@@ -81,3 +81,80 @@
     height: 16px;
   }
 }
+
+.ProseMirror {
+  outline: none;
+  min-height: 300px;
+}
+
+.ProseMirror h1 {
+  @apply text-3xl font-bold font-serif mb-4 mt-6;
+}
+
+.ProseMirror h2 {
+  @apply text-2xl font-semibold font-serif mb-3 mt-5;
+}
+
+.ProseMirror h3 {
+  @apply text-xl font-semibold font-serif mb-2 mt-4;
+}
+
+.ProseMirror p {
+  @apply mb-3 leading-relaxed;
+}
+
+.ProseMirror ul {
+  @apply list-disc pl-6 mb-3;
+}
+
+.ProseMirror ol {
+  @apply list-decimal pl-6 mb-3;
+}
+
+.ProseMirror li {
+  @apply mb-1;
+}
+
+.ProseMirror blockquote {
+  @apply border-l-4 border-primary pl-4 py-2 my-4 italic text-muted-foreground;
+}
+
+.ProseMirror hr {
+  @apply my-6 border-t-2 border-border;
+}
+
+.ProseMirror a {
+  @apply text-primary underline;
+}
+
+.ProseMirror strong {
+  @apply font-semibold;
+}
+
+.ProseMirror em {
+  @apply italic;
+}
+
+.ProseMirror u {
+  @apply underline;
+}
+
+.ProseMirror s {
+  @apply line-through;
+}
+
+.ProseMirror sup {
+  @apply text-xs align-super;
+}
+
+.ProseMirror sub {
+  @apply text-xs align-sub;
+}
+
+.ProseMirror p.is-editor-empty:first-child::before {
+  @apply text-muted-foreground/50;
+  content: attr(data-placeholder);
+  float: left;
+  height: 0;
+  pointer-events: none;
+}

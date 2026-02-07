@@ -171,6 +171,29 @@ export interface Translations {
     editorMode: string;
     conversationMode: string;
   };
+  formatting: {
+    bold: string;
+    italic: string;
+    underline: string;
+    strikethrough: string;
+    superscript: string;
+    subscript: string;
+    alignLeft: string;
+    alignCenter: string;
+    alignRight: string;
+    alignJustify: string;
+    heading1: string;
+    heading2: string;
+    heading3: string;
+    paragraph: string;
+    bulletList: string;
+    numberedList: string;
+    increaseIndent: string;
+    decreaseIndent: string;
+    quote: string;
+    horizontalRule: string;
+    clearFormatting: string;
+  };
   conversation: {
     questionOf: string;
     skipQuestion: string;
@@ -457,6 +480,29 @@ export const translations: Record<Language, Translations> = {
       editorMode: 'Editor Mode',
       conversationMode: 'Conversation Mode',
     },
+    formatting: {
+      bold: 'Bold',
+      italic: 'Italic',
+      underline: 'Underline',
+      strikethrough: 'Strikethrough',
+      superscript: 'Superscript',
+      subscript: 'Subscript',
+      alignLeft: 'Align Left',
+      alignCenter: 'Align Center',
+      alignRight: 'Align Right',
+      alignJustify: 'Justify',
+      heading1: 'Heading 1',
+      heading2: 'Heading 2',
+      heading3: 'Heading 3',
+      paragraph: 'Paragraph',
+      bulletList: 'Bullet List',
+      numberedList: 'Numbered List',
+      increaseIndent: 'Increase Indent',
+      decreaseIndent: 'Decrease Indent',
+      quote: 'Quote',
+      horizontalRule: 'Horizontal Line',
+      clearFormatting: 'Clear Formatting',
+    },
     conversation: {
       questionOf: 'Question {current} of {total} for {section}',
       skipQuestion: 'Skip this question',
@@ -740,6 +786,29 @@ export const translations: Record<Language, Translations> = {
       failedSummary: 'Impossibile generare il riassunto',
       editorMode: 'Modalità Editor',
       conversationMode: 'Modalità Conversazione',
+    },
+    formatting: {
+      bold: 'Grassetto',
+      italic: 'Corsivo',
+      underline: 'Sottolineato',
+      strikethrough: 'Barrato',
+      superscript: 'Apice',
+      subscript: 'Pedice',
+      alignLeft: 'Allinea Sinistra',
+      alignCenter: 'Allinea Centro',
+      alignRight: 'Allinea Destra',
+      alignJustify: 'Giustificato',
+      heading1: 'Titolo 1',
+      heading2: 'Titolo 2',
+      heading3: 'Titolo 3',
+      paragraph: 'Paragrafo Normale',
+      bulletList: 'Elenco Puntato',
+      numberedList: 'Elenco Numerato',
+      increaseIndent: 'Aumenta Rientro',
+      decreaseIndent: 'Riduci Rientro',
+      quote: 'Citazione',
+      horizontalRule: 'Linea Separatrice',
+      clearFormatting: 'Rimuovi Formattazione',
     },
     conversation: {
       questionOf: 'Domanda {current} di {total} per {section}',
@@ -1025,6 +1094,29 @@ export const translations: Record<Language, Translations> = {
       editorMode: 'Mode Éditeur',
       conversationMode: 'Mode Conversation',
     },
+    formatting: {
+      bold: 'Gras',
+      italic: 'Italique',
+      underline: 'Souligné',
+      strikethrough: 'Barré',
+      superscript: 'Exposant',
+      subscript: 'Indice',
+      alignLeft: 'Aligner à Gauche',
+      alignCenter: 'Centrer',
+      alignRight: 'Aligner à Droite',
+      alignJustify: 'Justifier',
+      heading1: 'Titre 1',
+      heading2: 'Titre 2',
+      heading3: 'Titre 3',
+      paragraph: 'Paragraphe',
+      bulletList: 'Liste à Puces',
+      numberedList: 'Liste Numérotée',
+      increaseIndent: 'Augmenter Retrait',
+      decreaseIndent: 'Réduire Retrait',
+      quote: 'Citation',
+      horizontalRule: 'Ligne Horizontale',
+      clearFormatting: 'Effacer Mise en Forme',
+    },
     conversation: {
       questionOf: 'Question {current} sur {total} pour {section}',
       skipQuestion: 'Passer cette question',
@@ -1308,6 +1400,29 @@ export const translations: Record<Language, Translations> = {
       failedSummary: 'Zusammenfassung konnte nicht erstellt werden',
       editorMode: 'Editor-Modus',
       conversationMode: 'Konversationsmodus',
+    },
+    formatting: {
+      bold: 'Fett',
+      italic: 'Kursiv',
+      underline: 'Unterstrichen',
+      strikethrough: 'Durchgestrichen',
+      superscript: 'Hochgestellt',
+      subscript: 'Tiefgestellt',
+      alignLeft: 'Linksbündig',
+      alignCenter: 'Zentriert',
+      alignRight: 'Rechtsbündig',
+      alignJustify: 'Blocksatz',
+      heading1: 'Überschrift 1',
+      heading2: 'Überschrift 2',
+      heading3: 'Überschrift 3',
+      paragraph: 'Absatz',
+      bulletList: 'Aufzählung',
+      numberedList: 'Nummerierte Liste',
+      increaseIndent: 'Einzug Vergrößern',
+      decreaseIndent: 'Einzug Verkleinern',
+      quote: 'Zitat',
+      horizontalRule: 'Horizontale Linie',
+      clearFormatting: 'Formatierung Entfernen',
     },
     conversation: {
       questionOf: 'Frage {current} von {total} für {section}',

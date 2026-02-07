@@ -1,8 +1,8 @@
 'use client';
 
-import { useRef, useState } from 'react';
+import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { FormattingToolbar } from './formatting-toolbar';
+import { RichTextEditor } from './rich-text-editor';
 import { VoiceRecorder } from './voice-recorder';
 import { useTranslation } from '@/lib/i18n/i18n-context';
 import {
@@ -50,10 +50,8 @@ export function SectionEditor({
   editorFontSize = 16,
   onEditorFontSizeChange,
 }: SectionEditorProps) {
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
   const [showVoice, setShowVoice] = useState(false);
   const section = BIOGRAPHY_SECTIONS.find((s) => s.key === sectionKey);
-  const charCount = data.text.length;
   const { t } = useTranslation();
 
   const sectionTitle = t.sectionTitles[sectionKey as keyof typeof t.sectionTitles] || section?.title || '';
@@ -165,29 +163,14 @@ export function SectionEditor({
         </div>
       )}
 
-      <div className="flex items-center justify-between px-4 sm:px-6 py-2 border-b border-border/30 bg-muted/30 shrink-0">
-        <FormattingToolbar
-          textareaRef={textareaRef}
-          onTextChange={onTextChange}
-          biographyId={biographyId}
-          editorFontSize={editorFontSize}
-          onEditorFontSizeChange={onEditorFontSizeChange}
-        />
-        <span className="text-xs text-muted-foreground">
-          {charCount.toLocaleString()} {t.editor.chars}
-        </span>
-      </div>
-
-      <div className="flex-1 min-h-0">
-        <textarea
-          ref={textareaRef}
-          value={data.text}
-          onChange={(e) => onTextChange(e.target.value)}
-          placeholder={`${t.editor.startWritingAbout} ${sectionTitle.toLowerCase()}...`}
-          className="w-full h-full resize-none bg-transparent px-4 sm:px-6 py-4 leading-relaxed placeholder:text-muted-foreground/50 focus:outline-none"
-          style={{ fontSize: `${editorFontSize}px` }}
-        />
-      </div>
+      <RichTextEditor
+        content={data.text}
+        onChange={onTextChange}
+        placeholder={`${t.editor.startWritingAbout} ${sectionTitle.toLowerCase()}...`}
+        biographyId={biographyId}
+        editorFontSize={editorFontSize}
+        onEditorFontSizeChange={onEditorFontSizeChange}
+      />
 
       <div className="flex items-center justify-between px-4 sm:px-6 py-3 border-t border-border/50 shrink-0">
         <label className="flex items-center gap-2 cursor-pointer select-none group">
