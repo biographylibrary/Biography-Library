@@ -417,6 +417,8 @@ export function ConversationMode({
       return;
     }
 
+    const isDraft1Complete = answers.length >= 8;
+
     setIsGenerating(true);
     try {
       await onGenerateDraft(answers);
@@ -426,10 +428,18 @@ export function ConversationMode({
       }
 
       const completionMessages = {
-        en: t.conversation.draftGenerated + ' ' + t.conversation.switchToEditorToRefine,
-        it: t.conversation.draftGenerated + ' ' + t.conversation.switchToEditorToRefine,
-        fr: t.conversation.draftGenerated + ' ' + t.conversation.switchToEditorToRefine,
-        de: t.conversation.draftGenerated + ' ' + t.conversation.switchToEditorToRefine,
+        en: isDraft1Complete
+          ? '🎉 Excellent work! You\'ve answered ' + answers.length + ' questions - Draft 1 Complete! ' + t.conversation.switchToEditorToRefine
+          : t.conversation.draftGenerated + ' You answered ' + answers.length + ' questions. For a more comprehensive draft, consider answering 8 or more questions next time. ' + t.conversation.switchToEditorToRefine,
+        it: isDraft1Complete
+          ? '🎉 Ottimo lavoro! Hai risposto a ' + answers.length + ' domande - Bozza 1 Completa! ' + t.conversation.switchToEditorToRefine
+          : t.conversation.draftGenerated + ' Hai risposto a ' + answers.length + ' domande. Per una bozza più completa, considera di rispondere a 8 o più domande la prossima volta. ' + t.conversation.switchToEditorToRefine,
+        fr: isDraft1Complete
+          ? '🎉 Excellent travail ! Vous avez répondu à ' + answers.length + ' questions - Brouillon 1 Complet ! ' + t.conversation.switchToEditorToRefine
+          : t.conversation.draftGenerated + ' Vous avez répondu à ' + answers.length + ' questions. Pour un brouillon plus complet, envisagez de répondre à 8 questions ou plus la prochaine fois. ' + t.conversation.switchToEditorToRefine,
+        de: isDraft1Complete
+          ? '🎉 Ausgezeichnete Arbeit! Sie haben ' + answers.length + ' Fragen beantwortet - Entwurf 1 Vollständig! ' + t.conversation.switchToEditorToRefine
+          : t.conversation.draftGenerated + ' Sie haben ' + answers.length + ' Fragen beantwortet. Für einen umfassenderen Entwurf sollten Sie beim nächsten Mal 8 oder mehr Fragen beantworten. ' + t.conversation.switchToEditorToRefine,
       };
 
       const completionMessage = completionMessages[language as keyof typeof completionMessages];
@@ -483,9 +493,22 @@ export function ConversationMode({
             <ArrowLeft className="h-4 w-4" />
             {t.conversation.backToEditor}
           </Button>
-          <span className="text-xs font-medium text-muted-foreground bg-primary/10 px-3 py-1 rounded-full">
-            {progressText}
-          </span>
+          <div className="flex items-center gap-2">
+            <span className="text-xs font-medium text-muted-foreground bg-primary/10 px-3 py-1 rounded-full">
+              {progressText}
+            </span>
+            {answers.length > 0 && (
+              <span className={cn(
+                "text-xs font-medium px-3 py-1 rounded-full",
+                answers.length >= 8
+                  ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
+                  : "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400"
+              )}>
+                {answers.length >= 8 ? '✓ ' : ''}{answers.length} {language === 'it' ? 'risposte' : language === 'fr' ? 'réponses' : language === 'de' ? 'Antworten' : 'answers'}
+                {answers.length < 8 && ` (${8 - answers.length} ${language === 'it' ? 'per bozza completa' : language === 'fr' ? 'pour brouillon complet' : language === 'de' ? 'für vollständigen Entwurf' : 'for complete draft'})`}
+              </span>
+            )}
+          </div>
         </div>
       </div>
 
