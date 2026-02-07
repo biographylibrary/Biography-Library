@@ -34,6 +34,7 @@ interface SectionEditorProps {
   biographyId?: string;
   editorFontSize?: number;
   onEditorFontSizeChange?: (size: number) => void;
+  onImportMultipleSections?: (sections: Array<{ title: string; content: string }>) => void;
 }
 
 export function SectionEditor({
@@ -51,6 +52,7 @@ export function SectionEditor({
   biographyId,
   editorFontSize = 16,
   onEditorFontSizeChange,
+  onImportMultipleSections,
 }: SectionEditorProps) {
   const [showVoice, setShowVoice] = useState(false);
   const [showImportDialog, setShowImportDialog] = useState(false);
@@ -229,6 +231,7 @@ export function SectionEditor({
         onOpenChange={setShowImportDialog}
         sectionName={sectionTitle}
         onImport={handleImportText}
+        onImportMultipleSections={onImportMultipleSections}
       />
     </div>
   );

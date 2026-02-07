@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useRef, useCallback } from 'react';
-import { Upload, FileText, AlertCircle, Loader2 } from 'lucide-react';
+import { Upload, FileText, AlertCircle, Loader2, Sparkles } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -22,6 +22,10 @@ import {
   TextImportError,
   type ParsedText,
 } from '@/lib/text-import-parser';
+import { detectSections, type SectionSuggestion } from '@/lib/import/section-matcher';
+import { SectionAssignmentWizard } from '@/components/import/SectionAssignmentWizard';
+import { useAuth } from '@/lib/auth-context';
+import { useTranslation } from '@/lib/i18n/i18n-context';
 
 interface ImportTextDialogProps {
   open: boolean;
@@ -38,6 +42,8 @@ export function ImportTextDialog({
   onImport,
   onImportMultipleSections,
 }: ImportTextDialogProps) {
+  const { session } = useAuth();
+  const { language } = useTranslation();
   const [dragActive, setDragActive] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -45,6 +51,9 @@ export function ImportTextDialog({
   const [parsedContent, setParsedContent] = useState<ParsedText | null>(null);
   const [replaceExisting, setReplaceExisting] = useState(false);
   const [importMode, setImportMode] = useState<'file' | 'paste' | 'preview'>('file');
+  const [showWizard, setShowWizard] = useState(false);
+  const [aiSuggestions, setAiSuggestions] = useState<SectionSuggestion[]>([]);
+  const [detectingAi, setDetectingAi] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const resetDialog = useCallback(() => {
@@ -55,6 +64,9 @@ export function ImportTextDialog({
     setImportMode('file');
     setLoading(false);
     setDragActive(false);
+    setShowWizard(false);
+    setAiSuggestions([]);
+    setDetectingAi(false);
   }, []);
 
   const handleFileSelect = useCallback(async (file: File) => {
@@ -127,6 +139,46 @@ export function ImportTextDialog({
       setLoading(false);
     }
   }, [pastedText]);
+
+  const handleAiDetection = useCallback(async () => {
+    if (!parsedContent || !session) {
+      setError('Devi essere autenticato per usare l\'AI');
+      return;
+    }
+
+    setDetectingAi(true);
+    setError(null);
+
+    try {
+      const token = session.access_token;
+      const result = await detectSections(parsedContent.content, language, token);
+
+      if (result.suggestions.length === 0) {
+        setError('L\'AI non è riuscita a rilevare sezioni nel testo');
+        return;
+      }
+
+      setAiSuggestions(result.suggestions);
+      setShowWizard(true);
+    } catch (err) {
+      console.error('AI detection error:', err);
+      setError('Errore durante il rilevamento automatico delle sezioni');
+    } finally {
+      setDetectingAi(false);
+    }
+  }, [parsedContent, session, language]);
+
+  const handleWizardAccept = useCallback((assignments: { section: string; text: string }[]) => {
+    if (onImportMultipleSections) {
+      const sections = assignments.map(a => ({
+        title: a.section,
+        content: a.text,
+      }));
+      onImportMultipleSections(sections);
+      resetDialog();
+      onOpenChange(false);
+    }
+  }, [onImportMultipleSections, resetDialog, onOpenChange]);
 
   const handleImportConfirm = useCallback(() => {
     if (!parsedContent) return;
@@ -292,19 +344,52 @@ export function ImportTextDialog({
               </div>
 
               {!parsedContent.hasSections && (
-                <div className="flex items-center space-x-2">
-                  <Checkbox
-                    id="replace"
-                    checked={replaceExisting}
-                    onCheckedChange={(checked) => setReplaceExisting(checked === true)}
-                  />
-                  <Label
-                    htmlFor="replace"
-                    className="text-sm font-normal cursor-pointer"
-                  >
-                    Sostituisci contenuto esistente
-                  </Label>
-                </div>
+                <>
+                  <div className="flex items-center space-x-2">
+                    <Checkbox
+                      id="replace"
+                      checked={replaceExisting}
+                      onCheckedChange={(checked) => setReplaceExisting(checked === true)}
+                    />
+                    <Label
+                      htmlFor="replace"
+                      className="text-sm font-normal cursor-pointer"
+                    >
+                      Sostituisci contenuto esistente
+                    </Label>
+                  </div>
+
+                  <Alert className="bg-primary/5 border-primary/20">
+                    <Sparkles className="h-4 w-4 text-primary" />
+                    <AlertDescription>
+                      <div className="flex items-center justify-between gap-3">
+                        <span className="text-sm">
+                          Lascia che l&apos;AI analizzi il testo e suggerisca automaticamente le sezioni appropriate
+                        </span>
+                        <Button
+                          type="button"
+                          variant="default"
+                          size="sm"
+                          onClick={handleAiDetection}
+                          disabled={detectingAi}
+                          className="shrink-0"
+                        >
+                          {detectingAi ? (
+                            <>
+                              <Loader2 className="mr-2 h-3.5 w-3.5 animate-spin" />
+                              Analisi...
+                            </>
+                          ) : (
+                            <>
+                              <Sparkles className="mr-2 h-3.5 w-3.5" />
+                              Rileva Sezioni
+                            </>
+                          )}
+                        </Button>
+                      </div>
+                    </AlertDescription>
+                  </Alert>
+                </>
               )}
 
               <Button
@@ -340,6 +425,17 @@ export function ImportTextDialog({
           )}
         </DialogFooter>
       </DialogContent>
+
+      <SectionAssignmentWizard
+        open={showWizard}
+        onOpenChange={setShowWizard}
+        suggestions={aiSuggestions}
+        onAcceptAll={handleWizardAccept}
+        onCancel={() => {
+          setShowWizard(false);
+          setAiSuggestions([]);
+        }}
+      />
     </Dialog>
   );
 }

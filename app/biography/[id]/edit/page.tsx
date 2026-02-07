@@ -248,6 +248,30 @@ export default function BiographyEditorPage() {
     setShowExportDialog(true);
   }, [biography]);
 
+  const handleImportMultipleSections = useCallback(
+    (sections: Array<{ title: string; content: string }>) => {
+      setContent((prev) => {
+        const updated = { ...prev };
+        sections.forEach((section) => {
+          const matchingSection = BIOGRAPHY_SECTIONS.find(
+            (s) => s.key === section.title || s.title === section.title
+          );
+          if (matchingSection) {
+            const currentData = getSectionData(prev, matchingSection.key);
+            const separator = currentData.text && !currentData.text.endsWith('</p>') ? '<p></p>' : '';
+            updated[matchingSection.key] = {
+              ...currentData,
+              text: currentData.text + separator + section.content,
+            };
+          }
+        });
+        return updated;
+      });
+      markDirty();
+    },
+    [markDirty]
+  );
+
   const getToken = useCallback(async () => {
     const { data: { session: freshSession } } = await supabase.auth.getSession();
     return freshSession?.access_token || '';
@@ -647,6 +671,7 @@ export default function BiographyEditorPage() {
                 biographyId={id}
                 editorFontSize={editorFontSize}
                 onEditorFontSizeChange={setEditorFontSize}
+                onImportMultipleSections={handleImportMultipleSections}
               />
             )}
 
