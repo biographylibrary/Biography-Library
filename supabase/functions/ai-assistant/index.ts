@@ -100,6 +100,62 @@ Analyze this answer and determine if a follow-up question would help get more me
   };
 }
 
+function buildRecommendSectionPrompt(
+  currentSection: string,
+  completedSections: string[],
+  sectionContent: string,
+  availableSections: string[],
+  language: string
+) {
+  const langName = getLangName(language);
+
+  const sectionDescriptions: Record<string, string> = {
+    'childhood': 'childhood memories, early years, family life growing up',
+    'family': 'family background, parents, siblings, ancestors, family culture',
+    'education': 'schooling, learning experiences, academic journey, teachers',
+    'career': 'work life, professional achievements, career path, jobs',
+    'life-events': 'major life events, turning points, important moments',
+    'relationships': 'romantic relationships, marriage, love, partnerships',
+    'challenges': 'difficulties faced, struggles, lessons learned, overcoming obstacles',
+    'passions': 'hobbies, interests, passions, what brings joy',
+    'legacy': 'values to pass on, life reflections, wisdom, final thoughts',
+  };
+
+  const availableSectionsWithDesc = availableSections
+    .map(s => `- ${s}: ${sectionDescriptions[s] || s}`)
+    .join('\n');
+
+  return {
+    system: `You are a biography writing coach helping someone write their life story in ${langName}. The user just completed a section. Based on the content they wrote, recommend which section they should work on next.
+
+Consider:
+1. Natural chronological flow (childhood → education → career → relationships → legacy)
+2. Topics they mentioned but didn't fully explore (e.g., they mentioned "studying medicine" → recommend Education section)
+3. Emotional readiness (avoid suggesting heavy topics like Challenges too early unless they're ready)
+4. Building narrative momentum (if they wrote about career success, relationships or passions might be good next)
+
+Available sections to recommend from:
+${availableSectionsWithDesc}
+
+Already completed: ${completedSections.join(', ') || 'none'}
+
+Return a JSON object with:
+{
+  "recommendedSection": "section-key" (must be one of the available sections),
+  "reason": "brief explanation in ${langName} (1-2 sentences, personal and encouraging)",
+  "confidence": "high" | "medium" | "low"
+}
+
+Return ONLY valid JSON, no markdown fences.`,
+    user: `User just completed section: "${currentSection}"
+
+Content excerpt from this section:
+"${sectionContent}"
+
+What section should they work on next?`,
+  };
+}
+
 Deno.serve(async (req: Request) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { status: 200, headers: corsHeaders });
@@ -148,7 +204,20 @@ Deno.serve(async (req: Request) => {
     }
 
     const body = await req.json();
-    const { action, sectionTitle, sectionKey, content, language = "en", userAnswer, originalQuestion, conversationHistory } = body;
+    const {
+      action,
+      sectionTitle,
+      sectionKey,
+      content,
+      language = "en",
+      userAnswer,
+      originalQuestion,
+      conversationHistory,
+      currentSection,
+      completedSections,
+      sectionContent,
+      availableSections
+    } = body;
 
     if (!action) {
       return errorResponse("Missing action parameter", 400);
@@ -208,6 +277,25 @@ Deno.serve(async (req: Request) => {
           userAnswer,
           originalQuestion,
           conversationHistory || [],
+          language
+        );
+        systemPrompt = p.system;
+        userPrompt = p.user;
+        maxTokens = 512;
+        break;
+      }
+      case "recommend-next-section": {
+        if (!currentSection || !sectionContent || !availableSections) {
+          return errorResponse(
+            "Missing currentSection, sectionContent, or availableSections for recommendation",
+            400
+          );
+        }
+        const p = buildRecommendSectionPrompt(
+          currentSection,
+          completedSections || [],
+          sectionContent,
+          availableSections,
           language
         );
         systemPrompt = p.system;
@@ -282,6 +370,21 @@ Deno.serve(async (req: Request) => {
           needsFollowUp: jsonData.needsFollowUp || false,
           followUpQuestion: jsonData.followUpQuestion,
           acknowledgment: jsonData.acknowledgment || "Thank you for sharing that.",
+        };
+      } catch {
+        return errorResponse(
+          "AI returned an invalid response. Please try again.",
+          502
+        );
+      }
+    } else if (action === "recommend-next-section") {
+      try {
+        const cleaned = extractJson(textContent);
+        const jsonData = JSON.parse(cleaned);
+        parsed = {
+          recommendedSection: jsonData.recommendedSection,
+          reason: jsonData.reason || "",
+          confidence: jsonData.confidence || "medium",
         };
       } catch {
         return errorResponse(
