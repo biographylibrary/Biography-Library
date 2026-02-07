@@ -12,6 +12,7 @@ import { CreateBiographyModal } from '@/components/dashboard/create-biography-mo
 import { DeleteBiographyDialog } from '@/components/dashboard/delete-biography-dialog';
 import { WelcomeLanguageModal } from '@/components/welcome-language-modal';
 import { AICoachCard } from '@/components/dashboard/ai-coach-card';
+import { PendingTodosCard } from '@/components/dashboard/pending-todos-card';
 import {
   fetchBiographies,
   createBiography,
@@ -163,6 +164,10 @@ export default function DashboardPage() {
 
         <div className="mb-8">
           <StatsCards biographies={biographies} />
+        </div>
+
+        <div className="mb-8">
+          <PendingTodosCard />
         </div>
 
         <div className="flex items-center justify-between mb-6">

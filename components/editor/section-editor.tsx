@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { RichTextEditor } from './rich-text-editor';
 import { VoiceRecorder } from './voice-recorder';
 import { ImportTextDialog } from './import-text-dialog';
+import { SectionNotes } from './SectionNotes';
 import { useTranslation } from '@/lib/i18n/i18n-context';
 import {
   Sparkles,
@@ -15,6 +16,7 @@ import {
   FileText,
   Power,
   Upload,
+  StickyNote,
 } from 'lucide-react';
 import { BIOGRAPHY_SECTIONS, type SectionData } from '@/lib/editor-constants';
 import { cn } from '@/lib/utils';
@@ -56,6 +58,7 @@ export function SectionEditor({
 }: SectionEditorProps) {
   const [showVoice, setShowVoice] = useState(false);
   const [showImportDialog, setShowImportDialog] = useState(false);
+  const [showNotes, setShowNotes] = useState(false);
   const section = BIOGRAPHY_SECTIONS.find((s) => s.key === sectionKey);
   const { t } = useTranslation();
 
@@ -121,6 +124,16 @@ export function SectionEditor({
           >
             <Upload className="h-4 w-4" />
           </Button>
+          <Button
+            type="button"
+            variant={showNotes ? 'default' : 'ghost'}
+            size="sm"
+            className="h-8 w-8 p-0 shrink-0"
+            onClick={() => setShowNotes(!showNotes)}
+            title="Note e promemoria"
+          >
+            <StickyNote className="h-4 w-4" />
+          </Button>
         </div>
         <div className="flex items-center gap-1 sm:gap-1.5 ml-3 shrink-0 flex-wrap justify-end">
           {aiEnabled && (
@@ -185,6 +198,12 @@ export function SectionEditor({
             onClearTranscript={handleClearTranscript}
             audioTranscript={data.audioTranscript}
           />
+        </div>
+      )}
+
+      {showNotes && biographyId && (
+        <div className="px-4 sm:px-6 py-3 border-b border-border/30 shrink-0">
+          <SectionNotes biographyId={biographyId} sectionKey={sectionKey} />
         </div>
       )}
 

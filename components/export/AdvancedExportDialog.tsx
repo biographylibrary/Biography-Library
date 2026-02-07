@@ -20,8 +20,12 @@ import { BIOGRAPHY_SECTIONS } from '@/lib/editor-constants';
 import { generateBiographyPDF } from '@/lib/pdf-export';
 import { exportAsPlainText, exportAsRTF, exportAsDOCX } from '@/lib/export-utils';
 import { useTranslation } from '@/lib/i18n/i18n-context';
+import { supabase } from '@/lib/supabase';
+import { format as formatDate } from 'date-fns';
+import { it } from 'date-fns/locale';
 
 interface BiographyData {
+  id?: string;
   title: string;
   author_name: string;
   content: Record<string, { text: string }>;
@@ -47,6 +51,7 @@ export function AdvancedExportDialog({
   const [contentSelection, setContentSelection] = useState<ContentSelection>('all');
   const [selectedSections, setSelectedSections] = useState<string[]>([]);
   const [includeMetadata, setIncludeMetadata] = useState(false);
+  const [includeNotesAndTodos, setIncludeNotesAndTodos] = useState(false);
   const [separateFiles, setSeparateFiles] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
 
@@ -75,6 +80,55 @@ export function AdvancedExportDialog({
     }
   };
 
+  const fetchNotesAndTodos = async (sectionKey: string) => {
+    if (!biography.id) return { notes: [], todos: [] };
+
+    const [notesResult, todosResult] = await Promise.all([
+      supabase
+        .from('section_notes')
+        .select('*')
+        .eq('biography_id', biography.id)
+        .eq('section', sectionKey)
+        .order('created_at', { ascending: true }),
+      supabase
+        .from('section_todos')
+        .select('*')
+        .eq('biography_id', biography.id)
+        .eq('section', sectionKey)
+        .order('is_completed', { ascending: true })
+        .order('created_at', { ascending: true }),
+    ]);
+
+    return {
+      notes: notesResult.data || [],
+      todos: todosResult.data || [],
+    };
+  };
+
+  const formatNotesAndTodos = (notes: any[], todos: any[]) => {
+    let formatted = '';
+
+    if (notes.length > 0) {
+      formatted += '\n\n--- NOTE ---\n\n';
+      notes.forEach((note, index) => {
+        const date = formatDate(new Date(note.created_at), 'd MMM yyyy', { locale: it });
+        formatted += `${index + 1}. ${note.content} (${date})\n`;
+      });
+    }
+
+    if (todos.length > 0) {
+      formatted += '\n\n--- PROMEMORIA ---\n\n';
+      todos.forEach((todo) => {
+        const status = todo.is_completed ? '[✓]' : '[ ]';
+        const priority = todo.priority === 'high' ? '⚠️' : todo.priority === 'medium' ? '➡️' : '➖';
+        const dueDate = todo.due_date ? ` (Scadenza: ${formatDate(new Date(todo.due_date), 'd MMM yyyy', { locale: it })})` : '';
+        formatted += `${status} ${priority} ${todo.description}${dueDate}\n`;
+      });
+    }
+
+    return formatted;
+  };
+
   const handleExport = async () => {
     setIsExporting(true);
     try {
@@ -86,11 +140,24 @@ export function AdvancedExportDialog({
         return;
       }
 
-      const sections = sectionsToExport.map((section) => ({
-        key: section.key,
-        title: t.sectionTitles[section.key as keyof typeof t.sectionTitles] || section.title,
-        content: biography.content[section.key].text,
-      }));
+      const sections = await Promise.all(
+        sectionsToExport.map(async (section) => {
+          let content = biography.content[section.key].text;
+
+          if (includeNotesAndTodos && biography.id) {
+            const { notes, todos } = await fetchNotesAndTodos(section.key);
+            if (notes.length > 0 || todos.length > 0) {
+              content += formatNotesAndTodos(notes, todos);
+            }
+          }
+
+          return {
+            key: section.key,
+            title: t.sectionTitles[section.key as keyof typeof t.sectionTitles] || section.title,
+            content,
+          };
+        })
+      );
 
       switch (format) {
         case 'pdf':
@@ -241,6 +308,17 @@ export function AdvancedExportDialog({
                 />
                 <Label htmlFor="include-metadata" className="font-normal cursor-pointer">
                   Includi metadati (data creazione, ultima modifica)
+                </Label>
+              </div>
+
+              <div className="flex items-center space-x-2">
+                <Checkbox
+                  id="include-notes-todos"
+                  checked={includeNotesAndTodos}
+                  onCheckedChange={(checked) => setIncludeNotesAndTodos(checked as boolean)}
+                />
+                <Label htmlFor="include-notes-todos" className="font-normal cursor-pointer">
+                  Includi note e promemoria
                 </Label>
               </div>
             </div>
