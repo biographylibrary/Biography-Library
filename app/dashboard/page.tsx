@@ -11,6 +11,7 @@ import { BiographyCard } from '@/components/dashboard/biography-card';
 import { CreateBiographyModal } from '@/components/dashboard/create-biography-modal';
 import { DeleteBiographyDialog } from '@/components/dashboard/delete-biography-dialog';
 import { WelcomeLanguageModal } from '@/components/welcome-language-modal';
+import { AICoachCard } from '@/components/dashboard/ai-coach-card';
 import {
   fetchBiographies,
   createBiography,
@@ -150,6 +151,14 @@ export default function DashboardPage() {
               <span className="sm:hidden">{t.dashboard.createBiography}</span>
             </Button>
           </div>
+        </div>
+
+        <div className="mb-8">
+          <AICoachCard
+            biographies={biographies}
+            userName={displayName}
+            userId={user.id}
+          />
         </div>
 
         <div className="mb-8">

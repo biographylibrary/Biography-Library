@@ -246,6 +246,35 @@ export interface Translations {
     demoLoaded: string;
     error: string;
   };
+  coach: {
+    greeting: string;
+    goodMorning: string;
+    goodAfternoon: string;
+    goodEvening: string;
+    wordsWritten: string;
+    inSections: string;
+    progressComplete: string;
+    lastActivity: string;
+    daysAgo: string;
+    today: string;
+    yesterday: string;
+    readyWhenYouAre: string;
+    almostDone: string;
+    wantToFinish: string;
+    readyToStart: string;
+    guideFirstStory: string;
+    conversationPending: string;
+    continueConversation: string;
+    continueWriting: string;
+    startNewSection: string;
+    quickSession: string;
+    firstHundredWords: string;
+    firstSectionComplete: string;
+    biographyComplete: string;
+    dailyPrompt: string;
+    of: string;
+    sections: string;
+  };
 }
 
 export const translations: Record<Language, Translations> = {
@@ -495,6 +524,35 @@ export const translations: Record<Language, Translations> = {
       demoLoaded: 'Demo biography loaded successfully',
       error: 'An error occurred',
     },
+    coach: {
+      greeting: 'Welcome back',
+      goodMorning: 'Good morning',
+      goodAfternoon: 'Good afternoon',
+      goodEvening: 'Good evening',
+      wordsWritten: 'words written',
+      inSections: 'in {count} sections',
+      progressComplete: 'progress complete',
+      lastActivity: 'Last activity',
+      daysAgo: '{count} days ago',
+      today: 'today',
+      yesterday: 'yesterday',
+      readyWhenYouAre: 'I\'m here when you\'re ready to continue',
+      almostDone: 'You\'re almost done with {section}! Want to finish it?',
+      wantToFinish: 'Want to finish it?',
+      readyToStart: 'Ready to start? I\'ll guide you through your first story.',
+      guideFirstStory: 'I\'ll guide you through your first story.',
+      conversationPending: 'You have a conversation in progress on {section}. Continue?',
+      continueConversation: 'Continue',
+      continueWriting: 'Continue where you left off',
+      startNewSection: 'Start new section',
+      quickSession: 'Quick session (5 min)',
+      firstHundredWords: 'First 100 words',
+      firstSectionComplete: 'First section complete',
+      biographyComplete: 'Biography complete',
+      dailyPrompt: 'Daily prompt',
+      of: 'of',
+      sections: 'sections',
+    },
   },
   it: {
     common: {
@@ -741,6 +799,35 @@ export const translations: Record<Language, Translations> = {
       linkCopied: 'Link copiato negli appunti',
       demoLoaded: 'Biografia demo caricata con successo',
       error: 'Si \u00e8 verificato un errore',
+    },
+    coach: {
+      greeting: 'Bentornato',
+      goodMorning: 'Buongiorno',
+      goodAfternoon: 'Buon pomeriggio',
+      goodEvening: 'Buonasera',
+      wordsWritten: 'parole scritte',
+      inSections: 'in {count} sezioni',
+      progressComplete: 'completato',
+      lastActivity: 'Ultima attività',
+      daysAgo: '{count} giorni fa',
+      today: 'oggi',
+      yesterday: 'ieri',
+      readyWhenYouAre: 'Sono qui quando sei pronto per continuare',
+      almostDone: 'Hai quasi finito con {section}! Vuoi completarla?',
+      wantToFinish: 'Vuoi completarla?',
+      readyToStart: 'Pronto per iniziare? Ti guiderò nella tua prima storia.',
+      guideFirstStory: 'Ti guiderò nella tua prima storia.',
+      conversationPending: 'Hai una conversazione in sospeso su {section}. Continua?',
+      continueConversation: 'Continua',
+      continueWriting: 'Continua dove avevi lasciato',
+      startNewSection: 'Inizia nuova sezione',
+      quickSession: 'Sessione veloce (5 min)',
+      firstHundredWords: 'Prime 100 parole',
+      firstSectionComplete: 'Prima sezione completata',
+      biographyComplete: 'Biografia completa',
+      dailyPrompt: 'Spunto del giorno',
+      of: 'di',
+      sections: 'sezioni',
     },
   },
   fr: {
@@ -989,6 +1076,35 @@ export const translations: Record<Language, Translations> = {
       demoLoaded: 'Biographie d\u00e9mo charg\u00e9e avec succ\u00e8s',
       error: 'Une erreur s\'est produite',
     },
+    coach: {
+      greeting: 'Bon retour',
+      goodMorning: 'Bonjour',
+      goodAfternoon: 'Bon après-midi',
+      goodEvening: 'Bonsoir',
+      wordsWritten: 'mots écrits',
+      inSections: 'dans {count} sections',
+      progressComplete: 'terminé',
+      lastActivity: 'Dernière activité',
+      daysAgo: 'il y a {count} jours',
+      today: 'aujourd\'hui',
+      yesterday: 'hier',
+      readyWhenYouAre: 'Je suis là quand vous êtes prêt à continuer',
+      almostDone: 'Vous avez presque terminé {section}! Voulez-vous la finir?',
+      wantToFinish: 'Voulez-vous la finir?',
+      readyToStart: 'Prêt à commencer? Je vais vous guider dans votre première histoire.',
+      guideFirstStory: 'Je vais vous guider dans votre première histoire.',
+      conversationPending: 'Vous avez une conversation en cours sur {section}. Continuer?',
+      continueConversation: 'Continuer',
+      continueWriting: 'Continuez où vous vous êtes arrêté',
+      startNewSection: 'Commencer une nouvelle section',
+      quickSession: 'Session rapide (5 min)',
+      firstHundredWords: 'Premiers 100 mots',
+      firstSectionComplete: 'Première section terminée',
+      biographyComplete: 'Biographie terminée',
+      dailyPrompt: 'Suggestion du jour',
+      of: 'de',
+      sections: 'sections',
+    },
   },
   de: {
     common: {
@@ -1235,6 +1351,35 @@ export const translations: Record<Language, Translations> = {
       linkCopied: 'Link in die Zwischenablage kopiert',
       demoLoaded: 'Demo-Biografie erfolgreich geladen',
       error: 'Ein Fehler ist aufgetreten',
+    },
+    coach: {
+      greeting: 'Willkommen zurück',
+      goodMorning: 'Guten Morgen',
+      goodAfternoon: 'Guten Tag',
+      goodEvening: 'Guten Abend',
+      wordsWritten: 'Wörter geschrieben',
+      inSections: 'in {count} Abschnitten',
+      progressComplete: 'fertig',
+      lastActivity: 'Letzte Aktivität',
+      daysAgo: 'vor {count} Tagen',
+      today: 'heute',
+      yesterday: 'gestern',
+      readyWhenYouAre: 'Ich bin da, wenn Sie bereit sind fortzufahren',
+      almostDone: 'Sie sind fast fertig mit {section}! Möchten Sie es beenden?',
+      wantToFinish: 'Möchten Sie es beenden?',
+      readyToStart: 'Bereit zu beginnen? Ich führe Sie durch Ihre erste Geschichte.',
+      guideFirstStory: 'Ich führe Sie durch Ihre erste Geschichte.',
+      conversationPending: 'Sie haben ein laufendes Gespräch über {section}. Fortfahren?',
+      continueConversation: 'Fortfahren',
+      continueWriting: 'Dort weitermachen, wo Sie aufgehört haben',
+      startNewSection: 'Neuen Abschnitt beginnen',
+      quickSession: 'Schnelle Sitzung (5 Min.)',
+      firstHundredWords: 'Erste 100 Wörter',
+      firstSectionComplete: 'Erster Abschnitt abgeschlossen',
+      biographyComplete: 'Biografie abgeschlossen',
+      dailyPrompt: 'Tägliche Anregung',
+      of: 'von',
+      sections: 'Abschnitte',
     },
   },
 };
