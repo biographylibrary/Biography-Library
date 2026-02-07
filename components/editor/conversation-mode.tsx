@@ -13,6 +13,23 @@ import { VoiceRecorder } from './voice-recorder';
 import { cn } from '@/lib/utils';
 import { analyzeAndRespond, type ConversationHistory } from '@/lib/ai/smart-followup';
 import { useAuth } from '@/lib/auth-context';
+import {
+  saveCheckpoint,
+  loadCheckpoint,
+  deleteCheckpointByBioSection,
+  type ConversationMessage,
+} from '@/lib/checkpoint-service';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
+import { useParams } from 'next/navigation';
 
 interface Message {
   id: string;
@@ -36,6 +53,9 @@ export function ConversationMode({
 }: ConversationModeProps) {
   const { t, language } = useTranslation();
   const { session } = useAuth();
+  const params = useParams();
+  const biographyId = params.id as string;
+
   const [messages, setMessages] = useState<Message[]>([]);
   const [currentAnswer, setCurrentAnswer] = useState('');
   const [audioTranscript, setAudioTranscript] = useState('');
@@ -46,15 +66,47 @@ export function ConversationMode({
   const [answers, setAnswers] = useState<{ question: string; answer: string }[]>([]);
   const [isFollowUp, setIsFollowUp] = useState(false);
   const [hasHadFollowUp, setHasHadFollowUp] = useState(false);
+  const [showResumeDialog, setShowResumeDialog] = useState(false);
+  const [checkpointData, setCheckpointData] = useState<any>(null);
+  const [hasCheckedCheckpoint, setHasCheckedCheckpoint] = useState(false);
+
   const scrollRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const autoSaveIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
   const prompts = getFallbackPrompts(language)[sectionKey] || [];
   const section = BIOGRAPHY_SECTIONS.find((s) => s.key === sectionKey);
   const sectionTitle = section ? t.sectionTitles[sectionKey as keyof typeof t.sectionTitles] : '';
 
   useEffect(() => {
-    if (prompts.length > 0 && messages.length === 0) {
+    const checkForCheckpoint = async () => {
+      if (!session?.user?.id || !biographyId || hasCheckedCheckpoint) return;
+
+      const checkpoint = await loadCheckpoint(session.user.id, biographyId, sectionKey);
+
+      if (checkpoint && checkpoint.conversation_log.length > 0) {
+        setCheckpointData(checkpoint);
+        setShowResumeDialog(true);
+      } else if (prompts.length > 0 && messages.length === 0) {
+        const firstQuestion = prompts[0].prompt;
+        setMessages([
+          {
+            id: '1',
+            type: 'ai',
+            content: firstQuestion,
+            timestamp: new Date(),
+          },
+        ]);
+      }
+
+      setHasCheckedCheckpoint(true);
+    };
+
+    checkForCheckpoint();
+  }, [session, biographyId, sectionKey, prompts, messages.length, hasCheckedCheckpoint]);
+
+  useEffect(() => {
+    if (prompts.length > 0 && messages.length === 0 && hasCheckedCheckpoint && !checkpointData) {
       const firstQuestion = prompts[0].prompt;
       setMessages([
         {
@@ -65,7 +117,7 @@ export function ConversationMode({
         },
       ]);
     }
-  }, [prompts, messages.length]);
+  }, [prompts, messages.length, hasCheckedCheckpoint, checkpointData]);
 
   useEffect(() => {
     if (scrollRef.current) {
@@ -82,6 +134,84 @@ export function ConversationMode({
       setAudioTranscript('');
     }
   }, [audioTranscript]);
+
+  const saveCurrentCheckpoint = useCallback(async () => {
+    if (!session?.user?.id || !biographyId || messages.length === 0) return;
+
+    const lastQuestion = messages[messages.length - 1]?.type === 'ai'
+      ? messages[messages.length - 1]?.content
+      : null;
+
+    await saveCheckpoint(
+      session.user.id,
+      biographyId,
+      sectionKey,
+      messages as ConversationMessage[],
+      currentQuestionIndex,
+      lastQuestion,
+      answers,
+      isFollowUp,
+      hasHadFollowUp
+    );
+  }, [session, biographyId, sectionKey, messages, currentQuestionIndex, answers, isFollowUp, hasHadFollowUp]);
+
+  useEffect(() => {
+    if (messages.length > 0 && hasCheckedCheckpoint) {
+      autoSaveIntervalRef.current = setInterval(() => {
+        saveCurrentCheckpoint();
+      }, 120000);
+
+      return () => {
+        if (autoSaveIntervalRef.current) {
+          clearInterval(autoSaveIntervalRef.current);
+        }
+      };
+    }
+  }, [messages.length, hasCheckedCheckpoint, saveCurrentCheckpoint]);
+
+  useEffect(() => {
+    return () => {
+      if (messages.length > 0) {
+        saveCurrentCheckpoint();
+      }
+    };
+  }, [messages.length, saveCurrentCheckpoint]);
+
+  const handleResumeConversation = () => {
+    if (!checkpointData) return;
+
+    const restoredMessages = checkpointData.conversation_log.map((msg: any) => ({
+      ...msg,
+      timestamp: new Date(msg.timestamp),
+    }));
+
+    setMessages(restoredMessages);
+    setAnswers(checkpointData.answers || []);
+    setCurrentQuestionIndex(checkpointData.questions_completed || 0);
+    setIsFollowUp(checkpointData.is_follow_up || false);
+    setHasHadFollowUp(checkpointData.has_had_follow_up || false);
+    setShowResumeDialog(false);
+    setCheckpointData(null);
+  };
+
+  const handleStartFresh = async () => {
+    if (!session?.user?.id || !biographyId) return;
+
+    await deleteCheckpointByBioSection(session.user.id, biographyId, sectionKey);
+
+    setShowResumeDialog(false);
+    setCheckpointData(null);
+
+    const firstQuestion = prompts[0].prompt;
+    setMessages([
+      {
+        id: '1',
+        type: 'ai',
+        content: firstQuestion,
+        timestamp: new Date(),
+      },
+    ]);
+  };
 
   const generateAcknowledgment = (answer: string): string => {
     const acknowledgments = {
@@ -291,6 +421,10 @@ export function ConversationMode({
     try {
       await onGenerateDraft(answers);
 
+      if (session?.user?.id && biographyId) {
+        await deleteCheckpointByBioSection(session.user.id, biographyId, sectionKey);
+      }
+
       const completionMessages = {
         en: t.conversation.draftGenerated + ' ' + t.conversation.switchToEditorToRefine,
         it: t.conversation.draftGenerated + ' ' + t.conversation.switchToEditorToRefine,
@@ -486,6 +620,33 @@ export function ConversationMode({
           </div>
         </div>
       </div>
+
+      <AlertDialog open={showResumeDialog} onOpenChange={setShowResumeDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              {language === 'it' ? 'Conversazione in sospeso' : language === 'fr' ? 'Conversation en attente' : language === 'de' ? 'Ausstehende Unterhaltung' : 'Conversation in Progress'}
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              {language === 'it'
+                ? 'Hai una conversazione in sospeso per questa sezione. Vuoi continuare da dove hai lasciato o ricominciare da capo?'
+                : language === 'fr'
+                ? 'Vous avez une conversation en attente pour cette section. Voulez-vous continuer là où vous vous êtes arrêté ou recommencer?'
+                : language === 'de'
+                ? 'Sie haben eine ausstehende Unterhaltung für diesen Abschnitt. Möchten Sie dort fortfahren, wo Sie aufgehört haben, oder von vorne beginnen?'
+                : 'You have a conversation in progress for this section. Do you want to continue where you left off or start fresh?'}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={handleStartFresh}>
+              {language === 'it' ? 'Ricomincia da capo' : language === 'fr' ? 'Recommencer' : language === 'de' ? 'Von vorne beginnen' : 'Start Fresh'}
+            </AlertDialogCancel>
+            <AlertDialogAction onClick={handleResumeConversation}>
+              {language === 'it' ? 'Riprendi' : language === 'fr' ? 'Reprendre' : language === 'de' ? 'Fortsetzen' : 'Resume'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
