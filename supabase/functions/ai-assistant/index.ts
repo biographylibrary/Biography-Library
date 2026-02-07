@@ -59,6 +59,47 @@ function buildSummaryPrompt(sectionTitle: string, content: string, language: str
   };
 }
 
+function buildAnalyzeAnswerPrompt(
+  userAnswer: string,
+  originalQuestion: string,
+  conversationHistory: any[],
+  language: string
+) {
+  const langName = getLangName(language);
+
+  let historyContext = '';
+  if (conversationHistory && conversationHistory.length > 0) {
+    historyContext = '\n\nRecent conversation context:\n' +
+      conversationHistory.map((h: any) => `Q: ${h.question}\nA: ${h.answer}`).join('\n\n');
+  }
+
+  return {
+    system: `You are an empathetic biography interviewer. Analyze the user's answer to determine if it needs a follow-up question for more detail.
+
+Guidelines:
+- If the answer is very brief (< 30 words) or vague, ask ONE specific follow-up question
+- If the answer mentions names, places, or events without context, ask for clarification
+- If the answer is emotional or significant, ask a gentle follow-up like "How did that affect you?" or "What was that like for you?"
+- If the answer is already detailed (> 80 words) and complete, no follow-up needed
+- Follow-up questions must be warm, specific, and in ${langName}
+- NEVER ask more than ONE follow-up per original question
+
+Return a JSON object with:
+{
+  "needsFollowUp": boolean,
+  "followUpQuestion": "specific question in ${langName}" (only if needsFollowUp is true),
+  "acknowledgment": "brief warm response in ${langName} (1 sentence)"
+}
+
+Return ONLY valid JSON, no markdown fences.`,
+    user: `Original question: "${originalQuestion}"
+
+User's answer: "${userAnswer}"${historyContext}
+
+Analyze this answer and determine if a follow-up question would help get more meaningful detail.`,
+  };
+}
+
 Deno.serve(async (req: Request) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { status: 200, headers: corsHeaders });
@@ -107,7 +148,7 @@ Deno.serve(async (req: Request) => {
     }
 
     const body = await req.json();
-    const { action, sectionTitle, sectionKey, content, language = "en" } = body;
+    const { action, sectionTitle, sectionKey, content, language = "en", userAnswer, originalQuestion, conversationHistory } = body;
 
     if (!action) {
       return errorResponse("Missing action parameter", 400);
@@ -151,6 +192,24 @@ Deno.serve(async (req: Request) => {
           );
         }
         const p = buildSummaryPrompt(sectionTitle, content, language);
+        systemPrompt = p.system;
+        userPrompt = p.user;
+        maxTokens = 512;
+        break;
+      }
+      case "analyze-answer": {
+        if (!userAnswer || !originalQuestion) {
+          return errorResponse(
+            "Missing userAnswer or originalQuestion for analysis",
+            400
+          );
+        }
+        const p = buildAnalyzeAnswerPrompt(
+          userAnswer,
+          originalQuestion,
+          conversationHistory || [],
+          language
+        );
         systemPrompt = p.system;
         userPrompt = p.user;
         maxTokens = 512;
@@ -215,6 +274,21 @@ Deno.serve(async (req: Request) => {
     let parsed: any;
     if (action === "summary") {
       parsed = { summary: textContent };
+    } else if (action === "analyze-answer") {
+      try {
+        const cleaned = extractJson(textContent);
+        const jsonData = JSON.parse(cleaned);
+        parsed = {
+          needsFollowUp: jsonData.needsFollowUp || false,
+          followUpQuestion: jsonData.followUpQuestion,
+          acknowledgment: jsonData.acknowledgment || "Thank you for sharing that.",
+        };
+      } catch {
+        return errorResponse(
+          "AI returned an invalid response. Please try again.",
+          502
+        );
+      }
     } else {
       try {
         const cleaned = extractJson(textContent);

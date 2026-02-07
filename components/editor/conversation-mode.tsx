@@ -11,6 +11,8 @@ import { getFallbackPrompts } from '@/lib/ai-constants';
 import { BIOGRAPHY_SECTIONS } from '@/lib/editor-constants';
 import { VoiceRecorder } from './voice-recorder';
 import { cn } from '@/lib/utils';
+import { analyzeAndRespond, type ConversationHistory } from '@/lib/ai/smart-followup';
+import { useAuth } from '@/lib/auth-context';
 
 interface Message {
   id: string;
@@ -33,13 +35,17 @@ export function ConversationMode({
   currentText,
 }: ConversationModeProps) {
   const { t, language } = useTranslation();
+  const { session } = useAuth();
   const [messages, setMessages] = useState<Message[]>([]);
   const [currentAnswer, setCurrentAnswer] = useState('');
   const [audioTranscript, setAudioTranscript] = useState('');
   const [showVoice, setShowVoice] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [answers, setAnswers] = useState<{ question: string; answer: string }[]>([]);
+  const [isFollowUp, setIsFollowUp] = useState(false);
+  const [hasHadFollowUp, setHasHadFollowUp] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
@@ -116,6 +122,7 @@ export function ConversationMode({
 
   const handleSendAnswer = useCallback(async () => {
     if (!currentAnswer.trim() || currentQuestionIndex >= prompts.length) return;
+    if (!session?.access_token) return;
 
     const userMessage: Message = {
       id: Date.now().toString(),
@@ -124,44 +131,137 @@ export function ConversationMode({
       timestamp: new Date(),
     };
 
-    const currentQuestion = prompts[currentQuestionIndex].prompt;
-    const newAnswers = [...answers, { question: currentQuestion, answer: currentAnswer.trim() }];
-    setAnswers(newAnswers);
+    const currentQuestion = isFollowUp
+      ? messages[messages.length - 1]?.content || prompts[currentQuestionIndex].prompt
+      : prompts[currentQuestionIndex].prompt;
+
+    if (!isFollowUp) {
+      const newAnswers = [...answers, { question: currentQuestion, answer: currentAnswer.trim() }];
+      setAnswers(newAnswers);
+    } else {
+      const updatedAnswers = [...answers];
+      if (updatedAnswers.length > 0) {
+        updatedAnswers[updatedAnswers.length - 1].answer += '\n\n' + currentAnswer.trim();
+      }
+      setAnswers(updatedAnswers);
+    }
 
     setMessages((prev) => [...prev, userMessage]);
     setCurrentAnswer('');
+    setIsAnalyzing(true);
 
-    const nextQuestionIndex = currentQuestionIndex + 1;
+    try {
+      const conversationHistory: ConversationHistory[] = answers.slice(-3);
 
-    setTimeout(() => {
+      const analysis = await analyzeAndRespond(
+        session.access_token,
+        currentAnswer.trim(),
+        currentQuestion,
+        conversationHistory,
+        language,
+        hasHadFollowUp
+      );
+
+      setIsAnalyzing(false);
+
+      if (analysis.needsFollowUp && analysis.followUpQuestion && !isFollowUp) {
+        setIsFollowUp(true);
+        setHasHadFollowUp(true);
+
+        const aiMessage: Message = {
+          id: (Date.now() + 1).toString(),
+          type: 'ai',
+          content: `${analysis.acknowledgment}\n\n${analysis.followUpQuestion}`,
+          timestamp: new Date(),
+        };
+
+        setMessages((prev) => [...prev, aiMessage]);
+      } else {
+        setIsFollowUp(false);
+        setHasHadFollowUp(false);
+
+        const nextQuestionIndex = currentQuestionIndex + 1;
+
+        if (nextQuestionIndex < prompts.length) {
+          const nextQuestion = prompts[nextQuestionIndex].prompt;
+
+          const aiMessage: Message = {
+            id: (Date.now() + 1).toString(),
+            type: 'ai',
+            content: `${analysis.acknowledgment}\n\n${nextQuestion}`,
+            timestamp: new Date(),
+          };
+
+          setMessages((prev) => [...prev, aiMessage]);
+          setCurrentQuestionIndex(nextQuestionIndex);
+        } else {
+          const aiMessage: Message = {
+            id: (Date.now() + 1).toString(),
+            type: 'ai',
+            content: analysis.acknowledgment,
+            timestamp: new Date(),
+          };
+          setMessages((prev) => [...prev, aiMessage]);
+        }
+      }
+
+      textareaRef.current?.focus();
+    } catch (error) {
+      console.error('Failed to analyze answer:', error);
+      setIsAnalyzing(false);
+
+      const fallbackAcknowledgment = generateAcknowledgment(currentAnswer);
+      const nextQuestionIndex = currentQuestionIndex + 1;
+
       if (nextQuestionIndex < prompts.length) {
-        const acknowledgment = generateAcknowledgment(currentAnswer);
         const nextQuestion = prompts[nextQuestionIndex].prompt;
 
         const aiMessage: Message = {
           id: (Date.now() + 1).toString(),
           type: 'ai',
-          content: `${acknowledgment}\n\n${nextQuestion}`,
+          content: `${fallbackAcknowledgment}\n\n${nextQuestion}`,
           timestamp: new Date(),
         };
 
         setMessages((prev) => [...prev, aiMessage]);
         setCurrentQuestionIndex(nextQuestionIndex);
       } else {
-        const finalAcknowledgment = generateAcknowledgment(currentAnswer);
         const aiMessage: Message = {
           id: (Date.now() + 1).toString(),
           type: 'ai',
-          content: finalAcknowledgment,
+          content: fallbackAcknowledgment,
           timestamp: new Date(),
         };
         setMessages((prev) => [...prev, aiMessage]);
       }
+
       textareaRef.current?.focus();
-    }, 800);
-  }, [currentAnswer, currentQuestionIndex, prompts, answers, language]);
+    }
+  }, [currentAnswer, currentQuestionIndex, prompts, answers, language, session, isFollowUp, hasHadFollowUp, messages]);
 
   const handleSkipQuestion = () => {
+    if (isFollowUp) {
+      setIsFollowUp(false);
+      setHasHadFollowUp(false);
+
+      const nextQuestionIndex = currentQuestionIndex + 1;
+      if (nextQuestionIndex >= prompts.length) return;
+
+      const nextQuestion = prompts[nextQuestionIndex].prompt;
+
+      const aiMessage: Message = {
+        id: Date.now().toString(),
+        type: 'ai',
+        content: nextQuestion,
+        timestamp: new Date(),
+      };
+
+      setMessages((prev) => [...prev, aiMessage]);
+      setCurrentQuestionIndex(nextQuestionIndex);
+      setCurrentAnswer('');
+      return;
+    }
+
     if (currentQuestionIndex >= prompts.length - 1) return;
 
     const nextQuestionIndex = currentQuestionIndex + 1;
@@ -177,6 +277,8 @@ export function ConversationMode({
     setMessages((prev) => [...prev, aiMessage]);
     setCurrentQuestionIndex(nextQuestionIndex);
     setCurrentAnswer('');
+    setIsFollowUp(false);
+    setHasHadFollowUp(false);
   };
 
   const handleFinishSection = async () => {
@@ -220,10 +322,19 @@ export function ConversationMode({
     }
   };
 
-  const progressText = t.conversation.questionOf
-    .replace('{current}', String(currentQuestionIndex + 1))
-    .replace('{total}', String(prompts.length))
-    .replace('{section}', sectionTitle);
+  const followUpLabels = {
+    en: 'Follow-up question',
+    it: 'Domanda di approfondimento',
+    fr: 'Question de suivi',
+    de: 'Nachfrage',
+  };
+
+  const progressText = isFollowUp
+    ? followUpLabels[language as keyof typeof followUpLabels] || followUpLabels.en
+    : t.conversation.questionOf
+        .replace('{current}', String(currentQuestionIndex + 1))
+        .replace('{total}', String(prompts.length))
+        .replace('{section}', sectionTitle);
 
   return (
     <div className="flex flex-col h-full bg-background">
@@ -282,7 +393,7 @@ export function ConversationMode({
               )}
             </div>
           ))}
-          {isGenerating && (
+          {(isGenerating || isAnalyzing) && (
             <div className="flex gap-3 justify-start">
               <div className="flex-shrink-0">
                 <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
@@ -292,7 +403,7 @@ export function ConversationMode({
               <Card className="px-4 py-3 bg-card border-border/50">
                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
                   <Loader2 className="h-4 w-4 animate-spin" />
-                  {t.conversation.generatingDraft}
+                  {isGenerating ? t.conversation.generatingDraft : (language === 'it' ? 'Sto pensando...' : language === 'fr' ? 'Je réfléchis...' : language === 'de' ? 'Ich denke nach...' : 'Thinking...')}
                 </div>
               </Card>
             </div>
@@ -312,7 +423,7 @@ export function ConversationMode({
                 onKeyDown={handleKeyDown}
                 placeholder={t.conversation.typeYourAnswer}
                 className="min-h-[80px] resize-none"
-                disabled={isGenerating || currentQuestionIndex >= prompts.length}
+                disabled={isGenerating || isAnalyzing || currentQuestionIndex >= prompts.length}
               />
             </div>
             <div className="flex flex-col gap-2">
@@ -320,7 +431,7 @@ export function ConversationMode({
                 size="icon"
                 variant="outline"
                 onClick={() => setShowVoice(!showVoice)}
-                disabled={isGenerating}
+                disabled={isGenerating || isAnalyzing}
                 className="h-10 w-10"
               >
                 <Mic className="h-4 w-4" />
@@ -328,7 +439,7 @@ export function ConversationMode({
               <Button
                 size="icon"
                 onClick={handleSendAnswer}
-                disabled={!currentAnswer.trim() || isGenerating || currentQuestionIndex >= prompts.length}
+                disabled={!currentAnswer.trim() || isGenerating || isAnalyzing || currentQuestionIndex >= prompts.length}
                 className="h-10 w-10"
               >
                 <Send className="h-4 w-4" />
@@ -345,22 +456,22 @@ export function ConversationMode({
           )}
 
           <div className="flex items-center gap-2 justify-end">
-            {currentQuestionIndex < prompts.length - 1 && (
+            {(currentQuestionIndex < prompts.length - 1 || isFollowUp) && (
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={handleSkipQuestion}
-                disabled={isGenerating}
+                disabled={isGenerating || isAnalyzing}
               >
                 {t.conversation.skipQuestion}
               </Button>
             )}
-            {answers.length >= 3 && (
+            {answers.length >= 3 && !isFollowUp && (
               <Button
                 variant="default"
                 size="sm"
                 onClick={handleFinishSection}
-                disabled={isGenerating}
+                disabled={isGenerating || isAnalyzing}
               >
                 {isGenerating ? (
                   <>
