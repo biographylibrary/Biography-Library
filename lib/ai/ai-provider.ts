@@ -55,6 +55,13 @@ class ClaudeProvider implements AIProvider {
     token: string,
     body: Record<string, any>
   ): Promise<any> {
+    if (!token || token.trim() === '') {
+      throw new Error('No authentication token available. Please sign in again.');
+    }
+
+    console.log('AI Request - Token length:', token.length, 'First 20 chars:', token.substring(0, 20));
+    console.log('AI Request - Body:', body);
+
     const res = await fetch(this.AI_FUNCTION_URL, {
       method: 'POST',
       headers: {

@@ -295,8 +295,16 @@ export default function BiographyEditorPage() {
   );
 
   const getToken = useCallback(async () => {
-    const { data: { session: freshSession } } = await supabase.auth.getSession();
-    return freshSession?.access_token || '';
+    const { data: { session: freshSession }, error } = await supabase.auth.getSession();
+    if (error) {
+      console.error('Error getting session:', error);
+      return '';
+    }
+    if (!freshSession || !freshSession.access_token) {
+      console.error('No valid session or access token found');
+      return '';
+    }
+    return freshSession.access_token;
   }, []);
 
   const handleGrammarCheck = useCallback(async () => {
