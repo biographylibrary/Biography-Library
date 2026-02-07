@@ -173,7 +173,7 @@ export function EditorTopBar({
             onClick={onExportPDF}
           >
             <FileDown className="h-3.5 w-3.5" />
-            <span className="hidden sm:inline">{t.biography.exportPdf}</span>
+            <span className="hidden sm:inline">{t.biography.export}</span>
           </Button>
 
           <ThemeToggle />

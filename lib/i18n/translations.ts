@@ -85,7 +85,7 @@ export interface Translations {
     todos: string;
     aiSuggestions: string;
     shareLink: string;
-    exportPdf: string;
+    export: string;
     exporting: string;
     continueWriting: string;
     untitled: string;
@@ -394,7 +394,7 @@ export const translations: Record<Language, Translations> = {
       todos: 'To-Do',
       aiSuggestions: 'AI Suggestions',
       shareLink: 'Share Link',
-      exportPdf: 'Export PDF',
+      export: 'Export',
       exporting: 'Exporting...',
       continueWriting: 'Continue Writing',
       untitled: 'Untitled',
@@ -701,7 +701,7 @@ export const translations: Record<Language, Translations> = {
       todos: 'Da Fare',
       aiSuggestions: 'Suggerimenti AI',
       shareLink: 'Condividi Link',
-      exportPdf: 'Esporta PDF',
+      export: 'Esporta',
       exporting: 'Esportazione...',
       continueWriting: 'Continua a Scrivere',
       untitled: 'Senza titolo',
@@ -1008,7 +1008,7 @@ export const translations: Record<Language, Translations> = {
       todos: '\u00c0 Faire',
       aiSuggestions: 'Suggestions IA',
       shareLink: 'Lien de Partage',
-      exportPdf: 'Exporter en PDF',
+      export: 'Exporter',
       exporting: 'Exportation...',
       continueWriting: 'Continuer \u00e0 \u00c9crire',
       untitled: 'Sans titre',
@@ -1315,7 +1315,7 @@ export const translations: Record<Language, Translations> = {
       todos: 'Aufgaben',
       aiSuggestions: 'KI-Vorschl\u00e4ge',
       shareLink: 'Link Teilen',
-      exportPdf: 'PDF Exportieren',
+      export: 'Exportieren',
       exporting: 'Exportieren...',
       continueWriting: 'Weiterschreiben',
       untitled: 'Ohne Titel',

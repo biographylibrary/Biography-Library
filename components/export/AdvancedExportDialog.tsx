@@ -1,0 +1,280 @@
+'use client';
+
+import { useState } from 'react';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Label } from '@/components/ui/label';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Separator } from '@/components/ui/separator';
+import { Download, Loader2 } from 'lucide-react';
+import { BIOGRAPHY_SECTIONS } from '@/lib/editor-constants';
+import { generateBiographyPDF } from '@/lib/pdf-export';
+import { exportAsPlainText, exportAsRTF, exportAsDOCX } from '@/lib/export-utils';
+import { useTranslation } from '@/lib/i18n/i18n-context';
+
+interface BiographyData {
+  title: string;
+  author_name: string;
+  content: Record<string, { text: string }>;
+  created_at: string;
+}
+
+interface AdvancedExportDialogProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  biography: BiographyData;
+}
+
+type ExportFormat = 'pdf' | 'txt' | 'rtf' | 'docx';
+type ContentSelection = 'all' | 'completed' | 'custom';
+
+export function AdvancedExportDialog({
+  open,
+  onOpenChange,
+  biography,
+}: AdvancedExportDialogProps) {
+  const { t } = useTranslation();
+  const [format, setFormat] = useState<ExportFormat>('pdf');
+  const [contentSelection, setContentSelection] = useState<ContentSelection>('all');
+  const [selectedSections, setSelectedSections] = useState<string[]>([]);
+  const [includeMetadata, setIncludeMetadata] = useState(false);
+  const [separateFiles, setSeparateFiles] = useState(false);
+  const [isExporting, setIsExporting] = useState(false);
+
+  const toggleSection = (sectionKey: string) => {
+    setSelectedSections((prev) =>
+      prev.includes(sectionKey)
+        ? prev.filter((key) => key !== sectionKey)
+        : [...prev, sectionKey]
+    );
+  };
+
+  const getSectionsToExport = () => {
+    if (contentSelection === 'all') {
+      return BIOGRAPHY_SECTIONS.filter(
+        (section) => biography.content[section.key]?.text?.trim()
+      );
+    } else if (contentSelection === 'completed') {
+      return BIOGRAPHY_SECTIONS.filter((section) => {
+        const content = biography.content[section.key];
+        return content?.text?.trim() && content.text.length > 100;
+      });
+    } else {
+      return BIOGRAPHY_SECTIONS.filter((section) =>
+        selectedSections.includes(section.key)
+      );
+    }
+  };
+
+  const handleExport = async () => {
+    setIsExporting(true);
+    try {
+      const sectionsToExport = getSectionsToExport();
+
+      if (sectionsToExport.length === 0) {
+        alert('Nessuna sezione da esportare.');
+        setIsExporting(false);
+        return;
+      }
+
+      const sections = sectionsToExport.map((section) => ({
+        key: section.key,
+        title: t.sectionTitles[section.key as keyof typeof t.sectionTitles] || section.title,
+        content: biography.content[section.key].text,
+      }));
+
+      switch (format) {
+        case 'pdf':
+          const filteredBiography = {
+            ...biography,
+            content: Object.fromEntries(
+              sections.map((s) => [s.key, { text: s.content }])
+            ),
+          };
+          generateBiographyPDF(filteredBiography);
+          break;
+        case 'txt':
+          await exportAsPlainText(biography, sections, separateFiles);
+          break;
+        case 'rtf':
+          await exportAsRTF(biography, sections, separateFiles);
+          break;
+        case 'docx':
+          await exportAsDOCX(biography, sections, separateFiles);
+          break;
+      }
+
+      onOpenChange(false);
+    } catch (error) {
+      console.error('Export error:', error);
+      alert('Errore durante l\'esportazione. Riprova.');
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
+  const formatLabels: Record<ExportFormat, string> = {
+    pdf: 'PDF - Documento completo formattato',
+    txt: 'TXT - Testo semplice senza formattazione',
+    rtf: 'RTF - Testo con formattazione base',
+    docx: 'DOCX - Documento Word',
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-2xl max-h-[90vh] flex flex-col">
+        <DialogHeader>
+          <DialogTitle>Esporta Biografia</DialogTitle>
+          <DialogDescription>
+            Scegli il formato e le sezioni da esportare
+          </DialogDescription>
+        </DialogHeader>
+
+        <ScrollArea className="flex-1 pr-4">
+          <div className="space-y-6 py-4">
+            <div className="space-y-3">
+              <Label className="text-base font-semibold">Formato di esportazione</Label>
+              <RadioGroup value={format} onValueChange={(v) => setFormat(v as ExportFormat)}>
+                {(['pdf', 'txt', 'rtf', 'docx'] as ExportFormat[]).map((fmt) => (
+                  <div key={fmt} className="flex items-center space-x-2">
+                    <RadioGroupItem value={fmt} id={`format-${fmt}`} />
+                    <Label htmlFor={`format-${fmt}`} className="font-normal cursor-pointer">
+                      {formatLabels[fmt]}
+                    </Label>
+                  </div>
+                ))}
+              </RadioGroup>
+            </div>
+
+            <Separator />
+
+            <div className="space-y-3">
+              <Label className="text-base font-semibold">Selezione contenuto</Label>
+              <RadioGroup
+                value={contentSelection}
+                onValueChange={(v) => setContentSelection(v as ContentSelection)}
+              >
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="all" id="content-all" />
+                  <Label htmlFor="content-all" className="font-normal cursor-pointer">
+                    Biografia completa (tutte le sezioni)
+                  </Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="completed" id="content-completed" />
+                  <Label htmlFor="content-completed" className="font-normal cursor-pointer">
+                    Solo sezioni completate
+                  </Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="custom" id="content-custom" />
+                  <Label htmlFor="content-custom" className="font-normal cursor-pointer">
+                    Seleziona sezioni specifiche
+                  </Label>
+                </div>
+              </RadioGroup>
+
+              {contentSelection === 'custom' && (
+                <div className="ml-6 mt-3 space-y-2 border-l-2 border-border pl-4">
+                  {BIOGRAPHY_SECTIONS.map((section) => {
+                    const sectionTitle =
+                      t.sectionTitles[section.key as keyof typeof t.sectionTitles] ||
+                      section.title;
+                    const hasContent = biography.content[section.key]?.text?.trim();
+
+                    return (
+                      <div key={section.key} className="flex items-center space-x-2">
+                        <Checkbox
+                          id={`section-${section.key}`}
+                          checked={selectedSections.includes(section.key)}
+                          onCheckedChange={() => toggleSection(section.key)}
+                          disabled={!hasContent}
+                        />
+                        <Label
+                          htmlFor={`section-${section.key}`}
+                          className={`font-normal cursor-pointer ${
+                            !hasContent ? 'text-muted-foreground' : ''
+                          }`}
+                        >
+                          {sectionTitle}
+                          {!hasContent && ' (vuota)'}
+                        </Label>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+
+            <Separator />
+
+            <div className="space-y-3">
+              <Label className="text-base font-semibold">Opzioni aggiuntive</Label>
+
+              {format !== 'pdf' && (
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id="separate-files"
+                    checked={separateFiles}
+                    onCheckedChange={(checked) => setSeparateFiles(checked as boolean)}
+                  />
+                  <Label htmlFor="separate-files" className="font-normal cursor-pointer">
+                    Dividi in file separati per sezione (archivio .zip)
+                  </Label>
+                </div>
+              )}
+
+              <div className="flex items-center space-x-2">
+                <Checkbox
+                  id="include-metadata"
+                  checked={includeMetadata}
+                  onCheckedChange={(checked) => setIncludeMetadata(checked as boolean)}
+                />
+                <Label htmlFor="include-metadata" className="font-normal cursor-pointer">
+                  Includi metadati (data creazione, ultima modifica)
+                </Label>
+              </div>
+            </div>
+          </div>
+        </ScrollArea>
+
+        <DialogFooter className="gap-2">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => onOpenChange(false)}
+            disabled={isExporting}
+          >
+            Annulla
+          </Button>
+          <Button
+            type="button"
+            onClick={handleExport}
+            disabled={isExporting || (contentSelection === 'custom' && selectedSections.length === 0)}
+          >
+            {isExporting ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Esportazione...
+              </>
+            ) : (
+              <>
+                <Download className="mr-2 h-4 w-4" />
+                Esporta
+              </>
+            )}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}

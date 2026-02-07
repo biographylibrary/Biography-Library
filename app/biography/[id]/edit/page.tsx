@@ -32,6 +32,7 @@ import {
 import { recommendNextSection, type SectionRecommendation } from '@/lib/ai/next-section-recommender';
 import type { Biography } from '@/lib/biographies';
 import { generateBiographyPDF } from '@/lib/pdf-export';
+import { AdvancedExportDialog } from '@/components/export/AdvancedExportDialog';
 import { useTranslation } from '@/lib/i18n/i18n-context';
 import { Loader2, Menu, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -73,6 +74,7 @@ export default function BiographyEditorPage() {
   const [nextSectionRecommendation, setNextSectionRecommendation] = useState<SectionRecommendation | null>(null);
   const [isLoadingRecommendation, setIsLoadingRecommendation] = useState(false);
   const [completedSectionKey, setCompletedSectionKey] = useState<string | null>(null);
+  const [showExportDialog, setShowExportDialog] = useState(false);
 
   useEffect(() => {
     const stored = localStorage.getItem(AI_ENABLED_KEY);
@@ -243,12 +245,7 @@ export default function BiographyEditorPage() {
 
   const handleExportPDF = useCallback(() => {
     if (!biography) return;
-    generateBiographyPDF({
-      title: titleRef.current,
-      author_name: biography.author_name,
-      content: contentRef.current,
-      created_at: biography.created_at,
-    });
+    setShowExportDialog(true);
   }, [biography]);
 
   const getToken = useCallback(async () => {
@@ -713,6 +710,19 @@ export default function BiographyEditorPage() {
           )}
         </div>
       </div>
+
+      {biography && (
+        <AdvancedExportDialog
+          open={showExportDialog}
+          onOpenChange={setShowExportDialog}
+          biography={{
+            title: titleRef.current,
+            author_name: biography.author_name,
+            content: contentRef.current,
+            created_at: biography.created_at,
+          }}
+        />
+      )}
     </div>
   );
 }
