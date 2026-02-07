@@ -4,7 +4,6 @@ import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { ThemeToggle } from '@/components/theme-toggle';
 import { useTranslation } from '@/lib/i18n/i18n-context';
 import {
   ArrowLeft,
@@ -175,8 +174,6 @@ export function EditorTopBar({
             <FileDown className="h-3.5 w-3.5" />
             <span className="hidden sm:inline">{t.biography.export}</span>
           </Button>
-
-          <ThemeToggle />
         </div>
       </div>
     </div>
