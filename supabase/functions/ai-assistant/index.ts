@@ -192,6 +192,93 @@ Rewrite this in a ${tone} tone while preserving all facts and details.`,
   };
 }
 
+async function callClaudeAPI(
+  systemPrompt: string,
+  userPrompt: string,
+  maxTokens: number,
+  anthropicKey: string
+) {
+  const response = await fetch(
+    "https://api.anthropic.com/v1/messages",
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "x-api-key": anthropicKey,
+        "anthropic-version": "2023-06-01",
+      },
+      body: JSON.stringify({
+        model: "claude-sonnet-4-20250514",
+        max_tokens: maxTokens,
+        system: systemPrompt,
+        messages: [{ role: "user", content: userPrompt }],
+      }),
+    }
+  );
+
+  if (!response.ok) {
+    const errText = await response.text();
+    console.error("Claude API error:", {
+      status: response.status,
+      body: errText,
+    });
+
+    if (response.status === 401) {
+      throw new Error("Invalid API key. Please check your ANTHROPIC_API_KEY.");
+    }
+
+    if (response.status === 404) {
+      throw new Error("AI model not found. The configured model may not be available.");
+    }
+
+    throw new Error(`Claude API error (${response.status}). Please try again.`);
+  }
+
+  const result = await response.json();
+  return result.content?.[0]?.text ?? "";
+}
+
+async function callEuriaAPI(
+  systemPrompt: string,
+  userPrompt: string,
+  maxTokens: number,
+  euriaKey: string,
+  euriaUrl: string
+) {
+  const response = await fetch(euriaUrl, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${euriaKey}`,
+    },
+    body: JSON.stringify({
+      model: "euria-chat",
+      max_tokens: maxTokens,
+      messages: [
+        { role: "system", content: systemPrompt },
+        { role: "user", content: userPrompt }
+      ],
+    }),
+  });
+
+  if (!response.ok) {
+    const errText = await response.text();
+    console.error("Euria API error:", {
+      status: response.status,
+      body: errText,
+    });
+
+    if (response.status === 401) {
+      throw new Error("Invalid API key. Please check your EURIA_API_KEY.");
+    }
+
+    throw new Error(`Euria API error (${response.status}). Please try again.`);
+  }
+
+  const result = await response.json();
+  return result.choices?.[0]?.message?.content ?? result.content ?? "";
+}
+
 Deno.serve(async (req: Request) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { status: 200, headers: corsHeaders });
@@ -200,11 +287,22 @@ Deno.serve(async (req: Request) => {
   try {
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-    const anthropicKey = Deno.env.get("ANTHROPIC_API_KEY");
+    const aiProvider = (Deno.env.get("AI_PROVIDER") || "claude").toLowerCase();
 
-    if (!anthropicKey) {
+    const anthropicKey = Deno.env.get("ANTHROPIC_API_KEY");
+    const euriaKey = Deno.env.get("EURIA_API_KEY");
+    const euriaUrl = Deno.env.get("EURIA_API_URL") || "https://api.infomaniak.com/1/ai/chat";
+
+    if (aiProvider === "claude" && !anthropicKey) {
       return errorResponse(
-        "AI service is not configured. Please add ANTHROPIC_API_KEY to Supabase Edge Function secrets.",
+        "Claude AI is not configured. Please add ANTHROPIC_API_KEY to Supabase Edge Function secrets.",
+        503
+      );
+    }
+
+    if (aiProvider === "euria" && !euriaKey) {
+      return errorResponse(
+        "Euria AI is not configured. Please add EURIA_API_KEY to Supabase Edge Function secrets.",
         503
       );
     }
@@ -361,53 +459,37 @@ Deno.serve(async (req: Request) => {
       .from("ai_rate_limits")
       .insert({ user_id: user.id, action });
 
-    const anthropicResponse = await fetch(
-      "https://api.anthropic.com/v1/messages",
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "x-api-key": anthropicKey,
-          "anthropic-version": "2023-06-01",
-        },
-        body: JSON.stringify({
-          model: "claude-sonnet-4-20250514",
-          max_tokens: maxTokens,
-          system: systemPrompt,
-          messages: [{ role: "user", content: userPrompt }],
-        }),
-      }
-    );
+    let textContent: string;
 
-    if (!anthropicResponse.ok) {
-      const errText = await anthropicResponse.text();
-      console.error("Anthropic API error:", {
-        status: anthropicResponse.status,
-        body: errText,
-      });
-
-      if (anthropicResponse.status === 401) {
+    try {
+      if (aiProvider === "claude") {
+        textContent = await callClaudeAPI(
+          systemPrompt,
+          userPrompt,
+          maxTokens,
+          anthropicKey!
+        );
+      } else if (aiProvider === "euria") {
+        textContent = await callEuriaAPI(
+          systemPrompt,
+          userPrompt,
+          maxTokens,
+          euriaKey!,
+          euriaUrl
+        );
+      } else {
         return errorResponse(
-          "Invalid API key. Please check your ANTHROPIC_API_KEY in Supabase Edge Function secrets.",
-          502
+          `Unknown AI provider: ${aiProvider}. Supported providers: claude, euria`,
+          400
         );
       }
-
-      if (anthropicResponse.status === 404) {
-        return errorResponse(
-          "AI model not found. The configured model may not be available.",
-          502
-        );
-      }
-
+    } catch (apiError: any) {
+      console.error("AI API error:", apiError);
       return errorResponse(
-        `AI service error (${anthropicResponse.status}). Please try again.`,
+        apiError.message || "AI service error. Please try again.",
         502
       );
     }
-
-    const result = await anthropicResponse.json();
-    const textContent = result.content?.[0]?.text ?? "";
 
     let parsed: any;
     if (action === "summary") {

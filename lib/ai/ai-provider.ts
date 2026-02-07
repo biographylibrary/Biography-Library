@@ -228,10 +228,49 @@ class ClaudeProvider implements AIProvider {
 }
 
 class EuriaProvider implements AIProvider {
-  private EURIA_API_URL: string;
+  private AI_FUNCTION_URL: string;
 
   constructor() {
-    this.EURIA_API_URL = process.env.EURIA_API_URL || 'https://api.infomaniak.com/euria/v1';
+    this.AI_FUNCTION_URL = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/ai-assistant`;
+  }
+
+  private async callAiFunction(
+    token: string,
+    body: Record<string, any>
+  ): Promise<any> {
+    if (!token || token.trim() === '') {
+      throw new Error('No authentication token available. Please sign in again.');
+    }
+
+    console.log('AI Request (Euria) - Token length:', token.length, 'First 20 chars:', token.substring(0, 20));
+    console.log('AI Request (Euria) - Body:', body);
+
+    const res = await fetch(this.AI_FUNCTION_URL, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json',
+        Apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      },
+      body: JSON.stringify(body),
+    });
+
+    if (res.status === 429) {
+      throw new Error('Rate limit exceeded. Please wait a moment before trying again.');
+    }
+
+    if (res.status === 503) {
+      throw new Error('AI service is not configured yet.');
+    }
+
+    if (!res.ok) {
+      const data = await res.json().catch(() => ({}));
+      console.error('AI request failed (Euria):', { status: res.status, statusText: res.statusText, data });
+      const errorMsg = data.error || `AI request failed with status ${res.status}`;
+      throw new Error(errorMsg);
+    }
+
+    return res.json();
   }
 
   async suggestImprovements(
@@ -240,7 +279,21 @@ class EuriaProvider implements AIProvider {
     section: string,
     language: string
   ): Promise<Improvement[]> {
-    throw new Error('Euria provider not yet implemented. Coming soon!');
+    const result = await this.callAiFunction(token, {
+      action: 'grammar',
+      sectionTitle: section,
+      content: text,
+      language,
+    });
+
+    const raw = Array.isArray(result.data) ? result.data : [];
+    return raw.map((item: any) => ({
+      type: this.determineImprovementType(item.explanation),
+      original: item.original || '',
+      suggestion: item.suggestion || '',
+      reason: item.explanation || '',
+      priority: this.determinePriority(item.explanation),
+    }));
   }
 
   async checkGrammar(
@@ -249,7 +302,24 @@ class EuriaProvider implements AIProvider {
     content: string,
     language: string
   ): Promise<Array<{ id: string; original: string; suggestion: string; explanation: string }>> {
-    throw new Error('Euria provider not yet implemented. Coming soon!');
+    const result = await this.callAiFunction(token, {
+      action: 'grammar',
+      sectionTitle,
+      content,
+      language,
+    });
+
+    if (!result || typeof result !== 'object') {
+      throw new Error('Invalid response format from AI service');
+    }
+
+    const raw = Array.isArray(result.data) ? result.data : [];
+    return raw.map((item: any, index: number) => ({
+      id: item.id || `suggestion-${Date.now()}-${index}`,
+      original: item.original || '',
+      suggestion: item.suggestion || '',
+      explanation: item.explanation || '',
+    }));
   }
 
   async getGuidedPrompts(
@@ -258,7 +328,22 @@ class EuriaProvider implements AIProvider {
     sectionTitle: string,
     language: string
   ): Promise<Array<{ prompt: string; starter: string }>> {
-    throw new Error('Euria provider not yet implemented. Coming soon!');
+    const result = await this.callAiFunction(token, {
+      action: 'prompts',
+      sectionKey,
+      sectionTitle,
+      language,
+    });
+
+    if (!result || typeof result !== 'object') {
+      throw new Error('Invalid response format from AI service');
+    }
+
+    const raw = Array.isArray(result.data) ? result.data : [];
+    return raw.map((item: any) => ({
+      prompt: item.prompt || '',
+      starter: item.starter || '',
+    }));
   }
 
   async getSummary(
@@ -267,7 +352,18 @@ class EuriaProvider implements AIProvider {
     content: string,
     language: string
   ): Promise<string> {
-    throw new Error('Euria provider not yet implemented. Coming soon!');
+    const result = await this.callAiFunction(token, {
+      action: 'summary',
+      sectionTitle,
+      content,
+      language,
+    });
+
+    if (!result || typeof result !== 'object') {
+      throw new Error('Invalid response format from AI service');
+    }
+
+    return result.summary || '';
   }
 
   async rewriteSectionWithToken(
@@ -277,7 +373,40 @@ class EuriaProvider implements AIProvider {
     tone: string,
     language: string
   ): Promise<string> {
-    throw new Error('Euria provider not yet implemented. Coming soon!');
+    const result = await this.callAiFunction(token, {
+      action: 'rewrite',
+      sectionTitle,
+      content,
+      tone,
+      language,
+    });
+
+    if (!result || typeof result !== 'object') {
+      throw new Error('Invalid response format from AI service');
+    }
+
+    return result.rewrittenText || content;
+  }
+
+  private determineImprovementType(explanation: string): Improvement['type'] {
+    const lower = explanation.toLowerCase();
+    if (lower.includes('clear') || lower.includes('confus')) return 'clarity';
+    if (lower.includes('detail') || lower.includes('specific')) return 'detail';
+    if (lower.includes('flow') || lower.includes('transition')) return 'flow';
+    if (lower.includes('style') || lower.includes('tone')) return 'style';
+    if (lower.includes('structure') || lower.includes('organiz')) return 'structure';
+    return 'style';
+  }
+
+  private determinePriority(explanation: string): Improvement['priority'] {
+    const lower = explanation.toLowerCase();
+    if (lower.includes('error') || lower.includes('incorrect') || lower.includes('wrong')) {
+      return 'high';
+    }
+    if (lower.includes('could') || lower.includes('consider') || lower.includes('might')) {
+      return 'low';
+    }
+    return 'medium';
   }
 }
 
