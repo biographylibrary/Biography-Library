@@ -1,4 +1,5 @@
 import type { AiSuggestion, AiPrompt } from './ai-constants';
+import { aiService } from './ai/ai-provider';
 
 const AI_FUNCTION_URL = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/ai-assistant`;
 
@@ -40,26 +41,13 @@ export async function checkGrammar(
   content: string,
   language: string = 'en'
 ): Promise<AiSuggestion[]> {
-  const result = await callAiFunction(token, {
-    action: 'grammar',
-    sectionTitle,
-    content,
-    language,
-  });
+  const results = await aiService.checkGrammar(token, sectionTitle, content, language);
 
-  console.log('Grammar check result:', result);
-
-  if (!result || typeof result !== 'object') {
-    console.error('Invalid result format:', result);
-    throw new Error('Invalid response format from AI service');
-  }
-
-  const raw = Array.isArray(result.data) ? result.data : [];
-  return raw.map((item: any, index: number) => ({
-    id: item.id || `suggestion-${Date.now()}-${index}`,
-    original: item.original || '',
-    suggestion: item.suggestion || '',
-    explanation: item.explanation || '',
+  return results.map((item) => ({
+    id: item.id,
+    original: item.original,
+    suggestion: item.suggestion,
+    explanation: item.explanation,
     status: 'pending' as const,
   }));
 }
@@ -70,25 +58,7 @@ export async function getGuidedPrompts(
   sectionTitle: string,
   language: string = 'en'
 ): Promise<AiPrompt[]> {
-  const result = await callAiFunction(token, {
-    action: 'prompts',
-    sectionKey,
-    sectionTitle,
-    language,
-  });
-
-  console.log('Guided prompts result:', result);
-
-  if (!result || typeof result !== 'object') {
-    console.error('Invalid result format:', result);
-    throw new Error('Invalid response format from AI service');
-  }
-
-  const raw = Array.isArray(result.data) ? result.data : [];
-  return raw.map((item: any) => ({
-    prompt: item.prompt || '',
-    starter: item.starter || '',
-  }));
+  return await aiService.getGuidedPrompts(token, sectionKey, sectionTitle, language);
 }
 
 export async function getSummary(
@@ -97,19 +67,5 @@ export async function getSummary(
   content: string,
   language: string = 'en'
 ): Promise<string> {
-  const result = await callAiFunction(token, {
-    action: 'summary',
-    sectionTitle,
-    content,
-    language,
-  });
-
-  console.log('Summary result:', result);
-
-  if (!result || typeof result !== 'object') {
-    console.error('Invalid result format:', result);
-    throw new Error('Invalid response format from AI service');
-  }
-
-  return result.summary || '';
+  return await aiService.getSummary(token, sectionTitle, content, language);
 }
