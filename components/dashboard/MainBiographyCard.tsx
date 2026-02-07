@@ -135,8 +135,22 @@ export function MainBiographyCard({ biography, userName, userId }: MainBiography
   };
 
   const getStatusText = (status: string) => {
-    if (status === 'completed') return t.dashboard.completed;
-    return t.dashboard.draft;
+    switch (status) {
+      case 'completed':
+        return t.dashboard.completed;
+      case 'draft_1':
+        return t.dashboard.statusDraft1;
+      case 'draft_2':
+        return t.dashboard.statusDraft2;
+      case 'draft_3':
+        return t.dashboard.statusDraft3;
+      case 'approved':
+        return t.dashboard.statusApproved;
+      case 'published':
+        return t.dashboard.statusPublished;
+      default:
+        return t.dashboard.draft;
+    }
   };
 
   const calculateProgress = () => {
@@ -268,10 +282,10 @@ export function MainBiographyCard({ biography, userName, userId }: MainBiography
   const PrivacyIcon = privacyInfo.icon;
 
   return (
-    <Card className="p-6 bg-gradient-to-br from-blue-50/50 to-indigo-50/50 dark:from-blue-950/20 dark:to-indigo-950/20 border-blue-200 dark:border-blue-800">
+    <Card className="p-6">
       <div className="flex items-center gap-3 mb-6">
         <GreetingIcon className="h-6 w-6 text-amber-500" />
-        <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">
+        <h1 className="text-3xl font-bold">
           {greeting.text}, {userName}!
         </h1>
       </div>
@@ -279,38 +293,38 @@ export function MainBiographyCard({ biography, userName, userId }: MainBiography
       <div className="space-y-6">
         <div>
           <div className="flex items-center gap-2 mb-3">
-            <BookOpen className="h-5 w-5 text-gray-700 dark:text-gray-300" />
-            <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
-              {t.biography.biographyTitle}
+            <BookOpen className="h-5 w-5" />
+            <h2 className="text-lg font-semibold">
+              {biography.title || t.dashboard.untitledBiography}
             </h2>
           </div>
 
           <div className="space-y-3 pl-7">
             <div className="flex items-center gap-2">
-              <span className="text-sm text-gray-600 dark:text-gray-400 w-20">Status:</span>
+              <span className="text-sm text-muted-foreground w-24">{t.dashboard.status}:</span>
               <Badge variant={getStatusBadgeVariant(biography.status)}>
                 {getStatusText(biography.status)}
               </Badge>
             </div>
 
             <div className="flex items-center gap-2">
-              <span className="text-sm text-gray-600 dark:text-gray-400 w-20">Visibility:</span>
+              <span className="text-sm text-muted-foreground w-24">{t.dashboard.visibility}:</span>
               <div className="flex items-center gap-1.5">
-                <PrivacyIcon className="h-4 w-4 text-gray-600 dark:text-gray-400" />
+                <PrivacyIcon className="h-4 w-4 text-muted-foreground" />
                 <span className="text-sm font-medium">{privacyInfo.text}</span>
               </div>
             </div>
 
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <span className="text-sm text-gray-600 dark:text-gray-400">Progress:</span>
-                <span className="text-sm font-semibold text-blue-600 dark:text-blue-400">
+                <span className="text-sm text-muted-foreground">{t.dashboard.progress}:</span>
+                <span className="text-sm font-semibold">
                   {progress}%
                 </span>
               </div>
-              <div className="h-2 w-full bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+              <div className="h-2 w-full bg-muted rounded-full overflow-hidden">
                 <div
-                  className="h-full bg-blue-600 transition-all duration-300 ease-in-out"
+                  className="h-full bg-primary transition-all duration-300 ease-in-out"
                   style={{ width: `${progress}%` }}
                 />
               </div>
@@ -424,18 +438,29 @@ export function MainBiographyCard({ biography, userName, userId }: MainBiography
         <Separator />
 
         <div>
-          <div className="bg-white/60 dark:bg-gray-900/40 rounded-lg p-4">
-            <p className="text-sm text-gray-700 dark:text-gray-300 mb-3">
+          <div className="rounded-lg p-4 border bg-card">
+            <p className="text-sm mb-4">
               {suggestion.message}
             </p>
-            <Button
-              onClick={() => handleContinue(suggestion.type === 'pending-conversation' || suggestion.type === 'almost-done' ? suggestion.section : undefined)}
-              size="sm"
-              className="gap-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700"
-            >
-              <Play className="h-3.5 w-3.5" />
-              {suggestion.type === 'pending-conversation' ? t.coach.continueConversation : t.coach.continueWriting}
-            </Button>
+            <div className="flex gap-2">
+              <Button
+                onClick={() => router.push(`/biography/${biography.id}/edit`)}
+                size="sm"
+                variant="outline"
+                className="gap-2 flex-1"
+              >
+                <BookOpen className="h-3.5 w-3.5" />
+                {t.dashboard.goToWorkspace}
+              </Button>
+              <Button
+                onClick={() => handleContinue(suggestion.type === 'pending-conversation' || suggestion.type === 'almost-done' ? suggestion.section : undefined)}
+                size="sm"
+                className="gap-2 flex-1"
+              >
+                <Play className="h-3.5 w-3.5" />
+                {t.dashboard.continueLastSection}
+              </Button>
+            </div>
           </div>
         </div>
       </div>

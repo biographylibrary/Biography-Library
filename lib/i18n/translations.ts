@@ -69,6 +69,17 @@ export interface Translations {
     yourBiographies: string;
     tryAgain: string;
     drafts: string;
+    status: string;
+    visibility: string;
+    progress: string;
+    statusDraft1: string;
+    statusDraft2: string;
+    statusDraft3: string;
+    statusApproved: string;
+    statusPublished: string;
+    untitledBiography: string;
+    goToWorkspace: string;
+    continueLastSection: string;
   };
   biography: {
     newBiography: string;
@@ -378,6 +389,17 @@ export const translations: Record<Language, Translations> = {
       yourBiographies: 'Your Biographies',
       tryAgain: 'Try Again',
       drafts: 'Drafts',
+      status: 'Status',
+      visibility: 'Visibility',
+      progress: 'Progress',
+      statusDraft1: 'Draft 1',
+      statusDraft2: 'Draft 2',
+      statusDraft3: 'Draft 3',
+      statusApproved: 'Approved',
+      statusPublished: 'Published',
+      untitledBiography: 'Untitled Biography',
+      goToWorkspace: 'Go to Workspace',
+      continueLastSection: 'Continue Last Section',
     },
     biography: {
       newBiography: 'New Biography',
@@ -685,6 +707,17 @@ export const translations: Record<Language, Translations> = {
       yourBiographies: 'Le Tue Biografie',
       tryAgain: 'Riprova',
       drafts: 'Bozze',
+      status: 'Stato',
+      visibility: 'Visibilità',
+      progress: 'Progresso',
+      statusDraft1: 'Bozza 1',
+      statusDraft2: 'Bozza 2',
+      statusDraft3: 'Bozza 3',
+      statusApproved: 'Approvata',
+      statusPublished: 'Pubblicata',
+      untitledBiography: 'Biografia senza titolo',
+      goToWorkspace: 'Vai al Workspace',
+      continueLastSection: 'Continua Ultima Sezione',
     },
     biography: {
       newBiography: 'Nuova Biografia',
@@ -992,6 +1025,17 @@ export const translations: Record<Language, Translations> = {
       yourBiographies: 'Vos Biographies',
       tryAgain: 'R\u00e9essayer',
       drafts: 'Brouillons',
+      status: 'Statut',
+      visibility: 'Visibilité',
+      progress: 'Progrès',
+      statusDraft1: 'Brouillon 1',
+      statusDraft2: 'Brouillon 2',
+      statusDraft3: 'Brouillon 3',
+      statusApproved: 'Approuvé',
+      statusPublished: 'Publié',
+      untitledBiography: 'Biographie sans titre',
+      goToWorkspace: 'Aller à l\'Espace',
+      continueLastSection: 'Continuer Dernière Section',
     },
     biography: {
       newBiography: 'Nouvelle Biographie',
@@ -1299,6 +1343,17 @@ export const translations: Record<Language, Translations> = {
       yourBiographies: 'Ihre Biografien',
       tryAgain: 'Erneut versuchen',
       drafts: 'Entw\u00fcrfe',
+      status: 'Status',
+      visibility: 'Sichtbarkeit',
+      progress: 'Fortschritt',
+      statusDraft1: 'Entwurf 1',
+      statusDraft2: 'Entwurf 2',
+      statusDraft3: 'Entwurf 3',
+      statusApproved: 'Genehmigt',
+      statusPublished: 'Veröffentlicht',
+      untitledBiography: 'Biografie ohne Titel',
+      goToWorkspace: 'Zum Workspace',
+      continueLastSection: 'Letzte Sektion Fortsetzen',
     },
     biography: {
       newBiography: 'Neue Biografie',
