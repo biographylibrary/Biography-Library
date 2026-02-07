@@ -289,20 +289,20 @@ Deno.serve(async (req: Request) => {
     const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const aiProvider = (Deno.env.get("AI_PROVIDER") || "claude").toLowerCase();
 
-    const anthropicKey = Deno.env.get("ANTHROPIC_API_KEY");
-    const euriaKey = Deno.env.get("EURIA_API_KEY");
+    const anthropicKey = Deno.env.get("ANTHROPIC_API_KEY") || "";
+    const euriaKey = Deno.env.get("EURIA_API_KEY") || "";
     const euriaUrl = Deno.env.get("EURIA_API_URL") || "https://api.infomaniak.com/1/ai/chat";
 
     if (aiProvider === "claude" && !anthropicKey) {
       return errorResponse(
-        "Claude AI is not configured. Please add ANTHROPIC_API_KEY to Supabase Edge Function secrets.",
+        "Claude AI is not configured. Please set ANTHROPIC_API_KEY in Supabase Dashboard > Project Settings > Edge Functions > Manage secrets.",
         503
       );
     }
 
     if (aiProvider === "euria" && !euriaKey) {
       return errorResponse(
-        "Euria AI is not configured. Please add EURIA_API_KEY to Supabase Edge Function secrets.",
+        "Euria AI is not configured. Please set EURIA_API_KEY in Supabase Dashboard > Project Settings > Edge Functions > Manage secrets.",
         503
       );
     }
