@@ -8,11 +8,13 @@ import { LanguageSelector } from '@/components/language-selector';
 import { FontSizeControl } from '@/components/accessibility/font-size-control';
 import { Button } from '@/components/ui/button';
 import { Logo } from '@/components/logo';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
+import { cn } from '@/lib/utils';
 
 export function Header() {
   const { user, signOut, fontSize, setFontSize } = useAuth();
   const router = useRouter();
+  const pathname = usePathname();
   const { t } = useTranslation();
 
   const handleSignOut = async () => {
@@ -20,9 +22,14 @@ export function Header() {
     router.push('/login');
   };
 
+  const isEditorPage = pathname?.includes('/biography/') && pathname?.includes('/edit');
+
   return (
-    <header className="border-b border-border/50 bg-background/80 backdrop-blur-md sticky top-0 z-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+    <header className="border-b border-border bg-background sticky top-0 z-50">
+      <div className={cn(
+        "h-16 flex items-center justify-between",
+        isEditorPage ? "px-4 sm:px-6 lg:px-8" : "max-w-7xl mx-auto px-4 sm:px-6 lg:px-8"
+      )}>
         <div className="flex items-center gap-3">
           <Logo height={48} />
           <span className="text-lg font-serif font-semibold tracking-tight">Biography Library</span>
