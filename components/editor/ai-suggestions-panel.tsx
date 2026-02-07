@@ -11,7 +11,6 @@ import {
   MessageSquareText,
   FileText,
   AlertTriangle,
-  Info,
 } from 'lucide-react';
 import type { AiPanelState, AiSuggestion, AiPrompt } from '@/lib/ai-constants';
 import { cn } from '@/lib/utils';
@@ -167,13 +166,6 @@ export function AiSuggestionsPanel({
         >
           <X className="h-4 w-4" />
         </Button>
-      </div>
-
-      <div className="px-4 py-2 border-b border-border/30 bg-amber-500/5">
-        <p className="text-[11px] text-amber-700 dark:text-amber-400 flex items-start gap-1.5">
-          <Info className="h-3 w-3 shrink-0 mt-0.5" />
-          {t.editor.aiDisclaimer}
-        </p>
       </div>
 
       <ScrollArea className="flex-1">

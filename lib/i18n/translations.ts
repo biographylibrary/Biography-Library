@@ -149,7 +149,6 @@ export interface Translations {
     grammarStyle: string;
     writingPrompts: string;
     sectionSummary: string;
-    aiDisclaimer: string;
     analyzingWithAi: string;
     lookingGood: string;
     noGrammarIssues: string;
@@ -252,7 +251,6 @@ export interface Translations {
   };
   footer: {
     hostedInSwitzerland: string;
-    disclaimer: string;
   };
   welcome: {
     title: string;
@@ -458,7 +456,6 @@ export const translations: Record<Language, Translations> = {
       grammarStyle: 'Grammar & Style',
       writingPrompts: 'Writing Prompts',
       sectionSummary: 'Section Summary',
-      aiDisclaimer: 'AI processing uses external API. For production, all AI will run on Swiss infrastructure.',
       analyzingWithAi: 'Analyzing with AI...',
       lookingGood: 'Looking good!',
       noGrammarIssues: 'No grammar or style issues found.',
@@ -561,7 +558,6 @@ export const translations: Record<Language, Translations> = {
     },
     footer: {
       hostedInSwitzerland: 'Biography Library Demo - Hosted in Switzerland',
-      disclaimer: 'This is a demo. Production version will use Infomaniak Swiss infrastructure.',
     },
     welcome: {
       title: 'Welcome to Biography Library',
@@ -765,7 +761,6 @@ export const translations: Record<Language, Translations> = {
       grammarStyle: 'Grammatica e Stile',
       writingPrompts: 'Spunti di Scrittura',
       sectionSummary: 'Riassunto Sezione',
-      aiDisclaimer: 'L\'elaborazione AI utilizza un\'API esterna. In produzione, tutta l\'AI funzioner\u00e0 su infrastruttura svizzera.',
       analyzingWithAi: 'Analisi con AI...',
       lookingGood: 'Tutto bene!',
       noGrammarIssues: 'Nessun problema di grammatica o stile trovato.',
@@ -868,7 +863,6 @@ export const translations: Record<Language, Translations> = {
     },
     footer: {
       hostedInSwitzerland: 'Biography Library Demo - Ospitato in Svizzera',
-      disclaimer: 'Questa \u00e8 una demo. La versione di produzione utilizzer\u00e0 l\'infrastruttura svizzera di Infomaniak.',
     },
     welcome: {
       title: 'Benvenuto in Biography Library',
@@ -1072,7 +1066,6 @@ export const translations: Record<Language, Translations> = {
       grammarStyle: 'Grammaire et Style',
       writingPrompts: 'Suggestions d\'\u00c9criture',
       sectionSummary: 'R\u00e9sum\u00e9 de la Section',
-      aiDisclaimer: 'Le traitement IA utilise une API externe. En production, toute l\'IA fonctionnera sur l\'infrastructure suisse.',
       analyzingWithAi: 'Analyse avec l\'IA...',
       lookingGood: 'Tout va bien !',
       noGrammarIssues: 'Aucun probl\u00e8me de grammaire ou de style trouv\u00e9.',
@@ -1175,7 +1168,6 @@ export const translations: Record<Language, Translations> = {
     },
     footer: {
       hostedInSwitzerland: 'Biography Library Demo - H\u00e9berg\u00e9 en Suisse',
-      disclaimer: 'Ceci est une d\u00e9mo. La version de production utilisera l\'infrastructure suisse d\'Infomaniak.',
     },
     welcome: {
       title: 'Bienvenue dans Biography Library',
@@ -1379,7 +1371,6 @@ export const translations: Record<Language, Translations> = {
       grammarStyle: 'Grammatik und Stil',
       writingPrompts: 'Schreibvorschl\u00e4ge',
       sectionSummary: 'Abschnittszusammenfassung',
-      aiDisclaimer: 'KI-Verarbeitung nutzt eine externe API. In der Produktion wird die gesamte KI auf Schweizer Infrastruktur laufen.',
       analyzingWithAi: 'Analyse mit KI...',
       lookingGood: 'Sieht gut aus!',
       noGrammarIssues: 'Keine Grammatik- oder Stilprobleme gefunden.',
@@ -1482,7 +1473,6 @@ export const translations: Record<Language, Translations> = {
     },
     footer: {
       hostedInSwitzerland: 'Biography Library Demo - Gehostet in der Schweiz',
-      disclaimer: 'Dies ist eine Demo. Die Produktionsversion wird die schweizerische Infomaniak-Infrastruktur verwenden.',
     },
     welcome: {
       title: 'Willkommen bei Biography Library',
