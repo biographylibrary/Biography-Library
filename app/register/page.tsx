@@ -9,7 +9,6 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Logo } from '@/components/logo';
-import { Footer } from '@/components/footer';
 import { Loader2, AlertCircle } from 'lucide-react';
 import { ThemeToggle } from '@/components/theme-toggle';
 
@@ -171,8 +170,6 @@ export default function RegisterPage() {
           </p>
         </div>
       </div>
-
-      <Footer />
     </div>
   );
 }

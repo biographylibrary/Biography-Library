@@ -3,8 +3,6 @@
 import { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/auth-context';
-import { Header } from '@/components/header';
-import { Footer } from '@/components/footer';
 import { Button } from '@/components/ui/button';
 import { StatsCards } from '@/components/dashboard/stats-cards';
 import { BiographyCard } from '@/components/dashboard/biography-card';
@@ -114,8 +112,7 @@ export default function DashboardPage() {
     user.user_metadata?.name || user.email?.split('@')[0] || 'there';
 
   return (
-    <div className="min-h-screen flex flex-col bg-background">
-      <Header />
+    <div className="flex flex-col bg-background">
       <WelcomeLanguageModal />
 
       <main className="flex-1 max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-8">
@@ -251,8 +248,6 @@ export default function DashboardPage() {
         onConfirm={handleDelete}
         onCancel={() => setDeleteTarget(null)}
       />
-
-      <Footer />
     </div>
   );
 }

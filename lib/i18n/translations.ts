@@ -606,10 +606,10 @@ export const translations: Record<Language, Translations> = {
     accessibility: {
       uiFontSize: 'UI Font Size',
       editorFontSize: 'Editor Font Size',
-      small: 'Small',
-      normal: 'Normal',
-      large: 'Large',
-      extraLarge: 'Extra Large',
+      small: 'S',
+      normal: 'M',
+      large: 'L',
+      extraLarge: 'XL',
     },
   },
   it: {
@@ -911,10 +911,10 @@ export const translations: Record<Language, Translations> = {
     accessibility: {
       uiFontSize: 'Dimensione Testo UI',
       editorFontSize: 'Dimensione Testo Editor',
-      small: 'Piccolo',
-      normal: 'Normale',
-      large: 'Grande',
-      extraLarge: 'Molto Grande',
+      small: 'S',
+      normal: 'M',
+      large: 'L',
+      extraLarge: 'XL',
     },
   },
   fr: {
@@ -1216,10 +1216,10 @@ export const translations: Record<Language, Translations> = {
     accessibility: {
       uiFontSize: 'Taille de Police UI',
       editorFontSize: 'Taille de Police Éditeur',
-      small: 'Petit',
-      normal: 'Normal',
-      large: 'Grand',
-      extraLarge: 'Très Grand',
+      small: 'S',
+      normal: 'M',
+      large: 'L',
+      extraLarge: 'XL',
     },
   },
   de: {
@@ -1521,10 +1521,10 @@ export const translations: Record<Language, Translations> = {
     accessibility: {
       uiFontSize: 'UI-Schriftgröße',
       editorFontSize: 'Editor-Schriftgröße',
-      small: 'Klein',
-      normal: 'Normal',
-      large: 'Groß',
-      extraLarge: 'Sehr Groß',
+      small: 'S',
+      normal: 'M',
+      large: 'L',
+      extraLarge: 'XL',
     },
   },
 };

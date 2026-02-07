@@ -59,7 +59,7 @@ export function FontSizeControl({ currentSize, onSizeChange, userId }: FontSizeC
         onValueChange={handleSizeChange}
         disabled={isUpdating}
       >
-        <SelectTrigger className="w-[140px] h-9">
+        <SelectTrigger className="w-[80px] h-9">
           <SelectValue />
         </SelectTrigger>
         <SelectContent>
