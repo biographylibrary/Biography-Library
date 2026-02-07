@@ -4,22 +4,18 @@ import { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/auth-context';
 import { Button } from '@/components/ui/button';
-import { StatsCards } from '@/components/dashboard/stats-cards';
-import { BiographyCard } from '@/components/dashboard/biography-card';
 import { CreateBiographyModal } from '@/components/dashboard/create-biography-modal';
 import { DeleteBiographyDialog } from '@/components/dashboard/delete-biography-dialog';
 import { WelcomeLanguageModal } from '@/components/welcome-language-modal';
-import { AICoachCard } from '@/components/dashboard/ai-coach-card';
-import { PendingTodosCard } from '@/components/dashboard/pending-todos-card';
+import { MainBiographyCard } from '@/components/dashboard/MainBiographyCard';
 import {
   fetchBiographies,
   createBiography,
   deleteBiography,
   type Biography,
 } from '@/lib/biographies';
-import { BookOpen, Plus, Loader2, AlertCircle } from 'lucide-react';
+import { Plus, Loader2, AlertCircle } from 'lucide-react';
 import { useTranslation } from '@/lib/i18n/i18n-context';
-import { toast } from 'sonner';
 
 export default function DashboardPage() {
   const { user, loading: authLoading } = useAuth();
@@ -113,26 +109,6 @@ export default function DashboardPage() {
           </div>
         )}
 
-        <div className="mb-8">
-          <AICoachCard
-            biographies={biographies}
-            userName={displayName}
-            userId={user.id}
-          />
-        </div>
-
-        <div className="mb-8">
-          <StatsCards biographies={biographies} />
-        </div>
-
-        <div className="mb-8">
-          <PendingTodosCard />
-        </div>
-
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-lg font-semibold">{t.dashboard.yourBiographies}</h2>
-        </div>
-
         {isLoadingBios ? (
           <div className="flex justify-center py-16">
             <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
@@ -150,36 +126,12 @@ export default function DashboardPage() {
               {t.dashboard.tryAgain}
             </Button>
           </div>
-        ) : biographies.length === 0 ? (
-          <div className="rounded-xl border border-dashed border-border bg-card/50 p-12 text-center">
-            <div className="flex justify-center mb-4">
-              <div className="flex items-center justify-center h-14 w-14 rounded-2xl bg-primary/10">
-                <BookOpen className="h-7 w-7 text-primary" />
-              </div>
-            </div>
-            <h3 className="text-lg font-medium mb-2">{t.dashboard.noBiographies}</h3>
-            <p className="text-sm text-muted-foreground max-w-md mx-auto mb-6">
-              {t.dashboard.noBiographiesSubtitle}
-            </p>
-            <Button
-              className="gap-2"
-              onClick={() => setShowCreateModal(true)}
-            >
-              <Plus className="h-4 w-4" />
-              {t.dashboard.createBiography}
-            </Button>
-          </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {biographies.map((bio) => (
-              <BiographyCard
-                key={bio.id}
-                biography={bio}
-                onEdit={(id) => router.push(`/biography/${id}/edit`)}
-                onDelete={(b) => setDeleteTarget(b)}
-              />
-            ))}
-          </div>
+          <MainBiographyCard
+            biography={biographies[0] || null}
+            userName={displayName}
+            userId={user.id}
+          />
         )}
       </main>
 

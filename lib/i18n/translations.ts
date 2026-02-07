@@ -295,6 +295,8 @@ export interface Translations {
     dailyPrompt: string;
     of: string;
     sections: string;
+    pendingReminders: string;
+    viewAllReminders: string;
   };
   accessibility: {
     uiFontSize: string;
@@ -602,6 +604,8 @@ export const translations: Record<Language, Translations> = {
       dailyPrompt: 'Daily prompt',
       of: 'of',
       sections: 'sections',
+      pendingReminders: 'Pending Reminders',
+      viewAllReminders: 'View All Reminders',
     },
     accessibility: {
       uiFontSize: 'UI Font Size',
@@ -907,6 +911,8 @@ export const translations: Record<Language, Translations> = {
       dailyPrompt: 'Spunto del giorno',
       of: 'di',
       sections: 'sezioni',
+      pendingReminders: 'Promemoria in Sospeso',
+      viewAllReminders: 'Visualizza Tutti i Promemoria',
     },
     accessibility: {
       uiFontSize: 'Dimensione Testo UI',
@@ -1212,6 +1218,8 @@ export const translations: Record<Language, Translations> = {
       dailyPrompt: 'Suggestion du jour',
       of: 'de',
       sections: 'sections',
+      pendingReminders: 'Rappels en Attente',
+      viewAllReminders: 'Voir Tous les Rappels',
     },
     accessibility: {
       uiFontSize: 'Taille de Police UI',
@@ -1517,6 +1525,8 @@ export const translations: Record<Language, Translations> = {
       dailyPrompt: 'Tägliche Anregung',
       of: 'von',
       sections: 'Abschnitte',
+      pendingReminders: 'Ausstehende Erinnerungen',
+      viewAllReminders: 'Alle Erinnerungen Anzeigen',
     },
     accessibility: {
       uiFontSize: 'UI-Schriftgröße',
