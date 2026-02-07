@@ -156,6 +156,42 @@ What section should they work on next?`,
   };
 }
 
+function buildRewritePrompt(
+  sectionTitle: string,
+  content: string,
+  tone: string,
+  language: string
+) {
+  const langName = getLangName(language);
+
+  const toneInstructions: Record<string, string> = {
+    narrative: `Write in a flowing, storytelling style. Use vivid descriptions, sensory details, and narrative techniques. Make it engaging and immersive, as if telling a story to a friend.`,
+    formal: `Write in a formal, polished style. Use proper grammar, sophisticated vocabulary, and clear structure. Suitable for official documents or professional publications.`,
+    intimate: `Write in a warm, personal, conversational style. Use first-person perspective, emotional honesty, and direct address. Make it feel like a heartfelt letter to loved ones.`,
+  };
+
+  const instruction = toneInstructions[tone] || toneInstructions['narrative'];
+
+  return {
+    system: `You are a skilled biography editor. Rewrite the following biography section in ${langName} with a ${tone} tone.
+
+${instruction}
+
+Important:
+- Preserve all factual information and key details
+- Maintain the original meaning and events
+- Keep the same chronological order
+- Write entirely in ${langName}
+- Return ONLY the rewritten text, no additional commentary or markdown formatting`,
+    user: `Section: "${sectionTitle}"
+
+Original text:
+${content}
+
+Rewrite this in a ${tone} tone while preserving all facts and details.`,
+  };
+}
+
 Deno.serve(async (req: Request) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { status: 200, headers: corsHeaders });
@@ -303,6 +339,20 @@ Deno.serve(async (req: Request) => {
         maxTokens = 512;
         break;
       }
+      case "rewrite": {
+        if (!content || !sectionTitle) {
+          return errorResponse(
+            "Missing content or sectionTitle for rewrite",
+            400
+          );
+        }
+        const tone = body.tone || 'narrative';
+        const p = buildRewritePrompt(sectionTitle, content, tone, language);
+        systemPrompt = p.system;
+        userPrompt = p.user;
+        maxTokens = 4096;
+        break;
+      }
       default:
         return errorResponse(`Unknown action: ${action}`, 400);
     }
@@ -362,6 +412,8 @@ Deno.serve(async (req: Request) => {
     let parsed: any;
     if (action === "summary") {
       parsed = { summary: textContent };
+    } else if (action === "rewrite") {
+      parsed = { rewrittenText: textContent };
     } else if (action === "analyze-answer") {
       try {
         const cleaned = extractJson(textContent);

@@ -49,6 +49,14 @@ export interface AIProvider {
     content: string,
     language: string
   ): Promise<string>;
+
+  rewriteSectionWithToken(
+    token: string,
+    sectionTitle: string,
+    content: string,
+    tone: string,
+    language: string
+  ): Promise<string>;
 }
 
 class ClaudeProvider implements AIProvider {
@@ -123,7 +131,17 @@ class ClaudeProvider implements AIProvider {
     tone: string,
     language: string
   ): Promise<string> {
-    throw new Error('Method not implemented yet. This will be added in future updates.');
+    const token = await this.getAuthToken();
+
+    const result = await this.callAiFunction(token, {
+      action: 'rewrite',
+      sectionTitle: 'Biography Section',
+      content: text,
+      tone,
+      language,
+    });
+
+    return result.rewrittenText || text;
   }
 
   async generateSummary(text: string, language: string): Promise<string> {
@@ -217,6 +235,28 @@ class ClaudeProvider implements AIProvider {
     return result.summary || '';
   }
 
+  async rewriteSectionWithToken(
+    token: string,
+    sectionTitle: string,
+    content: string,
+    tone: string,
+    language: string
+  ): Promise<string> {
+    const result = await this.callAiFunction(token, {
+      action: 'rewrite',
+      sectionTitle,
+      content,
+      tone,
+      language,
+    });
+
+    if (!result || typeof result !== 'object') {
+      throw new Error('Invalid response format from AI service');
+    }
+
+    return result.rewrittenText || content;
+  }
+
   private async getAuthToken(): Promise<string> {
     throw new Error('Auth token must be provided directly to methods');
   }
@@ -304,6 +344,16 @@ class EuriaProvider implements AIProvider {
     token: string,
     sectionTitle: string,
     content: string,
+    language: string
+  ): Promise<string> {
+    throw new Error('Euria provider not yet implemented. Coming soon!');
+  }
+
+  async rewriteSectionWithToken(
+    token: string,
+    sectionTitle: string,
+    content: string,
+    tone: string,
     language: string
   ): Promise<string> {
     throw new Error('Euria provider not yet implemented. Coming soon!');
