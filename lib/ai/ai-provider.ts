@@ -7,27 +7,12 @@ export interface Improvement {
 }
 
 export interface AIProvider {
-  improveGrammar(text: string, language: string): Promise<string>;
-
   suggestImprovements(
+    token: string,
     text: string,
     section: string,
     language: string
   ): Promise<Improvement[]>;
-
-  rewriteSection(
-    text: string,
-    tone: string,
-    language: string
-  ): Promise<string>;
-
-  generateSummary(text: string, language: string): Promise<string>;
-
-  suggestTitles(
-    biographyContent: string,
-    count: number,
-    language: string
-  ): Promise<string[]>;
 
   checkGrammar(
     token: string,
@@ -98,17 +83,12 @@ class ClaudeProvider implements AIProvider {
     return res.json();
   }
 
-  async improveGrammar(text: string, language: string): Promise<string> {
-    throw new Error('Method not fully implemented. Use checkGrammar instead.');
-  }
-
   async suggestImprovements(
+    token: string,
     text: string,
     section: string,
     language: string
   ): Promise<Improvement[]> {
-    const token = await this.getAuthToken();
-
     const result = await this.callAiFunction(token, {
       action: 'grammar',
       sectionTitle: section,
@@ -124,45 +104,6 @@ class ClaudeProvider implements AIProvider {
       reason: item.explanation || '',
       priority: this.determinePriority(item.explanation),
     }));
-  }
-
-  async rewriteSection(
-    text: string,
-    tone: string,
-    language: string
-  ): Promise<string> {
-    const token = await this.getAuthToken();
-
-    const result = await this.callAiFunction(token, {
-      action: 'rewrite',
-      sectionTitle: 'Biography Section',
-      content: text,
-      tone,
-      language,
-    });
-
-    return result.rewrittenText || text;
-  }
-
-  async generateSummary(text: string, language: string): Promise<string> {
-    const token = await this.getAuthToken();
-
-    const result = await this.callAiFunction(token, {
-      action: 'summary',
-      sectionTitle: 'Biography Section',
-      content: text,
-      language,
-    });
-
-    return result.summary || '';
-  }
-
-  async suggestTitles(
-    biographyContent: string,
-    count: number,
-    language: string
-  ): Promise<string[]> {
-    throw new Error('Method not implemented yet. This will be added in future updates.');
   }
 
   async checkGrammar(
@@ -257,10 +198,6 @@ class ClaudeProvider implements AIProvider {
     return result.rewrittenText || content;
   }
 
-  private async getAuthToken(): Promise<string> {
-    throw new Error('Auth token must be provided directly to methods');
-  }
-
   private determineImprovementType(explanation: string): Improvement['type'] {
     const lower = explanation.toLowerCase();
     if (lower.includes('clear') || lower.includes('confus')) return 'clarity';
@@ -290,35 +227,12 @@ class EuriaProvider implements AIProvider {
     this.EURIA_API_URL = process.env.EURIA_API_URL || 'https://api.infomaniak.com/euria/v1';
   }
 
-  async improveGrammar(text: string, language: string): Promise<string> {
-    throw new Error('Euria provider not yet implemented. Coming soon!');
-  }
-
   async suggestImprovements(
+    token: string,
     text: string,
     section: string,
     language: string
   ): Promise<Improvement[]> {
-    throw new Error('Euria provider not yet implemented. Coming soon!');
-  }
-
-  async rewriteSection(
-    text: string,
-    tone: string,
-    language: string
-  ): Promise<string> {
-    throw new Error('Euria provider not yet implemented. Coming soon!');
-  }
-
-  async generateSummary(text: string, language: string): Promise<string> {
-    throw new Error('Euria provider not yet implemented. Coming soon!');
-  }
-
-  async suggestTitles(
-    biographyContent: string,
-    count: number,
-    language: string
-  ): Promise<string[]> {
     throw new Error('Euria provider not yet implemented. Coming soon!');
   }
 

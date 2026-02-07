@@ -85,7 +85,12 @@ export function AISectionReview({
 
     setLoading(true);
     try {
-      const results = await aiService.suggestImprovements(content, sectionTitle, language);
+      const results = await aiService.suggestImprovements(
+        session.access_token,
+        content,
+        sectionTitle,
+        language
+      );
       const improvementsWithState = results.map((imp, idx) => ({
         ...imp,
         id: `imp-${Date.now()}-${idx}`,

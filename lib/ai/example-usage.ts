@@ -24,12 +24,13 @@ export async function exampleGrammarCheck(
 }
 
 export async function exampleGetSuggestions(
+  token: string,
   text: string,
   section: string,
   language: string = 'en'
 ): Promise<Improvement[]> {
   try {
-    const improvements = await aiService.suggestImprovements(text, section, language);
+    const improvements = await aiService.suggestImprovements(token, text, section, language);
 
     const highPriority = improvements.filter((i) => i.priority === 'high');
     const mediumPriority = improvements.filter((i) => i.priority === 'medium');
