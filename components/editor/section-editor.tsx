@@ -246,6 +246,7 @@ export function SectionEditor({
             draftVersion={sectionStatus.draft_version}
             approvedAt={sectionStatus.approved_at}
             onStatusChange={loadSectionStatus}
+            onReviewWithAi={onReviewWithAi}
           />
         </div>
       )}

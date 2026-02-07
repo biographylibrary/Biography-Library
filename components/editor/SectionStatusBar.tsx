@@ -26,6 +26,7 @@ interface SectionStatusBarProps {
   draftVersion: number;
   approvedAt?: string | null;
   onStatusChange: () => void;
+  onReviewWithAi?: () => void;
 }
 
 export function SectionStatusBar({
@@ -35,6 +36,7 @@ export function SectionStatusBar({
   draftVersion,
   approvedAt,
   onStatusChange,
+  onReviewWithAi,
 }: SectionStatusBarProps) {
   const { t, language } = useTranslation();
   const [isUpdating, setIsUpdating] = useState(false);
@@ -213,7 +215,7 @@ export function SectionStatusBar({
             <Button
               size="sm"
               variant="outline"
-              onClick={() => {}}
+              onClick={() => onReviewWithAi?.()}
               disabled={isUpdating}
               className="gap-2"
             >
@@ -240,7 +242,7 @@ export function SectionStatusBar({
             <Button
               size="sm"
               variant="outline"
-              onClick={() => {}}
+              onClick={() => onReviewWithAi?.()}
               disabled={isUpdating}
               className="gap-2"
             >
