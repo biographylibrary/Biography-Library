@@ -10,7 +10,8 @@ export interface RevisionHistoryEntry {
 }
 
 export async function addRevisionToHistory(
-  sectionId: string,
+  biographyId: string,
+  sectionKey: string,
   content: string,
   changeType: RevisionHistoryEntry['changeType'],
   description?: string,
@@ -20,14 +21,14 @@ export async function addRevisionToHistory(
     const { data: section, error: fetchError } = await supabase
       .from('biography_sections')
       .select('draft_version, revision_history')
-      .eq('id', sectionId)
+      .eq('biography_id', biographyId)
+      .eq('section_key', sectionKey)
       .maybeSingle();
 
     if (fetchError) throw fetchError;
-    if (!section) throw new Error('Section not found');
 
-    const currentHistory = (section.revision_history as RevisionHistoryEntry[]) || [];
-    const newVersion = section.draft_version + 1;
+    const currentHistory = (section?.revision_history as RevisionHistoryEntry[]) || [];
+    const newVersion = (section?.draft_version || 0) + 1;
 
     const newEntry: RevisionHistoryEntry = {
       version: newVersion,
@@ -40,15 +41,31 @@ export async function addRevisionToHistory(
 
     const updatedHistory = [...currentHistory, newEntry];
 
-    const { error: updateError } = await supabase
-      .from('biography_sections')
-      .update({
-        draft_version: newVersion,
-        revision_history: updatedHistory,
-      })
-      .eq('id', sectionId);
+    if (section) {
+      const { error: updateError } = await supabase
+        .from('biography_sections')
+        .update({
+          draft_version: newVersion,
+          revision_history: updatedHistory,
+        })
+        .eq('biography_id', biographyId)
+        .eq('section_key', sectionKey);
 
-    if (updateError) throw updateError;
+      if (updateError) throw updateError;
+    } else {
+      const { error: insertError } = await supabase
+        .from('biography_sections')
+        .insert({
+          biography_id: biographyId,
+          section_key: sectionKey,
+          section_name: sectionKey,
+          draft_version: newVersion,
+          revision_history: updatedHistory,
+          content: '',
+        });
+
+      if (insertError) throw insertError;
+    }
   } catch (error) {
     console.error('Error adding revision to history:', error);
     throw error;
@@ -56,13 +73,15 @@ export async function addRevisionToHistory(
 }
 
 export async function getRevisionHistory(
-  sectionId: string
+  biographyId: string,
+  sectionKey: string
 ): Promise<RevisionHistoryEntry[]> {
   try {
     const { data, error } = await supabase
       .from('biography_sections')
       .select('revision_history')
-      .eq('id', sectionId)
+      .eq('biography_id', biographyId)
+      .eq('section_key', sectionKey)
       .maybeSingle();
 
     if (error) throw error;
@@ -76,11 +95,12 @@ export async function getRevisionHistory(
 }
 
 export async function restoreRevision(
-  sectionId: string,
+  biographyId: string,
+  sectionKey: string,
   version: number
 ): Promise<string | null> {
   try {
-    const history = await getRevisionHistory(sectionId);
+    const history = await getRevisionHistory(biographyId, sectionKey);
     const revision = history.find((r) => r.version === version);
 
     if (!revision) {
@@ -92,7 +112,8 @@ export async function restoreRevision(
       .update({
         content: revision.content,
       })
-      .eq('id', sectionId);
+      .eq('biography_id', biographyId)
+      .eq('section_key', sectionKey);
 
     if (error) throw error;
 
@@ -103,12 +124,16 @@ export async function restoreRevision(
   }
 }
 
-export async function getCurrentVersion(sectionId: string): Promise<number> {
+export async function getCurrentVersion(
+  biographyId: string,
+  sectionKey: string
+): Promise<number> {
   try {
     const { data, error } = await supabase
       .from('biography_sections')
       .select('draft_version')
-      .eq('id', sectionId)
+      .eq('biography_id', biographyId)
+      .eq('section_key', sectionKey)
       .maybeSingle();
 
     if (error) throw error;

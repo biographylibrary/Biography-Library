@@ -7,7 +7,8 @@ export function SectionEditorWithReview() {
   const [reviewOpen, setReviewOpen] = useState(false);
   const [sectionContent, setSectionContent] = useState('Your biography content here...');
 
-  const sectionId = 'your-section-id';
+  const biographyId = 'your-biography-id';
+  const sectionKey = 'early-life';
   const sectionTitle = 'Early Life';
   const language = 'en';
 
@@ -36,7 +37,8 @@ export function SectionEditorWithReview() {
       <AISectionReview
         open={reviewOpen}
         onOpenChange={setReviewOpen}
-        sectionId={sectionId}
+        biographyId={biographyId}
+        sectionKey={sectionKey}
         sectionTitle={sectionTitle}
         content={sectionContent}
         language={language}

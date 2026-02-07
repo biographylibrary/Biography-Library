@@ -77,7 +77,8 @@ function YourEditor() {
       <AISectionReview
         open={reviewOpen}
         onOpenChange={setReviewOpen}
-        sectionId="section-uuid"
+        biographyId="biography-uuid"
+        sectionKey="early-life"
         sectionTitle="Early Life"
         content={content}
         language="en"
@@ -88,13 +89,18 @@ function YourEditor() {
 }
 ```
 
+### Integrated in Biography Editor
+
+The component is fully integrated in the biography editor at `app/biography/[id]/edit/page.tsx`. Users can access it by clicking the "Review" button in the editor toolbar when AI is enabled.
+
 ### Props
 
 | Prop | Type | Description |
 |------|------|-------------|
 | `open` | `boolean` | Controls dialog visibility |
 | `onOpenChange` | `(open: boolean) => void` | Callback when dialog opens/closes |
-| `sectionId` | `string` | UUID of the biography section |
+| `biographyId` | `string` | UUID of the biography |
+| `sectionKey` | `string` | Key identifier for the section (e.g., 'early-life', 'education') |
 | `sectionTitle` | `string` | Display title of the section |
 | `content` | `string` | Current section content to review |
 | `language` | `string` | Content language (`en`, `it`, `fr`, `de`) |

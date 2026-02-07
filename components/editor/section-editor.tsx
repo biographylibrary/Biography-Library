@@ -18,6 +18,7 @@ import {
   Power,
   Upload,
   StickyNote,
+  Wand2,
 } from 'lucide-react';
 import { BIOGRAPHY_SECTIONS, type SectionData } from '@/lib/editor-constants';
 import { cn } from '@/lib/utils';
@@ -34,6 +35,7 @@ interface SectionEditorProps {
   onGrammarCheck: () => void;
   onGuidedPrompts: () => void;
   onSummarize: () => void;
+  onReviewWithAi?: () => void;
   aiLoading: boolean;
   biographyId?: string;
   editorFontSize?: number;
@@ -52,6 +54,7 @@ export function SectionEditor({
   onGrammarCheck,
   onGuidedPrompts,
   onSummarize,
+  onReviewWithAi,
   aiLoading,
   biographyId,
   editorFontSize = 16,
@@ -183,6 +186,18 @@ export function SectionEditor({
                 <FileText className="h-3.5 w-3.5" />
                 <span className="hidden md:inline">{t.editor.summarize}</span>
               </Button>
+              {onReviewWithAi && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="gap-1.5 text-xs h-8"
+                  disabled={aiLoading || !data.text.trim()}
+                  onClick={onReviewWithAi}
+                >
+                  <Wand2 className="h-3.5 w-3.5" />
+                  <span className="hidden md:inline">Review</span>
+                </Button>
+              )}
             </>
           )}
           <Button

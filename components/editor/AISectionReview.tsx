@@ -17,7 +17,8 @@ import { toast } from 'sonner';
 interface AISectionReviewProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  sectionId: string;
+  biographyId: string;
+  sectionKey: string;
   sectionTitle: string;
   content: string;
   language: string;
@@ -52,7 +53,8 @@ const IMPROVEMENT_ICONS = {
 export function AISectionReview({
   open,
   onOpenChange,
-  sectionId,
+  biographyId,
+  sectionKey,
   sectionTitle,
   content,
   language,
@@ -195,7 +197,8 @@ export function AISectionReview({
       }
 
       await addRevisionToHistory(
-        sectionId,
+        biographyId,
+        sectionKey,
         updatedContent,
         'ai_improvement',
         `Applied ${selected.length} AI improvements`,
@@ -217,7 +220,8 @@ export function AISectionReview({
     setApplying(true);
     try {
       await addRevisionToHistory(
-        sectionId,
+        biographyId,
+        sectionKey,
         rewrittenContent,
         'ai_rewrite',
         `Rewritten in ${tone} tone`

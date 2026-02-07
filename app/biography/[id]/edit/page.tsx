@@ -13,6 +13,7 @@ import { ShareLinkPanel } from '@/components/editor/share-link-panel';
 import { StatusManager } from '@/components/editor/status-manager';
 import { ConversationMode } from '@/components/editor/conversation-mode';
 import { NextSectionPrompt } from '@/components/editor/next-section-prompt';
+import { AISectionReview } from '@/components/editor/AISectionReview';
 import {
   BIOGRAPHY_SECTIONS,
   type BiographyContent,
@@ -75,6 +76,7 @@ export default function BiographyEditorPage() {
   const [isLoadingRecommendation, setIsLoadingRecommendation] = useState(false);
   const [completedSectionKey, setCompletedSectionKey] = useState<string | null>(null);
   const [showExportDialog, setShowExportDialog] = useState(false);
+  const [showReviewDialog, setShowReviewDialog] = useState(false);
 
   useEffect(() => {
     const stored = localStorage.getItem(AI_ENABLED_KEY);
@@ -247,6 +249,26 @@ export default function BiographyEditorPage() {
     if (!biography) return;
     setShowExportDialog(true);
   }, [biography]);
+
+  const handleReviewWithAi = useCallback(() => {
+    const sectionData = getSectionData(contentRef.current, activeSection);
+    if (!sectionData.text.trim()) return;
+    setShowReviewDialog(true);
+  }, [activeSection]);
+
+  const handleApplyReviewChanges = useCallback(
+    (newContent: string, changeType: 'improvements' | 'rewrite') => {
+      setContent((prev) => ({
+        ...prev,
+        [activeSection]: {
+          ...getSectionData(prev, activeSection),
+          text: newContent,
+        },
+      }));
+      markDirty();
+    },
+    [activeSection, markDirty]
+  );
 
   const handleImportMultipleSections = useCallback(
     (sections: Array<{ title: string; content: string }>) => {
@@ -667,6 +689,7 @@ export default function BiographyEditorPage() {
                 onGrammarCheck={handleGrammarCheck}
                 onGuidedPrompts={handleGuidedPrompts}
                 onSummarize={handleSummarize}
+                onReviewWithAi={handleReviewWithAi}
                 aiLoading={aiState.loading}
                 biographyId={id}
                 editorFontSize={editorFontSize}
@@ -748,6 +771,21 @@ export default function BiographyEditorPage() {
           }}
         />
       )}
+
+      <AISectionReview
+        open={showReviewDialog}
+        onOpenChange={setShowReviewDialog}
+        biographyId={id}
+        sectionKey={activeSection}
+        sectionTitle={
+          t.sectionTitles[activeSection as keyof typeof t.sectionTitles] ||
+          BIOGRAPHY_SECTIONS.find((s) => s.key === activeSection)?.title ||
+          ''
+        }
+        content={activeSectionData.text}
+        language={language}
+        onApplyChanges={handleApplyReviewChanges}
+      />
     </div>
   );
 }
