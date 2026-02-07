@@ -197,10 +197,10 @@ export function AiSuggestionsPanel({
                     <div className="mt-2 text-xs text-destructive/80 space-y-1">
                       <p>To enable AI features:</p>
                       <ol className="list-decimal list-inside space-y-0.5 ml-2">
-                        <li>Get an API key from Anthropic (claude.ai)</li>
+                        <li>Get an API token from Infomaniak AI Tools</li>
                         <li>Go to your Supabase project settings</li>
                         <li>Navigate to Edge Functions &rarr; Secrets</li>
-                        <li>Add secret: ANTHROPIC_API_KEY</li>
+                        <li>Add secret: INFOMANIAK_AI_TOKEN</li>
                       </ol>
                     </div>
                   )}

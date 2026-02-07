@@ -192,68 +192,24 @@ Rewrite this in a ${tone} tone while preserving all facts and details.`,
   };
 }
 
-async function callClaudeAPI(
+async function callInfomaniakAI(
   systemPrompt: string,
   userPrompt: string,
   maxTokens: number,
-  anthropicKey: string
+  infomaniakToken: string,
+  infomaniakEndpoint: string,
+  infomaniakModel: string
 ) {
-  const response = await fetch(
-    "https://api.anthropic.com/v1/messages",
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "x-api-key": anthropicKey,
-        "anthropic-version": "2023-06-01",
-      },
-      body: JSON.stringify({
-        model: "claude-sonnet-4-20250514",
-        max_tokens: maxTokens,
-        system: systemPrompt,
-        messages: [{ role: "user", content: userPrompt }],
-      }),
-    }
-  );
-
-  if (!response.ok) {
-    const errText = await response.text();
-    console.error("Claude API error:", {
-      status: response.status,
-      body: errText,
-    });
-
-    if (response.status === 401) {
-      throw new Error("Invalid API key. Please check your ANTHROPIC_API_KEY.");
-    }
-
-    if (response.status === 404) {
-      throw new Error("AI model not found. The configured model may not be available.");
-    }
-
-    throw new Error(`Claude API error (${response.status}). Please try again.`);
-  }
-
-  const result = await response.json();
-  return result.content?.[0]?.text ?? "";
-}
-
-async function callEuriaAPI(
-  systemPrompt: string,
-  userPrompt: string,
-  maxTokens: number,
-  euriaKey: string,
-  euriaUrl: string
-) {
-  const response = await fetch(euriaUrl, {
+  const response = await fetch(infomaniakEndpoint, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      "Authorization": `Bearer ${euriaKey}`,
+      "Authorization": `Bearer ${infomaniakToken}`,
     },
     body: JSON.stringify({
-      model: "euria-chat",
+      model: infomaniakModel,
       max_tokens: maxTokens,
+      temperature: 0.7,
       messages: [
         { role: "system", content: systemPrompt },
         { role: "user", content: userPrompt }
@@ -263,20 +219,24 @@ async function callEuriaAPI(
 
   if (!response.ok) {
     const errText = await response.text();
-    console.error("Euria API error:", {
+    console.error("Infomaniak AI error:", {
       status: response.status,
       body: errText,
     });
 
     if (response.status === 401) {
-      throw new Error("Invalid API key. Please check your EURIA_API_KEY.");
+      throw new Error("Invalid API key. Please check your INFOMANIAK_AI_TOKEN.");
     }
 
-    throw new Error(`Euria API error (${response.status}). Please try again.`);
+    if (response.status === 404) {
+      throw new Error("AI model not found. The configured model may not be available.");
+    }
+
+    throw new Error(`Infomaniak AI error (${response.status}). Please try again.`);
   }
 
   const result = await response.json();
-  return result.choices?.[0]?.message?.content ?? result.content ?? "";
+  return result.choices?.[0]?.message?.content ?? "";
 }
 
 Deno.serve(async (req: Request) => {
@@ -287,22 +247,14 @@ Deno.serve(async (req: Request) => {
   try {
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-    const aiProvider = (Deno.env.get("AI_PROVIDER") || "claude").toLowerCase();
 
-    const anthropicKey = Deno.env.get("ANTHROPIC_API_KEY") || "";
-    const euriaKey = Deno.env.get("EURIA_API_KEY") || "";
-    const euriaUrl = Deno.env.get("EURIA_API_URL") || "https://api.infomaniak.com/1/ai/chat";
+    const infomaniakToken = Deno.env.get("INFOMANIAK_AI_TOKEN") || "";
+    const infomaniakEndpoint = Deno.env.get("INFOMANIAK_AI_ENDPOINT") || "https://api.infomaniak.com/2/ai/107001/openai/v1/chat/completions";
+    const infomaniakModel = Deno.env.get("INFOMANIAK_AI_MODEL") || "mistral3";
 
-    if (aiProvider === "claude" && !anthropicKey) {
+    if (!infomaniakToken) {
       return errorResponse(
-        "Claude AI is not configured. Please set ANTHROPIC_API_KEY in Supabase Dashboard > Project Settings > Edge Functions > Manage secrets.",
-        503
-      );
-    }
-
-    if (aiProvider === "euria" && !euriaKey) {
-      return errorResponse(
-        "Euria AI is not configured. Please set EURIA_API_KEY in Supabase Dashboard > Project Settings > Edge Functions > Manage secrets.",
+        "Infomaniak AI is not configured. Please set INFOMANIAK_AI_TOKEN in Supabase Dashboard > Project Settings > Edge Functions > Manage secrets.",
         503
       );
     }
@@ -462,27 +414,14 @@ Deno.serve(async (req: Request) => {
     let textContent: string;
 
     try {
-      if (aiProvider === "claude") {
-        textContent = await callClaudeAPI(
-          systemPrompt,
-          userPrompt,
-          maxTokens,
-          anthropicKey!
-        );
-      } else if (aiProvider === "euria") {
-        textContent = await callEuriaAPI(
-          systemPrompt,
-          userPrompt,
-          maxTokens,
-          euriaKey!,
-          euriaUrl
-        );
-      } else {
-        return errorResponse(
-          `Unknown AI provider: ${aiProvider}. Supported providers: claude, euria`,
-          400
-        );
-      }
+      textContent = await callInfomaniakAI(
+        systemPrompt,
+        userPrompt,
+        maxTokens,
+        infomaniakToken,
+        infomaniakEndpoint,
+        infomaniakModel
+      );
     } catch (apiError: any) {
       console.error("AI API error:", apiError);
       return errorResponse(
