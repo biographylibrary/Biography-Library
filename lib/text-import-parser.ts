@@ -1,4 +1,4 @@
-import mammoth from 'mammoth';
+import * as mammoth from 'mammoth';
 import { RTFJS } from 'rtf.js';
 
 export interface ParsedSection {
