@@ -6,6 +6,7 @@ import {
   type BiographyContent,
   getSectionData,
 } from '@/lib/editor-constants';
+import { useTranslation } from '@/lib/i18n/i18n-context';
 import { cn } from '@/lib/utils';
 
 interface SectionSidebarProps {
@@ -25,11 +26,13 @@ export function SectionSidebar({
   onToggleTodoPanel,
   showTodoPanel,
 }: SectionSidebarProps) {
+  const { t } = useTranslation();
+
   return (
     <nav className="flex flex-col h-full">
       <div className="px-3 py-3 border-b border-border/50">
         <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-          Sections
+          {t.biography.sections}
         </h3>
       </div>
 
@@ -39,6 +42,7 @@ export function SectionSidebar({
           const isActive = activeSection === section.key;
           const hasContent = data.text.trim().length > 0;
           const isTodo = data.todo;
+          const sectionTitle = t.sectionTitles[section.key as keyof typeof t.sectionTitles] || section.title;
 
           return (
             <button
@@ -60,7 +64,7 @@ export function SectionSidebar({
                   <Circle className="h-3.5 w-3.5" />
                 )}
               </span>
-              <span className="truncate flex-1">{section.title}</span>
+              <span className="truncate flex-1">{sectionTitle}</span>
               {isActive && (
                 <ChevronRight className="h-3.5 w-3.5 shrink-0 opacity-50" />
               )}
@@ -81,7 +85,7 @@ export function SectionSidebar({
             )}
           >
             <ListTodo className="h-4 w-4" />
-            <span>TODO Items</span>
+            <span>{t.editor.todoItems}</span>
             <span className="ml-auto text-xs font-medium bg-amber-500/20 text-amber-600 dark:text-amber-400 rounded-full px-2 py-0.5">
               {todoCount}
             </span>

@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import type { AiPanelState, AiSuggestion, AiPrompt } from '@/lib/ai-constants';
 import { cn } from '@/lib/utils';
+import { useTranslation } from '@/lib/i18n/i18n-context';
 
 interface AiSuggestionsPanelProps {
   state: AiPanelState;
@@ -33,6 +34,7 @@ function SuggestionCard({
   onAccept: () => void;
   onReject: () => void;
 }) {
+  const { t } = useTranslation();
   const isResolved = suggestion.status !== 'pending';
 
   return (
@@ -47,7 +49,7 @@ function SuggestionCard({
       {suggestion.original && (
         <div className="mb-2">
           <span className="text-[11px] uppercase tracking-wider text-muted-foreground font-medium">
-            Original
+            {t.editor.original}
           </span>
           <p className="text-sm text-foreground/80 mt-0.5 line-through decoration-red-400/50">
             {suggestion.original}
@@ -56,7 +58,7 @@ function SuggestionCard({
       )}
       <div className="mb-2">
         <span className="text-[11px] uppercase tracking-wider text-muted-foreground font-medium">
-          Suggestion
+          {t.editor.suggestion}
         </span>
         <p className="text-sm text-foreground mt-0.5">{suggestion.suggestion}</p>
       </div>
@@ -74,7 +76,7 @@ function SuggestionCard({
             onClick={onAccept}
           >
             <Check className="h-3 w-3" />
-            Accept
+            {t.editor.accept}
           </Button>
           <Button
             size="sm"
@@ -83,18 +85,18 @@ function SuggestionCard({
             onClick={onReject}
           >
             <XCircle className="h-3 w-3" />
-            Reject
+            {t.editor.reject}
           </Button>
         </div>
       )}
       {suggestion.status === 'accepted' && (
         <span className="text-xs text-emerald-600 font-medium flex items-center gap-1">
-          <Check className="h-3 w-3" /> Applied
+          <Check className="h-3 w-3" /> {t.editor.applied}
         </span>
       )}
       {suggestion.status === 'rejected' && (
         <span className="text-xs text-muted-foreground flex items-center gap-1">
-          <XCircle className="h-3 w-3" /> Dismissed
+          <XCircle className="h-3 w-3" /> {t.editor.dismissed}
         </span>
       )}
     </div>
@@ -131,12 +133,14 @@ export function AiSuggestionsPanel({
   onRejectSuggestion,
   onInsertPrompt,
 }: AiSuggestionsPanelProps) {
+  const { t } = useTranslation();
+
   const panelTitle =
     state.type === 'grammar'
-      ? 'Grammar & Style'
+      ? t.editor.grammarStyle
       : state.type === 'prompts'
-        ? 'Writing Prompts'
-        : 'Section Summary';
+        ? t.editor.writingPrompts
+        : t.editor.sectionSummary;
 
   const PanelIcon =
     state.type === 'grammar'
@@ -168,8 +172,7 @@ export function AiSuggestionsPanel({
       <div className="px-4 py-2 border-b border-border/30 bg-amber-500/5">
         <p className="text-[11px] text-amber-700 dark:text-amber-400 flex items-start gap-1.5">
           <Info className="h-3 w-3 shrink-0 mt-0.5" />
-          AI processing uses external API. For production, all AI will run on
-          Swiss infrastructure.
+          {t.editor.aiDisclaimer}
         </p>
       </div>
 
@@ -179,7 +182,7 @@ export function AiSuggestionsPanel({
             <div className="flex flex-col items-center justify-center py-12 gap-3">
               <Loader2 className="h-6 w-6 animate-spin text-primary" />
               <span className="text-sm text-muted-foreground">
-                Analyzing with AI...
+                {t.editor.analyzingWithAi}
               </span>
             </div>
           )}
@@ -196,7 +199,7 @@ export function AiSuggestionsPanel({
                       <ol className="list-decimal list-inside space-y-0.5 ml-2">
                         <li>Get an API key from Anthropic (claude.ai)</li>
                         <li>Go to your Supabase project settings</li>
-                        <li>Navigate to Edge Functions → Secrets</li>
+                        <li>Navigate to Edge Functions &rarr; Secrets</li>
                         <li>Add secret: ANTHROPIC_API_KEY</li>
                       </ol>
                     </div>
@@ -211,16 +214,15 @@ export function AiSuggestionsPanel({
               {state.suggestions.length === 0 ? (
                 <div className="text-center py-8">
                   <Check className="h-8 w-8 text-emerald-500 mx-auto mb-2" />
-                  <p className="text-sm font-medium">Looking good!</p>
+                  <p className="text-sm font-medium">{t.editor.lookingGood}</p>
                   <p className="text-xs text-muted-foreground mt-1">
-                    No grammar or style issues found.
+                    {t.editor.noGrammarIssues}
                   </p>
                 </div>
               ) : (
                 <>
                   <p className="text-xs text-muted-foreground">
-                    {state.suggestions.length} suggestion
-                    {state.suggestions.length !== 1 && 's'} found
+                    {state.suggestions.length} {t.editor.suggestionsFound}
                   </p>
                   {state.suggestions.map((s) => (
                     <SuggestionCard
@@ -238,7 +240,7 @@ export function AiSuggestionsPanel({
           {!state.loading && !state.error && state.type === 'prompts' && (
             <>
               <p className="text-xs text-muted-foreground">
-                Click a prompt to insert it as a writing starter.
+                {t.editor.clickPromptToInsert}
               </p>
               {state.prompts.map((p, i) => (
                 <PromptCard
@@ -260,7 +262,7 @@ export function AiSuggestionsPanel({
                 </div>
               ) : (
                 <p className="text-sm text-muted-foreground text-center py-8">
-                  No summary available.
+                  {t.editor.noSummary}
                 </p>
               )}
             </>

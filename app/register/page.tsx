@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/lib/auth-context';
+import { useTranslation } from '@/lib/i18n/i18n-context';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -21,6 +22,7 @@ export default function RegisterPage() {
   const [isLoading, setIsLoading] = useState(false);
   const { signUp, user, loading } = useAuth();
   const router = useRouter();
+  const { t } = useTranslation();
 
   useEffect(() => {
     if (!loading && user) {
@@ -33,12 +35,12 @@ export default function RegisterPage() {
     setError('');
 
     if (password !== confirmPassword) {
-      setError('Passwords do not match');
+      setError(t.auth.passwordsDoNotMatch);
       return;
     }
 
     if (password.length < 6) {
-      setError('Password must be at least 6 characters');
+      setError(t.auth.passwordMinLength);
       return;
     }
 
@@ -73,9 +75,9 @@ export default function RegisterPage() {
             <div className="flex items-center justify-center mb-6">
               <Logo height={64} />
             </div>
-            <h1 className="text-2xl font-serif font-semibold tracking-tight">Create your account</h1>
+            <h1 className="text-2xl font-serif font-semibold tracking-tight">{t.auth.createYourAccount}</h1>
             <p className="text-sm text-muted-foreground">
-              Start preserving and sharing life stories today
+              {t.auth.registerSubtitle}
             </p>
           </div>
 
@@ -88,11 +90,11 @@ export default function RegisterPage() {
             )}
 
             <div className="space-y-2">
-              <Label htmlFor="name">Full name</Label>
+              <Label htmlFor="name">{t.auth.fullName}</Label>
               <Input
                 id="name"
                 type="text"
-                placeholder="Your name"
+                placeholder={t.auth.yourName}
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 autoComplete="name"
@@ -101,11 +103,11 @@ export default function RegisterPage() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="email">{t.auth.email}</Label>
               <Input
                 id="email"
                 type="email"
-                placeholder="you@example.com"
+                placeholder={t.auth.emailPlaceholder}
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
@@ -115,11 +117,11 @@ export default function RegisterPage() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
+              <Label htmlFor="password">{t.auth.password}</Label>
               <Input
                 id="password"
                 type="password"
-                placeholder="At least 6 characters"
+                placeholder={t.auth.atLeastSixChars}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
@@ -129,11 +131,11 @@ export default function RegisterPage() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="confirmPassword">Confirm password</Label>
+              <Label htmlFor="confirmPassword">{t.auth.confirmPassword}</Label>
               <Input
                 id="confirmPassword"
                 type="password"
-                placeholder="Repeat your password"
+                placeholder={t.auth.repeatPassword}
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 required
@@ -150,21 +152,21 @@ export default function RegisterPage() {
               {isLoading ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Creating account...
+                  {t.auth.creatingAccount}
                 </>
               ) : (
-                'Create account'
+                t.auth.createAccount
               )}
             </Button>
           </form>
 
           <p className="text-center text-sm text-muted-foreground mt-6">
-            Already have an account?{' '}
+            {t.auth.alreadyHaveAccount}{' '}
             <Link
               href="/login"
               className="font-medium text-primary hover:text-primary/80 transition-colors"
             >
-              Sign in
+              {t.auth.signIn}
             </Link>
           </p>
         </div>

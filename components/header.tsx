@@ -2,6 +2,7 @@
 
 import { LogOut, User } from 'lucide-react';
 import { useAuth } from '@/lib/auth-context';
+import { useTranslation } from '@/lib/i18n/i18n-context';
 import { ThemeToggle } from '@/components/theme-toggle';
 import { LanguageSelector } from '@/components/language-selector';
 import { Button } from '@/components/ui/button';
@@ -11,6 +12,7 @@ import { useRouter } from 'next/navigation';
 export function Header() {
   const { user, signOut } = useAuth();
   const router = useRouter();
+  const { t } = useTranslation();
 
   const handleSignOut = async () => {
     await signOut();
@@ -43,7 +45,7 @@ export function Header() {
               onClick={handleSignOut}
             >
               <LogOut className="h-[1.2rem] w-[1.2rem]" />
-              <span className="sr-only">Sign out</span>
+              <span className="sr-only">{t.common.signOut}</span>
             </Button>
           )}
         </div>

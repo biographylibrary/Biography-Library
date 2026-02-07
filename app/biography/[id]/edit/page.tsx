@@ -19,7 +19,7 @@ import {
 } from '@/lib/editor-constants';
 import {
   INITIAL_AI_STATE,
-  FALLBACK_PROMPTS,
+  getFallbackPrompts,
   type AiPanelState,
 } from '@/lib/ai-constants';
 import {
@@ -29,6 +29,7 @@ import {
 } from '@/lib/ai-service';
 import type { Biography } from '@/lib/biographies';
 import { generateBiographyPDF } from '@/lib/pdf-export';
+import { useTranslation } from '@/lib/i18n/i18n-context';
 import { Loader2, Menu, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -41,6 +42,7 @@ export default function BiographyEditorPage() {
   const { user, session, loading: authLoading } = useAuth();
   const router = useRouter();
   const params = useParams();
+  const { t, language } = useTranslation();
   const id = params.id as string;
 
   const [biography, setBiography] = useState<Biography | null>(null);
@@ -256,7 +258,7 @@ export default function BiographyEditorPage() {
         suggestions: [],
         prompts: [],
         summary: '',
-        error: 'You must be signed in to use AI features. Please refresh the page.',
+        error: t.editor.signInForAi,
       });
       return;
     }
@@ -274,7 +276,8 @@ export default function BiographyEditorPage() {
       const suggestions = await checkGrammar(
         token,
         section.title,
-        sectionData.text
+        sectionData.text,
+        language
       );
       setAiState((prev) => ({
         ...prev,
@@ -285,17 +288,18 @@ export default function BiographyEditorPage() {
       setAiState((prev) => ({
         ...prev,
         loading: false,
-        error: err.message || 'Failed to check grammar',
+        error: err.message || t.editor.failedGrammar,
       }));
     }
-  }, [activeSection, getToken]);
+  }, [activeSection, getToken, language, t]);
 
   const handleGuidedPrompts = useCallback(async () => {
     const token = await getToken();
     const section = BIOGRAPHY_SECTIONS.find((s) => s.key === activeSection);
     if (!section) return;
 
-    const fallback = FALLBACK_PROMPTS[activeSection] || [];
+    const langPrompts = getFallbackPrompts(language);
+    const fallback = langPrompts[activeSection] || [];
 
     setAiState({
       type: 'prompts',
@@ -319,7 +323,8 @@ export default function BiographyEditorPage() {
       const prompts = await getGuidedPrompts(
         token,
         activeSection,
-        section.title
+        section.title,
+        language
       );
       setAiState((prev) => ({
         ...prev,
@@ -334,7 +339,7 @@ export default function BiographyEditorPage() {
         error: null,
       }));
     }
-  }, [activeSection, getToken]);
+  }, [activeSection, getToken, language]);
 
   const handleSummarize = useCallback(async () => {
     const token = await getToken();
@@ -349,7 +354,7 @@ export default function BiographyEditorPage() {
         suggestions: [],
         prompts: [],
         summary: '',
-        error: 'You must be signed in to use AI features. Please refresh the page.',
+        error: t.editor.signInForAi,
       });
       return;
     }
@@ -367,7 +372,8 @@ export default function BiographyEditorPage() {
       const summary = await getSummary(
         token,
         section.title,
-        sectionData.text
+        sectionData.text,
+        language
       );
       setAiState((prev) => ({
         ...prev,
@@ -378,10 +384,10 @@ export default function BiographyEditorPage() {
       setAiState((prev) => ({
         ...prev,
         loading: false,
-        error: err.message || 'Failed to generate summary',
+        error: err.message || t.editor.failedSummary,
       }));
     }
-  }, [activeSection, getToken]);
+  }, [activeSection, getToken, language, t]);
 
   const handleAcceptSuggestion = useCallback(
     (suggestionId: string) => {
@@ -459,9 +465,9 @@ export default function BiographyEditorPage() {
   if (!biography) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-background gap-4">
-        <p className="text-muted-foreground">Biography not found.</p>
+        <p className="text-muted-foreground">{t.biography.notFound}</p>
         <Button variant="outline" onClick={() => router.push('/dashboard')}>
-          Return to Dashboard
+          {t.biography.returnToDashboard}
         </Button>
       </div>
     );

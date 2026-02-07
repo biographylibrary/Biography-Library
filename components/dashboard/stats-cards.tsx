@@ -1,6 +1,7 @@
 'use client';
 
-import { FileText, Clock, BookOpen } from 'lucide-react';
+import { BookOpen, FileText, CheckCircle } from 'lucide-react';
+import { useTranslation } from '@/lib/i18n/i18n-context';
 import type { Biography } from '@/lib/biographies';
 
 interface StatsCardsProps {
@@ -8,30 +9,48 @@ interface StatsCardsProps {
 }
 
 export function StatsCards({ biographies }: StatsCardsProps) {
-  const total = biographies.length;
-  const drafts = biographies.filter((b) => b.status === 'draft').length;
-  const completed = biographies.filter((b) => b.status === 'completed').length;
+  const { t } = useTranslation();
 
-  const cards = [
-    { label: 'Total Biographies', value: total, icon: FileText },
-    { label: 'Drafts', value: drafts, icon: Clock },
-    { label: 'Completed', value: completed, icon: BookOpen },
+  const stats = [
+    {
+      label: t.dashboard.totalBiographies,
+      value: biographies.length,
+      icon: BookOpen,
+      color: 'text-primary',
+      bg: 'bg-primary/10',
+    },
+    {
+      label: t.dashboard.drafts,
+      value: biographies.filter((b) => b.status !== 'completed').length,
+      icon: FileText,
+      color: 'text-amber-500',
+      bg: 'bg-amber-500/10',
+    },
+    {
+      label: t.dashboard.completed,
+      value: biographies.filter((b) => b.status === 'completed').length,
+      icon: CheckCircle,
+      color: 'text-emerald-500',
+      bg: 'bg-emerald-500/10',
+    },
   ];
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-      {cards.map((card) => {
-        const Icon = card.icon;
+    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      {stats.map((stat) => {
+        const Icon = stat.icon;
         return (
           <div
-            key={card.label}
-            className="rounded-xl border border-border bg-card p-5 space-y-2 transition-shadow hover:shadow-sm"
+            key={stat.label}
+            className="flex items-center gap-4 rounded-xl border border-border/50 bg-card p-4"
           >
-            <div className="flex items-center gap-2 text-muted-foreground">
-              <Icon className="h-4 w-4" />
-              <span className="text-sm font-medium">{card.label}</span>
+            <div className={`flex items-center justify-center h-10 w-10 rounded-lg ${stat.bg}`}>
+              <Icon className={`h-5 w-5 ${stat.color}`} />
             </div>
-            <p className="text-3xl font-semibold">{card.value}</p>
+            <div>
+              <p className="text-2xl font-semibold">{stat.value}</p>
+              <p className="text-xs text-muted-foreground">{stat.label}</p>
+            </div>
           </div>
         );
       })}

@@ -1,8 +1,9 @@
 'use client';
 
-import { Lock, Users, Globe, Clock, CheckCircle, Pen, Trash2 } from 'lucide-react';
+import { BookOpen, Lock, Users, Globe, Trash2, PenLine } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { formatDistanceToNow } from 'date-fns';
+import { useTranslation } from '@/lib/i18n/i18n-context';
+import { cn } from '@/lib/utils';
 import type { Biography } from '@/lib/biographies';
 
 interface BiographyCardProps {
@@ -11,88 +12,76 @@ interface BiographyCardProps {
   onDelete: (biography: Biography) => void;
 }
 
-const privacyConfig = {
-  private: {
-    icon: Lock,
-    label: 'Private',
-    className: 'bg-muted text-muted-foreground',
-  },
-  family: {
-    icon: Users,
-    label: 'Family',
-    className: 'bg-sky-500/10 text-sky-600 dark:text-sky-400',
-  },
-  public: {
-    icon: Globe,
-    label: 'Public',
-    className: 'bg-primary/10 text-primary',
-  },
-};
-
-const statusConfig = {
-  draft: {
-    icon: Clock,
-    label: 'Draft',
-    className: 'bg-amber-500/10 text-amber-600 dark:text-amber-400',
-  },
-  completed: {
-    icon: CheckCircle,
-    label: 'Completed',
-    className: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400',
-  },
-};
-
 export function BiographyCard({ biography, onEdit, onDelete }: BiographyCardProps) {
-  const privacy = privacyConfig[biography.privacy];
-  const status = statusConfig[biography.status];
+  const { t } = useTranslation();
+
+  const privacyConfig = {
+    private: { icon: Lock, label: t.dashboard.private, className: 'text-slate-500 bg-slate-500/10' },
+    family: { icon: Users, label: t.dashboard.family, className: 'text-blue-500 bg-blue-500/10' },
+    public: { icon: Globe, label: t.dashboard.public, className: 'text-emerald-500 bg-emerald-500/10' },
+  };
+
+  const statusConfig = {
+    draft: { label: t.dashboard.draft, className: 'text-amber-600 bg-amber-500/10' },
+    completed: { label: t.dashboard.completed, className: 'text-emerald-600 bg-emerald-500/10' },
+  };
+
+  const privacy = privacyConfig[biography.privacy] || privacyConfig.private;
+  const status = statusConfig[biography.status || 'draft'] || statusConfig.draft;
   const PrivacyIcon = privacy.icon;
-  const StatusIcon = status.icon;
+
+  const date = new Date(biography.updated_at || biography.created_at);
+  const formattedDate = date.toLocaleDateString(undefined, {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+  });
 
   return (
-    <div className="group rounded-xl border border-border bg-card p-5 flex flex-col gap-3 transition-all hover:shadow-md hover:border-primary/20">
-      <div>
-        <h3 className="font-semibold text-base truncate">
-          {biography.title || 'Untitled'}
-        </h3>
-        <p className="text-xs text-muted-foreground mt-1">
-          Updated{' '}
-          {formatDistanceToNow(new Date(biography.updated_at), {
-            addSuffix: true,
-          })}
+    <div className="group relative rounded-xl border border-border/50 bg-card hover:bg-card/80 hover:border-border transition-all duration-200 hover:shadow-md">
+      <div className="p-5">
+        <div className="flex items-start justify-between mb-3">
+          <div className="flex items-center gap-2">
+            <BookOpen className="h-4 w-4 text-primary shrink-0" />
+            <h3 className="font-medium text-sm truncate max-w-[180px]">
+              {biography.title || t.biography.untitled}
+            </h3>
+          </div>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-7 w-7 -mr-2 -mt-1 opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-destructive"
+            onClick={(e) => {
+              e.stopPropagation();
+              onDelete(biography);
+            }}
+          >
+            <Trash2 className="h-3.5 w-3.5" />
+          </Button>
+        </div>
+
+        <p className="text-xs text-muted-foreground mb-4">
+          {t.biography.updated} {formattedDate}
         </p>
-      </div>
 
-      <div className="flex items-center gap-2 flex-wrap">
-        <span
-          className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-medium ${status.className}`}
-        >
-          <StatusIcon className="h-3 w-3" />
-          {status.label}
-        </span>
-        <span
-          className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-medium ${privacy.className}`}
-        >
-          <PrivacyIcon className="h-3 w-3" />
-          {privacy.label}
-        </span>
-      </div>
+        <div className="flex items-center gap-2 mb-4">
+          <span className={cn('inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full font-medium', privacy.className)}>
+            <PrivacyIcon className="h-3 w-3" />
+            {privacy.label}
+          </span>
+          <span className={cn('text-xs px-2 py-0.5 rounded-full font-medium', status.className)}>
+            {status.label}
+          </span>
+        </div>
 
-      <div className="flex items-center gap-2 mt-auto pt-3 border-t border-border/50">
         <Button
+          variant="outline"
           size="sm"
-          className="flex-1 gap-1.5"
+          className="w-full gap-2 text-xs"
           onClick={() => onEdit(biography.id)}
         >
-          <Pen className="h-3.5 w-3.5" />
-          Continue Writing
-        </Button>
-        <Button
-          size="sm"
-          variant="ghost"
-          className="text-muted-foreground hover:text-destructive hover:bg-destructive/10 shrink-0"
-          onClick={() => onDelete(biography)}
-        >
-          <Trash2 className="h-3.5 w-3.5" />
+          <PenLine className="h-3.5 w-3.5" />
+          {t.biography.continueWriting}
         </Button>
       </div>
     </div>

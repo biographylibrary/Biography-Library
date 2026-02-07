@@ -10,6 +10,7 @@ import { Logo } from '@/components/logo';
 import { ThemeToggle } from '@/components/theme-toggle';
 import { FileDown, Loader2, Lock } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useTranslation } from '@/lib/i18n/i18n-context';
 
 interface BiographyViewData {
   id: string;
@@ -21,21 +22,24 @@ interface BiographyViewData {
   created_at: string;
 }
 
+type ViewError = 'token-missing' | 'not-found' | 'private' | null;
+
 export default function BiographyViewPage() {
   const params = useParams();
   const searchParams = useSearchParams();
   const router = useRouter();
+  const { t } = useTranslation();
   const id = params.id as string;
   const token = searchParams.get('token');
 
   const [biography, setBiography] = useState<BiographyViewData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<ViewError>(null);
 
   useEffect(() => {
     const load = async () => {
       if (!token) {
-        setError('Access token is missing');
+        setError('token-missing');
         setIsLoading(false);
         return;
       }
@@ -48,13 +52,13 @@ export default function BiographyViewPage() {
         .maybeSingle();
 
       if (fetchError || !data) {
-        setError('Biography not found or access denied');
+        setError('not-found');
         setIsLoading(false);
         return;
       }
 
       if (data.privacy_level === 'private') {
-        setError('This biography is private');
+        setError('private');
         setIsLoading(false);
         return;
       }
@@ -65,6 +69,15 @@ export default function BiographyViewPage() {
 
     load();
   }, [id, token]);
+
+  const getErrorMessage = (err: ViewError) => {
+    switch (err) {
+      case 'token-missing': return t.view.tokenMissing;
+      case 'not-found': return t.view.notFoundOrDenied;
+      case 'private': return t.view.biographyPrivate;
+      default: return t.view.notAvailable;
+    }
+  };
 
   const handleExportPDF = () => {
     if (!biography) return;
@@ -88,12 +101,12 @@ export default function BiographyViewPage() {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center gap-4 p-4">
         <Lock className="h-12 w-12 text-muted-foreground" />
-        <h1 className="text-2xl font-semibold">Access Denied</h1>
+        <h1 className="text-2xl font-semibold">{t.view.accessDenied}</h1>
         <p className="text-muted-foreground text-center max-w-md">
-          {error || 'This biography is not available for viewing.'}
+          {error ? getErrorMessage(error) : t.view.notAvailable}
         </p>
         <Button variant="outline" onClick={() => router.push('/')}>
-          Return Home
+          {t.view.returnHome}
         </Button>
       </div>
     );
@@ -121,7 +134,7 @@ export default function BiographyViewPage() {
               className="gap-2"
             >
               <FileDown className="h-4 w-4" />
-              <span className="hidden sm:inline">Download PDF</span>
+              <span className="hidden sm:inline">{t.view.downloadPdf}</span>
             </Button>
             <ThemeToggle />
           </div>
@@ -135,18 +148,19 @@ export default function BiographyViewPage() {
               {biography.title}
             </h1>
             <p className="text-xl text-muted-foreground">
-              By {biography.author_name}
+              {t.view.by} {biography.author_name}
             </p>
           </div>
 
           {visibleSections.map((section) => {
             const sectionData = biography.content[section.key];
             if (!sectionData?.text?.trim()) return null;
+            const sectionTitle = t.sectionTitles[section.key as keyof typeof t.sectionTitles] || section.title;
 
             return (
               <section key={section.key} className="mb-12">
                 <h2 className="text-2xl font-serif font-semibold text-primary mb-6">
-                  {section.title}
+                  {sectionTitle}
                 </h2>
                 <div className="whitespace-pre-wrap leading-relaxed font-serif text-base">
                   {sectionData.text.split('\n\n').map((paragraph, idx) => (
@@ -161,7 +175,7 @@ export default function BiographyViewPage() {
         </article>
 
         <footer className="mt-16 pt-8 border-t border-border text-center text-sm text-muted-foreground">
-          <p>Biography Library - Preserving Stories in Switzerland 🇨🇭</p>
+          <p>{t.view.preservingStories}</p>
         </footer>
       </main>
     </div>

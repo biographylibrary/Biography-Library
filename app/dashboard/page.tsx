@@ -120,10 +120,10 @@ export default function DashboardPage() {
         <div className="flex items-start justify-between mb-8">
           <div>
             <h1 className="text-2xl font-semibold tracking-tight">
-              Welcome, {displayName}
+              {t.dashboard.welcome}, {displayName}
             </h1>
             <p className="text-muted-foreground mt-1">
-              Your biography workspace
+              {t.dashboard.yourWorkspace}
             </p>
           </div>
           <div className="flex gap-2 shrink-0">
@@ -139,7 +139,7 @@ export default function DashboardPage() {
                 <Sparkles className="h-4 w-4" />
               )}
               <span className="hidden sm:inline">{t.dashboard.loadDemo}</span>
-              <span className="sm:hidden">Demo</span>
+              <span className="sm:hidden">{t.dashboard.loadDemo}</span>
             </Button>
             <Button
               className="gap-2"
@@ -147,7 +147,7 @@ export default function DashboardPage() {
             >
               <Plus className="h-4 w-4" />
               <span className="hidden sm:inline">{t.dashboard.createBiography}</span>
-              <span className="sm:hidden">New</span>
+              <span className="sm:hidden">{t.dashboard.createBiography}</span>
             </Button>
           </div>
         </div>
@@ -157,7 +157,7 @@ export default function DashboardPage() {
         </div>
 
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-lg font-semibold">Your Biographies</h2>
+          <h2 className="text-lg font-semibold">{t.dashboard.yourBiographies}</h2>
         </div>
 
         {isLoadingBios ? (
@@ -174,7 +174,7 @@ export default function DashboardPage() {
               className="mt-4"
               onClick={loadBiographies}
             >
-              Try Again
+              {t.dashboard.tryAgain}
             </Button>
           </div>
         ) : biographies.length === 0 ? (

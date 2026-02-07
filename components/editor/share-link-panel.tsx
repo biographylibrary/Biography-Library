@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Link2, Copy, Check } from 'lucide-react';
+import { useTranslation } from '@/lib/i18n/i18n-context';
 import { supabase } from '@/lib/supabase';
 
 interface ShareLinkPanelProps {
@@ -21,6 +22,7 @@ export function ShareLinkPanel({
 }: ShareLinkPanelProps) {
   const [isGenerating, setIsGenerating] = useState(false);
   const [copied, setCopied] = useState(false);
+  const { t } = useTranslation();
 
   if (privacy === 'private') {
     return null;
@@ -64,13 +66,13 @@ export function ShareLinkPanel({
     <div className="px-4 sm:px-6 py-4 border-b border-border/30 bg-muted/20">
       <div className="flex items-center gap-2 mb-3">
         <Link2 className="h-4 w-4 text-primary" />
-        <h3 className="text-sm font-medium">Share Link</h3>
+        <h3 className="text-sm font-medium">{t.biography.shareLink}</h3>
       </div>
 
       {!currentShareToken ? (
         <div className="space-y-2">
           <p className="text-sm text-muted-foreground">
-            Generate a shareable link for this biography
+            {t.share.shareDescription}
           </p>
           <Button
             size="sm"
@@ -78,15 +80,15 @@ export function ShareLinkPanel({
             disabled={isGenerating}
             className="w-full sm:w-auto"
           >
-            {isGenerating ? 'Generating...' : 'Generate Share Link'}
+            {isGenerating ? t.share.generating : t.share.generateLink}
           </Button>
         </div>
       ) : (
         <div className="space-y-2">
           <p className="text-xs text-muted-foreground">
             {privacy === 'public'
-              ? 'Anyone with this link can view the biography'
-              : 'Share this link with family members'}
+              ? t.share.publicViewDescription
+              : t.share.familyViewDescription}
           </p>
           <div className="flex gap-2">
             <Input
@@ -104,12 +106,12 @@ export function ShareLinkPanel({
               {copied ? (
                 <>
                   <Check className="h-4 w-4 mr-1" />
-                  Copied
+                  {t.share.copied}
                 </>
               ) : (
                 <>
                   <Copy className="h-4 w-4 mr-1" />
-                  Copy
+                  {t.share.copy}
                 </>
               )}
             </Button>

@@ -4,6 +4,7 @@ import { useRef, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { FormattingToolbar } from './formatting-toolbar';
 import { VoiceRecorder } from './voice-recorder';
+import { useTranslation } from '@/lib/i18n/i18n-context';
 import {
   Sparkles,
   Flag,
@@ -47,6 +48,9 @@ export function SectionEditor({
   const [showVoice, setShowVoice] = useState(false);
   const section = BIOGRAPHY_SECTIONS.find((s) => s.key === sectionKey);
   const charCount = data.text.length;
+  const { t } = useTranslation();
+
+  const sectionTitle = t.sectionTitles[sectionKey as keyof typeof t.sectionTitles] || section?.title || '';
 
   const handleVoiceTranscript = (transcript: string) => {
     const sep =
@@ -75,7 +79,7 @@ export function SectionEditor({
     <div className="flex flex-col flex-1 min-h-0">
       <div className="flex items-center justify-between px-4 sm:px-6 py-3 border-b border-border/50 shrink-0">
         <div className="flex items-center gap-2 min-w-0">
-          <h2 className="text-lg font-semibold truncate">{section?.title}</h2>
+          <h2 className="text-lg font-semibold truncate">{sectionTitle}</h2>
           <Button
             type="button"
             variant={showVoice ? 'default' : 'ghost'}
@@ -100,7 +104,7 @@ export function SectionEditor({
                 onClick={onGrammarCheck}
               >
                 <SpellCheck className="h-3.5 w-3.5" />
-                <span className="hidden md:inline">Check Grammar</span>
+                <span className="hidden md:inline">{t.editor.checkGrammar}</span>
               </Button>
               <Button
                 variant="outline"
@@ -110,7 +114,7 @@ export function SectionEditor({
                 onClick={onGuidedPrompts}
               >
                 <MessageSquareText className="h-3.5 w-3.5" />
-                <span className="hidden md:inline">Need help?</span>
+                <span className="hidden md:inline">{t.editor.needHelp}</span>
               </Button>
               <Button
                 variant="outline"
@@ -120,7 +124,7 @@ export function SectionEditor({
                 onClick={onSummarize}
               >
                 <FileText className="h-3.5 w-3.5" />
-                <span className="hidden md:inline">Summarize</span>
+                <span className="hidden md:inline">{t.editor.summarize}</span>
               </Button>
             </>
           )}
@@ -139,7 +143,7 @@ export function SectionEditor({
               <Power className="h-3.5 w-3.5" />
             )}
             <span className="hidden sm:inline">
-              {aiEnabled ? 'AI On' : 'AI Off'}
+              {aiEnabled ? t.editor.aiOn : t.editor.aiOff}
             </span>
           </Button>
         </div>
@@ -161,7 +165,7 @@ export function SectionEditor({
           onTextChange={onTextChange}
         />
         <span className="text-xs text-muted-foreground">
-          {charCount.toLocaleString()} chars
+          {charCount.toLocaleString()} {t.editor.chars}
         </span>
       </div>
 
@@ -170,7 +174,7 @@ export function SectionEditor({
           ref={textareaRef}
           value={data.text}
           onChange={(e) => onTextChange(e.target.value)}
-          placeholder={`Start writing about ${section?.title.toLowerCase()}...`}
+          placeholder={`${t.editor.startWritingAbout} ${sectionTitle.toLowerCase()}...`}
           className="w-full h-full resize-none bg-transparent px-4 sm:px-6 py-4 text-[15px] leading-relaxed placeholder:text-muted-foreground/50 focus:outline-none"
         />
       </div>
@@ -199,7 +203,7 @@ export function SectionEditor({
                 : 'text-muted-foreground'
             )}
           >
-            Mark as TODO
+            {t.editor.markAsTodo}
           </span>
         </label>
       </div>

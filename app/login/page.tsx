@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/lib/auth-context';
+import { useTranslation } from '@/lib/i18n/i18n-context';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -19,6 +20,7 @@ export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false);
   const { signIn, user, loading } = useAuth();
   const router = useRouter();
+  const { t } = useTranslation();
 
   useEffect(() => {
     if (!loading && user) {
@@ -60,9 +62,9 @@ export default function LoginPage() {
             <div className="flex items-center justify-center mb-6">
               <Logo height={64} />
             </div>
-            <h1 className="text-2xl font-serif font-semibold tracking-tight">Welcome back</h1>
+            <h1 className="text-2xl font-serif font-semibold tracking-tight">{t.auth.welcomeBack}</h1>
             <p className="text-sm text-muted-foreground">
-              Sign in to continue writing and preserving life stories
+              {t.auth.signInSubtitle}
             </p>
           </div>
 
@@ -75,11 +77,11 @@ export default function LoginPage() {
             )}
 
             <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="email">{t.auth.email}</Label>
               <Input
                 id="email"
                 type="email"
-                placeholder="you@example.com"
+                placeholder={t.auth.emailPlaceholder}
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
@@ -89,11 +91,11 @@ export default function LoginPage() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
+              <Label htmlFor="password">{t.auth.password}</Label>
               <Input
                 id="password"
                 type="password"
-                placeholder="Enter your password"
+                placeholder={t.auth.enterPassword}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
@@ -110,21 +112,21 @@ export default function LoginPage() {
               {isLoading ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Signing in...
+                  {t.auth.loggingIn}
                 </>
               ) : (
-                'Sign in'
+                t.auth.signIn
               )}
             </Button>
           </form>
 
           <p className="text-center text-sm text-muted-foreground mt-6">
-            Don&apos;t have an account?{' '}
+            {t.auth.dontHaveAccount}{' '}
             <Link
               href="/register"
               className="font-medium text-primary hover:text-primary/80 transition-colors"
             >
-              Create one
+              {t.auth.createOne}
             </Link>
           </p>
         </div>

@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Mic, Square, Trash2, AlertCircle, MicOff } from 'lucide-react';
+import { useTranslation } from '@/lib/i18n/i18n-context';
 import {
   useSpeechRecognition,
   SPEECH_LANGUAGES,
@@ -20,6 +21,7 @@ export function VoiceRecorder({
   audioTranscript,
 }: VoiceRecorderProps) {
   const [language, setLanguage] = useState('en-US');
+  const { t } = useTranslation();
 
   const { isRecording, isSupported, permissionDenied, interimText, start, stop } =
     useSpeechRecognition({ language, onTranscript });
@@ -28,10 +30,7 @@ export function VoiceRecorder({
     return (
       <div className="flex items-center gap-2 px-3 py-2.5 rounded-lg bg-destructive/10 text-destructive text-xs">
         <AlertCircle className="h-3.5 w-3.5 shrink-0" />
-        <span>
-          Voice recording not supported in this browser. Please use Chrome,
-          Edge, or Safari.
-        </span>
+        <span>{t.voice.notSupported}</span>
       </div>
     );
   }
@@ -40,10 +39,7 @@ export function VoiceRecorder({
     return (
       <div className="flex items-center gap-2 px-3 py-2.5 rounded-lg bg-destructive/10 text-destructive text-xs">
         <MicOff className="h-3.5 w-3.5 shrink-0" />
-        <span>
-          Microphone access denied. Please enable microphone permissions in your
-          browser settings and reload the page.
-        </span>
+        <span>{t.voice.permissionDenied}</span>
       </div>
     );
   }
@@ -73,7 +69,7 @@ export function VoiceRecorder({
             onClick={stop}
           >
             <Square className="h-3 w-3" />
-            Stop Recording
+            {t.voice.stopRecording}
           </Button>
         ) : (
           <Button
@@ -84,7 +80,7 @@ export function VoiceRecorder({
             onClick={start}
           >
             <Mic className="h-3.5 w-3.5" />
-            Record
+            {t.voice.record}
           </Button>
         )}
 
@@ -97,7 +93,7 @@ export function VoiceRecorder({
             onClick={onClearTranscript}
           >
             <Trash2 className="h-3.5 w-3.5" />
-            Clear transcript
+            {t.voice.clearTranscript}
           </Button>
         )}
       </div>
@@ -110,7 +106,7 @@ export function VoiceRecorder({
               <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-red-500" />
             </span>
             <span className="text-xs font-medium text-red-600 dark:text-red-400">
-              Recording...
+              {t.voice.recording}
             </span>
           </div>
 

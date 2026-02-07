@@ -10,6 +10,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
+import { useTranslation } from '@/lib/i18n/i18n-context';
 import { Loader2 } from 'lucide-react';
 import type { Biography } from '@/lib/biographies';
 
@@ -26,36 +27,33 @@ export function DeleteBiographyDialog({
   onConfirm,
   onCancel,
 }: DeleteBiographyDialogProps) {
+  const { t } = useTranslation();
+
   return (
-    <AlertDialog
-      open={!!biography}
-      onOpenChange={(open) => !open && onCancel()}
-    >
+    <AlertDialog open={!!biography} onOpenChange={(open) => !open && onCancel()}>
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>Delete Biography</AlertDialogTitle>
+          <AlertDialogTitle>{t.biography.deleteTitle}</AlertDialogTitle>
           <AlertDialogDescription>
-            Are you sure you want to delete &quot;
-            {biography?.title || 'Untitled'}&quot;? This action cannot be
-            undone.
+            {t.biography.deleteMessage}
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel disabled={isDeleting} onClick={onCancel}>
-            Cancel
+          <AlertDialogCancel onClick={onCancel}>
+            {t.common.cancel}
           </AlertDialogCancel>
           <AlertDialogAction
-            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-            disabled={isDeleting}
             onClick={onConfirm}
+            disabled={isDeleting}
+            className="bg-destructive hover:bg-destructive/90 text-destructive-foreground"
           >
             {isDeleting ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Deleting...
+                {t.biography.deleting}
               </>
             ) : (
-              'Delete'
+              t.common.delete
             )}
           </AlertDialogAction>
         </AlertDialogFooter>
