@@ -14,6 +14,7 @@ import { ShareLinkPanel } from '@/components/editor/share-link-panel';
 import { ConversationMode } from '@/components/editor/conversation-mode';
 import { NextSectionPrompt } from '@/components/editor/next-section-prompt';
 import { AISectionReview } from '@/components/editor/AISectionReview';
+import { FinalReviewDialog } from '@/components/editor/FinalReviewDialog';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import {
   BIOGRAPHY_SECTIONS,
@@ -36,9 +37,14 @@ import type { Biography } from '@/lib/biographies';
 import { generateBiographyPDF } from '@/lib/pdf-export';
 import { AdvancedExportDialog } from '@/components/export/AdvancedExportDialog';
 import { useTranslation } from '@/lib/i18n/i18n-context';
-import { Loader2, Menu, X } from 'lucide-react';
+import { Loader2, Menu, X, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import {
+  markSectionComplete,
+  markSectionIncomplete,
+  getCompletedSections,
+} from '@/lib/section-completion-service';
 
 type SaveStatus = 'saved' | 'saving' | 'unsaved' | 'error';
 
@@ -80,6 +86,8 @@ export default function BiographyEditorPage() {
   const [completedSectionKey, setCompletedSectionKey] = useState<string | null>(null);
   const [showExportDialog, setShowExportDialog] = useState(false);
   const [showReviewDialog, setShowReviewDialog] = useState(false);
+  const [completedSections, setCompletedSections] = useState<string[]>([]);
+  const [showFinalReview, setShowFinalReview] = useState(false);
 
   const editorContainerRef = useRef<HTMLDivElement>(null);
 
@@ -138,6 +146,9 @@ export default function BiographyEditorPage() {
       if (notesData) {
         setNotesCount(notesData.length);
       }
+
+      const completed = await getCompletedSections(id);
+      setCompletedSections(completed);
     };
     load();
   }, [user, id]);
@@ -290,6 +301,24 @@ export default function BiographyEditorPage() {
       console.error('Error updating status:', err);
     }
   }, [id, status]);
+
+  const handleMarkSectionComplete = useCallback(async () => {
+    if (!user?.id) return;
+
+    const isCurrentlyCompleted = completedSections.includes(activeSection);
+
+    try {
+      if (isCurrentlyCompleted) {
+        await markSectionIncomplete(id, activeSection);
+        setCompletedSections(prev => prev.filter(key => key !== activeSection));
+      } else {
+        await markSectionComplete(user.id, id, activeSection);
+        setCompletedSections(prev => [...prev, activeSection]);
+      }
+    } catch (err) {
+      console.error('Error marking section complete:', err);
+    }
+  }, [user, id, activeSection, completedSections]);
 
   const handleApplyReviewChanges = useCallback(
     (newContent: string, changeType: 'improvements' | 'rewrite') => {
@@ -619,6 +648,19 @@ export default function BiographyEditorPage() {
 
   const todoCount = Object.values(content).filter((d) => d.todo).length;
 
+  const allSectionsKeys = BIOGRAPHY_SECTIONS.map(s => s.key);
+  const allSectionsComplete = allSectionsKeys.every(key => completedSections.includes(key));
+
+  const sectionsForReview = BIOGRAPHY_SECTIONS.map(section => ({
+    key: section.key,
+    title: t.sectionTitles[section.key as keyof typeof t.sectionTitles] || section.title,
+    content: getSectionData(content, section.key).text,
+  })).filter(s => s.content.trim().length > 50);
+
+  const handleApplyStructure = useCallback((sectionOrder: string[], structureType: string, rationale: string) => {
+    console.log('Applied structure:', { sectionOrder, structureType, rationale });
+  }, []);
+
   if (authLoading || !user || isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[#ECE9E4] dark:bg-[#1F2121]">
@@ -693,6 +735,7 @@ export default function BiographyEditorPage() {
             onToggleNotesPanel={() => setShowNotesPanel(!showNotesPanel)}
             showTodoPanel={showTodoPanel}
             showNotesPanel={showNotesPanel}
+            completedSections={completedSections}
           />
         </aside>
 
@@ -743,8 +786,8 @@ export default function BiographyEditorPage() {
                   editorFontSize={editorFontSize}
                   onEditorFontSizeChange={setEditorFontSize}
                   onImportMultipleSections={handleImportMultipleSections}
-                  onMarkComplete={handleMarkComplete}
-                  isCompleted={status === 'completed'}
+                  onMarkComplete={handleMarkSectionComplete}
+                  isCompleted={completedSections.includes(activeSection)}
                 />
               )}
 
@@ -769,6 +812,38 @@ export default function BiographyEditorPage() {
                       })}
                     isLoading={isLoadingRecommendation}
                   />
+                </div>
+              )}
+
+              {editorMode === 'editor' && allSectionsComplete && activeSection === BIOGRAPHY_SECTIONS[BIOGRAPHY_SECTIONS.length - 1].key && (
+                <div className="p-6 border-t border-border/50 bg-gradient-to-br from-primary/5 to-primary/10 shrink-0">
+                  <div className="max-w-3xl mx-auto text-center space-y-4">
+                    <div className="space-y-2">
+                      <h3 className="text-xl font-bold text-foreground">
+                        {language === 'it' ? '🎉 Tutte le Sezioni Complete!' :
+                         language === 'fr' ? '🎉 Toutes les Sections Complètes!' :
+                         language === 'de' ? '🎉 Alle Abschnitte Abgeschlossen!' :
+                         '🎉 All Sections Complete!'}
+                      </h3>
+                      <p className="text-sm text-muted-foreground">
+                        {language === 'it' ? 'Esplora strutture narrative alternative con l\'IA per migliorare il flusso della tua storia.' :
+                         language === 'fr' ? 'Explorez des structures narratives alternatives avec l\'IA pour améliorer le flux de votre histoire.' :
+                         language === 'de' ? 'Erkunden Sie alternative Erzählstrukturen mit KI, um den Fluss Ihrer Geschichte zu verbessern.' :
+                         'Explore alternative narrative structures with AI to enhance your story\'s flow.'}
+                      </p>
+                    </div>
+                    <Button
+                      size="lg"
+                      onClick={() => setShowFinalReview(true)}
+                      className="gap-2"
+                    >
+                      <Sparkles className="h-5 w-5" />
+                      {language === 'it' ? 'Inizia Revisione Finale' :
+                       language === 'fr' ? 'Commencer la Révision Finale' :
+                       language === 'de' ? 'Abschließende Überprüfung Starten' :
+                       'Start Final Review'}
+                    </Button>
+                  </div>
                 </div>
               )}
             </div>
@@ -854,6 +929,14 @@ export default function BiographyEditorPage() {
           />
         </DialogContent>
       </Dialog>
+
+      <FinalReviewDialog
+        open={showFinalReview}
+        onOpenChange={setShowFinalReview}
+        biographyId={id}
+        sections={sectionsForReview}
+        onApplyStructure={handleApplyStructure}
+      />
     </div>
   );
 }

@@ -19,6 +19,7 @@ interface SectionSidebarProps {
   onToggleNotesPanel: () => void;
   showTodoPanel: boolean;
   showNotesPanel: boolean;
+  completedSections?: string[];
 }
 
 export function SectionSidebar({
@@ -31,6 +32,7 @@ export function SectionSidebar({
   onToggleNotesPanel,
   showTodoPanel,
   showNotesPanel,
+  completedSections = [],
 }: SectionSidebarProps) {
   const { t } = useTranslation();
 
@@ -48,6 +50,7 @@ export function SectionSidebar({
           const isActive = activeSection === section.key;
           const hasContent = data.text.trim().length > 0;
           const isTodo = data.todo;
+          const isCompleted = completedSections.includes(section.key);
           const sectionTitle = t.sectionTitles[section.key as keyof typeof t.sectionTitles] || section.title;
 
           return (
@@ -56,7 +59,9 @@ export function SectionSidebar({
               onClick={() => onSectionChange(section.key)}
               className={cn(
                 'w-full flex items-center gap-2.5 px-3 py-2.5 text-left text-sm transition-colors',
-                isActive
+                isCompleted
+                  ? 'bg-[#C8DFBE] dark:bg-[#C8DFBE]/20 font-bold text-foreground'
+                  : isActive
                   ? 'bg-primary/10 text-primary font-medium'
                   : 'text-muted-foreground hover:bg-muted/50 hover:text-foreground'
               )}
