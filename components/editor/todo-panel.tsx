@@ -20,32 +20,31 @@ export function TodoPanel({ content, onSectionChange }: TodoPanelProps) {
     (section) => getSectionData(content, section.key).todo
   );
 
-  if (todoSections.length === 0) return null;
+  if (todoSections.length === 0) {
+    return (
+      <div className="text-center py-8 text-muted-foreground">
+        <Flag className="h-12 w-12 mx-auto mb-3 opacity-50" />
+        <p>No pending items</p>
+      </div>
+    );
+  }
 
   return (
-    <div className="border-t border-border/50 bg-status-warning/20">
-      <div className="px-4 sm:px-6 py-3">
-        <h3 className="text-sm font-semibold flex items-center gap-2 text-text-primary dark:text-dark-text-primary">
-          <Flag className="h-4 w-4" />
-          {t.editor.todoItems} ({todoSections.length})
-        </h3>
-      </div>
-      <div className="px-2 pb-2">
-        {todoSections.map((section) => {
-          const sectionTitle = t.sectionTitles[section.key as keyof typeof t.sectionTitles] || section.title;
-          return (
-            <button
-              key={section.key}
-              onClick={() => onSectionChange(section.key)}
-              className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-left hover:bg-status-warning/30 transition-colors text-muted-foreground hover:text-foreground"
-            >
-              <Flag className="h-3.5 w-3.5 text-text-primary dark:text-dark-text-primary shrink-0" />
-              <span className="truncate flex-1">{sectionTitle}</span>
-              <ChevronRight className="h-3.5 w-3.5 shrink-0 opacity-50" />
-            </button>
-          );
-        })}
-      </div>
+    <div className="space-y-2">
+      {todoSections.map((section) => {
+        const sectionTitle = t.sectionTitles[section.key as keyof typeof t.sectionTitles] || section.title;
+        return (
+          <button
+            key={section.key}
+            onClick={() => onSectionChange(section.key)}
+            className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm text-left hover:bg-status-warning/20 transition-colors border border-border/50 hover:border-status-warning/50"
+          >
+            <Flag className="h-4 w-4 text-status-warning shrink-0" />
+            <span className="flex-1 font-medium">{sectionTitle}</span>
+            <ChevronRight className="h-4 w-4 shrink-0 opacity-50" />
+          </button>
+        );
+      })}
     </div>
   );
 }

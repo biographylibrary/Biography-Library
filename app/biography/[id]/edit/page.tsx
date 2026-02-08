@@ -8,11 +8,13 @@ import { EditorTopBar } from '@/components/editor/editor-top-bar';
 import { SectionSidebar } from '@/components/editor/section-sidebar';
 import { SectionEditor } from '@/components/editor/section-editor';
 import { TodoPanel } from '@/components/editor/todo-panel';
+import { NotesOverviewPanel } from '@/components/editor/notes-overview-panel';
 import { AiSuggestionsPanel } from '@/components/editor/ai-suggestions-panel';
 import { ShareLinkPanel } from '@/components/editor/share-link-panel';
 import { ConversationMode } from '@/components/editor/conversation-mode';
 import { NextSectionPrompt } from '@/components/editor/next-section-prompt';
 import { AISectionReview } from '@/components/editor/AISectionReview';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import {
   BIOGRAPHY_SECTIONS,
   type BiographyContent,
@@ -774,13 +776,6 @@ export default function BiographyEditorPage() {
                   currentShareToken={shareToken}
                   onTokenGenerated={setShareToken}
                 />
-
-                {showTodoPanel && todoCount > 0 && (
-                  <TodoPanel
-                    content={content}
-                    onSectionChange={handleSectionChange}
-                  />
-                )}
               </div>
             )}
           </div>
@@ -824,6 +819,36 @@ export default function BiographyEditorPage() {
         language={language}
         onApplyChanges={handleApplyReviewChanges}
       />
+
+      <Dialog open={showTodoPanel} onOpenChange={setShowTodoPanel}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>{t.biography.todos}</DialogTitle>
+          </DialogHeader>
+          <TodoPanel
+            content={content}
+            onSectionChange={(key) => {
+              handleSectionChange(key);
+              setShowTodoPanel(false);
+            }}
+          />
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={showNotesPanel} onOpenChange={setShowNotesPanel}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>{t.biography.notes}</DialogTitle>
+          </DialogHeader>
+          <NotesOverviewPanel
+            biographyId={id}
+            onSectionChange={(key) => {
+              handleSectionChange(key);
+              setShowNotesPanel(false);
+            }}
+          />
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
