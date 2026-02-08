@@ -287,7 +287,7 @@ export function MainBiographyCard({ biography, userName, userId }: MainBiography
 
   if (!biography) {
     return (
-      <div className="p-6 sm:p-8 text-center bg-white dark:bg-transparent rounded-2xl">
+      <div className="p-6 sm:p-8 text-center bg-transparent rounded-2xl">
         <div className="flex justify-center mb-4">
           <div className="flex items-center justify-center h-14 w-14 rounded-2xl bg-primary/10">
             <BookOpen className="h-7 w-7 text-primary" />
@@ -305,7 +305,7 @@ export function MainBiographyCard({ biography, userName, userId }: MainBiography
   const PrivacyIcon = privacyInfo.icon;
 
   return (
-    <div className="p-4 sm:p-6 lg:p-8 bg-white dark:bg-transparent rounded-2xl">
+    <div className="p-4 sm:p-6 lg:p-8 bg-transparent rounded-2xl">
       <div className="flex flex-col items-center mb-6 sm:mb-8">
         <div className="mb-3 sm:mb-4">
           <div className="hidden sm:block">
@@ -414,8 +414,8 @@ export function MainBiographyCard({ biography, userName, userId }: MainBiography
                     <Card
                       key={todo.id}
                       className={cn(
-                        'p-3 cursor-pointer hover:bg-[#F8F6F2] dark:hover:bg-white/5 transition-colors border-0',
-                        'bg-[#F5F3EF] dark:bg-white/5',
+                        'p-3 cursor-pointer hover:bg-[#F5F3EF] dark:hover:bg-white/5 transition-colors border-0',
+                        'bg-[#F8F6F2] dark:bg-white/5',
                         isOverdue && 'border-error bg-error/10 dark:bg-error/10'
                       )}
                       onClick={() => handleTodoClick(todo.section)}
@@ -470,7 +470,7 @@ export function MainBiographyCard({ biography, userName, userId }: MainBiography
         <Separator />
 
         <div>
-          <div className="rounded-lg p-4 sm:p-5 border-0 bg-[#F5F3EF] dark:bg-white/5">
+          <div className="rounded-lg p-4 sm:p-5 border-0 bg-[#F8F6F2] dark:bg-white/5">
             <p className="text-sm mb-4 text-center sm:text-left">
               {suggestion.message}
             </p>

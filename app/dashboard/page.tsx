@@ -113,7 +113,7 @@ export default function DashboardPage() {
             <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
           </div>
         ) : fetchError ? (
-          <div className="rounded-2xl border-0 bg-white dark:bg-transparent p-6 sm:p-8 text-center">
+          <div className="rounded-2xl border-0 bg-transparent p-6 sm:p-8 text-center">
             <AlertCircle className="h-8 w-8 text-destructive mx-auto mb-3" />
             <p className="text-sm text-destructive">{fetchError}</p>
             <Button
