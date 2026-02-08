@@ -287,7 +287,7 @@ export function MainBiographyCard({ biography, userName, userId }: MainBiography
 
   if (!biography) {
     return (
-      <div className="p-6 sm:p-8 text-center bg-[#FDFBF7] dark:bg-card rounded-2xl">
+      <div className="p-6 sm:p-8 text-center bg-[#EDEBE7] dark:bg-card rounded-2xl">
         <div className="flex justify-center mb-4">
           <div className="flex items-center justify-center h-14 w-14 rounded-2xl bg-primary/10">
             <BookOpen className="h-7 w-7 text-primary" />
@@ -305,7 +305,7 @@ export function MainBiographyCard({ biography, userName, userId }: MainBiography
   const PrivacyIcon = privacyInfo.icon;
 
   return (
-    <div className="p-4 sm:p-6 lg:p-8 bg-[#FDFBF7] dark:bg-card rounded-2xl">
+    <div className="p-4 sm:p-6 lg:p-8 bg-[#EDEBE7] dark:bg-card rounded-2xl">
       <div className="flex flex-col items-center mb-6 sm:mb-8">
         <div className="mb-3 sm:mb-4">
           <div className="hidden sm:block">
@@ -352,7 +352,7 @@ export function MainBiographyCard({ biography, userName, userId }: MainBiography
                   {progress}%
                 </span>
               </div>
-              <div className="h-2 w-full bg-[#EDEBE7] dark:bg-muted rounded-full overflow-hidden">
+              <div className="h-2 w-full bg-[#FDFBF7] dark:bg-muted rounded-full overflow-hidden">
                 <div
                   className="h-full transition-all duration-300 ease-in-out"
                   style={{
@@ -414,8 +414,8 @@ export function MainBiographyCard({ biography, userName, userId }: MainBiography
                     <Card
                       key={todo.id}
                       className={cn(
-                        'p-3 cursor-pointer hover:bg-[#EDEBE7] dark:hover:bg-muted/50 transition-colors border-0',
-                        'bg-[#EDEBE7] dark:bg-muted/20',
+                        'p-3 cursor-pointer hover:bg-[#FDFBF7]/80 dark:hover:bg-muted/50 transition-colors border-0',
+                        'bg-[#FDFBF7] dark:bg-muted/20',
                         isOverdue && 'border-error bg-error/10 dark:bg-error/10'
                       )}
                       onClick={() => handleTodoClick(todo.section)}
@@ -472,7 +472,7 @@ export function MainBiographyCard({ biography, userName, userId }: MainBiography
         <Separator />
 
         <div>
-          <div className="rounded-lg p-4 sm:p-5 border-0 bg-[#EDEBE7] dark:bg-muted/20">
+          <div className="rounded-lg p-4 sm:p-5 border-0 bg-[#FDFBF7] dark:bg-muted/20">
             <p className="text-sm mb-4 text-center sm:text-left">
               {suggestion.message}
             </p>
