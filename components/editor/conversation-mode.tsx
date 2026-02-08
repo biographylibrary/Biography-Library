@@ -216,32 +216,32 @@ export function ConversationMode({
   const generateAcknowledgment = (answer: string): string => {
     const acknowledgments = {
       en: [
-        'Thank you for sharing that.',
-        'That\'s a wonderful memory.',
-        'I appreciate you opening up about this.',
-        'That sounds meaningful.',
-        'Thank you for that insight.',
+        'Thank you for sharing these memories.',
+        'These are wonderful memories.',
+        'I appreciate you opening up about these memories.',
+        'These memories sound meaningful.',
+        'Thank you for sharing these insights.',
       ],
       it: [
-        'Grazie per aver condiviso questo.',
-        'È un ricordo meraviglioso.',
-        'Apprezzo che tu ti sia aperto su questo.',
-        'Sembra molto significativo.',
-        'Grazie per questa riflessione.',
+        'Grazie per aver condiviso questi ricordi.',
+        'Questi sono ricordi meravigliosi.',
+        'Apprezzo che tu ti sia aperto su questi ricordi.',
+        'Questi ricordi sembrano molto significativi.',
+        'Grazie per queste riflessioni.',
       ],
       fr: [
-        'Merci d\'avoir partagé cela.',
-        'C\'est un merveilleux souvenir.',
-        'J\'apprécie que vous vous ouvriez sur ce sujet.',
-        'Cela semble significatif.',
-        'Merci pour cette réflexion.',
+        'Merci d\'avoir partagé ces souvenirs.',
+        'Ce sont de merveilleux souvenirs.',
+        'J\'apprécie que vous vous ouvriez sur ces souvenirs.',
+        'Ces souvenirs semblent significatifs.',
+        'Merci pour ces réflexions.',
       ],
       de: [
-        'Danke, dass Sie das geteilt haben.',
-        'Das ist eine wunderbare Erinnerung.',
-        'Ich schätze es, dass Sie sich dazu geöffnet haben.',
-        'Das klingt bedeutungsvoll.',
-        'Danke für diese Einsicht.',
+        'Danke, dass Sie diese Erinnerungen geteilt haben.',
+        'Das sind wunderbare Erinnerungen.',
+        'Ich schätze es, dass Sie sich über diese Erinnerungen geöffnet haben.',
+        'Diese Erinnerungen klingen bedeutungsvoll.',
+        'Danke für diese Einsichten.',
       ],
     };
 
@@ -301,7 +301,7 @@ export function ConversationMode({
         const aiMessage: Message = {
           id: (Date.now() + 1).toString(),
           type: 'ai',
-          content: `${analysis.acknowledgment}\n\n${analysis.followUpQuestion}`,
+          content: analysis.followUpQuestion,
           timestamp: new Date(),
         };
 
@@ -318,7 +318,7 @@ export function ConversationMode({
           const aiMessage: Message = {
             id: (Date.now() + 1).toString(),
             type: 'ai',
-            content: `${analysis.acknowledgment}\n\n${nextQuestion}`,
+            content: nextQuestion,
             timestamp: new Date(),
           };
 
@@ -340,7 +340,6 @@ export function ConversationMode({
       console.error('Failed to analyze answer:', error);
       setIsAnalyzing(false);
 
-      const fallbackAcknowledgment = generateAcknowledgment(currentAnswer);
       const nextQuestionIndex = currentQuestionIndex + 1;
 
       if (nextQuestionIndex < prompts.length) {
@@ -349,13 +348,14 @@ export function ConversationMode({
         const aiMessage: Message = {
           id: (Date.now() + 1).toString(),
           type: 'ai',
-          content: `${fallbackAcknowledgment}\n\n${nextQuestion}`,
+          content: nextQuestion,
           timestamp: new Date(),
         };
 
         setMessages((prev) => [...prev, aiMessage]);
         setCurrentQuestionIndex(nextQuestionIndex);
       } else {
+        const fallbackAcknowledgment = generateAcknowledgment(currentAnswer);
         const aiMessage: Message = {
           id: (Date.now() + 1).toString(),
           type: 'ai',
@@ -514,42 +514,63 @@ export function ConversationMode({
 
       <ScrollArea className="flex-1 px-4 py-4 pb-0">
         <div className="max-w-3xl mx-auto space-y-4 pb-4">
-          {messages.map((message) => (
-            <div
-              key={message.id}
-              className={cn(
-                'flex gap-3',
-                message.type === 'user' ? 'justify-end' : 'justify-start'
-              )}
-            >
-              {message.type === 'ai' && (
-                <div className="flex-shrink-0">
-                  <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
-                    <Bot className="h-5 w-5 text-primary" />
-                  </div>
+          {messages.map((message, index) => {
+            const isLastMessage = index === messages.length - 1;
+            const isLastAIMessage = isLastMessage && message.type === 'ai';
+            const canSkip = isLastAIMessage && (currentQuestionIndex < prompts.length - 1 || isFollowUp);
+
+            return (
+              <div key={message.id} className="space-y-2">
+                <div
+                  className={cn(
+                    'flex gap-3',
+                    message.type === 'user' ? 'justify-end' : 'justify-start'
+                  )}
+                >
+                  {message.type === 'ai' && (
+                    <div className="flex-shrink-0">
+                      <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
+                        <Bot className="h-5 w-5 text-primary" />
+                      </div>
+                    </div>
+                  )}
+                  <Card
+                    className={cn(
+                      'px-4 py-3 max-w-[80%]',
+                      message.type === 'ai'
+                        ? 'bg-card border-border/50'
+                        : 'bg-primary text-primary-foreground border-primary'
+                    )}
+                  >
+                    <p className="text-sm leading-relaxed whitespace-pre-wrap">
+                      {message.content}
+                    </p>
+                  </Card>
+                  {message.type === 'user' && (
+                    <div className="flex-shrink-0">
+                      <div className="h-8 w-8 rounded-full bg-primary flex items-center justify-center">
+                        <User className="h-5 w-5 text-primary-foreground" />
+                      </div>
+                    </div>
+                  )}
                 </div>
-              )}
-              <Card
-                className={cn(
-                  'px-4 py-3 max-w-[80%]',
-                  message.type === 'ai'
-                    ? 'bg-card border-border/50'
-                    : 'bg-primary text-primary-foreground border-primary'
+                {canSkip && (
+                  <div className="flex gap-3 justify-start">
+                    <div className="w-8 flex-shrink-0" />
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={handleSkipQuestion}
+                      disabled={isGenerating || isAnalyzing}
+                      className="text-xs"
+                    >
+                      {t.conversation.skipQuestion}
+                    </Button>
+                  </div>
                 )}
-              >
-                <p className="text-sm leading-relaxed whitespace-pre-wrap">
-                  {message.content}
-                </p>
-              </Card>
-              {message.type === 'user' && (
-                <div className="flex-shrink-0">
-                  <div className="h-8 w-8 rounded-full bg-primary flex items-center justify-center">
-                    <User className="h-5 w-5 text-primary-foreground" />
-                  </div>
-                </div>
-              )}
-            </div>
-          ))}
+              </div>
+            );
+          })}
           {(isGenerating || isAnalyzing) && (
             <div className="flex gap-3 justify-start">
               <div className="flex-shrink-0">
@@ -612,18 +633,8 @@ export function ConversationMode({
             />
           )}
 
-          <div className="flex items-center gap-2 justify-end">
-            {(currentQuestionIndex < prompts.length - 1 || isFollowUp) && (
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={handleSkipQuestion}
-                disabled={isGenerating || isAnalyzing}
-              >
-                {t.conversation.skipQuestion}
-              </Button>
-            )}
-            {answers.length >= 3 && !isFollowUp && (
+          {answers.length >= 3 && !isFollowUp && (
+            <div className="flex items-center gap-2 justify-end">
               <Button
                 variant="default"
                 size="sm"
@@ -639,8 +650,8 @@ export function ConversationMode({
                   t.conversation.finishSection
                 )}
               </Button>
-            )}
-          </div>
+            </div>
+          )}
         </div>
       </div>
 
