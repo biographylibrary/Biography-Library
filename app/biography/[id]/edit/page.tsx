@@ -81,6 +81,8 @@ export default function BiographyEditorPage() {
   const [showExportDialog, setShowExportDialog] = useState(false);
   const [showReviewDialog, setShowReviewDialog] = useState(false);
 
+  const editorContainerRef = useRef<HTMLDivElement>(null);
+
   useEffect(() => {
     const stored = localStorage.getItem(AI_ENABLED_KEY);
     if (stored === 'true') setAiEnabled(true);
@@ -245,6 +247,9 @@ export default function BiographyEditorPage() {
     setActiveSection(key);
     setShowMobileSidebar(false);
     setAiState(INITIAL_AI_STATE);
+    setTimeout(() => {
+      editorContainerRef.current?.scrollTo({ top: 0, behavior: 'smooth' });
+    }, 100);
   }, []);
 
   const handleToggleAi = useCallback(() => {
@@ -712,7 +717,7 @@ export default function BiographyEditorPage() {
               </Button>
             </div>
 
-            <div className="flex-1 min-h-0 flex flex-col">
+            <div ref={editorContainerRef} className="flex-1 min-h-0 flex flex-col overflow-y-auto">
               {editorMode === 'conversation' ? (
                 <ConversationMode
                   sectionKey={activeSection}

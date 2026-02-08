@@ -33,10 +33,9 @@ export function NotesOverviewPanel({ biographyId, onSectionChange }: NotesOvervi
       for (const section of BIOGRAPHY_SECTIONS) {
         const { data, error } = await supabase
           .from('section_notes')
-          .select('id', { count: 'exact' })
+          .select('id')
           .eq('biography_id', biographyId)
-          .eq('section_key', section.key)
-          .eq('is_completed', false);
+          .eq('section', section.key);
 
         if (!error && data && data.length > 0) {
           const sectionTitle = t.sectionTitles[section.key as keyof typeof t.sectionTitles] || section.title;
