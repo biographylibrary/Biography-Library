@@ -107,41 +107,42 @@ export function SectionEditor({
 
   return (
     <div className="flex flex-col flex-1 min-h-0 overflow-hidden">
-      <div className="flex items-center justify-between px-3 sm:px-6 py-3 border-b border-border/50 shrink-0">
-        <div className="flex items-center gap-1.5 min-w-0">
-          <h2 className="text-base sm:text-lg font-semibold truncate">{sectionTitle}</h2>
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            className="h-7 w-7 p-0 shrink-0 rounded-full bg-[#A84B2F] hover:bg-[#6B2F1F] hover:text-[#FDFBF7] text-[#FDFBF7]"
-            onClick={() => setShowVoice(!showVoice)}
-            title="Registra audio"
-          >
-            <Mic className="h-3.5 w-3.5" />
-          </Button>
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            className="h-7 w-7 p-0 shrink-0"
-            onClick={() => setShowImportDialog(true)}
-            title="Importa testo"
-          >
-            <Upload className="h-3.5 w-3.5" />
-          </Button>
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            className="h-7 w-7 p-0 shrink-0"
-            onClick={() => setShowNotesDialog(true)}
-            title="Note e promemoria"
-          >
-            <StickyNote className="h-3.5 w-3.5" />
-          </Button>
-        </div>
-        <div className="flex items-center gap-0.5 sm:gap-1 ml-2 shrink-0 flex-wrap justify-end">
+      <div className="px-3 sm:px-6 py-3 border-b border-border/50 shrink-0">
+        <div className="flex flex-col xl:flex-row xl:items-center xl:justify-between gap-2">
+          <div className="flex items-center gap-1.5 min-w-0">
+            <h2 className="text-base sm:text-lg font-semibold truncate">{sectionTitle}</h2>
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              className="h-7 w-7 p-0 shrink-0 rounded-full bg-[#A84B2F] hover:bg-[#6B2F1F] hover:text-[#FDFBF7] text-[#FDFBF7]"
+              onClick={() => setShowVoice(!showVoice)}
+              title="Registra audio"
+            >
+              <Mic className="h-3.5 w-3.5" />
+            </Button>
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              className="h-7 w-7 p-0 shrink-0"
+              onClick={() => setShowImportDialog(true)}
+              title="Importa testo"
+            >
+              <Upload className="h-3.5 w-3.5" />
+            </Button>
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              className="h-7 w-7 p-0 shrink-0"
+              onClick={() => setShowNotesDialog(true)}
+              title="Note e promemoria"
+            >
+              <StickyNote className="h-3.5 w-3.5" />
+            </Button>
+          </div>
+          <div className="flex items-center gap-0.5 sm:gap-1 shrink-0 flex-wrap">
           {aiEnabled && (
             <>
               <Button
@@ -222,6 +223,7 @@ export function SectionEditor({
               </span>
             </Button>
           )}
+        </div>
         </div>
       </div>
 
