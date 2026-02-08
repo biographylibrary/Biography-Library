@@ -122,7 +122,7 @@ export default function DashboardPage() {
             />
             <PublishedBiographiesCard userId={user.id} />
 
-            <div className="flex flex-col items-center gap-3 pt-6">
+            <div className="flex flex-col items-center gap-2 pt-2">
               {(biographies.length === 0 || biographies.some(b => b.status === 'published')) && (
                 <Button
                   className="gap-2 min-h-[44px] px-6"

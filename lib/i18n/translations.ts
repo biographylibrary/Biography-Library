@@ -1601,14 +1601,14 @@ export const translations: Record<Language, Translations> = {
 
 export const languageNames: Record<Language, string> = {
   en: 'English',
-  it: 'Italiano',
-  fr: 'Fran\u00e7ais',
   de: 'Deutsch',
+  fr: 'Fran\u00e7ais',
+  it: 'Italiano',
 };
 
 export const languageFlags: Record<Language, string> = {
   en: '\ud83c\uddec\ud83c\udde7',
-  it: '\ud83c\uddee\ud83c\uddf9',
-  fr: '\ud83c\uddeb\ud83c\uddf7',
   de: '\ud83c\udde9\ud83c\uddea',
+  fr: '\ud83c\uddeb\ud83c\uddf7',
+  it: '\ud83c\uddee\ud83c\uddf9',
 };

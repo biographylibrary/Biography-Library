@@ -772,7 +772,7 @@ export default function BiographyEditorPage() {
         <div className="lg:hidden fixed bottom-4 left-4 z-40">
           <Button
             size="icon"
-            className="h-12 w-12 rounded-full shadow-lg"
+            className="h-12 w-12 rounded-full "
             onClick={() => setShowMobileSidebar(!showMobileSidebar)}
           >
             {showMobileSidebar ? (

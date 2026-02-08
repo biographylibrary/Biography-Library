@@ -27,7 +27,7 @@ export function LanguageSelector() {
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
-        {(Object.keys(languageNames) as Language[]).map((lang) => (
+        {(['en', 'de', 'fr', 'it'] as Language[]).map((lang) => (
           <DropdownMenuItem
             key={lang}
             onClick={() => handleLanguageChange(lang)}
