@@ -287,7 +287,7 @@ export function MainBiographyCard({ biography, userName, userId }: MainBiography
 
   if (!biography) {
     return (
-      <div className="p-8 text-center">
+      <div className="p-6 sm:p-8 text-center bg-[#FDFBF7] dark:bg-card rounded-2xl">
         <div className="flex justify-center mb-4">
           <div className="flex items-center justify-center h-14 w-14 rounded-2xl bg-primary/10">
             <BookOpen className="h-7 w-7 text-primary" />
@@ -305,12 +305,17 @@ export function MainBiographyCard({ biography, userName, userId }: MainBiography
   const PrivacyIcon = privacyInfo.icon;
 
   return (
-    <div className="p-6">
-      <div className="flex flex-col items-center mb-6">
-        <div className="mb-4">
-          <Logo height={100} />
+    <div className="p-4 sm:p-6 lg:p-8 bg-[#FDFBF7] dark:bg-card rounded-2xl">
+      <div className="flex flex-col items-center mb-6 sm:mb-8">
+        <div className="mb-3 sm:mb-4">
+          <div className="hidden sm:block">
+            <Logo height={100} />
+          </div>
+          <div className="block sm:hidden">
+            <Logo height={70} />
+          </div>
         </div>
-        <h1 className="text-3xl font-bold">
+        <h1 className="text-2xl sm:text-3xl font-bold text-center">
           {greeting}, {userName}!
         </h1>
       </div>
@@ -318,22 +323,22 @@ export function MainBiographyCard({ biography, userName, userId }: MainBiography
       <div className="space-y-6">
         <div>
           <div className="flex items-center gap-2 mb-3">
-            <BookOpen className="h-5 w-5" />
-            <h2 className="text-lg font-semibold">
+            <BookOpen className="h-5 w-5 shrink-0" />
+            <h2 className="text-lg font-semibold truncate">
               {biography.title || t.dashboard.untitledBiography}
             </h2>
           </div>
 
-          <div className="space-y-3 pl-7">
+          <div className="space-y-3 pl-4 sm:pl-7">
             <div className="flex items-center gap-2">
-              <span className="text-sm text-muted-foreground w-24">{t.dashboard.status}:</span>
+              <span className="text-sm text-muted-foreground w-20 sm:w-24 shrink-0">{t.dashboard.status}:</span>
               <Badge className={getStatusBadgeConfig(biography.status).className}>
                 {getStatusBadgeConfig(biography.status).text}
               </Badge>
             </div>
 
             <div className="flex items-center gap-2">
-              <span className="text-sm text-muted-foreground w-24">{t.dashboard.visibility}:</span>
+              <span className="text-sm text-muted-foreground w-20 sm:w-24 shrink-0">{t.dashboard.visibility}:</span>
               <div className="flex items-center gap-1.5">
                 <PrivacyIcon className="h-4 w-4 text-muted-foreground" />
                 <span className="text-sm font-medium">{privacyInfo.text}</span>
@@ -347,7 +352,7 @@ export function MainBiographyCard({ biography, userName, userId }: MainBiography
                   {progress}%
                 </span>
               </div>
-              <div className="h-2 w-full bg-muted rounded-full overflow-hidden">
+              <div className="h-2 w-full bg-[#EDEBE7] dark:bg-muted rounded-full overflow-hidden">
                 <div
                   className="h-full transition-all duration-300 ease-in-out"
                   style={{
@@ -384,8 +389,8 @@ export function MainBiographyCard({ biography, userName, userId }: MainBiography
           <>
             <Separator />
             <div>
-              <div className="flex items-center gap-2 mb-3">
-                <CheckSquare className="h-5 w-5 text-text-primary dark:text-dark-text-primary" />
+              <div className="flex items-center gap-2 mb-3 flex-wrap">
+                <CheckSquare className="h-5 w-5 text-text-primary dark:text-dark-text-primary shrink-0" />
                 <h2 className="text-lg font-semibold text-text-primary dark:text-dark-text-primary">
                   {t.coach.pendingReminders}
                 </h2>
@@ -400,7 +405,7 @@ export function MainBiographyCard({ biography, userName, userId }: MainBiography
                 )}
               </div>
 
-              <div className="space-y-2 pl-7">
+              <div className="space-y-2 pl-4 sm:pl-7">
                 {todos.map((todo) => {
                   const isOverdue = isDueDateOverdue(todo.due_date);
                   const sectionTitle = getSectionTitle(todo.section, language);
@@ -409,9 +414,9 @@ export function MainBiographyCard({ biography, userName, userId }: MainBiography
                     <Card
                       key={todo.id}
                       className={cn(
-                        'p-3 cursor-pointer hover:bg-muted/50 transition-colors border-0',
-                        'bg-[#FDFBF7] dark:bg-card',
-                        isOverdue && 'border-error bg-error/10'
+                        'p-3 cursor-pointer hover:bg-[#EDEBE7] dark:hover:bg-muted/50 transition-colors border-0',
+                        'bg-[#EDEBE7] dark:bg-muted/20',
+                        isOverdue && 'border-error bg-error/10 dark:bg-error/10'
                       )}
                       onClick={() => handleTodoClick(todo.section)}
                     >
@@ -467,27 +472,27 @@ export function MainBiographyCard({ biography, userName, userId }: MainBiography
         <Separator />
 
         <div>
-          <div className="rounded-lg p-4 border-0 bg-[#FDFBF7] dark:bg-card">
-            <p className="text-sm mb-4">
+          <div className="rounded-lg p-4 sm:p-5 border-0 bg-[#EDEBE7] dark:bg-muted/20">
+            <p className="text-sm mb-4 text-center sm:text-left">
               {suggestion.message}
             </p>
-            <div className="flex gap-2">
+            <div className="flex flex-col sm:flex-row gap-2">
               <Button
                 onClick={() => router.push(`/biography/${biography.id}/edit`)}
                 size="sm"
                 variant="outline"
-                className="gap-2 flex-1"
+                className="gap-2 flex-1 w-full sm:w-auto"
               >
                 <BookOpen className="h-3.5 w-3.5" />
-                {t.dashboard.goToWorkspace}
+                <span className="truncate">{t.dashboard.goToWorkspace}</span>
               </Button>
               <Button
                 onClick={() => handleContinue(suggestion.type === 'pending-conversation' || suggestion.type === 'almost-done' ? suggestion.section : undefined)}
                 size="sm"
-                className="gap-2 flex-1"
+                className="gap-2 flex-1 w-full sm:w-auto"
               >
                 <Play className="h-3.5 w-3.5" />
-                {t.dashboard.continueLastSection}
+                <span className="truncate">{t.dashboard.continueLastSection}</span>
               </Button>
             </div>
           </div>

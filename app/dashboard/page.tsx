@@ -95,16 +95,15 @@ export default function DashboardPage() {
     <div className="min-h-screen bg-[#EDEBE7] dark:bg-[#1F2121] flex items-center justify-center">
       <WelcomeLanguageModal />
 
-      <main className="w-full max-w-2xl px-4">
+      <main className="w-full max-w-2xl px-4 sm:px-6 py-8">
         {biographies.length === 0 && (
-          <div className="flex justify-end mb-8">
+          <div className="flex justify-end mb-6 sm:mb-8">
             <Button
               className="gap-2"
               onClick={() => setShowCreateModal(true)}
             >
               <Plus className="h-4 w-4" />
-              <span className="hidden sm:inline">{t.dashboard.createBiography}</span>
-              <span className="sm:hidden">{t.dashboard.createBiography}</span>
+              <span>{t.dashboard.createBiography}</span>
             </Button>
           </div>
         )}
@@ -114,7 +113,7 @@ export default function DashboardPage() {
             <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
           </div>
         ) : fetchError ? (
-          <div className="rounded-xl border border-destructive/30 bg-destructive/5 p-8 text-center">
+          <div className="rounded-2xl border-0 bg-[#FDFBF7] dark:bg-card p-6 sm:p-8 text-center">
             <AlertCircle className="h-8 w-8 text-destructive mx-auto mb-3" />
             <p className="text-sm text-destructive">{fetchError}</p>
             <Button
