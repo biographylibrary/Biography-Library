@@ -306,8 +306,10 @@ export function MainBiographyCard({ biography, userName, userId }: MainBiography
 
   return (
     <div className="p-6">
-      <div className="flex items-center gap-3 mb-6">
-        <Logo height={32} />
+      <div className="flex flex-col items-center mb-6">
+        <div className="mb-4">
+          <Logo height={100} />
+        </div>
         <h1 className="text-3xl font-bold">
           {greeting}, {userName}!
         </h1>
