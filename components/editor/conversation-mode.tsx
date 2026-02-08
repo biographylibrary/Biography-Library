@@ -691,7 +691,7 @@ export function ConversationMode({
 
       <div className="border-t border-border/50 bg-card/50 p-4 shrink-0">
         <div className="max-w-3xl mx-auto space-y-3">
-          <div className="flex items-center gap-2">
+          <div className="flex flex-col sm:flex-row gap-3">
             <div className="flex-1">
               <Textarea
                 ref={textareaRef}
@@ -703,7 +703,7 @@ export function ConversationMode({
                 disabled={isGenerating || isAnalyzing || currentQuestionIndex >= prompts.length}
               />
             </div>
-            <div className="flex flex-col gap-2 self-center">
+            <div className="flex sm:flex-col gap-2 justify-end sm:justify-center">
               <Button
                 size="icon"
                 variant="ghost"
@@ -721,6 +721,25 @@ export function ConversationMode({
               >
                 <Send className="h-4 w-4" />
               </Button>
+              {answers.length >= 3 && !isFollowUp && (
+                <Button
+                  onClick={handleFinishSection}
+                  disabled={isGenerating || isAnalyzing}
+                  className="sm:w-10 h-10 sm:aspect-square gap-2 bg-green-600 hover:bg-green-700 text-white"
+                  title={language === 'it' ? 'Rivedi Risposte' :
+                         language === 'fr' ? 'Réviser les Réponses' :
+                         language === 'de' ? 'Antworten Überprüfen' :
+                         'Review Answers'}
+                >
+                  <span className="sm:hidden">
+                    {language === 'it' ? 'Rivedi Risposte' :
+                     language === 'fr' ? 'Réviser les Réponses' :
+                     language === 'de' ? 'Antworten Überprüfen' :
+                     'Review Answers'}
+                  </span>
+                  <span className="hidden sm:inline text-lg">✓</span>
+                </Button>
+              )}
             </div>
           </div>
 
@@ -730,22 +749,6 @@ export function ConversationMode({
               onClearTranscript={() => setAudioTranscript('')}
               audioTranscript={audioTranscript}
             />
-          )}
-
-          {answers.length >= 3 && !isFollowUp && (
-            <div className="flex items-center gap-2 justify-end">
-              <Button
-                variant="default"
-                size="sm"
-                onClick={handleFinishSection}
-                disabled={isGenerating || isAnalyzing}
-              >
-                {language === 'it' ? 'Rivedi Risposte' :
-                 language === 'fr' ? 'Réviser les Réponses' :
-                 language === 'de' ? 'Antworten Überprüfen' :
-                 'Review Answers'}
-              </Button>
-            </div>
           )}
         </div>
       </div>
