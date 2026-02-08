@@ -123,7 +123,7 @@ export function SectionEditor({
             type="button"
             variant="ghost"
             size="sm"
-            className="h-8 w-8 p-0 shrink-0 rounded-full bg-[#A84B2F] hover:bg-[#8B3D26] text-[#FDFBF7]"
+            className="h-8 w-8 p-0 shrink-0 rounded-full bg-[#A84B2F] hover:bg-[#6B2F1F] hover:text-[#FDFBF7] text-[#FDFBF7]"
             onClick={() => setShowVoice(!showVoice)}
             title="Registra audio"
           >

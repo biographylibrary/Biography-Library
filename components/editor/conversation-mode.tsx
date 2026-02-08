@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Card } from '@/components/ui/card';
-import { Bot, User, Send, Mic, Loader2, ArrowLeft } from 'lucide-react';
+import { User, Send, Mic, Loader2, ArrowLeft } from 'lucide-react';
 import { useTranslation } from '@/lib/i18n/i18n-context';
 import { getFallbackPrompts } from '@/lib/ai-constants';
 import { BIOGRAPHY_SECTIONS } from '@/lib/editor-constants';
@@ -30,6 +30,8 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { useParams } from 'next/navigation';
+import { Logo } from '@/components/logo';
+import { useTheme } from 'next-themes';
 
 interface Message {
   id: string;
@@ -529,8 +531,8 @@ export function ConversationMode({
                 >
                   {message.type === 'ai' && (
                     <div className="flex-shrink-0">
-                      <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
-                        <Bot className="h-5 w-5 text-primary" />
+                      <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center p-1">
+                        <Logo height={24} />
                       </div>
                     </div>
                   )}
@@ -574,8 +576,8 @@ export function ConversationMode({
           {(isGenerating || isAnalyzing) && (
             <div className="flex gap-3 justify-start">
               <div className="flex-shrink-0">
-                <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
-                  <Bot className="h-5 w-5 text-primary" />
+                <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center p-1">
+                  <Logo height={24} />
                 </div>
               </div>
               <Card className="px-4 py-3 bg-card border-border/50">
@@ -610,7 +612,7 @@ export function ConversationMode({
                 variant="ghost"
                 onClick={() => setShowVoice(!showVoice)}
                 disabled={isGenerating || isAnalyzing}
-                className="h-10 w-10 rounded-full bg-[#A84B2F] hover:bg-[#8B3D26] text-[#FDFBF7]"
+                className="h-10 w-10 rounded-full bg-[#A84B2F] hover:bg-[#6B2F1F] hover:text-[#FDFBF7] text-[#FDFBF7]"
               >
                 <Mic className="h-4 w-4" />
               </Button>
