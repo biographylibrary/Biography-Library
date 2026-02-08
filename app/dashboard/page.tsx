@@ -99,10 +99,10 @@ export default function DashboardPage() {
         {biographies.length === 0 && (
           <div className="flex justify-end mb-6 sm:mb-8">
             <Button
-              className="gap-2"
+              className="gap-2 min-h-[44px] px-6"
               onClick={() => setShowCreateModal(true)}
             >
-              <Plus className="h-4 w-4" />
+              <Plus className="h-5 w-5" />
               <span>{t.dashboard.createBiography}</span>
             </Button>
           </div>
@@ -118,8 +118,7 @@ export default function DashboardPage() {
             <p className="text-sm text-destructive">{fetchError}</p>
             <Button
               variant="outline"
-              size="sm"
-              className="mt-4"
+              className="mt-4 min-h-[44px] px-6"
               onClick={loadBiographies}
             >
               {t.dashboard.tryAgain}

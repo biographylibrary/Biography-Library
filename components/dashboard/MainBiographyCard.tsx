@@ -439,15 +439,14 @@ export function MainBiographyCard({ biography, userName, userId }: MainBiography
                           </div>
                         </div>
                         <Button
-                          size="sm"
                           variant="ghost"
-                          className="h-7 w-7 p-0 shrink-0"
+                          className="h-10 w-10 p-0 shrink-0"
                           onClick={(e) => {
                             e.stopPropagation();
                             handleTodoClick(todo.section);
                           }}
                         >
-                          <ArrowRight className="h-4 w-4" />
+                          <ArrowRight className="h-5 w-5" />
                         </Button>
                       </div>
                     </Card>
@@ -457,8 +456,7 @@ export function MainBiographyCard({ biography, userName, userId }: MainBiography
                 {todos.length >= 3 && (
                   <Button
                     variant="outline"
-                    size="sm"
-                    className="w-full mt-2"
+                    className="w-full mt-2 min-h-[44px]"
                     onClick={() => handleContinue()}
                   >
                     {t.coach.viewAllReminders}
@@ -479,19 +477,17 @@ export function MainBiographyCard({ biography, userName, userId }: MainBiography
             <div className="flex flex-col sm:flex-row gap-2">
               <Button
                 onClick={() => router.push(`/biography/${biography.id}/edit`)}
-                size="sm"
                 variant="outline"
-                className="gap-2 flex-1 w-full sm:w-auto"
+                className="gap-2 flex-1 w-full sm:w-auto min-h-[44px]"
               >
-                <BookOpen className="h-3.5 w-3.5" />
+                <BookOpen className="h-4 w-4" />
                 <span className="truncate">{t.dashboard.goToWorkspace}</span>
               </Button>
               <Button
                 onClick={() => handleContinue(suggestion.type === 'pending-conversation' || suggestion.type === 'almost-done' ? suggestion.section : undefined)}
-                size="sm"
-                className="gap-2 flex-1 w-full sm:w-auto"
+                className="gap-2 flex-1 w-full sm:w-auto min-h-[44px]"
               >
-                <Play className="h-3.5 w-3.5" />
+                <Play className="h-4 w-4" />
                 <span className="truncate">{t.dashboard.continueLastSection}</span>
               </Button>
             </div>
