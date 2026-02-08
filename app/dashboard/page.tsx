@@ -97,38 +97,6 @@ export default function DashboardPage() {
       <WelcomeLanguageModal />
 
       <main className="w-full max-w-2xl px-4 sm:px-6 py-8">
-        {(biographies.length === 0 || biographies.every(b => b.status === 'published')) && (
-          <div className="flex justify-end mb-6 sm:mb-8">
-            <Button
-              className="gap-2 min-h-[44px] px-6"
-              onClick={() => setShowCreateModal(true)}
-            >
-              <Plus className="h-5 w-5" />
-              <span>{t.dashboard.createBiography}</span>
-            </Button>
-          </div>
-        )}
-
-        {biographies.length > 0 && biographies.some(b => b.status !== 'published') && (
-          <div className="flex justify-end mb-6 sm:mb-8">
-            <div className="text-right">
-              <Button
-                className="gap-2 min-h-[44px] px-6"
-                disabled
-              >
-                <Plus className="h-5 w-5" />
-                <span>{t.dashboard.createBiography}</span>
-              </Button>
-              <p className="text-xs text-muted-foreground mt-2 max-w-xs">
-                {language === 'it' ? 'Completa e pubblica la tua biografia attuale prima di crearne una nuova' :
-                 language === 'fr' ? 'Terminez et publiez votre biographie actuelle avant d\'en créer une nouvelle' :
-                 language === 'de' ? 'Vervollständigen und veröffentlichen Sie Ihre aktuelle Biografie, bevor Sie eine neue erstellen' :
-                 'Complete and publish your current biography before creating a new one'}
-              </p>
-            </div>
-          </div>
-        )}
-
         {isLoadingBios ? (
           <div className="flex justify-center py-16">
             <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
@@ -153,6 +121,28 @@ export default function DashboardPage() {
               userId={user.id}
             />
             <PublishedBiographiesCard userId={user.id} />
+
+            <div className="flex flex-col items-center gap-3 pt-6">
+              {(biographies.length === 0 || biographies.some(b => b.status === 'published')) && (
+                <Button
+                  className="gap-2 min-h-[44px] px-6"
+                  onClick={() => setShowCreateModal(true)}
+                  variant="secondary"
+                >
+                  <Plus className="h-5 w-5" />
+                  <span>{t.dashboard.createBiography}</span>
+                </Button>
+              )}
+
+              {biographies.length > 0 && biographies.some(b => b.status !== 'published') && (
+                <p className="text-xs text-muted-foreground text-center max-w-md">
+                  {language === 'it' ? 'Completa e pubblica la tua biografia attuale prima di crearne una nuova' :
+                   language === 'fr' ? 'Terminez et publiez votre biographie actuelle avant d\'en créer une nouvelle' :
+                   language === 'de' ? 'Vervollständigen und veröffentlichen Sie Ihre aktuelle Biografie, bevor Sie eine neue erstellen' :
+                   'Complete and publish your current biography before creating a new one'}
+                </p>
+              )}
+            </div>
           </div>
         )}
       </main>
