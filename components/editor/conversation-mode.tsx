@@ -3,7 +3,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import { Card } from '@/components/ui/card';
 import { User, Send, Mic, Loader2, ArrowLeft } from 'lucide-react';
 import { useTranslation } from '@/lib/i18n/i18n-context';
@@ -483,9 +482,9 @@ export function ConversationMode({
         .replace('{section}', sectionTitle);
 
   return (
-    <div className="flex flex-col h-full bg-background">
+    <div className="flex flex-col h-full bg-background overflow-hidden">
       <div className="border-b border-border/50 px-4 py-3 bg-card/50 shrink-0">
-        <div className="flex items-center justify-between mb-2">
+        <div className="flex items-center justify-between mb-3">
           <Button
             variant="ghost"
             size="sm"
@@ -495,26 +494,26 @@ export function ConversationMode({
             <ArrowLeft className="h-4 w-4" />
             {t.conversation.backToEditor}
           </Button>
-          <div className="flex items-center gap-2">
-            <span className="text-xs font-medium text-muted-foreground bg-primary/10 px-3 py-1 rounded-full">
-              {progressText}
+        </div>
+        <div className="flex flex-col gap-2">
+          <span className="text-xs font-medium text-muted-foreground bg-primary/10 px-3 py-1 rounded-full w-fit">
+            {progressText}
+          </span>
+          {answers.length > 0 && (
+            <span className={cn(
+              "text-xs font-medium px-3 py-1 rounded-full w-fit",
+              answers.length >= 8
+                ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
+                : "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400"
+            )}>
+              {answers.length >= 8 ? '✓ ' : ''}{answers.length} {language === 'it' ? 'risposte' : language === 'fr' ? 'réponses' : language === 'de' ? 'Antworten' : 'answers'}
+              {answers.length < 8 && ` (${8 - answers.length} ${language === 'it' ? 'per bozza completa' : language === 'fr' ? 'pour brouillon complet' : language === 'de' ? 'für vollständigen Entwurf' : 'for complete draft'})`}
             </span>
-            {answers.length > 0 && (
-              <span className={cn(
-                "text-xs font-medium px-3 py-1 rounded-full",
-                answers.length >= 8
-                  ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
-                  : "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400"
-              )}>
-                {answers.length >= 8 ? '✓ ' : ''}{answers.length} {language === 'it' ? 'risposte' : language === 'fr' ? 'réponses' : language === 'de' ? 'Antworten' : 'answers'}
-                {answers.length < 8 && ` (${8 - answers.length} ${language === 'it' ? 'per bozza completa' : language === 'fr' ? 'pour brouillon complet' : language === 'de' ? 'für vollständigen Entwurf' : 'for complete draft'})`}
-              </span>
-            )}
-          </div>
+          )}
         </div>
       </div>
 
-      <ScrollArea className="flex-1 px-4 py-4 pb-0">
+      <div className="flex-1 min-h-0 overflow-y-auto px-4 py-4">
         <div className="max-w-3xl mx-auto space-y-4 pb-4">
           {messages.map((message, index) => {
             const isLastMessage = index === messages.length - 1;
@@ -590,9 +589,9 @@ export function ConversationMode({
           )}
           <div ref={scrollRef} />
         </div>
-      </ScrollArea>
+      </div>
 
-      <div className="border-t border-border/50 bg-card/50 p-4 shrink-0 sticky bottom-0">
+      <div className="border-t border-border/50 bg-card/50 p-4 shrink-0">
         <div className="max-w-3xl mx-auto space-y-3">
           <div className="flex items-center gap-2">
             <div className="flex-1">
