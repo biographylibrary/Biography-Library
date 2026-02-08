@@ -287,7 +287,7 @@ export function MainBiographyCard({ biography, userName, userId }: MainBiography
 
   if (!biography) {
     return (
-      <div className="p-6 sm:p-8 text-center bg-[#EDEBE7] dark:bg-card rounded-2xl">
+      <div className="p-6 sm:p-8 text-center bg-[#EDEBE7] dark:bg-[#121212] rounded-2xl">
         <div className="flex justify-center mb-4">
           <div className="flex items-center justify-center h-14 w-14 rounded-2xl bg-primary/10">
             <BookOpen className="h-7 w-7 text-primary" />
@@ -305,7 +305,7 @@ export function MainBiographyCard({ biography, userName, userId }: MainBiography
   const PrivacyIcon = privacyInfo.icon;
 
   return (
-    <div className="p-4 sm:p-6 lg:p-8 bg-[#EDEBE7] dark:bg-card rounded-2xl">
+    <div className="p-4 sm:p-6 lg:p-8 bg-[#EDEBE7] dark:bg-[#121212] rounded-2xl">
       <div className="flex flex-col items-center mb-6 sm:mb-8">
         <div className="mb-3 sm:mb-4">
           <div className="hidden sm:block">
