@@ -640,7 +640,7 @@ export default function BiographyEditorPage() {
 
         <aside
           className={cn(
-            'w-[280px] border-r border-border/50 bg-card/50 shrink-0 flex flex-col',
+            'w-[280px] border-r border-border/50 bg-card shrink-0 flex flex-col',
             'fixed lg:relative inset-y-0 left-0 z-30 top-[57px] lg:top-0',
             'transition-transform duration-200',
             showMobileSidebar
