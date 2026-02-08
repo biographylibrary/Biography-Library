@@ -152,7 +152,7 @@ export function SectionEditor({
                 onClick={onGrammarCheck}
               >
                 <SpellCheck className="h-3.5 w-3.5" />
-                <span className="hidden md:inline">{t.editor.checkGrammar}</span>
+                <span className="hidden xl:inline">{t.editor.checkGrammar}</span>
               </Button>
               <Button
                 variant="outline"
@@ -162,7 +162,7 @@ export function SectionEditor({
                 onClick={onGuidedPrompts}
               >
                 <MessageSquareText className="h-3.5 w-3.5" />
-                <span className="hidden md:inline">{t.editor.needHelp}</span>
+                <span className="hidden xl:inline">{t.editor.needHelp}</span>
               </Button>
               <Button
                 variant="outline"
@@ -172,7 +172,7 @@ export function SectionEditor({
                 onClick={onSummarize}
               >
                 <FileText className="h-3.5 w-3.5" />
-                <span className="hidden md:inline">{t.editor.summarize}</span>
+                <span className="hidden xl:inline">{t.editor.summarize}</span>
               </Button>
               {onReviewWithAi && (
                 <Button
@@ -183,7 +183,7 @@ export function SectionEditor({
                   onClick={onReviewWithAi}
                 >
                   <Wand2 className="h-3.5 w-3.5" />
-                  <span className="hidden md:inline">Review</span>
+                  <span className="hidden xl:inline">Review</span>
                 </Button>
               )}
             </>
@@ -202,7 +202,7 @@ export function SectionEditor({
             ) : (
               <Power className="h-3.5 w-3.5" />
             )}
-            <span className="hidden sm:inline">
+            <span className="hidden xl:inline">
               {aiEnabled ? t.editor.aiOn : t.editor.aiOff}
             </span>
           </Button>
@@ -217,7 +217,7 @@ export function SectionEditor({
               onClick={onMarkComplete}
             >
               <CheckCircle2 className="h-3.5 w-3.5" />
-              <span className="hidden sm:inline">
+              <span className="hidden xl:inline">
                 {isCompleted ? 'Completed' : t.status.markComplete}
               </span>
             </Button>
