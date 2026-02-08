@@ -80,14 +80,14 @@ export function RichTextEditor({
   }, [editor, editorFontSize]);
 
   return (
-    <div className="flex flex-col flex-1 min-h-0">
+    <div className="flex flex-col flex-1 min-h-0 overflow-hidden">
       <RichTextToolbar
         editor={editor}
         biographyId={biographyId}
         editorFontSize={editorFontSize}
         onEditorFontSizeChange={onEditorFontSizeChange}
       />
-      <div className="flex-1 min-h-0 overflow-y-auto">
+      <div className="flex-1 overflow-y-auto">
         <EditorContent editor={editor} />
       </div>
     </div>

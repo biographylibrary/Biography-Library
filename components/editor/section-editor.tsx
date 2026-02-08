@@ -115,7 +115,7 @@ export function SectionEditor({
   };
 
   return (
-    <div className="flex flex-col flex-1 min-h-0">
+    <div className="flex flex-col flex-1 min-h-0 overflow-hidden">
       <div className="flex items-center justify-between px-4 sm:px-6 py-3 border-b border-border/50 shrink-0">
         <div className="flex items-center gap-2 min-w-0">
           <h2 className="text-lg font-semibold truncate">{sectionTitle}</h2>

@@ -679,57 +679,59 @@ export default function BiographyEditorPage() {
               </Button>
             </div>
 
-            {editorMode === 'conversation' ? (
-              <ConversationMode
-                sectionKey={activeSection}
-                onBackToEditor={() => setEditorMode('editor')}
-                onGenerateDraft={handleGenerateDraftFromConversation}
-                currentText={activeSectionData.text}
-              />
-            ) : (
-              <SectionEditor
-                sectionKey={activeSection}
-                data={activeSectionData}
-                onTextChange={handleTextChange}
-                onTodoChange={handleTodoChange}
-                onAudioTranscriptChange={handleAudioTranscriptChange}
-                aiEnabled={aiEnabled}
-                onToggleAi={handleToggleAi}
-                onGrammarCheck={handleGrammarCheck}
-                onGuidedPrompts={handleGuidedPrompts}
-                onSummarize={handleSummarize}
-                onReviewWithAi={handleReviewWithAi}
-                aiLoading={aiState.loading}
-                biographyId={id}
-                editorFontSize={editorFontSize}
-                onEditorFontSizeChange={setEditorFontSize}
-                onImportMultipleSections={handleImportMultipleSections}
-              />
-            )}
-
-            {editorMode === 'editor' && showNextSectionPrompt && completedSectionKey && (
-              <div className="p-4 border-b border-border/50 shrink-0">
-                <NextSectionPrompt
-                  completedSectionKey={completedSectionKey}
-                  recommendedSection={nextSectionRecommendation?.recommendedSection}
-                  recommendationReason={nextSectionRecommendation?.reason}
-                  confidence={nextSectionRecommendation?.confidence}
-                  onStartSection={(sectionKey) => {
-                    setActiveSection(sectionKey);
-                    setShowNextSectionPrompt(false);
-                    setNextSectionRecommendation(null);
-                    setCompletedSectionKey(null);
-                  }}
-                  completedSections={BIOGRAPHY_SECTIONS
-                    .map(s => s.key)
-                    .filter(key => {
-                      const sectionData = getSectionData(content, key);
-                      return sectionData.text.trim().length > 100;
-                    })}
-                  isLoading={isLoadingRecommendation}
+            <div className="flex-1 min-h-0 flex flex-col">
+              {editorMode === 'conversation' ? (
+                <ConversationMode
+                  sectionKey={activeSection}
+                  onBackToEditor={() => setEditorMode('editor')}
+                  onGenerateDraft={handleGenerateDraftFromConversation}
+                  currentText={activeSectionData.text}
                 />
-              </div>
-            )}
+              ) : (
+                <SectionEditor
+                  sectionKey={activeSection}
+                  data={activeSectionData}
+                  onTextChange={handleTextChange}
+                  onTodoChange={handleTodoChange}
+                  onAudioTranscriptChange={handleAudioTranscriptChange}
+                  aiEnabled={aiEnabled}
+                  onToggleAi={handleToggleAi}
+                  onGrammarCheck={handleGrammarCheck}
+                  onGuidedPrompts={handleGuidedPrompts}
+                  onSummarize={handleSummarize}
+                  onReviewWithAi={handleReviewWithAi}
+                  aiLoading={aiState.loading}
+                  biographyId={id}
+                  editorFontSize={editorFontSize}
+                  onEditorFontSizeChange={setEditorFontSize}
+                  onImportMultipleSections={handleImportMultipleSections}
+                />
+              )}
+
+              {editorMode === 'editor' && showNextSectionPrompt && completedSectionKey && (
+                <div className="p-4 border-b border-border/50 shrink-0">
+                  <NextSectionPrompt
+                    completedSectionKey={completedSectionKey}
+                    recommendedSection={nextSectionRecommendation?.recommendedSection}
+                    recommendationReason={nextSectionRecommendation?.reason}
+                    confidence={nextSectionRecommendation?.confidence}
+                    onStartSection={(sectionKey) => {
+                      setActiveSection(sectionKey);
+                      setShowNextSectionPrompt(false);
+                      setNextSectionRecommendation(null);
+                      setCompletedSectionKey(null);
+                    }}
+                    completedSections={BIOGRAPHY_SECTIONS
+                      .map(s => s.key)
+                      .filter(key => {
+                        const sectionData = getSectionData(content, key);
+                        return sectionData.text.trim().length > 100;
+                      })}
+                    isLoading={isLoadingRecommendation}
+                  />
+                </div>
+              )}
+            </div>
 
             {editorMode === 'editor' && (
               <div className="shrink-0">
