@@ -82,7 +82,7 @@ export default function DashboardPage() {
 
   if (authLoading || !user) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
+      <div className="min-h-screen flex items-center justify-center bg-[#EDEBE7] dark:bg-[#1F2121]">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
       </div>
     );
@@ -92,10 +92,10 @@ export default function DashboardPage() {
     user.user_metadata?.name || user.email?.split('@')[0] || 'there';
 
   return (
-    <div className="flex flex-col bg-background">
+    <div className="min-h-screen bg-[#EDEBE7] dark:bg-[#1F2121] flex items-center justify-center">
       <WelcomeLanguageModal />
 
-      <main className="flex-1 max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-8">
+      <main className="w-full max-w-2xl px-4">
         {biographies.length === 0 && (
           <div className="flex justify-end mb-8">
             <Button

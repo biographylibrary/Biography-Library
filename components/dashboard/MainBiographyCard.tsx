@@ -129,27 +129,43 @@ export function MainBiographyCard({ biography, userName, userId }: MainBiography
     }
   };
 
-  const getStatusBadgeVariant = (status: string) => {
-    if (status === 'completed') return 'default';
-    return 'secondary';
-  };
-
-  const getStatusText = (status: string) => {
+  const getStatusBadgeConfig = (status: string) => {
     switch (status) {
       case 'completed':
-        return t.dashboard.completed;
-      case 'draft_1':
-        return t.dashboard.statusDraft1;
-      case 'draft_2':
-        return t.dashboard.statusDraft2;
-      case 'draft_3':
-        return t.dashboard.statusDraft3;
+        return {
+          text: t.dashboard.completed,
+          className: 'bg-status-success text-text-primary dark:text-dark-text-primary'
+        };
       case 'approved':
-        return t.dashboard.statusApproved;
+        return {
+          text: t.dashboard.statusApproved,
+          className: 'bg-status-success text-text-primary dark:text-dark-text-primary'
+        };
       case 'published':
-        return t.dashboard.statusPublished;
+        return {
+          text: t.dashboard.statusPublished,
+          className: 'bg-status-success text-text-primary dark:text-dark-text-primary'
+        };
+      case 'draft_1':
+        return {
+          text: t.dashboard.statusDraft1,
+          className: 'bg-status-warning text-text-primary dark:text-dark-text-primary'
+        };
+      case 'draft_2':
+        return {
+          text: t.dashboard.statusDraft2,
+          className: 'bg-status-warning text-text-primary dark:text-dark-text-primary'
+        };
+      case 'draft_3':
+        return {
+          text: t.dashboard.statusDraft3,
+          className: 'bg-status-warning text-text-primary dark:text-dark-text-primary'
+        };
       default:
-        return t.dashboard.draft;
+        return {
+          text: t.dashboard.draft,
+          className: 'bg-status-info text-text-primary dark:text-dark-text-primary'
+        };
     }
   };
 
@@ -270,7 +286,7 @@ export function MainBiographyCard({ biography, userName, userId }: MainBiography
 
   if (!biography) {
     return (
-      <Card className="p-8 text-center">
+      <div className="p-8 text-center">
         <div className="flex justify-center mb-4">
           <div className="flex items-center justify-center h-14 w-14 rounded-2xl bg-primary/10">
             <BookOpen className="h-7 w-7 text-primary" />
@@ -280,7 +296,7 @@ export function MainBiographyCard({ biography, userName, userId }: MainBiography
         <p className="text-sm text-muted-foreground max-w-md mx-auto">
           {t.dashboard.noBiographiesSubtitle}
         </p>
-      </Card>
+      </div>
     );
   }
 
@@ -288,7 +304,7 @@ export function MainBiographyCard({ biography, userName, userId }: MainBiography
   const PrivacyIcon = privacyInfo.icon;
 
   return (
-    <Card className="p-6">
+    <div className="p-6">
       <div className="flex items-center gap-3 mb-6">
         <GreetingIcon className="h-6 w-6 text-text-primary dark:text-dark-text-primary" />
         <h1 className="text-3xl font-bold">
@@ -308,8 +324,8 @@ export function MainBiographyCard({ biography, userName, userId }: MainBiography
           <div className="space-y-3 pl-7">
             <div className="flex items-center gap-2">
               <span className="text-sm text-muted-foreground w-24">{t.dashboard.status}:</span>
-              <Badge variant={getStatusBadgeVariant(biography.status)}>
-                {getStatusText(biography.status)}
+              <Badge className={getStatusBadgeConfig(biography.status).className}>
+                {getStatusBadgeConfig(biography.status).text}
               </Badge>
             </div>
 
@@ -473,6 +489,6 @@ export function MainBiographyCard({ biography, userName, userId }: MainBiography
           </div>
         </div>
       </div>
-    </Card>
+    </div>
   );
 }
