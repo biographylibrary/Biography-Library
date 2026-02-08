@@ -23,12 +23,13 @@ export function Header() {
   };
 
   const isEditorPage = pathname?.includes('/biography/') && pathname?.includes('/edit');
+  const isDashboardPage = pathname === '/dashboard';
 
   return (
     <header className="border-b border-border bg-background sticky top-0 z-50">
       <div className={cn(
         "h-16 flex items-center justify-between",
-        isEditorPage ? "px-4 sm:px-6 lg:px-8" : "max-w-7xl mx-auto px-4 sm:px-6 lg:px-8"
+        (isEditorPage || isDashboardPage) ? "px-4 sm:px-6 lg:px-8" : "max-w-7xl mx-auto px-4 sm:px-6 lg:px-8"
       )}>
         <div className="flex items-center gap-3">
           <Logo height={48} />
