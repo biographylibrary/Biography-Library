@@ -132,39 +132,43 @@ export function MainBiographyCard({ biography, userName, userId }: MainBiography
   const getStatusBadgeConfig = (status: string) => {
     switch (status) {
       case 'completed':
-        return {
-          text: t.dashboard.completed,
-          className: 'bg-status-success text-text-primary dark:text-dark-text-primary'
-        };
       case 'approved':
+      case 'ready_to_publish':
         return {
-          text: t.dashboard.statusApproved,
-          className: 'bg-status-success text-text-primary dark:text-dark-text-primary'
+          text: status === 'completed' ? t.dashboard.completed :
+                status === 'approved' ? t.dashboard.statusApproved :
+                t.dashboard.statusPublished,
+          className: 'bg-[#C8DFBE] text-[#121212]'
         };
       case 'published':
         return {
           text: t.dashboard.statusPublished,
-          className: 'bg-status-success text-text-primary dark:text-dark-text-primary'
+          className: 'bg-[#D3F1FF] text-[#121212]'
         };
       case 'draft_1':
         return {
           text: t.dashboard.statusDraft1,
-          className: 'bg-status-warning text-text-primary dark:text-dark-text-primary'
+          className: 'bg-[#FBDEC1] text-[#121212]'
         };
       case 'draft_2':
         return {
           text: t.dashboard.statusDraft2,
-          className: 'bg-status-warning text-text-primary dark:text-dark-text-primary'
+          className: 'bg-[#FBDEC1] text-[#121212]'
         };
       case 'draft_3':
         return {
           text: t.dashboard.statusDraft3,
-          className: 'bg-status-warning text-text-primary dark:text-dark-text-primary'
+          className: 'bg-[#FBDEC1] text-[#121212]'
+        };
+      case 'in_progress':
+        return {
+          text: t.dashboard.draft,
+          className: 'bg-[#FBDEC1] text-[#121212]'
         };
       default:
         return {
           text: t.dashboard.draft,
-          className: 'bg-status-info text-text-primary dark:text-dark-text-primary'
+          className: 'bg-[#FBDEC1] text-[#121212]'
         };
     }
   };
@@ -199,13 +203,13 @@ export function MainBiographyCard({ biography, userName, userId }: MainBiography
 
     const milestones = [];
     if (totalWords >= 100) {
-      milestones.push({ icon: PartyPopper, label: t.coach.firstHundredWords, color: 'text-text-primary dark:text-dark-text-primary' });
+      milestones.push({ icon: PartyPopper, label: t.coach.firstHundredWords });
     }
     if (progress >= 25) {
-      milestones.push({ icon: Star, label: t.coach.firstSectionComplete, color: 'text-text-primary dark:text-dark-text-primary' });
+      milestones.push({ icon: Star, label: t.coach.firstSectionComplete });
     }
     if (progress >= 100) {
-      milestones.push({ icon: Trophy, label: t.coach.biographyComplete, color: 'text-text-primary dark:text-dark-text-primary' });
+      milestones.push({ icon: Trophy, label: t.coach.biographyComplete });
     }
     return milestones;
   };
@@ -367,8 +371,8 @@ export function MainBiographyCard({ biography, userName, userId }: MainBiography
             {milestones.length > 0 && (
               <div className="flex items-center gap-2 flex-wrap pt-2">
                 {milestones.map((milestone, index) => (
-                  <Badge key={index} variant="secondary" className="gap-1.5 py-1">
-                    <milestone.icon className={`h-3.5 w-3.5 ${milestone.color}`} />
+                  <Badge key={index} className="gap-1.5 py-1 bg-[#C8DFBE] text-[#121212]">
+                    <milestone.icon className="h-3.5 w-3.5" />
                     <span className="text-xs">{milestone.label}</span>
                   </Badge>
                 ))}
