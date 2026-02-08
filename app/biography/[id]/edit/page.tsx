@@ -10,7 +10,6 @@ import { SectionEditor } from '@/components/editor/section-editor';
 import { TodoPanel } from '@/components/editor/todo-panel';
 import { AiSuggestionsPanel } from '@/components/editor/ai-suggestions-panel';
 import { ShareLinkPanel } from '@/components/editor/share-link-panel';
-import { StatusManager } from '@/components/editor/status-manager';
 import { ConversationMode } from '@/components/editor/conversation-mode';
 import { NextSectionPrompt } from '@/components/editor/next-section-prompt';
 import { AISectionReview } from '@/components/editor/AISectionReview';
@@ -265,6 +264,25 @@ export default function BiographyEditorPage() {
     if (!sectionData.text.trim()) return;
     setShowReviewDialog(true);
   }, [activeSection]);
+
+  const handleMarkComplete = useCallback(async () => {
+    const newStatus = status === 'completed' ? 'draft' : 'completed';
+    try {
+      const { error } = await supabase
+        .from('biographies')
+        .update({
+          status: newStatus,
+          completed_at: newStatus === 'completed' ? new Date().toISOString() : null,
+        })
+        .eq('id', id);
+
+      if (!error) {
+        setStatus(newStatus);
+      }
+    } catch (err) {
+      console.error('Error updating status:', err);
+    }
+  }, [id, status]);
 
   const handleApplyReviewChanges = useCallback(
     (newContent: string, changeType: 'improvements' | 'rewrite') => {
@@ -718,6 +736,8 @@ export default function BiographyEditorPage() {
                   editorFontSize={editorFontSize}
                   onEditorFontSizeChange={setEditorFontSize}
                   onImportMultipleSections={handleImportMultipleSections}
+                  onMarkComplete={handleMarkComplete}
+                  isCompleted={status === 'completed'}
                 />
               )}
 
@@ -753,12 +773,6 @@ export default function BiographyEditorPage() {
                   privacy={privacy}
                   currentShareToken={shareToken}
                   onTokenGenerated={setShareToken}
-                />
-
-                <StatusManager
-                  biographyId={id}
-                  currentStatus={status}
-                  onStatusChanged={setStatus}
                 />
 
                 {showTodoPanel && todoCount > 0 && (

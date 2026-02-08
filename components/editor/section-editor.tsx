@@ -207,17 +207,17 @@ export function SectionEditor({
           </Button>
           {onMarkComplete && (
             <Button
-              variant={isCompleted ? 'outline' : 'default'}
+              variant={isCompleted ? 'default' : 'outline'}
               size="sm"
               className={cn(
                 'gap-1.5 text-xs h-8',
-                isCompleted && 'border-green-500 text-green-600 dark:text-green-400'
+                isCompleted && 'bg-primary hover:bg-primary/90'
               )}
               onClick={onMarkComplete}
             >
               <CheckCircle2 className="h-3.5 w-3.5" />
               <span className="hidden sm:inline">
-                {isCompleted ? t.status.markAsDraft : t.status.markComplete}
+                {isCompleted ? 'Completed' : t.status.markComplete}
               </span>
             </Button>
           )}
