@@ -51,7 +51,7 @@ export function SectionStatusBar({
         fr: 'En Cours',
         de: 'In Bearbeitung'
       },
-      color: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
+      color: 'bg-status-info text-text-primary dark:text-dark-text-primary',
       emoji: '📝'
     },
     draft_1: {
@@ -62,7 +62,7 @@ export function SectionStatusBar({
         fr: 'Brouillon 1',
         de: 'Entwurf 1'
       },
-      color: 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400',
+      color: 'bg-status-warning text-text-primary dark:text-dark-text-primary',
       emoji: '🔄'
     },
     draft_2: {
@@ -73,7 +73,7 @@ export function SectionStatusBar({
         fr: 'Brouillon 2',
         de: 'Entwurf 2'
       },
-      color: 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400',
+      color: 'bg-status-warning text-text-primary dark:text-dark-text-primary',
       emoji: '🔄'
     },
     draft_3: {
@@ -84,7 +84,7 @@ export function SectionStatusBar({
         fr: 'Brouillon 3',
         de: 'Entwurf 3'
       },
-      color: 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400',
+      color: 'bg-status-warning text-text-primary dark:text-dark-text-primary',
       emoji: '🔄'
     },
     approved: {
@@ -95,7 +95,7 @@ export function SectionStatusBar({
         fr: 'Approuvé',
         de: 'Genehmigt'
       },
-      color: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400',
+      color: 'bg-status-success text-text-primary dark:text-dark-text-primary',
       emoji: '✅'
     },
     locked: {
@@ -106,7 +106,7 @@ export function SectionStatusBar({
         fr: 'Publié',
         de: 'Veröffentlicht'
       },
-      color: 'bg-gray-100 text-gray-700 dark:bg-gray-900/30 dark:text-gray-400',
+      color: 'bg-bg-surface dark:bg-dark-bg-surface text-text-primary dark:text-dark-text-primary',
       emoji: '🔒'
     }
   };
@@ -299,9 +299,9 @@ export function SectionStatusBar({
       </div>
 
       {approvedAt && currentStatus === 'approved' && (
-        <Alert className="bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800">
-          <CheckCircle2 className="h-4 w-4 text-green-600 dark:text-green-400" />
-          <AlertDescription className="text-sm text-green-700 dark:text-green-300">
+        <Alert className="bg-status-success border-border-global dark:border-dark-btn-primary-border">
+          <CheckCircle2 className="h-4 w-4 text-text-primary dark:text-dark-text-primary" />
+          <AlertDescription className="text-sm text-text-primary dark:text-dark-text-primary">
             {language === 'it'
               ? `Approvato il ${new Date(approvedAt).toLocaleDateString('it-IT')}`
               : language === 'fr'

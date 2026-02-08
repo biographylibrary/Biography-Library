@@ -188,9 +188,9 @@ export function SectionNotes({ biographyId, sectionKey }: SectionNotesProps) {
 
   const getPriorityBadge = (priority: string) => {
     const configs = {
-      low: { label: 'Bassa', variant: 'secondary' as const, className: 'bg-gray-100 text-gray-700' },
-      medium: { label: 'Media', variant: 'default' as const, className: 'bg-yellow-100 text-yellow-700' },
-      high: { label: 'Alta', variant: 'destructive' as const, className: 'bg-red-100 text-red-700' },
+      low: { label: 'Bassa', variant: 'secondary' as const, className: 'bg-bg-surface dark:bg-dark-bg-surface text-text-secondary dark:text-dark-text-secondary' },
+      medium: { label: 'Media', variant: 'default' as const, className: 'bg-status-warning text-text-primary dark:text-dark-text-primary' },
+      high: { label: 'Alta', variant: 'destructive' as const, className: 'bg-error/20 text-error' },
     };
     const config = configs[priority as keyof typeof configs] || configs.medium;
     return (
@@ -451,7 +451,7 @@ export function SectionNotes({ biographyId, sectionKey }: SectionNotesProps) {
                               variant="outline"
                               className={cn(
                                 'gap-1 text-xs',
-                                isDueDateOverdue(todo.due_date) && !todo.is_completed && 'border-red-500 text-red-700'
+                                isDueDateOverdue(todo.due_date) && !todo.is_completed && 'border-error text-error'
                               )}
                             >
                               <CalendarIcon className="h-3 w-3" />

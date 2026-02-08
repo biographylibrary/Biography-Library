@@ -23,15 +23,15 @@ export function StatsCards({ biographies }: StatsCardsProps) {
       label: t.dashboard.drafts,
       value: biographies.filter((b) => b.status !== 'completed').length,
       icon: FileText,
-      color: 'text-amber-500',
-      bg: 'bg-amber-500/10',
+      color: 'text-text-primary dark:text-dark-text-primary',
+      bg: 'bg-status-warning',
     },
     {
       label: t.dashboard.completed,
       value: biographies.filter((b) => b.status === 'completed').length,
       icon: CheckCircle,
-      color: 'text-emerald-500',
-      bg: 'bg-emerald-500/10',
+      color: 'text-text-primary dark:text-dark-text-primary',
+      bg: 'bg-status-success',
     },
   ];
 

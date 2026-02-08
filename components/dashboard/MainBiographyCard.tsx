@@ -183,13 +183,13 @@ export function MainBiographyCard({ biography, userName, userId }: MainBiography
 
     const milestones = [];
     if (totalWords >= 100) {
-      milestones.push({ icon: PartyPopper, label: t.coach.firstHundredWords, color: 'text-blue-500' });
+      milestones.push({ icon: PartyPopper, label: t.coach.firstHundredWords, color: 'text-text-primary dark:text-dark-text-primary' });
     }
     if (progress >= 25) {
-      milestones.push({ icon: Star, label: t.coach.firstSectionComplete, color: 'text-yellow-500' });
+      milestones.push({ icon: Star, label: t.coach.firstSectionComplete, color: 'text-text-primary dark:text-dark-text-primary' });
     }
     if (progress >= 100) {
-      milestones.push({ icon: Trophy, label: t.coach.biographyComplete, color: 'text-green-500' });
+      milestones.push({ icon: Trophy, label: t.coach.biographyComplete, color: 'text-text-primary dark:text-dark-text-primary' });
     }
     return milestones;
   };
@@ -290,7 +290,7 @@ export function MainBiographyCard({ biography, userName, userId }: MainBiography
   return (
     <Card className="p-6">
       <div className="flex items-center gap-3 mb-6">
-        <GreetingIcon className="h-6 w-6 text-amber-500" />
+        <GreetingIcon className="h-6 w-6 text-text-primary dark:text-dark-text-primary" />
         <h1 className="text-3xl font-bold">
           {greeting.text}, {userName}!
         </h1>
@@ -340,7 +340,7 @@ export function MainBiographyCard({ biography, userName, userId }: MainBiography
             </div>
 
             {biography.updated_at && (
-              <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-500">
+              <div className="flex items-center gap-2 text-xs text-text-secondary dark:text-dark-text-secondary">
                 <Clock className="h-3.5 w-3.5" />
                 <span>
                   {t.dashboard.lastUpdated}: {format(new Date(biography.updated_at), 'd MMM yyyy, HH:mm', { locale: dateLocales[language] })}
@@ -366,8 +366,8 @@ export function MainBiographyCard({ biography, userName, userId }: MainBiography
             <Separator />
             <div>
               <div className="flex items-center gap-2 mb-3">
-                <CheckSquare className="h-5 w-5 text-gray-700 dark:text-gray-300" />
-                <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+                <CheckSquare className="h-5 w-5 text-text-primary dark:text-dark-text-primary" />
+                <h2 className="text-lg font-semibold text-text-primary dark:text-dark-text-primary">
                   {t.coach.pendingReminders}
                 </h2>
                 <Badge variant="secondary" className="ml-auto">
@@ -391,7 +391,7 @@ export function MainBiographyCard({ biography, userName, userId }: MainBiography
                       key={todo.id}
                       className={cn(
                         'p-3 cursor-pointer hover:bg-muted/50 transition-colors',
-                        isOverdue && 'border-red-300 bg-red-50/50 dark:bg-red-950/20'
+                        isOverdue && 'border-error bg-error/10'
                       )}
                       onClick={() => handleTodoClick(todo.section)}
                     >
@@ -405,7 +405,7 @@ export function MainBiographyCard({ biography, userName, userId }: MainBiography
                             {todo.due_date && (
                               <>
                                 <span>•</span>
-                                <span className={cn(isOverdue && 'text-red-600 font-medium')}>
+                                <span className={cn(isOverdue && 'text-error font-medium')}>
                                   {format(new Date(todo.due_date), 'd MMM', { locale: dateLocales[language] })}
                                   {isOverdue && ' ⚠️'}
                                 </span>

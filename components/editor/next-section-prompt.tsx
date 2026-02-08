@@ -95,14 +95,14 @@ export function NextSectionPrompt({
 
   if (availableSections.length === 0) {
     return (
-      <Card className="p-6 bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-950/20 dark:to-emerald-950/20 border-green-200 dark:border-green-800">
+      <Card className="p-6 bg-status-success border-border-global dark:border-dark-btn-primary-border">
         <div className="flex items-start gap-3">
-          <CheckCircle2 className="h-6 w-6 text-green-600 dark:text-green-400 flex-shrink-0 mt-0.5" />
+          <CheckCircle2 className="h-6 w-6 text-text-primary dark:text-dark-text-primary flex-shrink-0 mt-0.5" />
           <div className="flex-1">
-            <h3 className="font-semibold text-green-900 dark:text-green-100 mb-1">
+            <h3 className="font-semibold text-text-primary dark:text-dark-text-primary mb-1">
               {getMessage('greatWork')} {completedSectionTitle}!
             </h3>
-            <p className="text-sm text-green-800 dark:text-green-200">
+            <p className="text-sm text-text-primary dark:text-dark-text-primary">
               {getMessage('allSectionsComplete')}
             </p>
           </div>
@@ -112,27 +112,27 @@ export function NextSectionPrompt({
   }
 
   return (
-    <Card className="p-6 bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-950/20 dark:to-emerald-950/20 border-green-200 dark:border-green-800">
+    <Card className="p-6 bg-status-success border-border-global dark:border-dark-btn-primary-border">
       <div className="flex items-start gap-3 mb-4">
-        <CheckCircle2 className="h-6 w-6 text-green-600 dark:text-green-400 flex-shrink-0 mt-0.5" />
+        <CheckCircle2 className="h-6 w-6 text-text-primary dark:text-dark-text-primary flex-shrink-0 mt-0.5" />
         <div className="flex-1">
-          <h3 className="font-semibold text-green-900 dark:text-green-100 mb-1">
+          <h3 className="font-semibold text-text-primary dark:text-dark-text-primary mb-1">
             {getMessage('greatWork')} {completedSectionTitle}!
           </h3>
 
           {isLoading ? (
-            <div className="flex items-center gap-2 text-sm text-green-800 dark:text-green-200">
+            <div className="flex items-center gap-2 text-sm text-text-primary dark:text-dark-text-primary">
               <Loader2 className="h-4 w-4 animate-spin" />
               {getMessage('analyzingContent')}
             </div>
           ) : recommendedSection && recommendationReason ? (
             <div className="space-y-3 mt-3">
-              <p className="text-sm text-green-800 dark:text-green-200">
+              <p className="text-sm text-text-primary dark:text-dark-text-primary">
                 {recommendationReason}
               </p>
               <Button
                 onClick={() => onStartSection(recommendedSection)}
-                className="bg-green-600 hover:bg-green-700 text-white gap-2"
+                className="bg-primary hover:bg-primary/90 text-white gap-2"
               >
                 {getMessage('start')} {getSectionTitle(recommendedSection, language)}
                 <ArrowRight className="h-4 w-4" />
@@ -143,12 +143,12 @@ export function NextSectionPrompt({
       </div>
 
       <div className="space-y-2 pt-3 border-t border-green-200 dark:border-green-800">
-        <p className="text-sm text-green-800 dark:text-green-200 font-medium">
+        <p className="text-sm text-text-primary dark:text-dark-text-primary font-medium">
           {getMessage('orChooseAnother')}
         </p>
         <div className="flex gap-2">
           <Select value={selectedSection} onValueChange={setSelectedSection}>
-            <SelectTrigger className="flex-1 bg-white dark:bg-gray-900">
+            <SelectTrigger className="flex-1 bg-bg-surface dark:bg-dark-bg-surface">
               <SelectValue placeholder={getMessage('selectSection')} />
             </SelectTrigger>
             <SelectContent>

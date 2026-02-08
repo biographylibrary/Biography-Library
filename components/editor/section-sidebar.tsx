@@ -57,9 +57,9 @@ export function SectionSidebar({
             >
               <span className="shrink-0">
                 {isTodo ? (
-                  <Flag className="h-3.5 w-3.5 text-amber-500" />
+                  <Flag className="h-3.5 w-3.5 text-text-primary dark:text-dark-text-primary" />
                 ) : hasContent ? (
-                  <Check className="h-3.5 w-3.5 text-emerald-500" />
+                  <Check className="h-3.5 w-3.5 text-text-primary dark:text-dark-text-primary" />
                 ) : (
                   <Circle className="h-3.5 w-3.5" />
                 )}
@@ -80,13 +80,13 @@ export function SectionSidebar({
             className={cn(
               'w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-colors',
               showTodoPanel
-                ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400 font-medium'
+                ? 'bg-status-warning/30 text-text-primary dark:text-dark-text-primary font-medium'
                 : 'text-muted-foreground hover:bg-muted/50 hover:text-foreground'
             )}
           >
             <ListTodo className="h-4 w-4" />
             <span>{t.editor.todoItems}</span>
-            <span className="ml-auto text-xs font-medium bg-amber-500/20 text-amber-600 dark:text-amber-400 rounded-full px-2 py-0.5">
+            <span className="ml-auto text-xs font-medium bg-status-warning/40 text-text-primary dark:text-dark-text-primary rounded-full px-2 py-0.5">
               {todoCount}
             </span>
           </button>
