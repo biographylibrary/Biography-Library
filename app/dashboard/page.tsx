@@ -136,10 +136,7 @@ export default function DashboardPage() {
 
               {biographies.length > 0 && biographies.some(b => b.status !== 'published') && (
                 <p className="text-xs text-muted-foreground text-center max-w-md">
-                  {language === 'it' ? 'Completa e pubblica la tua biografia attuale prima di crearne una nuova' :
-                   language === 'fr' ? 'Terminez et publiez votre biographie actuelle avant d\'en créer une nouvelle' :
-                   language === 'de' ? 'Vervollständigen und veröffentlichen Sie Ihre aktuelle Biografie, bevor Sie eine neue erstellen' :
-                   'Complete and publish your current biography before creating a new one'}
+                  {t.dashboard.updateAvailabilityMessage}
                 </p>
               )}
             </div>

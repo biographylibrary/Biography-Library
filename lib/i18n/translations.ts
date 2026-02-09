@@ -80,6 +80,7 @@ export interface Translations {
     untitledBiography: string;
     goToWorkspace: string;
     continueLastSection: string;
+    updateAvailabilityMessage: string;
   };
   biography: {
     newBiography: string;
@@ -533,6 +534,7 @@ export const translations: Record<Language, Translations> = {
       untitledBiography: 'Untitled Biography',
       goToWorkspace: 'Go to Workspace',
       continueLastSection: 'Continue Last Section',
+      updateAvailabilityMessage: 'After publishing your biography. Every 12 months, you have the opportunity to create a new update.',
     },
     biography: {
       newBiography: 'New Biography',
@@ -984,6 +986,7 @@ export const translations: Record<Language, Translations> = {
       untitledBiography: 'Biografia senza titolo',
       goToWorkspace: 'Vai al Workspace',
       continueLastSection: 'Continua Ultima Sezione',
+      updateAvailabilityMessage: 'Dopo aver pubblicato la tua biografia. Ogni 12 mesi, hai l\'opportunità di creare un nuovo aggiornamento.',
     },
     biography: {
       newBiography: 'Nuova Biografia',
@@ -1435,6 +1438,7 @@ export const translations: Record<Language, Translations> = {
       untitledBiography: 'Biographie sans titre',
       goToWorkspace: 'Aller à l\'Espace',
       continueLastSection: 'Continuer Dernière Section',
+      updateAvailabilityMessage: 'Après avoir publié votre biographie. Tous les 12 mois, vous avez l\'opportunité de créer une nouvelle mise à jour.',
     },
     biography: {
       newBiography: 'Nouvelle Biographie',
@@ -1886,6 +1890,7 @@ export const translations: Record<Language, Translations> = {
       untitledBiography: 'Biografie ohne Titel',
       goToWorkspace: 'Zum Workspace',
       continueLastSection: 'Letzte Sektion Fortsetzen',
+      updateAvailabilityMessage: 'Nach der Veröffentlichung Ihrer Biografie. Alle 12 Monate haben Sie die Möglichkeit, ein neues Update zu erstellen.',
     },
     biography: {
       newBiography: 'Neue Biografie',
