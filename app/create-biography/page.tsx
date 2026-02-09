@@ -40,7 +40,7 @@ export default function CreateBiographyPage() {
   };
 
   const handleDeceased = () => {
-    router.push('/dashboard');
+    router.push('/deceased-biography/declaration');
   };
 
   return (

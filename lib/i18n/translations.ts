@@ -359,6 +359,39 @@ export interface Translations {
     cannotWriteLine4: string;
     acceptButton: string;
   };
+  deceasedDeclaration: {
+    stepIndicator: string;
+    title: string;
+    subtitle: string;
+    reviewPeriodTitle: string;
+    reviewPeriodText: string;
+    reviewPeriodBullet1: string;
+    reviewPeriodBullet2: string;
+    reviewPeriodBullet3: string;
+    reviewPeriodBullet4: string;
+    checkbox1: string;
+    checkbox1Helper: string;
+    checkbox2: string;
+    checkbox2Helper: string;
+    checkbox3: string;
+    checkbox3Helper: string;
+    checkbox4: string;
+    checkbox4Helper: string;
+    checkbox5: string;
+    checkbox5TermsLink: string;
+    checkbox5PrivacyLink: string;
+    perspectivesTitle: string;
+    perspectivesText: string;
+    perspectivesBullet1: string;
+    perspectivesBullet2: string;
+    perspectivesBullet3: string;
+    legalWarningTitle: string;
+    legalWarningText: string;
+    legalWarningBullet1: string;
+    legalWarningBullet2: string;
+    legalWarningBullet3: string;
+    acceptButton: string;
+  };
 }
 
 export const translations: Record<Language, Translations> = {
@@ -721,6 +754,39 @@ export const translations: Record<Language, Translations> = {
       cannotWriteLine4: 'Private financial information of others',
       acceptButton: 'Accept and Continue',
     },
+    deceasedDeclaration: {
+      stepIndicator: 'Step 1 of 3: Declaration and Consent',
+      title: 'Create a Biography of a Deceased Person',
+      subtitle: 'Before you begin, please confirm the following:',
+      reviewPeriodTitle: '30-Day Review Period',
+      reviewPeriodText: 'Biographies of deceased persons will be publicly visible after 30 days. During this time:',
+      reviewPeriodBullet1: 'The biography is visible only to you',
+      reviewPeriodBullet2: 'You can modify it freely',
+      reviewPeriodBullet3: 'Other users can report issues if they are mentioned',
+      reviewPeriodBullet4: 'We will review for compliance with Terms of Service',
+      checkbox1: 'I declare under my civil and criminal responsibility that the person I am writing about is deceased.',
+      checkbox1Helper: 'False declarations can be prosecuted under Swiss Criminal Code Art. 179decies (identity fraud).',
+      checkbox2: 'I confirm that the information I will publish is truthful or clearly indicated as my personal interpretation.',
+      checkbox2Helper: 'False or defamatory statements can result in legal action by the deceased\'s family.',
+      checkbox3: 'I understand that I must respect the rights of living persons I may mention and cannot include sensitive data about them without consent.',
+      checkbox3Helper: 'This includes health data, sexual orientation, legal proceedings, and private financial information.',
+      checkbox4: 'I understand that Biography Library may request proof of death (death certificate or equivalent documentation) if this biography is reported.',
+      checkbox4Helper: 'Failure to provide proof will result in biography removal and potential account termination.',
+      checkbox5: 'I have read and accept the {terms} and {privacy}.',
+      checkbox5TermsLink: 'Terms of Service',
+      checkbox5PrivacyLink: 'Privacy Policy',
+      perspectivesTitle: 'Multiple Perspectives',
+      perspectivesText: 'Other family members or acquaintances may create additional biographies of the same person. Each biography reflects the author\'s perspective and contributes to a more complete picture. If you find another biography of this person, you can:',
+      perspectivesBullet1: 'Link your biography to theirs',
+      perspectivesBullet2: 'Add comments or memories',
+      perspectivesBullet3: 'Contact the other author for collaboration',
+      legalWarningTitle: 'Legal Warning: Defamation',
+      legalWarningText: 'Even though the deceased has no data protection rights, making false or defamatory statements can result in:',
+      legalWarningBullet1: 'Civil lawsuits by the family for damages to their honor',
+      legalWarningBullet2: 'Criminal prosecution under Swiss law (Art. 173-177 CP)',
+      legalWarningBullet3: 'Immediate removal of the biography and account termination',
+      acceptButton: 'Accept and Continue',
+    },
   },
   it: {
     common: {
@@ -1079,6 +1145,39 @@ export const translations: Record<Language, Translations> = {
       cannotWriteLine2: 'Orientamento sessuale di altri',
       cannotWriteLine3: 'Procedimenti legali/penali che coinvolgono altri',
       cannotWriteLine4: 'Informazioni finanziarie private di altri',
+      acceptButton: 'Accetta e Continua',
+    },
+    deceasedDeclaration: {
+      stepIndicator: 'Passo 1 di 3: Dichiarazione e Consenso',
+      title: 'Crea una Biografia di una Persona Deceduta',
+      subtitle: 'Prima di iniziare, conferma quanto segue:',
+      reviewPeriodTitle: 'Periodo di Revisione di 30 Giorni',
+      reviewPeriodText: 'Le biografie di persone decedute saranno pubblicamente visibili dopo 30 giorni. Durante questo periodo:',
+      reviewPeriodBullet1: 'La biografia è visibile solo a te',
+      reviewPeriodBullet2: 'Puoi modificarla liberamente',
+      reviewPeriodBullet3: 'Altri utenti possono segnalare problemi se sono menzionati',
+      reviewPeriodBullet4: 'Esamineremo la conformità ai Termini di Servizio',
+      checkbox1: 'Dichiaro sotto la mia responsabilità civile e penale che la persona di cui sto scrivendo è deceduta.',
+      checkbox1Helper: 'Le false dichiarazioni possono essere perseguite ai sensi del Codice Penale Svizzero Art. 179decies (frode d\'identità).',
+      checkbox2: 'Confermo che le informazioni che pubblicherò sono veritiere o chiaramente indicate come mia interpretazione personale.',
+      checkbox2Helper: 'Dichiarazioni false o diffamatorie possono comportare azioni legali da parte della famiglia del defunto.',
+      checkbox3: 'Comprendo di dover rispettare i diritti delle persone viventi che potrei menzionare e di non poter includere dati sensibili su di loro senza consenso.',
+      checkbox3Helper: 'Questo include dati sanitari, orientamento sessuale, procedimenti legali e informazioni finanziarie private.',
+      checkbox4: 'Comprendo che Biography Library può richiedere la prova del decesso (certificato di morte o documentazione equivalente) se questa biografia viene segnalata.',
+      checkbox4Helper: 'La mancata fornitura della prova comporterà la rimozione della biografia e la potenziale chiusura dell\'account.',
+      checkbox5: 'Ho letto e accetto i {terms} e la {privacy}.',
+      checkbox5TermsLink: 'Termini di Servizio',
+      checkbox5PrivacyLink: 'Informativa sulla Privacy',
+      perspectivesTitle: 'Prospettive Multiple',
+      perspectivesText: 'Altri familiari o conoscenti possono creare biografie aggiuntive della stessa persona. Ogni biografia riflette la prospettiva dell\'autore e contribuisce a un quadro più completo. Se trovi un\'altra biografia di questa persona, puoi:',
+      perspectivesBullet1: 'Collegare la tua biografia alla loro',
+      perspectivesBullet2: 'Aggiungere commenti o ricordi',
+      perspectivesBullet3: 'Contattare l\'altro autore per collaborare',
+      legalWarningTitle: 'Avviso Legale: Diffamazione',
+      legalWarningText: 'Anche se il defunto non ha diritti di protezione dei dati, fare dichiarazioni false o diffamatorie può comportare:',
+      legalWarningBullet1: 'Cause civili da parte della famiglia per danni al loro onore',
+      legalWarningBullet2: 'Persecuzione penale ai sensi della legge svizzera (Art. 173-177 CP)',
+      legalWarningBullet3: 'Rimozione immediata della biografia e chiusura dell\'account',
       acceptButton: 'Accetta e Continua',
     },
   },
@@ -1441,6 +1540,39 @@ export const translations: Record<Language, Translations> = {
       cannotWriteLine4: 'Informations financières privées d\'autrui',
       acceptButton: 'Accepter et Continuer',
     },
+    deceasedDeclaration: {
+      stepIndicator: 'Étape 1 sur 3 : Déclaration et Consentement',
+      title: 'Créer une Biographie d\'une Personne Décédée',
+      subtitle: 'Avant de commencer, veuillez confirmer ce qui suit :',
+      reviewPeriodTitle: 'Période de Révision de 30 Jours',
+      reviewPeriodText: 'Les biographies de personnes décédées seront publiquement visibles après 30 jours. Pendant cette période :',
+      reviewPeriodBullet1: 'La biographie n\'est visible que pour vous',
+      reviewPeriodBullet2: 'Vous pouvez la modifier librement',
+      reviewPeriodBullet3: 'D\'autres utilisateurs peuvent signaler des problèmes s\'ils sont mentionnés',
+      reviewPeriodBullet4: 'Nous examinerons la conformité avec les Conditions d\'Utilisation',
+      checkbox1: 'Je déclare sous ma responsabilité civile et pénale que la personne dont j\'écris la biographie est décédée.',
+      checkbox1Helper: 'Les fausses déclarations peuvent être poursuivies en vertu du Code pénal suisse Art. 179decies (fraude à l\'identité).',
+      checkbox2: 'Je confirme que les informations que je publierai sont véridiques ou clairement indiquées comme mon interprétation personnelle.',
+      checkbox2Helper: 'Les déclarations fausses ou diffamatoires peuvent entraîner des actions en justice de la part de la famille du défunt.',
+      checkbox3: 'Je comprends que je dois respecter les droits des personnes vivantes que je pourrais mentionner et ne peux pas inclure de données sensibles les concernant sans leur consentement.',
+      checkbox3Helper: 'Cela inclut les données de santé, l\'orientation sexuelle, les procédures judiciaires et les informations financières privées.',
+      checkbox4: 'Je comprends que Biography Library peut demander une preuve de décès (certificat de décès ou documentation équivalente) si cette biographie est signalée.',
+      checkbox4Helper: 'Le défaut de fournir une preuve entraînera la suppression de la biographie et la fermeture potentielle du compte.',
+      checkbox5: 'J\'ai lu et j\'accepte les {terms} et la {privacy}.',
+      checkbox5TermsLink: 'Conditions d\'Utilisation',
+      checkbox5PrivacyLink: 'Politique de Confidentialité',
+      perspectivesTitle: 'Perspectives Multiples',
+      perspectivesText: 'D\'autres membres de la famille ou connaissances peuvent créer des biographies supplémentaires de la même personne. Chaque biographie reflète la perspective de l\'auteur et contribue à une image plus complète. Si vous trouvez une autre biographie de cette personne, vous pouvez :',
+      perspectivesBullet1: 'Lier votre biographie à la leur',
+      perspectivesBullet2: 'Ajouter des commentaires ou des souvenirs',
+      perspectivesBullet3: 'Contacter l\'autre auteur pour collaborer',
+      legalWarningTitle: 'Avertissement Légal : Diffamation',
+      legalWarningText: 'Même si le défunt n\'a pas de droits à la protection des données, faire des déclarations fausses ou diffamatoires peut entraîner :',
+      legalWarningBullet1: 'Des poursuites civiles par la famille pour atteinte à leur honneur',
+      legalWarningBullet2: 'Des poursuites pénales en vertu du droit suisse (Art. 173-177 CP)',
+      legalWarningBullet3: 'La suppression immédiate de la biographie et la fermeture du compte',
+      acceptButton: 'Accepter et Continuer',
+    },
   },
   de: {
     common: {
@@ -1799,6 +1931,39 @@ export const translations: Record<Language, Translations> = {
       cannotWriteLine2: 'Sexuelle Orientierung anderer',
       cannotWriteLine3: 'Gerichts-/Strafverfahren mit Beteiligung anderer',
       cannotWriteLine4: 'Private Finanzinformationen anderer',
+      acceptButton: 'Akzeptieren und Fortfahren',
+    },
+    deceasedDeclaration: {
+      stepIndicator: 'Schritt 1 von 3: Erklärung und Einwilligung',
+      title: 'Biografie einer Verstorbenen Person Erstellen',
+      subtitle: 'Bevor Sie beginnen, bestätigen Sie bitte Folgendes:',
+      reviewPeriodTitle: '30-Tägige Prüfungsfrist',
+      reviewPeriodText: 'Biografien verstorbener Personen werden nach 30 Tagen öffentlich sichtbar. Während dieser Zeit:',
+      reviewPeriodBullet1: 'Die Biografie ist nur für Sie sichtbar',
+      reviewPeriodBullet2: 'Sie können sie frei ändern',
+      reviewPeriodBullet3: 'Andere Benutzer können Probleme melden, wenn sie erwähnt werden',
+      reviewPeriodBullet4: 'Wir prüfen die Einhaltung der Nutzungsbedingungen',
+      checkbox1: 'Ich erkläre unter meiner zivil- und strafrechtlichen Verantwortung, dass die Person, über die ich schreibe, verstorben ist.',
+      checkbox1Helper: 'Falsche Erklärungen können nach Schweizer Strafgesetzbuch Art. 179decies (Identitätsbetrug) strafrechtlich verfolgt werden.',
+      checkbox2: 'Ich bestätige, dass die Informationen, die ich veröffentlichen werde, wahrheitsgemäß sind oder eindeutig als meine persönliche Interpretation gekennzeichnet sind.',
+      checkbox2Helper: 'Falsche oder diffamierende Aussagen können zu rechtlichen Schritten durch die Familie des Verstorbenen führen.',
+      checkbox3: 'Ich verstehe, dass ich die Rechte lebender Personen, die ich erwähne, respektieren muss und ohne deren Zustimmung keine sensiblen Daten über sie angeben kann.',
+      checkbox3Helper: 'Dies umfasst Gesundheitsdaten, sexuelle Orientierung, Gerichtsverfahren und private Finanzinformationen.',
+      checkbox4: 'Ich verstehe, dass Biography Library einen Todesnachweis (Sterbeurkunde oder gleichwertige Dokumentation) anfordern kann, wenn diese Biografie gemeldet wird.',
+      checkbox4Helper: 'Das Nichtvorlegen eines Nachweises führt zur Entfernung der Biografie und möglicher Kontosperrung.',
+      checkbox5: 'Ich habe die {terms} und die {privacy} gelesen und akzeptiere sie.',
+      checkbox5TermsLink: 'Nutzungsbedingungen',
+      checkbox5PrivacyLink: 'Datenschutzerklärung',
+      perspectivesTitle: 'Multiple Perspektiven',
+      perspectivesText: 'Andere Familienmitglieder oder Bekannte können zusätzliche Biografien derselben Person erstellen. Jede Biografie spiegelt die Perspektive des Autors wider und trägt zu einem vollständigeren Bild bei. Wenn Sie eine andere Biografie dieser Person finden, können Sie:',
+      perspectivesBullet1: 'Ihre Biografie mit deren verknüpfen',
+      perspectivesBullet2: 'Kommentare oder Erinnerungen hinzufügen',
+      perspectivesBullet3: 'Den anderen Autor für eine Zusammenarbeit kontaktieren',
+      legalWarningTitle: 'Rechtshinweis: Verleumdung',
+      legalWarningText: 'Auch wenn der Verstorbene keine Datenschutzrechte hat, können falsche oder diffamierende Aussagen zu Folgendem führen:',
+      legalWarningBullet1: 'Zivilklagen der Familie wegen Schädigung ihrer Ehre',
+      legalWarningBullet2: 'Strafrechtliche Verfolgung nach Schweizer Recht (Art. 173-177 StGB)',
+      legalWarningBullet3: 'Sofortige Entfernung der Biografie und Kontosperrung',
       acceptButton: 'Akzeptieren und Fortfahren',
     },
   },
