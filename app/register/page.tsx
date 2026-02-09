@@ -25,7 +25,7 @@ export default function RegisterPage() {
 
   useEffect(() => {
     if (!loading && user) {
-      router.push('/dashboard');
+      router.push('/create-biography');
     }
   }, [user, loading, router]);
 
@@ -50,7 +50,7 @@ export default function RegisterPage() {
       setError(error);
       setIsLoading(false);
     } else {
-      router.push('/dashboard');
+      router.push('/create-biography');
     }
   };
 

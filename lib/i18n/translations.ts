@@ -318,6 +318,23 @@ export interface Translations {
     large: string;
     extraLarge: string;
   };
+  biographyType: {
+    title: string;
+    subtitle: string;
+    autobiography: string;
+    autobiographyDescription: string;
+    autobiographyButton: string;
+    mostPopular: string;
+    deceased: string;
+    deceasedDescription: string;
+    deceasedButton: string;
+    reviewPeriod: string;
+    warningTitle: string;
+    warningLine1: string;
+    warningLine2: string;
+    warningLine3: string;
+    warningLine4: string;
+  };
 }
 
 export const translations: Record<Language, Translations> = {
@@ -639,6 +656,23 @@ export const translations: Record<Language, Translations> = {
       large: 'L',
       extraLarge: 'XL',
     },
+    biographyType: {
+      title: 'Create a New Biography',
+      subtitle: 'Choose what type of biography you want to create',
+      autobiography: 'My Autobiography',
+      autobiographyDescription: 'Write your own life story. Share your memories, experiences, and legacy.',
+      autobiographyButton: 'Start My Story',
+      mostPopular: 'Most popular',
+      deceased: 'Biography of a Deceased Person',
+      deceasedDescription: 'Honor the memory of a loved one who has passed away.',
+      deceasedButton: 'Create Memorial',
+      reviewPeriod: '30-day review period',
+      warningTitle: 'Important: You CANNOT create biographies of:',
+      warningLine1: 'Living persons (other than yourself)',
+      warningLine2: 'Minors (under 18 years old)',
+      warningLine3: 'Anyone you cannot prove is deceased',
+      warningLine4: 'Violations will result in account termination.',
+    },
   },
   it: {
     common: {
@@ -957,6 +991,23 @@ export const translations: Record<Language, Translations> = {
       normal: 'M',
       large: 'L',
       extraLarge: 'XL',
+    },
+    biographyType: {
+      title: 'Crea una Nuova Biografia',
+      subtitle: 'Scegli che tipo di biografia vuoi creare',
+      autobiography: 'La Mia Autobiografia',
+      autobiographyDescription: 'Scrivi la tua storia di vita. Condividi i tuoi ricordi, esperienze e la tua eredità.',
+      autobiographyButton: 'Inizia la Mia Storia',
+      mostPopular: 'Più popolare',
+      deceased: 'Biografia di una Persona Deceduta',
+      deceasedDescription: 'Onora la memoria di una persona cara che è scomparsa.',
+      deceasedButton: 'Crea Memoriale',
+      reviewPeriod: 'Periodo di revisione di 30 giorni',
+      warningTitle: 'Importante: NON PUOI creare biografie di:',
+      warningLine1: 'Persone viventi (tranne te stesso)',
+      warningLine2: 'Minori (sotto i 18 anni)',
+      warningLine3: 'Chiunque di cui non puoi provare il decesso',
+      warningLine4: 'Le violazioni comporteranno la chiusura dell\'account.',
     },
   },
   fr: {
@@ -1277,6 +1328,23 @@ export const translations: Record<Language, Translations> = {
       large: 'L',
       extraLarge: 'XL',
     },
+    biographyType: {
+      title: 'Créer une Nouvelle Biographie',
+      subtitle: 'Choisissez le type de biographie que vous souhaitez créer',
+      autobiography: 'Mon Autobiographie',
+      autobiographyDescription: 'Écrivez votre propre histoire de vie. Partagez vos souvenirs, expériences et votre héritage.',
+      autobiographyButton: 'Commencer Mon Histoire',
+      mostPopular: 'Le plus populaire',
+      deceased: 'Biographie d\'une Personne Décédée',
+      deceasedDescription: 'Honorez la mémoire d\'un être cher qui est décédé.',
+      deceasedButton: 'Créer un Mémorial',
+      reviewPeriod: 'Période de révision de 30 jours',
+      warningTitle: 'Important: Vous NE POUVEZ PAS créer de biographies de:',
+      warningLine1: 'Personnes vivantes (autres que vous-même)',
+      warningLine2: 'Mineurs (moins de 18 ans)',
+      warningLine3: 'Toute personne dont vous ne pouvez pas prouver le décès',
+      warningLine4: 'Les violations entraîneront la fermeture du compte.',
+    },
   },
   de: {
     common: {
@@ -1595,6 +1663,23 @@ export const translations: Record<Language, Translations> = {
       normal: 'M',
       large: 'L',
       extraLarge: 'XL',
+    },
+    biographyType: {
+      title: 'Neue Biografie Erstellen',
+      subtitle: 'Wählen Sie, welche Art von Biografie Sie erstellen möchten',
+      autobiography: 'Meine Autobiografie',
+      autobiographyDescription: 'Schreiben Sie Ihre eigene Lebensgeschichte. Teilen Sie Ihre Erinnerungen, Erfahrungen und Ihr Vermächtnis.',
+      autobiographyButton: 'Meine Geschichte Beginnen',
+      mostPopular: 'Am beliebtesten',
+      deceased: 'Biografie einer Verstorbenen Person',
+      deceasedDescription: 'Ehren Sie das Andenken einer geliebten Person, die verstorben ist.',
+      deceasedButton: 'Gedenkstätte Erstellen',
+      reviewPeriod: '30-tägige Prüfungsfrist',
+      warningTitle: 'Wichtig: Sie KÖNNEN KEINE Biografien erstellen von:',
+      warningLine1: 'Lebenden Personen (außer sich selbst)',
+      warningLine2: 'Minderjährigen (unter 18 Jahren)',
+      warningLine3: 'Personen, deren Tod Sie nicht nachweisen können',
+      warningLine4: 'Verstöße führen zur Kontosperrung.',
     },
   },
 };
