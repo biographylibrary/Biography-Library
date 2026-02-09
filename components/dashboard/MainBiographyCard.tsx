@@ -328,9 +328,9 @@ export function MainBiographyCard({ biography, userName, userId, onDeleteClick }
 
       <div className="space-y-6">
         <div>
-          <div className="flex items-center gap-2 mb-3">
-            <BookOpen className="h-5 w-5 shrink-0" />
-            <h2 className="text-lg font-semibold truncate">
+          <div className="flex items-start gap-2 mb-3">
+            <BookOpen className="h-5 w-5 shrink-0 mt-0.5" />
+            <h2 className="text-lg font-semibold break-words line-clamp-4">
               {biography.title || t.dashboard.untitledBiography}
             </h2>
           </div>
