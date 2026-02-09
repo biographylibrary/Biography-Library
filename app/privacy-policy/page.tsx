@@ -1,7 +1,5 @@
 'use client';
 
-import { Header } from '@/components/header';
-import { Footer } from '@/components/footer';
 import { Button } from '@/components/ui/button';
 import { useRouter } from 'next/navigation';
 import { ArrowLeft } from 'lucide-react';
@@ -12,10 +10,7 @@ export default function PrivacyPolicyPage() {
   const { t } = useTranslation();
 
   return (
-    <div className="min-h-screen flex flex-col bg-background">
-      <Header />
-
-      <main className="flex-1 px-4 py-8 md:py-12">
+    <div className="px-4 py-8 md:py-12">
         <div className="max-w-4xl mx-auto">
           <div className="mb-6">
             <Button
@@ -55,9 +50,6 @@ export default function PrivacyPolicyPage() {
             </p>
           </div>
         </div>
-      </main>
-
-      <Footer />
     </div>
   );
 }

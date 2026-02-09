@@ -8,8 +8,6 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
-import { Header } from '@/components/header';
-import { Footer } from '@/components/footer';
 import { User, Flame, AlertTriangle, Loader2 } from 'lucide-react';
 
 export default function CreateBiographyPage() {
@@ -25,7 +23,7 @@ export default function CreateBiographyPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
+      <div className="flex items-center justify-center py-12">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
       </div>
     );
@@ -44,10 +42,7 @@ export default function CreateBiographyPage() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-background">
-      <Header />
-
-      <main className="flex-1 flex items-center justify-center px-4 py-12">
+    <div className="flex items-center justify-center px-4 py-12">
         <div className="w-full max-w-5xl space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
           <div className="text-center space-y-2">
             <h1 className="text-3xl font-serif font-semibold tracking-tight">
@@ -125,9 +120,6 @@ export default function CreateBiographyPage() {
             </AlertDescription>
           </Alert>
         </div>
-      </main>
-
-      <Footer />
     </div>
   );
 }

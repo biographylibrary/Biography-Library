@@ -9,8 +9,6 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Header } from '@/components/header';
-import { Footer } from '@/components/footer';
 import { TermsOfServiceModal } from '@/components/legal/terms-of-service-modal';
 import { Info, Loader2, CheckCircle2, XCircle } from 'lucide-react';
 
@@ -35,7 +33,7 @@ export default function AutobiographyDeclarationPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
+      <div className="flex items-center justify-center py-12">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
       </div>
     );
@@ -103,10 +101,7 @@ export default function AutobiographyDeclarationPage() {
         onOpenChange={setShowTermsModal}
       />
 
-      <div className="min-h-screen flex flex-col bg-background">
-        <Header />
-
-      <main className="flex-1 px-4 py-8 md:py-12">
+      <div className="px-4 py-8 md:py-12">
         <div className="max-w-4xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
           <div className="space-y-1">
             <div className="text-sm text-muted-foreground font-medium">
@@ -252,9 +247,6 @@ export default function AutobiographyDeclarationPage() {
             </Button>
           </div>
         </div>
-      </main>
-
-      <Footer />
       </div>
     </>
   );
