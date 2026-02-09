@@ -24,7 +24,7 @@ export function TodoPanel({ content, onSectionChange }: TodoPanelProps) {
     return (
       <div className="text-center py-8 text-muted-foreground">
         <Flag className="h-12 w-12 mx-auto mb-3 opacity-50" />
-        <p>No pending items</p>
+        <p>{t.notesAndTodos.noPendingItems}</p>
       </div>
     );
   }

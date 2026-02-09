@@ -392,6 +392,64 @@ export interface Translations {
     legalWarningBullet3: string;
     acceptButton: string;
   };
+  importDialog: {
+    title: string;
+    description: string;
+    dragFile: string;
+    dragFileHint: string;
+    formats: string;
+    selectFile: string;
+    or: string;
+    pasteLabel: string;
+    pastePlaceholder: string;
+    analyzeText: string;
+    preview: string;
+    sectionsFound: string;
+    autoImport: string;
+    singleSectionNotice: string;
+    useMarkers: string;
+    replaceExisting: string;
+    aiDetectPrompt: string;
+    detectSections: string;
+    analyzing: string;
+    back: string;
+    import: string;
+    fileReadError: string;
+    pasteTextFirst: string;
+    textAnalysisError: string;
+    aiAuthRequired: string;
+    aiNoSections: string;
+    aiDetectionError: string;
+    multiImportUnavailable: string;
+    loading: string;
+  };
+  notesAndTodos: {
+    notesTab: string;
+    todosTab: string;
+    addNotePlaceholder: string;
+    addNote: string;
+    noNotes: string;
+    editNote: string;
+    deleteNote: string;
+    cancel: string;
+    save: string;
+    createdAt: string;
+    addTodoDescription: string;
+    priorityLow: string;
+    priorityMedium: string;
+    priorityHigh: string;
+    dueDate: string;
+    removeDueDate: string;
+    addTodo: string;
+    filterAll: string;
+    filterPending: string;
+    filterCompleted: string;
+    noTodos: string;
+    noCompletedTodos: string;
+    loadingNotes: string;
+    noNotesYet: string;
+    noPendingItems: string;
+  };
 }
 
 export const translations: Record<Language, Translations> = {
@@ -787,6 +845,64 @@ export const translations: Record<Language, Translations> = {
       legalWarningBullet3: 'Immediate removal of the biography and account termination',
       acceptButton: 'Accept and Continue',
     },
+    importDialog: {
+      title: 'Import text into section "{sectionName}"',
+      description: 'Upload a file or paste text to import',
+      dragFile: 'Drag a file here or click to select',
+      dragFileHint: 'Supported formats: .txt, .rtf, .docx (max 5MB)',
+      formats: 'Supported formats: .txt, .rtf, .docx (max 5MB)',
+      selectFile: 'Select File',
+      or: 'or',
+      pasteLabel: 'Paste text directly',
+      pastePlaceholder: 'Paste text to import here...',
+      analyzeText: 'Analyze Text',
+      preview: 'Preview:',
+      sectionsFound: 'Found {count} sections in the file. Do you want to import them automatically?',
+      autoImport: 'Found {count} sections',
+      singleSectionNotice: 'This text will be imported only into {sectionName}. To import multiple sections, use markers in the file (## Section Title).',
+      useMarkers: 'To import multiple sections, use markers in the file (## Section Title).',
+      replaceExisting: 'Replace existing content',
+      aiDetectPrompt: 'Let AI analyze the text and automatically suggest appropriate sections',
+      detectSections: 'Detect Sections',
+      analyzing: 'Analyzing...',
+      back: 'Back',
+      import: 'Import',
+      fileReadError: 'Error reading file',
+      pasteTextFirst: 'Paste some text before continuing',
+      textAnalysisError: 'Error analyzing text',
+      aiAuthRequired: 'You must be authenticated to use AI',
+      aiNoSections: 'AI could not detect sections in the text',
+      aiDetectionError: 'Error during automatic section detection',
+      multiImportUnavailable: 'Multiple section import not available',
+      loading: 'Loading...',
+    },
+    notesAndTodos: {
+      notesTab: 'Notes',
+      todosTab: 'To Do',
+      addNotePlaceholder: 'Add a note for this section... (max 500 characters)',
+      addNote: 'Add Note',
+      noNotes: 'No notes for this section',
+      editNote: 'Edit',
+      deleteNote: 'Delete',
+      cancel: 'Cancel',
+      save: 'Save',
+      createdAt: 'at',
+      addTodoDescription: 'Reminder description...',
+      priorityLow: 'Low Priority',
+      priorityMedium: 'Medium Priority',
+      priorityHigh: 'High Priority',
+      dueDate: 'Due Date',
+      removeDueDate: 'Remove date',
+      addTodo: 'Add',
+      filterAll: 'All',
+      filterPending: 'To Do',
+      filterCompleted: 'Completed',
+      noTodos: 'No reminders',
+      noCompletedTodos: 'No completed reminders',
+      loadingNotes: 'Loading notes...',
+      noNotesYet: 'No notes yet',
+      noPendingItems: 'No pending items',
+    },
   },
   it: {
     common: {
@@ -1179,6 +1295,64 @@ export const translations: Record<Language, Translations> = {
       legalWarningBullet2: 'Persecuzione penale ai sensi della legge svizzera (Art. 173-177 CP)',
       legalWarningBullet3: 'Rimozione immediata della biografia e chiusura dell\'account',
       acceptButton: 'Accetta e Continua',
+    },
+    importDialog: {
+      title: 'Importa testo nella sezione "{sectionName}"',
+      description: 'Carica un file o incolla il testo da importare',
+      dragFile: 'Trascina un file qui o clicca per selezionare',
+      dragFileHint: 'Formati supportati: .txt, .rtf, .docx (max 5MB)',
+      formats: 'Formati supportati: .txt, .rtf, .docx (max 5MB)',
+      selectFile: 'Seleziona File',
+      or: 'oppure',
+      pasteLabel: 'Incolla il testo direttamente',
+      pastePlaceholder: 'Incolla qui il testo da importare...',
+      analyzeText: 'Analizza Testo',
+      preview: 'Anteprima:',
+      sectionsFound: 'Ho trovato {count} sezioni nel file. Vuoi importarle automaticamente?',
+      autoImport: 'Ho trovato {count} sezioni',
+      singleSectionNotice: 'Questo testo verrà importato solo in {sectionName}. Per importare multiple sezioni, usa marcatori nel file (## Titolo Sezione).',
+      useMarkers: 'Per importare multiple sezioni, usa marcatori nel file (## Titolo Sezione).',
+      replaceExisting: 'Sostituisci contenuto esistente',
+      aiDetectPrompt: 'Lascia che l\'AI analizzi il testo e suggerisca automaticamente le sezioni appropriate',
+      detectSections: 'Rileva Sezioni',
+      analyzing: 'Analisi...',
+      back: 'Indietro',
+      import: 'Importa',
+      fileReadError: 'Errore nella lettura del file',
+      pasteTextFirst: 'Incolla del testo prima di continuare',
+      textAnalysisError: 'Errore nell\'analisi del testo',
+      aiAuthRequired: 'Devi essere autenticato per usare l\'AI',
+      aiNoSections: 'L\'AI non è riuscita a rilevare sezioni nel testo',
+      aiDetectionError: 'Errore durante il rilevamento automatico delle sezioni',
+      multiImportUnavailable: 'Importazione multipla sezioni non disponibile',
+      loading: 'Caricamento...',
+    },
+    notesAndTodos: {
+      notesTab: 'Note',
+      todosTab: 'Da Fare',
+      addNotePlaceholder: 'Aggiungi una nota per questa sezione... (max 500 caratteri)',
+      addNote: 'Aggiungi Nota',
+      noNotes: 'Nessuna nota per questa sezione',
+      editNote: 'Modifica',
+      deleteNote: 'Elimina',
+      cancel: 'Annulla',
+      save: 'Salva',
+      createdAt: 'alle',
+      addTodoDescription: 'Descrizione promemoria...',
+      priorityLow: 'Priorità Bassa',
+      priorityMedium: 'Priorità Media',
+      priorityHigh: 'Priorità Alta',
+      dueDate: 'Scadenza',
+      removeDueDate: 'Rimuovi data',
+      addTodo: 'Aggiungi',
+      filterAll: 'Tutti',
+      filterPending: 'Da fare',
+      filterCompleted: 'Completati',
+      noTodos: 'Nessun promemoria',
+      noCompletedTodos: 'Nessun promemoria completato',
+      loadingNotes: 'Caricamento note...',
+      noNotesYet: 'Nessuna nota ancora',
+      noPendingItems: 'Nessun elemento in sospeso',
     },
   },
   fr: {
@@ -1573,6 +1747,64 @@ export const translations: Record<Language, Translations> = {
       legalWarningBullet3: 'La suppression immédiate de la biographie et la fermeture du compte',
       acceptButton: 'Accepter et Continuer',
     },
+    importDialog: {
+      title: 'Importer du texte dans la section "{sectionName}"',
+      description: 'Téléchargez un fichier ou collez le texte à importer',
+      dragFile: 'Glissez un fichier ici ou cliquez pour sélectionner',
+      dragFileHint: 'Formats supportés : .txt, .rtf, .docx (max 5MB)',
+      formats: 'Formats supportés : .txt, .rtf, .docx (max 5MB)',
+      selectFile: 'Sélectionner un Fichier',
+      or: 'ou',
+      pasteLabel: 'Coller le texte directement',
+      pastePlaceholder: 'Collez le texte à importer ici...',
+      analyzeText: 'Analyser le Texte',
+      preview: 'Aperçu :',
+      sectionsFound: 'J\'ai trouvé {count} sections dans le fichier. Voulez-vous les importer automatiquement ?',
+      autoImport: 'J\'ai trouvé {count} sections',
+      singleSectionNotice: 'Ce texte sera importé uniquement dans {sectionName}. Pour importer plusieurs sections, utilisez des marqueurs dans le fichier (## Titre de Section).',
+      useMarkers: 'Pour importer plusieurs sections, utilisez des marqueurs dans le fichier (## Titre de Section).',
+      replaceExisting: 'Remplacer le contenu existant',
+      aiDetectPrompt: 'Laissez l\'IA analyser le texte et suggérer automatiquement les sections appropriées',
+      detectSections: 'Détecter les Sections',
+      analyzing: 'Analyse...',
+      back: 'Retour',
+      import: 'Importer',
+      fileReadError: 'Erreur lors de la lecture du fichier',
+      pasteTextFirst: 'Collez du texte avant de continuer',
+      textAnalysisError: 'Erreur lors de l\'analyse du texte',
+      aiAuthRequired: 'Vous devez être authentifié pour utiliser l\'IA',
+      aiNoSections: 'L\'IA n\'a pas pu détecter de sections dans le texte',
+      aiDetectionError: 'Erreur lors de la détection automatique des sections',
+      multiImportUnavailable: 'Importation de plusieurs sections non disponible',
+      loading: 'Chargement...',
+    },
+    notesAndTodos: {
+      notesTab: 'Notes',
+      todosTab: 'À Faire',
+      addNotePlaceholder: 'Ajouter une note pour cette section... (max 500 caractères)',
+      addNote: 'Ajouter une Note',
+      noNotes: 'Aucune note pour cette section',
+      editNote: 'Modifier',
+      deleteNote: 'Supprimer',
+      cancel: 'Annuler',
+      save: 'Enregistrer',
+      createdAt: 'à',
+      addTodoDescription: 'Description du rappel...',
+      priorityLow: 'Priorité Basse',
+      priorityMedium: 'Priorité Moyenne',
+      priorityHigh: 'Priorité Haute',
+      dueDate: 'Date d\'échéance',
+      removeDueDate: 'Retirer la date',
+      addTodo: 'Ajouter',
+      filterAll: 'Tous',
+      filterPending: 'À faire',
+      filterCompleted: 'Terminés',
+      noTodos: 'Aucun rappel',
+      noCompletedTodos: 'Aucun rappel terminé',
+      loadingNotes: 'Chargement des notes...',
+      noNotesYet: 'Aucune note encore',
+      noPendingItems: 'Aucun élément en attente',
+    },
   },
   de: {
     common: {
@@ -1965,6 +2197,64 @@ export const translations: Record<Language, Translations> = {
       legalWarningBullet2: 'Strafrechtliche Verfolgung nach Schweizer Recht (Art. 173-177 StGB)',
       legalWarningBullet3: 'Sofortige Entfernung der Biografie und Kontosperrung',
       acceptButton: 'Akzeptieren und Fortfahren',
+    },
+    importDialog: {
+      title: 'Text in Abschnitt "{sectionName}" importieren',
+      description: 'Datei hochladen oder Text einfügen zum Importieren',
+      dragFile: 'Datei hierher ziehen oder klicken zum Auswählen',
+      dragFileHint: 'Unterstützte Formate: .txt, .rtf, .docx (max 5MB)',
+      formats: 'Unterstützte Formate: .txt, .rtf, .docx (max 5MB)',
+      selectFile: 'Datei Auswählen',
+      or: 'oder',
+      pasteLabel: 'Text direkt einfügen',
+      pastePlaceholder: 'Fügen Sie hier den zu importierenden Text ein...',
+      analyzeText: 'Text Analysieren',
+      preview: 'Vorschau:',
+      sectionsFound: 'Ich habe {count} Abschnitte in der Datei gefunden. Möchten Sie diese automatisch importieren?',
+      autoImport: 'Ich habe {count} Abschnitte gefunden',
+      singleSectionNotice: 'Dieser Text wird nur in {sectionName} importiert. Um mehrere Abschnitte zu importieren, verwenden Sie Markierungen in der Datei (## Abschnittstitel).',
+      useMarkers: 'Um mehrere Abschnitte zu importieren, verwenden Sie Markierungen in der Datei (## Abschnittstitel).',
+      replaceExisting: 'Vorhandenen Inhalt ersetzen',
+      aiDetectPrompt: 'Lassen Sie die KI den Text analysieren und automatisch geeignete Abschnitte vorschlagen',
+      detectSections: 'Abschnitte Erkennen',
+      analyzing: 'Analyse...',
+      back: 'Zurück',
+      import: 'Importieren',
+      fileReadError: 'Fehler beim Lesen der Datei',
+      pasteTextFirst: 'Fügen Sie zuerst Text ein, bevor Sie fortfahren',
+      textAnalysisError: 'Fehler bei der Textanalyse',
+      aiAuthRequired: 'Sie müssen authentifiziert sein, um KI zu verwenden',
+      aiNoSections: 'Die KI konnte keine Abschnitte im Text erkennen',
+      aiDetectionError: 'Fehler bei der automatischen Abschnittserkennung',
+      multiImportUnavailable: 'Import mehrerer Abschnitte nicht verfügbar',
+      loading: 'Laden...',
+    },
+    notesAndTodos: {
+      notesTab: 'Notizen',
+      todosTab: 'Zu Erledigen',
+      addNotePlaceholder: 'Fügen Sie eine Notiz für diesen Abschnitt hinzu... (max 500 Zeichen)',
+      addNote: 'Notiz Hinzufügen',
+      noNotes: 'Keine Notizen für diesen Abschnitt',
+      editNote: 'Bearbeiten',
+      deleteNote: 'Löschen',
+      cancel: 'Abbrechen',
+      save: 'Speichern',
+      createdAt: 'um',
+      addTodoDescription: 'Erinnerungsbeschreibung...',
+      priorityLow: 'Niedrige Priorität',
+      priorityMedium: 'Mittlere Priorität',
+      priorityHigh: 'Hohe Priorität',
+      dueDate: 'Fälligkeitsdatum',
+      removeDueDate: 'Datum entfernen',
+      addTodo: 'Hinzufügen',
+      filterAll: 'Alle',
+      filterPending: 'Zu erledigen',
+      filterCompleted: 'Erledigt',
+      noTodos: 'Keine Erinnerungen',
+      noCompletedTodos: 'Keine erledigten Erinnerungen',
+      loadingNotes: 'Notizen laden...',
+      noNotesYet: 'Noch keine Notizen',
+      noPendingItems: 'Keine ausstehenden Elemente',
     },
   },
 };

@@ -43,7 +43,7 @@ export function ImportTextDialog({
   onImportMultipleSections,
 }: ImportTextDialogProps) {
   const { session } = useAuth();
-  const { language } = useTranslation();
+  const { t, language } = useTranslation();
   const [dragActive, setDragActive] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -81,12 +81,12 @@ export function ImportTextDialog({
       if (err instanceof TextImportError) {
         setError(err.message);
       } else {
-        setError('Errore nella lettura del file');
+        setError(t.importDialog.fileReadError);
       }
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [t]);
 
   const handleDrag = useCallback((e: React.DragEvent) => {
     e.preventDefault();
@@ -122,7 +122,7 @@ export function ImportTextDialog({
 
   const handlePasteAnalyze = useCallback(() => {
     if (!pastedText.trim()) {
-      setError('Incolla del testo prima di continuare');
+      setError(t.importDialog.pasteTextFirst);
       return;
     }
 
@@ -134,15 +134,15 @@ export function ImportTextDialog({
       setParsedContent(parsed);
       setImportMode('preview');
     } catch (err) {
-      setError('Errore nell\'analisi del testo');
+      setError(t.importDialog.textAnalysisError);
     } finally {
       setLoading(false);
     }
-  }, [pastedText]);
+  }, [pastedText, t]);
 
   const handleAiDetection = useCallback(async () => {
     if (!parsedContent || !session) {
-      setError('Devi essere autenticato per usare l\'AI');
+      setError(t.importDialog.aiAuthRequired);
       return;
     }
 
@@ -154,7 +154,7 @@ export function ImportTextDialog({
       const result = await detectSections(parsedContent.content, language, token);
 
       if (result.suggestions.length === 0) {
-        setError('L\'AI non è riuscita a rilevare sezioni nel testo');
+        setError(t.importDialog.aiNoSections);
         return;
       }
 
@@ -162,11 +162,11 @@ export function ImportTextDialog({
       setShowWizard(true);
     } catch (err) {
       console.error('AI detection error:', err);
-      setError('Errore durante il rilevamento automatico delle sezioni');
+      setError(t.importDialog.aiDetectionError);
     } finally {
       setDetectingAi(false);
     }
-  }, [parsedContent, session, language]);
+  }, [parsedContent, session, language, t]);
 
   const handleWizardAccept = useCallback((assignments: { section: string; text: string }[]) => {
     if (onImportMultipleSections) {
@@ -189,14 +189,14 @@ export function ImportTextDialog({
         resetDialog();
         onOpenChange(false);
       } else {
-        setError('Importazione multipla sezioni non disponibile');
+        setError(t.importDialog.multiImportUnavailable);
       }
     } else {
       onImport(parsedContent.content, replaceExisting);
       resetDialog();
       onOpenChange(false);
     }
-  }, [parsedContent, replaceExisting, onImport, onImportMultipleSections, resetDialog, onOpenChange]);
+  }, [parsedContent, replaceExisting, onImport, onImportMultipleSections, resetDialog, onOpenChange, t]);
 
   const handleOpenChange = useCallback(
     (newOpen: boolean) => {
@@ -212,9 +212,9 @@ export function ImportTextDialog({
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className="max-w-2xl max-h-[80vh] flex flex-col">
         <DialogHeader>
-          <DialogTitle>Importa testo nella sezione &quot;{sectionName}&quot;</DialogTitle>
+          <DialogTitle>{t.importDialog.title.replace('{sectionName}', sectionName)}</DialogTitle>
           <DialogDescription>
-            Carica un file o incolla il testo da importare
+            {t.importDialog.description}
           </DialogDescription>
         </DialogHeader>
 
@@ -241,10 +241,10 @@ export function ImportTextDialog({
                 />
                 <Upload className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
                 <p className="text-sm font-medium mb-2">
-                  Trascina un file qui o clicca per selezionare
+                  {t.importDialog.dragFile}
                 </p>
                 <p className="text-xs text-muted-foreground mb-4">
-                  Formati supportati: .txt, .rtf, .docx (max 5MB)
+                  {t.importDialog.formats}
                 </p>
                 <Button
                   type="button"
@@ -255,12 +255,12 @@ export function ImportTextDialog({
                   {loading ? (
                     <>
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Caricamento...
+                      {t.importDialog.loading}
                     </>
                   ) : (
                     <>
                       <FileText className="mr-2 h-4 w-4" />
-                      Seleziona File
+                      {t.importDialog.selectFile}
                     </>
                   )}
                 </Button>
@@ -272,16 +272,16 @@ export function ImportTextDialog({
                 </div>
                 <div className="relative flex justify-center text-xs uppercase">
                   <span className="bg-background px-2 text-muted-foreground">
-                    oppure
+                    {t.importDialog.or}
                   </span>
                 </div>
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="paste-text">Incolla il testo direttamente</Label>
+                <Label htmlFor="paste-text">{t.importDialog.pasteLabel}</Label>
                 <Textarea
                   id="paste-text"
-                  placeholder="Incolla qui il testo da importare..."
+                  placeholder={t.importDialog.pastePlaceholder}
                   value={pastedText}
                   onChange={(e) => setPastedText(e.target.value)}
                   className="min-h-[120px] font-mono text-sm"
@@ -293,7 +293,7 @@ export function ImportTextDialog({
                   disabled={!pastedText.trim() || loading}
                   className="w-full"
                 >
-                  Analizza Testo
+                  {t.importDialog.analyzeText}
                 </Button>
               </div>
             </div>
@@ -305,22 +305,20 @@ export function ImportTextDialog({
                 <Alert>
                   <AlertCircle className="h-4 w-4" />
                   <AlertDescription>
-                    Ho trovato <strong>{parsedContent.sections.length} sezioni</strong> nel
-                    file. Vuoi importarle automaticamente?
+                    {t.importDialog.sectionsFound.replace('{count}', String(parsedContent.sections.length))}
                   </AlertDescription>
                 </Alert>
               ) : (
                 <Alert>
                   <AlertCircle className="h-4 w-4" />
                   <AlertDescription>
-                    Questo testo verrà importato solo in <strong>{sectionName}</strong>. Per
-                    importare multiple sezioni, usa marcatori nel file (## Titolo Sezione).
+                    {t.importDialog.singleSectionNotice.replace('{sectionName}', sectionName)}
                   </AlertDescription>
                 </Alert>
               )}
 
               <div>
-                <Label className="mb-2 block">Anteprima:</Label>
+                <Label className="mb-2 block">{t.importDialog.preview}</Label>
                 <ScrollArea className="h-[200px] w-full rounded-md border p-4">
                   {parsedContent.hasSections && parsedContent.sections ? (
                     <div className="space-y-4">
@@ -355,7 +353,7 @@ export function ImportTextDialog({
                       htmlFor="replace"
                       className="text-sm font-normal cursor-pointer"
                     >
-                      Sostituisci contenuto esistente
+                      {t.importDialog.replaceExisting}
                     </Label>
                   </div>
 
@@ -364,7 +362,7 @@ export function ImportTextDialog({
                     <AlertDescription>
                       <div className="flex items-center justify-between gap-3">
                         <span className="text-sm">
-                          Lascia che l&apos;AI analizzi il testo e suggerisca automaticamente le sezioni appropriate
+                          {t.importDialog.aiDetectPrompt}
                         </span>
                         <Button
                           type="button"
@@ -377,12 +375,12 @@ export function ImportTextDialog({
                           {detectingAi ? (
                             <>
                               <Loader2 className="mr-2 h-3.5 w-3.5 animate-spin" />
-                              Analisi...
+                              {t.importDialog.analyzing}
                             </>
                           ) : (
                             <>
                               <Sparkles className="mr-2 h-3.5 w-3.5" />
-                              Rileva Sezioni
+                              {t.importDialog.detectSections}
                             </>
                           )}
                         </Button>
@@ -401,7 +399,7 @@ export function ImportTextDialog({
                 }}
                 className="w-full"
               >
-                Indietro
+                {t.importDialog.back}
               </Button>
             </div>
           )}
@@ -416,11 +414,11 @@ export function ImportTextDialog({
 
         <DialogFooter>
           <Button type="button" variant="outline" onClick={() => handleOpenChange(false)}>
-            Annulla
+            {t.common.cancel}
           </Button>
           {importMode === 'preview' && (
             <Button type="button" onClick={handleImportConfirm} disabled={!parsedContent}>
-              Importa
+              {t.importDialog.import}
             </Button>
           )}
         </DialogFooter>

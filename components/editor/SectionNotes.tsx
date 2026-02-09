@@ -31,6 +31,7 @@ import { format, isPast, isToday } from 'date-fns';
 import { it } from 'date-fns/locale';
 import { supabase } from '@/lib/supabase';
 import { cn } from '@/lib/utils';
+import { useTranslation } from '@/lib/i18n/i18n-context';
 
 interface SectionNote {
   id: string;
@@ -56,6 +57,7 @@ interface SectionNotesProps {
 type TodoFilter = 'all' | 'pending' | 'completed';
 
 export function SectionNotes({ biographyId, sectionKey }: SectionNotesProps) {
+  const { t } = useTranslation();
   const [notes, setNotes] = useState<SectionNote[]>([]);
   const [todos, setTodos] = useState<SectionTodo[]>([]);
   const [newNoteContent, setNewNoteContent] = useState('');
@@ -188,9 +190,9 @@ export function SectionNotes({ biographyId, sectionKey }: SectionNotesProps) {
 
   const getPriorityBadge = (priority: string) => {
     const configs = {
-      low: { label: 'Bassa', variant: 'secondary' as const, className: 'bg-bg-surface dark:bg-dark-bg-surface text-text-secondary dark:text-dark-text-secondary' },
-      medium: { label: 'Media', variant: 'default' as const, className: 'bg-status-warning text-text-primary dark:text-dark-text-primary' },
-      high: { label: 'Alta', variant: 'destructive' as const, className: 'bg-error/20 text-error' },
+      low: { label: t.notesAndTodos.priorityLow, variant: 'secondary' as const, className: 'bg-bg-surface dark:bg-dark-bg-surface text-text-secondary dark:text-dark-text-secondary' },
+      medium: { label: t.notesAndTodos.priorityMedium, variant: 'default' as const, className: 'bg-status-warning text-text-primary dark:text-dark-text-primary' },
+      high: { label: t.notesAndTodos.priorityHigh, variant: 'destructive' as const, className: 'bg-error/20 text-error' },
     };
     const config = configs[priority as keyof typeof configs] || configs.medium;
     return (
@@ -217,7 +219,7 @@ export function SectionNotes({ biographyId, sectionKey }: SectionNotesProps) {
         <TabsList className="grid w-full grid-cols-2">
           <TabsTrigger value="notes" className="gap-2">
             <StickyNote className="h-4 w-4" />
-            Note
+            {t.notesAndTodos.notesTab}
             {notes.length > 0 && (
               <Badge variant="secondary" className="ml-1 h-5 w-5 rounded-full p-0 text-xs">
                 {notes.length}
@@ -226,7 +228,7 @@ export function SectionNotes({ biographyId, sectionKey }: SectionNotesProps) {
           </TabsTrigger>
           <TabsTrigger value="todos" className="gap-2">
             <CheckSquare className="h-4 w-4" />
-            Da Fare
+            {t.notesAndTodos.todosTab}
             {todos.filter(t => !t.is_completed).length > 0 && (
               <Badge variant="destructive" className="ml-1 h-5 w-5 rounded-full p-0 text-xs">
                 {todos.filter(t => !t.is_completed).length}
@@ -238,7 +240,7 @@ export function SectionNotes({ biographyId, sectionKey }: SectionNotesProps) {
         <TabsContent value="notes" className="space-y-4 mt-4">
           <div className="space-y-2">
             <Textarea
-              placeholder="Aggiungi una nota per questa sezione... (max 500 caratteri)"
+              placeholder={t.notesAndTodos.addNotePlaceholder}
               value={newNoteContent}
               onChange={(e) => setNewNoteContent(e.target.value.slice(0, 500))}
               className="min-h-[80px] resize-none"
@@ -258,7 +260,7 @@ export function SectionNotes({ biographyId, sectionKey }: SectionNotesProps) {
                 disabled={!newNoteContent.trim()}
               >
                 <Plus className="h-4 w-4 mr-1" />
-                Aggiungi Nota
+                {t.notesAndTodos.addNote}
               </Button>
             </div>
           </div>
@@ -267,7 +269,7 @@ export function SectionNotes({ biographyId, sectionKey }: SectionNotesProps) {
             <div className="space-y-3">
               {notes.length === 0 ? (
                 <p className="text-sm text-muted-foreground text-center py-8">
-                  Nessuna nota per questa sezione
+                  {t.notesAndTodos.noNotes}
                 </p>
               ) : (
                 notes.map((note) => (
@@ -288,13 +290,13 @@ export function SectionNotes({ biographyId, sectionKey }: SectionNotesProps) {
                               setEditingNoteContent('');
                             }}
                           >
-                            Annulla
+                            {t.notesAndTodos.cancel}
                           </Button>
                           <Button
                             size="sm"
                             onClick={() => handleUpdateNote(note.id, editingNoteContent)}
                           >
-                            Salva
+                            {t.notesAndTodos.save}
                           </Button>
                         </div>
                       </div>
@@ -340,7 +342,7 @@ export function SectionNotes({ biographyId, sectionKey }: SectionNotesProps) {
           <Card className="p-3 bg-muted/50">
             <div className="space-y-3">
               <Textarea
-                placeholder="Descrizione promemoria..."
+                placeholder={t.notesAndTodos.addTodoDescription}
                 value={newTodoDescription}
                 onChange={(e) => setNewTodoDescription(e.target.value)}
                 className="min-h-[60px] resize-none"
@@ -354,9 +356,9 @@ export function SectionNotes({ biographyId, sectionKey }: SectionNotesProps) {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="low">Priorità Bassa</SelectItem>
-                    <SelectItem value="medium">Priorità Media</SelectItem>
-                    <SelectItem value="high">Priorità Alta</SelectItem>
+                    <SelectItem value="low">{t.notesAndTodos.priorityLow}</SelectItem>
+                    <SelectItem value="medium">{t.notesAndTodos.priorityMedium}</SelectItem>
+                    <SelectItem value="high">{t.notesAndTodos.priorityHigh}</SelectItem>
                   </SelectContent>
                 </Select>
 
@@ -364,7 +366,7 @@ export function SectionNotes({ biographyId, sectionKey }: SectionNotesProps) {
                   <PopoverTrigger asChild>
                     <Button variant="outline" size="sm" className="gap-2 h-9">
                       <CalendarIcon className="h-4 w-4" />
-                      {newTodoDueDate ? format(newTodoDueDate, 'd MMM yyyy', { locale: it }) : 'Scadenza'}
+                      {newTodoDueDate ? format(newTodoDueDate, 'd MMM yyyy', { locale: it }) : t.notesAndTodos.dueDate}
                     </Button>
                   </PopoverTrigger>
                   <PopoverContent className="w-auto p-0" align="start">
@@ -385,7 +387,7 @@ export function SectionNotes({ biographyId, sectionKey }: SectionNotesProps) {
                     className="h-9"
                     onClick={() => setNewTodoDueDate(undefined)}
                   >
-                    Rimuovi data
+                    {t.notesAndTodos.removeDueDate}
                   </Button>
                 )}
 
@@ -396,7 +398,7 @@ export function SectionNotes({ biographyId, sectionKey }: SectionNotesProps) {
                   className="ml-auto h-9"
                 >
                   <Plus className="h-4 w-4 mr-1" />
-                  Aggiungi
+                  {t.notesAndTodos.addTodo}
                 </Button>
               </div>
             </div>
@@ -409,9 +411,9 @@ export function SectionNotes({ biographyId, sectionKey }: SectionNotesProps) {
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">Tutti ({todos.length})</SelectItem>
-                <SelectItem value="pending">Da fare ({todos.filter(t => !t.is_completed).length})</SelectItem>
-                <SelectItem value="completed">Completati ({todos.filter(t => t.is_completed).length})</SelectItem>
+                <SelectItem value="all">{t.notesAndTodos.filterAll} ({todos.length})</SelectItem>
+                <SelectItem value="pending">{t.notesAndTodos.filterPending} ({todos.filter(t => !t.is_completed).length})</SelectItem>
+                <SelectItem value="completed">{t.notesAndTodos.filterCompleted} ({todos.filter(t => t.is_completed).length})</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -420,7 +422,7 @@ export function SectionNotes({ biographyId, sectionKey }: SectionNotesProps) {
             <div className="space-y-2">
               {filteredTodos.length === 0 ? (
                 <p className="text-sm text-muted-foreground text-center py-8">
-                  {todoFilter === 'completed' ? 'Nessun promemoria completato' : 'Nessun promemoria'}
+                  {todoFilter === 'completed' ? t.notesAndTodos.noCompletedTodos : t.notesAndTodos.noTodos}
                 </p>
               ) : (
                 filteredTodos.map((todo) => (

@@ -57,7 +57,7 @@ export function NotesOverviewPanel({ biographyId, onSectionChange }: NotesOvervi
   if (loading) {
     return (
       <div className="text-center py-8 text-muted-foreground">
-        <p>Loading notes...</p>
+        <p>{t.notesAndTodos.loadingNotes}</p>
       </div>
     );
   }
@@ -66,7 +66,7 @@ export function NotesOverviewPanel({ biographyId, onSectionChange }: NotesOvervi
     return (
       <div className="text-center py-8 text-muted-foreground">
         <StickyNote className="h-12 w-12 mx-auto mb-3 opacity-50" />
-        <p>No notes yet</p>
+        <p>{t.notesAndTodos.noNotesYet}</p>
       </div>
     );
   }
