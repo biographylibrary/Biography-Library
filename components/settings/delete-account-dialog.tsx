@@ -10,46 +10,38 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
+  AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
 import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { useTranslation } from '@/lib/i18n/i18n-context';
 import { Loader2 } from 'lucide-react';
-import type { Biography } from '@/lib/biographies';
 
-interface DeleteBiographyDialogProps {
-  biography: Biography | null;
+interface DeleteAccountDialogProps {
+  biographyCount: number;
   isDeleting: boolean;
   onConfirm: () => void;
-  onCancel: () => void;
 }
 
-export function DeleteBiographyDialog({
-  biography,
+export function DeleteAccountDialog({
+  biographyCount,
   isDeleting,
   onConfirm,
-  onCancel,
-}: DeleteBiographyDialogProps) {
+}: DeleteAccountDialogProps) {
   const { t } = useTranslation();
+  const [isOpen, setIsOpen] = useState(false);
   const [step, setStep] = useState<1 | 2>(1);
   const [isChecked, setIsChecked] = useState(false);
   const [confirmText, setConfirmText] = useState('');
 
   useEffect(() => {
-    if (!biography) {
+    if (!isOpen) {
       setStep(1);
       setIsChecked(false);
       setConfirmText('');
     }
-  }, [biography]);
-
-  const handleCancel = () => {
-    setStep(1);
-    setIsChecked(false);
-    setConfirmText('');
-    onCancel();
-  };
+  }, [isOpen]);
 
   const handleContinue = () => {
     setStep(2);
@@ -57,28 +49,36 @@ export function DeleteBiographyDialog({
 
   const handleConfirm = () => {
     onConfirm();
+    setIsOpen(false);
   };
 
-  const isConfirmValid = isChecked && confirmText.toUpperCase() === 'DELETE';
+  const isConfirmValid = isChecked && confirmText.toUpperCase() === 'DELETE MY ACCOUNT';
+
+  const bioCountMessage = t.deleteDialog.bioCount.replace('{count}', String(biographyCount));
 
   return (
-    <AlertDialog open={!!biography} onOpenChange={(open) => !open && handleCancel()}>
+    <AlertDialog open={isOpen} onOpenChange={setIsOpen}>
+      <AlertDialogTrigger asChild>
+        <button className="text-sm text-muted-foreground hover:text-destructive underline underline-offset-4 transition-colors">
+          {t.deleteDialog.deleteAccountLink}
+        </button>
+      </AlertDialogTrigger>
       <AlertDialogContent>
         {step === 1 ? (
           <>
             <AlertDialogHeader>
-              <AlertDialogTitle>{t.deleteDialog.bioModal1Title}</AlertDialogTitle>
+              <AlertDialogTitle>{t.deleteDialog.accountModal1Title}</AlertDialogTitle>
               <AlertDialogDescription className="space-y-2">
-                <p>{t.deleteDialog.bioModal1Message}</p>
-                {biography && (
+                <p>{t.deleteDialog.accountModal1Message}</p>
+                {biographyCount > 0 && (
                   <p className="font-medium text-foreground">
-                    {biography.title || t.dashboard.untitledBiography}
+                    {bioCountMessage}
                   </p>
                 )}
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
-              <AlertDialogCancel onClick={handleCancel}>
+              <AlertDialogCancel>
                 {t.deleteDialog.buttonCancel}
               </AlertDialogCancel>
               <AlertDialogAction
@@ -92,40 +92,40 @@ export function DeleteBiographyDialog({
         ) : (
           <>
             <AlertDialogHeader>
-              <AlertDialogTitle>{t.deleteDialog.bioModal2Title}</AlertDialogTitle>
+              <AlertDialogTitle>{t.deleteDialog.accountModal2Title}</AlertDialogTitle>
               <AlertDialogDescription className="space-y-4">
-                <p>{t.deleteDialog.bioModal2Message}</p>
+                <p className="whitespace-pre-line">{t.deleteDialog.accountModal2Message}</p>
 
                 <div className="flex items-start space-x-2 pt-2">
                   <Checkbox
-                    id="confirm-irreversible"
+                    id="confirm-all-data"
                     checked={isChecked}
                     onCheckedChange={(checked) => setIsChecked(checked === true)}
                   />
                   <Label
-                    htmlFor="confirm-irreversible"
+                    htmlFor="confirm-all-data"
                     className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
                   >
-                    {t.deleteDialog.checkboxIrreversible}
+                    {t.deleteDialog.checkboxAllData}
                   </Label>
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="confirm-text" className="text-sm">
-                    {t.deleteDialog.bioInputPlaceholder}
+                  <Label htmlFor="confirm-account-text" className="text-sm">
+                    {t.deleteDialog.accountInputPlaceholder}
                   </Label>
                   <Input
-                    id="confirm-text"
+                    id="confirm-account-text"
                     value={confirmText}
                     onChange={(e) => setConfirmText(e.target.value)}
-                    placeholder={t.deleteDialog.bioInputPlaceholder}
-                    className="font-mono"
+                    placeholder={t.deleteDialog.accountInputPlaceholder}
+                    className="font-mono text-xs"
                   />
                 </div>
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
-              <AlertDialogCancel onClick={handleCancel}>
+              <AlertDialogCancel>
                 {t.deleteDialog.buttonCancel}
               </AlertDialogCancel>
               <AlertDialogAction
@@ -139,7 +139,7 @@ export function DeleteBiographyDialog({
                     {t.biography.deleting}
                   </>
                 ) : (
-                  t.deleteDialog.buttonDeleteBio
+                  t.deleteDialog.buttonDeleteAccount
                 )}
               </AlertDialogAction>
             </AlertDialogFooter>

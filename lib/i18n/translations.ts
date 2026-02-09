@@ -449,6 +449,29 @@ export interface Translations {
     noNotesYet: string;
     noPendingItems: string;
   };
+  deleteDialog: {
+    deleteBiographyLink: string;
+    deleteAccountLink: string;
+    bioModal1Title: string;
+    bioModal1Message: string;
+    bioModal2Title: string;
+    bioModal2Message: string;
+    checkboxIrreversible: string;
+    bioInputPlaceholder: string;
+    accountModal1Title: string;
+    accountModal1Message: string;
+    bioCount: string;
+    accountModal2Title: string;
+    accountModal2Message: string;
+    checkboxAllData: string;
+    accountInputPlaceholder: string;
+    buttonCancel: string;
+    buttonContinue: string;
+    buttonDeleteBio: string;
+    buttonDeleteAccount: string;
+    successToastBio: string;
+    successMessageAccount: string;
+  };
 }
 
 export const translations: Record<Language, Translations> = {
@@ -901,6 +924,29 @@ export const translations: Record<Language, Translations> = {
       noNotesYet: 'No notes yet',
       noPendingItems: 'No pending items',
     },
+    deleteDialog: {
+      deleteBiographyLink: 'Delete biography',
+      deleteAccountLink: 'Delete my account',
+      bioModal1Title: 'Delete Biography?',
+      bioModal1Message: 'Are you sure you want to delete this biography? This action cannot be undone.',
+      bioModal2Title: 'Final Confirmation',
+      bioModal2Message: 'This is your last chance. Once deleted, this biography and all its content will be permanently removed from our servers. We cannot recover it.',
+      checkboxIrreversible: 'I understand this action is irreversible',
+      bioInputPlaceholder: 'Type DELETE to confirm',
+      accountModal1Title: 'Delete Your Account?',
+      accountModal1Message: 'Deleting your account will permanently remove all your biographies, data, and profile. This action cannot be undone.',
+      bioCount: 'You have {count} biography/biographies that will be deleted',
+      accountModal2Title: 'Permanent Account Deletion',
+      accountModal2Message: 'This is irreversible. Once you delete your account:\n• All your biographies will be permanently deleted\n• Your profile and data will be removed\n• You cannot recover any information\n• This action complies with Swiss data protection laws (FADP/GDPR right to erasure)',
+      checkboxAllData: 'I understand all my data will be permanently deleted',
+      accountInputPlaceholder: 'Type DELETE MY ACCOUNT to confirm',
+      buttonCancel: 'Cancel',
+      buttonContinue: 'Continue',
+      buttonDeleteBio: 'Permanently Delete',
+      buttonDeleteAccount: 'Delete Account Permanently',
+      successToastBio: 'Biography deleted successfully',
+      successMessageAccount: 'Your account has been deleted',
+    },
   },
   it: {
     common: {
@@ -1350,6 +1396,29 @@ export const translations: Record<Language, Translations> = {
       loadingNotes: 'Caricamento note...',
       noNotesYet: 'Nessuna nota ancora',
       noPendingItems: 'Nessun elemento in sospeso',
+    },
+    deleteDialog: {
+      deleteBiographyLink: 'Elimina biografia',
+      deleteAccountLink: 'Elimina il mio account',
+      bioModal1Title: 'Eliminare la Biografia?',
+      bioModal1Message: 'Sei sicuro di voler eliminare questa biografia? Questa azione non può essere annullata.',
+      bioModal2Title: 'Conferma Finale',
+      bioModal2Message: 'Questa è la tua ultima opportunità. Una volta eliminata, questa biografia e tutto il suo contenuto saranno rimossi permanentemente dai nostri server. Non potremo recuperarli.',
+      checkboxIrreversible: 'Comprendo che questa azione è irreversibile',
+      bioInputPlaceholder: 'Scrivi ELIMINA per confermare',
+      accountModal1Title: 'Eliminare il Tuo Account?',
+      accountModal1Message: "L'eliminazione del tuo account rimuoverà permanentemente tutte le tue biografie, dati e profilo. Questa azione non può essere annullata.",
+      bioCount: 'Hai {count} biografia/biografie che saranno eliminate',
+      accountModal2Title: 'Eliminazione Permanente Account',
+      accountModal2Message: 'Questa azione è irreversibile. Una volta eliminato il tuo account:\n• Tutte le tue biografie saranno eliminate permanentemente\n• Il tuo profilo e i tuoi dati saranno rimossi\n• Non potrai recuperare nessuna informazione\n• Questa azione è conforme alle leggi svizzere sulla protezione dei dati (LPD/GDPR diritto alla cancellazione)',
+      checkboxAllData: 'Comprendo che tutti i miei dati saranno eliminati permanentemente',
+      accountInputPlaceholder: 'Scrivi ELIMINA IL MIO ACCOUNT per confermare',
+      buttonCancel: 'Annulla',
+      buttonContinue: 'Continua',
+      buttonDeleteBio: 'Elimina Permanentemente',
+      buttonDeleteAccount: 'Elimina Account Permanentemente',
+      successToastBio: 'Biografia eliminata con successo',
+      successMessageAccount: 'Il tuo account è stato eliminato',
     },
   },
   fr: {
@@ -1801,6 +1870,29 @@ export const translations: Record<Language, Translations> = {
       noNotesYet: 'Aucune note encore',
       noPendingItems: 'Aucun élément en attente',
     },
+    deleteDialog: {
+      deleteBiographyLink: 'Supprimer la biographie',
+      deleteAccountLink: 'Supprimer mon compte',
+      bioModal1Title: 'Supprimer la Biographie ?',
+      bioModal1Message: 'Êtes-vous sûr de vouloir supprimer cette biographie ? Cette action ne peut pas être annulée.',
+      bioModal2Title: 'Confirmation Finale',
+      bioModal2Message: "C'est votre dernière chance. Une fois supprimée, cette biographie et tout son contenu seront définitivement supprimés de nos serveurs. Nous ne pourrons pas les récupérer.",
+      checkboxIrreversible: 'Je comprends que cette action est irréversible',
+      bioInputPlaceholder: 'Tapez SUPPRIMER pour confirmer',
+      accountModal1Title: 'Supprimer Votre Compte ?',
+      accountModal1Message: 'La suppression de votre compte supprimera définitivement toutes vos biographies, données et profil. Cette action ne peut pas être annulée.',
+      bioCount: 'Vous avez {count} biographie(s) qui seront supprimée(s)',
+      accountModal2Title: 'Suppression Permanente du Compte',
+      accountModal2Message: 'Cette action est irréversible. Une fois votre compte supprimé :\n• Toutes vos biographies seront définitivement supprimées\n• Votre profil et vos données seront supprimés\n• Vous ne pourrez récupérer aucune information\n• Cette action est conforme aux lois suisses sur la protection des données (LPD/RGPD droit à l\'effacement)',
+      checkboxAllData: 'Je comprends que toutes mes données seront définitivement supprimées',
+      accountInputPlaceholder: 'Tapez SUPPRIMER MON COMPTE pour confirmer',
+      buttonCancel: 'Annuler',
+      buttonContinue: 'Continuer',
+      buttonDeleteBio: 'Supprimer Définitivement',
+      buttonDeleteAccount: 'Supprimer le Compte Définitivement',
+      successToastBio: 'Biographie supprimée avec succès',
+      successMessageAccount: 'Votre compte a été supprimé',
+    },
   },
   de: {
     common: {
@@ -2250,6 +2342,29 @@ export const translations: Record<Language, Translations> = {
       loadingNotes: 'Notizen laden...',
       noNotesYet: 'Noch keine Notizen',
       noPendingItems: 'Keine ausstehenden Elemente',
+    },
+    deleteDialog: {
+      deleteBiographyLink: 'Biografie löschen',
+      deleteAccountLink: 'Mein Konto löschen',
+      bioModal1Title: 'Biografie Löschen?',
+      bioModal1Message: 'Sind Sie sicher, dass Sie diese Biografie löschen möchten? Diese Aktion kann nicht rückgängig gemacht werden.',
+      bioModal2Title: 'Endgültige Bestätigung',
+      bioModal2Message: 'Dies ist Ihre letzte Chance. Nach dem Löschen werden diese Biografie und ihr gesamter Inhalt dauerhaft von unseren Servern entfernt. Wir können sie nicht wiederherstellen.',
+      checkboxIrreversible: 'Ich verstehe, dass diese Aktion unwiderruflich ist',
+      bioInputPlaceholder: 'Geben Sie LÖSCHEN ein, um zu bestätigen',
+      accountModal1Title: 'Ihr Konto Löschen?',
+      accountModal1Message: 'Das Löschen Ihres Kontos entfernt dauerhaft alle Ihre Biografien, Daten und Ihr Profil. Diese Aktion kann nicht rückgängig gemacht werden.',
+      bioCount: 'Sie haben {count} Biografie(n), die gelöscht werden',
+      accountModal2Title: 'Permanente Kontolöschung',
+      accountModal2Message: 'Dies ist unwiderruflich. Sobald Sie Ihr Konto löschen:\n• Werden alle Ihre Biografien dauerhaft gelöscht\n• Werden Ihr Profil und Ihre Daten entfernt\n• Können Sie keine Informationen wiederherstellen\n• Diese Aktion entspricht den Schweizer Datenschutzgesetzen (DSG/DSGVO Recht auf Löschung)',
+      checkboxAllData: 'Ich verstehe, dass alle meine Daten dauerhaft gelöscht werden',
+      accountInputPlaceholder: 'Geben Sie MEIN KONTO LÖSCHEN ein, um zu bestätigen',
+      buttonCancel: 'Abbrechen',
+      buttonContinue: 'Fortfahren',
+      buttonDeleteBio: 'Dauerhaft Löschen',
+      buttonDeleteAccount: 'Konto Dauerhaft Löschen',
+      successToastBio: 'Biografie erfolgreich gelöscht',
+      successMessageAccount: 'Ihr Konto wurde gelöscht',
     },
   },
 };

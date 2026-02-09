@@ -3,12 +3,14 @@
 import { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/auth-context';
+import { supabase } from '@/lib/supabase';
 import { Button } from '@/components/ui/button';
 import { CreateBiographyModal } from '@/components/dashboard/create-biography-modal';
 import { DeleteBiographyDialog } from '@/components/dashboard/delete-biography-dialog';
 import { WelcomeLanguageModal } from '@/components/welcome-language-modal';
 import { MainBiographyCard } from '@/components/dashboard/MainBiographyCard';
 import { PublishedBiographiesCard } from '@/components/dashboard/published-biographies-card';
+import { DeleteAccountDialog } from '@/components/settings/delete-account-dialog';
 import {
   fetchBiographies,
   createBiography,
@@ -17,6 +19,7 @@ import {
 } from '@/lib/biographies';
 import { Plus, Loader2, AlertCircle } from 'lucide-react';
 import { useTranslation } from '@/lib/i18n/i18n-context';
+import { toast } from 'sonner';
 
 export default function DashboardPage() {
   const { user, loading: authLoading } = useAuth();
@@ -28,6 +31,7 @@ export default function DashboardPage() {
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<Biography | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [isDeletingAccount, setIsDeletingAccount] = useState(false);
   const { t, language } = useTranslation();
 
   useEffect(() => {
@@ -76,9 +80,33 @@ export default function DashboardPage() {
       setBiographies((prev) =>
         prev.filter((b) => b.id !== deleteTarget.id)
       );
+      toast.success(t.deleteDialog.successToastBio);
     }
     setIsDeleting(false);
     setDeleteTarget(null);
+  };
+
+  const handleDeleteAccount = async () => {
+    if (!user) return;
+    setIsDeletingAccount(true);
+
+    try {
+      const { data, error } = await supabase.rpc('delete_user_account');
+
+      if (!error && data?.success) {
+        toast.success(t.deleteDialog.successMessageAccount);
+        await supabase.auth.signOut();
+        router.push('/');
+      } else {
+        toast.error('Failed to delete account');
+        console.error('Delete account error:', error || data?.error);
+      }
+    } catch (error) {
+      console.error('Error deleting account:', error);
+      toast.error('Failed to delete account');
+    } finally {
+      setIsDeletingAccount(false);
+    }
   };
 
   if (authLoading || !user) {
@@ -119,6 +147,7 @@ export default function DashboardPage() {
               biography={biographies[0] || null}
               userName={displayName}
               userId={user.id}
+              onDeleteClick={() => setDeleteTarget(biographies[0])}
             />
             <PublishedBiographiesCard userId={user.id} />
 
@@ -138,6 +167,17 @@ export default function DashboardPage() {
                   {t.dashboard.updateAvailabilityMessage}
                 </p>
               )}
+            </div>
+
+            <div className="mt-12 pt-8 border-t border-border/50">
+              <div className="text-center">
+                <h3 className="text-sm font-medium text-muted-foreground mb-4">Danger Zone</h3>
+                <DeleteAccountDialog
+                  biographyCount={biographies.length}
+                  isDeleting={isDeletingAccount}
+                  onConfirm={handleDeleteAccount}
+                />
+              </div>
             </div>
           </div>
         )}

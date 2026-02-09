@@ -35,6 +35,7 @@ interface MainBiographyCardProps {
   biography: Biography | null;
   userName: string;
   userId: string;
+  onDeleteClick?: () => void;
 }
 
 interface PendingTodo {
@@ -54,7 +55,7 @@ interface ConversationCheckpoint {
   updated_at: string;
 }
 
-export function MainBiographyCard({ biography, userName, userId }: MainBiographyCardProps) {
+export function MainBiographyCard({ biography, userName, userId, onDeleteClick }: MainBiographyCardProps) {
   const { t, language } = useTranslation();
   const router = useRouter();
   const [todos, setTodos] = useState<PendingTodo[]>([]);
@@ -491,6 +492,17 @@ export function MainBiographyCard({ biography, userName, userId }: MainBiography
             </div>
           </div>
         </div>
+
+        {onDeleteClick && (
+          <div className="flex justify-center pt-4">
+            <button
+              onClick={onDeleteClick}
+              className="text-sm text-muted-foreground hover:text-destructive underline underline-offset-4 transition-colors"
+            >
+              {t.deleteDialog.deleteBiographyLink}
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );
