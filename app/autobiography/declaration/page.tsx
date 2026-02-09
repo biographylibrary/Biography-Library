@@ -11,12 +11,14 @@ import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Header } from '@/components/header';
 import { Footer } from '@/components/footer';
+import { TermsOfServiceModal } from '@/components/legal/terms-of-service-modal';
 import { Info, Loader2, CheckCircle2, XCircle } from 'lucide-react';
 
 export default function AutobiographyDeclarationPage() {
   const { user, loading } = useAuth();
   const router = useRouter();
   const { t } = useTranslation();
+  const [showTermsModal, setShowTermsModal] = useState(false);
 
   const [checkboxes, setCheckboxes] = useState({
     identity: false,
@@ -67,33 +69,42 @@ export default function AutobiographyDeclarationPage() {
     return (
       <span>
         {parts[0]}
-        <a
-          href="#"
-          target="_blank"
-          rel="noopener noreferrer"
+        <button
+          type="button"
           className="text-primary hover:underline font-medium"
-          onClick={(e) => e.stopPropagation()}
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            setShowTermsModal(true);
+          }}
         >
           {t.declaration.checkbox3TermsLink}
-        </a>
+        </button>
         {afterTerms[0]}
-        <a
-          href="#"
-          target="_blank"
-          rel="noopener noreferrer"
+        <button
+          type="button"
           className="text-primary hover:underline font-medium"
-          onClick={(e) => e.stopPropagation()}
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+          }}
         >
           {t.declaration.checkbox3PrivacyLink}
-        </a>
+        </button>
         {afterTerms[1]}
       </span>
     );
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-background">
-      <Header />
+    <>
+      <TermsOfServiceModal
+        open={showTermsModal}
+        onOpenChange={setShowTermsModal}
+      />
+
+      <div className="min-h-screen flex flex-col bg-background">
+        <Header />
 
       <main className="flex-1 px-4 py-8 md:py-12">
         <div className="max-w-4xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
@@ -244,6 +255,7 @@ export default function AutobiographyDeclarationPage() {
       </main>
 
       <Footer />
-    </div>
+      </div>
+    </>
   );
 }
