@@ -125,9 +125,8 @@ export default function DashboardPage() {
             <div className="flex flex-col items-center gap-2 pt-2">
               {(biographies.length === 0 || biographies.some(b => b.status === 'published')) && (
                 <Button
-                  className="gap-2 min-h-[44px] px-6"
+                  className="gap-2 min-h-[44px] px-6 bg-[#121212] hover:bg-[#121212]/90 text-[#FDFBF7]"
                   onClick={() => setShowCreateModal(true)}
-                  variant="secondary"
                 >
                   <Plus className="h-5 w-5" />
                   <span>{t.dashboard.createBiography}</span>

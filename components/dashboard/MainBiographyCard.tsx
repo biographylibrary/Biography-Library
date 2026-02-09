@@ -288,12 +288,10 @@ export function MainBiographyCard({ biography, userName, userId }: MainBiography
   if (!biography) {
     return (
       <div className="p-6 sm:p-8 text-center bg-transparent rounded-2xl">
-        <div className="flex justify-center mb-4">
-          <div className="flex items-center justify-center h-14 w-14 rounded-2xl bg-primary/10">
-            <BookOpen className="h-7 w-7 text-primary" />
-          </div>
+        <div className="flex justify-center mb-6">
+          <Logo height={100} />
         </div>
-        <h3 className="text-lg font-medium mb-2">{t.dashboard.noBiographies}</h3>
+        <h3 className="text-2xl sm:text-3xl font-medium mb-2">{t.dashboard.noBiographies}</h3>
         <p className="text-sm text-muted-foreground max-w-md mx-auto">
           {t.dashboard.noBiographiesSubtitle}
         </p>
