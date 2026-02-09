@@ -534,7 +534,7 @@ export const translations: Record<Language, Translations> = {
       untitledBiography: 'Untitled Biography',
       goToWorkspace: 'Go to Workspace',
       continueLastSection: 'Continue Last Section',
-      updateAvailabilityMessage: 'After publishing your biography. Every 12 months, you have the opportunity to create a new update.',
+      updateAvailabilityMessage: 'Once your biography is live, you can add a new yearly update to showcase your latest year of activity.',
     },
     biography: {
       newBiography: 'New Biography',
@@ -986,7 +986,7 @@ export const translations: Record<Language, Translations> = {
       untitledBiography: 'Biografia senza titolo',
       goToWorkspace: 'Vai al Workspace',
       continueLastSection: 'Continua Ultima Sezione',
-      updateAvailabilityMessage: 'Dopo aver pubblicato la tua biografia. Ogni 12 mesi, hai l\'opportunità di creare un nuovo aggiornamento.',
+      updateAvailabilityMessage: 'Una volta che la tua biografia è pubblicata, puoi aggiungere un nuovo aggiornamento annuale per mostrare le tue attività dell\'ultimo anno.',
     },
     biography: {
       newBiography: 'Nuova Biografia',
@@ -1438,7 +1438,7 @@ export const translations: Record<Language, Translations> = {
       untitledBiography: 'Biographie sans titre',
       goToWorkspace: 'Aller à l\'Espace',
       continueLastSection: 'Continuer Dernière Section',
-      updateAvailabilityMessage: 'Après avoir publié votre biographie. Tous les 12 mois, vous avez l\'opportunité de créer une nouvelle mise à jour.',
+      updateAvailabilityMessage: 'Une fois votre biographie publiée, vous pouvez ajouter une nouvelle mise à jour annuelle pour présenter vos activités de la dernière année.',
     },
     biography: {
       newBiography: 'Nouvelle Biographie',
@@ -1890,7 +1890,7 @@ export const translations: Record<Language, Translations> = {
       untitledBiography: 'Biografie ohne Titel',
       goToWorkspace: 'Zum Workspace',
       continueLastSection: 'Letzte Sektion Fortsetzen',
-      updateAvailabilityMessage: 'Nach der Veröffentlichung Ihrer Biografie. Alle 12 Monate haben Sie die Möglichkeit, ein neues Update zu erstellen.',
+      updateAvailabilityMessage: 'Sobald Ihre Biografie veröffentlicht ist, können Sie ein neues jährliches Update hinzufügen, um Ihre Aktivitäten des letzten Jahres zu präsentieren.',
     },
     biography: {
       newBiography: 'Neue Biografie',
