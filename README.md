@@ -2,17 +2,6 @@
 
 A modern, multilingual biography creation platform that helps preserve life stories and family memories. Built with Next.js, Supabase, and AI assistance.
 
----
-
-> **⚠️ MVP in Development**
-> This is an early-stage MVP (Minimum Viable Product) built with AI-assisted development.
-> **Not production-ready.** We are actively working toward v1.0 release.
->
-> **Current status:** Demo version using third-party AI APIs
-> **Production goal:** Self-hosted on Swiss infrastructure
-
----
-
 ## Features
 
 ### Multi-Language Support
