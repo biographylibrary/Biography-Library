@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/auth-context';
 import { supabase } from '@/lib/supabase';
 import { Button } from '@/components/ui/button';
+import { Separator } from '@/components/ui/separator';
 import { CreateBiographyModal } from '@/components/dashboard/create-biography-modal';
 import { DeleteBiographyDialog } from '@/components/dashboard/delete-biography-dialog';
 import { WelcomeLanguageModal } from '@/components/welcome-language-modal';
@@ -149,15 +150,11 @@ export default function DashboardPage() {
               onDeleteClick={() => setDeleteTarget(biographies[0])}
             />
 
-            {biographies.length > 0 && biographies.some(b => b.status === 'published') && (
-              <div className="px-4 sm:px-6 lg:px-8 pb-8">
-                <p className="text-sm text-center text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-                  {t.dashboard.updateAvailabilityMessage}
-                </p>
-              </div>
-            )}
+            <div className="px-4 sm:px-6 lg:px-8 py-8">
+              <Separator />
+            </div>
 
-            <div className="mt-0 pt-8 border-t border-border/50 flex flex-col items-center gap-6">
+            <div className="flex flex-col items-center gap-6">
               <div className="text-center">
                 <DeleteAccountDialog
                   biographyCount={biographies.length}
@@ -180,13 +177,18 @@ export default function DashboardPage() {
 
                 if (monthsSincePublished >= 12) {
                   return (
-                    <Button
-                      className="gap-2 min-h-[44px] px-6 bg-[#121212] hover:bg-[#121212]/90 text-[#FDFBF7]"
-                      onClick={() => setShowCreateModal(true)}
-                    >
-                      <Plus className="h-5 w-5" />
-                      <span>{t.dashboard.createBiography}</span>
-                    </Button>
+                    <div className="flex flex-col items-center gap-6">
+                      <p className="text-sm text-center text-muted-foreground max-w-2xl leading-relaxed">
+                        {t.dashboard.updateAvailabilityMessage}
+                      </p>
+                      <Button
+                        className="gap-2 min-h-[44px] px-6 bg-[#121212] hover:bg-[#121212]/90 text-[#FDFBF7]"
+                        onClick={() => setShowCreateModal(true)}
+                      >
+                        <Plus className="h-5 w-5" />
+                        <span>{t.dashboard.createBiography}</span>
+                      </Button>
+                    </div>
                   );
                 }
                 return null;
