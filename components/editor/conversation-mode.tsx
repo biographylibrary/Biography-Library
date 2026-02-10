@@ -31,6 +31,7 @@ import {
 import { useParams } from 'next/navigation';
 import { Logo } from '@/components/logo';
 import { useTheme } from 'next-themes';
+import { ensureValidSession } from '@/lib/session-helper';
 
 interface Message {
   id: string;
@@ -283,10 +284,11 @@ export function ConversationMode({
     setIsAnalyzing(true);
 
     try {
+      const freshToken = await ensureValidSession();
       const conversationHistory: ConversationHistory[] = answers.slice(-3);
 
       const analysis = await analyzeAndRespond(
-        session.access_token,
+        freshToken,
         currentAnswer.trim(),
         currentQuestion,
         conversationHistory,

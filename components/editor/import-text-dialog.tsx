@@ -26,6 +26,7 @@ import { detectSections, type SectionSuggestion } from '@/lib/import/section-mat
 import { SectionAssignmentWizard } from '@/components/import/SectionAssignmentWizard';
 import { useAuth } from '@/lib/auth-context';
 import { useTranslation } from '@/lib/i18n/i18n-context';
+import { ensureValidSession } from '@/lib/session-helper';
 
 interface ImportTextDialogProps {
   open: boolean;
@@ -150,7 +151,7 @@ export function ImportTextDialog({
     setError(null);
 
     try {
-      const token = session.access_token;
+      const token = await ensureValidSession();
       const result = await detectSections(parsedContent.content, language, token);
 
       if (result.suggestions.length === 0) {

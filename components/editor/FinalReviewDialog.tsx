@@ -22,6 +22,7 @@ import { supabase } from '@/lib/supabase';
 import { BIOGRAPHY_SECTIONS } from '@/lib/editor-constants';
 import { useTranslation } from '@/lib/i18n/i18n-context';
 import { cn } from '@/lib/utils';
+import { ensureValidSession } from '@/lib/session-helper';
 
 interface FinalReviewDialogProps {
   open: boolean;
@@ -61,14 +62,10 @@ export function FinalReviewDialog({
     setError(null);
 
     try {
-      const { data: { session: freshSession } } = await supabase.auth.getSession();
-
-      if (!freshSession?.access_token) {
-        throw new Error('No valid session found. Please refresh the page and try again.');
-      }
+      const freshToken = await ensureValidSession();
 
       const themes = await analyzeThemes(
-        freshSession.access_token,
+        freshToken,
         sections.filter(s => s.content.trim().length > 50),
         language
       );
@@ -76,7 +73,7 @@ export function FinalReviewDialog({
       setThemeAnalysis(themes);
 
       const structureProposals = await proposeAlternativeStructures(
-        freshSession.access_token,
+        freshToken,
         themes,
         originalOrder,
         language

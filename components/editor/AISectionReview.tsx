@@ -13,6 +13,7 @@ import { aiService, type Improvement } from '@/lib/ai/ai-provider';
 import { useAuth } from '@/lib/auth-context';
 import { addRevisionToHistory } from '@/lib/revision-history-service';
 import { toast } from 'sonner';
+import { ensureValidSession } from '@/lib/session-helper';
 
 interface AISectionReviewProps {
   open: boolean;
@@ -85,8 +86,10 @@ export function AISectionReview({
 
     setLoading(true);
     try {
+      const freshToken = await ensureValidSession();
+
       const results = await aiService.suggestImprovements(
-        session.access_token,
+        freshToken,
         content,
         sectionTitle,
         language
@@ -118,8 +121,10 @@ export function AISectionReview({
     );
 
     try {
+      const freshToken = await ensureValidSession();
+
       const rewritten = await aiService.rewriteSectionWithToken(
-        session.access_token,
+        freshToken,
         sectionTitle,
         content,
         tone,
