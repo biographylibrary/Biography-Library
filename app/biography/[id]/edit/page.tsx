@@ -928,7 +928,7 @@ export default function BiographyEditorPage() {
                 </div>
               )}
 
-              {editorMode === 'editor' && allSectionsComplete && activeSection === BIOGRAPHY_SECTIONS[BIOGRAPHY_SECTIONS.length - 1].key && (
+              {editorMode === 'editor' && allSectionsComplete && biographyStatus === 'draft' && (
                 <div className="p-6 border-t border-border/50 bg-gradient-to-br from-primary/5 to-primary/10 shrink-0">
                   <div className="max-w-3xl mx-auto text-center space-y-4">
                     <div className="space-y-2">
