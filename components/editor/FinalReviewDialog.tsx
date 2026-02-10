@@ -61,8 +61,14 @@ export function FinalReviewDialog({
     setError(null);
 
     try {
+      const { data: { session: freshSession } } = await supabase.auth.getSession();
+
+      if (!freshSession?.access_token) {
+        throw new Error('No valid session found. Please refresh the page and try again.');
+      }
+
       const themes = await analyzeThemes(
-        session.access_token,
+        freshSession.access_token,
         sections.filter(s => s.content.trim().length > 50),
         language
       );
@@ -70,7 +76,7 @@ export function FinalReviewDialog({
       setThemeAnalysis(themes);
 
       const structureProposals = await proposeAlternativeStructures(
-        session.access_token,
+        freshSession.access_token,
         themes,
         originalOrder,
         language
@@ -99,11 +105,17 @@ export function FinalReviewDialog({
     if (!proposal) return;
 
     try {
+      const { data: { session: freshSession } } = await supabase.auth.getSession();
+
+      if (!freshSession?.user?.id) {
+        throw new Error('No valid session found');
+      }
+
       await supabase
         .from('narrative_structures')
         .upsert({
           biography_id: biographyId,
-          user_id: session?.user?.id,
+          user_id: freshSession.user.id,
           original_order: originalOrder,
           selected_order: proposal.sectionOrder,
           structure_type: proposal.structureType,
