@@ -48,6 +48,8 @@ export async function analyzeThemes(
 ): Promise<SectionThemeAnalysis[]> {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 
+  console.log('[analyzeThemes] Calling AI assistant with', sections.length, 'sections');
+
   const response = await fetch(`${supabaseUrl}/functions/v1/ai-assistant`, {
     method: 'POST',
     headers: {
@@ -61,12 +63,25 @@ export async function analyzeThemes(
     }),
   });
 
+  console.log('[analyzeThemes] Response status:', response.status);
+
   if (!response.ok) {
-    const errorData = await response.json().catch(() => ({ error: 'Failed to analyze themes' }));
+    const errorText = await response.text();
+    console.error('[analyzeThemes] Error response:', errorText);
+
+    let errorData;
+    try {
+      errorData = JSON.parse(errorText);
+    } catch {
+      errorData = { error: `HTTP ${response.status}: ${errorText}` };
+    }
+
     throw new Error(errorData.error || 'Failed to analyze themes');
   }
 
   const data = await response.json();
+  console.log('[analyzeThemes] Success, got', data.analysis?.length || 0, 'theme analyses');
+
   return data.analysis || [];
 }
 
@@ -77,6 +92,8 @@ export async function proposeAlternativeStructures(
   language: string
 ): Promise<NarrativeStructureProposal[]> {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+
+  console.log('[proposeAlternativeStructures] Calling AI assistant with', themeAnalysis.length, 'theme analyses');
 
   const response = await fetch(`${supabaseUrl}/functions/v1/ai-assistant`, {
     method: 'POST',
@@ -92,11 +109,24 @@ export async function proposeAlternativeStructures(
     }),
   });
 
+  console.log('[proposeAlternativeStructures] Response status:', response.status);
+
   if (!response.ok) {
-    const errorData = await response.json().catch(() => ({ error: 'Failed to propose structures' }));
+    const errorText = await response.text();
+    console.error('[proposeAlternativeStructures] Error response:', errorText);
+
+    let errorData;
+    try {
+      errorData = JSON.parse(errorText);
+    } catch {
+      errorData = { error: `HTTP ${response.status}: ${errorText}` };
+    }
+
     throw new Error(errorData.error || 'Failed to propose structures');
   }
 
   const data = await response.json();
+  console.log('[proposeAlternativeStructures] Success, got', data.proposals?.length || 0, 'proposals');
+
   return data.proposals || [];
 }
