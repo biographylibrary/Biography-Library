@@ -195,9 +195,10 @@ Rewrite this in a ${tone} tone while preserving all facts and details.`,
 function buildAnalyzeThemesPrompt(sections: any[], language: string) {
   const langName = getLangName(language);
   const sectionsText = sections.map(s => `
-Section: ${s.title}
+Section Key: ${s.key}
+Section Title: ${s.title}
 Content: ${s.content.substring(0, 500)}...
-`).join('\n');
+`).join('\n---\n');
 
   return {
     system: `You are a biography editor analyzing narrative themes. For each section, identify the main themes and provide a brief summary. Themes can include: career, relationships, travel, personal growth, challenges, family, education, hobbies, life lessons. Return ONLY valid JSON, no markdown fences.`,
@@ -211,15 +212,17 @@ For each section, identify:
 Sections:
 ${sectionsText}
 
+IMPORTANT: Use the exact "Section Key" value provided for each section in the "sectionKey" field of your response.
+
 Respond in JSON format:
 {
   "analysis": [
     {
-      "sectionKey": "string",
-      "sectionTitle": "string",
-      "themes": ["theme1", "theme2"],
-      "mainTheme": "primary theme",
-      "contentSummary": "brief summary"
+      "sectionKey": "childhood",
+      "sectionTitle": "Childhood",
+      "themes": ["family", "education"],
+      "mainTheme": "family",
+      "contentSummary": "brief summary of the section content"
     }
   ]
 }`,
