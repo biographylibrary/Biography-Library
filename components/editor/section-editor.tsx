@@ -258,7 +258,7 @@ export function SectionEditor({
         <Dialog open={showNotesDialog} onOpenChange={setShowNotesDialog}>
           <DialogContent className="max-w-3xl max-h-[80vh] overflow-hidden flex flex-col">
             <DialogHeader>
-              <DialogTitle>Note e Promemoria - {sectionTitle}</DialogTitle>
+              <DialogTitle>{t.notesAndTodos.title} - {sectionTitle}</DialogTitle>
             </DialogHeader>
             <div className="flex-1 overflow-auto">
               <SectionNotes biographyId={biographyId} sectionKey={sectionKey} />
