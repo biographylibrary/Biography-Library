@@ -48,32 +48,6 @@ export async function analyzeThemes(
 ): Promise<SectionThemeAnalysis[]> {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 
-  const prompt = `Analyze the following biography sections and identify the main themes in each section.
-
-For each section, identify:
-1. Main themes (career, relationships, travel, personal growth, challenges, family, education, hobbies, life lessons)
-2. The primary theme (the most dominant theme)
-3. A brief content summary
-
-Sections:
-${sections.map(s => `
-Section: ${s.title}
-Content: ${s.content.substring(0, 500)}...
-`).join('\n')}
-
-Respond in JSON format:
-{
-  "analysis": [
-    {
-      "sectionKey": "string",
-      "sectionTitle": "string",
-      "themes": ["theme1", "theme2"],
-      "mainTheme": "primary theme",
-      "contentSummary": "brief summary"
-    }
-  ]
-}`;
-
   const response = await fetch(`${supabaseUrl}/functions/v1/ai-assistant`, {
     method: 'POST',
     headers: {
@@ -81,24 +55,19 @@ Respond in JSON format:
       'Authorization': `Bearer ${accessToken}`,
     },
     body: JSON.stringify({
-      prompt,
+      action: 'analyze-themes',
+      sections,
       language,
-      maxTokens: 2000,
     }),
   });
 
   if (!response.ok) {
-    throw new Error('Failed to analyze themes');
+    const errorData = await response.json().catch(() => ({ error: 'Failed to analyze themes' }));
+    throw new Error(errorData.error || 'Failed to analyze themes');
   }
 
   const data = await response.json();
-
-  try {
-    const parsed = JSON.parse(data.response);
-    return parsed.analysis;
-  } catch {
-    return [];
-  }
+  return data.analysis || [];
 }
 
 export async function proposeAlternativeStructures(
@@ -109,38 +78,6 @@ export async function proposeAlternativeStructures(
 ): Promise<NarrativeStructureProposal[]> {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 
-  const prompt = `Based on this theme analysis of biography sections, propose 3 alternative narrative structures.
-
-Theme Analysis:
-${JSON.stringify(themeAnalysis, null, 2)}
-
-Original Order: ${originalOrder.join(' → ')}
-
-IMPORTANT RULES:
-- DO NOT change any content or words
-- ONLY reorder sections to create better narrative flow
-- Each proposal should focus on different storytelling approach
-- Provide clear rationale for each structure
-- Explain how transitions work between reordered sections
-
-Proposal types to consider:
-1. Thematic grouping (group by theme like career, relationships, personal growth)
-2. Emotional arc (arrange by emotional journey)
-3. Impact-based (start with most impactful moments)
-
-Respond in JSON format:
-{
-  "proposals": [
-    {
-      "structureType": "descriptive name",
-      "sectionOrder": ["key1", "key2", ...],
-      "rationale": "why this order works",
-      "transitionNotes": ["how section1 leads to section2", ...],
-      "focusTheme": "main theme of this structure"
-    }
-  ]
-}`;
-
   const response = await fetch(`${supabaseUrl}/functions/v1/ai-assistant`, {
     method: 'POST',
     headers: {
@@ -148,22 +85,18 @@ Respond in JSON format:
       'Authorization': `Bearer ${accessToken}`,
     },
     body: JSON.stringify({
-      prompt,
+      action: 'propose-structures',
+      themeAnalysis,
+      originalOrder,
       language,
-      maxTokens: 3000,
     }),
   });
 
   if (!response.ok) {
-    throw new Error('Failed to propose structures');
+    const errorData = await response.json().catch(() => ({ error: 'Failed to propose structures' }));
+    throw new Error(errorData.error || 'Failed to propose structures');
   }
 
   const data = await response.json();
-
-  try {
-    const parsed = JSON.parse(data.response);
-    return parsed.proposals || [];
-  } catch {
-    return [];
-  }
+  return data.proposals || [];
 }

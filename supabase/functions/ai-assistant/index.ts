@@ -192,6 +192,83 @@ Rewrite this in a ${tone} tone while preserving all facts and details.`,
   };
 }
 
+function buildAnalyzeThemesPrompt(sections: any[], language: string) {
+  const langName = getLangName(language);
+  const sectionsText = sections.map(s => `
+Section: ${s.title}
+Content: ${s.content.substring(0, 500)}...
+`).join('\n');
+
+  return {
+    system: `You are a biography editor analyzing narrative themes. For each section, identify the main themes and provide a brief summary. Themes can include: career, relationships, travel, personal growth, challenges, family, education, hobbies, life lessons. Return ONLY valid JSON, no markdown fences.`,
+    user: `Analyze the following biography sections and identify the main themes in each section.
+
+For each section, identify:
+1. Main themes (career, relationships, travel, personal growth, challenges, family, education, hobbies, life lessons)
+2. The primary theme (the most dominant theme)
+3. A brief content summary
+
+Sections:
+${sectionsText}
+
+Respond in JSON format:
+{
+  "analysis": [
+    {
+      "sectionKey": "string",
+      "sectionTitle": "string",
+      "themes": ["theme1", "theme2"],
+      "mainTheme": "primary theme",
+      "contentSummary": "brief summary"
+    }
+  ]
+}`,
+  };
+}
+
+function buildProposeStructuresPrompt(
+  themeAnalysis: any[],
+  originalOrder: string[],
+  language: string
+) {
+  const langName = getLangName(language);
+
+  return {
+    system: `You are a biography editor proposing alternative narrative structures. Based on theme analysis, suggest 3 different ways to reorder sections for better storytelling. Return ONLY valid JSON, no markdown fences.`,
+    user: `Based on this theme analysis of biography sections, propose 3 alternative narrative structures.
+
+Theme Analysis:
+${JSON.stringify(themeAnalysis, null, 2)}
+
+Original Order: ${originalOrder.join(' → ')}
+
+IMPORTANT RULES:
+- DO NOT change any content or words
+- ONLY reorder sections to create better narrative flow
+- Each proposal should focus on different storytelling approach
+- Provide clear rationale for each structure
+- Explain how transitions work between reordered sections
+
+Proposal types to consider:
+1. Thematic grouping (group by theme like career, relationships, personal growth)
+2. Emotional arc (arrange by emotional journey)
+3. Impact-based (start with most impactful moments)
+
+Respond in JSON format:
+{
+  "proposals": [
+    {
+      "structureType": "descriptive name",
+      "sectionOrder": ["key1", "key2", ...],
+      "rationale": "why this order works",
+      "transitionNotes": ["how section1 leads to section2", ...],
+      "focusTheme": "main theme of this structure"
+    }
+  ]
+}`,
+  };
+}
+
 async function callInfomaniakAI(
   systemPrompt: string,
   userPrompt: string,
@@ -302,7 +379,10 @@ Deno.serve(async (req: Request) => {
       currentSection,
       completedSections,
       sectionContent,
-      availableSections
+      availableSections,
+      sections,
+      themeAnalysis,
+      originalOrder
     } = body;
 
     if (!action) {
@@ -403,6 +483,32 @@ Deno.serve(async (req: Request) => {
         maxTokens = 4096;
         break;
       }
+      case "analyze-themes": {
+        if (!sections || !Array.isArray(sections)) {
+          return errorResponse(
+            "Missing sections array for theme analysis",
+            400
+          );
+        }
+        const p = buildAnalyzeThemesPrompt(sections, language);
+        systemPrompt = p.system;
+        userPrompt = p.user;
+        maxTokens = 2000;
+        break;
+      }
+      case "propose-structures": {
+        if (!themeAnalysis || !originalOrder) {
+          return errorResponse(
+            "Missing themeAnalysis or originalOrder for structure proposals",
+            400
+          );
+        }
+        const p = buildProposeStructuresPrompt(themeAnalysis, originalOrder, language);
+        systemPrompt = p.system;
+        userPrompt = p.user;
+        maxTokens = 3000;
+        break;
+      }
       default:
         return errorResponse(`Unknown action: ${action}`, 400);
     }
@@ -459,6 +565,28 @@ Deno.serve(async (req: Request) => {
           reason: jsonData.reason || "",
           confidence: jsonData.confidence || "medium",
         };
+      } catch {
+        return errorResponse(
+          "AI returned an invalid response. Please try again.",
+          502
+        );
+      }
+    } else if (action === "analyze-themes") {
+      try {
+        const cleaned = extractJson(textContent);
+        const jsonData = JSON.parse(cleaned);
+        parsed = { analysis: jsonData.analysis || [] };
+      } catch {
+        return errorResponse(
+          "AI returned an invalid response. Please try again.",
+          502
+        );
+      }
+    } else if (action === "propose-structures") {
+      try {
+        const cleaned = extractJson(textContent);
+        const jsonData = JSON.parse(cleaned);
+        parsed = { proposals: jsonData.proposals || [] };
       } catch {
         return errorResponse(
           "AI returned an invalid response. Please try again.",
