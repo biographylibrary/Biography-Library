@@ -19,17 +19,14 @@ export function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  const accessToken =
-    request.cookies.get('sb-access-token')?.value ||
-    request.cookies.get('supabase-auth-token')?.value ||
-    (() => {
-      for (const [name, value] of request.cookies.getAll().map(c => [c.name, c.value] as const)) {
-        if (name.startsWith('sb-') && name.endsWith('-auth-token')) return value;
-      }
-      return null;
-    })();
+  const hasSession = request.cookies.getAll().some(({ name }) =>
+    name.startsWith('sb-') && (
+      name.endsWith('-auth-token') ||
+      name.match(/-auth-token\.\d+$/) !== null
+    )
+  );
 
-  if (!accessToken) {
+  if (!hasSession) {
     const loginUrl = new URL('/login', request.url);
     loginUrl.searchParams.set('redirectTo', pathname);
     return NextResponse.redirect(loginUrl);
