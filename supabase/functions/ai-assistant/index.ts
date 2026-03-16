@@ -327,6 +327,7 @@ Deno.serve(async (req: Request) => {
   try {
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    const anonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
 
     const infomaniakToken = Deno.env.get("INFOMANIAK_AI_TOKEN") || "";
     const infomaniakEndpoint = Deno.env.get("INFOMANIAK_AI_ENDPOINT") || "https://api.infomaniak.com/2/ai/107001/openai/v1/chat/completions";
@@ -344,16 +345,20 @@ Deno.serve(async (req: Request) => {
       return errorResponse("Missing authorization header", 401);
     }
 
-    const supabase = createClient(supabaseUrl, serviceRoleKey);
     const token = authHeader.replace("Bearer ", "");
+    const authClient = createClient(supabaseUrl, anonKey, {
+      global: { headers: { Authorization: `Bearer ${token}` } },
+    });
     const {
       data: { user },
       error: authError,
-    } = await supabase.auth.getUser(token);
+    } = await authClient.auth.getUser();
 
     if (authError || !user) {
       return errorResponse("Unauthorized", 401);
     }
+
+    const supabase = createClient(supabaseUrl, serviceRoleKey);
 
     const windowStart = new Date(Date.now() - RATE_WINDOW_MS).toISOString();
     const { count } = await supabase
