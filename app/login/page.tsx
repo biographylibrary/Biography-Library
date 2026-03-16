@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Logo } from '@/components/logo';
-import { Loader2, AlertCircle } from 'lucide-react';
+import { Loader as Loader2, CircleAlert as AlertCircle } from 'lucide-react';
 import { ThemeToggle } from '@/components/theme-toggle';
 
 export default function LoginPage() {
@@ -90,7 +90,15 @@ export default function LoginPage() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="password">{t.auth.password}</Label>
+              <div className="flex items-center justify-between">
+                <Label htmlFor="password">{t.auth.password}</Label>
+                <Link
+                  href="/forgot-password"
+                  className="text-xs text-muted-foreground hover:text-primary transition-colors"
+                >
+                  {t.auth.forgotPassword}
+                </Link>
+              </div>
               <Input
                 id="password"
                 type="password"

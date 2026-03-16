@@ -1,15 +1,18 @@
 'use client';
 
 import Link from 'next/link';
+import { useTranslation } from '@/lib/i18n/i18n-context';
 
 export function Footer() {
+  const { t } = useTranslation();
+
   return (
     <footer className="border-t border-border/50 bg-[#ECE9E4] dark:bg-[#1F2121] mt-auto">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         <div className="flex flex-col items-center gap-3">
           <div className="flex items-center gap-2">
             <p className="text-sm font-medium text-muted-foreground">
-              Biography Library | Hosted in Switzerland
+              {t.footer.hostedInSwitzerland}
             </p>
             <svg
               width="20"
@@ -28,14 +31,14 @@ export function Footer() {
               href="/terms-of-service"
               className="hover:text-foreground transition-colors"
             >
-              Terms of Service
+              {t.footer.termsOfService}
             </Link>
             <span>•</span>
             <Link
               href="/privacy-policy"
               className="hover:text-foreground transition-colors"
             >
-              Privacy Policy
+              {t.footer.privacyPolicy}
             </Link>
           </div>
         </div>

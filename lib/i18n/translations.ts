@@ -48,6 +48,32 @@ export interface Translations {
     passwordMinLength: string;
     createOne: string;
     createAccount: string;
+    forgotPassword: string;
+    forgotPasswordTitle: string;
+    forgotPasswordSubtitle: string;
+    forgotPasswordButton: string;
+    forgotPasswordSending: string;
+    forgotPasswordSuccess: string;
+    forgotPasswordSuccessDetail: string;
+    backToLogin: string;
+    resetPassword: string;
+    resetPasswordTitle: string;
+    resetPasswordSubtitle: string;
+    newPassword: string;
+    confirmNewPassword: string;
+    resetPasswordButton: string;
+    resetPasswordUpdating: string;
+    resetPasswordSuccess: string;
+    resetPasswordSuccessDetail: string;
+    verifyEmailTitle: string;
+    verifyEmailSubtitle: string;
+    verifyEmailDetail: string;
+    resendVerification: string;
+    resendVerificationSending: string;
+    resendVerificationSuccess: string;
+    emailNotVerified: string;
+    emailNotVerifiedDetail: string;
+    mustAcceptTerms: string;
   };
   dashboard: {
     title: string;
@@ -263,6 +289,8 @@ export interface Translations {
   };
   footer: {
     hostedInSwitzerland: string;
+    termsOfService: string;
+    privacyPolicy: string;
   };
   welcome: {
     title: string;
@@ -586,6 +614,32 @@ export const translations: Record<Language, Translations> = {
       passwordMinLength: 'Password must be at least 6 characters',
       createOne: 'Create one',
       createAccount: 'Create account',
+      forgotPassword: 'Forgot password?',
+      forgotPasswordTitle: 'Reset your password',
+      forgotPasswordSubtitle: 'Enter your email address and we\'ll send you a link to reset your password',
+      forgotPasswordButton: 'Send reset link',
+      forgotPasswordSending: 'Sending...',
+      forgotPasswordSuccess: 'Check your email',
+      forgotPasswordSuccessDetail: 'We\'ve sent a password reset link to your email address. Please check your inbox.',
+      backToLogin: 'Back to login',
+      resetPassword: 'Reset password',
+      resetPasswordTitle: 'Set a new password',
+      resetPasswordSubtitle: 'Enter your new password below',
+      newPassword: 'New password',
+      confirmNewPassword: 'Confirm new password',
+      resetPasswordButton: 'Update password',
+      resetPasswordUpdating: 'Updating...',
+      resetPasswordSuccess: 'Password updated',
+      resetPasswordSuccessDetail: 'Your password has been updated successfully. You can now sign in with your new password.',
+      verifyEmailTitle: 'Verify your email',
+      verifyEmailSubtitle: 'We\'ve sent a verification email to your address. Please check your inbox and click the link to activate your account.',
+      verifyEmailDetail: 'Didn\'t receive the email? Check your spam folder or resend it below.',
+      resendVerification: 'Resend verification email',
+      resendVerificationSending: 'Sending...',
+      resendVerificationSuccess: 'Verification email sent',
+      emailNotVerified: 'Email not verified',
+      emailNotVerifiedDetail: 'Please verify your email address to access the dashboard.',
+      mustAcceptTerms: 'Required — you must accept the terms to continue',
     },
     dashboard: {
       title: 'My Biographies',
@@ -801,6 +855,8 @@ export const translations: Record<Language, Translations> = {
     },
     footer: {
       hostedInSwitzerland: 'Biography Library - Hosted in Switzerland',
+      termsOfService: 'Terms of Service',
+      privacyPolicy: 'Privacy Policy',
     },
     welcome: {
       title: 'Welcome to Biography Library',
@@ -1122,6 +1178,32 @@ export const translations: Record<Language, Translations> = {
       passwordMinLength: 'La password deve essere di almeno 6 caratteri',
       createOne: 'Creane uno',
       createAccount: 'Crea account',
+      forgotPassword: 'Password dimenticata?',
+      forgotPasswordTitle: 'Reimposta la tua password',
+      forgotPasswordSubtitle: 'Inserisci il tuo indirizzo email e ti invieremo un link per reimpostare la password',
+      forgotPasswordButton: 'Invia link di reimpostazione',
+      forgotPasswordSending: 'Invio in corso...',
+      forgotPasswordSuccess: 'Controlla la tua email',
+      forgotPasswordSuccessDetail: 'Abbiamo inviato un link per reimpostare la password al tuo indirizzo email. Controlla la tua casella di posta.',
+      backToLogin: 'Torna al login',
+      resetPassword: 'Reimposta password',
+      resetPasswordTitle: 'Imposta una nuova password',
+      resetPasswordSubtitle: 'Inserisci la tua nuova password qui sotto',
+      newPassword: 'Nuova password',
+      confirmNewPassword: 'Conferma nuova password',
+      resetPasswordButton: 'Aggiorna password',
+      resetPasswordUpdating: 'Aggiornamento...',
+      resetPasswordSuccess: 'Password aggiornata',
+      resetPasswordSuccessDetail: 'La tua password è stata aggiornata con successo. Ora puoi accedere con la tua nuova password.',
+      verifyEmailTitle: 'Verifica la tua email',
+      verifyEmailSubtitle: 'Abbiamo inviato un\'email di verifica al tuo indirizzo. Controlla la tua casella di posta e clicca sul link per attivare il tuo account.',
+      verifyEmailDetail: 'Non hai ricevuto l\'email? Controlla la cartella spam o reinviala qui sotto.',
+      resendVerification: 'Reinvia email di verifica',
+      resendVerificationSending: 'Invio in corso...',
+      resendVerificationSuccess: 'Email di verifica inviata',
+      emailNotVerified: 'Email non verificata',
+      emailNotVerifiedDetail: 'Per favore verifica il tuo indirizzo email per accedere alla dashboard.',
+      mustAcceptTerms: 'Obbligatorio — devi accettare i termini per continuare',
     },
     dashboard: {
       title: 'Le Mie Biografie',
@@ -1337,6 +1419,8 @@ export const translations: Record<Language, Translations> = {
     },
     footer: {
       hostedInSwitzerland: 'Biography Library - Ospitato in Svizzera',
+      termsOfService: 'Termini di Servizio',
+      privacyPolicy: 'Informativa sulla Privacy',
     },
     welcome: {
       title: 'Benvenuto in Biography Library',
@@ -1658,6 +1742,32 @@ export const translations: Record<Language, Translations> = {
       passwordMinLength: 'Le mot de passe doit contenir au moins 6 caract\u00e8res',
       createOne: 'Cr\u00e9er un compte',
       createAccount: 'Cr\u00e9er un compte',
+      forgotPassword: 'Mot de passe oubli\u00e9\u00a0?',
+      forgotPasswordTitle: 'R\u00e9initialiser votre mot de passe',
+      forgotPasswordSubtitle: 'Entrez votre adresse email et nous vous enverrons un lien pour r\u00e9initialiser votre mot de passe',
+      forgotPasswordButton: 'Envoyer le lien de r\u00e9initialisation',
+      forgotPasswordSending: 'Envoi en cours...',
+      forgotPasswordSuccess: 'V\u00e9rifiez votre email',
+      forgotPasswordSuccessDetail: 'Nous avons envoy\u00e9 un lien de r\u00e9initialisation du mot de passe \u00e0 votre adresse email. Veuillez v\u00e9rifier votre bo\u00eete de r\u00e9ception.',
+      backToLogin: 'Retour \u00e0 la connexion',
+      resetPassword: 'R\u00e9initialiser le mot de passe',
+      resetPasswordTitle: 'D\u00e9finir un nouveau mot de passe',
+      resetPasswordSubtitle: 'Entrez votre nouveau mot de passe ci-dessous',
+      newPassword: 'Nouveau mot de passe',
+      confirmNewPassword: 'Confirmer le nouveau mot de passe',
+      resetPasswordButton: 'Mettre \u00e0 jour le mot de passe',
+      resetPasswordUpdating: 'Mise \u00e0 jour...',
+      resetPasswordSuccess: 'Mot de passe mis \u00e0 jour',
+      resetPasswordSuccessDetail: 'Votre mot de passe a \u00e9t\u00e9 mis \u00e0 jour avec succ\u00e8s. Vous pouvez maintenant vous connecter avec votre nouveau mot de passe.',
+      verifyEmailTitle: 'V\u00e9rifiez votre email',
+      verifyEmailSubtitle: 'Nous avons envoy\u00e9 un email de v\u00e9rification \u00e0 votre adresse. Veuillez v\u00e9rifier votre bo\u00eete de r\u00e9ception et cliquer sur le lien pour activer votre compte.',
+      verifyEmailDetail: 'Vous n\'avez pas re\u00e7u l\'email\u00a0? V\u00e9rifiez votre dossier spam ou renvoyez-le ci-dessous.',
+      resendVerification: 'Renvoyer l\'email de v\u00e9rification',
+      resendVerificationSending: 'Envoi en cours...',
+      resendVerificationSuccess: 'Email de v\u00e9rification envoy\u00e9',
+      emailNotVerified: 'Email non v\u00e9rifi\u00e9',
+      emailNotVerifiedDetail: 'Veuillez v\u00e9rifier votre adresse email pour acc\u00e9der au tableau de bord.',
+      mustAcceptTerms: 'Obligatoire \u2014 vous devez accepter les conditions pour continuer',
     },
     dashboard: {
       title: 'Mes Biographies',
@@ -1873,6 +1983,8 @@ export const translations: Record<Language, Translations> = {
     },
     footer: {
       hostedInSwitzerland: 'Biography Library - H\u00e9berg\u00e9 en Suisse',
+      termsOfService: 'Conditions d\'Utilisation',
+      privacyPolicy: 'Politique de Confidentialit\u00e9',
     },
     welcome: {
       title: 'Bienvenue dans Biography Library',
@@ -2194,6 +2306,32 @@ export const translations: Record<Language, Translations> = {
       passwordMinLength: 'Das Passwort muss mindestens 6 Zeichen lang sein',
       createOne: 'Konto erstellen',
       createAccount: 'Konto erstellen',
+      forgotPassword: 'Passwort vergessen?',
+      forgotPasswordTitle: 'Ihr Passwort zur\u00fccksetzen',
+      forgotPasswordSubtitle: 'Geben Sie Ihre E-Mail-Adresse ein und wir senden Ihnen einen Link zum Zur\u00fccksetzen Ihres Passworts',
+      forgotPasswordButton: 'Zur\u00fccksetzen-Link senden',
+      forgotPasswordSending: 'Wird gesendet...',
+      forgotPasswordSuccess: '\u00dcberpr\u00fcfen Sie Ihre E-Mail',
+      forgotPasswordSuccessDetail: 'Wir haben einen Link zum Zur\u00fccksetzen des Passworts an Ihre E-Mail-Adresse gesendet. Bitte \u00fcberpr\u00fcfen Sie Ihren Posteingang.',
+      backToLogin: 'Zur\u00fcck zur Anmeldung',
+      resetPassword: 'Passwort zur\u00fccksetzen',
+      resetPasswordTitle: 'Neues Passwort festlegen',
+      resetPasswordSubtitle: 'Geben Sie Ihr neues Passwort unten ein',
+      newPassword: 'Neues Passwort',
+      confirmNewPassword: 'Neues Passwort best\u00e4tigen',
+      resetPasswordButton: 'Passwort aktualisieren',
+      resetPasswordUpdating: 'Wird aktualisiert...',
+      resetPasswordSuccess: 'Passwort aktualisiert',
+      resetPasswordSuccessDetail: 'Ihr Passwort wurde erfolgreich aktualisiert. Sie k\u00f6nnen sich jetzt mit Ihrem neuen Passwort anmelden.',
+      verifyEmailTitle: 'E-Mail best\u00e4tigen',
+      verifyEmailSubtitle: 'Wir haben eine Best\u00e4tigungs-E-Mail an Ihre Adresse gesendet. Bitte \u00fcberpr\u00fcfen Sie Ihren Posteingang und klicken Sie auf den Link, um Ihr Konto zu aktivieren.',
+      verifyEmailDetail: 'Keine E-Mail erhalten? \u00dcberpr\u00fcfen Sie Ihren Spam-Ordner oder senden Sie sie erneut.',
+      resendVerification: 'Best\u00e4tigungs-E-Mail erneut senden',
+      resendVerificationSending: 'Wird gesendet...',
+      resendVerificationSuccess: 'Best\u00e4tigungs-E-Mail gesendet',
+      emailNotVerified: 'E-Mail nicht best\u00e4tigt',
+      emailNotVerifiedDetail: 'Bitte best\u00e4tigen Sie Ihre E-Mail-Adresse, um auf das Dashboard zuzugreifen.',
+      mustAcceptTerms: 'Erforderlich \u2014 Sie m\u00fcssen die Bedingungen akzeptieren, um fortzufahren',
     },
     dashboard: {
       title: 'Meine Biografien',
@@ -2409,6 +2547,8 @@ export const translations: Record<Language, Translations> = {
     },
     footer: {
       hostedInSwitzerland: 'Biography Library - Gehostet in der Schweiz',
+      termsOfService: 'Nutzungsbedingungen',
+      privacyPolicy: 'Datenschutzrichtlinie',
     },
     welcome: {
       title: 'Willkommen bei Biography Library',
