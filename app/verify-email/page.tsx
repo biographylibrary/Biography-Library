@@ -1,24 +1,31 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { supabase } from '@/lib/supabase';
+import { useAuth } from '@/lib/auth-context';
 import { useTranslation } from '@/lib/i18n/i18n-context';
 import { Button } from '@/components/ui/button';
 import { Logo } from '@/components/logo';
 import { ThemeToggle } from '@/components/theme-toggle';
 import { Loader as Loader2, Mail, CircleCheck as CheckCircle2, ArrowLeft } from 'lucide-react';
 
-interface VerifyEmailPageProps {
-  searchParams?: { email?: string };
-}
-
-export default function VerifyEmailPage({ searchParams }: VerifyEmailPageProps) {
-  const email = searchParams?.email ?? '';
+export default function VerifyEmailPage() {
+  const { user, loading, emailVerified } = useAuth();
+  const router = useRouter();
   const [isResending, setIsResending] = useState(false);
   const [resent, setResent] = useState(false);
   const [error, setError] = useState('');
   const { t } = useTranslation();
+
+  useEffect(() => {
+    if (!loading && emailVerified) {
+      router.replace('/dashboard');
+    }
+  }, [loading, emailVerified, router]);
+
+  const email = user?.email ?? '';
 
   const handleResend = async () => {
     if (!email) return;
@@ -35,6 +42,14 @@ export default function VerifyEmailPage({ searchParams }: VerifyEmailPageProps) 
     }
     setIsResending(false);
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex flex-col bg-background">

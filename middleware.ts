@@ -1,42 +1,33 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server'
 
 const PROTECTED_ROUTES = [
   '/dashboard',
   '/biography',
   '/create-biography',
-  '/autobiography/declaration',
-  '/deceased-biography/declaration',
-];
-
-function isProtectedRoute(pathname: string): boolean {
-  return PROTECTED_ROUTES.some(
-    (route) => pathname === route || pathname.startsWith(route + '/')
-  );
-}
-
-function hasAuthCookie(request: NextRequest): boolean {
-  const cookies = request.cookies.getAll();
-  return cookies.some(
-    ({ name }) =>
-      name.startsWith('sb-') &&
-      (name.endsWith('-auth-token') || name.match(/-auth-token\.\d+$/) !== null)
-  );
-}
+  '/autobiography-declaration',
+  '/deceased-biography-declaration',
+  '/verify-email',
+]
 
 export function middleware(request: NextRequest) {
-  const { pathname } = request.nextUrl;
+  const { pathname } = request.nextUrl
 
-  if (!isProtectedRoute(pathname)) {
-    return NextResponse.next();
+  const isProtected = PROTECTED_ROUTES.some(route =>
+    pathname.startsWith(route)
+  )
+
+  if (!isProtected) return NextResponse.next()
+
+  const hasCookie = Array.from(request.cookies.getAll()).some(
+    cookie => cookie.name.startsWith('sb-') &&
+              cookie.name.endsWith('-auth-token')
+  )
+
+  if (!hasCookie) {
+    return NextResponse.redirect(new URL('/login', request.url))
   }
 
-  if (!hasAuthCookie(request)) {
-    const loginUrl = new URL('/login', request.url);
-    loginUrl.searchParams.set('redirectTo', pathname);
-    return NextResponse.redirect(loginUrl);
-  }
-
-  return NextResponse.next();
+  return NextResponse.next()
 }
 
 export const config = {
@@ -44,7 +35,8 @@ export const config = {
     '/dashboard/:path*',
     '/biography/:path*',
     '/create-biography/:path*',
-    '/autobiography/declaration/:path*',
-    '/deceased-biography/declaration/:path*',
+    '/autobiography-declaration/:path*',
+    '/deceased-biography-declaration/:path*',
+    '/verify-email/:path*',
   ],
-};
+}

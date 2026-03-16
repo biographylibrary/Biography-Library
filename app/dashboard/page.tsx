@@ -17,12 +17,12 @@ import {
   deleteBiography,
   type Biography,
 } from '@/lib/biographies';
-import { Plus, Loader2, AlertCircle } from 'lucide-react';
+import { Plus, Loader as Loader2, CircleAlert as AlertCircle } from 'lucide-react';
 import { useTranslation } from '@/lib/i18n/i18n-context';
 import { toast } from 'sonner';
 
 export default function DashboardPage() {
-  const { user, loading: authLoading } = useAuth();
+  const { user, loading: authLoading, emailVerified } = useAuth();
   const router = useRouter();
 
   const [biographies, setBiographies] = useState<Biography[]>([]);
@@ -37,8 +37,10 @@ export default function DashboardPage() {
   useEffect(() => {
     if (!authLoading && !user) {
       router.push('/login');
+    } else if (!authLoading && user && !emailVerified) {
+      router.push('/verify-email');
     }
-  }, [user, authLoading, router]);
+  }, [user, authLoading, emailVerified, router]);
 
   const loadBiographies = useCallback(async () => {
     if (!user) return;
