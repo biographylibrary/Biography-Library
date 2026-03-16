@@ -9,7 +9,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Info, Loader2, CheckCircle2, XCircle } from 'lucide-react';
+import { Info, Loader as Loader2, CircleCheck as CheckCircle2, Circle as XCircle } from 'lucide-react';
 
 export default function AutobiographyDeclarationPage() {
   const { user, loading } = useAuth();
@@ -164,7 +164,7 @@ export default function AutobiographyDeclarationPage() {
                         {renderCheckbox3Label()}
                       </Label>
                       <p className="text-sm font-medium text-amber-600 dark:text-amber-500">
-                        Required - You must accept the terms to continue
+                        {t.declaration.mustAcceptTerms}
                       </p>
                     </div>
                   </div>
