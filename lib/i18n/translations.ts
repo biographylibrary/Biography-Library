@@ -48,32 +48,6 @@ export interface Translations {
     passwordMinLength: string;
     createOne: string;
     createAccount: string;
-    forgotPassword: string;
-    forgotPasswordTitle: string;
-    forgotPasswordSubtitle: string;
-    sendResetLink: string;
-    sendingResetLink: string;
-    resetLinkSent: string;
-    resetLinkSentMessage: string;
-    backToLogin: string;
-    resetPassword: string;
-    resetPasswordTitle: string;
-    resetPasswordSubtitle: string;
-    newPassword: string;
-    enterNewPassword: string;
-    confirmNewPassword: string;
-    repeatNewPassword: string;
-    updatingPassword: string;
-    passwordUpdated: string;
-    passwordUpdatedMessage: string;
-    verifyEmail: string;
-    verifyEmailTitle: string;
-    verifyEmailMessage: string;
-    verifyEmailSentTo: string;
-    resendEmail: string;
-    resendingEmail: string;
-    emailResent: string;
-    checkSpam: string;
   };
   dashboard: {
     title: string;
@@ -289,8 +263,6 @@ export interface Translations {
   };
   footer: {
     hostedInSwitzerland: string;
-    termsOfService: string;
-    privacyPolicy: string;
   };
   welcome: {
     title: string;
@@ -385,7 +357,6 @@ export interface Translations {
     cannotWriteLine3: string;
     cannotWriteLine4: string;
     acceptButton: string;
-    mustAcceptTerms: string;
   };
   deceasedDeclaration: {
     stepIndicator: string;
@@ -419,7 +390,6 @@ export interface Translations {
     legalWarningBullet2: string;
     legalWarningBullet3: string;
     acceptButton: string;
-    mustAcceptTerms: string;
   };
   importDialog: {
     title: string;
@@ -616,32 +586,6 @@ export const translations: Record<Language, Translations> = {
       passwordMinLength: 'Password must be at least 6 characters',
       createOne: 'Create one',
       createAccount: 'Create account',
-      forgotPassword: 'Forgot password?',
-      forgotPasswordTitle: 'Reset your password',
-      forgotPasswordSubtitle: 'Enter your email address and we\'ll send you a link to reset your password',
-      sendResetLink: 'Send reset link',
-      sendingResetLink: 'Sending...',
-      resetLinkSent: 'Check your email',
-      resetLinkSentMessage: 'We sent a password reset link to your email address. Check your inbox and follow the instructions.',
-      backToLogin: 'Back to login',
-      resetPassword: 'Reset password',
-      resetPasswordTitle: 'Set a new password',
-      resetPasswordSubtitle: 'Choose a strong password for your account',
-      newPassword: 'New password',
-      enterNewPassword: 'Enter your new password',
-      confirmNewPassword: 'Confirm new password',
-      repeatNewPassword: 'Repeat your new password',
-      updatingPassword: 'Updating password...',
-      passwordUpdated: 'Password updated',
-      passwordUpdatedMessage: 'Your password has been updated successfully. You can now sign in with your new password.',
-      verifyEmail: 'Verify your email',
-      verifyEmailTitle: 'Check your email',
-      verifyEmailMessage: 'We sent a verification link to your email address. Click the link to activate your account.',
-      verifyEmailSentTo: 'Sent to',
-      resendEmail: 'Resend email',
-      resendingEmail: 'Resending...',
-      emailResent: 'Email resent',
-      checkSpam: 'Didn\'t receive the email? Check your spam folder.',
     },
     dashboard: {
       title: 'My Biographies',
@@ -857,8 +801,6 @@ export const translations: Record<Language, Translations> = {
     },
     footer: {
       hostedInSwitzerland: 'Biography Library - Hosted in Switzerland',
-      termsOfService: 'Terms of Service',
-      privacyPolicy: 'Privacy Policy',
     },
     welcome: {
       title: 'Welcome to Biography Library',
@@ -953,7 +895,6 @@ export const translations: Record<Language, Translations> = {
       cannotWriteLine3: 'Legal/criminal proceedings involving others',
       cannotWriteLine4: 'Private financial information of others',
       acceptButton: 'Accept and Continue',
-      mustAcceptTerms: 'Required - You must accept the terms to continue',
     },
     deceasedDeclaration: {
       stepIndicator: 'Step 1 of 3: Declaration and Consent',
@@ -987,7 +928,6 @@ export const translations: Record<Language, Translations> = {
       legalWarningBullet2: 'Criminal prosecution under Swiss law (Art. 173-177 CP)',
       legalWarningBullet3: 'Immediate removal of the biography and account termination',
       acceptButton: 'Accept and Continue',
-      mustAcceptTerms: 'Required - You must accept the terms to continue',
     },
     importDialog: {
       title: 'Import text into section "{sectionName}"',
@@ -1182,32 +1122,6 @@ export const translations: Record<Language, Translations> = {
       passwordMinLength: 'La password deve essere di almeno 6 caratteri',
       createOne: 'Creane uno',
       createAccount: 'Crea account',
-      forgotPassword: 'Password dimenticata?',
-      forgotPasswordTitle: 'Reimposta la tua password',
-      forgotPasswordSubtitle: 'Inserisci il tuo indirizzo email e ti invieremo un link per reimpostare la password',
-      sendResetLink: 'Invia link di reimpostazione',
-      sendingResetLink: 'Invio in corso...',
-      resetLinkSent: 'Controlla la tua email',
-      resetLinkSentMessage: 'Abbiamo inviato un link di reimpostazione della password al tuo indirizzo email. Controlla la posta in arrivo e segui le istruzioni.',
-      backToLogin: 'Torna al login',
-      resetPassword: 'Reimposta password',
-      resetPasswordTitle: 'Imposta una nuova password',
-      resetPasswordSubtitle: 'Scegli una password sicura per il tuo account',
-      newPassword: 'Nuova password',
-      enterNewPassword: 'Inserisci la tua nuova password',
-      confirmNewPassword: 'Conferma nuova password',
-      repeatNewPassword: 'Ripeti la tua nuova password',
-      updatingPassword: 'Aggiornamento password...',
-      passwordUpdated: 'Password aggiornata',
-      passwordUpdatedMessage: 'La tua password è stata aggiornata con successo. Ora puoi accedere con la tua nuova password.',
-      verifyEmail: 'Verifica la tua email',
-      verifyEmailTitle: 'Controlla la tua email',
-      verifyEmailMessage: 'Abbiamo inviato un link di verifica al tuo indirizzo email. Clicca sul link per attivare il tuo account.',
-      verifyEmailSentTo: 'Inviato a',
-      resendEmail: 'Reinvia email',
-      resendingEmail: 'Reinvio in corso...',
-      emailResent: 'Email reinviata',
-      checkSpam: 'Non hai ricevuto l\'email? Controlla la cartella spam.',
     },
     dashboard: {
       title: 'Le Mie Biografie',
@@ -1423,8 +1337,6 @@ export const translations: Record<Language, Translations> = {
     },
     footer: {
       hostedInSwitzerland: 'Biography Library - Ospitato in Svizzera',
-      termsOfService: 'Termini di Servizio',
-      privacyPolicy: 'Informativa sulla Privacy',
     },
     welcome: {
       title: 'Benvenuto in Biography Library',
@@ -1519,7 +1431,6 @@ export const translations: Record<Language, Translations> = {
       cannotWriteLine3: 'Procedimenti legali/penali che coinvolgono altri',
       cannotWriteLine4: 'Informazioni finanziarie private di altri',
       acceptButton: 'Accetta e Continua',
-      mustAcceptTerms: 'Obbligatorio - Devi accettare i termini per continuare',
     },
     deceasedDeclaration: {
       stepIndicator: 'Passo 1 di 3: Dichiarazione e Consenso',
@@ -1553,7 +1464,6 @@ export const translations: Record<Language, Translations> = {
       legalWarningBullet2: 'Persecuzione penale ai sensi della legge svizzera (Art. 173-177 CP)',
       legalWarningBullet3: 'Rimozione immediata della biografia e chiusura dell\'account',
       acceptButton: 'Accetta e Continua',
-      mustAcceptTerms: 'Obbligatorio - Devi accettare i termini per continuare',
     },
     importDialog: {
       title: 'Importa testo nella sezione "{sectionName}"',
@@ -1746,34 +1656,8 @@ export const translations: Record<Language, Translations> = {
       repeatPassword: 'R\u00e9p\u00e9tez votre mot de passe',
       passwordsDoNotMatch: 'Les mots de passe ne correspondent pas',
       passwordMinLength: 'Le mot de passe doit contenir au moins 6 caract\u00e8res',
-      createOne: 'Créer un compte',
-      createAccount: 'Créer un compte',
-      forgotPassword: 'Mot de passe oublié ?',
-      forgotPasswordTitle: 'Réinitialisez votre mot de passe',
-      forgotPasswordSubtitle: "Entrez votre adresse email et nous vous enverrons un lien pour réinitialiser votre mot de passe",
-      sendResetLink: 'Envoyer le lien de réinitialisation',
-      sendingResetLink: 'Envoi en cours...',
-      resetLinkSent: 'Vérifiez votre email',
-      resetLinkSentMessage: 'Nous avons envoyé un lien de réinitialisation de mot de passe à votre adresse email. Consultez votre boîte de réception et suivez les instructions.',
-      backToLogin: 'Retour à la connexion',
-      resetPassword: 'Réinitialiser le mot de passe',
-      resetPasswordTitle: 'Définissez un nouveau mot de passe',
-      resetPasswordSubtitle: 'Choisissez un mot de passe fort pour votre compte',
-      newPassword: 'Nouveau mot de passe',
-      enterNewPassword: 'Entrez votre nouveau mot de passe',
-      confirmNewPassword: 'Confirmez le nouveau mot de passe',
-      repeatNewPassword: 'Répétez votre nouveau mot de passe',
-      updatingPassword: 'Mise à jour du mot de passe...',
-      passwordUpdated: 'Mot de passe mis à jour',
-      passwordUpdatedMessage: 'Votre mot de passe a été mis à jour avec succès. Vous pouvez maintenant vous connecter avec votre nouveau mot de passe.',
-      verifyEmail: 'Vérifiez votre email',
-      verifyEmailTitle: 'Vérifiez votre email',
-      verifyEmailMessage: 'Nous avons envoyé un lien de vérification à votre adresse email. Cliquez sur le lien pour activer votre compte.',
-      verifyEmailSentTo: 'Envoyé à',
-      resendEmail: "Renvoyer l'email",
-      resendingEmail: 'Renvoi en cours...',
-      emailResent: 'Email renvoyé',
-      checkSpam: "Vous n'avez pas reçu l'email ? Vérifiez votre dossier spam.",
+      createOne: 'Cr\u00e9er un compte',
+      createAccount: 'Cr\u00e9er un compte',
     },
     dashboard: {
       title: 'Mes Biographies',
@@ -1988,9 +1872,7 @@ export const translations: Record<Language, Translations> = {
       biographyPrivate: 'Cette biographie est priv\u00e9e',
     },
     footer: {
-      hostedInSwitzerland: 'Biography Library - Hébergé en Suisse',
-      termsOfService: "Conditions d'utilisation",
-      privacyPolicy: 'Politique de confidentialité',
+      hostedInSwitzerland: 'Biography Library - H\u00e9berg\u00e9 en Suisse',
     },
     welcome: {
       title: 'Bienvenue dans Biography Library',
@@ -2085,7 +1967,6 @@ export const translations: Record<Language, Translations> = {
       cannotWriteLine3: 'Procédures judiciaires/pénales impliquant d\'autres personnes',
       cannotWriteLine4: 'Informations financières privées d\'autrui',
       acceptButton: 'Accepter et Continuer',
-      mustAcceptTerms: 'Obligatoire - Vous devez accepter les conditions pour continuer',
     },
     deceasedDeclaration: {
       stepIndicator: 'Étape 1 sur 3 : Déclaration et Consentement',
@@ -2119,7 +2000,6 @@ export const translations: Record<Language, Translations> = {
       legalWarningBullet2: 'Des poursuites pénales en vertu du droit suisse (Art. 173-177 CP)',
       legalWarningBullet3: 'La suppression immédiate de la biographie et la fermeture du compte',
       acceptButton: 'Accepter et Continuer',
-      mustAcceptTerms: 'Obligatoire - Vous devez accepter les conditions pour continuer',
     },
     importDialog: {
       title: 'Importer du texte dans la section "{sectionName}"',
@@ -2314,32 +2194,6 @@ export const translations: Record<Language, Translations> = {
       passwordMinLength: 'Das Passwort muss mindestens 6 Zeichen lang sein',
       createOne: 'Konto erstellen',
       createAccount: 'Konto erstellen',
-      forgotPassword: 'Passwort vergessen?',
-      forgotPasswordTitle: 'Passwort zurücksetzen',
-      forgotPasswordSubtitle: 'Geben Sie Ihre E-Mail-Adresse ein und wir senden Ihnen einen Link zum Zurücksetzen Ihres Passworts',
-      sendResetLink: 'Reset-Link senden',
-      sendingResetLink: 'Wird gesendet...',
-      resetLinkSent: 'Überprüfen Sie Ihre E-Mail',
-      resetLinkSentMessage: 'Wir haben einen Link zum Zurücksetzen des Passworts an Ihre E-Mail-Adresse gesendet. Überprüfen Sie Ihren Posteingang und folgen Sie den Anweisungen.',
-      backToLogin: 'Zurück zur Anmeldung',
-      resetPassword: 'Passwort zurücksetzen',
-      resetPasswordTitle: 'Neues Passwort festlegen',
-      resetPasswordSubtitle: 'Wählen Sie ein sicheres Passwort für Ihr Konto',
-      newPassword: 'Neues Passwort',
-      enterNewPassword: 'Geben Sie Ihr neues Passwort ein',
-      confirmNewPassword: 'Neues Passwort bestätigen',
-      repeatNewPassword: 'Neues Passwort wiederholen',
-      updatingPassword: 'Passwort wird aktualisiert...',
-      passwordUpdated: 'Passwort aktualisiert',
-      passwordUpdatedMessage: 'Ihr Passwort wurde erfolgreich aktualisiert. Sie können sich jetzt mit Ihrem neuen Passwort anmelden.',
-      verifyEmail: 'E-Mail verifizieren',
-      verifyEmailTitle: 'Überprüfen Sie Ihre E-Mail',
-      verifyEmailMessage: 'Wir haben einen Verifizierungslink an Ihre E-Mail-Adresse gesendet. Klicken Sie auf den Link, um Ihr Konto zu aktivieren.',
-      verifyEmailSentTo: 'Gesendet an',
-      resendEmail: 'E-Mail erneut senden',
-      resendingEmail: 'Wird erneut gesendet...',
-      emailResent: 'E-Mail erneut gesendet',
-      checkSpam: 'Keine E-Mail erhalten? Überprüfen Sie Ihren Spam-Ordner.',
     },
     dashboard: {
       title: 'Meine Biografien',
@@ -2555,8 +2409,6 @@ export const translations: Record<Language, Translations> = {
     },
     footer: {
       hostedInSwitzerland: 'Biography Library - Gehostet in der Schweiz',
-      termsOfService: 'Nutzungsbedingungen',
-      privacyPolicy: 'Datenschutzrichtlinie',
     },
     welcome: {
       title: 'Willkommen bei Biography Library',
@@ -2651,7 +2503,6 @@ export const translations: Record<Language, Translations> = {
       cannotWriteLine3: 'Gerichts-/Strafverfahren mit Beteiligung anderer',
       cannotWriteLine4: 'Private Finanzinformationen anderer',
       acceptButton: 'Akzeptieren und Fortfahren',
-      mustAcceptTerms: 'Erforderlich - Sie müssen die Bedingungen akzeptieren, um fortzufahren',
     },
     deceasedDeclaration: {
       stepIndicator: 'Schritt 1 von 3: Erklärung und Einwilligung',
@@ -2685,7 +2536,6 @@ export const translations: Record<Language, Translations> = {
       legalWarningBullet2: 'Strafrechtliche Verfolgung nach Schweizer Recht (Art. 173-177 StGB)',
       legalWarningBullet3: 'Sofortige Entfernung der Biografie und Kontosperrung',
       acceptButton: 'Akzeptieren und Fortfahren',
-      mustAcceptTerms: 'Erforderlich - Sie müssen die Bedingungen akzeptieren, um fortzufahren',
     },
     importDialog: {
       title: 'Text in Abschnitt "{sectionName}" importieren',

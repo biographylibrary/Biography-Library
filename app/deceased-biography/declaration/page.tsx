@@ -9,7 +9,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { TriangleAlert as AlertTriangle, Info, Loader as Loader2, Clock, Scale } from 'lucide-react';
+import { AlertTriangle, Info, Loader2, Clock, Scale } from 'lucide-react';
 
 export default function DeceasedDeclarationPage() {
   const { user, loading } = useAuth();
@@ -228,7 +228,7 @@ export default function DeceasedDeclarationPage() {
                         {renderCheckbox5Label()}
                       </Label>
                       <p className="text-sm font-medium text-amber-600 dark:text-amber-500">
-                        {t.deceasedDeclaration.mustAcceptTerms}
+                        Required - You must accept the terms to continue
                       </p>
                     </div>
                   </div>

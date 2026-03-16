@@ -10,7 +10,6 @@ interface AuthContextType {
   user: User | null;
   session: Session | null;
   loading: boolean;
-  emailVerified: boolean;
   fontSize: FontSize;
   setFontSize: (size: FontSize) => void;
   signIn: (email: string, password: string) => Promise<{ error: string | null }>;
@@ -25,8 +24,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
   const [fontSize, setFontSize] = useState<FontSize>('normal');
-
-  const emailVerified = !!user?.email_confirmed_at;
 
   const loadFontSize = useCallback(async (userId: string) => {
     const { data } = await supabase
@@ -48,12 +45,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   useEffect(() => {
-    const sessionTimeout = setTimeout(() => {
-      setLoading(false);
-    }, 8000);
-
     supabase.auth.getSession().then(({ data: { session } }) => {
-      clearTimeout(sessionTimeout);
       setSession(session);
       setUser(session?.user ?? null);
       if (session?.user) {
@@ -73,10 +65,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
     );
 
-    return () => {
-      clearTimeout(sessionTimeout);
-      subscription.unsubscribe();
-    };
+    return () => subscription.unsubscribe();
   }, [loadFontSize]);
 
   const signIn = useCallback(async (email: string, password: string) => {
@@ -106,7 +95,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   return (
-    <AuthContext.Provider value={{ user, session, loading, emailVerified, fontSize, setFontSize, signIn, signUp, signOut }}>
+    <AuthContext.Provider value={{ user, session, loading, fontSize, setFontSize, signIn, signUp, signOut }}>
       {children}
     </AuthContext.Provider>
   );

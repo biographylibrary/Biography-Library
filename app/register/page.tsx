@@ -4,13 +4,12 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/lib/auth-context';
-import { supabase } from '@/lib/supabase';
 import { useTranslation } from '@/lib/i18n/i18n-context';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Logo } from '@/components/logo';
-import { Loader as Loader2, CircleAlert as AlertCircle, Mail, CircleCheck as CheckCircle2 } from 'lucide-react';
+import { Loader2, AlertCircle } from 'lucide-react';
 import { ThemeToggle } from '@/components/theme-toggle';
 
 export default function RegisterPage() {
@@ -20,9 +19,6 @@ export default function RegisterPage() {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [registered, setRegistered] = useState(false);
-  const [isResending, setIsResending] = useState(false);
-  const [resent, setResent] = useState(false);
   const { signUp, user, loading } = useAuth();
   const router = useRouter();
   const { t } = useTranslation();
@@ -54,100 +50,14 @@ export default function RegisterPage() {
       setError(error);
       setIsLoading(false);
     } else {
-      setRegistered(true);
-      setIsLoading(false);
+      router.push('/create-biography');
     }
-  };
-
-  const handleResend = async () => {
-    setIsResending(true);
-    setResent(false);
-    const { error } = await supabase.auth.resend({ type: 'signup', email });
-    if (!error) setResent(true);
-    setIsResending(false);
   };
 
   if (loading || user) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
-      </div>
-    );
-  }
-
-  if (registered) {
-    return (
-      <div className="min-h-screen flex flex-col bg-background">
-        <div className="absolute top-4 right-4 z-10">
-          <ThemeToggle />
-        </div>
-
-        <div className="flex-1 flex items-center justify-center px-4 py-12">
-          <div className="w-full max-w-[420px] animate-in fade-in slide-in-from-bottom-4 duration-500 space-y-6">
-            <div className="text-center space-y-2">
-              <div className="flex items-center justify-center mb-6">
-                <Logo height={64} />
-              </div>
-              <h1 className="text-2xl font-serif font-semibold tracking-tight">
-                {t.auth.verifyEmailTitle}
-              </h1>
-              <p className="text-sm text-muted-foreground">
-                {t.auth.verifyEmailMessage}
-              </p>
-            </div>
-
-            <div className="flex flex-col items-center gap-4 p-6 rounded-xl bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800 text-center">
-              <div className="w-14 h-14 rounded-full bg-blue-100 dark:bg-blue-900/50 flex items-center justify-center">
-                <Mail className="h-7 w-7 text-blue-600 dark:text-blue-400" />
-              </div>
-              <div className="space-y-1">
-                <p className="text-xs text-blue-600 dark:text-blue-400 font-medium uppercase tracking-wider">
-                  {t.auth.verifyEmailSentTo}
-                </p>
-                <p className="font-semibold text-blue-900 dark:text-blue-100 break-all">
-                  {email}
-                </p>
-              </div>
-            </div>
-
-            {resent && (
-              <div className="flex items-center gap-2 p-3 rounded-lg bg-green-50 dark:bg-green-950/30 border border-green-200 dark:border-green-800 text-green-700 dark:text-green-300 text-sm">
-                <CheckCircle2 className="h-4 w-4 shrink-0" />
-                <span>{t.auth.emailResent}</span>
-              </div>
-            )}
-
-            <p className="text-center text-xs text-muted-foreground">
-              {t.auth.checkSpam}
-            </p>
-
-            <Button
-              variant="outline"
-              className="w-full h-11"
-              onClick={handleResend}
-              disabled={isResending}
-            >
-              {isResending ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  {t.auth.resendingEmail}
-                </>
-              ) : (
-                t.auth.resendEmail
-              )}
-            </Button>
-
-            <p className="text-center text-sm text-muted-foreground">
-              {t.auth.alreadyHaveAccount}{' '}
-              <Link
-                href="/login"
-                className="font-medium text-primary hover:text-primary/80 transition-colors"
-              >
-                {t.auth.signIn}
-              </Link>
-            </p>
-          </div>
-        </div>
       </div>
     );
   }

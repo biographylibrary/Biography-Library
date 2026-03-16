@@ -19,29 +19,16 @@ export interface Biography {
 }
 
 export async function fetchBiographies(userId: string) {
-  try {
-    const fetchPromise = supabase
-      .from('biographies')
-      .select('*')
-      .eq('user_id', userId)
-      .order('updated_at', { ascending: false });
+  const { data, error } = await supabase
+    .from('biographies')
+    .select('*')
+    .eq('user_id', userId)
+    .order('updated_at', { ascending: false });
 
-    const timeoutPromise = new Promise<{ data: null; error: { message: string } }>((resolve) =>
-      setTimeout(() => resolve({ data: null, error: { message: 'Request timed out. Please try again.' } }), 10000)
-    );
-
-    const { data, error } = await Promise.race([fetchPromise, timeoutPromise]);
-
-    return {
-      data: data as Biography[] | null,
-      error: error?.message ?? null,
-    };
-  } catch (err: unknown) {
-    return {
-      data: null,
-      error: err instanceof Error ? err.message : 'Failed to load biographies',
-    };
-  }
+  return {
+    data: data as Biography[] | null,
+    error: error?.message ?? null,
+  };
 }
 
 export async function createBiography(
@@ -49,12 +36,6 @@ export async function createBiography(
   title: string,
   privacy: 'private' | 'family' | 'public'
 ) {
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('name')
-    .eq('id', userId)
-    .maybeSingle();
-
   const { data, error } = await supabase
     .from('biographies')
     .insert({
@@ -63,7 +44,6 @@ export async function createBiography(
       privacy,
       status: 'draft',
       content: {},
-      author_name: profile?.name ?? '',
     })
     .select()
     .maybeSingle();
