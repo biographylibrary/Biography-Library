@@ -401,16 +401,30 @@ export default function BiographyEditorPage() {
   );
 
   const getToken = useCallback(async () => {
-    const { data: { session: freshSession }, error } = await supabase.auth.refreshSession();
-    if (error) {
-      console.error('Error refreshing session:', error);
+    try {
+      const { data: { session: currentSession }, error } = await supabase.auth.getSession();
+      if (error || !currentSession?.access_token) {
+        console.error('Error getting session:', error);
+        return '';
+      }
+
+      const expiresAt = currentSession.expires_at ?? 0;
+      const nowSec = Math.floor(Date.now() / 1000);
+
+      if (expiresAt - nowSec < 60) {
+        const { data: refreshed, error: refreshError } = await supabase.auth.refreshSession();
+        if (refreshError || !refreshed.session?.access_token) {
+          console.error('Error refreshing session:', refreshError);
+          return '';
+        }
+        return refreshed.session.access_token;
+      }
+
+      return currentSession.access_token;
+    } catch (err) {
+      console.error('getToken error:', err);
       return '';
     }
-    if (!freshSession || !freshSession.access_token) {
-      console.error('No valid session or access token found');
-      return '';
-    }
-    return freshSession.access_token;
   }, []);
 
   const handleGrammarCheck = useCallback(async () => {
