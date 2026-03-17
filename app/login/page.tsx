@@ -32,7 +32,11 @@ export default function LoginPage() {
     setError('');
     setIsLoading(true);
 
-    const { error } = await signIn(email, password);
+    const { error, emailNotConfirmed } = await signIn(email, password);
+    if (emailNotConfirmed) {
+      router.push(`/verify-email?email=${encodeURIComponent(email)}`);
+      return;
+    }
     if (error) {
       setError(error);
       setIsLoading(false);

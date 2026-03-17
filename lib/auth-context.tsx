@@ -12,7 +12,7 @@ interface AuthContextType {
   loading: boolean;
   fontSize: FontSize;
   setFontSize: (size: FontSize) => void;
-  signIn: (email: string, password: string) => Promise<{ error: string | null }>;
+  signIn: (email: string, password: string) => Promise<{ error: string | null; emailNotConfirmed?: boolean }>;
   signUp: (email: string, password: string, name: string) => Promise<{ error: string | null }>;
   signOut: () => Promise<void>;
 }
@@ -69,8 +69,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [loadFontSize]);
 
   const signIn = useCallback(async (email: string, password: string) => {
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
-    return { error: error?.message ?? null };
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+    if (error) return { error: error.message };
+    if (data.user && !data.user.email_confirmed_at) {
+      await supabase.auth.signOut();
+      return { error: null, emailNotConfirmed: true };
+    }
+    return { error: null };
   }, []);
 
   const signUp = useCallback(async (email: string, password: string, name: string) => {
