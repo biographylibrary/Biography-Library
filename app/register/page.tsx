@@ -51,13 +51,15 @@ export default function RegisterPage() {
 
     setIsLoading(true);
 
-    const { error } = await signUp(email, password, name);
+    const { error, emailConfirmRequired } = await signUp(email, password, name);
     if (error) {
       setError(error);
       setIsLoading(false);
-    } else {
+    } else if (emailConfirmRequired) {
       setShowVerification(true);
       setIsLoading(false);
+    } else {
+      router.push('/create-biography');
     }
   };
 

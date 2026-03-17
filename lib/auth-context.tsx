@@ -13,7 +13,7 @@ interface AuthContextType {
   fontSize: FontSize;
   setFontSize: (size: FontSize) => void;
   signIn: (email: string, password: string) => Promise<{ error: string | null; emailNotConfirmed?: boolean }>;
-  signUp: (email: string, password: string, name: string) => Promise<{ error: string | null }>;
+  signUp: (email: string, password: string, name: string) => Promise<{ error: string | null; emailConfirmRequired?: boolean }>;
   signOut: () => Promise<void>;
 }
 
@@ -99,7 +99,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       );
     }
 
-    return { error: error?.message ?? null };
+    const emailConfirmRequired = !error && data.user && !data.session;
+    return { error: error?.message ?? null, emailConfirmRequired: emailConfirmRequired ?? false };
   }, []);
 
   const signOut = useCallback(async () => {
