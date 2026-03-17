@@ -34,7 +34,12 @@ export default function DashboardPage() {
   const [isDeletingAccount, setIsDeletingAccount] = useState(false);
   const [resendLoading, setResendLoading] = useState(false);
   const [resendSuccess, setResendSuccess] = useState(false);
+  const [mounted, setMounted] = useState(false);
   const { t, language } = useTranslation();
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -120,7 +125,7 @@ export default function DashboardPage() {
     setResendSuccess(true);
   };
 
-  if (authLoading || !user) {
+  if (!mounted || authLoading || !user) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[#ECE9E4] dark:bg-[#1F2121]">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
