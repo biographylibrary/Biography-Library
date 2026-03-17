@@ -15,10 +15,9 @@ export default function VerifyEmailPage() {
   const [resendLoading, setResendLoading] = useState(false);
   const [resendSuccess, setResendSuccess] = useState(false);
   const [resendCooldown, setResendCooldown] = useState(0);
-  const [verifying, setVerifying] = useState(false);
-  const [verified, setVerified] = useState(false);
   const [verifyError, setVerifyError] = useState('');
   const [checkingStatus, setCheckingStatus] = useState(false);
+  const [confirmed, setConfirmed] = useState(false);
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const cooldownRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
@@ -30,35 +29,9 @@ export default function VerifyEmailPage() {
   const emailForResend = user?.email ?? emailFromUrl;
 
   useEffect(() => {
-    const code = searchParams.get('code');
-    const tokenHash = searchParams.get('token_hash');
-    const type = searchParams.get('type');
-
-    if (code) {
-      setVerifying(true);
-      supabase.auth.exchangeCodeForSession(code).then(({ error }) => {
-        setVerifying(false);
-        if (!error) {
-          setVerified(true);
-          setTimeout(() => router.push('/dashboard'), 2500);
-        } else {
-          setVerifyError(error.message);
-        }
-      });
-      return;
-    }
-
-    if (tokenHash && (type === 'signup' || type === 'email')) {
-      setVerifying(true);
-      supabase.auth.verifyOtp({ token_hash: tokenHash, type: 'signup' }).then(({ error }) => {
-        setVerifying(false);
-        if (!error) {
-          setVerified(true);
-          setTimeout(() => router.push('/dashboard'), 2500);
-        } else {
-          setVerifyError(error.message);
-        }
-      });
+    const errorParam = searchParams.get('error');
+    if (errorParam) {
+      setVerifyError(decodeURIComponent(errorParam));
       return;
     }
 
@@ -67,7 +40,7 @@ export default function VerifyEmailPage() {
       const currentUser = data.session?.user;
       if (currentUser?.email_confirmed_at) {
         if (pollRef.current) clearInterval(pollRef.current);
-        setVerified(true);
+        setConfirmed(true);
         setTimeout(() => router.push('/dashboard'), 2500);
       }
     }, 4000);
@@ -78,10 +51,10 @@ export default function VerifyEmailPage() {
   }, [router, searchParams]);
 
   useEffect(() => {
-    if (user?.email_confirmed_at && !verifying && !verifyError) {
+    if (user?.email_confirmed_at && !verifyError) {
       router.push('/dashboard');
     }
-  }, [user, verifying, verifyError, router]);
+  }, [user, verifyError, router]);
 
   useEffect(() => {
     return () => {
@@ -107,8 +80,8 @@ export default function VerifyEmailPage() {
     setResendLoading(true);
     setResendSuccess(false);
     const redirectTo = typeof window !== 'undefined'
-      ? `${window.location.origin}/verify-email`
-      : '/verify-email';
+      ? `${window.location.origin}/auth/callback`
+      : '/auth/callback';
     await supabase.auth.resend({
       type: 'signup',
       email: emailForResend,
@@ -124,7 +97,7 @@ export default function VerifyEmailPage() {
     const { data } = await supabase.auth.getSession();
     const currentUser = data.session?.user;
     if (currentUser?.email_confirmed_at) {
-      setVerified(true);
+      setConfirmed(true);
       setTimeout(() => router.push('/dashboard'), 2500);
     }
     setCheckingStatus(false);
@@ -142,12 +115,7 @@ export default function VerifyEmailPage() {
             <Logo height={64} />
           </div>
 
-          {verifying ? (
-            <div className="flex flex-col items-center gap-4 py-8">
-              <Loader2 className="h-8 w-8 animate-spin text-primary" />
-              <p className="text-sm text-muted-foreground">Verifica in corso...</p>
-            </div>
-          ) : verified ? (
+          {confirmed ? (
             <div className="flex flex-col items-center gap-4 p-6 rounded-xl bg-green-50 dark:bg-green-950/30 border border-green-200 dark:border-green-800 text-center">
               <div className="w-14 h-14 rounded-full bg-green-100 dark:bg-green-900/50 flex items-center justify-center">
                 <CheckCircle2 className="h-7 w-7 text-green-600 dark:text-green-400" />
@@ -157,7 +125,7 @@ export default function VerifyEmailPage() {
                   Email confermata!
                 </h2>
                 <p className="text-sm text-green-800 dark:text-green-200">
-                  Il tuo account e stato verificato. Reindirizzamento alla dashboard...
+                  Il tuo account è stato verificato. Reindirizzamento alla dashboard...
                 </p>
               </div>
               <Loader2 className="h-4 w-4 animate-spin text-green-600 dark:text-green-400" />
@@ -170,7 +138,7 @@ export default function VerifyEmailPage() {
               <div>
                 <p className="font-semibold text-destructive">Verifica non riuscita</p>
                 <p className="text-sm text-muted-foreground mt-1">
-                  Il link di conferma e scaduto o e gia stato utilizzato. Richiedine uno nuovo.
+                  Il link di conferma è scaduto o è già stato utilizzato. Richiedine uno nuovo.
                 </p>
               </div>
               {emailForResend && (

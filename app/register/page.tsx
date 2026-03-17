@@ -64,7 +64,10 @@ export default function RegisterPage() {
   const handleResend = async () => {
     setResendLoading(true);
     setResendSuccess(false);
-    await supabase.auth.resend({ type: 'signup', email });
+    const redirectTo = typeof window !== 'undefined'
+      ? `${window.location.origin}/auth/callback`
+      : '/auth/callback';
+    await supabase.auth.resend({ type: 'signup', email, options: { emailRedirectTo: redirectTo } });
     setResendLoading(false);
     setResendSuccess(true);
   };

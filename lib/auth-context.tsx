@@ -80,8 +80,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signUp = useCallback(async (email: string, password: string, name: string) => {
     const redirectTo = typeof window !== 'undefined'
-      ? `${window.location.origin}/verify-email`
-      : '/verify-email';
+      ? `${window.location.origin}/auth/callback`
+      : '/auth/callback';
 
     const { data, error } = await supabase.auth.signUp({
       email,
