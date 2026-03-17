@@ -19,15 +19,39 @@ export default function ResetPasswordPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [sessionReady, setSessionReady] = useState(false);
+  const [sessionError, setSessionError] = useState(false);
   const router = useRouter();
   const { t } = useTranslation();
 
   useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
-      if (event === 'PASSWORD_RECOVERY') {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === 'PASSWORD_RECOVERY' || (event === 'SIGNED_IN' && session)) {
         setSessionReady(true);
       }
     });
+
+    const params = new URLSearchParams(window.location.search);
+    const code = params.get('code');
+    const tokenHash = params.get('token_hash');
+    const type = params.get('type');
+
+    if (code) {
+      supabase.auth.exchangeCodeForSession(code).then(({ error }) => {
+        if (!error) setSessionReady(true);
+        else setSessionError(true);
+      });
+    } else if (tokenHash && type === 'recovery') {
+      supabase.auth.verifyOtp({ token_hash: tokenHash, type: 'recovery' }).then(({ error }) => {
+        if (!error) setSessionReady(true);
+        else setSessionError(true);
+      });
+    } else {
+      supabase.auth.getSession().then(({ data: { session } }) => {
+        if (session) setSessionReady(true);
+        else setSessionError(true);
+      });
+    }
+
     return () => subscription.unsubscribe();
   }, []);
 
@@ -81,7 +105,28 @@ export default function ResetPasswordPage() {
             </p>
           </div>
 
-          {success ? (
+          {sessionError ? (
+            <div className="flex flex-col items-center gap-4 p-6 rounded-xl bg-destructive/10 border border-destructive/20 text-center">
+              <AlertCircle className="h-8 w-8 text-destructive" />
+              <div>
+                <p className="font-semibold text-destructive">Invalid or expired link</p>
+                <p className="text-sm text-muted-foreground mt-1">
+                  This password reset link has expired or already been used. Please request a new one.
+                </p>
+              </div>
+              <Link
+                href="/forgot-password"
+                className="text-sm text-primary hover:text-primary/80 transition-colors font-medium"
+              >
+                Request a new reset link
+              </Link>
+            </div>
+          ) : !sessionReady ? (
+            <div className="flex flex-col items-center gap-4 py-8">
+              <Loader2 className="h-8 w-8 animate-spin text-primary" />
+              <p className="text-sm text-muted-foreground">Verifying your reset link...</p>
+            </div>
+          ) : success ? (
             <div className="space-y-6">
               <div className="flex flex-col items-center gap-3 p-6 rounded-xl bg-green-50 dark:bg-green-950/30 border border-green-200 dark:border-green-800 text-center">
                 <div className="w-12 h-12 rounded-full bg-green-100 dark:bg-green-900/50 flex items-center justify-center">
