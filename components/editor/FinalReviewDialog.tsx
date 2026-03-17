@@ -10,7 +10,7 @@ import {
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { Loader2, Check, ArrowRight, RefreshCw } from 'lucide-react';
+import { Loader as Loader2, Check, ArrowRight, RefreshCw } from 'lucide-react';
 import { useAuth } from '@/lib/auth-context';
 import {
   analyzeThemes,
@@ -18,6 +18,7 @@ import {
   type SectionThemeAnalysis,
   type NarrativeStructureProposal,
 } from '@/lib/ai/narrative-structure-service';
+import { AiLimitError } from '@/lib/ai/ai-provider';
 import { supabase } from '@/lib/supabase';
 import { BIOGRAPHY_SECTIONS } from '@/lib/editor-constants';
 import { useTranslation } from '@/lib/i18n/i18n-context';
@@ -81,8 +82,14 @@ export function FinalReviewDialog({
 
       setProposals(structureProposals);
     } catch (err: any) {
-      console.error('Error analyzing structure:', err);
-      setError(err.message || 'Failed to analyze narrative structure');
+      if (err instanceof AiLimitError) {
+        const msg = err.limitType === 'daily' ? t.aiUsage.dailyLimitReached : t.aiUsage.weeklyLimitReached;
+        const detail = err.limitType === 'daily' ? t.aiUsage.dailyLimitDetail : t.aiUsage.weeklyLimitDetail;
+        setError(`${msg}. ${detail}`);
+      } else {
+        console.error('Error analyzing structure:', err);
+        setError(err.message || 'Failed to analyze narrative structure');
+      }
     } finally {
       setIsAnalyzing(false);
     }

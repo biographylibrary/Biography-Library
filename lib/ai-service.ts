@@ -1,11 +1,13 @@
 import type { AiSuggestion, AiPrompt } from './ai-constants';
-import { aiService } from './ai/ai-provider';
+import { aiService, AiLimitError } from './ai/ai-provider';
+
+export { AiLimitError };
 
 const AI_FUNCTION_URL = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/ai-assistant`;
 
 async function callAiFunction(
   token: string,
-  body: Record<string, string>
+  body: Record<string, unknown>
 ): Promise<any> {
   const res = await fetch(AI_FUNCTION_URL, {
     method: 'POST',
@@ -18,6 +20,10 @@ async function callAiFunction(
   });
 
   if (res.status === 429) {
+    const data = await res.json().catch(() => ({}));
+    if (data.limitType === 'daily' || data.limitType === 'weekly') {
+      throw new AiLimitError(data.limitType as 'daily' | 'weekly', data.resetAt, data.dailyLimit ?? 40, data.weeklyLimit ?? 150);
+    }
     throw new Error('Rate limit exceeded. Please wait a moment before trying again.');
   }
 

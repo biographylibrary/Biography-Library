@@ -8,8 +8,8 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Loader2, CheckCircle2, XCircle, BookOpen, Wand2, BarChart3 } from 'lucide-react';
-import { aiService, type Improvement } from '@/lib/ai/ai-provider';
+import { Loader as Loader2, CircleCheck as CheckCircle2, Circle as XCircle, BookOpen, Wand as Wand2, ChartBar as BarChart3 } from 'lucide-react';
+import { aiService, AiLimitError, type Improvement } from '@/lib/ai/ai-provider';
 import { useAuth } from '@/lib/auth-context';
 import { addRevisionToHistory } from '@/lib/revision-history-service';
 import { toast } from 'sonner';
@@ -119,8 +119,13 @@ export function AISectionReview({
         .map(imp => imp.id);
       setSelectedImprovements(new Set(highPriority));
     } catch (error) {
-      console.error('Error loading suggestions:', error);
-      toast.error(t.aiReview.failedToLoad);
+      if (error instanceof AiLimitError) {
+        const msg = error.limitType === 'daily' ? t.aiUsage.dailyLimitReached : t.aiUsage.weeklyLimitReached;
+        toast.error(msg, { description: error.limitType === 'daily' ? t.aiUsage.dailyLimitDetail : t.aiUsage.weeklyLimitDetail });
+      } else {
+        console.error('Error loading suggestions:', error);
+        toast.error(t.aiReview.failedToLoad);
+      }
     } finally {
       setLoading(false);
     }
@@ -148,8 +153,13 @@ export function AISectionReview({
         prev.map(v => v.tone === tone ? { ...v, content: rewritten, loading: false } : v)
       );
     } catch (error) {
-      console.error('Error rewriting section:', error);
-      toast.error(`${t.aiReview.failedToGenerate} ${tone}`);
+      if (error instanceof AiLimitError) {
+        const msg = error.limitType === 'daily' ? t.aiUsage.dailyLimitReached : t.aiUsage.weeklyLimitReached;
+        toast.error(msg, { description: error.limitType === 'daily' ? t.aiUsage.dailyLimitDetail : t.aiUsage.weeklyLimitDetail });
+      } else {
+        console.error('Error rewriting section:', error);
+        toast.error(`${t.aiReview.failedToGenerate} ${tone}`);
+      }
       setRewriteVersions(prev =>
         prev.map(v => v.tone === tone ? { ...v, loading: false } : v)
       );

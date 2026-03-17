@@ -17,7 +17,7 @@ import { AISectionReview } from '@/components/editor/AISectionReview';
 import { FinalReviewDialog } from '@/components/editor/FinalReviewDialog';
 import { FinalVersionEditor } from '@/components/editor/FinalVersionEditor';
 import { PublishConfirmationDialog } from '@/components/editor/PublishConfirmationDialog';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import {
   BIOGRAPHY_SECTIONS,
   type BiographyContent,
@@ -33,13 +33,15 @@ import {
   checkGrammar,
   getGuidedPrompts,
   getSummary,
+  AiLimitError,
 } from '@/lib/ai-service';
+import { AiUsageIndicator } from '@/components/editor/ai-usage-indicator';
 import { recommendNextSection, type SectionRecommendation } from '@/lib/ai/next-section-recommender';
 import type { Biography } from '@/lib/biographies';
 import { generateBiographyPDF } from '@/lib/pdf-export';
 import { AdvancedExportDialog } from '@/components/export/AdvancedExportDialog';
 import { useTranslation } from '@/lib/i18n/i18n-context';
-import { Loader2, Menu, X, Sparkles } from 'lucide-react';
+import { Loader as Loader2, Menu, X, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import {
@@ -95,6 +97,8 @@ export default function BiographyEditorPage() {
   const [biographyStatus, setBiographyStatus] = useState<'draft' | 'sections_complete' | 'final_version' | 'published'>('draft');
   const [isLocked, setIsLocked] = useState(false);
   const [showPublishDialog, setShowPublishDialog] = useState(false);
+  const [aiLimitError, setAiLimitError] = useState<AiLimitError | null>(null);
+  const [aiUsageRefresh, setAiUsageRefresh] = useState(0);
 
   const editorContainerRef = useRef<HTMLDivElement>(null);
 
@@ -443,12 +447,18 @@ export default function BiographyEditorPage() {
         sectionData.text,
         language
       );
+      setAiUsageRefresh((n) => n + 1);
       setAiState((prev) => ({
         ...prev,
         loading: false,
         suggestions,
       }));
     } catch (err: any) {
+      if (err instanceof AiLimitError) {
+        setAiState(INITIAL_AI_STATE);
+        setAiLimitError(err);
+        return;
+      }
       setAiState((prev) => ({
         ...prev,
         loading: false,
@@ -490,12 +500,18 @@ export default function BiographyEditorPage() {
         section.title,
         language
       );
+      setAiUsageRefresh((n) => n + 1);
       setAiState((prev) => ({
         ...prev,
         loading: false,
         prompts: prompts.length > 0 ? prompts : fallback,
       }));
-    } catch {
+    } catch (err: any) {
+      if (err instanceof AiLimitError) {
+        setAiState(INITIAL_AI_STATE);
+        setAiLimitError(err);
+        return;
+      }
       setAiState((prev) => ({
         ...prev,
         loading: false,
@@ -539,12 +555,18 @@ export default function BiographyEditorPage() {
         sectionData.text,
         language
       );
+      setAiUsageRefresh((n) => n + 1);
       setAiState((prev) => ({
         ...prev,
         loading: false,
         summary,
       }));
     } catch (err: any) {
+      if (err instanceof AiLimitError) {
+        setAiState(INITIAL_AI_STATE);
+        setAiLimitError(err);
+        return;
+      }
       setAiState((prev) => ({
         ...prev,
         loading: false,
@@ -861,6 +883,11 @@ export default function BiographyEditorPage() {
                 >
                   {t.editor.conversationMode}
                 </Button>
+                {aiEnabled && (
+                  <div className="ml-auto">
+                    <AiUsageIndicator refreshTrigger={aiUsageRefresh} />
+                  </div>
+                )}
               </div>
             )}
 
@@ -1057,6 +1084,43 @@ export default function BiographyEditorPage() {
         onOpenChange={setShowPublishDialog}
         onConfirm={handlePublish}
       />
+
+      <Dialog open={!!aiLimitError} onOpenChange={(open) => { if (!open) setAiLimitError(null); }}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle>
+              {aiLimitError?.limitType === 'daily'
+                ? t.aiUsage.dailyLimitReached
+                : t.aiUsage.weeklyLimitReached}
+            </DialogTitle>
+            <DialogDescription className="pt-1">
+              {aiLimitError?.limitType === 'daily'
+                ? t.aiUsage.dailyLimitDetail
+                : t.aiUsage.weeklyLimitDetail}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex items-center gap-2 text-sm text-muted-foreground bg-muted/50 rounded-md px-3 py-2">
+            <span>{t.aiUsage.resetsAt}:</span>
+            <span className="font-medium text-foreground">
+              {aiLimitError
+                ? new Date(aiLimitError.resetAt).toLocaleString(undefined, {
+                    weekday: 'short',
+                    month: 'short',
+                    day: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    timeZoneName: 'short',
+                  })
+                : ''}
+            </span>
+          </div>
+          <DialogFooter>
+            <Button onClick={() => setAiLimitError(null)}>
+              {t.common.close}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

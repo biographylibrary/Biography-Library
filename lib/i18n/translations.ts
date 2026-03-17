@@ -563,6 +563,18 @@ export interface Translations {
     successToastBio: string;
     successMessageAccount: string;
   };
+  aiUsage: {
+    dailyLimit: string;
+    weeklyLimit: string;
+    dailyLimitReached: string;
+    weeklyLimitReached: string;
+    dailyLimitDetail: string;
+    weeklyLimitDetail: string;
+    resetsAt: string;
+    today: string;
+    thisWeek: string;
+    usageIndicatorTitle: string;
+  };
 }
 
 export const translations: Record<Language, Translations> = {
@@ -1129,6 +1141,18 @@ export const translations: Record<Language, Translations> = {
       successToastBio: 'Biography deleted successfully',
       successMessageAccount: 'Your account has been deleted',
     },
+    aiUsage: {
+      dailyLimit: '40 actions/day',
+      weeklyLimit: '150 actions/week',
+      dailyLimitReached: 'Daily AI limit reached',
+      weeklyLimitReached: 'Weekly AI limit reached',
+      dailyLimitDetail: "You've used all 40 AI actions for today. Your limit resets at midnight UTC.",
+      weeklyLimitDetail: "You've used all 150 AI actions for this week. Your limit resets on Monday.",
+      resetsAt: 'Resets at',
+      today: 'Today',
+      thisWeek: 'This week',
+      usageIndicatorTitle: 'AI usage',
+    },
   },
   it: {
     common: {
@@ -1692,6 +1716,18 @@ export const translations: Record<Language, Translations> = {
       buttonDeleteAccount: 'Elimina Account Permanentemente',
       successToastBio: 'Biografia eliminata con successo',
       successMessageAccount: 'Il tuo account è stato eliminato',
+    },
+    aiUsage: {
+      dailyLimit: '40 azioni/giorno',
+      weeklyLimit: '150 azioni/settimana',
+      dailyLimitReached: 'Limite giornaliero AI raggiunto',
+      weeklyLimitReached: 'Limite settimanale AI raggiunto',
+      dailyLimitDetail: 'Hai esaurito le 40 azioni AI di oggi. Il limite si rinnova a mezzanotte UTC.',
+      weeklyLimitDetail: 'Hai esaurito le 150 azioni AI di questa settimana. Il limite si rinnova lunedì.',
+      resetsAt: 'Si rinnova alle',
+      today: 'Oggi',
+      thisWeek: 'Questa settimana',
+      usageIndicatorTitle: 'Utilizzo AI',
     },
   },
   fr: {
@@ -2257,6 +2293,18 @@ export const translations: Record<Language, Translations> = {
       successToastBio: 'Biographie supprimée avec succès',
       successMessageAccount: 'Votre compte a été supprimé',
     },
+    aiUsage: {
+      dailyLimit: '40 actions/jour',
+      weeklyLimit: '150 actions/semaine',
+      dailyLimitReached: 'Limite quotidienne IA atteinte',
+      weeklyLimitReached: 'Limite hebdomadaire IA atteinte',
+      dailyLimitDetail: 'Vous avez utilisé vos 40 actions IA pour aujourd\'hui. La limite se réinitialise à minuit UTC.',
+      weeklyLimitDetail: 'Vous avez utilisé vos 150 actions IA pour cette semaine. La limite se réinitialise le lundi.',
+      resetsAt: 'Réinitialisation à',
+      today: 'Aujourd\'hui',
+      thisWeek: 'Cette semaine',
+      usageIndicatorTitle: 'Utilisation IA',
+    },
   },
   de: {
     common: {
@@ -2820,6 +2868,18 @@ export const translations: Record<Language, Translations> = {
       buttonDeleteAccount: 'Konto Dauerhaft Löschen',
       successToastBio: 'Biografie erfolgreich gelöscht',
       successMessageAccount: 'Ihr Konto wurde gelöscht',
+    },
+    aiUsage: {
+      dailyLimit: '40 Aktionen/Tag',
+      weeklyLimit: '150 Aktionen/Woche',
+      dailyLimitReached: 'Tägliches KI-Limit erreicht',
+      weeklyLimitReached: 'Wöchentliches KI-Limit erreicht',
+      dailyLimitDetail: 'Sie haben alle 40 KI-Aktionen für heute aufgebraucht. Das Limit wird um Mitternacht UTC zurückgesetzt.',
+      weeklyLimitDetail: 'Sie haben alle 150 KI-Aktionen für diese Woche aufgebraucht. Das Limit wird am Montag zurückgesetzt.',
+      resetsAt: 'Zurücksetzen um',
+      today: 'Heute',
+      thisWeek: 'Diese Woche',
+      usageIndicatorTitle: 'KI-Nutzung',
     },
   },
 };

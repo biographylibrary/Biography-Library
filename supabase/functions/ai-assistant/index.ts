@@ -11,6 +11,11 @@ const corsHeaders = {
 const RATE_LIMIT = 5;
 const RATE_WINDOW_MS = 60_000;
 
+const DAILY_LIMIT = 40;
+const WEEKLY_LIMIT = 150;
+
+const HEAVY_ACTIONS = new Set(["rewrite", "analyze-themes", "propose-structures"]);
+
 const LANGUAGE_NAMES: Record<string, string> = {
   en: "English",
   it: "Italian",
@@ -18,11 +23,25 @@ const LANGUAGE_NAMES: Record<string, string> = {
   de: "German",
 };
 
-function errorResponse(message: string, status: number) {
-  return new Response(JSON.stringify({ error: message }), {
+function errorResponse(message: string, status: number, extra?: Record<string, unknown>) {
+  return new Response(JSON.stringify({ error: message, ...extra }), {
     status,
     headers: { ...corsHeaders, "Content-Type": "application/json" },
   });
+}
+
+function getNextMidnightUTC(): string {
+  const now = new Date();
+  const tomorrow = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() + 1));
+  return tomorrow.toISOString();
+}
+
+function getNextMondayUTC(): string {
+  const now = new Date();
+  const day = now.getUTCDay();
+  const daysUntilMonday = day === 0 ? 1 : 8 - day;
+  const nextMonday = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() + daysUntilMonday));
+  return nextMonday.toISOString();
 }
 
 function extractJson(text: string): string {
@@ -193,7 +212,6 @@ Rewrite this in a ${tone} tone while preserving all facts and details.`,
 }
 
 function buildAnalyzeThemesPrompt(sections: any[], language: string) {
-  const langName = getLangName(language);
   const sectionsText = sections.map(s => `
 Section Key: ${s.key}
 Section Title: ${s.title}
@@ -234,8 +252,6 @@ function buildProposeStructuresPrompt(
   originalOrder: string[],
   language: string
 ) {
-  const langName = getLangName(language);
-
   return {
     system: `You are a biography editor proposing alternative narrative structures. Based on theme analysis, suggest 3 different ways to reorder sections for better storytelling. Return ONLY valid JSON, no markdown fences.`,
     user: `Based on this theme analysis of biography sections, propose 3 alternative narrative structures.
@@ -262,9 +278,9 @@ Respond in JSON format:
   "proposals": [
     {
       "structureType": "descriptive name",
-      "sectionOrder": ["key1", "key2", ...],
+      "sectionOrder": ["key1", "key2"],
       "rationale": "why this order works",
-      "transitionNotes": ["how section1 leads to section2", ...],
+      "transitionNotes": ["how section1 leads to section2"],
       "focusTheme": "main theme of this structure"
     }
   ]
@@ -317,6 +333,86 @@ async function callInfomaniakAI(
 
   const result = await response.json();
   return result.choices?.[0]?.message?.content ?? "";
+}
+
+async function checkAndIncrementUsage(
+  supabase: any,
+  userId: string,
+  cost: number
+): Promise<{ allowed: boolean; limitType?: "daily" | "weekly"; resetAt?: string }> {
+  const nowUtc = new Date();
+  const todayStart = new Date(Date.UTC(nowUtc.getUTCFullYear(), nowUtc.getUTCMonth(), nowUtc.getUTCDate()));
+  const weekDay = nowUtc.getUTCDay();
+  const daysToMonday = weekDay === 0 ? -6 : 1 - weekDay;
+  const weekStart = new Date(Date.UTC(nowUtc.getUTCFullYear(), nowUtc.getUTCMonth(), nowUtc.getUTCDate() + daysToMonday));
+
+  const { data: existing, error: fetchError } = await supabase
+    .from("ai_usage_tracking")
+    .select("*")
+    .eq("user_id", userId)
+    .maybeSingle();
+
+  if (fetchError) {
+    console.error("Usage fetch error:", fetchError);
+    return { allowed: true };
+  }
+
+  let dailyCount = 0;
+  let weeklyCount = 0;
+  let dailyResetAt = todayStart;
+  let weeklyResetAt = weekStart;
+
+  if (existing) {
+    dailyCount = existing.daily_count;
+    weeklyCount = existing.weekly_count;
+    dailyResetAt = new Date(existing.daily_reset_at);
+    weeklyResetAt = new Date(existing.weekly_reset_at);
+
+    if (dailyResetAt < todayStart) {
+      dailyCount = 0;
+      dailyResetAt = todayStart;
+    }
+    if (weeklyResetAt < weekStart) {
+      weeklyCount = 0;
+      weeklyResetAt = weekStart;
+    }
+  }
+
+  if (dailyCount + cost > DAILY_LIMIT) {
+    return { allowed: false, limitType: "daily", resetAt: getNextMidnightUTC() };
+  }
+
+  if (weeklyCount + cost > WEEKLY_LIMIT) {
+    return { allowed: false, limitType: "weekly", resetAt: getNextMondayUTC() };
+  }
+
+  const newDaily = dailyCount + cost;
+  const newWeekly = weeklyCount + cost;
+
+  if (existing) {
+    await supabase
+      .from("ai_usage_tracking")
+      .update({
+        daily_count: newDaily,
+        weekly_count: newWeekly,
+        daily_reset_at: dailyResetAt.toISOString(),
+        weekly_reset_at: weeklyResetAt.toISOString(),
+        updated_at: new Date().toISOString(),
+      })
+      .eq("user_id", userId);
+  } else {
+    await supabase
+      .from("ai_usage_tracking")
+      .insert({
+        user_id: userId,
+        daily_count: newDaily,
+        weekly_count: newWeekly,
+        daily_reset_at: todayStart.toISOString(),
+        weekly_reset_at: weekStart.toISOString(),
+      });
+  }
+
+  return { allowed: true };
 }
 
 Deno.serve(async (req: Request) => {
@@ -395,6 +491,24 @@ Deno.serve(async (req: Request) => {
 
     if (!action) {
       return errorResponse("Missing action parameter", 400);
+    }
+
+    const actionCost = HEAVY_ACTIONS.has(action) ? 2 : 1;
+
+    const usageCheck = await checkAndIncrementUsage(supabase, user.id, actionCost);
+    if (!usageCheck.allowed) {
+      return errorResponse(
+        usageCheck.limitType === "daily"
+          ? `Daily limit reached. Resets at ${usageCheck.resetAt}`
+          : `Weekly limit reached. Resets at ${usageCheck.resetAt}`,
+        429,
+        {
+          limitType: usageCheck.limitType,
+          resetAt: usageCheck.resetAt,
+          dailyLimit: DAILY_LIMIT,
+          weeklyLimit: WEEKLY_LIMIT,
+        }
+      );
     }
 
     let systemPrompt: string;

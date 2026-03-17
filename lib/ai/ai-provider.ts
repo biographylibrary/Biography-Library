@@ -1,3 +1,19 @@
+export class AiLimitError extends Error {
+  limitType: 'daily' | 'weekly';
+  resetAt: string;
+  dailyLimit: number;
+  weeklyLimit: number;
+
+  constructor(limitType: 'daily' | 'weekly', resetAt: string, dailyLimit: number, weeklyLimit: number) {
+    super(limitType === 'daily' ? 'daily_limit_reached' : 'weekly_limit_reached');
+    this.name = 'AiLimitError';
+    this.limitType = limitType;
+    this.resetAt = resetAt;
+    this.dailyLimit = dailyLimit;
+    this.weeklyLimit = weeklyLimit;
+  }
+}
+
 export interface Improvement {
   type: 'clarity' | 'detail' | 'flow' | 'style' | 'structure';
   original: string;
@@ -70,6 +86,10 @@ class InfomaniakProvider implements AIProvider {
     });
 
     if (res.status === 429) {
+      const data = await res.json().catch(() => ({}));
+      if (data.limitType === 'daily' || data.limitType === 'weekly') {
+        throw new AiLimitError(data.limitType, data.resetAt, data.dailyLimit ?? 40, data.weeklyLimit ?? 150);
+      }
       throw new Error('Rate limit exceeded. Please wait a moment before trying again.');
     }
 
