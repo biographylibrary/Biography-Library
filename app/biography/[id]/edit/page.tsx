@@ -816,7 +816,7 @@ export default function BiographyEditorPage() {
 
         {showMobileSidebar && (
           <div
-            className="lg:hidden fixed inset-0 bg-black/50 z-30"
+            className="lg:hidden fixed inset-x-0 bottom-0 top-[120px] bg-black/50 z-30"
             onClick={() => setShowMobileSidebar(false)}
           />
         )}
@@ -824,7 +824,7 @@ export default function BiographyEditorPage() {
         <aside
           className={cn(
             'w-[280px] border-r border-border/50 bg-card shrink-0 flex flex-col',
-            'fixed lg:relative inset-y-0 left-0 z-30 top-[57px] lg:top-0',
+            'fixed lg:relative inset-y-0 left-0 z-30 top-[120px] lg:top-0',
             'transition-transform duration-200',
             showMobileSidebar
               ? 'translate-x-0'
