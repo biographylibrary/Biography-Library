@@ -14,7 +14,7 @@ interface UsageData {
 }
 
 const DAILY_LIMIT = 40;
-const WEEKLY_LIMIT = 150;
+const WEEKLY_LIMIT = 200;
 
 interface AiUsageIndicatorProps {
   refreshTrigger?: number;

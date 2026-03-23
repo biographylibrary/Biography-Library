@@ -12,7 +12,7 @@ const RATE_LIMIT = 5;
 const RATE_WINDOW_MS = 60_000;
 
 const DAILY_LIMIT = 40;
-const WEEKLY_LIMIT = 150;
+const WEEKLY_LIMIT = 200;
 
 const HEAVY_ACTIONS = new Set(["rewrite", "analyze-themes", "propose-structures"]);
 
