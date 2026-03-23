@@ -8,7 +8,7 @@ import { generateBiographyPDF } from '@/lib/pdf-export';
 import { Button } from '@/components/ui/button';
 import { Logo } from '@/components/logo';
 import { ThemeToggle } from '@/components/theme-toggle';
-import { FileDown, Loader2, Lock } from 'lucide-react';
+import { FileDown, Loader as Loader2, Lock } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useTranslation } from '@/lib/i18n/i18n-context';
 
@@ -17,7 +17,7 @@ interface BiographyViewData {
   title: string;
   author_name: string;
   content: BiographyContent;
-  privacy_level: string;
+  privacy: string;
   share_token: string | null;
   created_at: string;
 }
@@ -57,7 +57,7 @@ export default function BiographyViewPage() {
         return;
       }
 
-      if (data.privacy_level === 'private') {
+      if (data.privacy === 'private') {
         setError('private');
         setIsLoading(false);
         return;
