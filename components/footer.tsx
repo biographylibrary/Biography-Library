@@ -31,7 +31,7 @@ export function Footer() {
   const cookieHref = COOKIE_LINKS[language] ?? COOKIE_LINKS.en;
 
   return (
-    <footer className="border-t border-border/50 bg-[#ECE9E4] dark:bg-[#1F2121] mt-auto h-20 flex items-center">
+    <footer className="border-t border-border/50 bg-[#ECE9E4] dark:bg-[#1F2121] mt-auto py-2 flex items-center">
       <div className="w-full px-4">
         <div className="flex flex-col items-center gap-1">
           <div className="flex items-center gap-1.5">
