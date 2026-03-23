@@ -8,19 +8,7 @@ import { VoiceRecorder } from './voice-recorder';
 import { ImportTextDialog } from './import-text-dialog';
 import { SectionNotes } from './SectionNotes';
 import { useTranslation } from '@/lib/i18n/i18n-context';
-import {
-  Sparkles,
-  Flag,
-  Mic,
-  SpellCheck,
-  MessageSquareText,
-  FileText,
-  Power,
-  Upload,
-  StickyNote,
-  Wand2,
-  CheckCircle2,
-} from 'lucide-react';
+import { Sparkles, Flag, Mic, SpellCheck, MessageSquareText, FileText, Power, Upload, StickyNote, Wand as Wand2, CircleCheck as CheckCircle2, Images } from 'lucide-react';
 import { BIOGRAPHY_SECTIONS, type SectionData } from '@/lib/editor-constants';
 import { cn } from '@/lib/utils';
 
@@ -43,6 +31,7 @@ interface SectionEditorProps {
   onImportMultipleSections?: (sections: Array<{ title: string; content: string }>) => void;
   onMarkComplete?: () => void;
   isCompleted?: boolean;
+  onTogglePhotos?: () => void;
 }
 
 export function SectionEditor({
@@ -64,6 +53,7 @@ export function SectionEditor({
   onImportMultipleSections,
   onMarkComplete,
   isCompleted = false,
+  onTogglePhotos,
 }: SectionEditorProps) {
   const [showVoice, setShowVoice] = useState(false);
   const [showImportDialog, setShowImportDialog] = useState(false);
@@ -131,6 +121,18 @@ export function SectionEditor({
             >
               <Upload className="h-3.5 w-3.5" />
             </Button>
+            {onTogglePhotos && (
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                className="h-7 w-7 p-0 shrink-0"
+                onClick={onTogglePhotos}
+                title={t.photos.panelTitle}
+              >
+                <Images className="h-3.5 w-3.5" />
+              </Button>
+            )}
             <Button
               type="button"
               variant="ghost"

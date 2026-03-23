@@ -911,6 +911,7 @@ export default function BiographyEditorPage() {
                   onImportMultipleSections={handleImportMultipleSections}
                   onMarkComplete={handleMarkSectionComplete}
                   isCompleted={completedSections.includes(activeSection)}
+                  onTogglePhotos={() => setShowPhotosPanel((v) => !v)}
                 />
               )}
 

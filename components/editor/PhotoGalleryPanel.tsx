@@ -22,7 +22,6 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import { Progress } from '@/components/ui/progress';
 import { GripVertical, Trash2, Upload, ImagePlus } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -36,6 +35,7 @@ interface MediaRow {
   layout: string;
   display_order: number;
   created_at: string;
+  previewUrl?: string;
 }
 
 interface PhotoGalleryPanelProps {
@@ -43,16 +43,9 @@ interface PhotoGalleryPanelProps {
   userId: string;
 }
 
-const LAYOUT_VALUES = [
-  'full-page',
-  'cover',
-  'two-vertical',
-  'two-horizontal',
-  'three-mixed',
-] as const;
-
 const ACCEPTED_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
 const MAX_BYTES = 5 * 1024 * 1024;
+const SIGNED_URL_EXPIRES = 3600;
 
 function useDebounce<T>(value: T, delay: number): T {
   const [debounced, setDebounced] = useState(value);
@@ -61,6 +54,23 @@ function useDebounce<T>(value: T, delay: number): T {
     return () => clearTimeout(timer);
   }, [value, delay]);
   return debounced;
+}
+
+function storagePathFromUrl(fileUrl: string): string {
+  try {
+    const url = new URL(fileUrl);
+    const parts = url.pathname.split('/biography-photos/');
+    if (parts[1]) return parts[1];
+  } catch {
+  }
+  return fileUrl;
+}
+
+async function getSignedUrl(storagePath: string): Promise<string> {
+  const { data } = await supabase.storage
+    .from('biography-photos')
+    .createSignedUrl(storagePath, SIGNED_URL_EXPIRES);
+  return data?.signedUrl ?? '';
 }
 
 interface PhotoCardProps {
@@ -100,6 +110,8 @@ function PhotoCard({
     }
   }, [debouncedCaption]);
 
+  const displayUrl = item.previewUrl || item.file_url;
+
   return (
     <div
       draggable
@@ -112,13 +124,18 @@ function PhotoCard({
         dragging && 'opacity-50'
       )}
     >
-      <div className="relative">
-        <img
-          src={item.file_url}
-          alt={item.file_name ?? ''}
-          className="w-full h-48 object-cover"
-          loading="lazy"
-        />
+      <div className="relative bg-muted">
+        {displayUrl ? (
+          <img
+            src={displayUrl}
+            alt={item.file_name ?? ''}
+            className="w-full h-48 object-cover"
+          />
+        ) : (
+          <div className="w-full h-48 flex items-center justify-center">
+            <ImagePlus className="h-8 w-8 text-muted-foreground/40" />
+          </div>
+        )}
         <div className="absolute top-2 left-2 cursor-grab active:cursor-grabbing p-1 rounded bg-black/40 text-white opacity-0 group-hover:opacity-100 transition-opacity">
           <GripVertical className="h-4 w-4" />
         </div>
@@ -173,8 +190,14 @@ export function PhotoGalleryPanel({ biographyId, userId }: PhotoGalleryPanelProp
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<MediaRow | null>(null);
   const [draggingId, setDraggingId] = useState<string | null>(null);
-  const dragOverId = useRef<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const objectUrlsRef = useRef<string[]>([]);
+
+  useEffect(() => {
+    return () => {
+      objectUrlsRef.current.forEach((u) => URL.revokeObjectURL(u));
+    };
+  }, []);
 
   const load = useCallback(async () => {
     const { data } = await supabase
@@ -182,7 +205,20 @@ export function PhotoGalleryPanel({ biographyId, userId }: PhotoGalleryPanelProp
       .select('*')
       .eq('biography_id', biographyId)
       .order('display_order', { ascending: true });
-    if (data) setItems(data as MediaRow[]);
+
+    if (!data) return;
+
+    const rows = data as MediaRow[];
+
+    const withUrls = await Promise.all(
+      rows.map(async (row) => {
+        const path = storagePathFromUrl(row.file_url);
+        const signedUrl = await getSignedUrl(path);
+        return { ...row, previewUrl: signedUrl };
+      })
+    );
+
+    setItems(withUrls);
   }, [biographyId]);
 
   useEffect(() => {
@@ -206,6 +242,9 @@ export function PhotoGalleryPanel({ biographyId, userId }: PhotoGalleryPanelProp
         return;
       }
 
+      const localPreview = URL.createObjectURL(file);
+      objectUrlsRef.current.push(localPreview);
+
       setUploading(true);
       setUploadProgress(10);
 
@@ -223,6 +262,7 @@ export function PhotoGalleryPanel({ biographyId, userId }: PhotoGalleryPanelProp
         setErrorMsg(t.photos.uploadError);
         setUploading(false);
         setUploadProgress(0);
+        URL.revokeObjectURL(localPreview);
         return;
       }
 
@@ -230,9 +270,10 @@ export function PhotoGalleryPanel({ biographyId, userId }: PhotoGalleryPanelProp
         .from('biography-photos')
         .getPublicUrl(storagePath);
 
-      const fileUrl = urlData?.publicUrl ?? '';
+      const fileUrl = urlData?.publicUrl ?? storagePath;
 
-      const newOrder = items.length > 0 ? Math.max(...items.map((i) => i.display_order)) + 1 : 0;
+      const newOrder =
+        items.length > 0 ? Math.max(...items.map((i) => i.display_order)) + 1 : 0;
 
       const { data: inserted, error: insertError } = await supabase
         .from('biography_media')
@@ -253,8 +294,12 @@ export function PhotoGalleryPanel({ biographyId, userId }: PhotoGalleryPanelProp
       if (insertError || !inserted) {
         await supabase.storage.from('biography-photos').remove([storagePath]);
         setErrorMsg(t.photos.uploadError);
+        URL.revokeObjectURL(localPreview);
       } else {
-        setItems((prev) => [...prev, inserted as MediaRow]);
+        setItems((prev) => [
+          ...prev,
+          { ...(inserted as MediaRow), previewUrl: localPreview },
+        ]);
       }
 
       setUploading(false);
@@ -287,14 +332,9 @@ export function PhotoGalleryPanel({ biographyId, userId }: PhotoGalleryPanelProp
     const target = deleteTarget;
     setDeleteTarget(null);
 
-    try {
-      const url = new URL(target.file_url);
-      const pathParts = url.pathname.split('/biography-photos/');
-      const storagePath = pathParts[1] ?? '';
-      if (storagePath) {
-        await supabase.storage.from('biography-photos').remove([storagePath]);
-      }
-    } catch {
+    const path = storagePathFromUrl(target.file_url);
+    if (path) {
+      await supabase.storage.from('biography-photos').remove([path]);
     }
 
     const { error } = await supabase.from('biography_media').delete().eq('id', target.id);
@@ -366,7 +406,12 @@ export function PhotoGalleryPanel({ biographyId, userId }: PhotoGalleryPanelProp
         {uploading && (
           <div className="space-y-1.5">
             <p className="text-xs text-muted-foreground">{t.photos.uploadProgress}</p>
-            <Progress value={uploadProgress} className="h-1.5" />
+            <div className="w-full h-1.5 bg-muted rounded-full overflow-hidden">
+              <div
+                className="h-full bg-primary rounded-full transition-all duration-300"
+                style={{ width: `${uploadProgress}%` }}
+              />
+            </div>
           </div>
         )}
 
@@ -416,7 +461,12 @@ export function PhotoGalleryPanel({ biographyId, userId }: PhotoGalleryPanelProp
         </Button>
       </div>
 
-      <AlertDialog open={!!deleteTarget} onOpenChange={(open) => { if (!open) setDeleteTarget(null); }}>
+      <AlertDialog
+        open={!!deleteTarget}
+        onOpenChange={(open) => {
+          if (!open) setDeleteTarget(null);
+        }}
+      >
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>{t.photos.deleteConfirmTitle}</AlertDialogTitle>
