@@ -788,7 +788,7 @@ export default function BiographyEditorPage() {
   const activeSectionData = getSectionData(content, activeSection);
 
   return (
-    <div className="h-screen flex flex-col bg-[#ECE9E4] dark:bg-[#1F2121] overflow-hidden">
+    <div className="h-full flex flex-col bg-[#ECE9E4] dark:bg-[#1F2121] overflow-hidden">
       <EditorTopBar
         title={title}
         privacy={privacy}

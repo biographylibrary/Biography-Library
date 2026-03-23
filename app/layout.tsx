@@ -18,9 +18,9 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <body>
         <Providers>
-          <div className="flex flex-col min-h-screen">
+          <div className="flex flex-col h-screen overflow-hidden">
             <Header />
-            <main className="flex-1">
+            <main className="flex-1 overflow-auto min-h-0">
               {children}
             </main>
             <Footer />
