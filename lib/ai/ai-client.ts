@@ -11,17 +11,6 @@ async function getValidToken(): Promise<string> {
     throw new Error('No valid session found. Please sign in again.');
   }
 
-  const expiresAt = session.expires_at ?? 0;
-  const nowSec = Math.floor(Date.now() / 1000);
-
-  if (expiresAt - nowSec < 300) {
-    const { data: refreshed, error: refreshError } = await supabase.auth.refreshSession();
-    if (refreshError || !refreshed.session?.access_token) {
-      throw new Error('Session expired. Please sign in again.');
-    }
-    return refreshed.session.access_token;
-  }
-
   return session.access_token;
 }
 
@@ -30,7 +19,6 @@ export async function callAI(body: Record<string, unknown>): Promise<any> {
   let res = await doFetch(token, body);
 
   if (res.status === 401) {
-    await new Promise(resolve => setTimeout(resolve, 500));
     const { data: refreshed, error: refreshError } = await supabase.auth.refreshSession();
     if (refreshError || !refreshed.session?.access_token) {
       throw new Error('Session expired. Please sign in again.');
