@@ -2743,9 +2743,9 @@ export const translations: Record<Language, Translations> = {
     },
     footer: {
       hostedInSwitzerland: 'Biography Library - Gehostet in der Schweiz',
-      termsOfService: 'Nutzungsbedingungen',
-      privacyPolicy: 'Datenschutzrichtlinie',
-      cookiePolicy: 'Cookie-Richtlinie',
+      termsOfService: 'AGB',
+      privacyPolicy: 'Datenschutz',
+      cookiePolicy: 'Cookies',
     },
     welcome: {
       title: 'Willkommen bei Biography Library',
