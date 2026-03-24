@@ -521,6 +521,15 @@ export interface Translations {
     loadingNotes: string;
     noNotesYet: string;
     noPendingItems: string;
+    editTodo: string;
+    deleteTodo: string;
+    confirmDelete: string;
+    confirmDeleteNote: string;
+    confirmDeleteTodo: string;
+    sortBy: string;
+    sortByDate: string;
+    sortByPriority: string;
+    sortByDueDate: string;
   };
   aiReview: {
     title: string;
@@ -1197,6 +1206,15 @@ export const translations: Record<Language, Translations> = {
       loadingNotes: 'Loading notes...',
       noNotesYet: 'No notes yet',
       noPendingItems: 'No pending items',
+      editTodo: 'Edit',
+      deleteTodo: 'Delete',
+      confirmDelete: 'Confirm delete',
+      confirmDeleteNote: 'Delete this note? This action cannot be undone.',
+      confirmDeleteTodo: 'Delete this reminder? This action cannot be undone.',
+      sortBy: 'Sort by',
+      sortByDate: 'Date added',
+      sortByPriority: 'Priority',
+      sortByDueDate: 'Due date',
     },
     aiReview: {
       title: 'AI Section Review',
@@ -1871,6 +1889,15 @@ export const translations: Record<Language, Translations> = {
       loadingNotes: 'Caricamento note...',
       noNotesYet: 'Nessuna nota ancora',
       noPendingItems: 'Nessun elemento in sospeso',
+      editTodo: 'Modifica',
+      deleteTodo: 'Elimina',
+      confirmDelete: 'Conferma eliminazione',
+      confirmDeleteNote: 'Eliminare questa nota? L\'azione non può essere annullata.',
+      confirmDeleteTodo: 'Eliminare questo promemoria? L\'azione non può essere annullata.',
+      sortBy: 'Ordina per',
+      sortByDate: 'Data aggiunta',
+      sortByPriority: 'Priorità',
+      sortByDueDate: 'Scadenza',
     },
     aiReview: {
       title: 'Revisione IA della Sezione',
@@ -2545,6 +2572,15 @@ export const translations: Record<Language, Translations> = {
       loadingNotes: 'Chargement des notes...',
       noNotesYet: 'Aucune note encore',
       noPendingItems: 'Aucun élément en attente',
+      editTodo: 'Modifier',
+      deleteTodo: 'Supprimer',
+      confirmDelete: 'Confirmer la suppression',
+      confirmDeleteNote: 'Supprimer cette note ? Cette action est irréversible.',
+      confirmDeleteTodo: 'Supprimer ce rappel ? Cette action est irréversible.',
+      sortBy: 'Trier par',
+      sortByDate: 'Date d\'ajout',
+      sortByPriority: 'Priorité',
+      sortByDueDate: 'Date d\'échéance',
     },
     aiReview: {
       title: 'Révision IA de la Section',
@@ -3219,6 +3255,15 @@ export const translations: Record<Language, Translations> = {
       loadingNotes: 'Notizen laden...',
       noNotesYet: 'Noch keine Notizen',
       noPendingItems: 'Keine ausstehenden Elemente',
+      editTodo: 'Bearbeiten',
+      deleteTodo: 'Löschen',
+      confirmDelete: 'Löschen bestätigen',
+      confirmDeleteNote: 'Diese Notiz löschen? Diese Aktion kann nicht rückgängig gemacht werden.',
+      confirmDeleteTodo: 'Diese Erinnerung löschen? Diese Aktion kann nicht rückgängig gemacht werden.',
+      sortBy: 'Sortieren nach',
+      sortByDate: 'Hinzufügedatum',
+      sortByPriority: 'Priorität',
+      sortByDueDate: 'Fälligkeitsdatum',
     },
     aiReview: {
       title: 'KI-Abschnittsüberprüfung',
