@@ -8,9 +8,12 @@ import { generateBiographyPDF } from '@/lib/pdf-export';
 import { Button } from '@/components/ui/button';
 import { Logo } from '@/components/logo';
 import { ThemeToggle } from '@/components/theme-toggle';
-import { FileDown, Loader as Loader2, Lock, Info, Archive } from 'lucide-react';
+import { FileDown, Loader as Loader2, Lock, Info, Archive, Flag } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useTranslation } from '@/lib/i18n/i18n-context';
+import { ReportBiographyModal } from '@/components/editor/ReportBiographyModal';
+import { useToast } from '@/hooks/use-toast';
+import { Toaster } from '@/components/ui/toaster';
 
 interface BiographyViewData {
   id: string;
@@ -64,10 +67,12 @@ export default function BiographyViewPage() {
   const id = params.id as string;
   const token = searchParams.get('token');
 
+  const { toast } = useToast();
   const [biography, setBiography] = useState<BiographyViewData | null>(null);
   const [orderedSections, setOrderedSections] = useState<SectionWithDate[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<ViewError>(null);
+  const [reportOpen, setReportOpen] = useState(false);
 
   useEffect(() => {
     const load = async () => {
@@ -217,6 +222,15 @@ export default function BiographyViewPage() {
               <FileDown className="h-4 w-4" />
               <span className="hidden sm:inline">{t.view.downloadPdf}</span>
             </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setReportOpen(true)}
+              className="gap-1.5 text-muted-foreground hover:text-foreground"
+            >
+              <Flag className="h-4 w-4" />
+              <span className="hidden sm:inline">{t.view.reportButton}</span>
+            </Button>
             <ThemeToggle />
           </div>
         </div>
@@ -288,6 +302,16 @@ export default function BiographyViewPage() {
           <p>{t.view.preservingStories}</p>
         </footer>
       </main>
+
+      <ReportBiographyModal
+        biographyId={biography.id}
+        open={reportOpen}
+        onOpenChange={setReportOpen}
+        onSuccess={() =>
+          toast({ title: t.view.reportSuccess })
+        }
+      />
+      <Toaster />
     </div>
   );
 }

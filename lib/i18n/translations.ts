@@ -303,6 +303,24 @@ export interface Translations {
     reviewBannerSuffix: string;
     archivedBanner: string;
     publishedOn: string;
+    reportButton: string;
+    reportModalTitle: string;
+    reportModalSubtitle: string;
+    reportTypeLabel: string;
+    reportTypePlaceholder: string;
+    reportDescriptionLabel: string;
+    reportDescriptionPlaceholder: string;
+    reportSubmit: string;
+    reportSubmitting: string;
+    reportSuccess: string;
+    reportError: string;
+    reportTypeLevel1: string;
+    reportTypeLevel2: string;
+    reportTypeLivingPerson: string;
+    reportTypeRightToOblivion: string;
+    reportTypeImpersonation: string;
+    reportTypeCopyright: string;
+    reportTypeOther: string;
   };
   footer: {
     hostedInSwitzerland: string;
@@ -949,6 +967,24 @@ export const translations: Record<Language, Translations> = {
       reviewBannerSuffix: '.',
       archivedBanner: 'This biography has been archived.',
       publishedOn: 'Published',
+      reportButton: 'Report',
+      reportModalTitle: 'Report this biography',
+      reportModalSubtitle: 'Help us keep the library safe and accurate.',
+      reportTypeLabel: 'Reason for report',
+      reportTypePlaceholder: 'Select a reason...',
+      reportDescriptionLabel: 'Additional details (optional)',
+      reportDescriptionPlaceholder: 'Provide any additional context...',
+      reportSubmit: 'Submit report',
+      reportSubmitting: 'Submitting...',
+      reportSuccess: 'Report submitted. Thank you.',
+      reportError: 'Something went wrong. Please try again.',
+      reportTypeLevel1: 'Harmful or illegal content',
+      reportTypeLevel2: 'Hate speech or harassment',
+      reportTypeLivingPerson: 'This person is alive',
+      reportTypeRightToOblivion: 'Remove my personal data',
+      reportTypeImpersonation: 'False identity',
+      reportTypeCopyright: 'Copyright violation',
+      reportTypeOther: 'Other',
     },
     footer: {
       hostedInSwitzerland: 'Biography Library - Hosted in Switzerland',
@@ -1593,6 +1629,24 @@ export const translations: Record<Language, Translations> = {
       reviewBannerSuffix: '.',
       archivedBanner: 'Questa biografia \u00e8 stata archiviata.',
       publishedOn: 'Pubblicato',
+      reportButton: 'Segnala',
+      reportModalTitle: 'Segnala questa biografia',
+      reportModalSubtitle: 'Aiutaci a mantenere la libreria sicura e accurata.',
+      reportTypeLabel: 'Motivo della segnalazione',
+      reportTypePlaceholder: 'Seleziona un motivo...',
+      reportDescriptionLabel: 'Dettagli aggiuntivi (opzionale)',
+      reportDescriptionPlaceholder: 'Fornisci ulteriori informazioni...',
+      reportSubmit: 'Invia segnalazione',
+      reportSubmitting: 'Invio in corso...',
+      reportSuccess: 'Segnalazione inviata. Grazie.',
+      reportError: 'Si \u00e8 verificato un errore. Riprova.',
+      reportTypeLevel1: 'Contenuto dannoso o illegale',
+      reportTypeLevel2: 'Incitamento all\u2019odio o molestie',
+      reportTypeLivingPerson: 'Questa persona \u00e8 viva',
+      reportTypeRightToOblivion: 'Rimuovi i miei dati personali',
+      reportTypeImpersonation: 'Falsa identit\u00e0',
+      reportTypeCopyright: 'Violazione del copyright',
+      reportTypeOther: 'Altro',
     },
     footer: {
       hostedInSwitzerland: 'Biography Library - Ospitato in Svizzera',
@@ -2237,6 +2291,24 @@ export const translations: Record<Language, Translations> = {
       reviewBannerSuffix: '.',
       archivedBanner: 'Cette biographie a \u00e9t\u00e9 archiv\u00e9e.',
       publishedOn: 'Publi\u00e9',
+      reportButton: 'Signaler',
+      reportModalTitle: 'Signaler cette biographie',
+      reportModalSubtitle: 'Aidez-nous \u00e0 maintenir la biblioth\u00e8que s\u00fbre et exacte.',
+      reportTypeLabel: 'Motif du signalement',
+      reportTypePlaceholder: 'S\u00e9lectionnez un motif...',
+      reportDescriptionLabel: 'D\u00e9tails suppl\u00e9mentaires (facultatif)',
+      reportDescriptionPlaceholder: 'Fournissez tout contexte suppl\u00e9mentaire...',
+      reportSubmit: 'Envoyer le signalement',
+      reportSubmitting: 'Envoi en cours...',
+      reportSuccess: 'Signalement envoy\u00e9. Merci.',
+      reportError: 'Une erreur s\'est produite. Veuillez r\u00e9essayer.',
+      reportTypeLevel1: 'Contenu nuisible ou ill\u00e9gal',
+      reportTypeLevel2: 'Discours haineux ou harc\u00e8lement',
+      reportTypeLivingPerson: 'Cette personne est vivante',
+      reportTypeRightToOblivion: 'Supprimer mes donn\u00e9es personnelles',
+      reportTypeImpersonation: 'Fausse identit\u00e9',
+      reportTypeCopyright: 'Violation du droit d\'auteur',
+      reportTypeOther: 'Autre',
     },
     footer: {
       hostedInSwitzerland: 'Biography Library - H\u00e9berg\u00e9 en Suisse',
@@ -2881,6 +2953,24 @@ export const translations: Record<Language, Translations> = {
       reviewBannerSuffix: ' im Pr\u00fcfzeitraum.',
       archivedBanner: 'Diese Biografie wurde archiviert.',
       publishedOn: 'Ver\u00f6ffentlicht',
+      reportButton: 'Melden',
+      reportModalTitle: 'Diese Biografie melden',
+      reportModalSubtitle: 'Helfen Sie uns, die Bibliothek sicher und korrekt zu halten.',
+      reportTypeLabel: 'Grund der Meldung',
+      reportTypePlaceholder: 'Grund ausw\u00e4hlen...',
+      reportDescriptionLabel: 'Zus\u00e4tzliche Details (optional)',
+      reportDescriptionPlaceholder: 'Weiteren Kontext angeben...',
+      reportSubmit: 'Meldung absenden',
+      reportSubmitting: 'Wird gesendet...',
+      reportSuccess: 'Meldung eingereicht. Vielen Dank.',
+      reportError: 'Ein Fehler ist aufgetreten. Bitte erneut versuchen.',
+      reportTypeLevel1: 'Sch\u00e4dlicher oder illegaler Inhalt',
+      reportTypeLevel2: 'Hassrede oder Bel\u00e4stigung',
+      reportTypeLivingPerson: 'Diese Person lebt noch',
+      reportTypeRightToOblivion: 'Meine pers\u00f6nlichen Daten l\u00f6schen',
+      reportTypeImpersonation: 'Falsche Identit\u00e4t',
+      reportTypeCopyright: 'Urheberrechtsverletzung',
+      reportTypeOther: 'Sonstiges',
     },
     footer: {
       hostedInSwitzerland: 'Biography Library - Gehostet in der Schweiz',
