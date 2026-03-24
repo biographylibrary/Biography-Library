@@ -713,6 +713,7 @@ export interface Translations {
     installBannerText: string;
     installButton: string;
     dismissButton: string;
+    iosInstallText: string;
   };
 }
 
@@ -1430,6 +1431,7 @@ export const translations: Record<Language, Translations> = {
       installBannerText: 'Add Biography Library to your home screen',
       installButton: 'Install',
       dismissButton: 'Dismiss',
+      iosInstallText: "To install: tap the Share button (\u{1F4E4}) then 'Add to Home Screen'",
     },
   },
   it: {
@@ -2145,6 +2147,7 @@ export const translations: Record<Language, Translations> = {
       installBannerText: 'Aggiungi Biography Library alla schermata principale',
       installButton: 'Installa',
       dismissButton: 'Chiudi',
+      iosInstallText: "Per installare: tocca il pulsante Condividi (\u{1F4E4}) poi 'Aggiungi a schermata Home'",
     },
   },
   fr: {
@@ -2860,6 +2863,7 @@ export const translations: Record<Language, Translations> = {
       installBannerText: 'Ajouter Biography Library à votre écran d\'accueil',
       installButton: 'Installer',
       dismissButton: 'Fermer',
+      iosInstallText: "Pour installer : appuyez sur Partager (\u{1F4E4}) puis 'Sur l\u2019écran d\u2019accueil'",
     },
   },
   de: {
@@ -3575,6 +3579,7 @@ export const translations: Record<Language, Translations> = {
       installBannerText: 'Biography Library zum Startbildschirm hinzufügen',
       installButton: 'Installieren',
       dismissButton: 'Schließen',
+      iosInstallText: "Zum Installieren: Teilen-Taste (\u{1F4E4}) antippen, dann 'Zum Home-Bildschirm'",
     },
   },
 };
