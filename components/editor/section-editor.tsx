@@ -6,7 +6,7 @@ import { RichTextEditor } from './rich-text-editor';
 import { VoiceRecorder } from './voice-recorder';
 import { ImportTextDialog } from './import-text-dialog';
 import { useTranslation } from '@/lib/i18n/i18n-context';
-import { Sparkles, Flag, Mic, SpellCheck, MessageSquareText, FileText, Power, Upload, StickyNote, Wand as Wand2, CircleCheck as CheckCircle2, Images, Lock } from 'lucide-react';
+import { Sparkles, Flag, Mic, SpellCheck, MessageSquareText, FileText, Power, Wand as Wand2, CircleCheck as CheckCircle2, Lock } from 'lucide-react';
 import { BIOGRAPHY_SECTIONS, type SectionData } from '@/lib/editor-constants';
 import { cn } from '@/lib/utils';
 
@@ -111,50 +111,16 @@ export function SectionEditor({
           <div className="flex items-center gap-1.5 min-w-0">
             <h2 className="text-base sm:text-lg font-semibold truncate">{sectionTitle}</h2>
             {!isPublished && (
-              <>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  className="h-7 w-7 p-0 shrink-0 rounded-full bg-[#A84B2F] hover:bg-[#6B2F1F] hover:text-[#FDFBF7] text-[#FDFBF7]"
-                  onClick={() => setShowVoice(!showVoice)}
-                  title={t.notesAndTodos.recordAudio}
-                >
-                  <Mic className="h-3.5 w-3.5" />
-                </Button>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  className="h-7 w-7 p-0 shrink-0"
-                  onClick={() => setShowImportDialog(true)}
-                  title={t.notesAndTodos.importText}
-                >
-                  <Upload className="h-3.5 w-3.5" />
-                </Button>
-                {onTogglePhotos && (
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    className="h-7 w-7 p-0 shrink-0"
-                    onClick={onTogglePhotos}
-                    title={t.photos.panelTitle}
-                  >
-                    <Images className="h-3.5 w-3.5" />
-                  </Button>
-                )}
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  className="h-7 w-7 p-0 shrink-0"
-                  onClick={onToggleNotes}
-                  title={t.notesAndTodos.globalTitle}
-                >
-                  <StickyNote className="h-3.5 w-3.5" />
-                </Button>
-              </>
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                className="h-7 w-7 p-0 shrink-0 rounded-full bg-[#A84B2F] hover:bg-[#6B2F1F] hover:text-[#FDFBF7] text-[#FDFBF7]"
+                onClick={() => setShowVoice(!showVoice)}
+                title={t.notesAndTodos.recordAudio}
+              >
+                <Mic className="h-3.5 w-3.5" />
+              </Button>
             )}
           </div>
           <div className="flex items-center gap-0.5 sm:gap-1 shrink-0 flex-wrap">

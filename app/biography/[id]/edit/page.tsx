@@ -812,7 +812,6 @@ export default function BiographyEditorPage() {
         saveStatus={saveStatus}
         onTitleChange={handleTitleChange}
         onPrivacyChange={handlePrivacyChange}
-        onExportPDF={handleExportPDF}
       />
 
       {isFrozen && (

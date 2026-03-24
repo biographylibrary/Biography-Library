@@ -5,17 +5,7 @@ import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useTranslation } from '@/lib/i18n/i18n-context';
-import {
-  ArrowLeft,
-  Check,
-  CloudOff,
-  Loader2,
-  Lock,
-  Users,
-  Globe,
-  FileDown,
-  BookOpen,
-} from 'lucide-react';
+import { ArrowLeft, Check, CloudOff, Loader as Loader2, Lock, Users, Globe, BookOpen } from 'lucide-react';
 
 type SaveStatus = 'saved' | 'saving' | 'unsaved' | 'error';
 type Privacy = 'private' | 'family' | 'public';
@@ -26,7 +16,6 @@ interface EditorTopBarProps {
   saveStatus: SaveStatus;
   onTitleChange: (title: string) => void;
   onPrivacyChange: (privacy: Privacy) => void;
-  onExportPDF: () => void;
 }
 
 const privacyIcons = {
@@ -43,7 +32,6 @@ export function EditorTopBar({
   saveStatus,
   onTitleChange,
   onPrivacyChange,
-  onExportPDF,
 }: EditorTopBarProps) {
   const router = useRouter();
   const { t } = useTranslation();
@@ -165,15 +153,6 @@ export function EditorTopBar({
             <span className="hidden sm:inline">{privacyLabels[privacy]}</span>
           </Button>
 
-          <Button
-            variant="ghost"
-            size="sm"
-            className="gap-1.5 text-xs h-8"
-            onClick={onExportPDF}
-          >
-            <FileDown className="h-3.5 w-3.5" />
-            <span className="hidden sm:inline">{t.biography.export}</span>
-          </Button>
         </div>
       </div>
     </div>

@@ -137,7 +137,7 @@ export function AdvancedExportDialog({
       const sectionsToExport = getSectionsToExport();
 
       if (sectionsToExport.length === 0) {
-        alert('Nessuna sezione da esportare.');
+        alert(t.exportDialog.noSectionsError);
         setIsExporting(false);
         return;
       }
@@ -185,26 +185,26 @@ export function AdvancedExportDialog({
       onOpenChange(false);
     } catch (error) {
       console.error('Export error:', error);
-      alert('Errore durante l\'esportazione. Riprova.');
+      alert(t.exportDialog.exportError);
     } finally {
       setIsExporting(false);
     }
   };
 
   const formatLabels: Record<ExportFormat, string> = {
-    pdf: 'PDF - Documento completo formattato',
-    txt: 'TXT - Testo semplice senza formattazione',
-    rtf: 'RTF - Testo con formattazione base',
-    docx: 'DOCX - Documento Word',
+    pdf: t.exportDialog.pdfFormat,
+    txt: t.exportDialog.txtFormat,
+    rtf: t.exportDialog.rtfFormat,
+    docx: t.exportDialog.docxFormat,
   };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl max-h-[90vh] flex flex-col">
         <DialogHeader>
-          <DialogTitle>Esporta Biografia</DialogTitle>
+          <DialogTitle>{t.exportDialog.title}</DialogTitle>
           <DialogDescription>
-            Scegli il formato e le sezioni da esportare
+            {t.exportDialog.description}
           </DialogDescription>
         </DialogHeader>
 
@@ -214,13 +214,13 @@ export function AdvancedExportDialog({
               <div className="flex items-start gap-3 rounded-lg bg-[#C8DFBE] dark:bg-[#C8DFBE]/20 border border-[#a8c99a] dark:border-[#C8DFBE]/30 px-4 py-3">
                 <Info className="h-4 w-4 mt-0.5 shrink-0 text-[#3a6b30] dark:text-[#C8DFBE]" />
                 <p className="text-sm text-[#2a4f27] dark:text-[#C8DFBE] leading-relaxed">
-                  L&apos;esportazione in <strong>PDF</strong> è disponibile solo una volta che la biografia è stata <strong>completata e approvata</strong>. Per ora puoi esportare nei formati TXT, RTF e DOCX.
+                  {t.exportDialog.pdfNotice}
                 </p>
               </div>
             )}
 
             <div className="space-y-3">
-              <Label className="text-base font-semibold">Formato di esportazione</Label>
+              <Label className="text-base font-semibold">{t.exportDialog.formatLabel}</Label>
               <RadioGroup value={format} onValueChange={(v) => setFormat(v as ExportFormat)}>
                 {(['pdf', 'txt', 'rtf', 'docx'] as ExportFormat[])
                   .filter(fmt => isPublished || fmt !== 'pdf')
@@ -238,7 +238,7 @@ export function AdvancedExportDialog({
             <Separator />
 
             <div className="space-y-3">
-              <Label className="text-base font-semibold">Selezione contenuto</Label>
+              <Label className="text-base font-semibold">{t.exportDialog.contentLabel}</Label>
               <RadioGroup
                 value={contentSelection}
                 onValueChange={(v) => setContentSelection(v as ContentSelection)}
@@ -246,19 +246,19 @@ export function AdvancedExportDialog({
                 <div className="flex items-center space-x-2">
                   <RadioGroupItem value="all" id="content-all" />
                   <Label htmlFor="content-all" className="font-normal cursor-pointer">
-                    Biografia completa (tutte le sezioni)
+                    {t.exportDialog.allSections}
                   </Label>
                 </div>
                 <div className="flex items-center space-x-2">
                   <RadioGroupItem value="completed" id="content-completed" />
                   <Label htmlFor="content-completed" className="font-normal cursor-pointer">
-                    Solo sezioni completate
+                    {t.exportDialog.completedSections}
                   </Label>
                 </div>
                 <div className="flex items-center space-x-2">
                   <RadioGroupItem value="custom" id="content-custom" />
                   <Label htmlFor="content-custom" className="font-normal cursor-pointer">
-                    Seleziona sezioni specifiche
+                    {t.exportDialog.customSections}
                   </Label>
                 </div>
               </RadioGroup>
@@ -286,7 +286,7 @@ export function AdvancedExportDialog({
                           }`}
                         >
                           {sectionTitle}
-                          {!hasContent && ' (vuota)'}
+                          {!hasContent && ` ${t.exportDialog.emptySection}`}
                         </Label>
                       </div>
                     );
@@ -298,7 +298,7 @@ export function AdvancedExportDialog({
             <Separator />
 
             <div className="space-y-3">
-              <Label className="text-base font-semibold">Opzioni aggiuntive</Label>
+              <Label className="text-base font-semibold">{t.exportDialog.additionalOptions}</Label>
 
               {format !== 'pdf' && (
                 <div className="flex items-center space-x-2">
@@ -308,7 +308,7 @@ export function AdvancedExportDialog({
                     onCheckedChange={(checked) => setSeparateFiles(checked as boolean)}
                   />
                   <Label htmlFor="separate-files" className="font-normal cursor-pointer">
-                    Dividi in file separati per sezione (archivio .zip)
+                    {t.exportDialog.separateFiles}
                   </Label>
                 </div>
               )}
@@ -320,7 +320,7 @@ export function AdvancedExportDialog({
                   onCheckedChange={(checked) => setIncludeMetadata(checked as boolean)}
                 />
                 <Label htmlFor="include-metadata" className="font-normal cursor-pointer">
-                  Includi metadati (data creazione, ultima modifica)
+                  {t.exportDialog.includeMetadata}
                 </Label>
               </div>
 
@@ -331,7 +331,7 @@ export function AdvancedExportDialog({
                   onCheckedChange={(checked) => setIncludeNotesAndTodos(checked as boolean)}
                 />
                 <Label htmlFor="include-notes-todos" className="font-normal cursor-pointer">
-                  Includi note e promemoria
+                  {t.exportDialog.includeNotesTodos}
                 </Label>
               </div>
             </div>
@@ -345,7 +345,7 @@ export function AdvancedExportDialog({
             onClick={() => onOpenChange(false)}
             disabled={isExporting}
           >
-            Annulla
+            {t.exportDialog.cancel}
           </Button>
           <Button
             type="button"
@@ -355,12 +355,12 @@ export function AdvancedExportDialog({
             {isExporting ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Esportazione...
+                {t.exportDialog.exporting}
               </>
             ) : (
               <>
                 <Download className="mr-2 h-4 w-4" />
-                Esporta
+                {t.exportDialog.export}
               </>
             )}
           </Button>

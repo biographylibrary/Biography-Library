@@ -158,6 +158,30 @@ export interface Translations {
     titleLabel: string;
     privacyLabel: string;
   };
+  exportDialog: {
+    title: string;
+    description: string;
+    pdfNotice: string;
+    formatLabel: string;
+    contentLabel: string;
+    allSections: string;
+    completedSections: string;
+    customSections: string;
+    additionalOptions: string;
+    separateFiles: string;
+    includeMetadata: string;
+    includeNotesTodos: string;
+    cancel: string;
+    export: string;
+    exporting: string;
+    noSectionsError: string;
+    exportError: string;
+    pdfFormat: string;
+    txtFormat: string;
+    rtfFormat: string;
+    docxFormat: string;
+    emptySection: string;
+  };
   sectionTitles: {
     childhood: string;
     family: string;
@@ -846,6 +870,30 @@ export const translations: Record<Language, Translations> = {
       titleLabel: 'Title',
       privacyLabel: 'Privacy',
     },
+    exportDialog: {
+      title: 'Export Biography',
+      description: 'Choose format and sections to export',
+      pdfNotice: 'PDF export is only available once the biography has been completed and approved. You can export in TXT, RTF, and DOCX formats in the meantime.',
+      formatLabel: 'Export format',
+      contentLabel: 'Content selection',
+      allSections: 'Full biography (all sections)',
+      completedSections: 'Completed sections only',
+      customSections: 'Select specific sections',
+      additionalOptions: 'Additional options',
+      separateFiles: 'Split into separate files per section (.zip archive)',
+      includeMetadata: 'Include metadata (creation date, last modified)',
+      includeNotesTodos: 'Include notes and reminders',
+      cancel: 'Cancel',
+      export: 'Export',
+      exporting: 'Exporting...',
+      noSectionsError: 'No sections to export.',
+      exportError: 'Export error. Please try again.',
+      pdfFormat: 'PDF - Complete formatted document',
+      txtFormat: 'TXT - Plain text without formatting',
+      rtfFormat: 'RTF - Text with basic formatting',
+      docxFormat: 'DOCX - Word document',
+      emptySection: '(empty)',
+    },
     sectionTitles: {
       childhood: 'Childhood & Early Years',
       family: 'Family Background',
@@ -1532,6 +1580,30 @@ export const translations: Record<Language, Translations> = {
       titleLabel: 'Titolo',
       privacyLabel: 'Privacy',
     },
+    exportDialog: {
+      title: 'Esporta Biografia',
+      description: 'Scegli il formato e le sezioni da esportare',
+      pdfNotice: 'L\'esportazione in PDF è disponibile solo una volta che la biografia è stata completata e approvata. Per ora puoi esportare nei formati TXT, RTF e DOCX.',
+      formatLabel: 'Formato di esportazione',
+      contentLabel: 'Selezione contenuto',
+      allSections: 'Biografia completa (tutte le sezioni)',
+      completedSections: 'Solo sezioni completate',
+      customSections: 'Seleziona sezioni specifiche',
+      additionalOptions: 'Opzioni aggiuntive',
+      separateFiles: 'Dividi in file separati per sezione (archivio .zip)',
+      includeMetadata: 'Includi metadati (data creazione, ultima modifica)',
+      includeNotesTodos: 'Includi note e promemoria',
+      cancel: 'Annulla',
+      export: 'Esporta',
+      exporting: 'Esportazione...',
+      noSectionsError: 'Nessuna sezione da esportare.',
+      exportError: 'Errore durante l\'esportazione. Riprova.',
+      pdfFormat: 'PDF - Documento completo formattato',
+      txtFormat: 'TXT - Testo semplice senza formattazione',
+      rtfFormat: 'RTF - Testo con formattazione base',
+      docxFormat: 'DOCX - Documento Word',
+      emptySection: '(vuota)',
+    },
     sectionTitles: {
       childhood: 'Infanzia e Primi Anni',
       family: 'Origini Familiari',
@@ -2216,10 +2288,34 @@ export const translations: Record<Language, Translations> = {
       returnToDashboard: 'Retour au Tableau de bord',
       startWritingButton: 'Commencer \u00e0 \u00c9crire',
       titleLabel: 'Titre',
-      privacyLabel: 'Confidentialit\u00e9',
+      privacyLabel: 'Confidentialité',
+    },
+    exportDialog: {
+      title: 'Exporter la Biographie',
+      description: 'Choisissez le format et les sections à exporter',
+      pdfNotice: "L'exportation en PDF n'est disponible qu'une fois la biographie terminée et approuvée. Vous pouvez exporter aux formats TXT, RTF et DOCX en attendant.",
+      formatLabel: "Format d'exportation",
+      contentLabel: 'Sélection du contenu',
+      allSections: 'Biographie complète (toutes les sections)',
+      completedSections: 'Sections terminées uniquement',
+      customSections: 'Sélectionner des sections spécifiques',
+      additionalOptions: 'Options supplémentaires',
+      separateFiles: 'Diviser en fichiers séparés par section (archive .zip)',
+      includeMetadata: 'Inclure les métadonnées (date de création, dernière modification)',
+      includeNotesTodos: 'Inclure les notes et rappels',
+      cancel: 'Annuler',
+      export: 'Exporter',
+      exporting: 'Exportation...',
+      noSectionsError: 'Aucune section à exporter.',
+      exportError: "Erreur lors de l'exportation. Réessayez.",
+      pdfFormat: 'PDF - Document complet formaté',
+      txtFormat: 'TXT - Texte brut sans mise en forme',
+      rtfFormat: 'RTF - Texte avec mise en forme de base',
+      docxFormat: 'DOCX - Document Word',
+      emptySection: '(vide)',
     },
     sectionTitles: {
-      childhood: 'Enfance et Premi\u00e8res Ann\u00e9es',
+      childhood: 'Enfance et Premières Années',
       family: 'Contexte Familial',
       education: '\u00c9ducation',
       career: 'Carri\u00e8re et Travail',
@@ -2904,8 +3000,32 @@ export const translations: Record<Language, Translations> = {
       titleLabel: 'Titel',
       privacyLabel: 'Datenschutz',
     },
+    exportDialog: {
+      title: 'Biografie exportieren',
+      description: 'Format und Abschnitte zum Exportieren auswählen',
+      pdfNotice: 'Der PDF-Export ist erst verfügbar, wenn die Biografie abgeschlossen und genehmigt wurde. In der Zwischenzeit können Sie in den Formaten TXT, RTF und DOCX exportieren.',
+      formatLabel: 'Exportformat',
+      contentLabel: 'Inhaltsauswahl',
+      allSections: 'Vollständige Biografie (alle Abschnitte)',
+      completedSections: 'Nur abgeschlossene Abschnitte',
+      customSections: 'Bestimmte Abschnitte auswählen',
+      additionalOptions: 'Zusätzliche Optionen',
+      separateFiles: 'In separate Dateien pro Abschnitt aufteilen (.zip-Archiv)',
+      includeMetadata: 'Metadaten einschließen (Erstellungsdatum, letzte Änderung)',
+      includeNotesTodos: 'Notizen und Erinnerungen einschließen',
+      cancel: 'Abbrechen',
+      export: 'Exportieren',
+      exporting: 'Exportieren...',
+      noSectionsError: 'Keine Abschnitte zum Exportieren.',
+      exportError: 'Fehler beim Exportieren. Bitte erneut versuchen.',
+      pdfFormat: 'PDF - Vollständiges formatiertes Dokument',
+      txtFormat: 'TXT - Einfacher Text ohne Formatierung',
+      rtfFormat: 'RTF - Text mit einfacher Formatierung',
+      docxFormat: 'DOCX - Word-Dokument',
+      emptySection: '(leer)',
+    },
     sectionTitles: {
-      childhood: 'Kindheit und Fr\u00fche Jahre',
+      childhood: 'Kindheit und Frühe Jahre',
       family: 'Familienhintergrund',
       education: 'Bildung',
       career: 'Karriere und Arbeit',
