@@ -266,7 +266,10 @@ export function GlobalNotesPanel({
           <div className="flex-1 overflow-hidden px-6 pb-6 pt-4">
             <Tabs defaultValue="notes" className="flex flex-col h-full">
               <TabsList className="grid w-full grid-cols-2 shrink-0">
-                <TabsTrigger value="notes" className="gap-2">
+                <TabsTrigger
+                  value="notes"
+                  className="gap-2 data-[state=active]:bg-[#C8DFBE] data-[state=active]:text-[#121212] data-[state=active]:shadow-none"
+                >
                   <StickyNote className="h-4 w-4" />
                   {t.notesAndTodos.notesTab}
                   {notes.length > 0 && (
@@ -275,7 +278,10 @@ export function GlobalNotesPanel({
                     </Badge>
                   )}
                 </TabsTrigger>
-                <TabsTrigger value="todos" className="gap-2">
+                <TabsTrigger
+                  value="todos"
+                  className="gap-2 data-[state=active]:bg-[#C8DFBE] data-[state=active]:text-[#121212] data-[state=active]:shadow-none"
+                >
                   <CheckSquare className="h-4 w-4" />
                   {t.notesAndTodos.todosTab}
                   {pendingCount > 0 && (
