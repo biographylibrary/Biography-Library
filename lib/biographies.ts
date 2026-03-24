@@ -31,12 +31,17 @@ export interface PublishedBiography {
   frozen_reason: string | null;
   chapters_count: number;
   published_at: string | null;
+  view_count?: number;
+  is_featured?: boolean;
+  featured_at?: string | null;
 }
+
+const PUBLISHED_SELECT = 'id, title, author_name, content_language, frozen_reason, chapters_count, published_at, view_count, is_featured, featured_at';
 
 export async function fetchPublishedBiographies() {
   const { data, error } = await supabase
     .from('biographies')
-    .select('id, title, author_name, content_language, frozen_reason, chapters_count, published_at')
+    .select(PUBLISHED_SELECT)
     .eq('status', 'published')
     .eq('privacy', 'public')
     .order('published_at', { ascending: false });
@@ -45,6 +50,58 @@ export async function fetchPublishedBiographies() {
     data: data as PublishedBiography[] | null,
     error: error?.message ?? null,
   };
+}
+
+export async function fetchFeaturedBiographies() {
+  const { data, error } = await supabase
+    .from('biographies')
+    .select(PUBLISHED_SELECT)
+    .eq('status', 'published')
+    .eq('privacy', 'public')
+    .eq('is_featured', true)
+    .order('featured_at', { ascending: false })
+    .limit(6);
+
+  return {
+    data: data as PublishedBiography[] | null,
+    error: error?.message ?? null,
+  };
+}
+
+export async function fetchMostReadBiographies() {
+  const { data, error } = await supabase
+    .from('biographies')
+    .select(PUBLISHED_SELECT)
+    .eq('status', 'published')
+    .eq('privacy', 'public')
+    .order('view_count', { ascending: false })
+    .limit(10);
+
+  return {
+    data: data as PublishedBiography[] | null,
+    error: error?.message ?? null,
+  };
+}
+
+export async function fetchDiscoverBiographies(excludeIds: string[]) {
+  let query = supabase
+    .from('biographies')
+    .select(PUBLISHED_SELECT)
+    .eq('status', 'published')
+    .eq('privacy', 'public');
+
+  if (excludeIds.length > 0) {
+    query = query.not('id', 'in', `(${excludeIds.join(',')})`);
+  }
+
+  const { data, error } = await query.limit(50);
+
+  if (error || !data) {
+    return { data: null, error: error?.message ?? null };
+  }
+
+  const shuffled = [...data].sort(() => Math.random() - 0.5).slice(0, 10);
+  return { data: shuffled as PublishedBiography[], error: null };
 }
 
 export async function fetchBiographies(userId: string) {

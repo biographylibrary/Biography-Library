@@ -3,7 +3,13 @@
 import { useEffect, useState, useMemo } from 'react';
 import Link from 'next/link';
 import { useTranslation } from '@/lib/i18n/i18n-context';
-import { fetchPublishedBiographies, type PublishedBiography } from '@/lib/biographies';
+import {
+  fetchPublishedBiographies,
+  fetchFeaturedBiographies,
+  fetchMostReadBiographies,
+  fetchDiscoverBiographies,
+  type PublishedBiography,
+} from '@/lib/biographies';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import {
@@ -13,7 +19,21 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Search, BookOpen, User, Globe, Layers, Calendar, Loader as Loader2, CircleAlert as AlertCircle, BookMarked } from 'lucide-react';
+import { Logo } from '@/components/logo';
+import { ThemeToggle } from '@/components/theme-toggle';
+import {
+  Search,
+  BookOpen,
+  User,
+  Globe,
+  Layers,
+  Calendar,
+  Loader as Loader2,
+  CircleAlert as AlertCircle,
+  BookMarked,
+  Eye,
+  Star,
+} from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const LANGUAGE_FLAGS: Record<string, string> = {
@@ -42,9 +62,10 @@ function formatDate(dateStr: string | null): string {
 interface BiographyCardProps {
   bio: PublishedBiography;
   t: ReturnType<typeof useTranslation>['t'];
+  featured?: boolean;
 }
 
-function BiographyCard({ bio, t }: BiographyCardProps) {
+function BiographyCard({ bio, t, featured }: BiographyCardProps) {
   const isMemorial = bio.frozen_reason === 'death';
   const lang = bio.content_language || 'en';
   const flag = LANGUAGE_FLAGS[lang] ?? '';
@@ -53,7 +74,10 @@ function BiographyCard({ bio, t }: BiographyCardProps) {
   return (
     <Link
       href={`/biography/${bio.id}/view`}
-      className="group flex flex-col rounded-2xl border border-border bg-card hover:border-border/80 hover:shadow-md transition-all duration-200 overflow-hidden"
+      className={cn(
+        'group flex flex-col rounded-2xl border border-border bg-card hover:border-primary/30 hover:shadow-lg transition-all duration-200 overflow-hidden',
+        featured && 'ring-1 ring-amber-200 dark:ring-amber-800/60'
+      )}
     >
       <div className="flex flex-col flex-1 p-6 gap-4">
         <div className="flex items-start justify-between gap-3">
@@ -64,21 +88,29 @@ function BiographyCard({ bio, t }: BiographyCardProps) {
             )}
           >
             {isMemorial ? (
-              <BookMarked className={cn('h-5 w-5', 'text-amber-600 dark:text-amber-400')} />
+              <BookMarked className="h-5 w-5 text-amber-600 dark:text-amber-400" />
             ) : (
-              <BookOpen className={cn('h-5 w-5', 'text-sky-600 dark:text-sky-400')} />
+              <BookOpen className="h-5 w-5 text-sky-600 dark:text-sky-400" />
             )}
           </div>
-          <span
-            className={cn(
-              'text-xs font-medium px-2.5 py-1 rounded-full',
-              isMemorial
-                ? 'bg-amber-100 text-amber-700 dark:bg-amber-950/50 dark:text-amber-300'
-                : 'bg-sky-100 text-sky-700 dark:bg-sky-950/50 dark:text-sky-300'
+          <div className="flex items-center gap-1.5 flex-wrap justify-end">
+            {featured && (
+              <span className="flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 dark:bg-amber-950/50 dark:text-amber-300">
+                <Star className="h-3 w-3" />
+                Featured
+              </span>
             )}
-          >
-            {isMemorial ? t.publicBiographies.typeMemorial : t.publicBiographies.typeAutobiography}
-          </span>
+            <span
+              className={cn(
+                'text-xs font-medium px-2.5 py-1 rounded-full',
+                isMemorial
+                  ? 'bg-amber-100 text-amber-700 dark:bg-amber-950/50 dark:text-amber-300'
+                  : 'bg-sky-100 text-sky-700 dark:bg-sky-950/50 dark:text-sky-300'
+              )}
+            >
+              {isMemorial ? t.publicBiographies.typeMemorial : t.publicBiographies.typeAutobiography}
+            </span>
+          </div>
         </div>
 
         <div className="flex-1 min-w-0">
@@ -101,6 +133,12 @@ function BiographyCard({ bio, t }: BiographyCardProps) {
               <Layers className="h-3.5 w-3.5" />
               <span>{bio.chapters_count ?? 0} {t.publicBiographies.chaptersCount}</span>
             </span>
+            {(bio.view_count ?? 0) > 0 && (
+              <span className="flex items-center gap-1">
+                <Eye className="h-3.5 w-3.5" />
+                <span>{bio.view_count} {t.publicBiographies.viewsCount}</span>
+              </span>
+            )}
           </div>
           <span className="flex items-center gap-1 text-xs text-muted-foreground">
             <Calendar className="h-3.5 w-3.5" />
@@ -118,9 +156,36 @@ function BiographyCard({ bio, t }: BiographyCardProps) {
   );
 }
 
+interface SectionProps {
+  title: string;
+  bios: PublishedBiography[];
+  t: ReturnType<typeof useTranslation>['t'];
+  featured?: boolean;
+}
+
+function BiographySection({ title, bios, t, featured }: SectionProps) {
+  if (bios.length === 0) return null;
+  return (
+    <section className="mb-14">
+      <h2 className="text-xl font-serif font-semibold text-foreground mb-6 flex items-center gap-2">
+        {title}
+        <span className="h-px flex-1 bg-border/60" />
+      </h2>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+        {bios.map((bio) => (
+          <BiographyCard key={bio.id} bio={bio} t={t} featured={featured} />
+        ))}
+      </div>
+    </section>
+  );
+}
+
 export default function PublicBiographiesPage() {
   const { t } = useTranslation();
-  const [biographies, setBiographies] = useState<PublishedBiography[]>([]);
+  const [allBios, setAllBios] = useState<PublishedBiography[]>([]);
+  const [featured, setFeatured] = useState<PublishedBiography[]>([]);
+  const [mostRead, setMostRead] = useState<PublishedBiography[]>([]);
+  const [discover, setDiscover] = useState<PublishedBiography[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState('');
@@ -130,20 +195,53 @@ export default function PublicBiographiesPage() {
   useEffect(() => {
     const load = async () => {
       setIsLoading(true);
-      const { data, error: fetchError } = await fetchPublishedBiographies();
-      if (fetchError || !data) {
-        setError(fetchError ?? t.publicBiographies.errorLoading);
-      } else {
-        setBiographies(data);
+
+      const [featuredRes, mostReadRes] = await Promise.all([
+        fetchFeaturedBiographies(),
+        fetchMostReadBiographies(),
+      ]);
+
+      if (featuredRes.error || mostReadRes.error) {
+        setError(featuredRes.error ?? mostReadRes.error ?? t.publicBiographies.errorLoading);
+        setIsLoading(false);
+        return;
       }
+
+      const featuredData = featuredRes.data ?? [];
+      const mostReadData = mostReadRes.data ?? [];
+
+      const shownIds = [
+        ...featuredData.map((b) => b.id),
+        ...mostReadData.map((b) => b.id),
+      ];
+      const uniqueShownIds = shownIds.filter((id, i, arr) => arr.indexOf(id) === i);
+
+      const discoverRes = await fetchDiscoverBiographies(uniqueShownIds);
+
+      setFeatured(featuredData);
+      setMostRead(mostReadData);
+      setDiscover(discoverRes.data ?? []);
       setIsLoading(false);
     };
+
     load();
   }, [t.publicBiographies.errorLoading]);
 
+  useEffect(() => {
+    if (!search && langFilter === 'all' && typeFilter === 'all') return;
+    const load = async () => {
+      const { data } = await fetchPublishedBiographies();
+      setAllBios(data ?? []);
+    };
+    load();
+  }, [search, langFilter, typeFilter]);
+
+  const isSearchActive = search.trim() !== '' || langFilter !== 'all' || typeFilter !== 'all';
+
   const filtered = useMemo(() => {
+    if (!isSearchActive) return [];
     const q = search.trim().toLowerCase();
-    return biographies.filter((bio) => {
+    return allBios.filter((bio) => {
       if (q) {
         const inTitle = (bio.title || '').toLowerCase().includes(q);
         const inAuthor = (bio.author_name || '').toLowerCase().includes(q);
@@ -154,94 +252,136 @@ export default function PublicBiographiesPage() {
       if (typeFilter === 'memorial' && bio.frozen_reason !== 'death') return false;
       return true;
     });
-  }, [biographies, search, langFilter, typeFilter]);
+  }, [allBios, search, langFilter, typeFilter, isSearchActive]);
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
-      <div className="mb-10 space-y-2">
-        <h1 className="text-3xl font-serif font-semibold tracking-tight text-foreground">
-          {t.publicBiographies.pageTitle}
-        </h1>
-        <p className="text-muted-foreground text-base">
-          {t.publicBiographies.pageSubtitle}
-        </p>
-      </div>
-
-      <div className="flex flex-col sm:flex-row gap-3 mb-8">
-        <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
-          <Input
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder={t.publicBiographies.searchPlaceholder}
-            className="pl-9"
-          />
-        </div>
-
-        <Select value={langFilter} onValueChange={setLangFilter}>
-          <SelectTrigger className="w-full sm:w-44">
-            <SelectValue placeholder={t.publicBiographies.filterLanguage} />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">{t.publicBiographies.langAll}</SelectItem>
-            <SelectItem value="en">🇬🇧 EN</SelectItem>
-            <SelectItem value="it">🇮🇹 IT</SelectItem>
-            <SelectItem value="fr">🇫🇷 FR</SelectItem>
-            <SelectItem value="de">🇩🇪 DE</SelectItem>
-          </SelectContent>
-        </Select>
-
-        <Select value={typeFilter} onValueChange={setTypeFilter}>
-          <SelectTrigger className="w-full sm:w-44">
-            <SelectValue placeholder={t.publicBiographies.filterType} />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">{t.publicBiographies.filterAll}</SelectItem>
-            <SelectItem value="autobiography">{t.publicBiographies.typeAutobiography}</SelectItem>
-            <SelectItem value="memorial">{t.publicBiographies.typeMemorial}</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
-
-      {isLoading && (
-        <div className="flex flex-col items-center justify-center py-24 text-muted-foreground gap-3">
-          <Loader2 className="h-7 w-7 animate-spin" />
-          <p className="text-sm">{t.publicBiographies.loading}</p>
-        </div>
-      )}
-
-      {!isLoading && error && (
-        <div className="flex flex-col items-center justify-center py-24 text-muted-foreground gap-3">
-          <AlertCircle className="h-7 w-7 text-destructive" />
-          <p className="text-sm text-destructive">{error}</p>
-        </div>
-      )}
-
-      {!isLoading && !error && filtered.length === 0 && (
-        <div className="flex flex-col items-center justify-center py-24 gap-3">
-          <BookOpen className="h-10 w-10 text-muted-foreground/40" />
-          <p className="font-medium text-foreground">{t.publicBiographies.noResults}</p>
-          <p className="text-sm text-muted-foreground">{t.publicBiographies.noResultsSubtitle}</p>
-          {(search || langFilter !== 'all' || typeFilter !== 'all') && (
-            <Button
-              variant="outline"
-              size="sm"
-              className="mt-2"
-              onClick={() => { setSearch(''); setLangFilter('all'); setTypeFilter('all'); }}
-            >
-              {t.publicBiographies.filterAll}
+    <div className="min-h-screen bg-background">
+      <header className="border-b border-border/50 bg-background/80 backdrop-blur-md sticky top-0 z-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
+          <Link href="/" className="shrink-0">
+            <Logo height={38} />
+          </Link>
+          <div className="flex items-center gap-2">
+            <ThemeToggle />
+            <Button variant="ghost" size="sm" asChild>
+              <Link href="/login">{t.publicBiographies.signIn}</Link>
             </Button>
-          )}
+            <Button size="sm" asChild className="hidden sm:inline-flex">
+              <Link href="/register">{t.publicBiographies.startBiography}</Link>
+            </Button>
+          </div>
         </div>
-      )}
+      </header>
 
-      {!isLoading && !error && filtered.length > 0 && (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
-          {filtered.map((bio) => (
-            <BiographyCard key={bio.id} bio={bio} t={t} />
-          ))}
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+        <div className="mb-10 space-y-2">
+          <h1 className="text-3xl font-serif font-semibold tracking-tight text-foreground">
+            {t.publicBiographies.pageTitle}
+          </h1>
+          <p className="text-muted-foreground text-base">
+            {t.publicBiographies.pageSubtitle}
+          </p>
         </div>
-      )}
+
+        <div className="flex flex-col sm:flex-row gap-3 mb-10">
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
+            <Input
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder={t.publicBiographies.searchPlaceholder}
+              className="pl-9"
+            />
+          </div>
+
+          <Select value={langFilter} onValueChange={setLangFilter}>
+            <SelectTrigger className="w-full sm:w-44">
+              <SelectValue placeholder={t.publicBiographies.filterLanguage} />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">{t.publicBiographies.langAll}</SelectItem>
+              <SelectItem value="en">🇬🇧 EN</SelectItem>
+              <SelectItem value="it">🇮🇹 IT</SelectItem>
+              <SelectItem value="fr">🇫🇷 FR</SelectItem>
+              <SelectItem value="de">🇩🇪 DE</SelectItem>
+            </SelectContent>
+          </Select>
+
+          <Select value={typeFilter} onValueChange={setTypeFilter}>
+            <SelectTrigger className="w-full sm:w-44">
+              <SelectValue placeholder={t.publicBiographies.filterType} />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">{t.publicBiographies.filterAll}</SelectItem>
+              <SelectItem value="autobiography">{t.publicBiographies.typeAutobiography}</SelectItem>
+              <SelectItem value="memorial">{t.publicBiographies.typeMemorial}</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
+        {isLoading && (
+          <div className="flex flex-col items-center justify-center py-24 text-muted-foreground gap-3">
+            <Loader2 className="h-7 w-7 animate-spin" />
+            <p className="text-sm">{t.publicBiographies.loading}</p>
+          </div>
+        )}
+
+        {!isLoading && error && (
+          <div className="flex flex-col items-center justify-center py-24 text-muted-foreground gap-3">
+            <AlertCircle className="h-7 w-7 text-destructive" />
+            <p className="text-sm text-destructive">{error}</p>
+          </div>
+        )}
+
+        {!isLoading && !error && isSearchActive && (
+          <>
+            {filtered.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-24 gap-3">
+                <BookOpen className="h-10 w-10 text-muted-foreground/40" />
+                <p className="font-medium text-foreground">{t.publicBiographies.noResults}</p>
+                <p className="text-sm text-muted-foreground">{t.publicBiographies.noResultsSubtitle}</p>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="mt-2"
+                  onClick={() => { setSearch(''); setLangFilter('all'); setTypeFilter('all'); }}
+                >
+                  {t.publicBiographies.filterAll}
+                </Button>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+                {filtered.map((bio) => (
+                  <BiographyCard key={bio.id} bio={bio} t={t} />
+                ))}
+              </div>
+            )}
+          </>
+        )}
+
+        {!isLoading && !error && !isSearchActive && (
+          <>
+            {featured.length > 0 && (
+              <BiographySection
+                title={t.publicBiographies.featuredTitle}
+                bios={featured}
+                t={t}
+                featured
+              />
+            )}
+            <BiographySection
+              title={t.publicBiographies.mostReadTitle}
+              bios={mostRead}
+              t={t}
+            />
+            <BiographySection
+              title={t.publicBiographies.discoverTitle}
+              bios={discover}
+              t={t}
+            />
+          </>
+        )}
+      </main>
     </div>
   );
 }

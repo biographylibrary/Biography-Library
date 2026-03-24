@@ -660,6 +660,12 @@ export interface Translations {
     errorLoading: string;
     untitled: string;
     unknownAuthor: string;
+    featuredTitle: string;
+    mostReadTitle: string;
+    discoverTitle: string;
+    signIn: string;
+    startBiography: string;
+    viewsCount: string;
   };
 }
 
@@ -1324,6 +1330,12 @@ export const translations: Record<Language, Translations> = {
       errorLoading: 'Failed to load biographies.',
       untitled: 'Untitled Biography',
       unknownAuthor: 'Unknown Author',
+      featuredTitle: 'Featured Stories',
+      mostReadTitle: 'Most Read',
+      discoverTitle: 'Discover',
+      signIn: 'Sign in',
+      startBiography: 'Start your biography',
+      viewsCount: 'views',
     },
   },
   it: {
@@ -1986,6 +1998,12 @@ export const translations: Record<Language, Translations> = {
       errorLoading: 'Impossibile caricare le biografie.',
       untitled: 'Biografia senza titolo',
       unknownAuthor: 'Autore sconosciuto',
+      featuredTitle: 'Storie in Evidenza',
+      mostReadTitle: 'Più Lette',
+      discoverTitle: 'Scopri',
+      signIn: 'Accedi',
+      startBiography: 'Inizia la tua biografia',
+      viewsCount: 'visualizzazioni',
     },
   },
   fr: {
@@ -2648,6 +2666,12 @@ export const translations: Record<Language, Translations> = {
       errorLoading: 'Impossible de charger les biographies.',
       untitled: 'Biographie sans titre',
       unknownAuthor: 'Auteur inconnu',
+      featuredTitle: 'À la Une',
+      mostReadTitle: 'Les Plus Lues',
+      discoverTitle: 'Découvrir',
+      signIn: 'Se connecter',
+      startBiography: 'Commencer votre biographie',
+      viewsCount: 'vues',
     },
   },
   de: {
@@ -3310,6 +3334,12 @@ export const translations: Record<Language, Translations> = {
       errorLoading: 'Biografien konnten nicht geladen werden.',
       untitled: 'Biografie ohne Titel',
       unknownAuthor: 'Unbekannter Autor',
+      featuredTitle: 'Ausgewählte Geschichten',
+      mostReadTitle: 'Meistgelesen',
+      discoverTitle: 'Entdecken',
+      signIn: 'Anmelden',
+      startBiography: 'Biografie starten',
+      viewsCount: 'Aufrufe',
     },
   },
 };
