@@ -1,7 +1,14 @@
 'use client';
 
-import PublicBiographiesPage from '@/app/biographies/page';
+import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 
 export default function Home() {
-  return <PublicBiographiesPage />;
+  const router = useRouter();
+
+  useEffect(() => {
+    router.replace('/biographies');
+  }, [router]);
+
+  return null;
 }
