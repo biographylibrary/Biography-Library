@@ -1,18 +1,19 @@
 'use client';
 
-import { LogOut, User } from 'lucide-react';
-import { useAuth } from '@/lib/auth-context';
+import { LogOut, User, Shield } from 'lucide-react';
+import { useAuth, ADMIN_ROLES } from '@/lib/auth-context';
 import { useTranslation } from '@/lib/i18n/i18n-context';
 import { ThemeToggle } from '@/components/theme-toggle';
 import { LanguageSelector } from '@/components/language-selector';
 import { FontSizeControl } from '@/components/accessibility/font-size-control';
 import { Button } from '@/components/ui/button';
 import { Logo } from '@/components/logo';
+import Link from 'next/link';
 import { useRouter, usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
 
 export function Header() {
-  const { user, signOut, fontSize, setFontSize } = useAuth();
+  const { user, role, signOut, fontSize, setFontSize } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
   const { t } = useTranslation();
@@ -36,6 +37,20 @@ export function Header() {
           <span className="text-lg font-serif font-semibold tracking-tight">Biography Library</span>
         </div>
         <div className="flex items-center gap-1">
+          {user && role && ADMIN_ROLES.includes(role) && (
+            <Link
+              href="/admin"
+              className={cn(
+                'hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors',
+                pathname === '/admin'
+                  ? 'bg-sky-100 text-sky-700 dark:bg-sky-950/50 dark:text-sky-300'
+                  : 'text-muted-foreground hover:text-foreground hover:bg-muted/60'
+              )}
+            >
+              <Shield className="h-3.5 w-3.5" />
+              Admin
+            </Link>
+          )}
           {user && (
             <div className="flex items-center gap-2 mr-2 px-3 py-1.5 rounded-full bg-muted/50">
               <User className="h-3.5 w-3.5 text-muted-foreground" />

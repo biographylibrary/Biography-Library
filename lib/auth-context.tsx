@@ -6,10 +6,15 @@ import { supabase } from './supabase';
 
 type FontSize = 'small' | 'normal' | 'large' | 'extra-large';
 
+export type UserRole = 'user' | 'reviewer' | 'admin' | 'super_admin';
+
+export const ADMIN_ROLES: UserRole[] = ['reviewer', 'admin', 'super_admin'];
+
 interface AuthContextType {
   user: User | null;
   session: Session | null;
   loading: boolean;
+  role: UserRole | null;
   fontSize: FontSize;
   setFontSize: (size: FontSize) => void;
   signIn: (email: string, password: string) => Promise<{ error: string | null; emailNotConfirmed?: boolean }>;
@@ -23,14 +28,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
+  const [role, setRole] = useState<UserRole | null>(null);
   const [fontSize, setFontSize] = useState<FontSize>('normal');
 
-  const loadFontSize = useCallback(async (userId: string) => {
+  const loadProfile = useCallback(async (userId: string) => {
     const { data } = await supabase
       .from('profiles')
-      .select('ui_font_size')
+      .select('ui_font_size, role')
       .eq('id', userId)
       .maybeSingle();
+
+    if (data?.role) {
+      setRole(data.role as UserRole);
+    }
 
     if (data?.ui_font_size) {
       setFontSize(data.ui_font_size as FontSize);
@@ -49,7 +59,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setSession(session);
       setUser(session?.user ?? null);
       if (session?.user) {
-        loadFontSize(session.user.id);
+        loadProfile(session.user.id);
       }
       setLoading(false);
     });
@@ -59,14 +69,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setSession(session);
         setUser(session?.user ?? null);
         if (session?.user) {
-          loadFontSize(session.user.id);
+          loadProfile(session.user.id);
+        } else {
+          setRole(null);
         }
         setLoading(false);
       }
     );
 
     return () => subscription.unsubscribe();
-  }, [loadFontSize]);
+  }, [loadProfile]);
 
   const signIn = useCallback(async (email: string, password: string) => {
     const { data, error } = await supabase.auth.signInWithPassword({ email, password });
@@ -108,7 +120,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   return (
-    <AuthContext.Provider value={{ user, session, loading, fontSize, setFontSize, signIn, signUp, signOut }}>
+    <AuthContext.Provider value={{ user, session, loading, role, fontSize, setFontSize, signIn, signUp, signOut }}>
       {children}
     </AuthContext.Provider>
   );
