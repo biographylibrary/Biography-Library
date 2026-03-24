@@ -1,6 +1,6 @@
 'use client';
 
-import { Bell, ChevronDown, LogOut, Shield } from 'lucide-react';
+import { Bell, LogOut, Shield } from 'lucide-react';
 import { useAuth, ADMIN_ROLES } from '@/lib/auth-context';
 import { useTranslation } from '@/lib/i18n/i18n-context';
 import { useTheme } from 'next-themes';
@@ -44,17 +44,30 @@ export function Header() {
   const isDark = mounted && resolvedTheme === 'dark';
   const showAdminLink = user && role && ADMIN_ROLES.includes(role);
 
+  const getInitials = (name: string) => {
+    const parts = name.trim().split(/\s+/);
+    if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+    return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+  };
+
+  const displayName = user?.user_metadata?.name || user?.email || '';
+  const initials = displayName ? getInitials(displayName) : '?';
+
   return (
     <header className="border-b border-border bg-[#ECE9E4] dark:bg-[#1F2121] sticky top-0 z-50">
       <div className={cn(
-        "h-16 flex items-center justify-between",
+        "h-16 flex items-center relative",
         (isEditorPage || isDashboardPage) ? "px-4 sm:px-6 lg:px-8" : "max-w-7xl mx-auto px-4 sm:px-6 lg:px-8"
       )}>
-        <Link href="/" className="flex items-center">
-          <Logo height={48} />
-        </Link>
+        <div className="flex-1" />
 
-        <div className="flex items-center gap-1">
+        <div className="absolute left-1/2 -translate-x-1/2 flex items-center">
+          <Link href="/" className="flex items-center">
+            <Logo height={48} />
+          </Link>
+        </div>
+
+        <div className="flex-1 flex items-center justify-end gap-1">
           {showAdminLink && (
             <Link
               href="/admin"
@@ -87,12 +100,12 @@ export function Header() {
               <DropdownMenuTrigger asChild>
                 <Button
                   variant="ghost"
-                  className="flex items-center gap-1.5 h-9 px-2.5 text-sm text-muted-foreground hover:text-foreground"
+                  size="icon"
+                  className="h-9 w-9 rounded-full p-0 hover:opacity-80"
                 >
-                  <span className="hidden sm:block max-w-[120px] truncate">
-                    {user.user_metadata?.name || user.email}
+                  <span className="flex items-center justify-center h-8 w-8 rounded-full bg-foreground text-background text-xs font-semibold select-none">
+                    {initials}
                   </span>
-                  <ChevronDown className="h-3.5 w-3.5 shrink-0 opacity-70" />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-64">
