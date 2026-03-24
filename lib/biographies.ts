@@ -19,6 +19,32 @@ export interface Biography {
   is_frozen?: boolean;
   frozen_at?: string | null;
   frozen_reason?: string | null;
+  content_language?: string;
+  chapters_count?: number;
+}
+
+export interface PublishedBiography {
+  id: string;
+  title: string;
+  author_name: string;
+  content_language: string;
+  frozen_reason: string | null;
+  chapters_count: number;
+  published_at: string | null;
+}
+
+export async function fetchPublishedBiographies() {
+  const { data, error } = await supabase
+    .from('biographies')
+    .select('id, title, author_name, content_language, frozen_reason, chapters_count, published_at')
+    .eq('status', 'published')
+    .eq('privacy', 'public')
+    .order('published_at', { ascending: false });
+
+  return {
+    data: data as PublishedBiography[] | null,
+    error: error?.message ?? null,
+  };
 }
 
 export async function fetchBiographies(userId: string) {

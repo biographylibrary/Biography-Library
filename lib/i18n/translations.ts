@@ -619,6 +619,26 @@ export interface Translations {
     frozenBannerTitle: string;
     frozenBannerMessage: string;
   };
+  publicBiographies: {
+    pageTitle: string;
+    pageSubtitle: string;
+    searchPlaceholder: string;
+    filterLanguage: string;
+    filterType: string;
+    filterAll: string;
+    typeAutobiography: string;
+    typeMemorial: string;
+    langAll: string;
+    chaptersCount: string;
+    publishedOn: string;
+    readBiography: string;
+    noResults: string;
+    noResultsSubtitle: string;
+    loading: string;
+    errorLoading: string;
+    untitled: string;
+    unknownAuthor: string;
+  };
 }
 
 export const translations: Record<Language, Translations> = {
@@ -1241,6 +1261,26 @@ export const translations: Record<Language, Translations> = {
       frozenBannerTitle: 'This biography has been frozen',
       frozenBannerMessage: 'This biography is read-only and cannot be edited.',
     },
+    publicBiographies: {
+      pageTitle: 'Published Biographies',
+      pageSubtitle: 'Discover life stories shared with the world.',
+      searchPlaceholder: 'Search by title or author…',
+      filterLanguage: 'Language',
+      filterType: 'Type',
+      filterAll: 'All',
+      typeAutobiography: 'Autobiography',
+      typeMemorial: 'Memorial',
+      langAll: 'All languages',
+      chaptersCount: 'Chapters',
+      publishedOn: 'Published',
+      readBiography: 'Read biography',
+      noResults: 'No biographies found',
+      noResultsSubtitle: 'Try adjusting your search or filters.',
+      loading: 'Loading biographies…',
+      errorLoading: 'Failed to load biographies.',
+      untitled: 'Untitled Biography',
+      unknownAuthor: 'Unknown Author',
+    },
   },
   it: {
     common: {
@@ -1860,6 +1900,26 @@ export const translations: Record<Language, Translations> = {
       freezing: 'Congelamento...',
       frozenBannerTitle: 'Questa biografia è stata congelata',
       frozenBannerMessage: 'Questa biografia è di sola lettura e non può essere modificata.',
+    },
+    publicBiographies: {
+      pageTitle: 'Biografie Pubblicate',
+      pageSubtitle: 'Scopri storie di vita condivise con il mondo.',
+      searchPlaceholder: 'Cerca per titolo o autore…',
+      filterLanguage: 'Lingua',
+      filterType: 'Tipo',
+      filterAll: 'Tutti',
+      typeAutobiography: 'Autobiografia',
+      typeMemorial: 'Memoriale',
+      langAll: 'Tutte le lingue',
+      chaptersCount: 'Capitoli',
+      publishedOn: 'Pubblicato',
+      readBiography: 'Leggi la biografia',
+      noResults: 'Nessuna biografia trovata',
+      noResultsSubtitle: 'Prova a modificare la ricerca o i filtri.',
+      loading: 'Caricamento biografie…',
+      errorLoading: 'Impossibile caricare le biografie.',
+      untitled: 'Biografia senza titolo',
+      unknownAuthor: 'Autore sconosciuto',
     },
   },
   fr: {
@@ -2481,6 +2541,26 @@ export const translations: Record<Language, Translations> = {
       frozenBannerTitle: 'Cette biographie a été gelée',
       frozenBannerMessage: 'Cette biographie est en lecture seule et ne peut pas être modifiée.',
     },
+    publicBiographies: {
+      pageTitle: 'Biographies Publiées',
+      pageSubtitle: 'Découvrez des histoires de vie partagées avec le monde.',
+      searchPlaceholder: 'Rechercher par titre ou auteur…',
+      filterLanguage: 'Langue',
+      filterType: 'Type',
+      filterAll: 'Tous',
+      typeAutobiography: 'Autobiographie',
+      typeMemorial: 'Mémorial',
+      langAll: 'Toutes les langues',
+      chaptersCount: 'Chapitres',
+      publishedOn: 'Publié',
+      readBiography: 'Lire la biographie',
+      noResults: 'Aucune biographie trouvée',
+      noResultsSubtitle: 'Essayez de modifier votre recherche ou vos filtres.',
+      loading: 'Chargement des biographies…',
+      errorLoading: 'Impossible de charger les biographies.',
+      untitled: 'Biographie sans titre',
+      unknownAuthor: 'Auteur inconnu',
+    },
   },
   de: {
     common: {
@@ -3100,6 +3180,26 @@ export const translations: Record<Language, Translations> = {
       freezing: 'Einfrieren...',
       frozenBannerTitle: 'Diese Biografie wurde eingefroren',
       frozenBannerMessage: 'Diese Biografie ist schreibgeschützt und kann nicht bearbeitet werden.',
+    },
+    publicBiographies: {
+      pageTitle: 'Veröffentlichte Biografien',
+      pageSubtitle: 'Entdecken Sie Lebensgeschichten, die mit der Welt geteilt werden.',
+      searchPlaceholder: 'Nach Titel oder Autor suchen…',
+      filterLanguage: 'Sprache',
+      filterType: 'Typ',
+      filterAll: 'Alle',
+      typeAutobiography: 'Autobiografie',
+      typeMemorial: 'Gedenkschrift',
+      langAll: 'Alle Sprachen',
+      chaptersCount: 'Kapitel',
+      publishedOn: 'Veröffentlicht',
+      readBiography: 'Biografie lesen',
+      noResults: 'Keine Biografien gefunden',
+      noResultsSubtitle: 'Versuchen Sie, Ihre Suche oder Filter anzupassen.',
+      loading: 'Biografien werden geladen…',
+      errorLoading: 'Biografien konnten nicht geladen werden.',
+      untitled: 'Biografie ohne Titel',
+      unknownAuthor: 'Unbekannter Autor',
     },
   },
 };
