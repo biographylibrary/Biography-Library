@@ -897,7 +897,7 @@ export default function BiographyEditorPage() {
         <div className="flex-1 flex min-w-0">
           <div className="flex-1 flex flex-col min-w-0">
             {biographyStatus !== 'final_version' && biographyStatus !== 'published' && !isFrozen && (
-              <div className="border-b border-border/50 px-4 py-2 bg-card/30 flex items-center gap-2 shrink-0">
+              <div className="border-b border-border/50 px-4 py-2 bg-card/30 flex flex-wrap items-center gap-2 shrink-0">
                 <Button
                   variant={editorMode === 'editor' ? 'default' : 'ghost'}
                   size="sm"
@@ -915,7 +915,7 @@ export default function BiographyEditorPage() {
                   {t.editor.conversationMode}
                 </Button>
                 {aiEnabled && (
-                  <div className="ml-auto">
+                  <div className="sm:ml-auto">
                     <AiUsageIndicator refreshTrigger={aiUsageRefresh} />
                   </div>
                 )}

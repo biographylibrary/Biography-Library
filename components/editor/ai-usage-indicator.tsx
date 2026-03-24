@@ -72,9 +72,9 @@ export function AiUsageIndicator({ refreshTrigger }: AiUsageIndicatorProps) {
             )}>
               {usage.daily_count}/{DAILY_LIMIT}
             </span>
-            <span className="text-muted-foreground/50">·</span>
+            <span className="hidden sm:inline text-muted-foreground/50">·</span>
             <span className={cn(
-              'font-medium tabular-nums',
+              'hidden sm:inline font-medium tabular-nums',
               weeklyCritical ? 'text-destructive' :
               weeklyWarning ? 'text-amber-500' : ''
             )}>
