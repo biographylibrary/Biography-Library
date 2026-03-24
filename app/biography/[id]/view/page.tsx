@@ -90,6 +90,7 @@ export default function BiographyViewPage() {
 
       if (!publicQuery.error && publicQuery.data) {
         data = publicQuery.data as BiographyViewData;
+        supabase.rpc('increment_view_count', { biography_uuid: id });
       } else if (token) {
         const tokenQuery = await supabase
           .from('biographies')
