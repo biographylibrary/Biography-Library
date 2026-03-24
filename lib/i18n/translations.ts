@@ -709,6 +709,11 @@ export interface Translations {
     startBiography: string;
     viewsCount: string;
   };
+  pwa: {
+    installBannerText: string;
+    installButton: string;
+    dismissButton: string;
+  };
 }
 
 export const translations: Record<Language, Translations> = {
@@ -1421,6 +1426,11 @@ export const translations: Record<Language, Translations> = {
       startBiography: 'Start your biography',
       viewsCount: 'views',
     },
+    pwa: {
+      installBannerText: 'Add Biography Library to your home screen',
+      installButton: 'Install',
+      dismissButton: 'Dismiss',
+    },
   },
   it: {
     common: {
@@ -2130,6 +2140,11 @@ export const translations: Record<Language, Translations> = {
       signIn: 'Accedi',
       startBiography: 'Inizia la tua biografia',
       viewsCount: 'visualizzazioni',
+    },
+    pwa: {
+      installBannerText: 'Aggiungi Biography Library alla schermata principale',
+      installButton: 'Installa',
+      dismissButton: 'Chiudi',
     },
   },
   fr: {
@@ -2841,6 +2856,11 @@ export const translations: Record<Language, Translations> = {
       startBiography: 'Commencer votre biographie',
       viewsCount: 'vues',
     },
+    pwa: {
+      installBannerText: 'Ajouter Biography Library à votre écran d\'accueil',
+      installButton: 'Installer',
+      dismissButton: 'Fermer',
+    },
   },
   de: {
     common: {
@@ -3550,6 +3570,11 @@ export const translations: Record<Language, Translations> = {
       signIn: 'Anmelden',
       startBiography: 'Biografie starten',
       viewsCount: 'Aufrufe',
+    },
+    pwa: {
+      installBannerText: 'Biography Library zum Startbildschirm hinzufügen',
+      installButton: 'Installieren',
+      dismissButton: 'Schließen',
     },
   },
 };

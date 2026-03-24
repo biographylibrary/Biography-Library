@@ -3,6 +3,7 @@ import type { Metadata } from 'next';
 import { Providers } from './providers';
 import { ConditionalHeader } from '@/components/conditional-header';
 import { Footer } from '@/components/footer';
+import { PwaInstallPrompt } from '@/components/pwa-install-prompt';
 
 export const metadata: Metadata = {
   title: 'Biography Library - Preserving Stories in Switzerland',
@@ -33,6 +34,7 @@ export default function RootLayout({
             </main>
             <Footer />
           </div>
+          <PwaInstallPrompt />
         </Providers>
       </body>
     </html>
