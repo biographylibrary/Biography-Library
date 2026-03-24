@@ -3,7 +3,6 @@
 import { useEffect, useState, useMemo } from 'react';
 import Link from 'next/link';
 import { useTranslation } from '@/lib/i18n/i18n-context';
-import { useAuth } from '@/lib/auth-context';
 import {
   fetchPublishedBiographies,
   fetchFeaturedBiographies,
@@ -20,9 +19,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Logo } from '@/components/logo';
-import { ThemeToggle } from '@/components/theme-toggle';
-import { LanguageSelector } from '@/components/language-selector';
 import {
   Search,
   BookOpen,
@@ -184,7 +180,6 @@ function BiographySection({ title, bios, t, featured }: SectionProps) {
 
 export default function PublicBiographiesPage() {
   const { t } = useTranslation();
-  const { user, loading: authLoading } = useAuth();
   const [allBios, setAllBios] = useState<PublishedBiography[]>([]);
   const [featured, setFeatured] = useState<PublishedBiography[]>([]);
   const [mostRead, setMostRead] = useState<PublishedBiography[]>([]);
@@ -259,27 +254,6 @@ export default function PublicBiographiesPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      {!authLoading && !user && (
-        <header className="border-b border-border/50 bg-background/80 backdrop-blur-md sticky top-0 z-50">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
-            <Link href="/" className="shrink-0 flex items-center gap-2">
-              <Logo height={38} />
-              <span className="text-base font-serif font-semibold tracking-tight hidden sm:block">Biography Library</span>
-            </Link>
-            <div className="flex items-center gap-2">
-              <LanguageSelector />
-              <ThemeToggle />
-              <Button variant="ghost" size="sm" asChild>
-                <Link href="/login">{t.publicBiographies.signIn}</Link>
-              </Button>
-              <Button size="sm" asChild className="hidden sm:inline-flex">
-                <Link href="/register">{t.publicBiographies.startBiography}</Link>
-              </Button>
-            </div>
-          </div>
-        </header>
-      )}
-
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
         <div className="mb-10 space-y-2">
           <h1 className="text-3xl font-serif font-semibold tracking-tight text-foreground">

@@ -1,6 +1,6 @@
 'use client';
 
-import { Bell, LogOut, Shield } from 'lucide-react';
+import { Bell, LayoutDashboard, LogOut, Shield } from 'lucide-react';
 import { useAuth, ADMIN_ROLES } from '@/lib/auth-context';
 import { useTranslation } from '@/lib/i18n/i18n-context';
 import { useTheme } from 'next-themes';
@@ -36,7 +36,7 @@ export function Header() {
 
   const handleSignOut = async () => {
     await signOut();
-    router.push('/login');
+    router.push('/biographies');
   };
 
   const isEditorPage = pathname?.includes('/biography/') && pathname?.includes('/edit');
@@ -62,7 +62,7 @@ export function Header() {
         <div className="flex-1" />
 
         <div className="absolute left-1/2 -translate-x-1/2 flex items-center">
-          <Link href="/" className="flex items-center">
+          <Link href="/biographies" className="flex items-center">
             <Logo height={48} />
           </Link>
         </div>
@@ -94,6 +94,17 @@ export function Header() {
           )}
 
           <LanguageSelector />
+
+          {!user && (
+            <div className="flex items-center gap-1.5 ml-1">
+              <Button variant="ghost" size="sm" asChild>
+                <Link href="/login">{t.publicBiographies.signIn}</Link>
+              </Button>
+              <Button size="sm" asChild className="hidden sm:inline-flex">
+                <Link href="/register">{t.publicBiographies.startBiography}</Link>
+              </Button>
+            </div>
+          )}
 
           {user && (
             <DropdownMenu>
@@ -134,6 +145,13 @@ export function Header() {
                 </div>
 
                 <DropdownMenuSeparator />
+
+                <DropdownMenuItem asChild>
+                  <Link href="/dashboard" className="flex items-center gap-2 cursor-pointer">
+                    <LayoutDashboard className="h-4 w-4" />
+                    <span>{t.nav.dashboard}</span>
+                  </Link>
+                </DropdownMenuItem>
 
                 <DropdownMenuItem asChild>
                   <Link href="/notifications" className="flex items-center gap-2 cursor-pointer">
