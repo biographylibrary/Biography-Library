@@ -496,6 +496,7 @@ export interface Translations {
     title: string;
     recordAudio: string;
     importText: string;
+    exportText: string;
     notesTab: string;
     todosTab: string;
     addNotePlaceholder: string;
@@ -1183,6 +1184,7 @@ export const translations: Record<Language, Translations> = {
       title: 'Notes & Reminders',
       recordAudio: 'Record audio',
       importText: 'Import text',
+      exportText: 'Export text',
       notesTab: 'Notes',
       todosTab: 'To Do',
       addNotePlaceholder: 'Add a note for this section... (max 500 characters)',
@@ -1868,6 +1870,7 @@ export const translations: Record<Language, Translations> = {
       title: 'Note e Promemoria',
       recordAudio: 'Registra audio',
       importText: 'Importa testo',
+      exportText: 'Esporta testo',
       notesTab: 'Note',
       todosTab: 'Da Fare',
       addNotePlaceholder: 'Aggiungi una nota per questa sezione... (max 500 caratteri)',
@@ -2553,6 +2556,7 @@ export const translations: Record<Language, Translations> = {
       title: 'Notes et Rappels',
       recordAudio: 'Enregistrer audio',
       importText: 'Importer texte',
+      exportText: 'Exporter texte',
       notesTab: 'Notes',
       todosTab: 'À Faire',
       addNotePlaceholder: 'Ajouter une note pour cette section... (max 500 caractères)',
@@ -3238,6 +3242,7 @@ export const translations: Record<Language, Translations> = {
       title: 'Notizen & Erinnerungen',
       recordAudio: 'Audio aufnehmen',
       importText: 'Text importieren',
+      exportText: 'Text exportieren',
       notesTab: 'Notizen',
       todosTab: 'Zu Erledigen',
       addNotePlaceholder: 'Fügen Sie eine Notiz für diesen Abschnitt hinzu... (max 500 Zeichen)',

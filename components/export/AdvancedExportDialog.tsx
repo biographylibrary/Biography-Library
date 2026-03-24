@@ -15,7 +15,7 @@ import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
-import { Download, Loader2 } from 'lucide-react';
+import { Download, Loader as Loader2, Info } from 'lucide-react';
 import { BIOGRAPHY_SECTIONS } from '@/lib/editor-constants';
 import { generateBiographyPDF } from '@/lib/pdf-export';
 import { exportAsPlainText, exportAsRTF, exportAsDOCX } from '@/lib/export-utils';
@@ -210,13 +210,17 @@ export function AdvancedExportDialog({
 
         <ScrollArea className="flex-1 pr-4">
           <div className="space-y-6 py-4">
+            {!isPublished && (
+              <div className="flex items-start gap-3 rounded-lg bg-[#C8DFBE] dark:bg-[#C8DFBE]/20 border border-[#a8c99a] dark:border-[#C8DFBE]/30 px-4 py-3">
+                <Info className="h-4 w-4 mt-0.5 shrink-0 text-[#3a6b30] dark:text-[#C8DFBE]" />
+                <p className="text-sm text-[#2a4f27] dark:text-[#C8DFBE] leading-relaxed">
+                  L&apos;esportazione in <strong>PDF</strong> è disponibile solo una volta che la biografia è stata <strong>completata e approvata</strong>. Per ora puoi esportare nei formati TXT, RTF e DOCX.
+                </p>
+              </div>
+            )}
+
             <div className="space-y-3">
               <Label className="text-base font-semibold">Formato di esportazione</Label>
-              {!isPublished && (
-                <p className="text-xs text-muted-foreground">
-                  Esportazione PDF disponibile solo dopo la pubblicazione definitiva
-                </p>
-              )}
               <RadioGroup value={format} onValueChange={(v) => setFormat(v as ExportFormat)}>
                 {(['pdf', 'txt', 'rtf', 'docx'] as ExportFormat[])
                   .filter(fmt => isPublished || fmt !== 'pdf')

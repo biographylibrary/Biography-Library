@@ -888,6 +888,7 @@ export default function BiographyEditorPage() {
             onToggleNotesPanel={() => setShowGlobalNotesPanel(!showGlobalNotesPanel)}
             onTogglePhotosPanel={() => setShowPhotosPanel(!showPhotosPanel)}
             onToggleImportText={() => setShowSidebarImport(true)}
+            onToggleExportText={() => setShowExportDialog(true)}
             showNotesPanel={showGlobalNotesPanel}
             showPhotosPanel={showPhotosPanel}
             completedSections={completedSections}
