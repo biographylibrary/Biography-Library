@@ -273,7 +273,7 @@ export function GlobalNotesPanel({
                   <StickyNote className="h-4 w-4" />
                   {t.notesAndTodos.notesTab}
                   {notes.length > 0 && (
-                    <Badge variant="secondary" className="ml-1 h-5 min-w-5 rounded-full px-1 text-xs">
+                    <Badge variant="secondary" className="ml-1 h-5 min-w-5 rounded-full px-1 text-xs text-white">
                       {notes.length}
                     </Badge>
                   )}
