@@ -7,8 +7,6 @@ import { useTranslation } from '@/lib/i18n/i18n-context';
 import {
   Lock,
   FileCheck,
-  SpellCheck,
-  MessageSquareText,
   RotateCcw,
 } from 'lucide-react';
 
@@ -19,10 +17,7 @@ interface FinalVersionEditorProps {
   isLocked: boolean;
   onPublish: () => void;
   editorFontSize?: number;
-  onGrammarCheck?: () => void;
-  onGuidedPrompts?: () => void;
   onRevertToDraft?: () => void;
-  aiEnabled?: boolean;
 }
 
 export function FinalVersionEditor({
@@ -32,10 +27,7 @@ export function FinalVersionEditor({
   isLocked,
   onPublish,
   editorFontSize = 16,
-  onGrammarCheck,
-  onGuidedPrompts,
   onRevertToDraft,
-  aiEnabled = true,
 }: FinalVersionEditorProps) {
   const { language } = useTranslation();
 
@@ -67,20 +59,6 @@ export function FinalVersionEditor({
     de: 'Dies ist Ihre endgültige kombinierte Biografie. Sie können diese Version weiterhin mit KI-Unterstützung bearbeiten und verfeinern, bis Sie vollständig zufrieden sind.',
   }[language] || 'This is your final combined biography.';
 
-  const grammarLabel = {
-    en: 'Grammar Check',
-    it: 'Controllo Grammatica',
-    fr: 'Vérification Grammaire',
-    de: 'Grammatikprüfung',
-  }[language] || 'Grammar Check';
-
-  const guidedPromptsLabel = {
-    en: 'Writing Help',
-    it: 'Aiuto Scrittura',
-    fr: 'Aide à l\'Écriture',
-    de: 'Schreibhilfe',
-  }[language] || 'Writing Help';
-
   const revertLabel = {
     en: 'Back to Editing',
     it: 'Torna alla Modifica',
@@ -104,28 +82,6 @@ export function FinalVersionEditor({
 
           {!isLocked && (
             <div className="flex items-center gap-2 flex-wrap shrink-0">
-              {aiEnabled && onGrammarCheck && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={onGrammarCheck}
-                  className="gap-1.5 text-xs"
-                >
-                  <SpellCheck className="h-3.5 w-3.5" />
-                  {grammarLabel}
-                </Button>
-              )}
-              {aiEnabled && onGuidedPrompts && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={onGuidedPrompts}
-                  className="gap-1.5 text-xs"
-                >
-                  <MessageSquareText className="h-3.5 w-3.5" />
-                  {guidedPromptsLabel}
-                </Button>
-              )}
               {onRevertToDraft && (
                 <Button
                   variant="ghost"

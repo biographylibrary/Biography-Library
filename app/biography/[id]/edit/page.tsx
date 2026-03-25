@@ -1055,10 +1055,7 @@ const [isPublishing, setIsPublishing] = useState(false);
                   isLocked={effectivelyLocked}
                   onPublish={() => setShowPublishDialog(true)}
                   editorFontSize={editorFontSize}
-                  onGrammarCheck={aiEnabled ? handleFinalVersionGrammarCheck : undefined}
-                  onGuidedPrompts={aiEnabled ? handleFinalVersionGuidedPrompts : undefined}
                   onRevertToDraft={!effectivelyLocked ? handleRevertToDraft : undefined}
-                  aiEnabled={aiEnabled}
                 />
               ) : editorMode === 'conversation' && !isFrozen ? (
                 <ConversationMode
