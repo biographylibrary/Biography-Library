@@ -480,7 +480,7 @@ export function ConversationMode({
               "text-sm font-medium px-3 py-1 rounded-full",
               answers.length >= 8
                 ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
-                : "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400"
+                : "bg-[#EDE4B9] text-[#121212] dark:bg-[#EDE4B9]/20 dark:text-[#EDE4B9]"
             )}>
               {answers.length} {language === 'it' ? 'risposte' : language === 'fr' ? 'réponses' : language === 'de' ? 'Antworten' : 'answers'}
             </span>
@@ -601,7 +601,7 @@ export function ConversationMode({
               "text-xs font-medium px-3 py-1 rounded-full w-fit",
               answers.length >= 8
                 ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
-                : "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400"
+                : "bg-[#EDE4B9] text-[#121212] dark:bg-[#EDE4B9]/20 dark:text-[#EDE4B9]"
             )}>
               {answers.length >= 8 ? '✓ ' : ''}{answers.length} {language === 'it' ? 'risposte' : language === 'fr' ? 'réponses' : language === 'de' ? 'Antworten' : 'answers'}
               {answers.length < 8 && ` (${8 - answers.length} ${language === 'it' ? 'per bozza completa' : language === 'fr' ? 'pour brouillon complet' : language === 'de' ? 'für vollständigen Entwurf' : 'for complete draft'})`}

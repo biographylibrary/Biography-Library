@@ -225,7 +225,7 @@ export function Header() {
 
                 <DropdownMenuItem
                   onClick={handleSignOut}
-                  className="text-destructive focus:text-destructive focus:bg-destructive/10 cursor-pointer"
+                  className="text-[#FDFBF7] dark:text-[#FDFBF7] focus:text-[#FDFBF7] focus:bg-destructive/10 cursor-pointer"
                 >
                   <LogOut className="h-4 w-4 mr-2" />
                   {t.nav.signOut}

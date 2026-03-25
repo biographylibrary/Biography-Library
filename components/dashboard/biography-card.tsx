@@ -22,12 +22,12 @@ export function BiographyCard({ biography, onEdit, onDelete }: BiographyCardProp
   };
 
   const statusConfig: Record<string, { label: string; className: string }> = {
-    draft: { label: t.dashboard.draft, className: 'text-amber-600 bg-amber-500/10' },
+    draft: { label: t.dashboard.draft, className: 'text-[#121212] bg-[#EDE4B9] dark:bg-[#EDE4B9]/20 dark:text-[#EDE4B9]' },
     completed: { label: t.dashboard.completed, className: 'text-emerald-600 bg-emerald-500/10' },
     sections_complete: { label: 'Sections Complete', className: 'text-blue-600 bg-blue-500/10' },
     final_version: { label: 'Final Version', className: 'text-sky-600 bg-sky-500/10' },
     published: { label: t.dashboard.statusPublished, className: 'text-green-600 bg-green-500/10' },
-    under_review: { label: t.dashboard.statusUnderReview, className: 'text-orange-600 bg-orange-500/10' },
+    under_review: { label: t.dashboard.statusUnderReview, className: 'text-[#121212] bg-[#EDE4B9] dark:bg-[#EDE4B9]/20 dark:text-[#EDE4B9]' },
   };
 
   const isUnderReview = biography.status === 'under_review';

@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { CheckSquare, AlertCircle, Calendar as CalendarIcon, ArrowRight } from 'lucide-react';
+import { SquareCheck as CheckSquare, CircleAlert as AlertCircle, Calendar as CalendarIcon, ArrowRight } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { BIOGRAPHY_SECTIONS } from '@/lib/editor-constants';
 import { format, isPast, isToday } from 'date-fns';
@@ -72,7 +72,7 @@ export function PendingTodosCard() {
   const getPriorityColor = (priority: string) => {
     const colors = {
       low: 'text-gray-600',
-      medium: 'text-yellow-600',
+      medium: 'text-[#121212] dark:text-[#EDE4B9]',
       high: 'text-red-600',
     };
     return colors[priority as keyof typeof colors] || colors.medium;

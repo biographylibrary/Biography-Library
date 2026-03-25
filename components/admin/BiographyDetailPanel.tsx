@@ -62,7 +62,7 @@ function StatusBadge({ status }: { status: string }) {
   const map: Record<string, { label: string; className: string }> = {
     draft: { label: t.admin.bioStatusDraft, className: 'bg-neutral-100 text-neutral-700 border-neutral-200 dark:bg-neutral-800 dark:text-neutral-300 dark:border-neutral-700' },
     published: { label: t.admin.bioStatusPublished, className: 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/30 dark:text-emerald-300 dark:border-emerald-800' },
-    under_review: { label: t.admin.bioStatusUnderReview, className: 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/30 dark:text-amber-300 dark:border-amber-800' },
+    under_review: { label: t.admin.bioStatusUnderReview, className: 'bg-[#EDE4B9] text-[#121212] border-amber-200 dark:bg-[#EDE4B9]/20 dark:text-[#EDE4B9] dark:border-amber-800' },
     removed: { label: t.admin.bioStatusRemoved, className: 'bg-red-50 text-red-700 border-red-200 dark:bg-red-950/30 dark:text-red-300 dark:border-red-800' },
   };
   const cfg = map[status] ?? map['draft'];

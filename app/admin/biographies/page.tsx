@@ -30,7 +30,7 @@ function StatusBadge({ status, t }: { status: string; t: any }) {
   const map: Record<string, string> = {
     draft: 'bg-neutral-100 text-neutral-700 border-neutral-200 dark:bg-neutral-800 dark:text-neutral-300 dark:border-neutral-700',
     published: 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/30 dark:text-emerald-300 dark:border-emerald-800',
-    under_review: 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/30 dark:text-amber-300 dark:border-amber-800',
+    under_review: 'bg-[#EDE4B9] text-[#121212] border-amber-200 dark:bg-[#EDE4B9]/20 dark:text-[#EDE4B9] dark:border-amber-800',
     removed: 'bg-red-50 text-red-700 border-red-200 dark:bg-red-950/30 dark:text-red-300 dark:border-red-800',
   };
   const labels: Record<string, string> = {

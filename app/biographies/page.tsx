@@ -82,18 +82,18 @@ function BiographyCard({ bio, t, featured }: BiographyCardProps) {
           <div
             className={cn(
               'p-2.5 rounded-xl shrink-0',
-              isMemorial ? 'bg-amber-50 dark:bg-amber-950/30' : 'bg-sky-50 dark:bg-sky-950/30'
+              isMemorial ? 'bg-[#EDE4B9] dark:bg-[#EDE4B9]/20' : 'bg-sky-50 dark:bg-sky-950/30'
             )}
           >
             {isMemorial ? (
-              <BookMarked className="h-5 w-5 text-amber-600 dark:text-amber-400" />
+              <BookMarked className="h-5 w-5 text-[#121212] dark:text-[#EDE4B9]" />
             ) : (
               <BookOpen className="h-5 w-5 text-sky-600 dark:text-sky-400" />
             )}
           </div>
           <div className="flex items-center gap-1.5 flex-wrap justify-end">
             {featured && (
-              <span className="flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 dark:bg-amber-950/50 dark:text-amber-300">
+              <span className="flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full bg-[#EDE4B9] text-[#121212] dark:bg-[#EDE4B9]/20 dark:text-[#EDE4B9]">
                 <Star className="h-3 w-3" />
                 Featured
               </span>
@@ -102,7 +102,7 @@ function BiographyCard({ bio, t, featured }: BiographyCardProps) {
               className={cn(
                 'text-xs font-medium px-2.5 py-1 rounded-full',
                 isMemorial
-                  ? 'bg-amber-100 text-amber-700 dark:bg-amber-950/50 dark:text-amber-300'
+                  ? 'bg-[#EDE4B9] text-[#121212] dark:bg-[#EDE4B9]/20 dark:text-[#EDE4B9]'
                   : 'bg-sky-100 text-sky-700 dark:bg-sky-950/50 dark:text-sky-300'
               )}
             >
