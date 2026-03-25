@@ -97,7 +97,7 @@ export function Header() {
               className={cn(
                 'sm:hidden flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-sm font-medium transition-colors',
                 pathname?.startsWith('/admin')
-                  ? 'bg-sky-100 text-sky-700 dark:bg-sky-950/50 dark:text-sky-300'
+                  ? 'bg-[#C4DAEB] text-[#121212] dark:bg-[#C4DAEB]/30 dark:text-[#121212]'
                   : 'text-muted-foreground hover:text-foreground hover:bg-muted/60'
               )}
             >
@@ -120,7 +120,7 @@ export function Header() {
               className={cn(
                 'hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors',
                 pathname?.startsWith('/admin')
-                  ? 'bg-sky-100 text-sky-700 dark:bg-sky-950/50 dark:text-sky-300'
+                  ? 'bg-[#C4DAEB] text-[#121212] dark:bg-[#C4DAEB]/30 dark:text-[#121212]'
                   : 'text-muted-foreground hover:text-foreground hover:bg-muted/60'
               )}
             >

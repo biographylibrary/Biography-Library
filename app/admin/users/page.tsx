@@ -71,13 +71,8 @@ function getRoleBadge(role: UserRole, label: string) {
   }
 }
 
-function getAvatarColor(name: string) {
-  const colors = [
-    'bg-sky-500', 'bg-emerald-500', 'bg-amber-500',
-    'bg-rose-500', 'bg-violet-500', 'bg-teal-500',
-  ];
-  const idx = name.charCodeAt(0) % colors.length;
-  return colors[idx];
+function getAvatarColor(_name: string) {
+  return 'bg-[#121212] dark:bg-[#FDFBF7]';
 }
 
 function formatDate(iso: string) {
@@ -353,7 +348,7 @@ export default function AdminUsersPage() {
                       return (
                         <tr key={u.id} className="hover:bg-muted/30 transition-colors">
                           <td className="px-4 py-3">
-                            <div className={`h-8 w-8 rounded-full flex items-center justify-center text-white text-xs font-bold shrink-0 ${getAvatarColor(displayName)}`}>
+                            <div className={`h-8 w-8 rounded-full flex items-center justify-center text-white dark:text-[#121212] text-xs font-bold shrink-0 ${getAvatarColor(displayName)}`}>
                               {initial}
                             </div>
                           </td>
