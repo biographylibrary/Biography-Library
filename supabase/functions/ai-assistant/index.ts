@@ -290,6 +290,31 @@ Respond in JSON format:
   };
 }
 
+function buildPrePublicationCheckPrompt(biographyText: string) {
+  return {
+    system: `You are a content moderator for Biography Library, a platform for personal autobiographies and memoirs of deceased persons. Analyze the text for violations:
+Level 1 (automatic block): genocide glorification, CSAM, terrorism, direct violence incitement, human trafficking, WMD instructions, suicide promotion.
+Level 2 (review required): hate speech targeting race/religion/gender/sexuality/disability, targeted harassment, graphic violence without narrative context, copyright.
+Level 3 (publish with warning): controversial opinions, contested historical narratives.
+Return only valid JSON, no other text.`,
+    user: `Analyze the following biography text for content violations and return a JSON object with this exact structure:
+{
+  "passed": boolean,
+  "violation_level": 1 | 2 | 3 | null,
+  "flagged_passages": [
+    { "text": "...", "reason": "...", "level": 1 | 2 | 3 }
+  ],
+  "summary": "short explanation for reviewers"
+}
+
+If no violations are found, return passed: true, violation_level: null, flagged_passages: [], and a brief positive summary.
+The violation_level should be the highest level found among all flagged passages (null if none).
+
+Biography text:
+${biographyText}`,
+  };
+}
+
 function buildDetectSectionPrompt(chunkText: string, language: string) {
   const langName = getLangName(language);
 
@@ -699,6 +724,20 @@ Deno.serve(async (req: Request) => {
         maxTokens = 256;
         break;
       }
+      case "pre-publication-check": {
+        const biographyText = body.biographyText;
+        if (!biographyText) {
+          return errorResponse(
+            "Missing biographyText for pre-publication check",
+            400
+          );
+        }
+        const p = buildPrePublicationCheckPrompt(biographyText);
+        systemPrompt = p.system;
+        userPrompt = p.user;
+        maxTokens = 2048;
+        break;
+      }
       default:
         return errorResponse(`Unknown action: ${action}`, 400);
     }
@@ -777,6 +816,22 @@ Deno.serve(async (req: Request) => {
         const cleaned = extractJson(textContent);
         const jsonData = JSON.parse(cleaned);
         parsed = { proposals: jsonData.proposals || [] };
+      } catch {
+        return errorResponse(
+          "AI returned an invalid response. Please try again.",
+          502
+        );
+      }
+    } else if (action === "pre-publication-check") {
+      try {
+        const cleaned = extractJson(textContent);
+        const jsonData = JSON.parse(cleaned);
+        parsed = {
+          passed: jsonData.passed ?? true,
+          violation_level: jsonData.violation_level ?? null,
+          flagged_passages: jsonData.flagged_passages ?? [],
+          summary: jsonData.summary ?? "",
+        };
       } catch {
         return errorResponse(
           "AI returned an invalid response. Please try again.",
