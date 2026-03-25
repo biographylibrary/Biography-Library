@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { ExternalLink } from 'lucide-react';
+import { ExternalLink, Snowflake } from 'lucide-react';
 import { useTranslation } from '@/lib/i18n/i18n-context';
 import { useAuth } from '@/lib/auth-context';
 import { supabase } from '@/lib/supabase';
@@ -41,6 +41,7 @@ export interface AdminBiographyRow {
   created_at: string;
   updated_at: string;
   published_at: string | null;
+  is_frozen: boolean;
 }
 
 interface SectionPreview {
@@ -48,7 +49,7 @@ interface SectionPreview {
   content: string;
 }
 
-type ConfirmAction = 'force_publish' | 'set_draft' | 'remove' | 'restore' | null;
+type ConfirmAction = 'force_publish' | 'set_draft' | 'remove' | 'restore' | 'freeze' | 'unfreeze' | null;
 
 interface BiographyDetailPanelProps {
   biography: AdminBiographyRow | null;
@@ -149,6 +150,26 @@ export function BiographyDetailPanel({ biography, onClose, onRefresh }: Biograph
     if (!biography || !action || !user) return;
     setSaving(true);
     try {
+      if (action === 'freeze' || action === 'unfreeze') {
+        const isFreezing = action === 'freeze';
+        const updateData: Record<string, unknown> = {
+          is_frozen: isFreezing,
+          frozen_at: isFreezing ? new Date().toISOString() : null,
+          frozen_reason: isFreezing ? 'admin_action' : null,
+        };
+        const { error } = await supabase
+          .from('biographies')
+          .update(updateData)
+          .eq('id', biography.id);
+        if (error) throw error;
+        const notifyMsg = isFreezing ? t.admin.bioNotifyFrozen : t.admin.bioNotifyUnfrozen;
+        await createNotification(biography.author_id, notifyMsg);
+        await logAction(action, biography.id, { is_frozen: isFreezing });
+        toast({ title: t.admin.bioActionSuccess });
+        onRefresh();
+        return;
+      }
+
       const oldStatus = biography.status;
       let newStatus = '';
       let notifyMsg = '';
@@ -202,6 +223,8 @@ export function BiographyDetailPanel({ biography, onClose, onRefresh }: Biograph
     set_draft: { title: t.admin.bioActionSetDraftConfirm, detail: t.admin.bioActionSetDraftDetail },
     remove: { title: t.admin.bioActionRemoveConfirm, detail: t.admin.bioActionRemoveDetail },
     restore: { title: t.admin.bioActionRestoreConfirm, detail: t.admin.bioActionRestoreDetail },
+    freeze: { title: t.admin.bioActionFreezeConfirm, detail: t.admin.bioActionFreezeDetail },
+    unfreeze: { title: t.admin.bioActionUnfreezeConfirm, detail: t.admin.bioActionUnfreezeDetail },
   };
 
   return (
@@ -243,7 +266,15 @@ export function BiographyDetailPanel({ biography, onClose, onRefresh }: Biograph
                     {biography.type === 'autobiography' ? t.admin.bioTypeAutobiography : t.admin.bioTypeDeceased}
                   </InfoRow>
                   <InfoRow label={t.admin.bioPanelStatus}>
-                    <StatusBadge status={biography.status} />
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <StatusBadge status={biography.status} />
+                      {biography.is_frozen && (
+                        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold border bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/30 dark:text-blue-300 dark:border-blue-800">
+                          <Snowflake className="h-3 w-3" />
+                          {t.admin.bioStatusFrozen}
+                        </span>
+                      )}
+                    </div>
                   </InfoRow>
                   <InfoRow label={t.admin.bioPanelPrivacy}>
                     <PrivacyBadge privacy={biography.privacy} />
@@ -349,6 +380,28 @@ export function BiographyDetailPanel({ biography, onClose, onRefresh }: Biograph
                       disabled={saving}
                     >
                       {t.admin.bioActionRestore}
+                    </Button>
+                  )}
+                  {!biography.is_frozen && (
+                    <Button
+                      variant="outline"
+                      className="justify-start gap-2 border-blue-200 text-blue-700 hover:bg-blue-50 dark:border-blue-800 dark:text-blue-300 dark:hover:bg-blue-950/30"
+                      onClick={() => setConfirmAction('freeze')}
+                      disabled={saving}
+                    >
+                      <Snowflake className="h-4 w-4" />
+                      {t.admin.bioActionFreeze}
+                    </Button>
+                  )}
+                  {biography.is_frozen && (
+                    <Button
+                      variant="outline"
+                      className="justify-start gap-2 border-blue-200 text-blue-700 hover:bg-blue-50 dark:border-blue-800 dark:text-blue-300 dark:hover:bg-blue-950/30"
+                      onClick={() => setConfirmAction('unfreeze')}
+                      disabled={saving}
+                    >
+                      <Snowflake className="h-4 w-4" />
+                      {t.admin.bioActionUnfreeze}
                     </Button>
                   )}
                 </div>

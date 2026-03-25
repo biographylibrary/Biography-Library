@@ -912,6 +912,15 @@ export interface Translations {
     bioNotifyRestored: string;
     bioActionSuccess: string;
     bioActionError: string;
+    bioActionFreeze: string;
+    bioActionUnfreeze: string;
+    bioActionFreezeConfirm: string;
+    bioActionFreezeDetail: string;
+    bioActionUnfreezeConfirm: string;
+    bioActionUnfreezeDetail: string;
+    bioNotifyFrozen: string;
+    bioNotifyUnfrozen: string;
+    bioStatusFrozen: string;
   };
   publicBiographies: {
     pageTitle: string;
@@ -1870,6 +1879,15 @@ export const translations: Record<Language, Translations> = {
       bioNotifyRestored: 'Your biography has been restored. You can review and republish it.',
       bioActionSuccess: 'Action completed successfully.',
       bioActionError: 'Failed to complete action.',
+      bioActionFreeze: 'Freeze biography',
+      bioActionUnfreeze: 'Unfreeze biography',
+      bioActionFreezeConfirm: 'Freeze this biography?',
+      bioActionFreezeDetail: 'The biography will become read-only for the author. The author will be notified. This action can be reversed.',
+      bioActionUnfreezeConfirm: 'Unfreeze this biography?',
+      bioActionUnfreezeDetail: 'The author will regain full editing access. The author will be notified.',
+      bioNotifyFrozen: 'Your biography has been frozen by an administrator and is now read-only.',
+      bioNotifyUnfrozen: 'Your biography has been unfrozen by an administrator. You can now edit it again.',
+      bioStatusFrozen: 'Frozen',
     },
     publicBiographies: {
       pageTitle: 'Published Biographies',
@@ -2826,6 +2844,15 @@ export const translations: Record<Language, Translations> = {
       bioNotifyRestored: 'La tua biografia è stata ripristinata. Puoi rivederla e ripubblicarla.',
       bioActionSuccess: 'Azione completata con successo.',
       bioActionError: 'Impossibile completare l\'azione.',
+      bioActionFreeze: 'Congela biografia',
+      bioActionUnfreeze: 'Scongela biografia',
+      bioActionFreezeConfirm: 'Congelare questa biografia?',
+      bioActionFreezeDetail: 'La biografia diventerà di sola lettura per l\'autore. L\'autore verrà notificato. Questa azione è reversibile.',
+      bioActionUnfreezeConfirm: 'Scongelare questa biografia?',
+      bioActionUnfreezeDetail: 'L\'autore riacquisterà pieno accesso alla modifica. L\'autore verrà notificato.',
+      bioNotifyFrozen: 'La tua biografia è stata congelata da un amministratore ed è ora di sola lettura.',
+      bioNotifyUnfrozen: 'La tua biografia è stata scongelata da un amministratore. Puoi modificarla di nuovo.',
+      bioStatusFrozen: 'Congelata',
     },
     publicBiographies: {
       pageTitle: 'Biografie Pubblicate',
@@ -3782,6 +3809,15 @@ export const translations: Record<Language, Translations> = {
       bioNotifyRestored: 'Votre biographie a été restaurée. Vous pouvez la réviser et la republier.',
       bioActionSuccess: 'Action effectuée avec succès.',
       bioActionError: 'Impossible d\'effectuer l\'action.',
+      bioActionFreeze: 'Geler la biographie',
+      bioActionUnfreeze: 'Dégeler la biographie',
+      bioActionFreezeConfirm: 'Geler cette biographie ?',
+      bioActionFreezeDetail: 'La biographie sera en lecture seule pour l\'auteur. L\'auteur sera notifié. Cette action est réversible.',
+      bioActionUnfreezeConfirm: 'Dégeler cette biographie ?',
+      bioActionUnfreezeDetail: 'L\'auteur retrouvera un accès complet à l\'édition. L\'auteur sera notifié.',
+      bioNotifyFrozen: 'Votre biographie a été gelée par un administrateur et est maintenant en lecture seule.',
+      bioNotifyUnfrozen: 'Votre biographie a été dégelée par un administrateur. Vous pouvez à nouveau la modifier.',
+      bioStatusFrozen: 'Gelée',
     },
     publicBiographies: {
       pageTitle: 'Biographies Publiées',
@@ -4738,6 +4774,15 @@ export const translations: Record<Language, Translations> = {
       bioNotifyRestored: 'Ihre Biografie wurde wiederhergestellt. Sie können sie überprüfen und erneut veröffentlichen.',
       bioActionSuccess: 'Aktion erfolgreich abgeschlossen.',
       bioActionError: 'Aktion konnte nicht abgeschlossen werden.',
+      bioActionFreeze: 'Biografie einfrieren',
+      bioActionUnfreeze: 'Biografie auftauen',
+      bioActionFreezeConfirm: 'Diese Biografie einfrieren?',
+      bioActionFreezeDetail: 'Die Biografie wird für den Autor schreibgeschützt. Der Autor wird benachrichtigt. Diese Aktion kann rückgängig gemacht werden.',
+      bioActionUnfreezeConfirm: 'Diese Biografie auftauen?',
+      bioActionUnfreezeDetail: 'Der Autor erhält wieder vollen Bearbeitungszugang. Der Autor wird benachrichtigt.',
+      bioNotifyFrozen: 'Ihre Biografie wurde von einem Administrator eingefroren und ist jetzt schreibgeschützt.',
+      bioNotifyUnfrozen: 'Ihre Biografie wurde von einem Administrator aufgetaut. Sie können sie wieder bearbeiten.',
+      bioStatusFrozen: 'Eingefroren',
     },
     publicBiographies: {
       pageTitle: 'Veröffentlichte Biografien',

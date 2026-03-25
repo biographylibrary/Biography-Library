@@ -82,6 +82,7 @@ function AdminBiographiesContent() {
           updated_at,
           published_at,
           content_language,
+          is_frozen,
           profiles!biographies_user_id_fkey (
             id,
             name,
@@ -110,6 +111,7 @@ function AdminBiographiesContent() {
           created_at: b.created_at,
           updated_at: b.updated_at,
           published_at: b.published_at ?? null,
+          is_frozen: b.is_frozen ?? false,
         };
       });
 

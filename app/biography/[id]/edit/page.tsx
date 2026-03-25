@@ -17,7 +17,6 @@ import { AISectionReview } from '@/components/editor/AISectionReview';
 import { FinalReviewDialog } from '@/components/editor/FinalReviewDialog';
 import { FinalVersionEditor } from '@/components/editor/FinalVersionEditor';
 import { PublishConfirmationDialog } from '@/components/editor/PublishConfirmationDialog';
-import { FreezeConfirmationDialog } from '@/components/editor/FreezeConfirmationDialog';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import {
   BIOGRAPHY_SECTIONS,
@@ -105,9 +104,7 @@ export default function BiographyEditorPage() {
   const [aiLimitError, setAiLimitError] = useState<AiLimitError | null>(null);
   const [aiUsageRefresh, setAiUsageRefresh] = useState(0);
   const [isFrozen, setIsFrozen] = useState(false);
-  const [userRole, setUserRole] = useState<string>('user');
-  const [showFreezeDialog, setShowFreezeDialog] = useState(false);
-  const [isPublishing, setIsPublishing] = useState(false);
+const [isPublishing, setIsPublishing] = useState(false);
 
   const editorContainerRef = useRef<HTMLDivElement>(null);
 
@@ -117,14 +114,13 @@ export default function BiographyEditorPage() {
 
       const { data } = await supabase
         .from('profiles')
-        .select('ai_features_enabled, role')
+        .select('ai_features_enabled')
         .eq('id', user.id)
         .maybeSingle();
 
       if (data) {
         setAiEnabled(data.ai_features_enabled);
         localStorage.setItem(AI_ENABLED_KEY, String(data.ai_features_enabled));
-        setUserRole(data.role || 'user');
       }
     };
 
@@ -826,23 +822,6 @@ export default function BiographyEditorPage() {
     }
   }, [id, finalVersion, content, t]);
 
-  const handleFreeze = useCallback(async () => {
-    const { error } = await supabase
-      .from('biographies')
-      .update({
-        is_frozen: true,
-        frozen_at: new Date().toISOString(),
-        frozen_reason: 'admin_action',
-      })
-      .eq('id', id);
-
-    if (!error) {
-      setIsFrozen(true);
-      setShowFreezeDialog(false);
-    }
-  }, [id]);
-
-  const isAdminOrSuperAdmin = userRole === 'admin' || userRole === 'super_admin';
   const effectivelyLocked = isLocked || isFrozen;
 
   if (authLoading || !user || isLoading) {
@@ -875,11 +854,9 @@ export default function BiographyEditorPage() {
         onTitleChange={handleTitleChange}
         onPrivacyChange={handlePrivacyChange}
         isFrozen={isFrozen}
-        isAdminOrSuperAdmin={isAdminOrSuperAdmin}
-        onFreeze={() => setShowFreezeDialog(true)}
       />
 
-      {isFrozen && !isAdminOrSuperAdmin && (
+      {isFrozen && (
         <div className="shrink-0 bg-blue-50 dark:bg-blue-950/40 border-b border-blue-200 dark:border-blue-800 px-4 py-2 flex items-center gap-3">
           <SnowflakeIcon className="h-4 w-4 text-blue-600 dark:text-blue-400 shrink-0" />
           <p className="text-xs text-blue-700 dark:text-blue-300">
@@ -1163,12 +1140,6 @@ export default function BiographyEditorPage() {
         onConfirm={handlePublish}
         isChecking={isPublishing}
         checkingText={t.toast.checkingContent}
-      />
-
-      <FreezeConfirmationDialog
-        open={showFreezeDialog}
-        onOpenChange={setShowFreezeDialog}
-        onConfirm={handleFreeze}
       />
 
       <Dialog open={!!aiLimitError} onOpenChange={(open) => { if (!open) setAiLimitError(null); }}>
