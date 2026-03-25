@@ -964,6 +964,12 @@ export interface Translations {
     markAsRead: string;
     justNow: string;
   };
+  errors: {
+    title: string;
+    description: string;
+    tryAgain: string;
+    goToDashboard: string;
+  };
 }
 
 export const translations: Record<Language, Translations> = {
@@ -1931,6 +1937,12 @@ export const translations: Record<Language, Translations> = {
       markAsRead: 'Mark as read',
       justNow: 'Just now',
     },
+    errors: {
+      title: 'Something went wrong',
+      description: 'An unexpected error occurred. Your work has been saved automatically.',
+      tryAgain: 'Try again',
+      goToDashboard: 'Go to Dashboard',
+    },
   },
   it: {
     common: {
@@ -2895,6 +2907,12 @@ export const translations: Record<Language, Translations> = {
       markAllRead: 'Segna tutto come letto',
       markAsRead: 'Segna come letto',
       justNow: 'Adesso',
+    },
+    errors: {
+      title: 'Qualcosa è andato storto',
+      description: 'Si è verificato un errore imprevisto. Il tuo lavoro è stato salvato automaticamente.',
+      tryAgain: 'Riprova',
+      goToDashboard: 'Vai alla Dashboard',
     },
   },
   fr: {
@@ -3861,6 +3879,12 @@ export const translations: Record<Language, Translations> = {
       markAsRead: 'Marquer comme lu',
       justNow: 'À l\'instant',
     },
+    errors: {
+      title: 'Une erreur s\'est produite',
+      description: 'Une erreur inattendue s\'est produite. Votre travail a été sauvegardé automatiquement.',
+      tryAgain: 'Réessayer',
+      goToDashboard: 'Aller au tableau de bord',
+    },
   },
   de: {
     common: {
@@ -4825,6 +4849,12 @@ export const translations: Record<Language, Translations> = {
       markAllRead: 'Alle als gelesen markieren',
       markAsRead: 'Als gelesen markieren',
       justNow: 'Gerade eben',
+    },
+    errors: {
+      title: 'Etwas ist schiefgelaufen',
+      description: 'Ein unerwarteter Fehler ist aufgetreten. Ihre Arbeit wurde automatisch gespeichert.',
+      tryAgain: 'Erneut versuchen',
+      goToDashboard: 'Zum Dashboard',
     },
   },
 };
