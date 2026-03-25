@@ -3,21 +3,28 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth, ADMIN_ROLES } from '@/lib/auth-context';
+import { useTranslation } from '@/lib/i18n/i18n-context';
 import { Shield, ShieldOff } from 'lucide-react';
-
-const ROLE_LABELS: Record<string, string> = {
-  user: 'User',
-  reviewer: 'Reviewer',
-  admin: 'Admin',
-  super_admin: 'Super Admin',
-};
+import { ModerationFilters as FiltersType, ModerationReport } from '@/lib/moderation/types';
+import { useModerationReports } from '@/lib/moderation/use-moderation-reports';
+import { ModerationFilters } from '@/components/admin/ModerationFilters';
+import { ModerationTable } from '@/components/admin/ModerationTable';
 
 export default function AdminPage() {
   const { user, role, loading } = useAuth();
+  const { t } = useTranslation();
   const router = useRouter();
   const [countdown, setCountdown] = useState(3);
 
+  const [filters, setFilters] = useState<FiltersType>({
+    status: 'all',
+    type: 'all',
+    sort: 'newest',
+  });
+
   const isDenied = !loading && (!user || (role !== null && !ADMIN_ROLES.includes(role)));
+
+  const { reports, unassignedCount, loading: reportsLoading, error } = useModerationReports(filters);
 
   useEffect(() => {
     if (loading) return;
@@ -79,31 +86,41 @@ export default function AdminPage() {
   if (!user || !role) return null;
   if (!ADMIN_ROLES.includes(role)) return null;
 
-  const name = user.user_metadata?.name || user.email || 'Unknown';
-  const roleLabel = ROLE_LABELS[role] ?? role;
+  function handleOpen(report: ModerationReport) {
+  }
+
+  const titleSuffix = unassignedCount > 0
+    ? ` (${unassignedCount} ${t.admin.moderationUnassignedBadge})`
+    : '';
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-        <div className="flex items-center gap-3 mb-10">
-          <div className="p-2.5 rounded-xl bg-sky-50 dark:bg-sky-950/30">
-            <Shield className="h-6 w-6 text-sky-600 dark:text-sky-400" />
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <div className="flex items-center gap-3 mb-8">
+          <div className="p-2.5 rounded-xl bg-sky-50 dark:bg-sky-950/30 shrink-0">
+            <Shield className="h-5 w-5 text-sky-600 dark:text-sky-400" />
           </div>
           <h1 className="text-2xl font-serif font-semibold tracking-tight text-foreground">
-            Moderation Panel
+            {t.admin.moderationTitle}
+            {unassignedCount > 0 && (
+              <span className="ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-red-100 text-red-700 dark:bg-red-950/50 dark:text-red-300 font-sans">
+                {unassignedCount} {t.admin.moderationUnassignedBadge}
+              </span>
+            )}
           </h1>
         </div>
 
-        <div className="rounded-2xl border border-border bg-card p-6 mb-8">
-          <p className="text-sm text-muted-foreground mb-1">Logged in as</p>
-          <p className="font-semibold text-foreground text-lg">{name}</p>
-          <span className="inline-block mt-2 text-xs font-medium px-2.5 py-1 rounded-full bg-sky-100 text-sky-700 dark:bg-sky-950/50 dark:text-sky-300">
-            {roleLabel}
-          </span>
-        </div>
+        <div className="flex flex-col gap-5">
+          <div className="flex items-center justify-between flex-wrap gap-3">
+            <ModerationFilters filters={filters} onChange={setFilters} />
+          </div>
 
-        <div className="rounded-2xl border border-dashed border-border bg-muted/30 p-10 text-center text-muted-foreground text-sm">
-          Admin features coming soon.
+          <ModerationTable
+            reports={reports}
+            loading={reportsLoading}
+            error={error}
+            onOpen={handleOpen}
+          />
         </div>
       </div>
     </div>

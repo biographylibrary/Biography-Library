@@ -687,6 +687,34 @@ export interface Translations {
     freezing: string;
     frozenBannerTitle: string;
     frozenBannerMessage: string;
+    moderationTitle: string;
+    moderationUnassignedBadge: string;
+    filterStatus: string;
+    filterType: string;
+    filterSort: string;
+    filterAll: string;
+    statusUnassigned: string;
+    statusInReview: string;
+    statusDecided: string;
+    sortNewest: string;
+    sortOldest: string;
+    typeLevel1: string;
+    typeLevel2: string;
+    typeLevel3: string;
+    typeUserReport: string;
+    colDate: string;
+    colType: string;
+    colBiography: string;
+    colStatus: string;
+    colAiSummary: string;
+    colActions: string;
+    actionOpen: string;
+    noReports: string;
+    loadingReports: string;
+    errorLoading: string;
+    unknownBiography: string;
+    unknownAuthor: string;
+    aiNoSummary: string;
   };
   publicBiographies: {
     pageTitle: string;
@@ -1420,6 +1448,34 @@ export const translations: Record<Language, Translations> = {
       freezing: 'Freezing...',
       frozenBannerTitle: 'This biography has been frozen',
       frozenBannerMessage: 'This biography is read-only and cannot be edited.',
+      moderationTitle: 'Moderation',
+      moderationUnassignedBadge: 'unassigned',
+      filterStatus: 'Status',
+      filterType: 'Type',
+      filterSort: 'Sort',
+      filterAll: 'All',
+      statusUnassigned: 'Unassigned',
+      statusInReview: 'In review',
+      statusDecided: 'Decided',
+      sortNewest: 'Newest first',
+      sortOldest: 'Oldest first',
+      typeLevel1: 'Level 1 – Blocked',
+      typeLevel2: 'Level 2 – Review',
+      typeLevel3: 'Level 3 – Warning',
+      typeUserReport: 'User Report',
+      colDate: 'Date',
+      colType: 'Type',
+      colBiography: 'Biography',
+      colStatus: 'Status',
+      colAiSummary: 'AI Summary',
+      colActions: 'Actions',
+      actionOpen: 'Open',
+      noReports: 'No reports found.',
+      loadingReports: 'Loading reports…',
+      errorLoading: 'Failed to load reports.',
+      unknownBiography: 'Untitled biography',
+      unknownAuthor: 'Unknown author',
+      aiNoSummary: 'No summary available',
     },
     publicBiographies: {
       pageTitle: 'Published Biographies',
@@ -2151,6 +2207,34 @@ export const translations: Record<Language, Translations> = {
       freezing: 'Congelamento...',
       frozenBannerTitle: 'Questa biografia è stata congelata',
       frozenBannerMessage: 'Questa biografia è di sola lettura e non può essere modificata.',
+      moderationTitle: 'Moderazione',
+      moderationUnassignedBadge: 'non assegnate',
+      filterStatus: 'Stato',
+      filterType: 'Tipo',
+      filterSort: 'Ordina',
+      filterAll: 'Tutti',
+      statusUnassigned: 'Non assegnato',
+      statusInReview: 'In revisione',
+      statusDecided: 'Deciso',
+      sortNewest: 'Più recenti',
+      sortOldest: 'Meno recenti',
+      typeLevel1: 'Livello 1 – Bloccato',
+      typeLevel2: 'Livello 2 – Revisione',
+      typeLevel3: 'Livello 3 – Avviso',
+      typeUserReport: 'Segnalazione utente',
+      colDate: 'Data',
+      colType: 'Tipo',
+      colBiography: 'Biografia',
+      colStatus: 'Stato',
+      colAiSummary: 'Riepilogo AI',
+      colActions: 'Azioni',
+      actionOpen: 'Apri',
+      noReports: 'Nessuna segnalazione trovata.',
+      loadingReports: 'Caricamento segnalazioni…',
+      errorLoading: 'Impossibile caricare le segnalazioni.',
+      unknownBiography: 'Biografia senza titolo',
+      unknownAuthor: 'Autore sconosciuto',
+      aiNoSummary: 'Nessun riepilogo disponibile',
     },
     publicBiographies: {
       pageTitle: 'Biografie Pubblicate',
@@ -2882,6 +2966,34 @@ export const translations: Record<Language, Translations> = {
       freezing: 'Gel en cours...',
       frozenBannerTitle: 'Cette biographie a été gelée',
       frozenBannerMessage: 'Cette biographie est en lecture seule et ne peut pas être modifiée.',
+      moderationTitle: 'Modération',
+      moderationUnassignedBadge: 'non assignés',
+      filterStatus: 'Statut',
+      filterType: 'Type',
+      filterSort: 'Trier',
+      filterAll: 'Tous',
+      statusUnassigned: 'Non assigné',
+      statusInReview: 'En révision',
+      statusDecided: 'Décidé',
+      sortNewest: 'Plus récents',
+      sortOldest: 'Plus anciens',
+      typeLevel1: 'Niveau 1 – Bloqué',
+      typeLevel2: 'Niveau 2 – Révision',
+      typeLevel3: 'Niveau 3 – Avertissement',
+      typeUserReport: 'Signalement utilisateur',
+      colDate: 'Date',
+      colType: 'Type',
+      colBiography: 'Biographie',
+      colStatus: 'Statut',
+      colAiSummary: 'Résumé IA',
+      colActions: 'Actions',
+      actionOpen: 'Ouvrir',
+      noReports: 'Aucun signalement trouvé.',
+      loadingReports: 'Chargement des signalements…',
+      errorLoading: 'Impossible de charger les signalements.',
+      unknownBiography: 'Biographie sans titre',
+      unknownAuthor: 'Auteur inconnu',
+      aiNoSummary: 'Aucun résumé disponible',
     },
     publicBiographies: {
       pageTitle: 'Biographies Publiées',
@@ -3613,6 +3725,34 @@ export const translations: Record<Language, Translations> = {
       freezing: 'Einfrieren...',
       frozenBannerTitle: 'Diese Biografie wurde eingefroren',
       frozenBannerMessage: 'Diese Biografie ist schreibgeschützt und kann nicht bearbeitet werden.',
+      moderationTitle: 'Moderation',
+      moderationUnassignedBadge: 'nicht zugewiesen',
+      filterStatus: 'Status',
+      filterType: 'Typ',
+      filterSort: 'Sortieren',
+      filterAll: 'Alle',
+      statusUnassigned: 'Nicht zugewiesen',
+      statusInReview: 'In Prüfung',
+      statusDecided: 'Entschieden',
+      sortNewest: 'Neueste zuerst',
+      sortOldest: 'Älteste zuerst',
+      typeLevel1: 'Stufe 1 – Gesperrt',
+      typeLevel2: 'Stufe 2 – Prüfung',
+      typeLevel3: 'Stufe 3 – Warnung',
+      typeUserReport: 'Nutzermeldung',
+      colDate: 'Datum',
+      colType: 'Typ',
+      colBiography: 'Biografie',
+      colStatus: 'Status',
+      colAiSummary: 'KI-Zusammenfassung',
+      colActions: 'Aktionen',
+      actionOpen: 'Öffnen',
+      noReports: 'Keine Meldungen gefunden.',
+      loadingReports: 'Meldungen werden geladen…',
+      errorLoading: 'Meldungen konnten nicht geladen werden.',
+      unknownBiography: 'Biografie ohne Titel',
+      unknownAuthor: 'Unbekannter Autor',
+      aiNoSummary: 'Keine Zusammenfassung verfügbar',
     },
     publicBiographies: {
       pageTitle: 'Veröffentlichte Biografien',
