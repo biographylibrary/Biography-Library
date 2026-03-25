@@ -16,6 +16,9 @@ const WEEKLY_LIMIT = parseInt(Deno.env.get('AI_WEEKLY_LIMIT') ?? '200');
 
 const HEAVY_ACTIONS = new Set(["rewrite", "analyze-themes", "propose-structures"]);
 
+const PRIMARY_MODEL = Deno.env.get('INFOMANIAK_AI_MODEL_PRIMARY') ?? 'Apertus-70B-Instruct-2509';
+const FALLBACK_MODEL = Deno.env.get('INFOMANIAK_AI_MODEL_FALLBACK') ?? 'mistral3';
+
 const LANGUAGE_NAMES: Record<string, string> = {
   en: "English",
   it: "Italian",
@@ -24,6 +27,13 @@ const LANGUAGE_NAMES: Record<string, string> = {
 };
 
 const AI_CALL_TIMEOUT_MS = 30_000;
+
+const JSON_ONLY_PREFIX = "You must respond with valid JSON only. Do not add any explanation, preamble, or text outside the JSON structure. Do not wrap the JSON in markdown code fences.\n\n";
+
+function truncateToTokenBudget(text: string, maxChars = 14000): string {
+  if (text.length <= maxChars) return text;
+  return text.slice(0, maxChars) + '\n[Content truncated for analysis]';
+}
 
 function errorResponse(message: string, status: number, extra?: Record<string, unknown>) {
   return new Response(JSON.stringify({ error: message, ...extra }), {
@@ -76,7 +86,7 @@ function getLangName(lang: string): string {
 function buildGrammarPrompt(sectionTitle: string, content: string, language: string) {
   const langName = getLangName(language);
   return {
-    system: `You are a skilled editor helping with a biography written in ${langName}. Review text for grammar, spelling, clarity, and style in ${langName}. Preserve the author's voice and tone. Respond in ${langName}. Return a JSON array of suggestions. Each suggestion must have: "id" (unique string), "original" (the problematic text), "suggestion" (the corrected text), "explanation" (brief reason in ${langName}). If the text is already good, return an empty array. Return ONLY valid JSON, no markdown fences.`,
+    system: `${JSON_ONLY_PREFIX}You are a skilled editor helping with a biography written in ${langName}. Review text for grammar, spelling, clarity, and style in ${langName}. Preserve the author's voice and tone. Respond in ${langName}. Return a JSON array of suggestions. Each suggestion must have: "id" (unique string), "original" (the problematic text), "suggestion" (the corrected text), "explanation" (brief reason in ${langName}). If the text is already good, return an empty array.`,
     user: `Section: "${sectionTitle}"\n\nText to review:\n${content}`,
   };
 }
@@ -84,7 +94,7 @@ function buildGrammarPrompt(sectionTitle: string, content: string, language: str
 function buildPromptsPrompt(sectionKey: string, sectionTitle: string, language: string) {
   const langName = getLangName(language);
   return {
-    system: `You are a warm, empathetic biography writing coach. Generate 5 thoughtful questions in ${langName} that help someone recall memories and stories for the given biography section. Questions should be specific, personal, and spark vivid memories. All text must be in ${langName}. Return a JSON array of objects with "prompt" (the question in ${langName}) and "starter" (a 5-8 word writing starter in ${langName} based on the question). Return ONLY valid JSON, no markdown fences.`,
+    system: `${JSON_ONLY_PREFIX}You are a warm, empathetic biography writing coach. Generate 5 thoughtful questions in ${langName} that help someone recall memories and stories for the given biography section. Questions should be specific, personal, and spark vivid memories. All text must be in ${langName}. Return a JSON array of objects with "prompt" (the question in ${langName}) and "starter" (a 5-8 word writing starter in ${langName} based on the question).`,
     user: `Generate prompts in ${langName} for the biography section: "${sectionTitle}" (key: ${sectionKey})`,
   };
 }
@@ -112,7 +122,7 @@ function buildAnalyzeAnswerPrompt(
   }
 
   return {
-    system: `You are an empathetic biography interviewer. Analyze the user's answer to determine if it needs a follow-up question for more detail.
+    system: `${JSON_ONLY_PREFIX}You are an empathetic biography interviewer. Analyze the user's answer to determine if it needs a follow-up question for more detail.
 
 Guidelines:
 - If the answer is very brief (< 30 words) or vague, ask ONE specific follow-up question
@@ -127,9 +137,7 @@ Return a JSON object with:
   "needsFollowUp": boolean,
   "followUpQuestion": "specific question in ${langName}" (only if needsFollowUp is true),
   "acknowledgment": "brief warm response in ${langName} (1 sentence)"
-}
-
-Return ONLY valid JSON, no markdown fences.`,
+}`,
     user: `Original question: "${originalQuestion}"
 
 User's answer: "${userAnswer}"${historyContext}
@@ -164,7 +172,7 @@ function buildRecommendSectionPrompt(
     .join('\n');
 
   return {
-    system: `You are a biography writing coach helping someone write their life story in ${langName}. The user just completed a section. Based on the content they wrote, recommend which section they should work on next.
+    system: `${JSON_ONLY_PREFIX}You are a biography writing coach helping someone write their life story in ${langName}. The user just completed a section. Based on the content they wrote, recommend which section they should work on next.
 
 Consider:
 1. Natural chronological flow (childhood -> education -> career -> relationships -> legacy)
@@ -182,9 +190,7 @@ Return a JSON object with:
   "recommendedSection": "section-key" (must be one of the available sections),
   "reason": "brief explanation in ${langName} (1-2 sentences, personal and encouraging)",
   "confidence": "high" | "medium" | "low"
-}
-
-Return ONLY valid JSON, no markdown fences.`,
+}`,
     user: `User just completed section: "${currentSection}"
 
 Content excerpt from this section:
@@ -238,7 +244,7 @@ Content: ${s.content.substring(0, 500)}...
 `).join('\n---\n');
 
   return {
-    system: `You are a biography editor analyzing narrative themes. For each section, identify the main themes and provide a brief summary. Themes can include: career, relationships, travel, personal growth, challenges, family, education, hobbies, life lessons. Return ONLY valid JSON, no markdown fences.`,
+    system: `${JSON_ONLY_PREFIX}You are a biography editor analyzing narrative themes. For each section, identify the main themes and provide a brief summary. Themes can include: career, relationships, travel, personal growth, challenges, family, education, hobbies, life lessons.`,
     user: `Analyze the following biography sections and identify the main themes in each section.
 
 For each section, identify:
@@ -272,7 +278,7 @@ function buildProposeStructuresPrompt(
   language: string
 ) {
   return {
-    system: `You are a biography editor proposing alternative narrative structures. Based on theme analysis, suggest 3 different ways to reorder sections for better storytelling. Return ONLY valid JSON, no markdown fences.`,
+    system: `${JSON_ONLY_PREFIX}You are a biography editor proposing alternative narrative structures. Based on theme analysis, suggest 3 different ways to reorder sections for better storytelling.`,
     user: `Based on this theme analysis of biography sections, propose 3 alternative narrative structures.
 
 Theme Analysis:
@@ -309,11 +315,10 @@ Respond in JSON format:
 
 function buildPrePublicationCheckPrompt(biographyText: string) {
   return {
-    system: `You are a content moderator for Biography Library, a platform for personal autobiographies and memoirs of deceased persons. Analyze the text for violations:
+    system: `${JSON_ONLY_PREFIX}You are a content moderator for Biography Library, a platform for personal autobiographies and memoirs of deceased persons. Analyze the text for violations:
 Level 1 (automatic block): genocide glorification, CSAM, terrorism, direct violence incitement, human trafficking, WMD instructions, suicide promotion.
 Level 2 (review required): hate speech targeting race/religion/gender/sexuality/disability, targeted harassment, graphic violence without narrative context, copyright.
-Level 3 (publish with warning): controversial opinions, contested historical narratives.
-Return only valid JSON, no other text.`,
+Level 3 (publish with warning): controversial opinions, contested historical narratives.`,
     user: `Analyze the following biography text for content violations and return a JSON object with this exact structure:
 {
   "passed": boolean,
@@ -352,7 +357,7 @@ function buildDetectSectionPrompt(chunkText: string, language: string) {
     .join('\n');
 
   return {
-    system: `You are analyzing a biography excerpt to determine which section it belongs to.
+    system: `${JSON_ONLY_PREFIX}You are analyzing a biography excerpt to determine which section it belongs to.
 
 Available sections:
 ${detailedSections}
@@ -360,9 +365,7 @@ ${detailedSections}
 Analyze the text and determine which biography section it most likely belongs to. Consider the main theme, time period, and subject matter.
 
 Return a JSON object:
-{"section": "section_key", "confidence": "high|medium|low", "reason": "Brief explanation in ${langName}"}
-
-Return ONLY valid JSON, no markdown fences.`,
+{"section": "section_key", "confidence": "high|medium|low", "reason": "Brief explanation in ${langName}"}`,
     user: `Text excerpt:\n"""\n${chunkText}\n"""`,
   };
 }
@@ -393,70 +396,51 @@ async function callWithRetry(
   throw lastError ?? new Error('All retries failed');
 }
 
-async function callInfomaniakAI(
-  systemPrompt: string,
-  userPrompt: string,
-  maxTokens: number,
-  infomaniakToken: string,
-  infomaniakEndpoint: string,
-  infomaniakModel: string
-) {
-  const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), AI_CALL_TIMEOUT_MS);
+async function callAIWithFallback(
+  payload: object,
+  endpoint: string,
+  token: string
+): Promise<{ data: unknown; modelUsed: string }> {
+  const models = [PRIMARY_MODEL, FALLBACK_MODEL];
 
-  try {
-    const response = await callWithRetry(() =>
-      fetch(infomaniakEndpoint, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${infomaniakToken}`,
-        },
-        body: JSON.stringify({
-          model: infomaniakModel,
-          max_tokens: maxTokens,
-          temperature: 0.7,
-          messages: [
-            { role: "system", content: systemPrompt },
-            { role: "user", content: userPrompt }
-          ],
-        }),
-        signal: controller.signal,
-      })
-    );
+  for (let i = 0; i < models.length; i++) {
+    const model = models[i];
+    try {
+      const res = await callWithRetry(() =>
+        fetch(endpoint, {
+          method: "POST",
+          headers: {
+            "Authorization": `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ ...payload, model }),
+          signal: AbortSignal.timeout(28000),
+        })
+      );
 
-    if (!response.ok) {
-      const errText = await response.text();
-      console.error("Infomaniak AI error:", {
-        status: response.status,
-        body: errText,
-      });
-
-      if (response.status === 401) {
-        throw new Error("Invalid API key. Please check your INFOMANIAK_AI_TOKEN.");
+      if (res.ok) {
+        const data = await res.json();
+        return { data, modelUsed: model };
       }
 
-      if (response.status === 404) {
-        throw new Error("AI model not found. The configured model may not be available.");
+      if (res.status >= 400 && res.status < 500 && res.status !== 429) {
+        const errText = await res.text();
+        console.error("Infomaniak AI error:", { status: res.status, body: errText });
+        if (res.status === 401) {
+          throw new Error("Invalid API key. Please check your INFOMANIAK_AI_TOKEN.");
+        }
+        throw new Error(`AI error: ${res.status}`);
       }
 
-      if (response.status === 429) {
-        throw new Error("Infomaniak rate limit exceeded. Please wait a moment.");
-      }
-
-      throw new Error(`Infomaniak AI error (${response.status}). Please try again.`);
+      console.warn(
+        `Model ${model} failed (${res.status}), ${i < models.length - 1 ? "trying fallback" : "no more fallbacks"}`
+      );
+    } catch (err) {
+      if (i === models.length - 1) throw err;
+      console.warn(`Model ${model} threw error, trying fallback: ${err}`);
     }
-
-    const result = await response.json();
-    return result.choices?.[0]?.message?.content ?? "";
-  } catch (err: any) {
-    if (err.name === "AbortError") {
-      throw new Error("AI request timed out. Please try again.");
-    }
-    throw err;
-  } finally {
-    clearTimeout(timeoutId);
   }
+  throw new Error("All AI models failed");
 }
 
 async function checkAndIncrementUsage(
@@ -551,7 +535,6 @@ Deno.serve(async (req: Request) => {
 
     const infomaniakToken = Deno.env.get("INFOMANIAK_AI_TOKEN") || "";
     const infomaniakEndpoint = Deno.env.get("INFOMANIAK_AI_ENDPOINT") || "";
-    const infomaniakModel = Deno.env.get("INFOMANIAK_AI_MODEL") || "mistral3";
 
     if (!infomaniakToken) {
       return errorResponse(
@@ -726,7 +709,7 @@ Deno.serve(async (req: Request) => {
           );
         }
         const tone = body.tone || 'narrative';
-        const p = buildRewritePrompt(sectionTitle, content, tone, language);
+        const p = buildRewritePrompt(sectionTitle, truncateToTokenBudget(content), tone, language);
         systemPrompt = p.system;
         userPrompt = p.user;
         maxTokens = 4096;
@@ -739,7 +722,11 @@ Deno.serve(async (req: Request) => {
             400
           );
         }
-        const p = buildAnalyzeThemesPrompt(sections, language);
+        const truncatedSections = sections.map((s: any) => ({
+          ...s,
+          content: truncateToTokenBudget(s.content ?? '', 2000),
+        }));
+        const p = buildAnalyzeThemesPrompt(truncatedSections, language);
         systemPrompt = p.system;
         userPrompt = p.user;
         maxTokens = 2000;
@@ -752,7 +739,8 @@ Deno.serve(async (req: Request) => {
             400
           );
         }
-        const p = buildProposeStructuresPrompt(themeAnalysis, originalOrder, language);
+        const themeAnalysisStr = truncateToTokenBudget(JSON.stringify(themeAnalysis));
+        const p = buildProposeStructuresPrompt(JSON.parse(themeAnalysisStr), originalOrder, language);
         systemPrompt = p.system;
         userPrompt = p.user;
         maxTokens = 3000;
@@ -779,7 +767,7 @@ Deno.serve(async (req: Request) => {
             400
           );
         }
-        const p = buildPrePublicationCheckPrompt(biographyText);
+        const p = buildPrePublicationCheckPrompt(truncateToTokenBudget(biographyText));
         systemPrompt = p.system;
         userPrompt = p.user;
         maxTokens = 2048;
@@ -794,16 +782,25 @@ Deno.serve(async (req: Request) => {
       .insert({ user_id: user.id, action });
 
     let textContent: string;
+    let modelUsed: string;
 
     try {
-      textContent = await callInfomaniakAI(
-        systemPrompt,
-        userPrompt,
-        maxTokens,
-        infomaniakToken,
+      const aiPayload = {
+        max_tokens: maxTokens,
+        temperature: 0.7,
+        messages: [
+          { role: "system", content: systemPrompt },
+          { role: "user", content: userPrompt },
+        ],
+      };
+      const { data: aiResult, modelUsed: usedModel } = await callAIWithFallback(
+        aiPayload,
         infomaniakEndpoint,
-        infomaniakModel
+        infomaniakToken
       );
+      modelUsed = usedModel;
+      const result = aiResult as any;
+      textContent = result.choices?.[0]?.message?.content ?? "";
     } catch (apiError: any) {
       console.error("AI API error:", apiError);
       return errorResponse(
@@ -915,7 +912,7 @@ Deno.serve(async (req: Request) => {
       }
     }
 
-    return new Response(JSON.stringify({ action, ...parsed }), {
+    return new Response(JSON.stringify({ action, ...parsed, model_used: modelUsed }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (e) {
