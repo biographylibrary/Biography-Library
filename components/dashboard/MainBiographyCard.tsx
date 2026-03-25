@@ -149,13 +149,13 @@ export function MainBiographyCard({ biography, userName, userId, onDeleteClick, 
       case 'under_review':
         return { text: t.dashboard.statusUnderReview, className: 'bg-[#FFE4C0] text-[#7C3A00]' };
       case 'draft_1':
-        return { text: t.dashboard.statusDraft1, className: 'bg-[#FBDEC1] text-[#121212]' };
+        return { text: t.dashboard.statusDraft1, className: 'bg-[#EDE4B9] text-[#121212]' };
       case 'draft_2':
-        return { text: t.dashboard.statusDraft2, className: 'bg-[#FBDEC1] text-[#121212]' };
+        return { text: t.dashboard.statusDraft2, className: 'bg-[#EDE4B9] text-[#121212]' };
       case 'draft_3':
-        return { text: t.dashboard.statusDraft3, className: 'bg-[#FBDEC1] text-[#121212]' };
+        return { text: t.dashboard.statusDraft3, className: 'bg-[#EDE4B9] text-[#121212]' };
       default:
-        return { text: t.dashboard.draft, className: 'bg-[#FBDEC1] text-[#121212]' };
+        return { text: t.dashboard.draft, className: 'bg-[#EDE4B9] text-[#121212]' };
     }
   };
 
@@ -169,9 +169,7 @@ export function MainBiographyCard({ biography, userName, userId, onDeleteClick, 
   };
 
   const getProgressColor = (percentage: number) => {
-    if (percentage >= 67) return '#C8DFBE';
-    if (percentage >= 34) return '#D3F1FF';
-    return '#FBDEC1';
+    return '#EDE4B9';
   };
 
   const getTotalWords = () => {
