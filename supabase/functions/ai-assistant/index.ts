@@ -793,10 +793,6 @@ Deno.serve(async (req: Request) => {
         return errorResponse(`Unknown action: ${action}`, 400);
     }
 
-    await supabase
-      .from("ai_rate_limits")
-      .insert({ user_id: user.id, action });
-
     let textContent: string;
     let modelUsed: string;
 
@@ -815,6 +811,10 @@ Deno.serve(async (req: Request) => {
         infomaniakToken
       );
       modelUsed = usedModel;
+
+      await supabase
+        .from("ai_rate_limits")
+        .insert({ user_id: user.id, action, model_used: modelUsed });
       const result = aiResult as any;
       textContent = result.choices?.[0]?.message?.content ?? "";
     } catch (apiError: any) {
