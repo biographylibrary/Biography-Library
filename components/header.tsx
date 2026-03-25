@@ -90,7 +90,22 @@ export function Header() {
         "h-16 flex items-center relative",
         (isEditorPage || isDashboardPage) ? "px-4 sm:px-6 lg:px-8" : "max-w-7xl mx-auto px-4 sm:px-6 lg:px-8"
       )}>
-        <div className="flex-1" />
+        <div className="flex-1 flex items-center">
+          {showAdminLink && (
+            <Link
+              href="/admin"
+              className={cn(
+                'sm:hidden flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-sm font-medium transition-colors',
+                pathname?.startsWith('/admin')
+                  ? 'bg-sky-100 text-sky-700 dark:bg-sky-950/50 dark:text-sky-300'
+                  : 'text-muted-foreground hover:text-foreground hover:bg-muted/60'
+              )}
+            >
+              <Shield className="h-4 w-4" />
+              {t.nav.admin}
+            </Link>
+          )}
+        </div>
 
         <div className="absolute left-1/2 -translate-x-1/2 flex items-center">
           <Link href="/biographies" className="flex items-center">
