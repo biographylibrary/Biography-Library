@@ -64,7 +64,7 @@ export default function ResetPasswordPage() {
       return;
     }
 
-    if (password.length < 6) {
+    if (password.length < 8) {
       setError(t.auth.passwordMinLength);
       return;
     }
@@ -80,8 +80,8 @@ export default function ResetPasswordPage() {
       setSuccess(true);
       setIsLoading(false);
       setTimeout(() => {
-        router.push('/login');
-      }, 3000);
+        router.push('/dashboard');
+      }, 2000);
     }
   };
 
@@ -109,22 +109,22 @@ export default function ResetPasswordPage() {
             <div className="flex flex-col items-center gap-4 p-6 rounded-xl bg-destructive/10 border border-destructive/20 text-center">
               <AlertCircle className="h-8 w-8 text-destructive" />
               <div>
-                <p className="font-semibold text-destructive">Invalid or expired link</p>
+                <p className="font-semibold text-destructive">{t.auth.resetPasswordInvalidLink}</p>
                 <p className="text-sm text-muted-foreground mt-1">
-                  This password reset link has expired or already been used. Please request a new one.
+                  {t.auth.resetPasswordInvalidLinkDetail}
                 </p>
               </div>
               <Link
                 href="/forgot-password"
                 className="text-sm text-primary hover:text-primary/80 transition-colors font-medium"
               >
-                Request a new reset link
+                {t.auth.resetPasswordRequestNew}
               </Link>
             </div>
           ) : !sessionReady ? (
             <div className="flex flex-col items-center gap-4 py-8">
               <Loader2 className="h-8 w-8 animate-spin text-primary" />
-              <p className="text-sm text-muted-foreground">Verifying your reset link...</p>
+              <p className="text-sm text-muted-foreground">{t.auth.resetPasswordVerifying}</p>
             </div>
           ) : success ? (
             <div className="space-y-6">
@@ -162,7 +162,7 @@ export default function ResetPasswordPage() {
                 <Input
                   id="password"
                   type="password"
-                  placeholder={t.auth.atLeastSixChars}
+                  placeholder={t.auth.atLeastEightChars}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required

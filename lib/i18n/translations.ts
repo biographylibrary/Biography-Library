@@ -71,6 +71,11 @@ export interface Translations {
     resetPasswordUpdating: string;
     resetPasswordSuccess: string;
     resetPasswordSuccessDetail: string;
+    resetPasswordInvalidLink: string;
+    resetPasswordInvalidLinkDetail: string;
+    resetPasswordRequestNew: string;
+    resetPasswordVerifying: string;
+    atLeastEightChars: string;
     verifyEmailTitle: string;
     verifyEmailSubtitle: string;
     verifyEmailDetail: string;
@@ -1003,7 +1008,7 @@ export const translations: Record<Language, Translations> = {
       atLeastSixChars: 'At least 6 characters',
       repeatPassword: 'Repeat your password',
       passwordsDoNotMatch: 'Passwords do not match',
-      passwordMinLength: 'Password must be at least 6 characters',
+      passwordMinLength: 'Password must be at least 8 characters',
       createOne: 'Create one',
       createAccount: 'Create account',
       forgotPassword: 'Forgot password?',
@@ -1023,6 +1028,11 @@ export const translations: Record<Language, Translations> = {
       resetPasswordUpdating: 'Updating...',
       resetPasswordSuccess: 'Password updated',
       resetPasswordSuccessDetail: 'Your password has been updated successfully. You can now sign in with your new password.',
+      resetPasswordInvalidLink: 'Invalid or expired link',
+      resetPasswordInvalidLinkDetail: 'This password reset link has expired or already been used. Please request a new one.',
+      resetPasswordRequestNew: 'Request a new reset link',
+      resetPasswordVerifying: 'Verifying your reset link...',
+      atLeastEightChars: 'At least 8 characters',
       verifyEmailTitle: 'Verify your email',
       verifyEmailSubtitle: 'We\'ve sent a verification email to your address. Please check your inbox and click the link to activate your account.',
       verifyEmailDetail: 'Didn\'t receive the email? Check your spam folder or resend it below.',
@@ -1953,7 +1963,7 @@ export const translations: Record<Language, Translations> = {
       atLeastSixChars: 'Almeno 6 caratteri',
       repeatPassword: 'Ripeti la tua password',
       passwordsDoNotMatch: 'Le password non corrispondono',
-      passwordMinLength: 'La password deve essere di almeno 6 caratteri',
+      passwordMinLength: 'La password deve essere di almeno 8 caratteri',
       createOne: 'Creane uno',
       createAccount: 'Crea account',
       forgotPassword: 'Password dimenticata?',
@@ -1973,6 +1983,11 @@ export const translations: Record<Language, Translations> = {
       resetPasswordUpdating: 'Aggiornamento...',
       resetPasswordSuccess: 'Password aggiornata',
       resetPasswordSuccessDetail: 'La tua password è stata aggiornata con successo. Ora puoi accedere con la tua nuova password.',
+      resetPasswordInvalidLink: 'Link non valido o scaduto',
+      resetPasswordInvalidLinkDetail: 'Questo link per reimpostare la password è scaduto o è già stato utilizzato. Richiedine uno nuovo.',
+      resetPasswordRequestNew: 'Richiedi un nuovo link di reimpostazione',
+      resetPasswordVerifying: 'Verifica del link in corso...',
+      atLeastEightChars: 'Almeno 8 caratteri',
       verifyEmailTitle: 'Verifica la tua email',
       verifyEmailSubtitle: 'Abbiamo inviato un\'email di verifica al tuo indirizzo. Controlla la tua casella di posta e clicca sul link per attivare il tuo account.',
       verifyEmailDetail: 'Non hai ricevuto l\'email? Controlla la cartella spam o reinviala qui sotto.',
@@ -2903,7 +2918,7 @@ export const translations: Record<Language, Translations> = {
       atLeastSixChars: 'Au moins 6 caract\u00e8res',
       repeatPassword: 'R\u00e9p\u00e9tez votre mot de passe',
       passwordsDoNotMatch: 'Les mots de passe ne correspondent pas',
-      passwordMinLength: 'Le mot de passe doit contenir au moins 6 caract\u00e8res',
+      passwordMinLength: 'Le mot de passe doit contenir au moins 8 caract\u00e8res',
       createOne: 'Cr\u00e9er un compte',
       createAccount: 'Cr\u00e9er un compte',
       forgotPassword: 'Mot de passe oubli\u00e9\u00a0?',
@@ -2923,6 +2938,11 @@ export const translations: Record<Language, Translations> = {
       resetPasswordUpdating: 'Mise \u00e0 jour...',
       resetPasswordSuccess: 'Mot de passe mis \u00e0 jour',
       resetPasswordSuccessDetail: 'Votre mot de passe a \u00e9t\u00e9 mis \u00e0 jour avec succ\u00e8s. Vous pouvez maintenant vous connecter avec votre nouveau mot de passe.',
+      resetPasswordInvalidLink: 'Lien invalide ou expir\u00e9',
+      resetPasswordInvalidLinkDetail: 'Ce lien de r\u00e9initialisation du mot de passe a expir\u00e9 ou a d\u00e9j\u00e0 \u00e9t\u00e9 utilis\u00e9. Veuillez en demander un nouveau.',
+      resetPasswordRequestNew: 'Demander un nouveau lien de r\u00e9initialisation',
+      resetPasswordVerifying: 'V\u00e9rification de votre lien...',
+      atLeastEightChars: 'Au moins 8 caract\u00e8res',
       verifyEmailTitle: 'V\u00e9rifiez votre email',
       verifyEmailSubtitle: 'Nous avons envoy\u00e9 un email de v\u00e9rification \u00e0 votre adresse. Veuillez v\u00e9rifier votre bo\u00eete de r\u00e9ception et cliquer sur le lien pour activer votre compte.',
       verifyEmailDetail: 'Vous n\'avez pas re\u00e7u l\'email\u00a0? V\u00e9rifiez votre dossier spam ou renvoyez-le ci-dessous.',
@@ -3853,7 +3873,7 @@ export const translations: Record<Language, Translations> = {
       atLeastSixChars: 'Mindestens 6 Zeichen',
       repeatPassword: 'Passwort wiederholen',
       passwordsDoNotMatch: 'Passw\u00f6rter stimmen nicht \u00fcberein',
-      passwordMinLength: 'Das Passwort muss mindestens 6 Zeichen lang sein',
+      passwordMinLength: 'Das Passwort muss mindestens 8 Zeichen lang sein',
       createOne: 'Konto erstellen',
       createAccount: 'Konto erstellen',
       forgotPassword: 'Passwort vergessen?',
@@ -3873,6 +3893,11 @@ export const translations: Record<Language, Translations> = {
       resetPasswordUpdating: 'Wird aktualisiert...',
       resetPasswordSuccess: 'Passwort aktualisiert',
       resetPasswordSuccessDetail: 'Ihr Passwort wurde erfolgreich aktualisiert. Sie k\u00f6nnen sich jetzt mit Ihrem neuen Passwort anmelden.',
+      resetPasswordInvalidLink: 'Ung\u00fcltiger oder abgelaufener Link',
+      resetPasswordInvalidLinkDetail: 'Dieser Link zum Zur\u00fccksetzen des Passworts ist abgelaufen oder wurde bereits verwendet. Bitte fordern Sie einen neuen an.',
+      resetPasswordRequestNew: 'Neuen Zur\u00fccksetzen-Link anfordern',
+      resetPasswordVerifying: 'Ihr Link wird \u00fcberpr\u00fcft...',
+      atLeastEightChars: 'Mindestens 8 Zeichen',
       verifyEmailTitle: 'E-Mail best\u00e4tigen',
       verifyEmailSubtitle: 'Wir haben eine Best\u00e4tigungs-E-Mail an Ihre Adresse gesendet. Bitte \u00fcberpr\u00fcfen Sie Ihren Posteingang und klicken Sie auf den Link, um Ihr Konto zu aktivieren.',
       verifyEmailDetail: 'Keine E-Mail erhalten? \u00dcberpr\u00fcfen Sie Ihren Spam-Ordner oder senden Sie sie erneut.',
