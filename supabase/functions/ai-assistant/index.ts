@@ -562,6 +562,13 @@ Deno.serve(async (req: Request) => {
 
     if (authError || !user) {
       console.error("Auth error:", authError?.message, "status:", authError?.status);
+      const isExpiry =
+        authError?.message?.toLowerCase().includes("expired") ||
+        authError?.message?.toLowerCase().includes("token is expired") ||
+        authError?.status === 401;
+      if (isExpiry && authError) {
+        return errorResponse("TOKEN_EXPIRED", 401);
+      }
       return errorResponse("Unauthorized", 401);
     }
 

@@ -8,19 +8,25 @@ async function getValidToken(): Promise<string> {
   const { data: { session }, error } = await supabase.auth.getSession();
 
   if (error || !session) {
-    throw new Error('No valid session found. Please sign in again.');
+    throw new Error('SESSION_EXPIRED');
   }
 
   const expiresAt = session.expires_at ?? 0;
   const nowSecs = Math.floor(Date.now() / 1000);
-  const isExpiredOrExpiringSoon = expiresAt - nowSecs < 60;
+  const isExpiredOrExpiringSoon = expiresAt - nowSecs < 300;
 
   if (isExpiredOrExpiringSoon) {
     const { data: refreshed, error: refreshError } = await supabase.auth.refreshSession();
-    if (refreshError || !refreshed.session?.access_token) {
-      throw new Error('Session expired. Please sign in again.');
+    if (!refreshError && refreshed.session?.access_token) {
+      return refreshed.session.access_token;
     }
-    return refreshed.session.access_token;
+
+    const { data: { session: freshSession } } = await supabase.auth.getSession();
+    if (freshSession?.access_token) {
+      return freshSession.access_token;
+    }
+
+    throw new Error('SESSION_EXPIRED');
   }
 
   return session.access_token;
@@ -31,15 +37,20 @@ export async function callAI(body: Record<string, unknown>): Promise<any> {
   let res = await doFetch(token, body);
 
   if (res.status === 401) {
+    await new Promise(r => setTimeout(r, 500));
     const { data: refreshed, error: refreshError } = await supabase.auth.refreshSession();
     if (refreshError || !refreshed.session?.access_token) {
-      throw new Error('Session expired. Please sign in again.');
+      throw new Error('SESSION_EXPIRED');
     }
     token = refreshed.session.access_token;
     res = await doFetch(token, body);
 
     if (res.status === 401) {
-      throw new Error('Session expired. Please sign in again.');
+      const errBody = await res.json().catch(() => ({}));
+      if (errBody?.error === 'TOKEN_EXPIRED') {
+        throw new Error('TOKEN_EXPIRED');
+      }
+      throw new Error('SESSION_EXPIRED');
     }
   }
 

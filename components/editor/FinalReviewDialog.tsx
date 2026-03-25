@@ -83,6 +83,14 @@ export function FinalReviewDialog({
         setError(`${msg}. ${detail}`);
       } else if (err instanceof Error && err.message === 'AI_TIMEOUT') {
         setError(t.biography.aiTimeout);
+      } else if (err instanceof Error && (err.message === 'SESSION_EXPIRED' || err.message === 'TOKEN_EXPIRED')) {
+        const { error: refreshError } = await supabase.auth.refreshSession();
+        if (!refreshError) {
+          setIsAnalyzing(false);
+          analyzeStructure();
+          return;
+        }
+        setError('Session expired. Please sign in again.');
       } else {
         console.error('Error analyzing structure:', err);
         setError(err.message || 'Failed to analyze narrative structure');

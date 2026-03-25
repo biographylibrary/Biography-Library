@@ -12,6 +12,7 @@ import { Loader as Loader2, CircleCheck as CheckCircle2, Circle as XCircle, Book
 import { aiService, AiLimitError, type Improvement } from '@/lib/ai/ai-provider';
 import { useAuth } from '@/lib/auth-context';
 import { addRevisionToHistory } from '@/lib/revision-history-service';
+import { supabase } from '@/lib/supabase';
 import { toast } from 'sonner';
 import { useTranslation } from '@/lib/i18n/i18n-context';
 
@@ -120,6 +121,25 @@ export function AISectionReview({
         toast.error(msg, { description: error.limitType === 'daily' ? t.aiUsage.dailyLimitDetail : t.aiUsage.weeklyLimitDetail });
       } else if (error instanceof Error && error.message === 'AI_TIMEOUT') {
         toast.error(t.biography.aiTimeout);
+      } else if (error instanceof Error && (error.message === 'SESSION_EXPIRED' || error.message === 'TOKEN_EXPIRED')) {
+        const { error: refreshError } = await supabase.auth.refreshSession();
+        if (!refreshError) {
+          try {
+            const results = await aiService.suggestImprovements(content, sectionTitle, language);
+            const improvementsWithState = results.map((imp, idx) => ({
+              ...imp,
+              id: `imp-${Date.now()}-${idx}`,
+              ignored: false,
+            }));
+            setImprovements(improvementsWithState);
+            const highPriority = improvementsWithState.filter(imp => imp.priority === 'high').map(imp => imp.id);
+            setSelectedImprovements(new Set(highPriority));
+          } catch {
+            toast.error(t.aiReview.failedToLoad);
+          }
+        } else {
+          toast.error('Session expired. Please sign in again.');
+        }
       } else {
         console.error('Error loading suggestions:', error);
         toast.error(t.aiReview.failedToLoad);
@@ -153,6 +173,21 @@ export function AISectionReview({
         toast.error(msg, { description: error.limitType === 'daily' ? t.aiUsage.dailyLimitDetail : t.aiUsage.weeklyLimitDetail });
       } else if (error instanceof Error && error.message === 'AI_TIMEOUT') {
         toast.error(t.biography.aiTimeout);
+      } else if (error instanceof Error && (error.message === 'SESSION_EXPIRED' || error.message === 'TOKEN_EXPIRED')) {
+        const { error: refreshError } = await supabase.auth.refreshSession();
+        if (!refreshError) {
+          try {
+            const rewritten = await aiService.rewriteSection(sectionTitle, content, tone, language);
+            setRewriteVersions(prev =>
+              prev.map(v => v.tone === tone ? { ...v, content: rewritten, loading: false } : v)
+            );
+            return;
+          } catch {
+            toast.error(`${t.aiReview.failedToGenerate} ${tone}`);
+          }
+        } else {
+          toast.error('Session expired. Please sign in again.');
+        }
       } else {
         console.error('Error rewriting section:', error);
         toast.error(`${t.aiReview.failedToGenerate} ${tone}`);
