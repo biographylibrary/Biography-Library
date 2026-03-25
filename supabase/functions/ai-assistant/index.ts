@@ -529,6 +529,7 @@ Deno.serve(async (req: Request) => {
     } = await supabase.auth.getUser(token);
 
     if (authError || !user) {
+      console.error("Auth error:", authError?.message, "status:", authError?.status);
       return errorResponse("Unauthorized", 401);
     }
 

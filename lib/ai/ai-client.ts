@@ -7,8 +7,20 @@ const ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
 async function getValidToken(): Promise<string> {
   const { data: { session }, error } = await supabase.auth.getSession();
 
-  if (error || !session?.access_token) {
+  if (error || !session) {
     throw new Error('No valid session found. Please sign in again.');
+  }
+
+  const expiresAt = session.expires_at ?? 0;
+  const nowSecs = Math.floor(Date.now() / 1000);
+  const isExpiredOrExpiringSoon = expiresAt - nowSecs < 60;
+
+  if (isExpiredOrExpiringSoon) {
+    const { data: refreshed, error: refreshError } = await supabase.auth.refreshSession();
+    if (refreshError || !refreshed.session?.access_token) {
+      throw new Error('Session expired. Please sign in again.');
+    }
+    return refreshed.session.access_token;
   }
 
   return session.access_token;
