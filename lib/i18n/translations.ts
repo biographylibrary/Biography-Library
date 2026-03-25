@@ -758,6 +758,36 @@ export interface Translations {
     notifyRemoved: string;
     assignedToYou: string;
     assignedToOther: string;
+    usersTitle: string;
+    usersSubtitle: string;
+    usersNavLink: string;
+    usersSearchPlaceholder: string;
+    usersColAvatar: string;
+    usersColName: string;
+    usersColEmail: string;
+    usersColRole: string;
+    usersColJoined: string;
+    usersColBiographies: string;
+    usersColActions: string;
+    usersSaveRole: string;
+    usersRoleUser: string;
+    usersRoleReviewer: string;
+    usersRoleAdmin: string;
+    usersRoleSuperAdmin: string;
+    usersChangeRoleTitle: string;
+    usersChangeRoleMessage: string;
+    usersChangeRoleFrom: string;
+    usersChangeRoleTo: string;
+    usersRoleUpdated: string;
+    usersCannotChangeSelf: string;
+    usersCannotChangeSelfTooltip: string;
+    usersPrev: string;
+    usersNext: string;
+    usersPageOf: string;
+    usersAccessDenied: string;
+    usersAccessDeniedMessage: string;
+    usersRedirectingIn: string;
+    usersLoadError: string;
   };
   publicBiographies: {
     pageTitle: string;
@@ -1562,6 +1592,36 @@ export const translations: Record<Language, Translations> = {
       notifyRemoved: 'Your biography has been removed for violating our content guidelines.',
       assignedToYou: 'Assigned to you',
       assignedToOther: 'Assigned to another reviewer',
+      usersTitle: 'User Management',
+      usersSubtitle: 'Manage user roles and accounts',
+      usersNavLink: 'Users',
+      usersSearchPlaceholder: 'Search by name or email…',
+      usersColAvatar: 'Avatar',
+      usersColName: 'Name',
+      usersColEmail: 'Email',
+      usersColRole: 'Role',
+      usersColJoined: 'Joined',
+      usersColBiographies: 'Biographies',
+      usersColActions: 'Actions',
+      usersSaveRole: 'Save role',
+      usersRoleUser: 'User',
+      usersRoleReviewer: 'Reviewer',
+      usersRoleAdmin: 'Admin',
+      usersRoleSuperAdmin: 'Super Admin',
+      usersChangeRoleTitle: 'Change role',
+      usersChangeRoleMessage: "Change {name}'s role from {old} to {new}?",
+      usersChangeRoleFrom: 'from',
+      usersChangeRoleTo: 'to',
+      usersRoleUpdated: 'Role updated successfully',
+      usersCannotChangeSelf: 'You cannot change your own role.',
+      usersCannotChangeSelfTooltip: 'You cannot change your own role',
+      usersPrev: 'Previous',
+      usersNext: 'Next',
+      usersPageOf: 'of',
+      usersAccessDenied: 'Access Denied',
+      usersAccessDeniedMessage: 'This page is restricted to super administrators.',
+      usersRedirectingIn: 'Redirecting in',
+      usersLoadError: 'Failed to load users.',
     },
     publicBiographies: {
       pageTitle: 'Published Biographies',
@@ -2364,6 +2424,36 @@ export const translations: Record<Language, Translations> = {
       notifyRemoved: 'La tua biografia è stata rimossa per violazione delle linee guida.',
       assignedToYou: 'Assegnato a te',
       assignedToOther: 'Assegnato a un altro revisore',
+      usersTitle: 'Gestione Utenti',
+      usersSubtitle: 'Gestisci ruoli e account degli utenti',
+      usersNavLink: 'Utenti',
+      usersSearchPlaceholder: 'Cerca per nome o email…',
+      usersColAvatar: 'Avatar',
+      usersColName: 'Nome',
+      usersColEmail: 'Email',
+      usersColRole: 'Ruolo',
+      usersColJoined: 'Iscritto',
+      usersColBiographies: 'Biografie',
+      usersColActions: 'Azioni',
+      usersSaveRole: 'Salva ruolo',
+      usersRoleUser: 'Utente',
+      usersRoleReviewer: 'Revisore',
+      usersRoleAdmin: 'Admin',
+      usersRoleSuperAdmin: 'Super Admin',
+      usersChangeRoleTitle: 'Cambia ruolo',
+      usersChangeRoleMessage: "Cambia il ruolo di {name} da {old} a {new}?",
+      usersChangeRoleFrom: 'da',
+      usersChangeRoleTo: 'a',
+      usersRoleUpdated: 'Ruolo aggiornato con successo',
+      usersCannotChangeSelf: 'Non puoi cambiare il tuo ruolo.',
+      usersCannotChangeSelfTooltip: 'Non puoi cambiare il tuo ruolo',
+      usersPrev: 'Precedente',
+      usersNext: 'Successivo',
+      usersPageOf: 'di',
+      usersAccessDenied: 'Accesso Negato',
+      usersAccessDeniedMessage: 'Questa pagina è riservata ai super amministratori.',
+      usersRedirectingIn: 'Reindirizzamento tra',
+      usersLoadError: 'Impossibile caricare gli utenti.',
     },
     publicBiographies: {
       pageTitle: 'Biografie Pubblicate',
@@ -3166,6 +3256,36 @@ export const translations: Record<Language, Translations> = {
       notifyRemoved: 'Votre biographie a été supprimée pour violation de nos directives de contenu.',
       assignedToYou: 'Assigné à vous',
       assignedToOther: 'Assigné à un autre réviseur',
+      usersTitle: 'Gestion des utilisateurs',
+      usersSubtitle: 'Gérer les rôles et les comptes utilisateurs',
+      usersNavLink: 'Utilisateurs',
+      usersSearchPlaceholder: 'Rechercher par nom ou email…',
+      usersColAvatar: 'Avatar',
+      usersColName: 'Nom',
+      usersColEmail: 'Email',
+      usersColRole: 'Rôle',
+      usersColJoined: 'Inscrit',
+      usersColBiographies: 'Biographies',
+      usersColActions: 'Actions',
+      usersSaveRole: 'Enregistrer le rôle',
+      usersRoleUser: 'Utilisateur',
+      usersRoleReviewer: 'Réviseur',
+      usersRoleAdmin: 'Admin',
+      usersRoleSuperAdmin: 'Super Admin',
+      usersChangeRoleTitle: 'Changer le rôle',
+      usersChangeRoleMessage: "Changer le rôle de {name} de {old} à {new} ?",
+      usersChangeRoleFrom: 'de',
+      usersChangeRoleTo: 'à',
+      usersRoleUpdated: 'Rôle mis à jour avec succès',
+      usersCannotChangeSelf: 'Vous ne pouvez pas modifier votre propre rôle.',
+      usersCannotChangeSelfTooltip: 'Vous ne pouvez pas modifier votre propre rôle',
+      usersPrev: 'Précédent',
+      usersNext: 'Suivant',
+      usersPageOf: 'sur',
+      usersAccessDenied: 'Accès Refusé',
+      usersAccessDeniedMessage: 'Cette page est réservée aux super administrateurs.',
+      usersRedirectingIn: 'Redirection dans',
+      usersLoadError: 'Impossible de charger les utilisateurs.',
     },
     publicBiographies: {
       pageTitle: 'Biographies Publiées',
@@ -3968,6 +4088,36 @@ export const translations: Record<Language, Translations> = {
       notifyRemoved: 'Ihre Biografie wurde wegen Verstoßes gegen unsere Inhaltsrichtlinien entfernt.',
       assignedToYou: 'Ihnen zugewiesen',
       assignedToOther: 'Einem anderen Prüfer zugewiesen',
+      usersTitle: 'Benutzerverwaltung',
+      usersSubtitle: 'Benutzerrollen und Konten verwalten',
+      usersNavLink: 'Benutzer',
+      usersSearchPlaceholder: 'Nach Name oder E-Mail suchen…',
+      usersColAvatar: 'Avatar',
+      usersColName: 'Name',
+      usersColEmail: 'E-Mail',
+      usersColRole: 'Rolle',
+      usersColJoined: 'Beigetreten',
+      usersColBiographies: 'Biografien',
+      usersColActions: 'Aktionen',
+      usersSaveRole: 'Rolle speichern',
+      usersRoleUser: 'Benutzer',
+      usersRoleReviewer: 'Prüfer',
+      usersRoleAdmin: 'Admin',
+      usersRoleSuperAdmin: 'Super Admin',
+      usersChangeRoleTitle: 'Rolle ändern',
+      usersChangeRoleMessage: "Rolle von {name} von {old} zu {new} ändern?",
+      usersChangeRoleFrom: 'von',
+      usersChangeRoleTo: 'zu',
+      usersRoleUpdated: 'Rolle erfolgreich aktualisiert',
+      usersCannotChangeSelf: 'Sie können Ihre eigene Rolle nicht ändern.',
+      usersCannotChangeSelfTooltip: 'Sie können Ihre eigene Rolle nicht ändern',
+      usersPrev: 'Zurück',
+      usersNext: 'Weiter',
+      usersPageOf: 'von',
+      usersAccessDenied: 'Zugriff verweigert',
+      usersAccessDeniedMessage: 'Diese Seite ist nur für Super-Administratoren zugänglich.',
+      usersRedirectingIn: 'Weiterleitung in',
+      usersLoadError: 'Benutzer konnten nicht geladen werden.',
     },
     publicBiographies: {
       pageTitle: 'Veröffentlichte Biografien',
