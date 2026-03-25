@@ -521,19 +521,16 @@ Deno.serve(async (req: Request) => {
     }
 
     const token = authHeader.replace("Bearer ", "");
-    const authClient = createClient(supabaseUrl, anonKey, {
-      global: { headers: { Authorization: `Bearer ${token}` } },
-    });
+    const supabase = createClient(supabaseUrl, serviceRoleKey);
+
     const {
       data: { user },
       error: authError,
-    } = await authClient.auth.getUser();
+    } = await supabase.auth.getUser(token);
 
     if (authError || !user) {
       return errorResponse("Unauthorized", 401);
     }
-
-    const supabase = createClient(supabaseUrl, serviceRoleKey);
 
     const windowStart = new Date(Date.now() - RATE_WINDOW_MS).toISOString();
     const { count } = await supabase
