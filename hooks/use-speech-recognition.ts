@@ -19,6 +19,7 @@ interface UseSpeechRecognitionReturn {
   isSupported: boolean;
   permissionDenied: boolean;
   interimText: string;
+  error: string | null;
   start: () => void;
   stop: () => void;
 }
@@ -40,6 +41,7 @@ export function useSpeechRecognition({
   const [isSupported, setIsSupported] = useState(true);
   const [permissionDenied, setPermissionDenied] = useState(false);
   const [interimText, setInterimText] = useState('');
+  const [error, setError] = useState<string | null>(null);
   const recognitionRef = useRef<any>(null);
   const onTranscriptRef = useRef(onTranscript);
 
@@ -50,6 +52,7 @@ export function useSpeechRecognition({
   useEffect(() => {
     if (!getSpeechRecognitionConstructor()) {
       setIsSupported(false);
+      setError('voice_not_supported');
     }
   }, []);
 
@@ -82,6 +85,15 @@ export function useSpeechRecognition({
     };
 
     recognition.onerror = (event: any) => {
+      const errorMessages: Record<string, string> = {
+        'not-allowed': 'microphone_denied',
+        'no-speech': 'no_speech_detected',
+        'network': 'voice_network_error',
+        'service-not-allowed': 'voice_service_unavailable',
+        'audio-capture': 'microphone_not_found',
+      };
+      const errorKey = errorMessages[event.error] ?? 'voice_unknown_error';
+      setError(errorKey);
       if (event.error === 'not-allowed') {
         setPermissionDenied(true);
       }
@@ -98,6 +110,7 @@ export function useSpeechRecognition({
     recognition.start();
     setIsRecording(true);
     setPermissionDenied(false);
+    setError(null);
   }, [language]);
 
   const stop = useCallback(() => {
@@ -122,6 +135,7 @@ export function useSpeechRecognition({
     isSupported,
     permissionDenied,
     interimText,
+    error,
     start,
     stop,
   };

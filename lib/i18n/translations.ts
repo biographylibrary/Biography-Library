@@ -315,6 +315,13 @@ export interface Translations {
     permissionDenied: string;
     record: string;
     clearTranscript: string;
+    microphoneDenied: string;
+    noSpeechDetected: string;
+    voiceNetworkError: string;
+    voiceServiceUnavailable: string;
+    microphoneNotFound: string;
+    voiceUnknownError: string;
+    voiceNotSupported: string;
   };
   share: {
     publicLink: string;
@@ -1288,6 +1295,13 @@ export const translations: Record<Language, Translations> = {
       permissionDenied: 'Microphone access denied. Please enable microphone permissions in your browser settings and reload the page.',
       record: 'Record',
       clearTranscript: 'Clear transcript',
+      microphoneDenied: 'Microphone access denied.',
+      noSpeechDetected: 'No speech detected. Try again.',
+      voiceNetworkError: 'Network error. Check your connection.',
+      voiceServiceUnavailable: 'Voice service unavailable.',
+      microphoneNotFound: 'No microphone found.',
+      voiceUnknownError: 'Voice recognition error. Try again.',
+      voiceNotSupported: 'Voice input is not supported in this browser. Try Chrome or Edge.',
     },
     share: {
       publicLink: 'Public Link',
@@ -2259,6 +2273,13 @@ export const translations: Record<Language, Translations> = {
       permissionDenied: 'Accesso al microfono negato. Abilita i permessi del microfono nelle impostazioni del browser e ricarica la pagina.',
       record: 'Registra',
       clearTranscript: 'Cancella trascrizione',
+      microphoneDenied: 'Accesso al microfono negato.',
+      noSpeechDetected: 'Nessun parlato rilevato. Riprova.',
+      voiceNetworkError: 'Errore di rete. Controlla la connessione.',
+      voiceServiceUnavailable: 'Servizio vocale non disponibile.',
+      microphoneNotFound: 'Nessun microfono trovato.',
+      voiceUnknownError: 'Errore di riconoscimento vocale. Riprova.',
+      voiceNotSupported: 'L\'input vocale non è supportato in questo browser. Prova Chrome o Edge.',
     },
     share: {
       publicLink: 'Link Pubblico',
@@ -3230,6 +3251,13 @@ export const translations: Record<Language, Translations> = {
       permissionDenied: 'Acc\u00e8s au microphone refus\u00e9. Veuillez activer les permissions du microphone dans les param\u00e8tres de votre navigateur et recharger la page.',
       record: 'Enregistrer',
       clearTranscript: 'Effacer la transcription',
+      microphoneDenied: 'Acc\u00e8s au microphone refus\u00e9.',
+      noSpeechDetected: 'Aucune parole d\u00e9tect\u00e9e. R\u00e9essayez.',
+      voiceNetworkError: 'Erreur r\u00e9seau. V\u00e9rifiez votre connexion.',
+      voiceServiceUnavailable: 'Service vocal indisponible.',
+      microphoneNotFound: 'Aucun microphone trouv\u00e9.',
+      voiceUnknownError: 'Erreur de reconnaissance vocale. R\u00e9essayez.',
+      voiceNotSupported: 'La saisie vocale n\'est pas support\u00e9e dans ce navigateur. Essayez Chrome ou Edge.',
     },
     share: {
       publicLink: 'Lien Public',
@@ -4201,6 +4229,13 @@ export const translations: Record<Language, Translations> = {
       permissionDenied: 'Mikrofonzugriff verweigert. Bitte aktivieren Sie die Mikrofonberechtigungen in Ihren Browsereinstellungen und laden Sie die Seite neu.',
       record: 'Aufnehmen',
       clearTranscript: 'Transkription l\u00f6schen',
+      microphoneDenied: 'Mikrofonzugriff verweigert.',
+      noSpeechDetected: 'Keine Sprache erkannt. Versuchen Sie es erneut.',
+      voiceNetworkError: 'Netzwerkfehler. \u00dcberpr\u00fcfen Sie Ihre Verbindung.',
+      voiceServiceUnavailable: 'Sprachdienst nicht verf\u00fcgbar.',
+      microphoneNotFound: 'Kein Mikrofon gefunden.',
+      voiceUnknownError: 'Spracherkennungsfehler. Versuchen Sie es erneut.',
+      voiceNotSupported: 'Spracheingabe wird in diesem Browser nicht unterst\u00fctzt. Versuchen Sie Chrome oder Edge.',
     },
     share: {
       publicLink: '\u00d6ffentlicher Link',

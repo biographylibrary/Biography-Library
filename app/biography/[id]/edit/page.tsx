@@ -1193,7 +1193,7 @@ const [isPublishing, setIsPublishing] = useState(false);
               />
               <div className={[
                 'border-l border-border/50 bg-card flex flex-col min-h-0 overflow-hidden',
-                'fixed right-0 top-0 bottom-0 z-50 w-[320px] shadow-2xl',
+                'fixed right-0 top-0 bottom-0 z-50 w-full sm:w-[320px] shadow-2xl',
                 'lg:relative lg:z-auto lg:shadow-none lg:shrink-0',
               ].join(' ')}>
                 <PhotoGalleryPanel
