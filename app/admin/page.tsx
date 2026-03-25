@@ -1,9 +1,9 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth, ADMIN_ROLES } from '@/lib/auth-context';
-import { Shield } from 'lucide-react';
+import { Shield, ShieldOff } from 'lucide-react';
 
 const ROLE_LABELS: Record<string, string> = {
   user: 'User',
@@ -15,19 +15,68 @@ const ROLE_LABELS: Record<string, string> = {
 export default function AdminPage() {
   const { user, role, loading } = useAuth();
   const router = useRouter();
+  const [countdown, setCountdown] = useState(3);
+
+  const isDenied = !loading && (!user || (role !== null && !ADMIN_ROLES.includes(role)));
 
   useEffect(() => {
     if (loading) return;
+
     if (!user) {
-      router.replace('/login');
-      return;
+      const timer = setInterval(() => {
+        setCountdown((c) => {
+          if (c <= 1) {
+            clearInterval(timer);
+            router.replace('/login');
+            return 0;
+          }
+          return c - 1;
+        });
+      }, 1000);
+      return () => clearInterval(timer);
     }
+
     if (role !== null && !ADMIN_ROLES.includes(role)) {
-      router.replace('/dashboard');
+      const timer = setInterval(() => {
+        setCountdown((c) => {
+          if (c <= 1) {
+            clearInterval(timer);
+            router.replace('/dashboard');
+            return 0;
+          }
+          return c - 1;
+        });
+      }, 1000);
+      return () => clearInterval(timer);
     }
   }, [loading, user, role, router]);
 
-  if (loading || !user || !role) return null;
+  if (loading) return null;
+
+  if (isDenied) {
+    return (
+      <div className="min-h-[60vh] flex items-center justify-center px-4">
+        <div className="text-center max-w-sm">
+          <div className="flex justify-center mb-5">
+            <div className="p-4 rounded-2xl bg-red-50 dark:bg-red-950/30">
+              <ShieldOff className="h-8 w-8 text-red-500 dark:text-red-400" />
+            </div>
+          </div>
+          <h1 className="text-xl font-semibold text-foreground mb-2">Access Denied</h1>
+          <p className="text-sm text-muted-foreground mb-5">
+            You do not have permission to access this page.
+          </p>
+          <p className="text-xs text-muted-foreground">
+            Redirecting in{' '}
+            <span className="font-semibold tabular-nums text-foreground">{countdown}</span>{' '}
+            second{countdown !== 1 ? 's' : ''}…
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!user || !role) return null;
   if (!ADMIN_ROLES.includes(role)) return null;
 
   const name = user.user_metadata?.name || user.email || 'Unknown';
