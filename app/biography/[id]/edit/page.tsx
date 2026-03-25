@@ -17,6 +17,7 @@ import { AISectionReview } from '@/components/editor/AISectionReview';
 import { FinalReviewDialog } from '@/components/editor/FinalReviewDialog';
 import { FinalVersionEditor } from '@/components/editor/FinalVersionEditor';
 import { PublishConfirmationDialog } from '@/components/editor/PublishConfirmationDialog';
+import { SubmitForReviewDialog } from '@/components/editor/SubmitForReviewDialog';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import {
   BIOGRAPHY_SECTIONS,
@@ -43,7 +44,7 @@ import type { Biography } from '@/lib/biographies';
 import { generateBiographyPDF } from '@/lib/pdf-export';
 import { AdvancedExportDialog } from '@/components/export/AdvancedExportDialog';
 import { useTranslation } from '@/lib/i18n/i18n-context';
-import { Loader as Loader2, Menu, X, Sparkles, Snowflake as SnowflakeIcon } from 'lucide-react';
+import { Loader as Loader2, Menu, X, Sparkles, Snowflake as SnowflakeIcon, Send as SendIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import {
@@ -101,6 +102,8 @@ export default function BiographyEditorPage() {
   const [biographyStatus, setBiographyStatus] = useState<'draft' | 'sections_complete' | 'final_version' | 'published' | 'under_review'>('draft');
   const [isLocked, setIsLocked] = useState(false);
   const [showPublishDialog, setShowPublishDialog] = useState(false);
+  const [showSubmitForReviewDialog, setShowSubmitForReviewDialog] = useState(false);
+  const [isSubmittingForReview, setIsSubmittingForReview] = useState(false);
   const [aiLimitError, setAiLimitError] = useState<AiLimitError | null>(null);
   const [aiUsageRefresh, setAiUsageRefresh] = useState(0);
   const [isFrozen, setIsFrozen] = useState(false);
@@ -822,6 +825,26 @@ const [isPublishing, setIsPublishing] = useState(false);
     }
   }, [id, finalVersion, content, t]);
 
+  const handleSubmitForReview = useCallback(async () => {
+    if (!user?.id) return;
+    setIsSubmittingForReview(true);
+    try {
+      const { error } = await supabase
+        .from('biographies')
+        .update({ status: 'under_review' })
+        .eq('id', id);
+
+      if (!error) {
+        setBiographyStatus('under_review');
+        setShowSubmitForReviewDialog(false);
+      }
+    } catch (err) {
+      console.error('Error submitting for review:', err);
+    } finally {
+      setIsSubmittingForReview(false);
+    }
+  }, [id, user]);
+
   const effectivelyLocked = isLocked || isFrozen;
 
   if (authLoading || !user || isLoading) {
@@ -1027,17 +1050,31 @@ const [isPublishing, setIsPublishing] = useState(false);
                          'Explore alternative narrative structures with AI to enhance your story\'s flow.'}
                       </p>
                     </div>
-                    <Button
-                      size="lg"
-                      onClick={() => setShowFinalReview(true)}
-                      className="gap-2"
-                    >
-                      <Sparkles className="h-5 w-5" />
-                      {language === 'it' ? 'Inizia Revisione Finale' :
-                       language === 'fr' ? 'Commencer la Révision Finale' :
-                       language === 'de' ? 'Abschließende Überprüfung Starten' :
-                       'Start Final Review'}
-                    </Button>
+                    <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+                      <Button
+                        size="lg"
+                        variant="outline"
+                        onClick={() => setShowFinalReview(true)}
+                        className="gap-2"
+                      >
+                        <Sparkles className="h-5 w-5" />
+                        {language === 'it' ? 'Revisione Finale con IA' :
+                         language === 'fr' ? 'Révision Finale avec IA' :
+                         language === 'de' ? 'Abschließende Überprüfung mit KI' :
+                         'Final Review with AI'}
+                      </Button>
+                      <Button
+                        size="lg"
+                        onClick={() => setShowSubmitForReviewDialog(true)}
+                        className="gap-2"
+                      >
+                        <SendIcon className="h-5 w-5" />
+                        {language === 'it' ? 'Invia per la Revisione' :
+                         language === 'fr' ? 'Soumettre pour Révision' :
+                         language === 'de' ? 'Zur Überprüfung Einreichen' :
+                         'Submit for Review'}
+                      </Button>
+                    </div>
                   </div>
                 </div>
               )}
@@ -1140,6 +1177,13 @@ const [isPublishing, setIsPublishing] = useState(false);
         onConfirm={handlePublish}
         isChecking={isPublishing}
         checkingText={t.toast.checkingContent}
+      />
+
+      <SubmitForReviewDialog
+        open={showSubmitForReviewDialog}
+        onOpenChange={setShowSubmitForReviewDialog}
+        onConfirm={handleSubmitForReview}
+        isSubmitting={isSubmittingForReview}
       />
 
       <Dialog open={!!aiLimitError} onOpenChange={(open) => { if (!open) setAiLimitError(null); }}>
