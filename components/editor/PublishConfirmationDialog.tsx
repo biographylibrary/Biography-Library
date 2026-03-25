@@ -11,18 +11,22 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { useTranslation } from '@/lib/i18n/i18n-context';
-import { AlertTriangle } from 'lucide-react';
+import { TriangleAlert as AlertTriangle, Loader as Loader2 } from 'lucide-react';
 
 interface PublishConfirmationDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onConfirm: () => void;
+  isChecking?: boolean;
+  checkingText?: string;
 }
 
 export function PublishConfirmationDialog({
   open,
   onOpenChange,
   onConfirm,
+  isChecking = false,
+  checkingText,
 }: PublishConfirmationDialogProps) {
   const { language } = useTranslation();
 
@@ -78,13 +82,20 @@ export function PublishConfirmationDialog({
             </div>
           </AlertDialogDescription>
         </AlertDialogHeader>
+        {isChecking && (
+          <div className="flex items-center gap-2 px-1 pb-2 text-sm text-muted-foreground">
+            <Loader2 className="h-4 w-4 animate-spin" />
+            <span>{checkingText}</span>
+          </div>
+        )}
         <AlertDialogFooter>
-          <AlertDialogCancel>{cancelText}</AlertDialogCancel>
+          <AlertDialogCancel disabled={isChecking}>{cancelText}</AlertDialogCancel>
           <AlertDialogAction
             onClick={onConfirm}
-            className="bg-primary hover:bg-primary/90"
+            disabled={isChecking}
+            className="bg-primary hover:bg-primary/90 disabled:opacity-50"
           >
-            {confirmText}
+            {isChecking ? <Loader2 className="h-4 w-4 animate-spin" /> : confirmText}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

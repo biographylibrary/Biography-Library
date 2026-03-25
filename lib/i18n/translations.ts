@@ -371,6 +371,9 @@ export interface Translations {
     pdfExported: string;
     linkCopied: string;
     error: string;
+    checkingContent: string;
+    publishBlocked: string;
+    publishUnderReview: string;
   };
   coach: {
     greeting: string;
@@ -1092,6 +1095,9 @@ export const translations: Record<Language, Translations> = {
       pdfExported: 'PDF exported successfully',
       linkCopied: 'Link copied to clipboard',
       error: 'An error occurred',
+      checkingContent: 'Checking content guidelines...',
+      publishBlocked: 'Publication blocked. This biography contains content that violates our guidelines.',
+      publishUnderReview: 'Your biography has been sent for review. You will be notified of the outcome.',
     },
     coach: {
       greeting: 'Welcome back',
@@ -1811,6 +1817,9 @@ export const translations: Record<Language, Translations> = {
       pdfExported: 'PDF esportato con successo',
       linkCopied: 'Link copiato negli appunti',
       error: 'Si \u00e8 verificato un errore',
+      checkingContent: 'Verifica delle linee guida sui contenuti...',
+      publishBlocked: 'Pubblicazione bloccata. Questa biografia contiene contenuti che violano le nostre linee guida.',
+      publishUnderReview: 'La tua biografia \u00e8 stata inviata per la revisione. Sarai informato dell\'esito.',
     },
     coach: {
       greeting: 'Bentornato',
@@ -2530,6 +2539,9 @@ export const translations: Record<Language, Translations> = {
       pdfExported: 'PDF export\u00e9 avec succ\u00e8s',
       linkCopied: 'Lien copi\u00e9 dans le presse-papiers',
       error: 'Une erreur s\'est produite',
+      checkingContent: 'V\u00e9rification des r\u00e8gles de contenu...',
+      publishBlocked: 'Publication bloqu\u00e9e. Cette biographie contient du contenu qui enfreint nos r\u00e8gles.',
+      publishUnderReview: 'Votre biographie a \u00e9t\u00e9 envoy\u00e9e pour examen. Vous serez inform\u00e9 du r\u00e9sultat.',
     },
     coach: {
       greeting: 'Bon retour',
@@ -3249,6 +3261,9 @@ export const translations: Record<Language, Translations> = {
       pdfExported: 'PDF erfolgreich exportiert',
       linkCopied: 'Link in die Zwischenablage kopiert',
       error: 'Ein Fehler ist aufgetreten',
+      checkingContent: 'Inhaltsrichtlinien werden \u00fcberpr\u00fcft...',
+      publishBlocked: 'Ver\u00f6ffentlichung blockiert. Diese Biografie enth\u00e4lt Inhalte, die gegen unsere Richtlinien versto\u00dfen.',
+      publishUnderReview: 'Ihre Biografie wurde zur \u00dcberpr\u00fcfung eingereicht. Sie werden \u00fcber das Ergebnis informiert.',
     },
     coach: {
       greeting: 'Willkommen zurück',

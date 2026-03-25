@@ -1,7 +1,37 @@
 import type { AiSuggestion, AiPrompt } from './ai-constants';
 import { aiService, AiLimitError } from './ai/ai-provider';
+import { callAI } from './ai/ai-client';
 
 export { AiLimitError };
+
+export interface FlaggedPassage {
+  text: string;
+  reason: string;
+  level: 1 | 2 | 3;
+}
+
+export interface PrePublicationCheckResult {
+  passed: boolean;
+  violation_level: 1 | 2 | 3 | null;
+  flagged_passages: FlaggedPassage[];
+  summary: string;
+}
+
+export async function runPrePublicationCheck(
+  biographyText: string
+): Promise<PrePublicationCheckResult> {
+  const result = await callAI({
+    action: 'pre-publication-check',
+    biographyText,
+  });
+
+  return {
+    passed: result.passed ?? true,
+    violation_level: result.violation_level ?? null,
+    flagged_passages: result.flagged_passages ?? [],
+    summary: result.summary ?? '',
+  };
+}
 
 export async function checkGrammar(
   sectionTitle: string,

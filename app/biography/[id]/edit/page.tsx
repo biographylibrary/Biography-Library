@@ -35,7 +35,9 @@ import {
   getGuidedPrompts,
   getSummary,
   AiLimitError,
+  runPrePublicationCheck,
 } from '@/lib/ai-service';
+import { toast } from 'sonner';
 import { AiUsageIndicator } from '@/components/editor/ai-usage-indicator';
 import { recommendNextSection, type SectionRecommendation } from '@/lib/ai/next-section-recommender';
 import type { Biography } from '@/lib/biographies';
@@ -105,6 +107,7 @@ export default function BiographyEditorPage() {
   const [isFrozen, setIsFrozen] = useState(false);
   const [userRole, setUserRole] = useState<string>('user');
   const [showFreezeDialog, setShowFreezeDialog] = useState(false);
+  const [isPublishing, setIsPublishing] = useState(false);
 
   const editorContainerRef = useRef<HTMLDivElement>(null);
 
@@ -743,6 +746,63 @@ export default function BiographyEditorPage() {
   }, [id]);
 
   const handlePublish = useCallback(async () => {
+    setIsPublishing(true);
+
+    const biographyText = finalVersion ||
+      Object.values(content).filter(Boolean).join('\n\n');
+
+    let checkResult;
+    try {
+      checkResult = await runPrePublicationCheck(biographyText);
+    } catch (err) {
+      console.error('Pre-publication check failed:', err);
+      setIsPublishing(false);
+      return;
+    }
+
+    if (checkResult.violation_level === 1) {
+      await supabase.from('moderation_reports').insert({
+        biography_id: id,
+        reporter_id: null,
+        report_type: 'level1_content',
+        status: 'unassigned',
+        ai_analysis: checkResult,
+        ai_violation_level: 1,
+      });
+      setIsPublishing(false);
+      setShowPublishDialog(false);
+      toast.error(t.toast.publishBlocked);
+      return;
+    }
+
+    if (checkResult.violation_level === 2) {
+      await supabase.from('biographies').update({ status: 'under_review' }).eq('id', id);
+      await supabase.from('moderation_reports').insert({
+        biography_id: id,
+        reporter_id: null,
+        report_type: 'level2_content',
+        status: 'unassigned',
+        ai_analysis: checkResult,
+        ai_violation_level: 2,
+      });
+      setIsPublishing(false);
+      setShowPublishDialog(false);
+      setBiographyStatus('draft');
+      toast.warning(t.toast.publishUnderReview);
+      return;
+    }
+
+    if (checkResult.violation_level === 3) {
+      await supabase.from('moderation_reports').insert({
+        biography_id: id,
+        report_type: 'other',
+        status: 'decided',
+        decision: 'publish',
+        ai_analysis: checkResult,
+        ai_violation_level: 3,
+      });
+    }
+
     try {
       const { error } = await supabase
         .from('biographies')
@@ -761,8 +821,10 @@ export default function BiographyEditorPage() {
       }
     } catch (err) {
       console.error('Error publishing biography:', err);
+    } finally {
+      setIsPublishing(false);
     }
-  }, [id]);
+  }, [id, finalVersion, content, t]);
 
   const handleFreeze = useCallback(async () => {
     const { error } = await supabase
@@ -1119,6 +1181,8 @@ export default function BiographyEditorPage() {
         open={showPublishDialog}
         onOpenChange={setShowPublishDialog}
         onConfirm={handlePublish}
+        isChecking={isPublishing}
+        checkingText={t.toast.checkingContent}
       />
 
       <FreezeConfirmationDialog
