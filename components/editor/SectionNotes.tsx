@@ -212,15 +212,15 @@ export function SectionNotes({ biographyId, sectionKey }: SectionNotesProps) {
     const configs = {
       low: {
         label: t.notesAndTodos.priorityLow,
-        className: 'bg-muted text-muted-foreground',
+        className: 'bg-[#C4DAEB] text-[#121212] dark:bg-[#C4DAEB] dark:text-[#121212]',
       },
       medium: {
         label: t.notesAndTodos.priorityMedium,
-        className: 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400',
+        className: 'bg-[#EDE4B9] text-[#121212] dark:bg-[#EDE4B9] dark:text-[#121212]',
       },
       high: {
         label: t.notesAndTodos.priorityHigh,
-        className: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400',
+        className: 'bg-[#6D323E] text-white dark:bg-[#6D323E] dark:text-white',
       },
     };
     const config = configs[priority as keyof typeof configs] || configs.medium;

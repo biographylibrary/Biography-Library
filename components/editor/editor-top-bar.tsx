@@ -54,7 +54,7 @@ export function EditorTopBar({
     saved: {
       icon: Check,
       text: t.common.saved,
-      className: 'text-emerald-600 dark:text-emerald-400',
+      className: 'text-[#C8DFBE] dark:text-[#C8DFBE]',
     },
     saving: {
       icon: Loader2,

@@ -66,7 +66,7 @@ export function SectionSidebar({
               className={cn(
                 'w-full flex items-center gap-2.5 px-3 py-2 lg:py-2.5 text-left text-sm transition-colors',
                 isCompleted
-                  ? 'bg-[#C8DFBE] dark:bg-[#C8DFBE]/20 font-bold text-foreground'
+                  ? 'bg-[#C4DAEB] dark:bg-[#C4DAEB]/20 text-[#121212] dark:text-[#121212]'
                   : isActive
                   ? 'bg-primary/10 text-primary font-medium'
                   : 'text-muted-foreground hover:bg-muted/50 hover:text-foreground'

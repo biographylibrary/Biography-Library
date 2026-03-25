@@ -234,9 +234,9 @@ export function MainBiographyCard({ biography, userName, userId, onDeleteClick, 
 
   const getPriorityBadgeClass = (priority: string) => {
     const map: Record<string, string> = {
-      low: 'bg-muted text-muted-foreground',
-      medium: 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400',
-      high: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400',
+      low: 'bg-[#C4DAEB] text-[#121212] dark:bg-[#C4DAEB] dark:text-[#121212]',
+      medium: 'bg-[#EDE4B9] text-[#121212] dark:bg-[#EDE4B9] dark:text-[#121212]',
+      high: 'bg-[#6D323E] text-white dark:bg-[#6D323E] dark:text-white',
     };
     return map[priority] || map.medium;
   };
