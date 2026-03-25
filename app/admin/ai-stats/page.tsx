@@ -311,7 +311,7 @@ function AiStatsContent() {
                     <span className="text-sm font-mono text-foreground w-48 shrink-0">{a.action}</span>
                     <div className="flex-1 h-2 bg-muted rounded-full overflow-hidden">
                       <div
-                        className="h-full bg-sky-500 dark:bg-sky-400 rounded-full transition-all duration-500"
+                        className="h-full bg-[#C4DAEB] dark:bg-[#C4DAEB] rounded-full transition-all duration-500"
                         style={{ width: `${Math.round((a.count / maxActionCount) * 100)}%` }}
                       />
                     </div>
