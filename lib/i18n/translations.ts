@@ -812,6 +812,73 @@ export interface Translations {
     quickActionModeration: string;
     quickActionUsers: string;
     quickActionBiographies: string;
+    bioPageTitle: string;
+    bioPageSubtitle: string;
+    bioSearchPlaceholder: string;
+    bioFilterStatus: string;
+    bioFilterType: string;
+    bioFilterSort: string;
+    bioFilterAll: string;
+    bioStatusDraft: string;
+    bioStatusPublished: string;
+    bioStatusUnderReview: string;
+    bioStatusRemoved: string;
+    bioTypeAll: string;
+    bioTypeAutobiography: string;
+    bioTypeDeceased: string;
+    bioSortNewest: string;
+    bioSortOldest: string;
+    bioSortRecentlyPublished: string;
+    bioColTitle: string;
+    bioColAuthor: string;
+    bioColType: string;
+    bioColStatus: string;
+    bioColCreated: string;
+    bioColPublished: string;
+    bioColActions: string;
+    bioActionView: string;
+    bioNoResults: string;
+    bioLoadError: string;
+    bioPrev: string;
+    bioNext: string;
+    bioPageOf: string;
+    bioPanelTitle: string;
+    bioPanelSection1: string;
+    bioPanelSection2: string;
+    bioPanelSection3: string;
+    bioPanelAuthor: string;
+    bioPanelEmail: string;
+    bioPanelType: string;
+    bioPanelStatus: string;
+    bioPanelPrivacy: string;
+    bioPanelCreated: string;
+    bioPanelUpdated: string;
+    bioPanelShareToken: string;
+    bioPanelNoContent: string;
+    bioPanelOpenFull: string;
+    bioPrivatePrivacy: string;
+    bioFamilyPrivacy: string;
+    bioPublicPrivacy: string;
+    bioActionForcePublish: string;
+    bioActionSetDraft: string;
+    bioActionRemove: string;
+    bioActionRestore: string;
+    bioActionForcePublishConfirm: string;
+    bioActionForcePublishDetail: string;
+    bioActionSetDraftConfirm: string;
+    bioActionSetDraftDetail: string;
+    bioActionRemoveConfirm: string;
+    bioActionRemoveDetail: string;
+    bioActionRestoreConfirm: string;
+    bioActionRestoreDetail: string;
+    bioActionConfirm: string;
+    bioActionCancel: string;
+    bioNotifyForcePublished: string;
+    bioNotifySetDraft: string;
+    bioNotifyRemoved: string;
+    bioNotifyRestored: string;
+    bioActionSuccess: string;
+    bioActionError: string;
   };
   publicBiographies: {
     pageTitle: string;
@@ -1670,6 +1737,73 @@ export const translations: Record<Language, Translations> = {
       quickActionModeration: 'Go to Moderation',
       quickActionUsers: 'Manage Users',
       quickActionBiographies: 'View Biographies',
+      bioPageTitle: 'All Biographies',
+      bioPageSubtitle: 'Browse, search, and manage all biographies in the system',
+      bioSearchPlaceholder: 'Search by title or author…',
+      bioFilterStatus: 'Status',
+      bioFilterType: 'Type',
+      bioFilterSort: 'Sort',
+      bioFilterAll: 'All',
+      bioStatusDraft: 'Draft',
+      bioStatusPublished: 'Published',
+      bioStatusUnderReview: 'Under Review',
+      bioStatusRemoved: 'Removed',
+      bioTypeAll: 'All types',
+      bioTypeAutobiography: 'Autobiography',
+      bioTypeDeceased: 'Deceased',
+      bioSortNewest: 'Newest first',
+      bioSortOldest: 'Oldest first',
+      bioSortRecentlyPublished: 'Recently published',
+      bioColTitle: 'Title',
+      bioColAuthor: 'Author',
+      bioColType: 'Type',
+      bioColStatus: 'Status',
+      bioColCreated: 'Created',
+      bioColPublished: 'Published',
+      bioColActions: 'Actions',
+      bioActionView: 'View',
+      bioNoResults: 'No biographies found.',
+      bioLoadError: 'Failed to load biographies.',
+      bioPrev: 'Previous',
+      bioNext: 'Next',
+      bioPageOf: 'of',
+      bioPanelTitle: 'Biography Details',
+      bioPanelSection1: 'Biography Info',
+      bioPanelSection2: 'Content Preview',
+      bioPanelSection3: 'Admin Actions',
+      bioPanelAuthor: 'Author',
+      bioPanelEmail: 'Email',
+      bioPanelType: 'Type',
+      bioPanelStatus: 'Status',
+      bioPanelPrivacy: 'Privacy',
+      bioPanelCreated: 'Created',
+      bioPanelUpdated: 'Updated',
+      bioPanelShareToken: 'Share token',
+      bioPanelNoContent: 'No content sections found.',
+      bioPanelOpenFull: 'Open full biography',
+      bioPrivatePrivacy: 'Private',
+      bioFamilyPrivacy: 'Family',
+      bioPublicPrivacy: 'Public',
+      bioActionForcePublish: 'Force publish',
+      bioActionSetDraft: 'Set to draft',
+      bioActionRemove: 'Remove biography',
+      bioActionRestore: 'Restore biography',
+      bioActionForcePublishConfirm: 'Force publish this biography?',
+      bioActionForcePublishDetail: 'The biography will be published immediately and the author will be notified.',
+      bioActionSetDraftConfirm: 'Return to draft?',
+      bioActionSetDraftDetail: 'The biography will be returned to draft and the author will be notified.',
+      bioActionRemoveConfirm: 'Remove this biography?',
+      bioActionRemoveDetail: 'The biography will be hidden from all non-staff users. The author will be notified. This action can be reversed.',
+      bioActionRestoreConfirm: 'Restore this biography?',
+      bioActionRestoreDetail: 'The biography will be restored to draft and the author can review and republish it.',
+      bioActionConfirm: 'Confirm',
+      bioActionCancel: 'Cancel',
+      bioNotifyForcePublished: 'Your biography has been published by an administrator.',
+      bioNotifySetDraft: 'Your biography has been returned to draft by an administrator.',
+      bioNotifyRemoved: 'Your biography has been removed by an administrator.',
+      bioNotifyRestored: 'Your biography has been restored. You can review and republish it.',
+      bioActionSuccess: 'Action completed successfully.',
+      bioActionError: 'Failed to complete action.',
     },
     publicBiographies: {
       pageTitle: 'Published Biographies',
@@ -2526,6 +2660,73 @@ export const translations: Record<Language, Translations> = {
       quickActionModeration: 'Vai alla Moderazione',
       quickActionUsers: 'Gestisci Utenti',
       quickActionBiographies: 'Vedi Biografie',
+      bioPageTitle: 'Tutte le Biografie',
+      bioPageSubtitle: 'Sfoglia, cerca e gestisci tutte le biografie nel sistema',
+      bioSearchPlaceholder: 'Cerca per titolo o autore…',
+      bioFilterStatus: 'Stato',
+      bioFilterType: 'Tipo',
+      bioFilterSort: 'Ordina',
+      bioFilterAll: 'Tutti',
+      bioStatusDraft: 'Bozza',
+      bioStatusPublished: 'Pubblicata',
+      bioStatusUnderReview: 'In revisione',
+      bioStatusRemoved: 'Rimossa',
+      bioTypeAll: 'Tutti i tipi',
+      bioTypeAutobiography: 'Autobiografia',
+      bioTypeDeceased: 'Defunto',
+      bioSortNewest: 'Più recenti',
+      bioSortOldest: 'Meno recenti',
+      bioSortRecentlyPublished: 'Pubblicati di recente',
+      bioColTitle: 'Titolo',
+      bioColAuthor: 'Autore',
+      bioColType: 'Tipo',
+      bioColStatus: 'Stato',
+      bioColCreated: 'Creata',
+      bioColPublished: 'Pubblicata',
+      bioColActions: 'Azioni',
+      bioActionView: 'Visualizza',
+      bioNoResults: 'Nessuna biografia trovata.',
+      bioLoadError: 'Impossibile caricare le biografie.',
+      bioPrev: 'Precedente',
+      bioNext: 'Successiva',
+      bioPageOf: 'di',
+      bioPanelTitle: 'Dettagli Biografia',
+      bioPanelSection1: 'Info Biografia',
+      bioPanelSection2: 'Anteprima Contenuto',
+      bioPanelSection3: 'Azioni Admin',
+      bioPanelAuthor: 'Autore',
+      bioPanelEmail: 'Email',
+      bioPanelType: 'Tipo',
+      bioPanelStatus: 'Stato',
+      bioPanelPrivacy: 'Privacy',
+      bioPanelCreated: 'Creata',
+      bioPanelUpdated: 'Aggiornata',
+      bioPanelShareToken: 'Token di condivisione',
+      bioPanelNoContent: 'Nessuna sezione di contenuto trovata.',
+      bioPanelOpenFull: 'Apri biografia completa',
+      bioPrivatePrivacy: 'Privata',
+      bioFamilyPrivacy: 'Famiglia',
+      bioPublicPrivacy: 'Pubblica',
+      bioActionForcePublish: 'Pubblica forzatamente',
+      bioActionSetDraft: 'Imposta come bozza',
+      bioActionRemove: 'Rimuovi biografia',
+      bioActionRestore: 'Ripristina biografia',
+      bioActionForcePublishConfirm: 'Pubblicare forzatamente questa biografia?',
+      bioActionForcePublishDetail: 'La biografia verrà pubblicata immediatamente e l\'autore verrà notificato.',
+      bioActionSetDraftConfirm: 'Tornare alla bozza?',
+      bioActionSetDraftDetail: 'La biografia verrà restituita come bozza e l\'autore verrà notificato.',
+      bioActionRemoveConfirm: 'Rimuovere questa biografia?',
+      bioActionRemoveDetail: 'La biografia sarà nascosta a tutti gli utenti non staff. L\'autore verrà notificato. Questa azione è reversibile.',
+      bioActionRestoreConfirm: 'Ripristinare questa biografia?',
+      bioActionRestoreDetail: 'La biografia verrà ripristinata come bozza e l\'autore potrà rivederla.',
+      bioActionConfirm: 'Conferma',
+      bioActionCancel: 'Annulla',
+      bioNotifyForcePublished: 'La tua biografia è stata pubblicata da un amministratore.',
+      bioNotifySetDraft: 'La tua biografia è stata restituita come bozza da un amministratore.',
+      bioNotifyRemoved: 'La tua biografia è stata rimossa da un amministratore.',
+      bioNotifyRestored: 'La tua biografia è stata ripristinata. Puoi rivederla e ripubblicarla.',
+      bioActionSuccess: 'Azione completata con successo.',
+      bioActionError: 'Impossibile completare l\'azione.',
     },
     publicBiographies: {
       pageTitle: 'Biografie Pubblicate',
@@ -3382,6 +3583,73 @@ export const translations: Record<Language, Translations> = {
       quickActionModeration: 'Aller à la Modération',
       quickActionUsers: 'Gérer les Utilisateurs',
       quickActionBiographies: 'Voir les Biographies',
+      bioPageTitle: 'Toutes les Biographies',
+      bioPageSubtitle: 'Parcourez, recherchez et gérez toutes les biographies du système',
+      bioSearchPlaceholder: 'Rechercher par titre ou auteur…',
+      bioFilterStatus: 'Statut',
+      bioFilterType: 'Type',
+      bioFilterSort: 'Trier',
+      bioFilterAll: 'Tous',
+      bioStatusDraft: 'Brouillon',
+      bioStatusPublished: 'Publiée',
+      bioStatusUnderReview: 'En révision',
+      bioStatusRemoved: 'Supprimée',
+      bioTypeAll: 'Tous les types',
+      bioTypeAutobiography: 'Autobiographie',
+      bioTypeDeceased: 'Défunt',
+      bioSortNewest: 'Plus récentes',
+      bioSortOldest: 'Plus anciennes',
+      bioSortRecentlyPublished: 'Récemment publiées',
+      bioColTitle: 'Titre',
+      bioColAuthor: 'Auteur',
+      bioColType: 'Type',
+      bioColStatus: 'Statut',
+      bioColCreated: 'Créée',
+      bioColPublished: 'Publiée',
+      bioColActions: 'Actions',
+      bioActionView: 'Voir',
+      bioNoResults: 'Aucune biographie trouvée.',
+      bioLoadError: 'Impossible de charger les biographies.',
+      bioPrev: 'Précédent',
+      bioNext: 'Suivant',
+      bioPageOf: 'sur',
+      bioPanelTitle: 'Détails de la Biographie',
+      bioPanelSection1: 'Infos Biographie',
+      bioPanelSection2: 'Aperçu du Contenu',
+      bioPanelSection3: 'Actions Admin',
+      bioPanelAuthor: 'Auteur',
+      bioPanelEmail: 'Email',
+      bioPanelType: 'Type',
+      bioPanelStatus: 'Statut',
+      bioPanelPrivacy: 'Confidentialité',
+      bioPanelCreated: 'Créée',
+      bioPanelUpdated: 'Mise à jour',
+      bioPanelShareToken: 'Jeton de partage',
+      bioPanelNoContent: 'Aucune section de contenu trouvée.',
+      bioPanelOpenFull: 'Ouvrir la biographie complète',
+      bioPrivatePrivacy: 'Privée',
+      bioFamilyPrivacy: 'Famille',
+      bioPublicPrivacy: 'Publique',
+      bioActionForcePublish: 'Forcer la publication',
+      bioActionSetDraft: 'Remettre en brouillon',
+      bioActionRemove: 'Supprimer la biographie',
+      bioActionRestore: 'Restaurer la biographie',
+      bioActionForcePublishConfirm: 'Forcer la publication de cette biographie ?',
+      bioActionForcePublishDetail: 'La biographie sera publiée immédiatement et l\'auteur sera notifié.',
+      bioActionSetDraftConfirm: 'Remettre en brouillon ?',
+      bioActionSetDraftDetail: 'La biographie sera remise en brouillon et l\'auteur sera notifié.',
+      bioActionRemoveConfirm: 'Supprimer cette biographie ?',
+      bioActionRemoveDetail: 'La biographie sera masquée pour tous les utilisateurs non-staff. L\'auteur sera notifié. Cette action est réversible.',
+      bioActionRestoreConfirm: 'Restaurer cette biographie ?',
+      bioActionRestoreDetail: 'La biographie sera restaurée en brouillon et l\'auteur pourra la réviser.',
+      bioActionConfirm: 'Confirmer',
+      bioActionCancel: 'Annuler',
+      bioNotifyForcePublished: 'Votre biographie a été publiée par un administrateur.',
+      bioNotifySetDraft: 'Votre biographie a été remise en brouillon par un administrateur.',
+      bioNotifyRemoved: 'Votre biographie a été supprimée par un administrateur.',
+      bioNotifyRestored: 'Votre biographie a été restaurée. Vous pouvez la réviser et la republier.',
+      bioActionSuccess: 'Action effectuée avec succès.',
+      bioActionError: 'Impossible d\'effectuer l\'action.',
     },
     publicBiographies: {
       pageTitle: 'Biographies Publiées',
@@ -4238,6 +4506,73 @@ export const translations: Record<Language, Translations> = {
       quickActionModeration: 'Zur Moderation',
       quickActionUsers: 'Benutzer verwalten',
       quickActionBiographies: 'Biografien ansehen',
+      bioPageTitle: 'Alle Biografien',
+      bioPageSubtitle: 'Alle Biografien im System durchsuchen, filtern und verwalten',
+      bioSearchPlaceholder: 'Nach Titel oder Autor suchen…',
+      bioFilterStatus: 'Status',
+      bioFilterType: 'Typ',
+      bioFilterSort: 'Sortieren',
+      bioFilterAll: 'Alle',
+      bioStatusDraft: 'Entwurf',
+      bioStatusPublished: 'Veröffentlicht',
+      bioStatusUnderReview: 'In Prüfung',
+      bioStatusRemoved: 'Entfernt',
+      bioTypeAll: 'Alle Typen',
+      bioTypeAutobiography: 'Autobiografie',
+      bioTypeDeceased: 'Verstorben',
+      bioSortNewest: 'Neueste zuerst',
+      bioSortOldest: 'Älteste zuerst',
+      bioSortRecentlyPublished: 'Zuletzt veröffentlicht',
+      bioColTitle: 'Titel',
+      bioColAuthor: 'Autor',
+      bioColType: 'Typ',
+      bioColStatus: 'Status',
+      bioColCreated: 'Erstellt',
+      bioColPublished: 'Veröffentlicht',
+      bioColActions: 'Aktionen',
+      bioActionView: 'Ansehen',
+      bioNoResults: 'Keine Biografien gefunden.',
+      bioLoadError: 'Biografien konnten nicht geladen werden.',
+      bioPrev: 'Zurück',
+      bioNext: 'Weiter',
+      bioPageOf: 'von',
+      bioPanelTitle: 'Biografiedetails',
+      bioPanelSection1: 'Biografieinfo',
+      bioPanelSection2: 'Inhaltsvorschau',
+      bioPanelSection3: 'Admin-Aktionen',
+      bioPanelAuthor: 'Autor',
+      bioPanelEmail: 'E-Mail',
+      bioPanelType: 'Typ',
+      bioPanelStatus: 'Status',
+      bioPanelPrivacy: 'Datenschutz',
+      bioPanelCreated: 'Erstellt',
+      bioPanelUpdated: 'Aktualisiert',
+      bioPanelShareToken: 'Freigabe-Token',
+      bioPanelNoContent: 'Keine Inhaltsabschnitte gefunden.',
+      bioPanelOpenFull: 'Vollständige Biografie öffnen',
+      bioPrivatePrivacy: 'Privat',
+      bioFamilyPrivacy: 'Familie',
+      bioPublicPrivacy: 'Öffentlich',
+      bioActionForcePublish: 'Erzwungen veröffentlichen',
+      bioActionSetDraft: 'Als Entwurf setzen',
+      bioActionRemove: 'Biografie entfernen',
+      bioActionRestore: 'Biografie wiederherstellen',
+      bioActionForcePublishConfirm: 'Diese Biografie erzwungen veröffentlichen?',
+      bioActionForcePublishDetail: 'Die Biografie wird sofort veröffentlicht und der Autor wird benachrichtigt.',
+      bioActionSetDraftConfirm: 'Als Entwurf zurücksetzen?',
+      bioActionSetDraftDetail: 'Die Biografie wird als Entwurf zurückgesetzt und der Autor wird benachrichtigt.',
+      bioActionRemoveConfirm: 'Diese Biografie entfernen?',
+      bioActionRemoveDetail: 'Die Biografie wird für alle Nicht-Staff-Benutzer ausgeblendet. Der Autor wird benachrichtigt. Diese Aktion ist reversibel.',
+      bioActionRestoreConfirm: 'Diese Biografie wiederherstellen?',
+      bioActionRestoreDetail: 'Die Biografie wird als Entwurf wiederhergestellt und der Autor kann sie überprüfen.',
+      bioActionConfirm: 'Bestätigen',
+      bioActionCancel: 'Abbrechen',
+      bioNotifyForcePublished: 'Ihre Biografie wurde von einem Administrator veröffentlicht.',
+      bioNotifySetDraft: 'Ihre Biografie wurde von einem Administrator als Entwurf zurückgesetzt.',
+      bioNotifyRemoved: 'Ihre Biografie wurde von einem Administrator entfernt.',
+      bioNotifyRestored: 'Ihre Biografie wurde wiederhergestellt. Sie können sie überprüfen und erneut veröffentlichen.',
+      bioActionSuccess: 'Aktion erfolgreich abgeschlossen.',
+      bioActionError: 'Aktion konnte nicht abgeschlossen werden.',
     },
     publicBiographies: {
       pageTitle: 'Veröffentlichte Biografien',
