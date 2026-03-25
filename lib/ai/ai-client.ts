@@ -49,9 +49,19 @@ export async function callAI(body: Record<string, unknown>): Promise<any> {
     const { data: refreshed, error: refreshError } = await supabase.auth.refreshSession();
     console.debug('[AI-CLIENT] refreshSession after 401 - error:', refreshError?.message ?? 'none', 'has token:', !!refreshed?.session?.access_token);
     if (refreshError || !refreshed.session?.access_token) {
-      throw new Error('SESSION_EXPIRED');
+      const { data: { session: currentSession } } = await supabase.auth.getSession();
+      if (
+        currentSession?.access_token &&
+        currentSession.expires_at &&
+        currentSession.expires_at > Math.floor(Date.now() / 1000)
+      ) {
+        token = currentSession.access_token;
+      } else {
+        throw new Error('SESSION_EXPIRED');
+      }
+    } else {
+      token = refreshed.session.access_token;
     }
-    token = refreshed.session.access_token;
     console.debug('[AI-CLIENT] retry token prefix:', token.slice(0, 20));
     res = await doFetch(token, body);
     console.debug('[AI-CLIENT] HTTP status after 401 retry:', res.status);
