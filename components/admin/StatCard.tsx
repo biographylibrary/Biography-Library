@@ -12,10 +12,10 @@ interface StatCardProps {
 }
 
 const accentMap = {
-  sky: 'bg-sky-50 dark:bg-sky-950/30 text-sky-600 dark:text-sky-400',
-  emerald: 'bg-emerald-50 dark:bg-emerald-950/30 text-emerald-600 dark:text-emerald-400',
+  sky: 'bg-[#C4DAEB] text-[#121212] dark:bg-[#C4DAEB]/20 dark:text-[#C4DAEB]',
+  emerald: 'bg-[#C8DFBE] text-[#121212] dark:bg-[#C8DFBE]/20 dark:text-[#C8DFBE]',
   amber: 'bg-[#EDE4B9] dark:bg-[#EDE4B9]/20 text-[#121212] dark:text-[#EDE4B9]',
-  red: 'bg-red-50 dark:bg-red-950/30 text-red-600 dark:text-red-400',
+  red: 'bg-[#6D323E] text-white dark:bg-[#6D323E] dark:text-white',
   neutral: 'bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400',
 };
 

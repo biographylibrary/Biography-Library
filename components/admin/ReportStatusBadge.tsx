@@ -9,9 +9,9 @@ interface ReportStatusBadgeProps {
 
 const STATUS_STYLES: Record<ReportStatus, string> = {
   unassigned: 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-300',
-  assigned: 'bg-sky-100 text-sky-700 dark:bg-sky-950/50 dark:text-sky-300',
-  in_review: 'bg-blue-100 text-blue-700 dark:bg-blue-950/50 dark:text-blue-300',
-  decided: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300',
+  assigned: 'bg-[#C4DAEB] text-[#121212] dark:bg-[#C4DAEB]/20 dark:text-[#C4DAEB]',
+  in_review: 'bg-[#C4DAEB] text-[#121212] dark:bg-[#C4DAEB]/20 dark:text-[#C4DAEB]',
+  decided: 'bg-[#C8DFBE] text-[#121212] dark:bg-[#C8DFBE]/20 dark:text-[#C8DFBE]',
 };
 
 function getStatusLabel(status: ReportStatus, t: ReturnType<typeof useTranslation>['t']): string {

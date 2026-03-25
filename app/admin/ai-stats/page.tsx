@@ -230,8 +230,8 @@ function AiStatsContent() {
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
         <div className="flex items-start justify-between gap-4 mb-8 flex-wrap">
           <div className="flex items-center gap-3">
-            <div className="p-2.5 rounded-xl bg-sky-50 dark:bg-sky-950/30 shrink-0">
-              <BrainCircuit className="h-5 w-5 text-sky-600 dark:text-sky-400" />
+            <div className="p-2.5 rounded-xl bg-[#C4DAEB] dark:bg-[#C4DAEB]/20 shrink-0">
+              <BrainCircuit className="h-5 w-5 text-[#121212] dark:text-[#FDFBF7]" />
             </div>
             <div>
               <h1 className="text-2xl font-serif font-semibold tracking-tight text-foreground">

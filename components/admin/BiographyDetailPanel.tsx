@@ -61,9 +61,9 @@ function StatusBadge({ status }: { status: string }) {
   const { t } = useTranslation();
   const map: Record<string, { label: string; className: string }> = {
     draft: { label: t.admin.bioStatusDraft, className: 'bg-neutral-100 text-neutral-700 border-neutral-200 dark:bg-neutral-800 dark:text-neutral-300 dark:border-neutral-700' },
-    published: { label: t.admin.bioStatusPublished, className: 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/30 dark:text-emerald-300 dark:border-emerald-800' },
+    published: { label: t.admin.bioStatusPublished, className: 'bg-[#C8DFBE] text-[#121212] border-emerald-200 dark:bg-[#C8DFBE]/20 dark:text-[#C8DFBE] dark:border-emerald-800' },
     under_review: { label: t.admin.bioStatusUnderReview, className: 'bg-[#EDE4B9] text-[#121212] border-amber-200 dark:bg-[#EDE4B9]/20 dark:text-[#EDE4B9] dark:border-amber-800' },
-    removed: { label: t.admin.bioStatusRemoved, className: 'bg-red-50 text-red-700 border-red-200 dark:bg-red-950/30 dark:text-red-300 dark:border-red-800' },
+    removed: { label: t.admin.bioStatusRemoved, className: 'bg-[#6D323E] text-white border-red-200 dark:bg-[#6D323E] dark:text-white dark:border-red-800' },
   };
   const cfg = map[status] ?? map['draft'];
   return (
@@ -77,8 +77,8 @@ function PrivacyBadge({ privacy }: { privacy: string }) {
   const { t } = useTranslation();
   const map: Record<string, { label: string; className: string }> = {
     private: { label: t.admin.bioPrivatePrivacy, className: 'bg-neutral-100 text-neutral-600 border-neutral-200 dark:bg-neutral-800 dark:text-neutral-400' },
-    family: { label: t.admin.bioFamilyPrivacy, className: 'bg-sky-50 text-sky-700 border-sky-200 dark:bg-sky-950/30 dark:text-sky-300' },
-    public: { label: t.admin.bioPublicPrivacy, className: 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/30 dark:text-emerald-300' },
+    family: { label: t.admin.bioFamilyPrivacy, className: 'bg-[#C4DAEB] text-[#121212] border-sky-200 dark:bg-[#C4DAEB]/20 dark:text-[#C4DAEB]' },
+    public: { label: t.admin.bioPublicPrivacy, className: 'bg-[#C8DFBE] text-[#121212] border-emerald-200 dark:bg-[#C8DFBE]/20 dark:text-[#C8DFBE]' },
   };
   const cfg = map[privacy] ?? map['private'];
   return (
@@ -269,7 +269,7 @@ export function BiographyDetailPanel({ biography, onClose, onRefresh }: Biograph
                     <div className="flex items-center gap-2 flex-wrap">
                       <StatusBadge status={biography.status} />
                       {biography.is_frozen && (
-                        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold border bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/30 dark:text-blue-300 dark:border-blue-800">
+                        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold border bg-[#C4DAEB] text-[#121212] border-blue-200 dark:bg-[#C4DAEB]/20 dark:text-[#C4DAEB] dark:border-blue-800">
                           <Snowflake className="h-3 w-3" />
                           {t.admin.bioStatusFrozen}
                         </span>

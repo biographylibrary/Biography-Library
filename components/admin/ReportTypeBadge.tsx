@@ -8,9 +8,9 @@ interface ReportTypeBadgeProps {
 }
 
 const TYPE_STYLES: Record<string, string> = {
-  level1_content: 'bg-red-100 text-red-700 dark:bg-red-950/50 dark:text-red-300',
+  level1_content: 'bg-[#6D323E] text-white dark:bg-[#6D323E] dark:text-white',
   level2_content: 'bg-[#EDE4B9] text-[#121212] dark:bg-[#EDE4B9]/20 dark:text-[#EDE4B9]',
-  level3_content: 'bg-blue-100 text-blue-700 dark:bg-blue-950/50 dark:text-blue-300',
+  level3_content: 'bg-[#C4DAEB] text-[#121212] dark:bg-[#C4DAEB]/20 dark:text-[#C4DAEB]',
   user_report: 'bg-[#EDE4B9] text-[#121212] dark:bg-[#EDE4B9]/20 dark:text-[#EDE4B9]',
   living_person: 'bg-[#EDE4B9] text-[#121212] dark:bg-[#EDE4B9]/20 dark:text-[#EDE4B9]',
   right_to_oblivion: 'bg-[#EDE4B9] text-[#121212] dark:bg-[#EDE4B9]/20 dark:text-[#EDE4B9]',

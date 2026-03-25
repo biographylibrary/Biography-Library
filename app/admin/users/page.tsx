@@ -61,11 +61,11 @@ function getRoleBadge(role: UserRole, label: string) {
   const base = 'text-xs font-semibold px-2 py-0.5 rounded-full border';
   switch (role) {
     case 'super_admin':
-      return <span className={`${base} bg-red-50 text-red-700 border-red-200 dark:bg-red-950/30 dark:text-red-300 dark:border-red-800`}>{label}</span>;
+      return <span className={`${base} bg-[#6D323E] text-white border-red-200 dark:bg-[#6D323E] dark:text-white dark:border-red-800`}>{label}</span>;
     case 'admin':
       return <span className={`${base} bg-[#EDE4B9] text-[#121212] border-amber-200 dark:bg-[#EDE4B9]/20 dark:text-[#EDE4B9] dark:border-amber-800`}>{label}</span>;
     case 'reviewer':
-      return <span className={`${base} bg-sky-50 text-sky-700 border-sky-200 dark:bg-sky-950/30 dark:text-sky-300 dark:border-sky-800`}>{label}</span>;
+      return <span className={`${base} bg-[#C4DAEB] text-[#121212] border-sky-200 dark:bg-[#C4DAEB]/20 dark:text-[#C4DAEB] dark:border-sky-800`}>{label}</span>;
     default:
       return <span className={`${base} bg-neutral-100 text-neutral-600 border-neutral-200 dark:bg-neutral-800 dark:text-neutral-300 dark:border-neutral-700`}>{label}</span>;
   }
@@ -276,8 +276,8 @@ export default function AdminUsersPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
 
           <div className="flex items-center gap-3 mb-2">
-            <div className="p-2.5 rounded-xl bg-sky-50 dark:bg-sky-950/30 shrink-0">
-              <Users className="h-5 w-5 text-sky-600 dark:text-sky-400" />
+            <div className="p-2.5 rounded-xl bg-[#C4DAEB] dark:bg-[#C4DAEB]/20 shrink-0">
+              <Users className="h-5 w-5 text-[#121212] dark:text-[#FDFBF7]" />
             </div>
             <div>
               <h1 className="text-2xl font-serif font-semibold tracking-tight text-foreground">
