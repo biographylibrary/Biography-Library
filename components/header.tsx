@@ -21,6 +21,7 @@ import Link from 'next/link';
 import { useRouter, usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import { useEffect, useState } from 'react';
+import { supabase } from '@/lib/supabase';
 
 export function Header() {
   const { user, role, signOut, fontSize, setFontSize } = useAuth();
@@ -29,10 +30,40 @@ export function Header() {
   const { t } = useTranslation();
   const { resolvedTheme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
+  const [unreadCount, setUnreadCount] = useState(0);
 
   useEffect(() => {
     setMounted(true);
   }, []);
+
+  useEffect(() => {
+    if (!user) {
+      setUnreadCount(0);
+      return;
+    }
+
+    const fetchUnreadCount = async () => {
+      const { count } = await supabase
+        .from('user_notifications')
+        .select('id', { count: 'exact', head: true })
+        .eq('user_id', user.id)
+        .eq('is_read', false);
+      setUnreadCount(count ?? 0);
+    };
+
+    fetchUnreadCount();
+
+    const channel = supabase
+      .channel(`notifications-header-${user.id}`)
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'user_notifications', filter: `user_id=eq.${user.id}` },
+        () => { fetchUnreadCount(); }
+      )
+      .subscribe();
+
+    return () => { supabase.removeChannel(channel); };
+  }, [user]);
 
   const handleSignOut = async () => {
     await signOut();
@@ -112,11 +143,16 @@ export function Header() {
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="h-9 w-9 rounded-full p-0 hover:opacity-80"
+                  className="h-9 w-9 rounded-full p-0 hover:opacity-80 relative"
                 >
                   <span className="flex items-center justify-center h-8 w-8 rounded-full bg-foreground text-background text-xs font-semibold select-none">
                     {initials}
                   </span>
+                  {unreadCount > 0 && (
+                    <span className="absolute -top-0.5 -right-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold text-white leading-none">
+                      {unreadCount > 99 ? '99+' : unreadCount}
+                    </span>
+                  )}
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-64">
@@ -155,8 +191,18 @@ export function Header() {
 
                 <DropdownMenuItem asChild>
                   <Link href="/notifications" className="flex items-center gap-2 cursor-pointer">
-                    <Bell className="h-4 w-4" />
+                    <div className="relative">
+                      <Bell className="h-4 w-4" />
+                      {unreadCount > 0 && (
+                        <span className="absolute -top-1 -right-1 flex h-3 min-w-3 items-center justify-center rounded-full bg-red-500 px-0.5 text-[9px] font-bold text-white leading-none">
+                          {unreadCount > 9 ? '9+' : unreadCount}
+                        </span>
+                      )}
+                    </div>
                     <span>{t.nav.notifications}</span>
+                    {unreadCount > 0 && (
+                      <span className="ml-auto text-xs font-semibold text-red-500">{unreadCount}</span>
+                    )}
                   </Link>
                 </DropdownMenuItem>
 

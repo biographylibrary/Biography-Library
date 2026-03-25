@@ -1,6 +1,6 @@
 'use client';
 
-import { BookOpen, Lock, Users, Globe, Trash2, PenLine } from 'lucide-react';
+import { BookOpen, Lock, Users, Globe, Trash2, PenLine, Clock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useTranslation } from '@/lib/i18n/i18n-context';
 import { cn } from '@/lib/utils';
@@ -25,10 +25,12 @@ export function BiographyCard({ biography, onEdit, onDelete }: BiographyCardProp
     draft: { label: t.dashboard.draft, className: 'text-amber-600 bg-amber-500/10' },
     completed: { label: t.dashboard.completed, className: 'text-emerald-600 bg-emerald-500/10' },
     sections_complete: { label: 'Sections Complete', className: 'text-blue-600 bg-blue-500/10' },
-    final_version: { label: 'Final Version', className: 'text-purple-600 bg-purple-500/10' },
-    published: { label: 'Published', className: 'text-green-600 bg-green-500/10' },
+    final_version: { label: 'Final Version', className: 'text-sky-600 bg-sky-500/10' },
+    published: { label: t.dashboard.statusPublished, className: 'text-green-600 bg-green-500/10' },
+    under_review: { label: t.dashboard.statusUnderReview, className: 'text-orange-600 bg-orange-500/10' },
   };
 
+  const isUnderReview = biography.status === 'under_review';
   const privacy = privacyConfig[biography.privacy] || privacyConfig.private;
   const status = statusConfig[biography.status || 'draft'] || statusConfig.draft;
   const PrivacyIcon = privacy.icon;
@@ -41,7 +43,12 @@ export function BiographyCard({ biography, onEdit, onDelete }: BiographyCardProp
   });
 
   return (
-    <div className="group relative rounded-xl border border-border/50 bg-card hover:bg-card/80 hover:border-border transition-all duration-200">
+    <div className={cn(
+      'group relative rounded-xl border bg-card hover:bg-card/80 transition-all duration-200',
+      isUnderReview
+        ? 'border-orange-300/60 dark:border-orange-700/40'
+        : 'border-border/50 hover:border-border'
+    )}>
       <div className="p-5">
         <div className="flex items-start justify-between mb-3">
           <div className="flex items-center gap-2">
@@ -72,10 +79,17 @@ export function BiographyCard({ biography, onEdit, onDelete }: BiographyCardProp
             <PrivacyIcon className="h-3 w-3" />
             {privacy.label}
           </span>
-          <span className={cn('text-xs px-2 py-0.5 rounded-full font-medium', status.className)}>
+          <span className={cn('inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full font-medium', status.className)}>
+            {isUnderReview && <Clock className="h-3 w-3" />}
             {status.label}
           </span>
         </div>
+
+        {isUnderReview && (
+          <p className="text-xs text-orange-600/80 dark:text-orange-400/80 mb-4 leading-relaxed">
+            {t.dashboard.underReviewMessage}
+          </p>
+        )}
 
         <Button
           variant="outline"

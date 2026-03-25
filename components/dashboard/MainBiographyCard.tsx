@@ -146,6 +146,8 @@ export function MainBiographyCard({ biography, userName, userId, onDeleteClick, 
         };
       case 'published':
         return { text: t.dashboard.statusPublished, className: 'bg-[#D3F1FF] text-[#121212]' };
+      case 'under_review':
+        return { text: t.dashboard.statusUnderReview, className: 'bg-[#FFE4C0] text-[#7C3A00]' };
       case 'draft_1':
         return { text: t.dashboard.statusDraft1, className: 'bg-[#FBDEC1] text-[#121212]' };
       case 'draft_2':
@@ -299,11 +301,18 @@ export function MainBiographyCard({ biography, userName, userId, onDeleteClick, 
           </div>
 
           <div className="space-y-3 pl-4 sm:pl-7">
-            <div className="flex items-center gap-2">
-              <span className="text-sm text-muted-foreground w-20 sm:w-24 shrink-0">{t.dashboard.status}:</span>
-              <Badge className={getStatusBadgeConfig(biography.status).className}>
-                {getStatusBadgeConfig(biography.status).text}
-              </Badge>
+            <div className="space-y-1.5">
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-muted-foreground w-20 sm:w-24 shrink-0">{t.dashboard.status}:</span>
+                <Badge className={getStatusBadgeConfig(biography.status).className}>
+                  {getStatusBadgeConfig(biography.status).text}
+                </Badge>
+              </div>
+              {biography.status === 'under_review' && (
+                <p className="text-xs text-orange-600/80 dark:text-orange-400/80 leading-relaxed pl-[calc(5rem+0.5rem)] sm:pl-[calc(6rem+0.5rem)]">
+                  {t.dashboard.underReviewMessage}
+                </p>
+              )}
             </div>
 
             <div className="flex items-center gap-2">

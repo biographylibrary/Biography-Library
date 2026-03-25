@@ -99,7 +99,7 @@ export default function BiographyEditorPage() {
   const [showFinalReview, setShowFinalReview] = useState(false);
   const [finalVersion, setFinalVersion] = useState<string>('');
   const [narrativeOrder, setNarrativeOrder] = useState<string[]>([]);
-  const [biographyStatus, setBiographyStatus] = useState<'draft' | 'sections_complete' | 'final_version' | 'published'>('draft');
+  const [biographyStatus, setBiographyStatus] = useState<'draft' | 'sections_complete' | 'final_version' | 'published' | 'under_review'>('draft');
   const [isLocked, setIsLocked] = useState(false);
   const [showPublishDialog, setShowPublishDialog] = useState(false);
   const [aiLimitError, setAiLimitError] = useState<AiLimitError | null>(null);

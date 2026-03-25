@@ -120,6 +120,8 @@ export interface Translations {
     statusDraft3: string;
     statusApproved: string;
     statusPublished: string;
+    statusUnderReview: string;
+    underReviewMessage: string;
     untitledBiography: string;
     goToWorkspace: string;
     continueLastSection: string;
@@ -721,6 +723,13 @@ export interface Translations {
   meta: {
     tagline: string;
   };
+  notifications: {
+    title: string;
+    empty: string;
+    markAllRead: string;
+    markAsRead: string;
+    justNow: string;
+  };
 }
 
 export const translations: Record<Language, Translations> = {
@@ -844,6 +853,8 @@ export const translations: Record<Language, Translations> = {
       statusDraft3: 'Draft 3',
       statusApproved: 'Approved',
       statusPublished: 'Published',
+      statusUnderReview: 'Under review',
+      underReviewMessage: 'Our team is reviewing your biography. You will be notified of the outcome.',
       untitledBiography: 'Untitled Biography',
       goToWorkspace: 'Go to Workspace',
       continueLastSection: 'Continue Last Section',
@@ -1445,6 +1456,13 @@ export const translations: Record<Language, Translations> = {
     meta: {
       tagline: 'Because every life deserves to be remembered',
     },
+    notifications: {
+      title: 'Notifications',
+      empty: 'You have no notifications right now. Check back later.',
+      markAllRead: 'Mark all as read',
+      markAsRead: 'Mark as read',
+      justNow: 'Just now',
+    },
   },
   it: {
     common: {
@@ -1566,6 +1584,8 @@ export const translations: Record<Language, Translations> = {
       statusDraft3: 'Bozza 3',
       statusApproved: 'Approvata',
       statusPublished: 'Pubblicata',
+      statusUnderReview: 'In revisione',
+      underReviewMessage: 'Il nostro team sta esaminando la tua biografia. Sarai informato dell\'esito.',
       untitledBiography: 'Biografia senza titolo',
       goToWorkspace: 'Vai al Workspace',
       continueLastSection: 'Continua Ultima Sezione',
@@ -2167,6 +2187,13 @@ export const translations: Record<Language, Translations> = {
     meta: {
       tagline: 'Perché ogni vita merita di essere ricordata',
     },
+    notifications: {
+      title: 'Notifiche',
+      empty: 'Non hai notifiche al momento. Controlla più tardi.',
+      markAllRead: 'Segna tutto come letto',
+      markAsRead: 'Segna come letto',
+      justNow: 'Adesso',
+    },
   },
   fr: {
     common: {
@@ -2288,6 +2315,8 @@ export const translations: Record<Language, Translations> = {
       statusDraft3: 'Brouillon 3',
       statusApproved: 'Approuvé',
       statusPublished: 'Publié',
+      statusUnderReview: 'En cours d\'examen',
+      underReviewMessage: 'Notre équipe examine votre biographie. Vous serez informé du résultat.',
       untitledBiography: 'Biographie sans titre',
       goToWorkspace: 'Aller à l\'Espace',
       continueLastSection: 'Continuer Dernière Section',
@@ -2889,6 +2918,13 @@ export const translations: Record<Language, Translations> = {
     meta: {
       tagline: 'Parce que chaque vie mérite d\'être rappelée',
     },
+    notifications: {
+      title: 'Notifications',
+      empty: 'Vous n\'avez aucune notification pour le moment. Revenez plus tard.',
+      markAllRead: 'Tout marquer comme lu',
+      markAsRead: 'Marquer comme lu',
+      justNow: 'À l\'instant',
+    },
   },
   de: {
     common: {
@@ -3010,6 +3046,8 @@ export const translations: Record<Language, Translations> = {
       statusDraft3: 'Entwurf 3',
       statusApproved: 'Genehmigt',
       statusPublished: 'Veröffentlicht',
+      statusUnderReview: 'In Prüfung',
+      underReviewMessage: 'Unser Team prüft Ihre Biografie. Sie werden über das Ergebnis informiert.',
       untitledBiography: 'Biografie ohne Titel',
       goToWorkspace: 'Zum Workspace',
       continueLastSection: 'Letzte Sektion Fortsetzen',
@@ -3610,6 +3648,13 @@ export const translations: Record<Language, Translations> = {
     },
     meta: {
       tagline: 'Denn jedes Leben verdient es, in Erinnerung zu bleiben',
+    },
+    notifications: {
+      title: 'Benachrichtigungen',
+      empty: 'Sie haben zurzeit keine Benachrichtigungen. Schauen Sie später wieder vorbei.',
+      markAllRead: 'Alle als gelesen markieren',
+      markAsRead: 'Als gelesen markieren',
+      justNow: 'Gerade eben',
     },
   },
 };
