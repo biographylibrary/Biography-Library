@@ -36,15 +36,23 @@ export function useModerationReports(filters: ModerationFilters): UseModerationR
             report_type,
             description,
             status,
+            assigned_to,
+            assigned_moderator_id,
+            assigned_at,
             ai_analysis,
             ai_violation_level,
             decision,
             decision_reason,
+            moderator_notes,
+            decided_by,
+            decided_at,
             created_at,
             updated_at,
             biographies (
               title,
-              profiles ( name )
+              status,
+              user_id,
+              profiles ( id, name )
             )
           `);
 
@@ -71,17 +79,26 @@ export function useModerationReports(filters: ModerationFilters): UseModerationR
           id: row.id,
           biography_id: row.biography_id,
           reporter_id: row.reporter_id,
+          reporter_email: null,
           report_type: row.report_type,
           description: row.description,
           status: row.status,
+          assigned_to: row.assigned_to,
+          assigned_moderator_id: row.assigned_moderator_id,
+          assigned_at: row.assigned_at,
           ai_analysis: row.ai_analysis ?? {},
           ai_violation_level: row.ai_violation_level,
           decision: row.decision,
           decision_reason: row.decision_reason,
+          moderator_notes: row.moderator_notes,
+          decided_by: row.decided_by,
+          decided_at: row.decided_at,
           created_at: row.created_at,
           updated_at: row.updated_at,
           biography_title: row.biographies?.title ?? null,
           biography_author: row.biographies?.profiles?.name ?? null,
+          biography_author_id: row.biographies?.user_id ?? null,
+          biography_status: row.biographies?.status ?? null,
         }));
 
         setReports(mapped);

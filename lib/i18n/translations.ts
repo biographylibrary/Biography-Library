@@ -715,6 +715,49 @@ export interface Translations {
     unknownBiography: string;
     unknownAuthor: string;
     aiNoSummary: string;
+    panelBiographyInfo: string;
+    panelReportInfo: string;
+    panelActions: string;
+    panelInternalNotes: string;
+    viewBiography: string;
+    biographyStatus: string;
+    aiViolationLevel: string;
+    aiSummaryFull: string;
+    flaggedPassages: string;
+    flaggedPassageReason: string;
+    flaggedPassageLevel: string;
+    reporterEmail: string;
+    reporterReason: string;
+    reporterDetails: string;
+    noFlaggedPassages: string;
+    takeOwnership: string;
+    takingOwnership: string;
+    approveAndPublish: string;
+    publishWithWarning: string;
+    returnToAuthor: string;
+    removeBiography: string;
+    messageToAuthor: string;
+    messageToAuthorPlaceholder: string;
+    confirmApprove: string;
+    confirmApproveDetail: string;
+    confirmPublishWarning: string;
+    confirmPublishWarningDetail: string;
+    confirmReturn: string;
+    confirmReturnDetail: string;
+    confirmRemove: string;
+    confirmRemoveDetail: string;
+    confirmAction: string;
+    cancelAction: string;
+    internalNotesPlaceholder: string;
+    saveNotes: string;
+    savingNotes: string;
+    notesSaved: string;
+    notifyPublished: string;
+    notifyPublishedWarning: string;
+    notifyReturned: string;
+    notifyRemoved: string;
+    assignedToYou: string;
+    assignedToOther: string;
   };
   publicBiographies: {
     pageTitle: string;
@@ -1476,6 +1519,49 @@ export const translations: Record<Language, Translations> = {
       unknownBiography: 'Untitled biography',
       unknownAuthor: 'Unknown author',
       aiNoSummary: 'No summary available',
+      panelBiographyInfo: 'Biography',
+      panelReportInfo: 'Report Details',
+      panelActions: 'Moderator Actions',
+      panelInternalNotes: 'Internal Notes',
+      viewBiography: 'View biography',
+      biographyStatus: 'Status',
+      aiViolationLevel: 'AI Violation Level',
+      aiSummaryFull: 'AI Analysis Summary',
+      flaggedPassages: 'Flagged Passages',
+      flaggedPassageReason: 'Reason',
+      flaggedPassageLevel: 'Level',
+      reporterEmail: 'Reported by',
+      reporterReason: 'Reason category',
+      reporterDetails: 'Details',
+      noFlaggedPassages: 'No flagged passages.',
+      takeOwnership: 'Take ownership',
+      takingOwnership: 'Taking ownership…',
+      approveAndPublish: 'Approve & publish',
+      publishWithWarning: 'Publish with warning',
+      returnToAuthor: 'Return to author',
+      removeBiography: 'Remove biography',
+      messageToAuthor: 'Message to author',
+      messageToAuthorPlaceholder: 'Explain what needs to be corrected…',
+      confirmApprove: 'Approve and publish?',
+      confirmApproveDetail: 'The biography will be published and the author notified.',
+      confirmPublishWarning: 'Publish with warning?',
+      confirmPublishWarningDetail: 'The biography will be published but the author will receive a content guidelines reminder.',
+      confirmReturn: 'Return to author?',
+      confirmReturnDetail: 'The biography will be returned to draft and the author will receive your message.',
+      confirmRemove: 'Remove biography?',
+      confirmRemoveDetail: 'This will permanently remove the biography. The author will be notified. This action cannot be undone.',
+      confirmAction: 'Confirm',
+      cancelAction: 'Cancel',
+      internalNotesPlaceholder: 'Add internal notes (not visible to users)…',
+      saveNotes: 'Save notes',
+      savingNotes: 'Saving…',
+      notesSaved: 'Notes saved',
+      notifyPublished: 'Your biography has been reviewed and published.',
+      notifyPublishedWarning: 'Your biography has been published. Please review our content guidelines for future reference.',
+      notifyReturned: 'Your biography has been returned for revision.',
+      notifyRemoved: 'Your biography has been removed for violating our content guidelines.',
+      assignedToYou: 'Assigned to you',
+      assignedToOther: 'Assigned to another reviewer',
     },
     publicBiographies: {
       pageTitle: 'Published Biographies',
@@ -2235,6 +2321,49 @@ export const translations: Record<Language, Translations> = {
       unknownBiography: 'Biografia senza titolo',
       unknownAuthor: 'Autore sconosciuto',
       aiNoSummary: 'Nessun riepilogo disponibile',
+      panelBiographyInfo: 'Biografia',
+      panelReportInfo: 'Dettagli segnalazione',
+      panelActions: 'Azioni moderatore',
+      panelInternalNotes: 'Note interne',
+      viewBiography: 'Visualizza biografia',
+      biographyStatus: 'Stato',
+      aiViolationLevel: 'Livello violazione AI',
+      aiSummaryFull: 'Riepilogo analisi AI',
+      flaggedPassages: 'Passaggi segnalati',
+      flaggedPassageReason: 'Motivo',
+      flaggedPassageLevel: 'Livello',
+      reporterEmail: 'Segnalato da',
+      reporterReason: 'Categoria motivo',
+      reporterDetails: 'Dettagli',
+      noFlaggedPassages: 'Nessun passaggio segnalato.',
+      takeOwnership: 'Prendi in carico',
+      takingOwnership: 'Prendendo in carico…',
+      approveAndPublish: 'Approva e pubblica',
+      publishWithWarning: 'Pubblica con avviso',
+      returnToAuthor: 'Restituisci all\'autore',
+      removeBiography: 'Rimuovi biografia',
+      messageToAuthor: 'Messaggio all\'autore',
+      messageToAuthorPlaceholder: 'Spiega cosa deve essere corretto…',
+      confirmApprove: 'Approvare e pubblicare?',
+      confirmApproveDetail: 'La biografia verrà pubblicata e l\'autore sarà notificato.',
+      confirmPublishWarning: 'Pubblicare con avviso?',
+      confirmPublishWarningDetail: 'La biografia verrà pubblicata ma l\'autore riceverà un promemoria sulle linee guida.',
+      confirmReturn: 'Restituire all\'autore?',
+      confirmReturnDetail: 'La biografia tornerà in bozza e l\'autore riceverà il tuo messaggio.',
+      confirmRemove: 'Rimuovere la biografia?',
+      confirmRemoveDetail: 'Questo rimuoverà definitivamente la biografia. L\'autore verrà notificato. Azione irreversibile.',
+      confirmAction: 'Conferma',
+      cancelAction: 'Annulla',
+      internalNotesPlaceholder: 'Aggiungi note interne (non visibili agli utenti)…',
+      saveNotes: 'Salva note',
+      savingNotes: 'Salvataggio…',
+      notesSaved: 'Note salvate',
+      notifyPublished: 'La tua biografia è stata revisionata e pubblicata.',
+      notifyPublishedWarning: 'La tua biografia è stata pubblicata. Ti invitiamo a rivedere le nostre linee guida.',
+      notifyReturned: 'La tua biografia è stata restituita per revisione.',
+      notifyRemoved: 'La tua biografia è stata rimossa per violazione delle linee guida.',
+      assignedToYou: 'Assegnato a te',
+      assignedToOther: 'Assegnato a un altro revisore',
     },
     publicBiographies: {
       pageTitle: 'Biografie Pubblicate',
@@ -2994,6 +3123,49 @@ export const translations: Record<Language, Translations> = {
       unknownBiography: 'Biographie sans titre',
       unknownAuthor: 'Auteur inconnu',
       aiNoSummary: 'Aucun résumé disponible',
+      panelBiographyInfo: 'Biographie',
+      panelReportInfo: 'Détails du signalement',
+      panelActions: 'Actions du modérateur',
+      panelInternalNotes: 'Notes internes',
+      viewBiography: 'Voir la biographie',
+      biographyStatus: 'Statut',
+      aiViolationLevel: 'Niveau de violation IA',
+      aiSummaryFull: 'Résumé de l\'analyse IA',
+      flaggedPassages: 'Passages signalés',
+      flaggedPassageReason: 'Raison',
+      flaggedPassageLevel: 'Niveau',
+      reporterEmail: 'Signalé par',
+      reporterReason: 'Catégorie de raison',
+      reporterDetails: 'Détails',
+      noFlaggedPassages: 'Aucun passage signalé.',
+      takeOwnership: 'Prendre en charge',
+      takingOwnership: 'Prise en charge…',
+      approveAndPublish: 'Approuver et publier',
+      publishWithWarning: 'Publier avec avertissement',
+      returnToAuthor: 'Retourner à l\'auteur',
+      removeBiography: 'Supprimer la biographie',
+      messageToAuthor: 'Message à l\'auteur',
+      messageToAuthorPlaceholder: 'Expliquez ce qui doit être corrigé…',
+      confirmApprove: 'Approuver et publier ?',
+      confirmApproveDetail: 'La biographie sera publiée et l\'auteur sera notifié.',
+      confirmPublishWarning: 'Publier avec avertissement ?',
+      confirmPublishWarningDetail: 'La biographie sera publiée mais l\'auteur recevra un rappel sur les directives de contenu.',
+      confirmReturn: 'Retourner à l\'auteur ?',
+      confirmReturnDetail: 'La biographie repassera en brouillon et l\'auteur recevra votre message.',
+      confirmRemove: 'Supprimer la biographie ?',
+      confirmRemoveDetail: 'Cela supprimera définitivement la biographie. L\'auteur sera notifié. Action irréversible.',
+      confirmAction: 'Confirmer',
+      cancelAction: 'Annuler',
+      internalNotesPlaceholder: 'Ajouter des notes internes (non visibles aux utilisateurs)…',
+      saveNotes: 'Enregistrer les notes',
+      savingNotes: 'Enregistrement…',
+      notesSaved: 'Notes enregistrées',
+      notifyPublished: 'Votre biographie a été examinée et publiée.',
+      notifyPublishedWarning: 'Votre biographie a été publiée. Veuillez consulter nos directives de contenu.',
+      notifyReturned: 'Votre biographie a été retournée pour révision.',
+      notifyRemoved: 'Votre biographie a été supprimée pour violation de nos directives de contenu.',
+      assignedToYou: 'Assigné à vous',
+      assignedToOther: 'Assigné à un autre réviseur',
     },
     publicBiographies: {
       pageTitle: 'Biographies Publiées',
@@ -3753,6 +3925,49 @@ export const translations: Record<Language, Translations> = {
       unknownBiography: 'Biografie ohne Titel',
       unknownAuthor: 'Unbekannter Autor',
       aiNoSummary: 'Keine Zusammenfassung verfügbar',
+      panelBiographyInfo: 'Biografie',
+      panelReportInfo: 'Meldungsdetails',
+      panelActions: 'Moderatoraktionen',
+      panelInternalNotes: 'Interne Notizen',
+      viewBiography: 'Biografie ansehen',
+      biographyStatus: 'Status',
+      aiViolationLevel: 'KI-Verstoßstufe',
+      aiSummaryFull: 'KI-Analysezusammenfassung',
+      flaggedPassages: 'Markierte Passagen',
+      flaggedPassageReason: 'Grund',
+      flaggedPassageLevel: 'Stufe',
+      reporterEmail: 'Gemeldet von',
+      reporterReason: 'Grundkategorie',
+      reporterDetails: 'Details',
+      noFlaggedPassages: 'Keine markierten Passagen.',
+      takeOwnership: 'Übernehmen',
+      takingOwnership: 'Wird übernommen…',
+      approveAndPublish: 'Genehmigen und veröffentlichen',
+      publishWithWarning: 'Mit Warnung veröffentlichen',
+      returnToAuthor: 'An Autor zurückgeben',
+      removeBiography: 'Biografie entfernen',
+      messageToAuthor: 'Nachricht an den Autor',
+      messageToAuthorPlaceholder: 'Erläutern Sie, was korrigiert werden muss…',
+      confirmApprove: 'Genehmigen und veröffentlichen?',
+      confirmApproveDetail: 'Die Biografie wird veröffentlicht und der Autor wird benachrichtigt.',
+      confirmPublishWarning: 'Mit Warnung veröffentlichen?',
+      confirmPublishWarningDetail: 'Die Biografie wird veröffentlicht, aber der Autor erhält eine Erinnerung zu den Inhaltsrichtlinien.',
+      confirmReturn: 'An Autor zurückgeben?',
+      confirmReturnDetail: 'Die Biografie wird als Entwurf zurückgesetzt und der Autor erhält Ihre Nachricht.',
+      confirmRemove: 'Biografie entfernen?',
+      confirmRemoveDetail: 'Die Biografie wird dauerhaft entfernt. Der Autor wird benachrichtigt. Diese Aktion kann nicht rückgängig gemacht werden.',
+      confirmAction: 'Bestätigen',
+      cancelAction: 'Abbrechen',
+      internalNotesPlaceholder: 'Interne Notizen hinzufügen (für Benutzer nicht sichtbar)…',
+      saveNotes: 'Notizen speichern',
+      savingNotes: 'Wird gespeichert…',
+      notesSaved: 'Notizen gespeichert',
+      notifyPublished: 'Ihre Biografie wurde geprüft und veröffentlicht.',
+      notifyPublishedWarning: 'Ihre Biografie wurde veröffentlicht. Bitte lesen Sie unsere Inhaltsrichtlinien.',
+      notifyReturned: 'Ihre Biografie wurde zur Überarbeitung zurückgegeben.',
+      notifyRemoved: 'Ihre Biografie wurde wegen Verstoßes gegen unsere Inhaltsrichtlinien entfernt.',
+      assignedToYou: 'Ihnen zugewiesen',
+      assignedToOther: 'Einem anderen Prüfer zugewiesen',
     },
     publicBiographies: {
       pageTitle: 'Veröffentlichte Biografien',

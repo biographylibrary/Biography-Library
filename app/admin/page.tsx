@@ -9,12 +9,14 @@ import { ModerationFilters as FiltersType, ModerationReport } from '@/lib/modera
 import { useModerationReports } from '@/lib/moderation/use-moderation-reports';
 import { ModerationFilters } from '@/components/admin/ModerationFilters';
 import { ModerationTable } from '@/components/admin/ModerationTable';
+import { ModerationDetailPanel } from '@/components/admin/ModerationDetailPanel';
 
 export default function AdminPage() {
   const { user, role, loading } = useAuth();
   const { t } = useTranslation();
   const router = useRouter();
   const [countdown, setCountdown] = useState(3);
+  const [selectedReport, setSelectedReport] = useState<ModerationReport | null>(null);
 
   const [filters, setFilters] = useState<FiltersType>({
     status: 'all',
@@ -24,7 +26,7 @@ export default function AdminPage() {
 
   const isDenied = !loading && (!user || (role !== null && !ADMIN_ROLES.includes(role)));
 
-  const { reports, unassignedCount, loading: reportsLoading, error } = useModerationReports(filters);
+  const { reports, unassignedCount, loading: reportsLoading, error, refresh } = useModerationReports(filters);
 
   useEffect(() => {
     if (loading) return;
@@ -86,13 +88,6 @@ export default function AdminPage() {
   if (!user || !role) return null;
   if (!ADMIN_ROLES.includes(role)) return null;
 
-  function handleOpen(report: ModerationReport) {
-  }
-
-  const titleSuffix = unassignedCount > 0
-    ? ` (${unassignedCount} ${t.admin.moderationUnassignedBadge})`
-    : '';
-
   return (
     <div className="min-h-screen bg-background">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
@@ -119,10 +114,19 @@ export default function AdminPage() {
             reports={reports}
             loading={reportsLoading}
             error={error}
-            onOpen={handleOpen}
+            onOpen={setSelectedReport}
           />
         </div>
       </div>
+
+      <ModerationDetailPanel
+        report={selectedReport}
+        onClose={() => setSelectedReport(null)}
+        onRefresh={() => {
+          refresh();
+          setSelectedReport(null);
+        }}
+      />
     </div>
   );
 }
