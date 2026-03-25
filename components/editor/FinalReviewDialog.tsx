@@ -81,6 +81,8 @@ export function FinalReviewDialog({
         const msg = err.limitType === 'daily' ? t.aiUsage.dailyLimitReached : t.aiUsage.weeklyLimitReached;
         const detail = err.limitType === 'daily' ? t.aiUsage.dailyLimitDetail : t.aiUsage.weeklyLimitDetail;
         setError(`${msg}. ${detail}`);
+      } else if (err instanceof Error && err.message === 'AI_TIMEOUT') {
+        setError(t.biography.aiTimeout);
       } else {
         console.error('Error analyzing structure:', err);
         setError(err.message || 'Failed to analyze narrative structure');

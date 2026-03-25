@@ -118,6 +118,8 @@ export function AISectionReview({
       if (error instanceof AiLimitError) {
         const msg = error.limitType === 'daily' ? t.aiUsage.dailyLimitReached : t.aiUsage.weeklyLimitReached;
         toast.error(msg, { description: error.limitType === 'daily' ? t.aiUsage.dailyLimitDetail : t.aiUsage.weeklyLimitDetail });
+      } else if (error instanceof Error && error.message === 'AI_TIMEOUT') {
+        toast.error(t.biography.aiTimeout);
       } else {
         console.error('Error loading suggestions:', error);
         toast.error(t.aiReview.failedToLoad);
@@ -149,6 +151,8 @@ export function AISectionReview({
       if (error instanceof AiLimitError) {
         const msg = error.limitType === 'daily' ? t.aiUsage.dailyLimitReached : t.aiUsage.weeklyLimitReached;
         toast.error(msg, { description: error.limitType === 'daily' ? t.aiUsage.dailyLimitDetail : t.aiUsage.weeklyLimitDetail });
+      } else if (error instanceof Error && error.message === 'AI_TIMEOUT') {
+        toast.error(t.biography.aiTimeout);
       } else {
         console.error('Error rewriting section:', error);
         toast.error(`${t.aiReview.failedToGenerate} ${tone}`);

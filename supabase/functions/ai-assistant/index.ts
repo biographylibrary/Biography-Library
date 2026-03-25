@@ -8,11 +8,11 @@ const corsHeaders = {
     "Content-Type, Authorization, X-Client-Info, Apikey",
 };
 
-const RATE_LIMIT = 5;
+const RATE_LIMIT = parseInt(Deno.env.get('AI_RATE_LIMIT') ?? '5');
 const RATE_WINDOW_MS = 60_000;
 
-const DAILY_LIMIT = 40;
-const WEEKLY_LIMIT = 200;
+const DAILY_LIMIT = parseInt(Deno.env.get('AI_DAILY_LIMIT') ?? '40');
+const WEEKLY_LIMIT = parseInt(Deno.env.get('AI_WEEKLY_LIMIT') ?? '200');
 
 const HEAVY_ACTIONS = new Set(["rewrite", "analyze-themes", "propose-structures"]);
 
@@ -49,6 +49,23 @@ function getNextMondayUTC(): string {
 function extractJson(text: string): string {
   const fenced = text.match(/```(?:json)?\s*([\s\S]*?)```/);
   if (fenced) return fenced[1].trim();
+
+  const firstBrace = text.indexOf('{');
+  const firstBracket = text.indexOf('[');
+  if (firstBrace === -1 && firstBracket === -1) return text.trim();
+
+  let start: number;
+  if (firstBrace === -1) start = firstBracket;
+  else if (firstBracket === -1) start = firstBrace;
+  else start = Math.min(firstBrace, firstBracket);
+
+  const openChar = text[start];
+  const closeChar = openChar === '{' ? '}' : ']';
+  const lastClose = text.lastIndexOf(closeChar);
+
+  if (lastClose > start) {
+    return text.slice(start, lastClose + 1).trim();
+  }
   return text.trim();
 }
 
@@ -350,6 +367,32 @@ Return ONLY valid JSON, no markdown fences.`,
   };
 }
 
+async function callWithRetry(
+  fn: () => Promise<Response>,
+  maxRetries = 3,
+  baseDelayMs = 500
+): Promise<Response> {
+  let lastError: Error | undefined;
+  for (let attempt = 0; attempt < maxRetries; attempt++) {
+    try {
+      const res = await fn();
+      if (res.status === 429 || res.status === 503 || res.status === 504) {
+        const delay = baseDelayMs * Math.pow(2, attempt);
+        await new Promise(r => setTimeout(r, delay));
+        continue;
+      }
+      return res;
+    } catch (err) {
+      lastError = err as Error;
+      if (attempt < maxRetries - 1) {
+        const delay = baseDelayMs * Math.pow(2, attempt);
+        await new Promise(r => setTimeout(r, delay));
+      }
+    }
+  }
+  throw lastError ?? new Error('All retries failed');
+}
+
 async function callInfomaniakAI(
   systemPrompt: string,
   userPrompt: string,
@@ -362,23 +405,25 @@ async function callInfomaniakAI(
   const timeoutId = setTimeout(() => controller.abort(), AI_CALL_TIMEOUT_MS);
 
   try {
-    const response = await fetch(infomaniakEndpoint, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${infomaniakToken}`,
-      },
-      body: JSON.stringify({
-        model: infomaniakModel,
-        max_tokens: maxTokens,
-        temperature: 0.7,
-        messages: [
-          { role: "system", content: systemPrompt },
-          { role: "user", content: userPrompt }
-        ],
-      }),
-      signal: controller.signal,
-    });
+    const response = await callWithRetry(() =>
+      fetch(infomaniakEndpoint, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${infomaniakToken}`,
+        },
+        body: JSON.stringify({
+          model: infomaniakModel,
+          max_tokens: maxTokens,
+          temperature: 0.7,
+          messages: [
+            { role: "system", content: systemPrompt },
+            { role: "user", content: userPrompt }
+          ],
+        }),
+        signal: controller.signal,
+      })
+    );
 
     if (!response.ok) {
       const errText = await response.text();
@@ -505,7 +550,7 @@ Deno.serve(async (req: Request) => {
     const anonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
 
     const infomaniakToken = Deno.env.get("INFOMANIAK_AI_TOKEN") || "";
-    const infomaniakEndpoint = Deno.env.get("INFOMANIAK_AI_ENDPOINT") || "https://api.infomaniak.com/2/ai/107001/openai/v1/chat/completions";
+    const infomaniakEndpoint = Deno.env.get("INFOMANIAK_AI_ENDPOINT") || "";
     const infomaniakModel = Deno.env.get("INFOMANIAK_AI_MODEL") || "mistral3";
 
     if (!infomaniakToken) {
@@ -513,6 +558,10 @@ Deno.serve(async (req: Request) => {
         "Infomaniak AI is not configured. Please set INFOMANIAK_AI_TOKEN in Supabase Dashboard > Project Settings > Edge Functions > Manage secrets.",
         503
       );
+    }
+
+    if (!infomaniakEndpoint) {
+      throw new Error("INFOMANIAK_AI_ENDPOINT not configured");
     }
 
     const authHeader = req.headers.get("Authorization");

@@ -142,6 +142,7 @@ export interface Translations {
     todos: string;
     notes: string;
     aiSuggestions: string;
+    aiTimeout: string;
     shareLink: string;
     export: string;
     exporting: string;
@@ -1093,6 +1094,7 @@ export const translations: Record<Language, Translations> = {
       todos: 'To-Do',
       notes: 'Notes',
       aiSuggestions: 'AI Suggestions',
+      aiTimeout: 'The AI is taking too long. Please try again.',
       shareLink: 'Share Link',
       export: 'Export',
       exporting: 'Exporting...',
@@ -2042,6 +2044,7 @@ export const translations: Record<Language, Translations> = {
       todos: 'Da Fare',
       notes: 'Note',
       aiSuggestions: 'Suggerimenti AI',
+      aiTimeout: "L'AI impiega troppo tempo. Riprova.",
       shareLink: 'Condividi Link',
       export: 'Esporta',
       exporting: 'Esportazione...',
@@ -2991,6 +2994,7 @@ export const translations: Record<Language, Translations> = {
       todos: '\u00c0 Faire',
       notes: 'Notes',
       aiSuggestions: 'Suggestions IA',
+      aiTimeout: "L'IA prend trop de temps. Veuillez réessayer.",
       shareLink: 'Lien de Partage',
       export: 'Exporter',
       exporting: 'Exportation...',
@@ -3940,6 +3944,7 @@ export const translations: Record<Language, Translations> = {
       todos: 'Aufgaben',
       notes: 'Notizen',
       aiSuggestions: 'KI-Vorschl\u00e4ge',
+      aiTimeout: 'Die KI braucht zu lange. Bitte erneut versuchen.',
       shareLink: 'Link Teilen',
       export: 'Exportieren',
       exporting: 'Exportieren...',

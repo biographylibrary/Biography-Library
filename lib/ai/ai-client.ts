@@ -69,6 +69,9 @@ export async function callAI(body: Record<string, unknown>): Promise<any> {
 }
 
 function doFetch(token: string, body: Record<string, unknown>): Promise<Response> {
+  const controller = new AbortController();
+  const clientTimeout = setTimeout(() => controller.abort(), 35000);
+
   return fetch(AI_FUNCTION_URL, {
     method: 'POST',
     headers: {
@@ -77,5 +80,15 @@ function doFetch(token: string, body: Record<string, unknown>): Promise<Response
       Apikey: ANON_KEY,
     },
     body: JSON.stringify(body),
-  });
+    signal: controller.signal,
+  })
+    .catch((err) => {
+      if (err instanceof Error && err.name === 'AbortError') {
+        throw new Error('AI_TIMEOUT');
+      }
+      throw err;
+    })
+    .finally(() => {
+      clearTimeout(clientTimeout);
+    });
 }
