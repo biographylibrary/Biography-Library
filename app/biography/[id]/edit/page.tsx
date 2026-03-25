@@ -744,6 +744,84 @@ const [isPublishing, setIsPublishing] = useState(false);
     }
   }, [id]);
 
+  const handleFinalVersionGrammarCheck = useCallback(async () => {
+    if (!finalVersion.trim()) return;
+    if (!session) {
+      setAiState({
+        type: 'grammar',
+        loading: false,
+        suggestions: [],
+        prompts: [],
+        summary: '',
+        error: t.editor.signInForAi,
+      });
+      return;
+    }
+    setAiState({
+      type: 'grammar',
+      loading: true,
+      suggestions: [],
+      prompts: [],
+      summary: '',
+      error: null,
+    });
+    try {
+      const suggestions = await checkGrammar('Final Biography', finalVersion, language);
+      setAiUsageRefresh((n) => n + 1);
+      setAiState((prev) => ({ ...prev, loading: false, suggestions }));
+    } catch (err: any) {
+      if (err instanceof AiLimitError) {
+        setAiState(INITIAL_AI_STATE);
+        setAiLimitError(err);
+        return;
+      }
+      setAiState((prev) => ({ ...prev, loading: false, error: err.message || t.editor.failedGrammar }));
+    }
+  }, [finalVersion, session, language, t]);
+
+  const handleFinalVersionGuidedPrompts = useCallback(async () => {
+    const langPrompts = getFallbackPrompts(language);
+    const fallback = langPrompts['general'] || [];
+    setAiState({
+      type: 'prompts',
+      loading: true,
+      suggestions: [],
+      prompts: [],
+      summary: '',
+      error: null,
+    });
+    if (!session) {
+      setAiState((prev) => ({ ...prev, loading: false, prompts: fallback }));
+      return;
+    }
+    try {
+      const prompts = await getGuidedPrompts('final_version', language === 'it' ? 'Versione Finale' : 'Final Version', language);
+      setAiUsageRefresh((n) => n + 1);
+      setAiState((prev) => ({ ...prev, loading: false, prompts: prompts.length > 0 ? prompts : fallback }));
+    } catch (err: any) {
+      if (err instanceof AiLimitError) {
+        setAiState(INITIAL_AI_STATE);
+        setAiLimitError(err);
+        return;
+      }
+      setAiState((prev) => ({ ...prev, loading: false, prompts: fallback, error: null }));
+    }
+  }, [session, language]);
+
+  const handleRevertToDraft = useCallback(async () => {
+    try {
+      const { error } = await supabase
+        .from('biographies')
+        .update({ status: 'draft' })
+        .eq('id', id);
+      if (!error) {
+        setBiographyStatus('draft');
+      }
+    } catch (err) {
+      console.error('Error reverting to draft:', err);
+    }
+  }, [id]);
+
   const handlePublish = useCallback(async () => {
     setIsPublishing(true);
 
@@ -938,26 +1016,30 @@ const [isPublishing, setIsPublishing] = useState(false);
 
         <div className="flex-1 flex min-w-0">
           <div className="flex-1 flex flex-col min-w-0">
-            {biographyStatus !== 'final_version' && biographyStatus !== 'published' && !isFrozen && (
+            {biographyStatus !== 'published' && !isFrozen && (
               <div className="border-b border-border/50 px-4 py-2 bg-card/30 flex flex-wrap items-center gap-2 shrink-0">
-                <Button
-                  variant={editorMode === 'editor' ? 'default' : 'ghost'}
-                  size="sm"
-                  onClick={() => setEditorMode('editor')}
-                  className="h-8 text-xs"
-                >
-                  {t.editor.editorMode}
-                </Button>
-                <Button
-                  variant={editorMode === 'conversation' ? 'default' : 'ghost'}
-                  size="sm"
-                  onClick={() => setEditorMode('conversation')}
-                  className="h-8 text-xs"
-                >
-                  {t.editor.conversationMode}
-                </Button>
+                {biographyStatus !== 'final_version' && (
+                  <>
+                    <Button
+                      variant={editorMode === 'editor' ? 'default' : 'ghost'}
+                      size="sm"
+                      onClick={() => setEditorMode('editor')}
+                      className="h-8 text-xs"
+                    >
+                      {t.editor.editorMode}
+                    </Button>
+                    <Button
+                      variant={editorMode === 'conversation' ? 'default' : 'ghost'}
+                      size="sm"
+                      onClick={() => setEditorMode('conversation')}
+                      className="h-8 text-xs"
+                    >
+                      {t.editor.conversationMode}
+                    </Button>
+                  </>
+                )}
                 {aiEnabled && (
-                  <div className="sm:ml-auto">
+                  <div className={biographyStatus !== 'final_version' ? 'sm:ml-auto' : ''}>
                     <AiUsageIndicator refreshTrigger={aiUsageRefresh} />
                   </div>
                 )}
@@ -973,6 +1055,10 @@ const [isPublishing, setIsPublishing] = useState(false);
                   isLocked={effectivelyLocked}
                   onPublish={() => setShowPublishDialog(true)}
                   editorFontSize={editorFontSize}
+                  onGrammarCheck={aiEnabled ? handleFinalVersionGrammarCheck : undefined}
+                  onGuidedPrompts={aiEnabled ? handleFinalVersionGuidedPrompts : undefined}
+                  onRevertToDraft={!effectivelyLocked ? handleRevertToDraft : undefined}
+                  aiEnabled={aiEnabled}
                 />
               ) : editorMode === 'conversation' && !isFrozen ? (
                 <ConversationMode

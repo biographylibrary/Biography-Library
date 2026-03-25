@@ -1,11 +1,16 @@
 'use client';
 
-import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { RichTextEditor } from './rich-text-editor';
 import { useTranslation } from '@/lib/i18n/i18n-context';
-import { Sparkles, Lock, FileCheck } from 'lucide-react';
+import {
+  Lock,
+  FileCheck,
+  SpellCheck,
+  MessageSquareText,
+  RotateCcw,
+} from 'lucide-react';
 
 interface FinalVersionEditorProps {
   content: string;
@@ -14,6 +19,10 @@ interface FinalVersionEditorProps {
   isLocked: boolean;
   onPublish: () => void;
   editorFontSize?: number;
+  onGrammarCheck?: () => void;
+  onGuidedPrompts?: () => void;
+  onRevertToDraft?: () => void;
+  aiEnabled?: boolean;
 }
 
 export function FinalVersionEditor({
@@ -23,8 +32,12 @@ export function FinalVersionEditor({
   isLocked,
   onPublish,
   editorFontSize = 16,
+  onGrammarCheck,
+  onGuidedPrompts,
+  onRevertToDraft,
+  aiEnabled = true,
 }: FinalVersionEditorProps) {
-  const { t, language } = useTranslation();
+  const { language } = useTranslation();
 
   const finalVersionTitle = {
     en: 'Final Complete Version',
@@ -48,17 +61,38 @@ export function FinalVersionEditor({
   }[language] || 'This biography has been published and is now locked.';
 
   const editInstructionsText = {
-    en: 'This is your final combined biography. You can continue editing and refining this version with AI assistance until you\'re completely satisfied. Once published, no further changes will be possible.',
-    it: 'Questa è la tua biografia finale combinata. Puoi continuare a modificare e perfezionare questa versione con l\'assistenza dell\'IA fino a quando non sei completamente soddisfatto. Una volta pubblicata, non saranno possibili ulteriori modifiche.',
-    fr: 'Ceci est votre biographie finale combinée. Vous pouvez continuer à modifier et affiner cette version avec l\'assistance de l\'IA jusqu\'à ce que vous soyez complètement satisfait. Une fois publiée, aucune autre modification ne sera possible.',
-    de: 'Dies ist Ihre endgültige kombinierte Biografie. Sie können diese Version weiterhin mit KI-Unterstützung bearbeiten und verfeinern, bis Sie vollständig zufrieden sind. Nach der Veröffentlichung sind keine weiteren Änderungen möglich.',
+    en: 'This is your final combined biography. You can continue editing and refining this version with AI assistance until you\'re completely satisfied.',
+    it: 'Questa è la tua biografia finale combinata. Puoi continuare a modificare e perfezionare questa versione con l\'assistenza dell\'IA fino a quando non sei completamente soddisfatto.',
+    fr: 'Ceci est votre biographie finale combinée. Vous pouvez continuer à modifier et affiner cette version avec l\'assistance de l\'IA jusqu\'à ce que vous soyez complètement satisfait.',
+    de: 'Dies ist Ihre endgültige kombinierte Biografie. Sie können diese Version weiterhin mit KI-Unterstützung bearbeiten und verfeinern, bis Sie vollständig zufrieden sind.',
   }[language] || 'This is your final combined biography.';
+
+  const grammarLabel = {
+    en: 'Grammar Check',
+    it: 'Controllo Grammatica',
+    fr: 'Vérification Grammaire',
+    de: 'Grammatikprüfung',
+  }[language] || 'Grammar Check';
+
+  const guidedPromptsLabel = {
+    en: 'Writing Help',
+    it: 'Aiuto Scrittura',
+    fr: 'Aide à l\'Écriture',
+    de: 'Schreibhilfe',
+  }[language] || 'Writing Help';
+
+  const revertLabel = {
+    en: 'Back to Editing',
+    it: 'Torna alla Modifica',
+    fr: 'Retour à l\'Édition',
+    de: 'Zurück zur Bearbeitung',
+  }[language] || 'Back to Editing';
 
   return (
     <div className="flex-1 flex flex-col min-h-0">
       <div className="border-b border-border/50 px-6 py-4 bg-gradient-to-r from-primary/5 to-primary/10">
-        <div className="flex items-center justify-between">
-          <div>
+        <div className="flex items-center justify-between gap-4 flex-wrap">
+          <div className="min-w-0">
             <h2 className="text-2xl font-bold text-foreground flex items-center gap-2">
               {isLocked && <Lock className="h-5 w-5 text-primary" />}
               {finalVersionTitle}
@@ -67,16 +101,52 @@ export function FinalVersionEditor({
               {isLocked ? lockedMessage : editInstructionsText}
             </p>
           </div>
+
           {!isLocked && (
-            <Button
-              onClick={onPublish}
-              size="lg"
-              className="gap-2"
-              disabled={!content || content.trim().length < 100}
-            >
-              <FileCheck className="h-5 w-5" />
-              {publishButtonText}
-            </Button>
+            <div className="flex items-center gap-2 flex-wrap shrink-0">
+              {aiEnabled && onGrammarCheck && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={onGrammarCheck}
+                  className="gap-1.5 text-xs"
+                >
+                  <SpellCheck className="h-3.5 w-3.5" />
+                  {grammarLabel}
+                </Button>
+              )}
+              {aiEnabled && onGuidedPrompts && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={onGuidedPrompts}
+                  className="gap-1.5 text-xs"
+                >
+                  <MessageSquareText className="h-3.5 w-3.5" />
+                  {guidedPromptsLabel}
+                </Button>
+              )}
+              {onRevertToDraft && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={onRevertToDraft}
+                  className="gap-1.5 text-xs text-muted-foreground hover:text-foreground"
+                >
+                  <RotateCcw className="h-3.5 w-3.5" />
+                  {revertLabel}
+                </Button>
+              )}
+              <Button
+                onClick={onPublish}
+                size="sm"
+                className="gap-2"
+                disabled={!content || content.trim().length < 100}
+              >
+                <FileCheck className="h-4 w-4" />
+                {publishButtonText}
+              </Button>
+            </div>
           )}
         </div>
       </div>
