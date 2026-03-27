@@ -34,6 +34,9 @@ interface SectionEditorProps {
   openImportDialog?: boolean;
   onImportDialogOpenChange?: (open: boolean) => void;
   isPublished?: boolean;
+  contentFreeflow?: string;
+  onImportedToSection?: (sectionKey: string, newContent: string) => void;
+  onImportedToFreeflow?: (newContent: string) => void;
 }
 
 export function SectionEditor({
@@ -60,6 +63,9 @@ export function SectionEditor({
   openImportDialog,
   onImportDialogOpenChange,
   isPublished = false,
+  contentFreeflow = '',
+  onImportedToSection,
+  onImportedToFreeflow,
 }: SectionEditorProps) {
   const [showVoice, setShowVoice] = useState(false);
   const [showImportDialog, setShowImportDialog] = useState(false);
@@ -92,15 +98,6 @@ export function SectionEditor({
       const cleaned = data.text.replace(data.audioTranscript, '').trim();
       onTextChange(cleaned);
       onAudioTranscriptChange('');
-    }
-  };
-
-  const handleImportText = (content: string, replace: boolean) => {
-    if (replace) {
-      onTextChange(content);
-    } else {
-      const separator = data.text && !data.text.endsWith('</p>') ? '<p></p>' : '';
-      onTextChange(data.text + separator + content);
     }
   };
 
@@ -239,13 +236,23 @@ export function SectionEditor({
         isPublished={isPublished}
       />
 
-      <ImportTextDialog
-        open={showImportDialog}
-        onOpenChange={(v) => { setShowImportDialog(v); onImportDialogOpenChange?.(v); }}
-        sectionName={sectionTitle}
-        onImport={handleImportText}
-        onImportMultipleSections={onImportMultipleSections}
-      />
+      {biographyId && (
+        <ImportTextDialog
+          open={showImportDialog}
+          onOpenChange={(v) => { setShowImportDialog(v); onImportDialogOpenChange?.(v); }}
+          biographyId={biographyId}
+          currentSectionKey={sectionKey}
+          currentSectionContent={data.text}
+          currentFreeflowContent={contentFreeflow}
+          onImportedToSection={(key, content) => {
+            if (key === sectionKey) onTextChange(content);
+            onImportedToSection?.(key, content);
+          }}
+          onImportedToFreeflow={(content) => {
+            onImportedToFreeflow?.(content);
+          }}
+        />
+      )}
 
     </div>
   );

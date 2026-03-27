@@ -262,6 +262,12 @@ export interface Translations {
     freeFlowTab: string;
     sectionsTab: string;
     freeFlowReadOnly: string;
+    importFreeFlowHint: string;
+    importSaveTo: string;
+    importDestinationFreeFlow: string;
+    importFieldNotEmpty: string;
+    importReplace: string;
+    importAddAtEnd: string;
   };
   formatting: {
     bold: string;
@@ -1245,6 +1251,12 @@ export const translations: Record<Language, Translations> = {
       freeFlowTab: 'Free Flow',
       sectionsTab: 'Sections',
       freeFlowReadOnly: 'Free Flow text (read only)',
+      importFreeFlowHint: 'Importing a biography written elsewhere? Choose Free Flow. You can manually copy sections later.\nImporting a single section from a Biography Library export? Paste only that section\'s text and select which section to save it to.',
+      importSaveTo: 'Save to',
+      importDestinationFreeFlow: 'Free Flow',
+      importFieldNotEmpty: 'This field already contains text. What would you like to do?',
+      importReplace: 'Replace',
+      importAddAtEnd: 'Add at the end',
     },
     formatting: {
       bold: 'Bold',
@@ -2226,6 +2238,12 @@ export const translations: Record<Language, Translations> = {
       freeFlowTab: 'Testo libero',
       sectionsTab: 'Sezioni',
       freeFlowReadOnly: 'Testo libero (sola lettura)',
+      importFreeFlowHint: 'Stai importando una biografia scritta altrove? Scegli Testo libero. Potrai copiare le sezioni manualmente in seguito.\nStai importando una singola sezione da un export di Biography Library? Incolla solo il testo di quella sezione e scegli in quale sezione salvarlo.',
+      importSaveTo: 'Salva in',
+      importDestinationFreeFlow: 'Testo libero',
+      importFieldNotEmpty: 'Questo campo contiene già del testo. Cosa vuoi fare?',
+      importReplace: 'Sostituisci',
+      importAddAtEnd: 'Aggiungi in fondo',
     },
     formatting: {
       bold: 'Grassetto',
@@ -3207,6 +3225,12 @@ export const translations: Record<Language, Translations> = {
       freeFlowTab: 'Texte libre',
       sectionsTab: 'Sections',
       freeFlowReadOnly: 'Texte libre (lecture seule)',
+      importFreeFlowHint: 'Vous importez une biographie écrite ailleurs ? Choisissez Texte libre. Vous pourrez copier les sections manuellement ensuite.\nVous importez une section depuis un export Biography Library ? Collez uniquement le texte de cette section et choisissez où l\'enregistrer.',
+      importSaveTo: 'Enregistrer dans',
+      importDestinationFreeFlow: 'Texte libre',
+      importFieldNotEmpty: 'Ce champ contient déjà du texte. Que souhaitez-vous faire ?',
+      importReplace: 'Remplacer',
+      importAddAtEnd: 'Ajouter à la fin',
     },
     formatting: {
       bold: 'Gras',
@@ -4188,6 +4212,12 @@ export const translations: Record<Language, Translations> = {
       freeFlowTab: 'Freier Text',
       sectionsTab: 'Abschnitte',
       freeFlowReadOnly: 'Freier Text (nur lesen)',
+      importFreeFlowHint: 'Importieren Sie eine woanders geschriebene Biografie? Wählen Sie Freier Text. Sie können Abschnitte später manuell kopieren.\nImportieren Sie einen einzelnen Abschnitt aus einem Biography Library-Export? Fügen Sie nur den Text dieses Abschnitts ein und wählen Sie, wo er gespeichert werden soll.',
+      importSaveTo: 'Speichern in',
+      importDestinationFreeFlow: 'Freier Text',
+      importFieldNotEmpty: 'Dieses Feld enthält bereits Text. Was möchten Sie tun?',
+      importReplace: 'Ersetzen',
+      importAddAtEnd: 'Am Ende hinzufügen',
     },
     formatting: {
       bold: 'Fett',

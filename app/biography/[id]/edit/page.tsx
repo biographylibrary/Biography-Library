@@ -1123,6 +1123,17 @@ const [isPublishing, setIsPublishing] = useState(false);
                   openImportDialog={showSidebarImport}
                   onImportDialogOpenChange={(v) => { if (!v) setShowSidebarImport(false); }}
                   isPublished={(biographyStatus as string) === 'published' || isFrozen}
+                  contentFreeflow={contentFreeflow}
+                  onImportedToSection={(sectionKey, newContent) => {
+                    setContent((prev) => ({
+                      ...prev,
+                      [sectionKey]: { ...getSectionData(prev, sectionKey), text: newContent },
+                    }));
+                  }}
+                  onImportedToFreeflow={(newContent) => {
+                    setContentFreeflow(newContent);
+                    setBiographyMode('freeflow');
+                  }}
                 />
               )}
 
