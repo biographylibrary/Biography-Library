@@ -79,7 +79,9 @@ export function SectionSidebar({
         </div>
       </div>
 
-      {biographyMode === 'freeflow' ? null : (
+      {biographyMode === 'freeflow' ? (
+        <div className="flex-1" />
+      ) : (
         <>
           <div className="flex-1 min-h-0 overflow-y-auto py-1">
             {BIOGRAPHY_SECTIONS.map((section) => {
