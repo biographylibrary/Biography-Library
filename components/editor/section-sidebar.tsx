@@ -1,7 +1,6 @@
 'use client';
 
-import { useState } from 'react';
-import { Check, Circle, Flag, ChevronRight, StickyNote, Images, Upload, Download, ChevronDown } from 'lucide-react';
+import { Check, Circle, Flag, ChevronRight, StickyNote, Images, Upload, Download } from 'lucide-react';
 import {
   BIOGRAPHY_SECTIONS,
   type BiographyContent,
@@ -48,7 +47,6 @@ export function SectionSidebar({
   onFreeflowChange,
 }: SectionSidebarProps) {
   const { t } = useTranslation();
-  const [freeflowPanelOpen, setFreeflowPanelOpen] = useState(false);
 
   const totalCount = globalNotesCount + globalTodosCount;
 
@@ -126,23 +124,11 @@ export function SectionSidebar({
           {contentFreeflow.trim().length > 0 && (
             <div className="border-t border-border/50 shrink-0">
               <button
-                onClick={() => setFreeflowPanelOpen((prev) => !prev)}
-                className="w-full flex items-center justify-between px-3 py-2 text-xs text-muted-foreground hover:bg-muted/50 hover:text-foreground transition-colors"
+                onClick={() => onModeChange('freeflow')}
+                className="w-full flex items-center px-3 py-2 text-xs text-muted-foreground hover:bg-muted/50 hover:text-foreground transition-colors"
               >
                 <span className="font-medium">{t.editor.freeFlowReadOnly}</span>
-                <ChevronDown
-                  className={cn(
-                    'h-3.5 w-3.5 shrink-0 transition-transform',
-                    freeflowPanelOpen && 'rotate-180'
-                  )}
-                />
               </button>
-              {freeflowPanelOpen && (
-                <div
-                  className="px-3 pb-3 max-h-48 overflow-y-auto text-xs text-muted-foreground prose prose-sm max-w-none"
-                  dangerouslySetInnerHTML={{ __html: contentFreeflow }}
-                />
-              )}
             </div>
           )}
         </>
