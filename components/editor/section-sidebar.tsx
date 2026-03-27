@@ -8,7 +8,6 @@ import {
   getSectionData,
 } from '@/lib/editor-constants';
 import { useTranslation } from '@/lib/i18n/i18n-context';
-import { RichTextEditor } from '@/components/editor/rich-text-editor';
 import { cn } from '@/lib/utils';
 
 interface SectionSidebarProps {
@@ -82,14 +81,7 @@ export function SectionSidebar({
         </div>
       </div>
 
-      {biographyMode === 'freeflow' ? (
-        <div className="flex-1 min-h-0 overflow-y-auto">
-          <RichTextEditor
-            content={contentFreeflow}
-            onChange={onFreeflowChange}
-          />
-        </div>
-      ) : (
+      {biographyMode === 'freeflow' ? null : (
         <>
           <div className="flex-1 min-h-0 overflow-y-auto py-1">
             {BIOGRAPHY_SECTIONS.map((section) => {

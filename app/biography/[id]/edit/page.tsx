@@ -1098,6 +1098,34 @@ const [isPublishing, setIsPublishing] = useState(false);
                   onGenerateDraft={handleGenerateDraftFromConversation}
                   currentText={activeSectionData.text}
                 />
+              ) : biographyMode === 'freeflow' ? (
+                <SectionEditor
+                  sectionKey="freeflow"
+                  titleOverride={t.editor.freeFlowTab}
+                  data={{ text: contentFreeflow, todo: false, audioTranscript: '' }}
+                  onTextChange={handleFreeflowChange}
+                  onTodoChange={() => {}}
+                  onAudioTranscriptChange={() => {}}
+                  aiEnabled={aiEnabled}
+                  onToggleAi={handleToggleAi}
+                  onGrammarCheck={handleGrammarCheck}
+                  onGuidedPrompts={handleGuidedPrompts}
+                  onSummarize={handleSummarize}
+                  onReviewWithAi={handleReviewWithAi}
+                  aiLoading={aiState.loading}
+                  biographyId={id}
+                  editorFontSize={editorFontSize}
+                  onEditorFontSizeChange={setEditorFontSize}
+                  onTogglePhotos={() => setShowPhotosPanel((v) => !v)}
+                  onToggleNotes={() => setShowGlobalNotesPanel((v) => !v)}
+                  openImportDialog={showSidebarImport}
+                  onImportDialogOpenChange={(v) => { if (!v) setShowSidebarImport(false); }}
+                  isPublished={(biographyStatus as string) === 'published' || isFrozen}
+                  contentFreeflow={contentFreeflow}
+                  onImportedToFreeflow={(newContent) => {
+                    setContentFreeflow(newContent);
+                  }}
+                />
               ) : (
                 <SectionEditor
                   sectionKey={activeSection}

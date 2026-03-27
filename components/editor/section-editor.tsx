@@ -37,6 +37,7 @@ interface SectionEditorProps {
   contentFreeflow?: string;
   onImportedToSection?: (sectionKey: string, newContent: string) => void;
   onImportedToFreeflow?: (newContent: string) => void;
+  titleOverride?: string;
 }
 
 export function SectionEditor({
@@ -66,6 +67,7 @@ export function SectionEditor({
   contentFreeflow = '',
   onImportedToSection,
   onImportedToFreeflow,
+  titleOverride,
 }: SectionEditorProps) {
   const [showVoice, setShowVoice] = useState(false);
   const [showImportDialog, setShowImportDialog] = useState(false);
@@ -76,7 +78,7 @@ export function SectionEditor({
   const section = BIOGRAPHY_SECTIONS.find((s) => s.key === sectionKey);
   const { t } = useTranslation();
 
-  const sectionTitle = t.sectionTitles[sectionKey as keyof typeof t.sectionTitles] || section?.title || '';
+  const sectionTitle = titleOverride || t.sectionTitles[sectionKey as keyof typeof t.sectionTitles] || section?.title || '';
 
   const handleVoiceTranscript = (transcript: string) => {
     const sep =
