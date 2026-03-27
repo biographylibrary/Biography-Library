@@ -5,6 +5,8 @@ interface BiographyData {
   title: string;
   author_name: string;
   content: Record<string, { text: string }>;
+  content_freeflow?: string;
+  biography_mode?: 'sections' | 'freeflow';
   created_at: string;
 }
 
@@ -50,69 +52,18 @@ export function generateBiographyPDF(biography: BiographyData) {
 
   addPageNumber();
 
-  doc.addPage();
-  yPosition = margin;
-
-  doc.setFontSize(24);
-  doc.setTextColor(20, 184, 166);
-  doc.text('Table of Contents', pageWidth / 2, yPosition, { align: 'center' });
-  yPosition += 20;
-
-  doc.setFontSize(12);
-  doc.setTextColor(0, 0, 0);
-
-  const tocEntries: { title: string; page: number }[] = [];
-  let currentPage = 3;
-
-  BIOGRAPHY_SECTIONS.forEach((section) => {
-    const sectionData = biography.content[section.key];
-    if (sectionData && sectionData.text.trim()) {
-      tocEntries.push({ title: section.title, page: currentPage });
-      const textLines = doc.splitTextToSize(sectionData.text, maxWidth);
-      const estimatedPages = Math.ceil((textLines.length * 5 + 30) / (pageHeight - 2 * margin));
-      currentPage += estimatedPages;
-    }
-  });
-
-  tocEntries.forEach((entry) => {
-    if (yPosition > pageHeight - margin) {
-      addPageNumber();
-      doc.addPage();
-      yPosition = margin;
-    }
-    doc.setFont('times', 'normal');
-    doc.text(entry.title, margin, yPosition);
-    doc.setFont('times', 'normal');
-    const dots = '.'.repeat(Math.floor((maxWidth - doc.getTextWidth(entry.title) - doc.getTextWidth(entry.page.toString())) / doc.getTextWidth('.')));
-    doc.text(dots, margin + doc.getTextWidth(entry.title) + 2, yPosition);
-    doc.text(entry.page.toString(), pageWidth - margin, yPosition, { align: 'right' });
-    yPosition += 8;
-  });
-
-  addPageNumber();
-
-  BIOGRAPHY_SECTIONS.forEach((section) => {
-    const sectionData = biography.content[section.key];
-    if (!sectionData || !sectionData.text.trim()) {
-      return;
-    }
-
+  if (biography.biography_mode === 'freeflow') {
     doc.addPage();
     yPosition = margin;
-
-    doc.setFontSize(20);
-    doc.setTextColor(20, 184, 166);
-    doc.text(section.title, margin, yPosition);
-    yPosition += 15;
 
     doc.setFontSize(12);
     doc.setTextColor(0, 0, 0);
     doc.setFont('times', 'normal');
 
-    const paragraphs = sectionData.text.split('\n\n');
+    const freeflowText = biography.content_freeflow || '';
+    const paragraphs = freeflowText.split('\n\n');
     paragraphs.forEach((paragraph) => {
       if (!paragraph.trim()) return;
-
       const lines = doc.splitTextToSize(paragraph.trim(), maxWidth);
       lines.forEach((line: string) => {
         if (yPosition > pageHeight - margin - 10) {
@@ -127,7 +78,86 @@ export function generateBiographyPDF(biography: BiographyData) {
     });
 
     addPageNumber();
-  });
+  } else {
+    doc.addPage();
+    yPosition = margin;
+
+    doc.setFontSize(24);
+    doc.setTextColor(20, 184, 166);
+    doc.text('Table of Contents', pageWidth / 2, yPosition, { align: 'center' });
+    yPosition += 20;
+
+    doc.setFontSize(12);
+    doc.setTextColor(0, 0, 0);
+
+    const tocEntries: { title: string; page: number }[] = [];
+    let currentPage = 3;
+
+    BIOGRAPHY_SECTIONS.forEach((section) => {
+      const sectionData = biography.content[section.key];
+      if (sectionData && sectionData.text.trim()) {
+        tocEntries.push({ title: section.title, page: currentPage });
+        const textLines = doc.splitTextToSize(sectionData.text, maxWidth);
+        const estimatedPages = Math.ceil((textLines.length * 5 + 30) / (pageHeight - 2 * margin));
+        currentPage += estimatedPages;
+      }
+    });
+
+    tocEntries.forEach((entry) => {
+      if (yPosition > pageHeight - margin) {
+        addPageNumber();
+        doc.addPage();
+        yPosition = margin;
+      }
+      doc.setFont('times', 'normal');
+      doc.text(entry.title, margin, yPosition);
+      doc.setFont('times', 'normal');
+      const dots = '.'.repeat(Math.floor((maxWidth - doc.getTextWidth(entry.title) - doc.getTextWidth(entry.page.toString())) / doc.getTextWidth('.')));
+      doc.text(dots, margin + doc.getTextWidth(entry.title) + 2, yPosition);
+      doc.text(entry.page.toString(), pageWidth - margin, yPosition, { align: 'right' });
+      yPosition += 8;
+    });
+
+    addPageNumber();
+
+    BIOGRAPHY_SECTIONS.forEach((section) => {
+      const sectionData = biography.content[section.key];
+      if (!sectionData || !sectionData.text.trim()) {
+        return;
+      }
+
+      doc.addPage();
+      yPosition = margin;
+
+      doc.setFontSize(20);
+      doc.setTextColor(20, 184, 166);
+      doc.text(section.title, margin, yPosition);
+      yPosition += 15;
+
+      doc.setFontSize(12);
+      doc.setTextColor(0, 0, 0);
+      doc.setFont('times', 'normal');
+
+      const paragraphs = sectionData.text.split('\n\n');
+      paragraphs.forEach((paragraph) => {
+        if (!paragraph.trim()) return;
+
+        const lines = doc.splitTextToSize(paragraph.trim(), maxWidth);
+        lines.forEach((line: string) => {
+          if (yPosition > pageHeight - margin - 10) {
+            addPageNumber();
+            doc.addPage();
+            yPosition = margin;
+          }
+          doc.text(line, margin, yPosition);
+          yPosition += 7;
+        });
+        yPosition += 5;
+      });
+
+      addPageNumber();
+    });
+  }
 
   const fileName = `${biography.title.replace(/[^a-z0-9]/gi, '-').toLowerCase()}-${new Date().toISOString().split('T')[0]}.pdf`;
   doc.save(fileName);

@@ -268,6 +268,8 @@ export interface Translations {
     importFieldNotEmpty: string;
     importReplace: string;
     importAddAtEnd: string;
+    exportModeFreeFlow: string;
+    exportModeSections: string;
   };
   formatting: {
     bold: string;
@@ -1257,6 +1259,8 @@ export const translations: Record<Language, Translations> = {
       importFieldNotEmpty: 'This field already contains text. What would you like to do?',
       importReplace: 'Replace',
       importAddAtEnd: 'Add at the end',
+      exportModeFreeFlow: 'Exporting in Free Flow mode — sections will not be included.',
+      exportModeSections: 'Exporting in Sections mode — free flow text will not be included.',
     },
     formatting: {
       bold: 'Bold',
@@ -2244,6 +2248,8 @@ export const translations: Record<Language, Translations> = {
       importFieldNotEmpty: 'Questo campo contiene già del testo. Cosa vuoi fare?',
       importReplace: 'Sostituisci',
       importAddAtEnd: 'Aggiungi in fondo',
+      exportModeFreeFlow: 'Export in modalità Testo libero — le sezioni non saranno incluse.',
+      exportModeSections: 'Export in modalità Sezioni — il testo libero non sarà incluso.',
     },
     formatting: {
       bold: 'Grassetto',
@@ -3231,6 +3237,8 @@ export const translations: Record<Language, Translations> = {
       importFieldNotEmpty: 'Ce champ contient déjà du texte. Que souhaitez-vous faire ?',
       importReplace: 'Remplacer',
       importAddAtEnd: 'Ajouter à la fin',
+      exportModeFreeFlow: 'Export en mode Texte libre — les sections ne seront pas incluses.',
+      exportModeSections: 'Export en mode Sections — le texte libre ne sera pas inclus.',
     },
     formatting: {
       bold: 'Gras',
@@ -4218,6 +4226,8 @@ export const translations: Record<Language, Translations> = {
       importFieldNotEmpty: 'Dieses Feld enthält bereits Text. Was möchten Sie tun?',
       importReplace: 'Ersetzen',
       importAddAtEnd: 'Am Ende hinzufügen',
+      exportModeFreeFlow: 'Export im Modus Freier Text — Abschnitte werden nicht einbezogen.',
+      exportModeSections: 'Export im Modus Abschnitte — freier Text wird nicht einbezogen.',
     },
     formatting: {
       bold: 'Fett',

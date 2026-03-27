@@ -1257,9 +1257,12 @@ const [isPublishing, setIsPublishing] = useState(false);
           open={showExportDialog}
           onOpenChange={setShowExportDialog}
           biography={{
+            id,
             title: titleRef.current,
             author_name: biography.author_name,
             content: contentRef.current,
+            content_freeflow: contentFreeflowRef.current,
+            biography_mode: biographyModeRef.current,
             created_at: biography.created_at,
           }}
           isPublished={biographyStatus === 'published'}

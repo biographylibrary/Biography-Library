@@ -7,6 +7,8 @@ interface BiographyData {
   title: string;
   author_name: string;
   content: Record<string, { text: string }>;
+  content_freeflow?: string;
+  biography_mode?: 'sections' | 'freeflow';
   created_at: string;
 }
 
@@ -22,6 +24,17 @@ function stripHtmlTags(html: string): string {
   return tmp.textContent || tmp.innerText || '';
 }
 
+function buildHeader(biography: BiographyData): string[] {
+  return [
+    `${biography.title}`,
+    `By ${biography.author_name}`,
+    `Created: ${new Date(biography.created_at).toLocaleDateString()}`,
+    '',
+    '='.repeat(80),
+    '',
+  ];
+}
+
 export async function exportAsPlainText(
   biography: BiographyData,
   sections: ExportSection[],
@@ -29,6 +42,17 @@ export async function exportAsPlainText(
 ): Promise<void> {
   const date = new Date().toISOString().split('T')[0];
   const baseFileName = `${biography.title.replace(/[^a-z0-9]/gi, '-').toLowerCase()}_${date}`;
+  const isFreeFlow = biography.biography_mode === 'freeflow';
+
+  if (isFreeFlow) {
+    const content = [
+      ...buildHeader(biography),
+      stripHtmlTags(biography.content_freeflow || ''),
+    ].join('\n');
+    const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+    saveAs(blob, `${baseFileName}.txt`);
+    return;
+  }
 
   if (separateFiles) {
     const zip = new JSZip();
@@ -54,14 +78,7 @@ export async function exportAsPlainText(
     const zipBlob = await zip.generateAsync({ type: 'blob' });
     saveAs(zipBlob, `${baseFileName}_sezioni.zip`);
   } else {
-    let content = [
-      `${biography.title}`,
-      `By ${biography.author_name}`,
-      `Created: ${new Date(biography.created_at).toLocaleDateString()}`,
-      '',
-      '='.repeat(80),
-      '',
-    ].join('\n');
+    let content = buildHeader(biography).join('\n');
 
     sections.forEach((section) => {
       content += `\n\n=== ${section.title.toUpperCase()} ===\n\n`;
@@ -80,6 +97,14 @@ export async function exportAsRTF(
 ): Promise<void> {
   const date = new Date().toISOString().split('T')[0];
   const baseFileName = `${biography.title.replace(/[^a-z0-9]/gi, '-').toLowerCase()}_${date}`;
+  const isFreeFlow = biography.biography_mode === 'freeflow';
+
+  const escapeRTF = (text: string): string => {
+    return text
+      .replace(/\\/g, '\\\\')
+      .replace(/{/g, '\\{')
+      .replace(/}/g, '\\}');
+  };
 
   const generateRTF = (title: string, content: string, isComplete: boolean = false): string => {
     let rtf = '{\\rtf1\\ansi\\deff0\n';
@@ -110,12 +135,27 @@ export async function exportAsRTF(
     return rtf;
   };
 
-  const escapeRTF = (text: string): string => {
-    return text
-      .replace(/\\/g, '\\\\')
-      .replace(/{/g, '\\{')
-      .replace(/}/g, '\\}');
-  };
+  if (isFreeFlow) {
+    let fullRTF = '{\\rtf1\\ansi\\deff0\n';
+    fullRTF += '{\\fonttbl{\\f0 Times New Roman;}}\n';
+    fullRTF += '\\pard\\qc\\fs32\\b ' + escapeRTF(biography.title) + '\\par\n';
+    fullRTF += '\\pard\\qc\\fs20 By ' + escapeRTF(biography.author_name) + '\\par\n';
+    fullRTF += '\\pard\\qc\\fs16 ' + new Date(biography.created_at).toLocaleDateString() + '\\par\n';
+    fullRTF += '\\pard\\par\\par\n';
+
+    const plainText = stripHtmlTags(biography.content_freeflow || '');
+    plainText.split('\n\n').forEach((para) => {
+      if (para.trim()) {
+        fullRTF += '\\pard\\fs24 ' + escapeRTF(para.trim()) + '\\par\n';
+        fullRTF += '\\pard\\par\n';
+      }
+    });
+
+    fullRTF += '}';
+    const blob = new Blob([fullRTF], { type: 'application/rtf' });
+    saveAs(blob, `${baseFileName}.rtf`);
+    return;
+  }
 
   if (separateFiles) {
     const zip = new JSZip();
@@ -167,6 +207,7 @@ export async function exportAsDOCX(
 ): Promise<void> {
   const date = new Date().toISOString().split('T')[0];
   const baseFileName = `${biography.title.replace(/[^a-z0-9]/gi, '-').toLowerCase()}_${date}`;
+  const isFreeFlow = biography.biography_mode === 'freeflow';
 
   const createDocument = (title: string, content: string, isComplete: boolean = false): Document => {
     const children: Paragraph[] = [];
@@ -226,6 +267,46 @@ export async function exportAsDOCX(
       }],
     });
   };
+
+  if (isFreeFlow) {
+    const { Packer } = await import('docx');
+    const children: Paragraph[] = [
+      new Paragraph({
+        text: biography.title,
+        heading: HeadingLevel.TITLE,
+        alignment: AlignmentType.CENTER,
+      }),
+      new Paragraph({
+        text: `By ${biography.author_name}`,
+        alignment: AlignmentType.CENTER,
+      }),
+      new Paragraph({
+        text: new Date(biography.created_at).toLocaleDateString(),
+        alignment: AlignmentType.CENTER,
+      }),
+      new Paragraph({ text: '' }),
+      new Paragraph({ text: '' }),
+    ];
+
+    const plainText = stripHtmlTags(biography.content_freeflow || '');
+    plainText.split('\n\n').forEach((para) => {
+      if (para.trim()) {
+        children.push(
+          new Paragraph({
+            children: [
+              new TextRun({ text: para.trim(), font: 'Times New Roman', size: 24 }),
+            ],
+          }),
+          new Paragraph({ text: '' })
+        );
+      }
+    });
+
+    const doc = new Document({ sections: [{ properties: {}, children }] });
+    const blob = await Packer.toBlob(doc);
+    saveAs(blob, `${baseFileName}.docx`);
+    return;
+  }
 
   if (separateFiles) {
     const zip = new JSZip();

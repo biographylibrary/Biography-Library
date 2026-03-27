@@ -29,6 +29,8 @@ interface BiographyData {
   title: string;
   author_name: string;
   content: Record<string, { text: string }>;
+  content_freeflow?: string;
+  biography_mode?: 'sections' | 'freeflow';
   created_at: string;
 }
 
@@ -134,6 +136,27 @@ export function AdvancedExportDialog({
   const handleExport = async () => {
     setIsExporting(true);
     try {
+      const isFreeFlow = biography.biography_mode === 'freeflow';
+
+      if (isFreeFlow) {
+        switch (format) {
+          case 'pdf':
+            generateBiographyPDF(biography);
+            break;
+          case 'txt':
+            await exportAsPlainText(biography, [], false);
+            break;
+          case 'rtf':
+            await exportAsRTF(biography, [], false);
+            break;
+          case 'docx':
+            await exportAsDOCX(biography, [], false);
+            break;
+        }
+        onOpenChange(false);
+        return;
+      }
+
       const sectionsToExport = getSectionsToExport();
 
       if (sectionsToExport.length === 0) {
@@ -338,6 +361,14 @@ export function AdvancedExportDialog({
           </div>
         </ScrollArea>
 
+        <div className="px-1 pb-2">
+          <p className="text-xs text-muted-foreground leading-relaxed">
+            {biography.biography_mode === 'freeflow'
+              ? t.editor.exportModeFreeFlow
+              : t.editor.exportModeSections}
+          </p>
+        </div>
+
         <DialogFooter className="gap-2">
           <Button
             type="button"
@@ -350,7 +381,7 @@ export function AdvancedExportDialog({
           <Button
             type="button"
             onClick={handleExport}
-            disabled={isExporting || (contentSelection === 'custom' && selectedSections.length === 0)}
+            disabled={isExporting || (biography.biography_mode !== 'freeflow' && contentSelection === 'custom' && selectedSections.length === 0)}
           >
             {isExporting ? (
               <>
