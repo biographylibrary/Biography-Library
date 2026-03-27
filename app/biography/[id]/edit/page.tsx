@@ -1062,14 +1062,16 @@ const [isPublishing, setIsPublishing] = useState(false);
                     >
                       {t.editor.editorMode}
                     </Button>
-                    <Button
-                      variant={editorMode === 'conversation' ? 'default' : 'ghost'}
-                      size="sm"
-                      onClick={() => setEditorMode('conversation')}
-                      className="h-8 text-xs"
-                    >
-                      {t.editor.conversationMode}
-                    </Button>
+                    {biographyMode !== 'freeflow' && (
+                      <Button
+                        variant={editorMode === 'conversation' ? 'default' : 'ghost'}
+                        size="sm"
+                        onClick={() => setEditorMode('conversation')}
+                        className="h-8 text-xs"
+                      >
+                        {t.editor.conversationMode}
+                      </Button>
+                    )}
                   </>
                 )}
                 {aiEnabled && (

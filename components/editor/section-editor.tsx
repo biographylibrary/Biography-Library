@@ -78,6 +78,8 @@ export function SectionEditor({
   const section = BIOGRAPHY_SECTIONS.find((s) => s.key === sectionKey);
   const { t } = useTranslation();
 
+  const isFreeflow = sectionKey === 'freeflow';
+
   const sectionTitle = titleOverride || t.sectionTitles[sectionKey as keyof typeof t.sectionTitles] || section?.title || '';
 
   const handleVoiceTranscript = (transcript: string) => {
@@ -109,7 +111,7 @@ export function SectionEditor({
         <div className="flex flex-col xl:flex-row xl:items-center xl:justify-between gap-2">
           <div className="flex items-center gap-1.5 min-w-0">
             <h2 className="text-base sm:text-lg font-semibold truncate">{sectionTitle}</h2>
-            {!isPublished && (
+            {!isPublished && !isFreeflow && (
               <Button
                 type="button"
                 variant="ghost"
@@ -123,7 +125,7 @@ export function SectionEditor({
             )}
           </div>
           <div className="flex items-center gap-0.5 sm:gap-1 shrink-0 flex-wrap">
-          {!isPublished && aiEnabled && (
+          {!isPublished && !isFreeflow && aiEnabled && (
             <>
               <Button
                 variant="outline"
@@ -170,24 +172,36 @@ export function SectionEditor({
             </>
           )}
           {!isPublished && (
-            <Button
-              variant={aiEnabled ? 'default' : 'outline'}
-              size="sm"
-              className={cn(
-                'gap-1 text-xs h-7 px-2',
-                aiEnabled && 'bg-primary hover:bg-primary/90'
-              )}
-              onClick={onToggleAi}
-            >
-              {aiEnabled ? (
-                <Sparkles className="h-3.5 w-3.5" />
-              ) : (
+            isFreeflow ? (
+              <Button
+                variant="outline"
+                size="sm"
+                className="gap-1 text-xs h-7 px-2 cursor-not-allowed"
+                disabled
+              >
                 <Power className="h-3.5 w-3.5" />
-              )}
-              <span className="hidden xl:inline">
-                {aiEnabled ? t.editor.aiOn : t.editor.aiOff}
-              </span>
-            </Button>
+                <span className="hidden xl:inline">{t.editor.aiOff}</span>
+              </Button>
+            ) : (
+              <Button
+                variant={aiEnabled ? 'default' : 'outline'}
+                size="sm"
+                className={cn(
+                  'gap-1 text-xs h-7 px-2',
+                  aiEnabled && 'bg-primary hover:bg-primary/90'
+                )}
+                onClick={onToggleAi}
+              >
+                {aiEnabled ? (
+                  <Sparkles className="h-3.5 w-3.5" />
+                ) : (
+                  <Power className="h-3.5 w-3.5" />
+                )}
+                <span className="hidden xl:inline">
+                  {aiEnabled ? t.editor.aiOn : t.editor.aiOff}
+                </span>
+              </Button>
+            )
           )}
           {!isPublished && onMarkComplete && (
             <Button
