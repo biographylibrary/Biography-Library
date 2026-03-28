@@ -1020,7 +1020,7 @@ const [isPublishing, setIsPublishing] = useState(false);
 
         <aside
           className={cn(
-            'w-[280px] border-r border-border/50 bg-card shrink-0 flex flex-col h-full',
+            'w-full lg:w-72 border-r border-border/50 bg-card shrink-0 flex flex-col h-full',
             'absolute lg:relative inset-y-0 left-0 z-30 lg:top-0',
             'transition-transform duration-200',
             showMobileSidebar
@@ -1056,44 +1056,43 @@ const [isPublishing, setIsPublishing] = useState(false);
               <div className="border-b border-border/50 px-4 py-2 bg-card/30 flex flex-wrap items-center gap-2 shrink-0">
                 {biographyStatus !== 'final_version' && (
                   <>
-                    <Button
-                      variant={editorMode === 'editor' ? 'default' : 'ghost'}
-                      size="sm"
-                      onClick={() => setEditorMode('editor')}
-                      className="h-8 text-xs"
-                    >
-                      {t.editor.editorMode}
-                    </Button>
-                    {biographyMode !== 'freeflow' && (
+                    {biographyMode === 'freeflow' ? (
                       <Button
-                        variant={editorMode === 'conversation' ? 'default' : 'ghost'}
                         size="sm"
-                        onClick={() => setEditorMode('conversation')}
+                        onClick={() => setShowSubmitForReviewDialog(true)}
+                        disabled={!contentFreeflow.trim() || biographyStatus === 'under_review'}
+                        className="h-8 text-xs text-white rounded-md disabled:opacity-50 disabled:cursor-not-allowed"
+                        style={{ backgroundColor: '#944454', borderColor: '#944454' }}
+                      >
+                        {language === 'it' ? 'Invia per la Revisione' :
+                         language === 'fr' ? 'Soumettre pour Révision' :
+                         language === 'de' ? 'Zur Überprüfung Einreichen' :
+                         'Submit for Review'}
+                      </Button>
+                    ) : (
+                      <Button
+                        variant={editorMode === 'editor' ? 'default' : 'ghost'}
+                        size="sm"
+                        onClick={() => setEditorMode('editor')}
                         className="h-8 text-xs"
                       >
-                        {t.editor.conversationMode}
+                        {t.editor.editorMode}
                       </Button>
                     )}
+                    <Button
+                      variant={editorMode === 'conversation' ? 'default' : 'ghost'}
+                      size="sm"
+                      onClick={() => setEditorMode('conversation')}
+                      className="h-8 text-xs"
+                    >
+                      {t.editor.conversationMode}
+                    </Button>
                   </>
                 )}
                 {aiEnabled && (
                   <div className={biographyStatus !== 'final_version' ? 'sm:ml-auto' : ''}>
                     <AiUsageIndicator refreshTrigger={aiUsageRefresh} />
                   </div>
-                )}
-                {biographyMode === 'freeflow' && biographyStatus !== 'final_version' && (
-                  <Button
-                    size="sm"
-                    onClick={() => setShowSubmitForReviewDialog(true)}
-                    disabled={!contentFreeflow.trim() || biographyStatus === 'under_review'}
-                    className="h-8 text-xs text-white disabled:opacity-50"
-                    style={{ backgroundColor: '#944454', borderColor: '#944454' }}
-                  >
-                    {language === 'it' ? 'Invia per la Revisione' :
-                     language === 'fr' ? 'Soumettre pour Révision' :
-                     language === 'de' ? 'Zur Überprüfung Einreichen' :
-                     'Submit for Review'}
-                  </Button>
                 )}
               </div>
             )}
