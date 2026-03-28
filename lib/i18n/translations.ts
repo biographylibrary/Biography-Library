@@ -292,6 +292,8 @@ export interface Translations {
     bookStructureEpiloguePlaceholder: string;
     bookStructureAcknowledgementsPlaceholder: string;
     bookStructureCreditPlaceholder: string;
+    importNoticeSectionsMode: string;
+    importNoticeFreeflowMode: string;
     bookStructureMainText: string;
     bookStructureImportText: string;
     bookStructureImportTitle: string;
@@ -1318,6 +1320,8 @@ export const translations: Record<Language, Translations> = {
       bookStructureEpiloguePlaceholder: 'Write the epilogue…',
       bookStructureAcknowledgementsPlaceholder: 'Write the acknowledgements…',
       bookStructureCreditPlaceholder: 'Specific credits…',
+      importNoticeSectionsMode: 'You are in Sections mode. Text will be imported into the currently selected section. To import a different chapter, first select it from the sidebar, then import.',
+      importNoticeFreeflowMode: 'You are in Free Flow mode.',
       bookStructureMainText: 'Main text',
       bookStructureImportText: 'Import text',
       bookStructureImportTitle: 'Import main text',
@@ -2342,6 +2346,8 @@ export const translations: Record<Language, Translations> = {
       bookStructureEpiloguePlaceholder: 'Scrivi l\'epilogo…',
       bookStructureAcknowledgementsPlaceholder: 'Scrivi i ringraziamenti…',
       bookStructureCreditPlaceholder: 'Crediti specifici…',
+      importNoticeSectionsMode: 'Sei in modalità Sezioni. Il testo verrà importato nella sezione attualmente selezionata. Per importare un altro capitolo, selezionalo prima dalla barra laterale.',
+      importNoticeFreeflowMode: 'Sei in modalità Testo libero.',
       bookStructureMainText: 'Testo principale',
       bookStructureImportText: 'Importa testo',
       bookStructureImportTitle: 'Importa testo principale',
@@ -3366,6 +3372,8 @@ export const translations: Record<Language, Translations> = {
       bookStructureEpiloguePlaceholder: 'Rédigez l\'épilogue…',
       bookStructureAcknowledgementsPlaceholder: 'Rédigez les remerciements…',
       bookStructureCreditPlaceholder: 'Crédits spécifiques…',
+      importNoticeSectionsMode: 'Vous êtes en mode Sections. Le texte sera importé dans la section actuellement sélectionnée. Pour importer un autre chapitre, sélectionnez-le d\'abord dans la barre latérale.',
+      importNoticeFreeflowMode: 'Vous êtes en mode Texte libre.',
       bookStructureMainText: 'Texte principal',
       bookStructureImportText: 'Importer le texte',
       bookStructureImportTitle: 'Importer le texte principal',
@@ -4390,6 +4398,8 @@ export const translations: Record<Language, Translations> = {
       bookStructureEpiloguePlaceholder: 'Epilog schreiben…',
       bookStructureAcknowledgementsPlaceholder: 'Danksagungen schreiben…',
       bookStructureCreditPlaceholder: 'Spezifische Credits…',
+      importNoticeSectionsMode: 'Sie befinden sich im Abschnittsmodus. Der Text wird in den aktuell ausgewählten Abschnitt importiert. Um ein anderes Kapitel zu importieren, wählen Sie es zuerst in der Seitenleiste aus.',
+      importNoticeFreeflowMode: 'Sie befinden sich im Freitextmodus.',
       bookStructureMainText: 'Haupttext',
       bookStructureImportText: 'Text importieren',
       bookStructureImportTitle: 'Haupttext importieren',

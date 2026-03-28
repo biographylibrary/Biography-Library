@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useRef, useCallback } from 'react';
-import { Upload, CircleAlert as AlertCircle, Loader as Loader2 } from 'lucide-react';
+import { Upload, CircleAlert as AlertCircle, Loader as Loader2, Info } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -39,6 +39,7 @@ interface ImportTextDialogProps {
   currentFreeflowContent: string;
   onImportedToSection: (sectionKey: string, newContent: string) => void;
   onImportedToFreeflow: (newContent: string) => void;
+  biographyMode?: 'sections' | 'freeflow';
 }
 
 type ConflictAction = 'replace' | 'append';
@@ -52,6 +53,7 @@ export function ImportTextDialog({
   currentFreeflowContent,
   onImportedToSection,
   onImportedToFreeflow,
+  biographyMode = 'sections',
 }: ImportTextDialogProps) {
   const { t } = useTranslation();
   const [dragActive, setDragActive] = useState(false);
@@ -243,6 +245,15 @@ export function ImportTextDialog({
         </DialogHeader>
 
         <div className="flex-1 overflow-y-auto px-6 py-4 space-y-5">
+          <div className="flex items-start gap-2.5 rounded-md bg-muted/50 border border-border/50 px-3 py-2.5">
+            <Info className="h-4 w-4 text-muted-foreground shrink-0 mt-0.5" />
+            <p className="text-xs text-muted-foreground leading-relaxed">
+              {biographyMode === 'freeflow'
+                ? t.editor.importNoticeFreeflowMode
+                : t.editor.importNoticeSectionsMode}
+            </p>
+          </div>
+
           <Alert className="bg-muted/60 border-border/60">
             <AlertCircle className="h-4 w-4 text-muted-foreground" />
             <AlertDescription className="text-sm text-muted-foreground space-y-1">
@@ -286,7 +297,7 @@ export function ImportTextDialog({
                 <input
                   ref={fileInputRef}
                   type="file"
-                  accept=".txt,.rtf,.docx"
+                  accept=".txt"
                   onChange={handleFileInputChange}
                   className="hidden"
                 />

@@ -1070,23 +1070,25 @@ const [isPublishing, setIsPublishing] = useState(false);
                          'Submit for Review'}
                       </Button>
                     ) : (
-                      <Button
-                        variant={editorMode === 'editor' ? 'default' : 'ghost'}
-                        size="sm"
-                        onClick={() => setEditorMode('editor')}
-                        className="h-8 text-xs"
-                      >
-                        {t.editor.editorMode}
-                      </Button>
+                      <>
+                        <Button
+                          variant={editorMode === 'editor' ? 'default' : 'ghost'}
+                          size="sm"
+                          onClick={() => setEditorMode('editor')}
+                          className="h-8 text-xs"
+                        >
+                          {t.editor.editorMode}
+                        </Button>
+                        <Button
+                          variant={editorMode === 'conversation' ? 'default' : 'ghost'}
+                          size="sm"
+                          onClick={() => setEditorMode('conversation')}
+                          className="h-8 text-xs"
+                        >
+                          {t.editor.conversationMode}
+                        </Button>
+                      </>
                     )}
-                    <Button
-                      variant={editorMode === 'conversation' ? 'default' : 'ghost'}
-                      size="sm"
-                      onClick={() => setEditorMode('conversation')}
-                      className="h-8 text-xs"
-                    >
-                      {t.editor.conversationMode}
-                    </Button>
                   </>
                 )}
                 {aiEnabled && (
@@ -1139,6 +1141,7 @@ const [isPublishing, setIsPublishing] = useState(false);
                   onImportDialogOpenChange={(v) => { if (!v) setShowSidebarImport(false); }}
                   isPublished={(biographyStatus as string) === 'published' || isFrozen}
                   contentFreeflow={contentFreeflow}
+                  biographyMode="freeflow"
                   onImportedToFreeflow={(newContent) => {
                     setContentFreeflow(newContent);
                   }}
@@ -1169,6 +1172,7 @@ const [isPublishing, setIsPublishing] = useState(false);
                   onImportDialogOpenChange={(v) => { if (!v) setShowSidebarImport(false); }}
                   isPublished={(biographyStatus as string) === 'published' || isFrozen}
                   contentFreeflow={contentFreeflow}
+                  biographyMode="sections"
                   onImportedToSection={(sectionKey, newContent) => {
                     setContent((prev) => ({
                       ...prev,

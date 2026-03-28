@@ -38,6 +38,7 @@ interface SectionEditorProps {
   onImportedToSection?: (sectionKey: string, newContent: string) => void;
   onImportedToFreeflow?: (newContent: string) => void;
   titleOverride?: string;
+  biographyMode?: 'sections' | 'freeflow';
 }
 
 export function SectionEditor({
@@ -68,6 +69,7 @@ export function SectionEditor({
   onImportedToSection,
   onImportedToFreeflow,
   titleOverride,
+  biographyMode = 'sections',
 }: SectionEditorProps) {
   const [showVoice, setShowVoice] = useState(false);
   const [showImportDialog, setShowImportDialog] = useState(false);
@@ -260,6 +262,7 @@ export function SectionEditor({
           currentSectionKey={sectionKey}
           currentSectionContent={data.text}
           currentFreeflowContent={contentFreeflow}
+          biographyMode={biographyMode}
           onImportedToSection={(key, content) => {
             if (key === sectionKey) onTextChange(content);
             onImportedToSection?.(key, content);
