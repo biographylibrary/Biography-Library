@@ -1045,6 +1045,8 @@ const [isPublishing, setIsPublishing] = useState(false);
             contentFreeflow={contentFreeflow}
             onModeChange={handleModeChange}
             onFreeflowChange={handleFreeflowChange}
+            biographyId={id}
+            userId={user.id}
           />
         </aside>
 

@@ -15,7 +15,7 @@ import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
-import { Download, Loader as Loader2, Info } from 'lucide-react';
+import { Download, Loader as Loader2, Info, TriangleAlert as AlertTriangle, X } from 'lucide-react';
 import { BIOGRAPHY_SECTIONS } from '@/lib/editor-constants';
 import { generateBiographyPDF, PdfVariant } from '@/lib/pdf-export';
 import { exportAsPlainText, exportAsRTF, exportAsDOCX } from '@/lib/export-utils';
@@ -58,6 +58,7 @@ export function AdvancedExportDialog({
   const [includeNotesAndTodos, setIncludeNotesAndTodos] = useState(false);
   const [separateFiles, setSeparateFiles] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
+  const [noChaptersWarningDismissed, setNoChaptersWarningDismissed] = useState(false);
 
   const isPdfFormat = format === 'pdf-b5-standard' || format === 'pdf-b5-print';
 
@@ -233,6 +234,23 @@ export function AdvancedExportDialog({
             {t.exportDialog.description}
           </DialogDescription>
         </DialogHeader>
+
+        {biography.biography_mode === 'freeflow' && !noChaptersWarningDismissed && (
+          <div className="flex items-start gap-3 rounded-lg bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 px-4 py-3">
+            <AlertTriangle className="h-4 w-4 mt-0.5 shrink-0 text-amber-600 dark:text-amber-400" />
+            <p className="text-sm text-amber-800 dark:text-amber-200 leading-relaxed flex-1">
+              {t.editor.noChaptersWarning}
+            </p>
+            <button
+              type="button"
+              onClick={() => setNoChaptersWarningDismissed(true)}
+              className="shrink-0 text-amber-600 dark:text-amber-400 hover:text-amber-800 dark:hover:text-amber-200 transition-colors"
+              aria-label={t.common.close}
+            >
+              <X className="h-4 w-4" />
+            </button>
+          </div>
+        )}
 
         <ScrollArea className="flex-1 pr-4">
           <div className="space-y-6 py-4">

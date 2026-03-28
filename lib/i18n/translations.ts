@@ -274,6 +274,37 @@ export interface Translations {
     importAddAtEnd: string;
     exportModeFreeFlow: string;
     exportModeSections: string;
+    bookStructureTitle: string;
+    bookStructureFrontMatter: string;
+    bookStructureBackMatter: string;
+    bookStructureDedication: string;
+    bookStructureEpigraph: string;
+    bookStructureEpigraphQuote: string;
+    bookStructureEpigraphSource: string;
+    bookStructurePreface: string;
+    bookStructureEpilogue: string;
+    bookStructureAcknowledgements: string;
+    bookStructureCredits: string;
+    bookStructureDedicationPlaceholder: string;
+    bookStructureEpigraphQuotePlaceholder: string;
+    bookStructureEpigraphSourcePlaceholder: string;
+    bookStructurePrefacePlaceholder: string;
+    bookStructureEpiloguePlaceholder: string;
+    bookStructureAcknowledgementsPlaceholder: string;
+    bookStructureCreditPlaceholder: string;
+    bookStructureMainText: string;
+    bookStructureImportText: string;
+    bookStructureImportTitle: string;
+    bookStructureImportDescription: string;
+    bookStructureImportPaste: string;
+    bookStructureImportPastePlaceholder: string;
+    bookStructureImportOrFile: string;
+    bookStructureImportSelectFile: string;
+    bookStructureImportConfirm: string;
+    bookStructureImportReplaceWarning: string;
+    bookStructureImportReplace: string;
+    bookStructureImportCancel: string;
+    noChaptersWarning: string;
   };
   formatting: {
     bold: string;
@@ -1269,6 +1300,37 @@ export const translations: Record<Language, Translations> = {
       importAddAtEnd: 'Add at the end',
       exportModeFreeFlow: 'Exporting in Free Flow mode — sections will not be included.',
       exportModeSections: 'Exporting in Sections mode — free flow text will not be included.',
+      bookStructureTitle: 'Book Structure',
+      bookStructureFrontMatter: 'Front matter',
+      bookStructureBackMatter: 'Back matter',
+      bookStructureDedication: 'Dedication',
+      bookStructureEpigraph: 'Epigraph',
+      bookStructureEpigraphQuote: 'Quote',
+      bookStructureEpigraphSource: 'Attribution',
+      bookStructurePreface: 'Preface / Incipit',
+      bookStructureEpilogue: 'Epilogue',
+      bookStructureAcknowledgements: 'Acknowledgements',
+      bookStructureCredits: 'Specific credits',
+      bookStructureDedicationPlaceholder: 'e.g. "To my mother"',
+      bookStructureEpigraphQuotePlaceholder: 'Quote text…',
+      bookStructureEpigraphSourcePlaceholder: 'Author, source…',
+      bookStructurePrefacePlaceholder: 'Write the preface…',
+      bookStructureEpiloguePlaceholder: 'Write the epilogue…',
+      bookStructureAcknowledgementsPlaceholder: 'Write the acknowledgements…',
+      bookStructureCreditPlaceholder: 'Specific credits…',
+      bookStructureMainText: 'Main text',
+      bookStructureImportText: 'Import text',
+      bookStructureImportTitle: 'Import main text',
+      bookStructureImportDescription: 'Paste your text or upload a .txt file. This will replace the current main content.',
+      bookStructureImportPaste: 'Paste text',
+      bookStructureImportPastePlaceholder: 'Paste your text here…',
+      bookStructureImportOrFile: 'or upload a file',
+      bookStructureImportSelectFile: 'Select .txt file',
+      bookStructureImportConfirm: 'Import',
+      bookStructureImportReplaceWarning: 'The main text already contains content. Importing will replace it. Are you sure?',
+      bookStructureImportReplace: 'Yes, replace',
+      bookStructureImportCancel: 'Cancel',
+      noChaptersWarning: 'No chapters defined. The book will be a continuous text without chapter breaks. To add chapters, switch to Sections mode.',
     },
     formatting: {
       bold: 'Bold',
@@ -2262,6 +2324,37 @@ export const translations: Record<Language, Translations> = {
       importAddAtEnd: 'Aggiungi in fondo',
       exportModeFreeFlow: 'Export in modalità Testo libero — le sezioni non saranno incluse.',
       exportModeSections: 'Export in modalità Sezioni — il testo libero non sarà incluso.',
+      bookStructureTitle: 'Struttura del libro',
+      bookStructureFrontMatter: 'Materiale iniziale',
+      bookStructureBackMatter: 'Materiale finale',
+      bookStructureDedication: 'Dedica',
+      bookStructureEpigraph: 'Epigrafe',
+      bookStructureEpigraphQuote: 'Citazione',
+      bookStructureEpigraphSource: 'Attribuzione',
+      bookStructurePreface: 'Prefazione / Incipit',
+      bookStructureEpilogue: 'Epilogo',
+      bookStructureAcknowledgements: 'Ringraziamenti',
+      bookStructureCredits: 'Crediti specifici',
+      bookStructureDedicationPlaceholder: 'Es. «A mia madre»',
+      bookStructureEpigraphQuotePlaceholder: 'Testo della citazione…',
+      bookStructureEpigraphSourcePlaceholder: 'Autore, fonte…',
+      bookStructurePrefacePlaceholder: 'Scrivi la prefazione…',
+      bookStructureEpiloguePlaceholder: 'Scrivi l\'epilogo…',
+      bookStructureAcknowledgementsPlaceholder: 'Scrivi i ringraziamenti…',
+      bookStructureCreditPlaceholder: 'Crediti specifici…',
+      bookStructureMainText: 'Testo principale',
+      bookStructureImportText: 'Importa testo',
+      bookStructureImportTitle: 'Importa testo principale',
+      bookStructureImportDescription: 'Incolla il tuo testo o carica un file .txt. Questo sostituirà il contenuto principale attuale.',
+      bookStructureImportPaste: 'Incolla testo',
+      bookStructureImportPastePlaceholder: 'Incolla il tuo testo qui…',
+      bookStructureImportOrFile: 'oppure carica un file',
+      bookStructureImportSelectFile: 'Seleziona file .txt',
+      bookStructureImportConfirm: 'Importa',
+      bookStructureImportReplaceWarning: 'Il testo principale contiene già dei contenuti. L\'importazione li sostituirà. Sei sicuro?',
+      bookStructureImportReplace: 'Sì, sostituisci',
+      bookStructureImportCancel: 'Annulla',
+      noChaptersWarning: 'Nessun capitolo definito. Il libro sarà un testo continuo senza interruzioni di capitolo. Per aggiungere capitoli, passa alla modalità Sezioni.',
     },
     formatting: {
       bold: 'Grassetto',
@@ -3255,6 +3348,37 @@ export const translations: Record<Language, Translations> = {
       importAddAtEnd: 'Ajouter à la fin',
       exportModeFreeFlow: 'Export en mode Texte libre — les sections ne seront pas incluses.',
       exportModeSections: 'Export en mode Sections — le texte libre ne sera pas inclus.',
+      bookStructureTitle: 'Structure du livre',
+      bookStructureFrontMatter: 'Matière liminaire',
+      bookStructureBackMatter: 'Matière finale',
+      bookStructureDedication: 'Dédicace',
+      bookStructureEpigraph: 'Épigraphe',
+      bookStructureEpigraphQuote: 'Citation',
+      bookStructureEpigraphSource: 'Attribution',
+      bookStructurePreface: 'Préface / Incipit',
+      bookStructureEpilogue: 'Épilogue',
+      bookStructureAcknowledgements: 'Remerciements',
+      bookStructureCredits: 'Crédits spécifiques',
+      bookStructureDedicationPlaceholder: 'Ex. «À ma mère»',
+      bookStructureEpigraphQuotePlaceholder: 'Texte de la citation…',
+      bookStructureEpigraphSourcePlaceholder: 'Auteur, source…',
+      bookStructurePrefacePlaceholder: 'Rédigez la préface…',
+      bookStructureEpiloguePlaceholder: 'Rédigez l\'épilogue…',
+      bookStructureAcknowledgementsPlaceholder: 'Rédigez les remerciements…',
+      bookStructureCreditPlaceholder: 'Crédits spécifiques…',
+      bookStructureMainText: 'Texte principal',
+      bookStructureImportText: 'Importer le texte',
+      bookStructureImportTitle: 'Importer le texte principal',
+      bookStructureImportDescription: 'Collez votre texte ou téléchargez un fichier .txt. Cela remplacera le contenu principal actuel.',
+      bookStructureImportPaste: 'Coller le texte',
+      bookStructureImportPastePlaceholder: 'Collez votre texte ici…',
+      bookStructureImportOrFile: 'ou télécharger un fichier',
+      bookStructureImportSelectFile: 'Sélectionner un fichier .txt',
+      bookStructureImportConfirm: 'Importer',
+      bookStructureImportReplaceWarning: 'Le texte principal contient déjà du contenu. L\'importation le remplacera. Êtes-vous sûr ?',
+      bookStructureImportReplace: 'Oui, remplacer',
+      bookStructureImportCancel: 'Annuler',
+      noChaptersWarning: 'Aucun chapitre défini. Le livre sera un texte continu sans coupure de chapitre. Pour ajouter des chapitres, passez en mode Sections.',
     },
     formatting: {
       bold: 'Gras',
@@ -4248,6 +4372,37 @@ export const translations: Record<Language, Translations> = {
       importAddAtEnd: 'Am Ende hinzufügen',
       exportModeFreeFlow: 'Export im Modus Freier Text — Abschnitte werden nicht einbezogen.',
       exportModeSections: 'Export im Modus Abschnitte — freier Text wird nicht einbezogen.',
+      bookStructureTitle: 'Buchstruktur',
+      bookStructureFrontMatter: 'Vorspann',
+      bookStructureBackMatter: 'Nachspann',
+      bookStructureDedication: 'Widmung',
+      bookStructureEpigraph: 'Epigraph',
+      bookStructureEpigraphQuote: 'Zitat',
+      bookStructureEpigraphSource: 'Quellenangabe',
+      bookStructurePreface: 'Vorwort / Incipit',
+      bookStructureEpilogue: 'Epilog',
+      bookStructureAcknowledgements: 'Danksagungen',
+      bookStructureCredits: 'Spezifische Credits',
+      bookStructureDedicationPlaceholder: 'z.B. «Meiner Mutter»',
+      bookStructureEpigraphQuotePlaceholder: 'Zitattext…',
+      bookStructureEpigraphSourcePlaceholder: 'Autor, Quelle…',
+      bookStructurePrefacePlaceholder: 'Vorwort schreiben…',
+      bookStructureEpiloguePlaceholder: 'Epilog schreiben…',
+      bookStructureAcknowledgementsPlaceholder: 'Danksagungen schreiben…',
+      bookStructureCreditPlaceholder: 'Spezifische Credits…',
+      bookStructureMainText: 'Haupttext',
+      bookStructureImportText: 'Text importieren',
+      bookStructureImportTitle: 'Haupttext importieren',
+      bookStructureImportDescription: 'Fügen Sie Ihren Text ein oder laden Sie eine .txt-Datei hoch. Dadurch wird der aktuelle Hauptinhalt ersetzt.',
+      bookStructureImportPaste: 'Text einfügen',
+      bookStructureImportPastePlaceholder: 'Fügen Sie Ihren Text hier ein…',
+      bookStructureImportOrFile: 'oder Datei hochladen',
+      bookStructureImportSelectFile: '.txt-Datei auswählen',
+      bookStructureImportConfirm: 'Importieren',
+      bookStructureImportReplaceWarning: 'Der Haupttext enthält bereits Inhalt. Beim Importieren wird er ersetzt. Sind Sie sicher?',
+      bookStructureImportReplace: 'Ja, ersetzen',
+      bookStructureImportCancel: 'Abbrechen',
+      noChaptersWarning: 'Keine Kapitel definiert. Das Buch wird ein fortlaufender Text ohne Kapitelunterbrechungen sein. Um Kapitel hinzuzufügen, wechseln Sie in den Abschnitte-Modus.',
     },
     formatting: {
       bold: 'Fett',

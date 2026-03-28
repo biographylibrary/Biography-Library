@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import { Check, Circle, Flag, ChevronRight, StickyNote, Images, Upload, Download } from 'lucide-react';
 import {
   BIOGRAPHY_SECTIONS,
@@ -8,6 +9,10 @@ import {
 } from '@/lib/editor-constants';
 import { useTranslation } from '@/lib/i18n/i18n-context';
 import { cn } from '@/lib/utils';
+import { BookStructurePanel } from './BookStructurePanel';
+import { FreeflowImportModal } from './FreeflowImportModal';
+import { Button } from '@/components/ui/button';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 interface SectionSidebarProps {
   content: BiographyContent;
@@ -26,6 +31,8 @@ interface SectionSidebarProps {
   contentFreeflow: string;
   onModeChange: (mode: 'sections' | 'freeflow') => void;
   onFreeflowChange: (value: string) => void;
+  biographyId?: string;
+  userId?: string;
 }
 
 export function SectionSidebar({
@@ -45,10 +52,14 @@ export function SectionSidebar({
   contentFreeflow,
   onModeChange,
   onFreeflowChange,
+  biographyId,
+  userId,
 }: SectionSidebarProps) {
   const { t } = useTranslation();
+  const [showFreeflowImport, setShowFreeflowImport] = useState(false);
 
   const totalCount = globalNotesCount + globalTodosCount;
+  const isFreeflow = biographyMode === 'freeflow';
 
   return (
     <nav className="flex flex-col h-full overflow-hidden">
@@ -79,11 +90,9 @@ export function SectionSidebar({
         </div>
       </div>
 
-      {biographyMode === 'freeflow' ? (
-        <div className="flex-1" />
-      ) : (
-        <>
-          <div className="flex-1 min-h-0 overflow-y-auto py-1">
+      <ScrollArea className="flex-1 min-h-0">
+        {!isFreeflow && (
+          <div className="py-1">
             {BIOGRAPHY_SECTIONS.map((section) => {
               const data = getSectionData(content, section.key);
               const isActive = activeSection === section.key;
@@ -121,20 +130,41 @@ export function SectionSidebar({
                 </button>
               );
             })}
-          </div>
 
-          {contentFreeflow.trim().length > 0 && (
-            <div className="border-t border-border/50 shrink-0">
-              <button
-                onClick={() => onModeChange('freeflow')}
-                className="w-full flex items-center px-3 py-2 text-xs text-muted-foreground hover:bg-muted/50 hover:text-foreground transition-colors"
-              >
-                <span className="font-medium">{t.editor.freeFlowReadOnly}</span>
-              </button>
-            </div>
-          )}
-        </>
-      )}
+            {contentFreeflow.trim().length > 0 && (
+              <div className="border-t border-border/50 mt-1">
+                <button
+                  onClick={() => onModeChange('freeflow')}
+                  className="w-full flex items-center px-3 py-2 text-xs text-muted-foreground hover:bg-muted/50 hover:text-foreground transition-colors"
+                >
+                  <span className="font-medium">{t.editor.freeFlowReadOnly}</span>
+                </button>
+              </div>
+            )}
+          </div>
+        )}
+
+        {isFreeflow && biographyId && (
+          <div className="border-b border-border/50 px-3 py-3">
+            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">
+              {t.editor.bookStructureMainText}
+            </p>
+            <Button
+              variant="outline"
+              size="sm"
+              className="w-full gap-2 text-xs"
+              onClick={() => setShowFreeflowImport(true)}
+            >
+              <Upload className="h-3.5 w-3.5" />
+              {t.editor.bookStructureImportText}
+            </Button>
+          </div>
+        )}
+
+        {biographyId && userId && (
+          <BookStructurePanel biographyId={biographyId} userId={userId} />
+        )}
+      </ScrollArea>
 
       <div className="border-t border-border/50 p-1.5 space-y-0.5 shrink-0">
         <button
@@ -181,6 +211,17 @@ export function SectionSidebar({
           <span>{t.notesAndTodos.exportText}</span>
         </button>
       </div>
+
+      {biographyId && (
+        <FreeflowImportModal
+          open={showFreeflowImport}
+          onOpenChange={setShowFreeflowImport}
+          currentContent={contentFreeflow}
+          onImport={(text) => {
+            onFreeflowChange(text);
+          }}
+        />
+      )}
     </nav>
   );
 }
