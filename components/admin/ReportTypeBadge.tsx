@@ -9,13 +9,13 @@ interface ReportTypeBadgeProps {
 
 const TYPE_STYLES: Record<string, string> = {
   level1_content: 'bg-[#6D323E] text-white dark:bg-[#6D323E] dark:text-white',
-  level2_content: 'bg-[#EDE4B9] text-[#121212] dark:bg-[#EDE4B9]/20 dark:text-[#EDE4B9]',
+  level2_content: 'bg-[#DDCF88] text-[#121212] dark:bg-[#DDCF88]/20 dark:text-[#DDCF88]',
   level3_content: 'bg-[#C4DAEB] text-[#121212] dark:bg-[#C4DAEB]/20 dark:text-[#C4DAEB]',
-  user_report: 'bg-[#EDE4B9] text-[#121212] dark:bg-[#EDE4B9]/20 dark:text-[#EDE4B9]',
-  living_person: 'bg-[#EDE4B9] text-[#121212] dark:bg-[#EDE4B9]/20 dark:text-[#EDE4B9]',
-  right_to_oblivion: 'bg-[#EDE4B9] text-[#121212] dark:bg-[#EDE4B9]/20 dark:text-[#EDE4B9]',
-  impersonation: 'bg-[#EDE4B9] text-[#121212] dark:bg-[#EDE4B9]/20 dark:text-[#EDE4B9]',
-  copyright: 'bg-[#EDE4B9] text-[#121212] dark:bg-[#EDE4B9]/20 dark:text-[#EDE4B9]',
+  user_report: 'bg-[#DDCF88] text-[#121212] dark:bg-[#DDCF88]/20 dark:text-[#DDCF88]',
+  living_person: 'bg-[#DDCF88] text-[#121212] dark:bg-[#DDCF88]/20 dark:text-[#DDCF88]',
+  right_to_oblivion: 'bg-[#DDCF88] text-[#121212] dark:bg-[#DDCF88]/20 dark:text-[#DDCF88]',
+  impersonation: 'bg-[#DDCF88] text-[#121212] dark:bg-[#DDCF88]/20 dark:text-[#DDCF88]',
+  copyright: 'bg-[#DDCF88] text-[#121212] dark:bg-[#DDCF88]/20 dark:text-[#DDCF88]',
   other: 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-300',
 };
 

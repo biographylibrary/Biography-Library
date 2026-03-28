@@ -72,7 +72,7 @@ export function PendingTodosCard() {
   const getPriorityColor = (priority: string) => {
     const colors = {
       low: 'text-gray-600',
-      medium: 'text-[#121212] dark:text-[#EDE4B9]',
+      medium: 'text-[#121212] dark:text-[#DDCF88]',
       high: 'text-red-600',
     };
     return colors[priority as keyof typeof colors] || colors.medium;

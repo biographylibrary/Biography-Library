@@ -149,13 +149,13 @@ export function MainBiographyCard({ biography, userName, userId, onDeleteClick, 
       case 'under_review':
         return { text: t.dashboard.statusUnderReview, className: 'bg-[#FFE4C0] text-[#7C3A00]' };
       case 'draft_1':
-        return { text: t.dashboard.statusDraft1, className: 'bg-[#EDE4B9] text-[#121212]' };
+        return { text: t.dashboard.statusDraft1, className: 'bg-[#DDCF88] text-[#121212]' };
       case 'draft_2':
-        return { text: t.dashboard.statusDraft2, className: 'bg-[#EDE4B9] text-[#121212]' };
+        return { text: t.dashboard.statusDraft2, className: 'bg-[#DDCF88] text-[#121212]' };
       case 'draft_3':
-        return { text: t.dashboard.statusDraft3, className: 'bg-[#EDE4B9] text-[#121212]' };
+        return { text: t.dashboard.statusDraft3, className: 'bg-[#DDCF88] text-[#121212]' };
       default:
-        return { text: t.dashboard.draft, className: 'bg-[#EDE4B9] text-[#121212]' };
+        return { text: t.dashboard.draft, className: 'bg-[#DDCF88] text-[#121212]' };
     }
   };
 
@@ -169,7 +169,7 @@ export function MainBiographyCard({ biography, userName, userId, onDeleteClick, 
   };
 
   const getProgressColor = (percentage: number) => {
-    return '#EDE4B9';
+    return '#DDCF88';
   };
 
   const getTotalWords = () => {
@@ -232,7 +232,7 @@ export function MainBiographyCard({ biography, userName, userId, onDeleteClick, 
   const getPriorityBadgeClass = (priority: string) => {
     const map: Record<string, string> = {
       low: 'bg-[#C4DAEB] text-[#121212] dark:bg-[#C4DAEB] dark:text-[#121212]',
-      medium: 'bg-[#EDE4B9] text-[#121212] dark:bg-[#EDE4B9] dark:text-[#121212]',
+      medium: 'bg-[#DDCF88] text-[#121212] dark:bg-[#DDCF88] dark:text-[#121212]',
       high: 'bg-[#6D323E] text-white dark:bg-[#6D323E] dark:text-white',
     };
     return map[priority] || map.medium;

@@ -246,7 +246,17 @@ export function ImportTextDialog({
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className="max-w-2xl max-h-[85vh] flex flex-col gap-0 p-0">
         <DialogHeader className="px-6 pt-6 pb-4 border-b border-border/50">
-          <DialogTitle>{t.importDialog.title.replace('{sectionName}', '')}</DialogTitle>
+          <DialogTitle>
+            {biographyMode === 'freeflow'
+              ? t.importDialog.titleFreeflow
+              : (() => {
+                  const section = BIOGRAPHY_SECTIONS.find((s) => s.key === currentSectionKey);
+                  const sectionName = section?.title?.trim();
+                  return sectionName
+                    ? t.importDialog.titleWithSection.replace('{sectionName}', sectionName)
+                    : t.importDialog.titleNoSection;
+                })()}
+          </DialogTitle>
         </DialogHeader>
 
         <div className="flex-1 overflow-y-auto px-6 py-4 space-y-5">

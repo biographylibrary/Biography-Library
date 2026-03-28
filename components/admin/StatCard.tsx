@@ -14,7 +14,7 @@ interface StatCardProps {
 const accentMap = {
   sky: 'bg-[#C4DAEB] text-[#121212] dark:bg-[#C4DAEB]/20 dark:text-[#C4DAEB]',
   emerald: 'bg-[#C8DFBE] text-[#121212] dark:bg-[#C8DFBE]/20 dark:text-[#C8DFBE]',
-  amber: 'bg-[#EDE4B9] dark:bg-[#EDE4B9]/20 text-[#121212] dark:text-[#EDE4B9]',
+  amber: 'bg-[#DDCF88] dark:bg-[#DDCF88]/20 text-[#121212] dark:text-[#DDCF88]',
   red: 'bg-[#6D323E] text-white dark:bg-[#6D323E] dark:text-white',
   neutral: 'bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400',
 };

@@ -63,7 +63,7 @@ function getRoleBadge(role: UserRole, label: string) {
     case 'super_admin':
       return <span className={`${base} bg-[#6D323E] text-white border-red-200 dark:bg-[#6D323E] dark:text-white dark:border-red-800`}>{label}</span>;
     case 'admin':
-      return <span className={`${base} bg-[#EDE4B9] text-[#121212] border-amber-200 dark:bg-[#EDE4B9]/20 dark:text-[#EDE4B9] dark:border-amber-800`}>{label}</span>;
+      return <span className={`${base} bg-[#DDCF88] text-[#121212] border-amber-200 dark:bg-[#DDCF88]/20 dark:text-[#DDCF88] dark:border-amber-800`}>{label}</span>;
     case 'reviewer':
       return <span className={`${base} bg-[#C4DAEB] text-[#121212] border-sky-200 dark:bg-[#C4DAEB]/20 dark:text-[#C4DAEB] dark:border-sky-800`}>{label}</span>;
     default:

@@ -216,7 +216,7 @@ export function SectionNotes({ biographyId, sectionKey }: SectionNotesProps) {
       },
       medium: {
         label: t.notesAndTodos.priorityMedium,
-        className: 'bg-[#EDE4B9] text-[#121212] dark:bg-[#EDE4B9] dark:text-[#121212]',
+        className: 'bg-[#DDCF88] text-[#121212] dark:bg-[#DDCF88] dark:text-[#121212]',
       },
       high: {
         label: t.notesAndTodos.priorityHigh,

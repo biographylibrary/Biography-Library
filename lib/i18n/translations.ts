@@ -557,6 +557,9 @@ export interface Translations {
   };
   importDialog: {
     title: string;
+    titleFreeflow: string;
+    titleWithSection: string;
+    titleNoSection: string;
     description: string;
     dragFile: string;
     dragFileHint: string;
@@ -1588,6 +1591,9 @@ export const translations: Record<Language, Translations> = {
     },
     importDialog: {
       title: 'Import text into section "{sectionName}"',
+      titleFreeflow: 'Import text',
+      titleWithSection: 'Import text into {sectionName}',
+      titleNoSection: 'Import text into section',
       description: 'Upload a file or paste text to import',
       dragFile: 'Drag a file here or click to select',
       dragFileHint: 'Supported format: .txt (max 5MB)',
@@ -2617,6 +2623,9 @@ export const translations: Record<Language, Translations> = {
     },
     importDialog: {
       title: 'Importa testo nella sezione "{sectionName}"',
+      titleFreeflow: 'Importa testo',
+      titleWithSection: 'Importa testo in {sectionName}',
+      titleNoSection: 'Importa testo nella sezione',
       description: 'Carica un file o incolla il testo da importare',
       dragFile: 'Trascina un file qui o clicca per selezionare',
       dragFileHint: 'Formato supportato: .txt (max 5MB)',
@@ -3646,6 +3655,9 @@ export const translations: Record<Language, Translations> = {
     },
     importDialog: {
       title: 'Importer du texte dans la section "{sectionName}"',
+      titleFreeflow: 'Importer du texte',
+      titleWithSection: 'Importer du texte dans {sectionName}',
+      titleNoSection: 'Importer du texte dans la section',
       description: 'Téléchargez un fichier ou collez le texte à importer',
       dragFile: 'Glissez un fichier ici ou cliquez pour sélectionner',
       dragFileHint: 'Format supporté : .txt (max 5MB)',
@@ -4675,6 +4687,9 @@ export const translations: Record<Language, Translations> = {
     },
     importDialog: {
       title: 'Text in Abschnitt "{sectionName}" importieren',
+      titleFreeflow: 'Text importieren',
+      titleWithSection: 'Text importieren in {sectionName}',
+      titleNoSection: 'Text in Abschnitt importieren',
       description: 'Datei hochladen oder Text einfügen zum Importieren',
       dragFile: 'Datei hierher ziehen oder klicken zum Auswählen',
       dragFileHint: 'Unterstütztes Format: .txt (max 5MB)',
