@@ -197,7 +197,7 @@ export function Header() {
 
                 <DropdownMenuSeparator />
 
-                <DropdownMenuItem onClick={() => router.push('/dashboard')} className="flex items-center gap-2 cursor-pointer">
+                <DropdownMenuItem onClick={() => router.push('/workspace')} className="flex items-center gap-2 cursor-pointer">
                   <LayoutDashboard className="h-4 w-4" />
                   <span>{t.nav.workspace}</span>
                 </DropdownMenuItem>
