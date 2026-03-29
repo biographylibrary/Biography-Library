@@ -33,6 +33,7 @@ export interface PublishedBiography {
   author_name: string;
   content_language: string;
   biography_type: 'autobiography' | 'memorial';
+  cover_mode: 'graphic' | 'photo';
   chapters_count: number;
   published_at: string | null;
   view_count?: number;
@@ -41,14 +42,14 @@ export interface PublishedBiography {
   slug: string | null;
 }
 
-const PUBLISHED_SELECT = 'id, title, author_name, content_language, biography_type, chapters_count, published_at, view_count, is_featured, featured_at, slug';
+const PUBLISHED_SELECT = 'id, title, author_name, content_language, biography_type, cover_mode, chapters_count, published_at, view_count, is_featured, featured_at, slug';
 
 export async function fetchPublishedBiographies() {
   const { data, error } = await supabase
     .from('biographies')
     .select(PUBLISHED_SELECT)
     .eq('status', 'published')
-    .eq('visibility', 'public')
+    .in('visibility', ['public', 'link-only'])
     .order('published_at', { ascending: false });
 
   return {
@@ -62,7 +63,7 @@ export async function fetchFeaturedBiographies() {
     .from('biographies')
     .select(PUBLISHED_SELECT)
     .eq('status', 'published')
-    .eq('visibility', 'public')
+    .in('visibility', ['public', 'link-only'])
     .eq('is_featured', true)
     .order('featured_at', { ascending: false })
     .limit(6);
@@ -78,7 +79,7 @@ export async function fetchMostReadBiographies() {
     .from('biographies')
     .select(PUBLISHED_SELECT)
     .eq('status', 'published')
-    .eq('visibility', 'public')
+    .in('visibility', ['public', 'link-only'])
     .order('view_count', { ascending: false })
     .limit(10);
 
@@ -93,7 +94,7 @@ export async function fetchDiscoverBiographies(excludeIds: string[]) {
     .from('biographies')
     .select(PUBLISHED_SELECT)
     .eq('status', 'published')
-    .eq('visibility', 'public');
+    .in('visibility', ['public', 'link-only']);
 
   if (excludeIds.length > 0) {
     query = query.not('id', 'in', `(${excludeIds.join(',')})`);

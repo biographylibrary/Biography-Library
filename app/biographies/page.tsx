@@ -10,6 +10,7 @@ import {
   fetchDiscoverBiographies,
   type PublishedBiography,
 } from '@/lib/biographies';
+import { supabase } from '@/lib/supabase';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import {
@@ -22,14 +23,8 @@ import {
 import {
   Search,
   BookOpen,
-  User,
-  Globe,
-  Layers,
-  Calendar,
   Loader as Loader2,
   CircleAlert as AlertCircle,
-  BookMarked,
-  Eye,
   Star,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -48,13 +43,72 @@ const LANGUAGE_LABELS: Record<string, string> = {
   de: 'DE',
 };
 
-function formatDate(dateStr: string | null): string {
-  if (!dateStr) return '—';
-  return new Date(dateStr).toLocaleDateString(undefined, {
-    day: 'numeric',
-    month: 'short',
-    year: 'numeric',
-  });
+const BRAND_TEAL = '#14B8A6';
+
+function biographyHref(bio: PublishedBiography): string {
+  return bio.slug
+    ? `/biography/${bio.slug}/view`
+    : `/biography/${bio.id}/view`;
+}
+
+interface CoverPhotoState {
+  url: string | null;
+  loaded: boolean;
+}
+
+function GraphicCover({ title, authorName }: { title: string; authorName: string }) {
+  return (
+    <div
+      style={{
+        background: BRAND_TEAL,
+        width: '100%',
+        aspectRatio: '176 / 250',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: '1.5rem',
+        overflow: 'hidden',
+      }}
+    >
+      <p
+        style={{
+          fontFamily: "'Noto Serif', Georgia, serif",
+          color: '#ffffff',
+          fontSize: 'clamp(0.875rem, 2.5vw, 1.125rem)',
+          fontWeight: 600,
+          lineHeight: 1.25,
+          textAlign: 'center',
+          wordBreak: 'break-word',
+          display: '-webkit-box',
+          WebkitLineClamp: 4,
+          WebkitBoxOrient: 'vertical',
+          overflow: 'hidden',
+        }}
+      >
+        {title}
+      </p>
+      {authorName && (
+        <p
+          style={{
+            fontFamily: "'Noto Serif', Georgia, serif",
+            color: 'rgba(255,255,255,0.8)',
+            fontSize: 'clamp(0.7rem, 2vw, 0.875rem)',
+            fontWeight: 400,
+            lineHeight: 1.3,
+            textAlign: 'center',
+            marginTop: '0.625rem',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            whiteSpace: 'nowrap',
+            maxWidth: '100%',
+          }}
+        >
+          {authorName}
+        </p>
+      )}
+    </div>
+  );
 }
 
 interface BiographyCardProps {
@@ -68,86 +122,88 @@ function BiographyCard({ bio, t, featured }: BiographyCardProps) {
   const lang = bio.content_language || 'en';
   const flag = LANGUAGE_FLAGS[lang] ?? '';
   const langLabel = LANGUAGE_LABELS[lang] ?? lang.toUpperCase();
+  const typeLabel = isMemorial
+    ? t.publicBiographies.typeMemorial
+    : t.publicBiographies.typeAutobiography;
+
+  const [cover, setCover] = useState<CoverPhotoState>({ url: null, loaded: false });
+
+  useEffect(() => {
+    if (bio.cover_mode !== 'photo') {
+      setCover({ url: null, loaded: true });
+      return;
+    }
+    let cancelled = false;
+    supabase
+      .from('biography_media')
+      .select('storage_path, file_url')
+      .eq('biography_id', bio.id)
+      .eq('layout', 'cover')
+      .maybeSingle()
+      .then(({ data }) => {
+        if (cancelled) return;
+        const url = data?.file_url ?? data?.storage_path ?? null;
+        setCover({ url: url ?? null, loaded: true });
+      });
+    return () => { cancelled = true; };
+  }, [bio.id, bio.cover_mode]);
+
+  const showGraphic = bio.cover_mode !== 'photo' || !cover.url;
+  const href = biographyHref(bio);
 
   return (
     <Link
-      href={`/biography/${bio.id}/view`}
+      href={href}
       className={cn(
         'group flex flex-col rounded-2xl border border-border bg-card hover:border-primary/30 hover:shadow-lg transition-all duration-200 overflow-hidden',
         featured && 'ring-1 ring-amber-200 dark:ring-amber-800/60'
       )}
     >
-      <div className="flex flex-col flex-1 p-6 gap-4">
-        <div className="flex items-start justify-between gap-3">
-          <div
-            className={cn(
-              'p-2.5 rounded-xl shrink-0',
-              isMemorial ? 'bg-[#DDCF88] dark:bg-[#DDCF88]/20' : 'bg-sky-50 dark:bg-sky-950/30'
-            )}
-          >
-            {isMemorial ? (
-              <BookMarked className="h-5 w-5 text-[#121212] dark:text-[#DDCF88]" />
-            ) : (
-              <BookOpen className="h-5 w-5 text-sky-600 dark:text-sky-400" />
-            )}
-          </div>
-          <div className="flex items-center gap-1.5 flex-wrap justify-end">
-            {featured && (
-              <span className="flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full bg-[#DDCF88] text-[#121212] dark:bg-[#DDCF88]/20 dark:text-[#DDCF88]">
-                <Star className="h-3 w-3" />
-                Featured
-              </span>
-            )}
-            <span
-              className={cn(
-                'text-xs font-medium px-2.5 py-1 rounded-full',
-                isMemorial
-                  ? 'bg-[#DDCF88] text-[#121212] dark:bg-[#DDCF88]/20 dark:text-[#DDCF88]'
-                  : 'bg-sky-100 text-sky-700 dark:bg-sky-950/50 dark:text-sky-300'
-              )}
-            >
-              {isMemorial ? t.publicBiographies.typeMemorial : t.publicBiographies.typeAutobiography}
-            </span>
-          </div>
-        </div>
-
-        <div className="flex-1 min-w-0">
-          <h3 className="font-semibold text-base leading-snug line-clamp-2 text-foreground group-hover:text-primary transition-colors">
-            {bio.title || t.publicBiographies.untitled}
-          </h3>
-          <p className="flex items-center gap-1.5 mt-1.5 text-sm text-muted-foreground">
-            <User className="h-3.5 w-3.5 shrink-0" />
-            <span className="truncate">{bio.author_name || t.publicBiographies.unknownAuthor}</span>
-          </p>
-        </div>
-
-        <div className="flex items-center justify-between pt-3 border-t border-border/50 gap-3 flex-wrap">
-          <div className="flex items-center gap-3 text-xs text-muted-foreground">
-            <span className="flex items-center gap-1">
-              <Globe className="h-3.5 w-3.5" />
-              <span>{flag} {langLabel}</span>
-            </span>
-            <span className="flex items-center gap-1">
-              <Layers className="h-3.5 w-3.5" />
-              <span>{bio.chapters_count ?? 0} {t.publicBiographies.chaptersCount}</span>
-            </span>
-            {(bio.view_count ?? 0) > 0 && (
-              <span className="flex items-center gap-1">
-                <Eye className="h-3.5 w-3.5" />
-                <span>{bio.view_count} {t.publicBiographies.viewsCount}</span>
-              </span>
-            )}
-          </div>
-          <span className="flex items-center gap-1 text-xs text-muted-foreground">
-            <Calendar className="h-3.5 w-3.5" />
-            {formatDate(bio.published_at)}
+      <div className="relative w-full overflow-hidden rounded-t-2xl" style={{ aspectRatio: '176 / 250' }}>
+        {!cover.loaded && bio.cover_mode === 'photo' ? (
+          <div className="w-full h-full" style={{ background: BRAND_TEAL }} />
+        ) : showGraphic ? (
+          <GraphicCover
+            title={bio.title || t.publicBiographies.untitled}
+            authorName={bio.author_name || t.publicBiographies.unknownAuthor}
+          />
+        ) : (
+          <img
+            src={cover.url!}
+            alt={bio.title || ''}
+            className="w-full h-full object-cover"
+            loading="lazy"
+          />
+        )}
+        {featured && (
+          <span className="absolute top-2 right-2 flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full bg-[#DDCF88] text-[#121212]">
+            <Star className="h-3 w-3" />
+            Featured
           </span>
-        </div>
+        )}
       </div>
 
-      <div className="px-6 pb-5">
-        <div className="w-full text-center text-xs font-medium text-primary group-hover:underline underline-offset-2 transition-all">
-          {t.publicBiographies.readBiography} →
+      <div className="flex flex-col gap-2 p-4">
+        <p className="text-sm font-semibold text-foreground truncate leading-snug group-hover:text-primary transition-colors">
+          {bio.author_name || t.publicBiographies.unknownAuthor}
+        </p>
+        <p className="text-xs text-muted-foreground truncate">
+          {bio.title || t.publicBiographies.untitled}
+        </p>
+        <div className="flex items-center gap-1.5 flex-wrap pt-1">
+          <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-sky-100 text-sky-700 dark:bg-sky-950/50 dark:text-sky-300">
+            {flag} {langLabel}
+          </span>
+          <span
+            className={cn(
+              'text-xs font-medium px-2 py-0.5 rounded-full',
+              isMemorial
+                ? 'bg-[#DDCF88]/60 text-[#6B5B1E] dark:bg-[#DDCF88]/20 dark:text-[#DDCF88]'
+                : 'bg-teal-50 text-teal-700 dark:bg-teal-950/40 dark:text-teal-300'
+            )}
+          >
+            {typeLabel}
+          </span>
         </div>
       </div>
     </Link>
@@ -169,7 +225,7 @@ function BiographySection({ title, bios, t, featured }: SectionProps) {
         {title}
         <span className="h-px flex-1 bg-border/60" />
       </h2>
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
         {bios.map((bio) => (
           <BiographyCard key={bio.id} bio={bio} t={t} featured={featured} />
         ))}
@@ -331,7 +387,7 @@ export default function PublicBiographiesPage() {
                 </Button>
               </div>
             ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
                 {filtered.map((bio) => (
                   <BiographyCard key={bio.id} bio={bio} t={t} />
                 ))}

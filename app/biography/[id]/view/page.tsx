@@ -75,27 +75,46 @@ export default function BiographyViewPage() {
   const [reportOpen, setReportOpen] = useState(false);
 
   useEffect(() => {
+    const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+    const resolveId = async (): Promise<string | null> => {
+      if (UUID_RE.test(id)) return id;
+      const { data } = await supabase
+        .from('biographies')
+        .select('id')
+        .eq('slug', id)
+        .maybeSingle();
+      return data?.id ?? null;
+    };
+
     const load = async () => {
       setIsLoading(true);
+
+      const resolvedId = await resolveId();
+      if (!resolvedId) {
+        setError('not-found');
+        setIsLoading(false);
+        return;
+      }
 
       let data: BiographyViewData | null = null;
 
       const publicQuery = await supabase
         .from('biographies')
         .select('id, title, author_name, content, visibility, status, share_token, created_at, published_at, is_frozen, frozen_at')
-        .eq('id', id)
-        .eq('visibility', 'public')
+        .eq('id', resolvedId)
+        .in('visibility', ['public', 'link-only'])
         .eq('status', 'published')
         .maybeSingle();
 
       if (!publicQuery.error && publicQuery.data) {
         data = publicQuery.data as BiographyViewData;
-        supabase.rpc('increment_view_count', { biography_uuid: id });
+        supabase.rpc('increment_view_count', { biography_uuid: resolvedId });
       } else if (token) {
         const tokenQuery = await supabase
           .from('biographies')
           .select('id, title, author_name, content, visibility, status, share_token, created_at, published_at, is_frozen, frozen_at')
-          .eq('id', id)
+          .eq('id', resolvedId)
           .eq('share_token', token)
           .maybeSingle();
 
@@ -120,7 +139,7 @@ export default function BiographyViewPage() {
       const sectionsQuery = await supabase
         .from('biography_sections')
         .select('section_name, created_at')
-        .eq('biography_id', id)
+        .eq('biography_id', resolvedId)
         .order('created_at', { ascending: true });
 
       const sectionTimestamps: Record<string, string> = {};
