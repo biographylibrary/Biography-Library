@@ -1055,6 +1055,8 @@ export interface Translations {
     justNow: string;
     biographyApproved: string;
     biographyRejected: string;
+    biographyAutoPublished: string;
+    reviewAssigned: string;
   };
   errors: {
     title: string;
@@ -2141,6 +2143,8 @@ export const translations: Record<Language, Translations> = {
       justNow: 'Just now',
       biographyApproved: 'Your biography has been approved and published.',
       biographyRejected: 'Your biography was returned for revision: ',
+      biographyAutoPublished: 'Your biography has been reviewed and published automatically.',
+      reviewAssigned: 'A biography has been assigned to you for review.',
     },
     errors: {
       title: 'Something went wrong',
@@ -3225,6 +3229,8 @@ export const translations: Record<Language, Translations> = {
       justNow: 'Adesso',
       biographyApproved: 'La tua biografia è stata approvata e pubblicata.',
       biographyRejected: 'La tua biografia è stata restituita per revisione: ',
+      biographyAutoPublished: 'La tua biografia è stata revisionata e pubblicata automaticamente.',
+      reviewAssigned: 'Una biografia ti è stata assegnata per la revisione.',
     },
     errors: {
       title: 'Qualcosa è andato storto',
@@ -4309,6 +4315,8 @@ export const translations: Record<Language, Translations> = {
       justNow: 'À l\'instant',
       biographyApproved: 'Votre biographie a été approuvée et publiée.',
       biographyRejected: 'Votre biographie a été retournée pour révision : ',
+      biographyAutoPublished: 'Votre biographie a été révisée et publiée automatiquement.',
+      reviewAssigned: 'Une biographie vous a été assignée pour révision.',
     },
     errors: {
       title: 'Une erreur s\'est produite',
@@ -5393,6 +5401,8 @@ export const translations: Record<Language, Translations> = {
       justNow: 'Gerade eben',
       biographyApproved: 'Ihre Biografie wurde genehmigt und veröffentlicht.',
       biographyRejected: 'Ihre Biografie wurde zur Überarbeitung zurückgesandt: ',
+      biographyAutoPublished: 'Ihre Biografie wurde automatisch geprüft und veröffentlicht.',
+      reviewAssigned: 'Eine Biografie wurde Ihnen zur Überprüfung zugewiesen.',
     },
     errors: {
       title: 'Etwas ist schiefgelaufen',

@@ -976,6 +976,11 @@ const [isPublishing, setIsPublishing] = useState(false);
       if (!error) {
         setBiographyStatus('under_review');
         setShowSubmitForReviewDialog(false);
+        fetch('/api/review/submit', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ biographyId: id }),
+        }).catch((err) => console.error('AI review trigger failed:', err));
       }
     } catch (err) {
       console.error('Error submitting for review:', err);
