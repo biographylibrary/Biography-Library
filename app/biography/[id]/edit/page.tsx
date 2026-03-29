@@ -10,6 +10,7 @@ import { SectionEditor } from '@/components/editor/section-editor';
 import { GlobalNotesPanel } from '@/components/editor/GlobalNotesPanel';
 import { AiSuggestionsPanel } from '@/components/editor/ai-suggestions-panel';
 import { ShareLinkPanel } from '@/components/editor/share-link-panel';
+import { BiographySettingsPanel } from '@/components/editor/BiographySettingsPanel';
 import { PhotoGalleryPanel } from '@/components/editor/PhotoGalleryPanel';
 import { ConversationMode } from '@/components/editor/conversation-mode';
 import { NextSectionPrompt } from '@/components/editor/next-section-prompt';
@@ -109,6 +110,9 @@ export default function BiographyEditorPage() {
   const [isFrozen, setIsFrozen] = useState(false);
   const [biographyMode, setBiographyMode] = useState<'sections' | 'freeflow'>('sections');
   const [contentFreeflow, setContentFreeflow] = useState<string>('');
+  const [biographyType, setBiographyType] = useState<'autobiography' | 'memorial'>('autobiography');
+  const [coverMode, setCoverMode] = useState<'graphic' | 'photo'>('graphic');
+  const [slug, setSlug] = useState<string | null>(null);
 const [isPublishing, setIsPublishing] = useState(false);
 
   const editorContainerRef = useRef<HTMLDivElement>(null);
@@ -138,6 +142,7 @@ const [isPublishing, setIsPublishing] = useState(false);
   const privacyRef = useRef(privacy);
   const biographyModeRef = useRef(biographyMode);
   const contentFreeflowRef = useRef(contentFreeflow);
+  const slugRef = useRef(slug);
 
   useEffect(() => {
     contentRef.current = content;
@@ -154,6 +159,10 @@ const [isPublishing, setIsPublishing] = useState(false);
   useEffect(() => {
     contentFreeflowRef.current = contentFreeflow;
   }, [contentFreeflow]);
+
+  useEffect(() => {
+    slugRef.current = slug;
+  }, [slug]);
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -183,6 +192,9 @@ const [isPublishing, setIsPublishing] = useState(false);
         setNarrativeOrder((data.narrative_order as string[]) || []);
         setBiographyMode((data.biography_mode as 'sections' | 'freeflow') || 'sections');
         setContentFreeflow(data.content_freeflow || '');
+        setBiographyType((data.biography_type as 'autobiography' | 'memorial') || 'autobiography');
+        setCoverMode((data.cover_mode as 'graphic' | 'photo') || 'graphic');
+        setSlug(data.slug || null);
         const loaded = data.content as BiographyContent | null;
         if (loaded && typeof loaded === 'object') {
           setContent({ ...getEmptyContent(), ...loaded });
@@ -247,12 +259,33 @@ const [isPublishing, setIsPublishing] = useState(false);
     setSaveStatus('unsaved');
   }, []);
 
+  const generateSlugFromTitle = (text: string): string =>
+    text
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '')
+      .replace(/-{2,}/g, '-');
+
   const handleTitleChange = useCallback(
-    (newTitle: string) => {
+    async (newTitle: string) => {
       setTitle(newTitle);
       markDirty();
+      if (!slugRef.current) {
+        const newSlug = generateSlugFromTitle(newTitle);
+        if (newSlug) {
+          const { error } = await supabase
+            .from('biographies')
+            .update({ slug: newSlug })
+            .eq('id', id);
+          if (!error) {
+            setSlug(newSlug);
+          }
+        }
+      }
     },
-    [markDirty]
+    [id, markDirty]
   );
 
   const handlePrivacyChange = useCallback(
@@ -1264,6 +1297,16 @@ const [isPublishing, setIsPublishing] = useState(false);
                   visibility={privacy}
                   currentShareToken={shareToken}
                   onTokenGenerated={setShareToken}
+                />
+                <BiographySettingsPanel
+                  biographyId={id}
+                  biographyType={biographyType}
+                  coverMode={coverMode}
+                  slug={slug}
+                  onBiographyTypeChange={setBiographyType}
+                  onCoverModeChange={setCoverMode}
+                  onSlugChange={setSlug}
+                  biographyTitle={title}
                 />
               </div>
             )}

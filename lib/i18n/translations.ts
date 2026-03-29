@@ -1034,6 +1034,24 @@ export interface Translations {
     tryAgain: string;
     goToDashboard: string;
   };
+  settings: {
+    biographyType: {
+      label: string;
+      autobiography: string;
+      memorial: string;
+    };
+    coverMode: {
+      label: string;
+      graphic: string;
+      photo: string;
+      noPhotoWarning: string;
+    };
+    slug: {
+      label: string;
+      helper: string;
+      duplicateError: string;
+    };
+  };
 }
 
 export const translations: Record<Language, Translations> = {
@@ -2071,6 +2089,24 @@ export const translations: Record<Language, Translations> = {
       tryAgain: 'Try again',
       goToDashboard: 'Go to Dashboard',
     },
+    settings: {
+      biographyType: {
+        label: 'Biography type',
+        autobiography: 'Autobiography',
+        memorial: 'Memorial',
+      },
+      coverMode: {
+        label: 'Cover style',
+        graphic: 'Graphic (brand color)',
+        photo: 'Photo (from gallery)',
+        noPhotoWarning: 'No cover photo selected. Go to the photo gallery and set a photo layout to "Cover".',
+      },
+      slug: {
+        label: 'URL slug',
+        helper: 'Used in the public URL. Only lowercase letters, numbers and hyphens.',
+        duplicateError: 'This slug is already in use. Please choose another.',
+      },
+    },
   },
   it: {
     common: {
@@ -3105,6 +3141,24 @@ export const translations: Record<Language, Translations> = {
       description: 'Si è verificato un errore imprevisto. Il tuo lavoro è stato salvato automaticamente.',
       tryAgain: 'Riprova',
       goToDashboard: 'Vai alla Dashboard',
+    },
+    settings: {
+      biographyType: {
+        label: 'Tipo di biografia',
+        autobiography: 'Autobiografia',
+        memorial: 'Memoriale',
+      },
+      coverMode: {
+        label: 'Stile copertina',
+        graphic: 'Grafico (colore brand)',
+        photo: 'Foto (dalla galleria)',
+        noPhotoWarning: 'Nessuna foto copertina selezionata. Vai alla galleria foto e imposta il layout di una foto su "Copertina".',
+      },
+      slug: {
+        label: 'URL slug',
+        helper: 'Usato nell\'URL pubblico. Solo lettere minuscole, numeri e trattini.',
+        duplicateError: 'Questo slug è già in uso. Scegline un altro.',
+      },
     },
   },
   fr: {
@@ -4141,6 +4195,24 @@ export const translations: Record<Language, Translations> = {
       tryAgain: 'Réessayer',
       goToDashboard: 'Aller au tableau de bord',
     },
+    settings: {
+      biographyType: {
+        label: 'Type de biographie',
+        autobiography: 'Autobiographie',
+        memorial: 'Mémorial',
+      },
+      coverMode: {
+        label: 'Style de couverture',
+        graphic: 'Graphique (couleur de marque)',
+        photo: 'Photo (depuis la galerie)',
+        noPhotoWarning: 'Aucune photo de couverture sélectionnée. Allez dans la galerie et définissez le layout d\'une photo sur "Couverture".',
+      },
+      slug: {
+        label: 'Identifiant URL',
+        helper: 'Utilisé dans l\'URL publique. Lettres minuscules, chiffres et tirets uniquement.',
+        duplicateError: 'Cet identifiant est déjà utilisé. Veuillez en choisir un autre.',
+      },
+    },
   },
   de: {
     common: {
@@ -5175,6 +5247,24 @@ export const translations: Record<Language, Translations> = {
       description: 'Ein unerwarteter Fehler ist aufgetreten. Ihre Arbeit wurde automatisch gespeichert.',
       tryAgain: 'Erneut versuchen',
       goToDashboard: 'Zum Dashboard',
+    },
+    settings: {
+      biographyType: {
+        label: 'Biografietyp',
+        autobiography: 'Autobiografie',
+        memorial: 'Gedenkbuch',
+      },
+      coverMode: {
+        label: 'Deckblatt-Stil',
+        graphic: 'Grafisch (Markenfarbe)',
+        photo: 'Foto (aus der Galerie)',
+        noPhotoWarning: 'Kein Titelbild ausgewählt. Gehen Sie zur Fotogalerie und setzen Sie das Layout eines Fotos auf "Cover".',
+      },
+      slug: {
+        label: 'URL-Kennung',
+        helper: 'Wird in der öffentlichen URL verwendet. Nur Kleinbuchstaben, Zahlen und Bindestriche.',
+        duplicateError: 'Dieser Slug ist bereits vergeben. Bitte wählen Sie einen anderen.',
+      },
     },
   },
 };
