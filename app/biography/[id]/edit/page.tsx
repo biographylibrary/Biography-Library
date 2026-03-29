@@ -1303,6 +1303,8 @@ const [isPublishing, setIsPublishing] = useState(false);
                   onBiographyTypeChange={setBiographyType}
                   onSlugChange={setSlug}
                   biographyTitle={title}
+                  authorName={biography.author_name ?? ''}
+                  onNavigateToPhotos={() => setShowPhotosPanel(true)}
                 />
               </div>
             )}

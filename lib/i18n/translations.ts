@@ -1052,6 +1052,9 @@ export interface Translations {
       helper: string;
       duplicateError: string;
     };
+    coverPreview: string;
+    noCoverPhoto: string;
+    goToPhotos: string;
   };
 }
 
@@ -2108,6 +2111,9 @@ export const translations: Record<Language, Translations> = {
         helper: 'Used in the public URL. Only lowercase letters, numbers and hyphens.',
         duplicateError: 'This slug is already in use. Please choose another.',
       },
+      coverPreview: 'Cover preview',
+      noCoverPhoto: 'No cover photo',
+      goToPhotos: 'Add in Photos',
     },
   },
   it: {
@@ -3162,6 +3168,9 @@ export const translations: Record<Language, Translations> = {
         helper: 'Usato nell\'URL pubblico. Solo lettere minuscole, numeri e trattini.',
         duplicateError: 'Questo slug è già in uso. Scegline un altro.',
       },
+      coverPreview: 'Anteprima copertina',
+      noCoverPhoto: 'Nessuna foto di copertina',
+      goToPhotos: 'Aggiungi nelle Foto',
     },
   },
   fr: {
@@ -4216,6 +4225,9 @@ export const translations: Record<Language, Translations> = {
         helper: 'Utilisé dans l\'URL publique. Lettres minuscules, chiffres et tirets uniquement.',
         duplicateError: 'Cet identifiant est déjà utilisé. Veuillez en choisir un autre.',
       },
+      coverPreview: 'Aperçu de la couverture',
+      noCoverPhoto: 'Aucune photo de couverture',
+      goToPhotos: 'Ajouter dans Photos',
     },
   },
   de: {
@@ -5270,6 +5282,9 @@ export const translations: Record<Language, Translations> = {
         helper: 'Wird in der öffentlichen URL verwendet. Nur Kleinbuchstaben, Zahlen und Bindestriche.',
         duplicateError: 'Dieser Slug ist bereits vergeben. Bitte wählen Sie einen anderen.',
       },
+      coverPreview: 'Vorschau Titelbild',
+      noCoverPhoto: 'Kein Titelfoto',
+      goToPhotos: 'In Fotos hinzufügen',
     },
   },
 };
