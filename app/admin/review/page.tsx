@@ -75,7 +75,7 @@ function ReviewQueueContent() {
   }, [load]);
 
   const viewHref = (bio: ReviewBiography) =>
-    `/biography/${bio.slug ?? bio.id}/view`;
+    `/biography/${bio.slug || bio.id}/view`;
 
   const handleApprove = async (bio: ReviewBiography) => {
     setActionLoading(bio.id);

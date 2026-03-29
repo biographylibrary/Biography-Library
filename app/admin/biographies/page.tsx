@@ -76,7 +76,7 @@ function AdminBiographiesContent() {
           user_id,
           author_name,
           status,
-          privacy,
+          visibility,
           share_token,
           created_at,
           updated_at,
