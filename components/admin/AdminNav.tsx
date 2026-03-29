@@ -1,16 +1,19 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useTranslation } from '@/lib/i18n/i18n-context';
 import { useAuth } from '@/lib/auth-context';
-import { LayoutDashboard, Shield, BookOpen, Users, ChartBar as BarChart3 } from 'lucide-react';
+import { supabase } from '@/lib/supabase';
+import { LayoutDashboard, Shield, BookOpen, Users, ChartBar as BarChart3, ClipboardList } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface NavItem {
   label: string;
   href: string;
   icon: React.ReactNode;
+  badge?: number;
   superAdminOnly?: boolean;
   adminOnly?: boolean;
 }
@@ -19,11 +22,26 @@ export function AdminNav() {
   const pathname = usePathname();
   const { t } = useTranslation();
   const { role } = useAuth();
+  const [reviewCount, setReviewCount] = useState(0);
+
+  useEffect(() => {
+    supabase
+      .from('biographies')
+      .select('id', { count: 'exact', head: true })
+      .eq('status', 'under_review')
+      .then(({ count }) => setReviewCount(count ?? 0));
+  }, []);
 
   const items: NavItem[] = [
     { label: t.admin.navOverview, href: '/admin', icon: <LayoutDashboard className="h-4 w-4" /> },
     { label: t.admin.navModeration, href: '/admin/moderation', icon: <Shield className="h-4 w-4" /> },
     { label: t.admin.navBiographies, href: '/admin/biographies', icon: <BookOpen className="h-4 w-4" /> },
+    {
+      label: t.admin.navReview,
+      href: '/admin/review',
+      icon: <ClipboardList className="h-4 w-4" />,
+      badge: reviewCount > 0 ? reviewCount : undefined,
+    },
     { label: t.admin.navUsers, href: '/admin/users', icon: <Users className="h-4 w-4" />, superAdminOnly: true },
     { label: t.admin.navAiStats, href: '/admin/ai-stats', icon: <BarChart3 className="h-4 w-4" />, adminOnly: true },
   ];
@@ -57,6 +75,16 @@ export function AdminNav() {
               >
                 {item.icon}
                 {item.label}
+                {item.badge !== undefined && (
+                  <span className={cn(
+                    'inline-flex items-center justify-center min-w-[1.25rem] h-5 px-1.5 rounded-full text-xs font-semibold tabular-nums',
+                    isActive
+                      ? 'bg-white/20 text-white'
+                      : 'bg-[#DDCF88] text-[#121212]'
+                  )}>
+                    {item.badge}
+                  </span>
+                )}
               </Link>
             );
           })}

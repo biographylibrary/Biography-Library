@@ -867,8 +867,31 @@ export interface Translations {
     navOverview: string;
     navModeration: string;
     navBiographies: string;
+    navReview: string;
     navUsers: string;
     navAiStats: string;
+    reviewPageTitle: string;
+    reviewPageSubtitle: string;
+    reviewColSubject: string;
+    reviewColTitle: string;
+    reviewColAuthor: string;
+    reviewColLanguage: string;
+    reviewColType: string;
+    reviewColSubmitted: string;
+    reviewColRead: string;
+    reviewColActions: string;
+    reviewApprove: string;
+    reviewReject: string;
+    reviewConfirmReject: string;
+    reviewCancelReject: string;
+    reviewReasonLabel: string;
+    reviewReasonPlaceholder: string;
+    reviewReasonRequired: string;
+    reviewEmpty: string;
+    reviewEmptySubtitle: string;
+    reviewLoadError: string;
+    reviewApproveError: string;
+    reviewRejectError: string;
     aiStatsPageTitle: string;
     aiStatsPageSubtitle: string;
     aiStatsDataNote: string;
@@ -1030,6 +1053,8 @@ export interface Translations {
     markAllRead: string;
     markAsRead: string;
     justNow: string;
+    biographyApproved: string;
+    biographyRejected: string;
   };
   errors: {
     title: string;
@@ -1928,8 +1953,31 @@ export const translations: Record<Language, Translations> = {
       navOverview: 'Overview',
       navModeration: 'Moderation',
       navBiographies: 'Biographies',
+      navReview: 'Review Queue',
       navUsers: 'Users',
       navAiStats: 'AI Stats',
+      reviewPageTitle: 'Biography Review Queue',
+      reviewPageSubtitle: 'Approve or reject biographies submitted for publication.',
+      reviewColSubject: 'Subject',
+      reviewColTitle: 'Title',
+      reviewColAuthor: 'Author',
+      reviewColLanguage: 'Language',
+      reviewColType: 'Type',
+      reviewColSubmitted: 'Submitted',
+      reviewColRead: 'Read',
+      reviewColActions: 'Actions',
+      reviewApprove: 'Approve',
+      reviewReject: 'Reject',
+      reviewConfirmReject: 'Confirm Reject',
+      reviewCancelReject: 'Cancel',
+      reviewReasonLabel: 'Rejection reason',
+      reviewReasonPlaceholder: 'Explain why the biography is being returned for revision…',
+      reviewReasonRequired: 'Please provide a reason (at least 10 characters).',
+      reviewEmpty: 'No biographies awaiting review',
+      reviewEmptySubtitle: 'All caught up! There are no biographies in the review queue right now.',
+      reviewLoadError: 'Failed to load the review queue.',
+      reviewApproveError: 'Failed to approve biography.',
+      reviewRejectError: 'Failed to reject biography.',
       aiStatsPageTitle: 'AI Usage Statistics',
       aiStatsPageSubtitle: 'Monitor AI feature usage across all users',
       aiStatsDataNote: 'Note: usage data is retained for 30 days.',
@@ -2091,6 +2139,8 @@ export const translations: Record<Language, Translations> = {
       markAllRead: 'Mark all as read',
       markAsRead: 'Mark as read',
       justNow: 'Just now',
+      biographyApproved: 'Your biography has been approved and published.',
+      biographyRejected: 'Your biography was returned for revision: ',
     },
     errors: {
       title: 'Something went wrong',
@@ -2987,8 +3037,31 @@ export const translations: Record<Language, Translations> = {
       navOverview: 'Panoramica',
       navModeration: 'Moderazione',
       navBiographies: 'Biografie',
+      navReview: 'Coda Revisione',
       navUsers: 'Utenti',
       navAiStats: 'Stat AI',
+      reviewPageTitle: 'Coda Revisione Biografie',
+      reviewPageSubtitle: 'Approva o rifiuta le biografie inviate per la pubblicazione.',
+      reviewColSubject: 'Soggetto',
+      reviewColTitle: 'Titolo',
+      reviewColAuthor: 'Autore',
+      reviewColLanguage: 'Lingua',
+      reviewColType: 'Tipo',
+      reviewColSubmitted: 'Inviata il',
+      reviewColRead: 'Leggi',
+      reviewColActions: 'Azioni',
+      reviewApprove: 'Approva',
+      reviewReject: 'Rifiuta',
+      reviewConfirmReject: 'Conferma Rifiuto',
+      reviewCancelReject: 'Annulla',
+      reviewReasonLabel: 'Motivo del rifiuto',
+      reviewReasonPlaceholder: 'Spiega perché la biografia viene restituita per revisione…',
+      reviewReasonRequired: 'Fornisci un motivo (almeno 10 caratteri).',
+      reviewEmpty: 'Nessuna biografia in attesa di revisione',
+      reviewEmptySubtitle: 'Tutto aggiornato! Non ci sono biografie nella coda di revisione.',
+      reviewLoadError: 'Impossibile caricare la coda di revisione.',
+      reviewApproveError: 'Impossibile approvare la biografia.',
+      reviewRejectError: 'Impossibile rifiutare la biografia.',
       aiStatsPageTitle: 'Statistiche Utilizzo AI',
       aiStatsPageSubtitle: 'Monitora l\'utilizzo delle funzioni AI da parte di tutti gli utenti',
       aiStatsDataNote: 'Nota: i dati di utilizzo vengono conservati per 30 giorni.',
@@ -3150,6 +3223,8 @@ export const translations: Record<Language, Translations> = {
       markAllRead: 'Segna tutto come letto',
       markAsRead: 'Segna come letto',
       justNow: 'Adesso',
+      biographyApproved: 'La tua biografia è stata approvata e pubblicata.',
+      biographyRejected: 'La tua biografia è stata restituita per revisione: ',
     },
     errors: {
       title: 'Qualcosa è andato storto',
@@ -4046,8 +4121,31 @@ export const translations: Record<Language, Translations> = {
       navOverview: 'Vue d\'ensemble',
       navModeration: 'Modération',
       navBiographies: 'Biographies',
+      navReview: 'File de révision',
       navUsers: 'Utilisateurs',
       navAiStats: 'Stats IA',
+      reviewPageTitle: 'File de révision des biographies',
+      reviewPageSubtitle: 'Approuvez ou refusez les biographies soumises pour publication.',
+      reviewColSubject: 'Sujet',
+      reviewColTitle: 'Titre',
+      reviewColAuthor: 'Auteur',
+      reviewColLanguage: 'Langue',
+      reviewColType: 'Type',
+      reviewColSubmitted: 'Soumis le',
+      reviewColRead: 'Lire',
+      reviewColActions: 'Actions',
+      reviewApprove: 'Approuver',
+      reviewReject: 'Refuser',
+      reviewConfirmReject: 'Confirmer le refus',
+      reviewCancelReject: 'Annuler',
+      reviewReasonLabel: 'Motif du refus',
+      reviewReasonPlaceholder: 'Expliquez pourquoi la biographie est renvoyée pour révision…',
+      reviewReasonRequired: 'Veuillez fournir un motif (au moins 10 caractères).',
+      reviewEmpty: 'Aucune biographie en attente de révision',
+      reviewEmptySubtitle: 'Tout est à jour ! Il n\'y a actuellement aucune biographie dans la file de révision.',
+      reviewLoadError: 'Impossible de charger la file de révision.',
+      reviewApproveError: 'Impossible d\'approuver la biographie.',
+      reviewRejectError: 'Impossible de refuser la biographie.',
       aiStatsPageTitle: 'Statistiques d\'utilisation de l\'IA',
       aiStatsPageSubtitle: 'Surveiller l\'utilisation des fonctions IA par tous les utilisateurs',
       aiStatsDataNote: 'Note : les données d\'utilisation sont conservées pendant 30 jours.',
@@ -4209,6 +4307,8 @@ export const translations: Record<Language, Translations> = {
       markAllRead: 'Tout marquer comme lu',
       markAsRead: 'Marquer comme lu',
       justNow: 'À l\'instant',
+      biographyApproved: 'Votre biographie a été approuvée et publiée.',
+      biographyRejected: 'Votre biographie a été retournée pour révision : ',
     },
     errors: {
       title: 'Une erreur s\'est produite',
@@ -5105,8 +5205,31 @@ export const translations: Record<Language, Translations> = {
       navOverview: 'Übersicht',
       navModeration: 'Moderation',
       navBiographies: 'Biografien',
+      navReview: 'Überprüfungswarteschlange',
       navUsers: 'Benutzer',
       navAiStats: 'KI-Statistiken',
+      reviewPageTitle: 'Biografien-Überprüfungswarteschlange',
+      reviewPageSubtitle: 'Genehmigen oder ablehnen Sie zur Veröffentlichung eingereichte Biografien.',
+      reviewColSubject: 'Person',
+      reviewColTitle: 'Titel',
+      reviewColAuthor: 'Autor',
+      reviewColLanguage: 'Sprache',
+      reviewColType: 'Typ',
+      reviewColSubmitted: 'Eingereicht am',
+      reviewColRead: 'Lesen',
+      reviewColActions: 'Aktionen',
+      reviewApprove: 'Genehmigen',
+      reviewReject: 'Ablehnen',
+      reviewConfirmReject: 'Ablehnung bestätigen',
+      reviewCancelReject: 'Abbrechen',
+      reviewReasonLabel: 'Ablehnungsgrund',
+      reviewReasonPlaceholder: 'Erklären Sie, warum die Biografie zur Überarbeitung zurückgesendet wird…',
+      reviewReasonRequired: 'Bitte geben Sie einen Grund an (mindestens 10 Zeichen).',
+      reviewEmpty: 'Keine Biografien zur Überprüfung',
+      reviewEmptySubtitle: 'Alles erledigt! Es befinden sich derzeit keine Biografien in der Überprüfungswarteschlange.',
+      reviewLoadError: 'Überprüfungswarteschlange konnte nicht geladen werden.',
+      reviewApproveError: 'Biografie konnte nicht genehmigt werden.',
+      reviewRejectError: 'Biografie konnte nicht abgelehnt werden.',
       aiStatsPageTitle: 'KI-Nutzungsstatistiken',
       aiStatsPageSubtitle: 'KI-Funktionsnutzung aller Benutzer überwachen',
       aiStatsDataNote: 'Hinweis: Nutzungsdaten werden 30 Tage lang aufbewahrt.',
@@ -5268,6 +5391,8 @@ export const translations: Record<Language, Translations> = {
       markAllRead: 'Alle als gelesen markieren',
       markAsRead: 'Als gelesen markieren',
       justNow: 'Gerade eben',
+      biographyApproved: 'Ihre Biografie wurde genehmigt und veröffentlicht.',
+      biographyRejected: 'Ihre Biografie wurde zur Überarbeitung zurückgesandt: ',
     },
     errors: {
       title: 'Etwas ist schiefgelaufen',
