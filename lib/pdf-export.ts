@@ -10,15 +10,12 @@ interface BiographyData {
   created_at: string;
 }
 
-export type PdfVariant = 'b5-standard' | 'b5-print';
-
 const BRAND_COLOR: [number, number, number] = [20, 184, 166];
 
 const B5_W = 176;
 const B5_H = 250;
-const BLEED = 3;
-const B5_BLEED_W = B5_W + BLEED * 2;
-const B5_BLEED_H = B5_H + BLEED * 2;
+
+const SAFE_MARGIN = 5;
 
 const MARGIN_TOP = 15;
 const MARGIN_BOTTOM = 20;
@@ -161,8 +158,8 @@ function outerMarginForPage(absolutePage: number): number {
   return isOddPage(absolutePage) ? MARGIN_OUTER : MARGIN_INNER;
 }
 
-function textStartX(absolutePage: number, bleed: number): number {
-  return bleed + innerMarginForPage(absolutePage);
+function textStartX(absolutePage: number): number {
+  return innerMarginForPage(absolutePage);
 }
 
 function textAvailableWidth(absolutePage: number): number {
@@ -177,15 +174,12 @@ interface PdfState {
   doc: jsPDF;
   absolutePage: number;
   contentPageNum: number;
-  bleed: number;
   fontsAvailable: boolean;
 }
 
 function addNewPage(state: PdfState, isContent: boolean): void {
-  const { doc, bleed } = state;
-  const pageW = B5_W + bleed * 2;
-  const pageH = B5_H + bleed * 2;
-  doc.addPage([pageW, pageH]);
+  const { doc } = state;
+  doc.addPage([B5_W, B5_H]);
   state.absolutePage++;
   if (isContent) {
     state.contentPageNum++;
@@ -193,32 +187,32 @@ function addNewPage(state: PdfState, isContent: boolean): void {
 }
 
 function drawRunningHeader(state: PdfState, title: string): void {
-  const { doc, absolutePage, bleed, fontsAvailable } = state;
+  const { doc, absolutePage, fontsAvailable } = state;
   applyFont(doc, fontsAvailable, 'normal');
   doc.setFontSize(PT_RUNNING);
   doc.setTextColor(120, 120, 120);
-  const headerY = bleed + 8;
+  const headerY = 8;
 
   if (isOddPage(absolutePage)) {
-    doc.text(title, bleed + B5_W - MARGIN_OUTER, headerY, { align: 'right' });
+    doc.text(title, B5_W - MARGIN_OUTER, headerY, { align: 'right' });
   } else {
-    doc.text(title, bleed + MARGIN_OUTER, headerY, { align: 'left' });
+    doc.text(title, MARGIN_OUTER, headerY, { align: 'left' });
   }
 }
 
 function drawPageNumber(state: PdfState): void {
-  const { doc, bleed, contentPageNum, fontsAvailable } = state;
+  const { doc, contentPageNum, fontsAvailable } = state;
   applyFont(doc, fontsAvailable, 'normal');
   doc.setFontSize(PT_PAGE_NUM);
   doc.setTextColor(80, 80, 80);
-  const numY = bleed + B5_H - 10;
-  const centerX = bleed + B5_W / 2;
+  const numY = B5_H - 10;
+  const centerX = B5_W / 2;
   doc.text(String(contentPageNum), centerX, numY, { align: 'center' });
 }
 
 export async function generateBiographyPDF(
   biography: BiographyData,
-  variant: PdfVariant = 'b5-standard',
+  _variant?: string,
   translations?: {
     createdWith: string;
     allRightsReserved: string;
@@ -226,16 +220,12 @@ export async function generateBiographyPDF(
 ): Promise<void> {
   await loadNotoSerifFonts();
 
-  const withBleed = variant === 'b5-print';
-  const bleed = withBleed ? BLEED : 0;
-  const pageW = B5_W + bleed * 2;
-  const pageH = B5_H + bleed * 2;
-  const centerX = bleed + B5_W / 2;
+  const centerX = B5_W / 2;
 
   const doc = new jsPDF({
     orientation: 'portrait',
     unit: 'mm',
-    format: [pageW, pageH],
+    format: [B5_W, B5_H],
   });
 
   const fontsAvailable = registerFonts(doc);
@@ -244,26 +234,26 @@ export async function generateBiographyPDF(
     doc,
     absolutePage: 1,
     contentPageNum: 0,
-    bleed,
     fontsAvailable,
   };
 
-  const textAreaTop = bleed + MARGIN_TOP;
-  const textAreaBottom = bleed + B5_H - MARGIN_BOTTOM;
+  const textAreaTop = MARGIN_TOP;
+  const textAreaBottom = B5_H - MARGIN_BOTTOM;
 
   // ────────────────────────────────────────
   // PAGE 1 — COVER
+  // Brand color rectangle with 5mm safe margin on all sides
   // ────────────────────────────────────────
   doc.setFillColor(BRAND_COLOR[0], BRAND_COLOR[1], BRAND_COLOR[2]);
-  doc.rect(0, 0, pageW, pageH, 'F');
+  doc.rect(SAFE_MARGIN, SAFE_MARGIN, B5_W - SAFE_MARGIN * 2, B5_H - SAFE_MARGIN * 2, 'F');
 
+  const coverSafeWidth = B5_W - 20;
   applyFont(doc, fontsAvailable, 'normal');
   doc.setFontSize(PT_COVER_TITLE);
   doc.setTextColor(255, 255, 255);
 
-  const safeWidth = B5_W - 20;
-  const coverTitleLines = doc.splitTextToSize(biography.title, safeWidth);
-  let coverY = bleed + B5_H * 0.6;
+  const coverTitleLines = doc.splitTextToSize(biography.title, coverSafeWidth);
+  let coverY = B5_H * 0.6;
   coverTitleLines.forEach((line: string) => {
     doc.text(line, centerX, coverY, { align: 'center' });
     coverY += ptToMm(PT_COVER_TITLE * LINE_HEIGHT_BODY);
@@ -277,7 +267,7 @@ export async function generateBiographyPDF(
 
   const logoWCover = 20;
   const logoHCover = logoWCover / 0.83;
-  const logoYCover = bleed + 230;
+  const logoYCover = 228;
   drawLogoSvg(doc, centerX, logoYCover + logoHCover / 2, logoWCover, '#FFFFFF');
 
   // ────────────────────────────────────────
@@ -286,11 +276,11 @@ export async function generateBiographyPDF(
   addNewPage(state, false);
 
   // ────────────────────────────────────────
-  // PAGE 3 — LOGO PAGE
+  // PAGE 3 — LOGO PAGE (black logo centered)
   // ────────────────────────────────────────
   addNewPage(state, false);
   const logoWBig = 40;
-  drawLogoSvg(doc, centerX, bleed + B5_H / 2, logoWBig, '#000000');
+  drawLogoSvg(doc, centerX, B5_H / 2, logoWBig, '#000000');
 
   // ────────────────────────────────────────
   // PAGE 4 — CREDITS
@@ -314,27 +304,27 @@ export async function generateBiographyPDF(
   doc.setTextColor(80, 80, 80);
 
   const creditsLineH = ptToMm(PT_CREDITS * 1.8);
-  const creditsStartY = bleed + B5_H * 0.67;
+  const creditsStartY = B5_H * 0.67;
   creditsLines.forEach((line, i) => {
     doc.text(line, centerX, creditsStartY + i * creditsLineH, { align: 'center' });
   });
 
   // ────────────────────────────────────────
-  // PAGE 5 — TITLE PAGE
+  // PAGE 5 — TITLE PAGE (FRONTESPIZIO)
   // ────────────────────────────────────────
   addNewPage(state, false);
 
   applyFont(doc, fontsAvailable, 'normal');
   doc.setFontSize(PT_TITLE_PAGE_AUTHOR);
   doc.setTextColor(80, 80, 80);
-  doc.text(biography.author_name, centerX, bleed + 40, { align: 'center' });
+  doc.text(biography.author_name, centerX, 40, { align: 'center' });
 
   applyFont(doc, fontsAvailable, 'normal');
   doc.setFontSize(PT_TITLE_PAGE_TITLE);
   doc.setTextColor(0, 0, 0);
-  const titlePageLines = doc.splitTextToSize(biography.title, safeWidth);
+  const titlePageLines = doc.splitTextToSize(biography.title, coverSafeWidth);
   const titlePageBlockH = titlePageLines.length * ptToMm(PT_TITLE_PAGE_TITLE * LINE_HEIGHT_BODY);
-  let titlePageY = bleed + B5_H / 2 - titlePageBlockH / 2;
+  let titlePageY = B5_H / 2 - titlePageBlockH / 2;
   titlePageLines.forEach((line: string) => {
     doc.text(line, centerX, titlePageY, { align: 'center' });
     titlePageY += ptToMm(PT_TITLE_PAGE_TITLE * LINE_HEIGHT_BODY);
@@ -347,7 +337,7 @@ export async function generateBiographyPDF(
 
   // ────────────────────────────────────────
   // PAGES 7+ — BIOGRAPHY CHAPTERS
-  // Page 6 is even; next page (7) is odd — correct for first chapter.
+  // Page 6 is even; next page (7) will be odd — correct.
   // ────────────────────────────────────────
 
   const getSections = () => {
@@ -371,24 +361,21 @@ export async function generateBiographyPDF(
   for (let si = 0; si < sections.length; si++) {
     const section = sections[si];
 
-    // Force chapter onto an odd page
     addNewPage(state, true);
     if (!isOddPage(state.absolutePage)) {
       addNewPage(state, true);
     }
 
-    // Draw chapter title
     applyFont(doc, fontsAvailable, 'normal');
     doc.setFontSize(PT_CHAPTER);
     doc.setTextColor(0, 0, 0);
 
-    const tx = textStartX(state.absolutePage, bleed);
+    const tx = textStartX(state.absolutePage);
     const chapterTitleY = textAreaTop + 10;
     doc.text(section.title, tx, chapterTitleY, { align: 'left' });
 
     let y = chapterTitleY + ptToMm(PT_CHAPTER * LINE_HEIGHT_BODY) + 4;
 
-    // If less than 3 body lines fit, start fresh page
     if (y + 3 * lineH > textAreaBottom) {
       addNewPage(state, true);
       if (!isOddPage(state.absolutePage)) {
@@ -397,7 +384,7 @@ export async function generateBiographyPDF(
       applyFont(doc, fontsAvailable, 'normal');
       doc.setFontSize(PT_CHAPTER);
       doc.setTextColor(0, 0, 0);
-      doc.text(section.title, textStartX(state.absolutePage, bleed), chapterTitleY, { align: 'left' });
+      doc.text(section.title, textStartX(state.absolutePage), chapterTitleY, { align: 'left' });
       y = chapterTitleY + ptToMm(PT_CHAPTER * LINE_HEIGHT_BODY) + 4;
     }
 
@@ -426,7 +413,7 @@ export async function generateBiographyPDF(
           doc.setTextColor(0, 0, 0);
           y = textAreaTop;
         }
-        doc.text(line, textStartX(state.absolutePage, bleed), y);
+        doc.text(line, textStartX(state.absolutePage), y);
         y += lineH;
       }
       y += lineH * 0.4;
@@ -434,7 +421,8 @@ export async function generateBiographyPDF(
   }
 
   // ────────────────────────────────────────
-  // BACK COVER (even page)
+  // BACK COVER (must be even page)
+  // Brand color rectangle with 5mm safe margin on all sides
   // ────────────────────────────────────────
   if (isOddPage(state.absolutePage)) {
     addNewPage(state, false);
@@ -444,10 +432,11 @@ export async function generateBiographyPDF(
   }
 
   doc.setFillColor(BRAND_COLOR[0], BRAND_COLOR[1], BRAND_COLOR[2]);
-  doc.rect(0, 0, pageW, pageH, 'F');
+  doc.rect(SAFE_MARGIN, SAFE_MARGIN, B5_W - SAFE_MARGIN * 2, B5_H - SAFE_MARGIN * 2, 'F');
 
   const safeName = biography.title.replace(/[^a-z0-9]/gi, '-').toLowerCase();
   const dateStamp = new Date().toISOString().split('T')[0];
-  const suffix = variant === 'b5-print' ? '-print' : '';
-  doc.save(`${safeName}-${dateStamp}${suffix}.pdf`);
+  doc.save(`${safeName}-${dateStamp}.pdf`);
 }
+
+export type PdfVariant = 'b5-standard';

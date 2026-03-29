@@ -17,7 +17,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import { Download, Loader as Loader2, Info, TriangleAlert as AlertTriangle, X } from 'lucide-react';
 import { BIOGRAPHY_SECTIONS } from '@/lib/editor-constants';
-import { generateBiographyPDF, PdfVariant } from '@/lib/pdf-export';
+import { generateBiographyPDF } from '@/lib/pdf-export';
 import { exportAsPlainText, exportAsRTF, exportAsDOCX } from '@/lib/export-utils';
 import { useTranslation } from '@/lib/i18n/i18n-context';
 import { supabase } from '@/lib/supabase';
@@ -41,7 +41,7 @@ interface AdvancedExportDialogProps {
   isPublished?: boolean;
 }
 
-type ExportFormat = 'pdf-b5-standard' | 'pdf-b5-print' | 'txt' | 'rtf' | 'docx';
+type ExportFormat = 'pdf-b5-standard' | 'txt' | 'rtf' | 'docx';
 type ContentSelection = 'all' | 'completed' | 'custom';
 
 export function AdvancedExportDialog({
@@ -60,7 +60,7 @@ export function AdvancedExportDialog({
   const [isExporting, setIsExporting] = useState(false);
   const [noChaptersWarningDismissed, setNoChaptersWarningDismissed] = useState(false);
 
-  const isPdfFormat = format === 'pdf-b5-standard' || format === 'pdf-b5-print';
+  const isPdfFormat = format === 'pdf-b5-standard';
 
   const toggleSection = (sectionKey: string) => {
     setSelectedSections((prev) =>
@@ -143,8 +143,7 @@ export function AdvancedExportDialog({
 
       if (isFreeFlow) {
         if (isPdfFormat) {
-          const variant: PdfVariant = format === 'pdf-b5-print' ? 'b5-print' : 'b5-standard';
-          await generateBiographyPDF(biography, variant, {
+          await generateBiographyPDF(biography, 'b5-standard', {
             createdWith: t.exportDialog.createdWith,
             allRightsReserved: t.exportDialog.allRightsReserved,
           });
@@ -193,8 +192,7 @@ export function AdvancedExportDialog({
             sections.map((s) => [s.key, { text: s.content }])
           ),
         };
-        const variant: PdfVariant = format === 'pdf-b5-print' ? 'b5-print' : 'b5-standard';
-        await generateBiographyPDF(filteredBiography, variant, {
+        await generateBiographyPDF(filteredBiography, 'b5-standard', {
           createdWith: t.exportDialog.createdWith,
           allRightsReserved: t.exportDialog.allRightsReserved,
         });
@@ -217,7 +215,6 @@ export function AdvancedExportDialog({
 
   const allFormats: { value: ExportFormat; label: string; pdfOnly?: boolean }[] = [
     { value: 'pdf-b5-standard', label: t.exportDialog.pdfB5Standard, pdfOnly: true },
-    { value: 'pdf-b5-print', label: t.exportDialog.pdfB5PrintReady, pdfOnly: true },
     { value: 'txt', label: t.exportDialog.txtFormat },
     { value: 'rtf', label: t.exportDialog.rtfFormat },
     { value: 'docx', label: t.exportDialog.docxFormat },
