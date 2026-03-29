@@ -186,6 +186,7 @@ export interface Translations {
     exporting: string;
     noSectionsError: string;
     exportError: string;
+    fontLoadError: string;
     pdfFormat: string;
     pdfB5Standard: string;
     txtFormat: string;
@@ -1284,6 +1285,7 @@ export const translations: Record<Language, Translations> = {
       exporting: 'Exporting...',
       noSectionsError: 'No sections to export.',
       exportError: 'Export error. Please try again.',
+      fontLoadError: 'Font not available — export aborted. Please reload the page and try again.',
       pdfFormat: 'PDF - Complete formatted document',
       pdfB5Standard: 'PDF B5 (176×250mm)',
       txtFormat: 'TXT - Plain text without formatting',
@@ -2380,6 +2382,7 @@ export const translations: Record<Language, Translations> = {
       exporting: 'Esportazione...',
       noSectionsError: 'Nessuna sezione da esportare.',
       exportError: 'Errore durante l\'esportazione. Riprova.',
+      fontLoadError: 'Font non disponibile — esportazione annullata. Ricarica la pagina e riprova.',
       pdfFormat: 'PDF - Documento completo formattato',
       pdfB5Standard: 'PDF B5 (176×250mm)',
       txtFormat: 'TXT - Testo semplice senza formattazione',
@@ -3476,6 +3479,7 @@ export const translations: Record<Language, Translations> = {
       exporting: 'Exportation...',
       noSectionsError: 'Aucune section à exporter.',
       exportError: "Erreur lors de l'exportation. Réessayez.",
+      fontLoadError: "Police non disponible — export annulé. Rechargez la page et réessayez.",
       pdfFormat: 'PDF - Document complet formaté',
       pdfB5Standard: 'PDF B5 (176×250mm)',
       txtFormat: 'TXT - Texte brut sans mise en forme',
@@ -4572,6 +4576,7 @@ export const translations: Record<Language, Translations> = {
       exporting: 'Exportieren...',
       noSectionsError: 'Keine Abschnitte zum Exportieren.',
       exportError: 'Fehler beim Exportieren. Bitte erneut versuchen.',
+      fontLoadError: 'Schriftart nicht verfügbar — Export abgebrochen. Bitte Seite neu laden und erneut versuchen.',
       pdfFormat: 'PDF - Vollständiges formatiertes Dokument',
       pdfB5Standard: 'PDF B5 (176×250mm)',
       txtFormat: 'TXT - Einfacher Text ohne Formatierung',

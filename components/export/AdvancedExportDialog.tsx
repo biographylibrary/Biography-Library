@@ -240,6 +240,8 @@ export function AdvancedExportDialog({
       if (error?.message === 'MISSING_COVER_PHOTO') {
         setCoverPhotoStatus('missing');
         setExportError(t.exportDialog.noCoverPhotoWarning);
+      } else if (error?.message === 'FONT_LOAD_FAILED') {
+        setExportError(t.exportDialog.fontLoadError);
       } else {
         setExportError(t.exportDialog.exportError);
       }
@@ -309,7 +311,14 @@ export function AdvancedExportDialog({
           </div>
         )}
 
-        {exportError && exportError !== t.exportDialog.noCoverPhotoWarning && (
+        {exportError === t.exportDialog.fontLoadError && (
+          <div className="flex items-start gap-3 rounded-lg bg-destructive/10 border border-destructive/30 px-4 py-3">
+            <AlertTriangle className="h-4 w-4 mt-0.5 shrink-0 text-destructive" />
+            <p className="text-sm text-destructive leading-relaxed flex-1">{t.exportDialog.fontLoadError}</p>
+          </div>
+        )}
+
+        {exportError && exportError !== t.exportDialog.noCoverPhotoWarning && exportError !== t.exportDialog.fontLoadError && (
           <div className="flex items-start gap-3 rounded-lg bg-destructive/10 border border-destructive/30 px-4 py-3">
             <AlertTriangle className="h-4 w-4 mt-0.5 shrink-0 text-destructive" />
             <p className="text-sm text-destructive leading-relaxed flex-1">{exportError}</p>

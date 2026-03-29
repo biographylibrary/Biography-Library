@@ -57,36 +57,43 @@ const LOGO_SVG_VB_W = 306.49;
 const LOGO_SVG_VB_H = 368.28;
 
 let notoSerifRegularBase64: string | null = null;
+let notoSerifBoldBase64: string | null = null;
 let notoSerifItalicBase64: string | null = null;
+let notoSerifBoldItalicBase64: string | null = null;
 let fontsLoaded = false;
 
 async function loadNotoSerifFonts(): Promise<void> {
   if (fontsLoaded) return;
 
-  const regularUrl =
-    'https://fonts.gstatic.com/s/notoserif/v24/ga6Iaw1J5X9T9RW6j9bNfFcWaDq8fMVxMw.woff2';
-  const italicUrl =
-    'https://fonts.gstatic.com/s/notoserif/v24/ga6Kaw1J5X9T9RW6j9bNfFImbjC7TMXZnKqT.woff2';
+  const base = '/fonts/noto-serif';
+  const urls = [
+    `${base}/NotoSerif-Regular.ttf`,
+    `${base}/NotoSerif-Bold.ttf`,
+    `${base}/NotoSerif-Italic.ttf`,
+    `${base}/NotoSerif-BoldItalic.ttf`,
+  ];
 
-  try {
-    const [regularResp, italicResp] = await Promise.all([
-      fetch(regularUrl),
-      fetch(italicUrl),
-    ]);
+  const responses = await Promise.all(urls.map((url) => fetch(url)));
 
-    if (!regularResp.ok || !italicResp.ok) return;
-
-    const [regularBuf, italicBuf] = await Promise.all([
-      regularResp.arrayBuffer(),
-      italicResp.arrayBuffer(),
-    ]);
-
-    notoSerifRegularBase64 = arrayBufferToBase64(regularBuf);
-    notoSerifItalicBase64 = arrayBufferToBase64(italicBuf);
-    fontsLoaded = true;
-  } catch {
-    fontsLoaded = false;
+  for (const resp of responses) {
+    if (!resp.ok) {
+      throw new Error('FONT_LOAD_FAILED');
+    }
   }
+
+  const buffers = await Promise.all(responses.map((r) => r.arrayBuffer()));
+
+  for (const buf of buffers) {
+    if (buf.byteLength < 50000) {
+      throw new Error('FONT_LOAD_FAILED');
+    }
+  }
+
+  notoSerifRegularBase64 = arrayBufferToBase64(buffers[0]);
+  notoSerifBoldBase64 = arrayBufferToBase64(buffers[1]);
+  notoSerifItalicBase64 = arrayBufferToBase64(buffers[2]);
+  notoSerifBoldItalicBase64 = arrayBufferToBase64(buffers[3]);
+  fontsLoaded = true;
 }
 
 function arrayBufferToBase64(buffer: ArrayBuffer): string {
@@ -98,25 +105,27 @@ function arrayBufferToBase64(buffer: ArrayBuffer): string {
   return btoa(binary);
 }
 
-function registerFonts(doc: jsPDF): boolean {
-  if (!notoSerifRegularBase64 || !notoSerifItalicBase64) return false;
-  try {
-    doc.addFileToVFS('NotoSerif-Regular.woff2', notoSerifRegularBase64);
-    doc.addFont('NotoSerif-Regular.woff2', 'NotoSerif', 'normal');
-    doc.addFileToVFS('NotoSerif-Italic.woff2', notoSerifItalicBase64);
-    doc.addFont('NotoSerif-Italic.woff2', 'NotoSerif', 'italic');
-    return true;
-  } catch {
-    return false;
+function registerFonts(doc: jsPDF): void {
+  if (
+    !notoSerifRegularBase64 ||
+    !notoSerifBoldBase64 ||
+    !notoSerifItalicBase64 ||
+    !notoSerifBoldItalicBase64
+  ) {
+    throw new Error('FONT_LOAD_FAILED');
   }
+  doc.addFileToVFS('NotoSerif-Regular.ttf', notoSerifRegularBase64);
+  doc.addFont('NotoSerif-Regular.ttf', 'NotoSerif', 'normal');
+  doc.addFileToVFS('NotoSerif-Bold.ttf', notoSerifBoldBase64);
+  doc.addFont('NotoSerif-Bold.ttf', 'NotoSerif', 'bold');
+  doc.addFileToVFS('NotoSerif-Italic.ttf', notoSerifItalicBase64);
+  doc.addFont('NotoSerif-Italic.ttf', 'NotoSerif', 'italic');
+  doc.addFileToVFS('NotoSerif-BoldItalic.ttf', notoSerifBoldItalicBase64);
+  doc.addFont('NotoSerif-BoldItalic.ttf', 'NotoSerif', 'bolditalic');
 }
 
-function applyFont(doc: jsPDF, fontsAvailable: boolean, style: 'normal' | 'italic' = 'normal') {
-  if (fontsAvailable) {
-    doc.setFont('NotoSerif', style);
-  } else {
-    doc.setFont('times', style);
-  }
+function applyFont(doc: jsPDF, style: 'normal' | 'italic' | 'bold' | 'bolditalic' = 'normal') {
+  doc.setFont('NotoSerif', style);
 }
 
 function ptToMm(pt: number): number {
@@ -190,7 +199,6 @@ interface PdfState {
   doc: jsPDF;
   absolutePage: number;
   contentPageNum: number;
-  fontsAvailable: boolean;
 }
 
 function addNewPage(state: PdfState, isContent: boolean): void {
@@ -203,8 +211,8 @@ function addNewPage(state: PdfState, isContent: boolean): void {
 }
 
 function drawRunningHeader(state: PdfState, title: string): void {
-  const { doc, absolutePage, fontsAvailable } = state;
-  applyFont(doc, fontsAvailable, 'normal');
+  const { doc, absolutePage } = state;
+  applyFont(doc, 'normal');
   doc.setFontSize(PT_RUNNING);
   doc.setTextColor(120, 120, 120);
   const headerY = 8;
@@ -217,8 +225,8 @@ function drawRunningHeader(state: PdfState, title: string): void {
 }
 
 function drawPageNumber(state: PdfState): void {
-  const { doc, contentPageNum, fontsAvailable } = state;
-  applyFont(doc, fontsAvailable, 'normal');
+  const { doc, contentPageNum } = state;
+  applyFont(doc, 'normal');
   doc.setFontSize(PT_PAGE_NUM);
   doc.setTextColor(80, 80, 80);
   const numY = B5_H - 10;
@@ -243,10 +251,10 @@ function renderTextBlock(
   sectionTitle?: string,
   drawHeaderAndNum?: (s: PdfState) => void
 ): void {
-  const { doc, fontsAvailable } = state;
+  const { doc } = state;
   const lineH = ptToMm(fontSize * lineHeightMultiplier);
 
-  applyFont(doc, fontsAvailable, fontStyle);
+  applyFont(doc, fontStyle);
   doc.setFontSize(fontSize);
   doc.setTextColor(0, 0, 0);
 
@@ -268,7 +276,7 @@ function renderTextBlock(
           drawRunningHeader(state, sectionTitle);
           drawPageNumber(state);
         }
-        applyFont(doc, fontsAvailable, fontStyle);
+        applyFont(doc, fontStyle);
         doc.setFontSize(fontSize);
         doc.setTextColor(0, 0, 0);
         y = MARGIN_TOP;
@@ -283,8 +291,8 @@ function renderTextBlock(
 function addDedicationPage(state: PdfState, content: string): void {
   ensureOddPage(state);
 
-  const { doc, fontsAvailable } = state;
-  applyFont(doc, fontsAvailable, 'italic');
+  const { doc } = state;
+  applyFont(doc, 'italic');
   doc.setFontSize(PT_BODY);
   doc.setTextColor(0, 0, 0);
 
@@ -302,8 +310,8 @@ function addDedicationPage(state: PdfState, content: string): void {
 function addEpigraphPage(state: PdfState, content: string, source: string | null): void {
   ensureOddPage(state);
 
-  const { doc, fontsAvailable } = state;
-  applyFont(doc, fontsAvailable, 'italic');
+  const { doc } = state;
+  applyFont(doc, 'italic');
   doc.setFontSize(PT_BODY);
   doc.setTextColor(0, 0, 0);
 
@@ -319,7 +327,7 @@ function addEpigraphPage(state: PdfState, content: string, source: string | null
 
   if (source && source.trim()) {
     const sourceY = startY + lines.length * lineH + lineH * 0.8;
-    applyFont(doc, fontsAvailable, 'normal');
+    applyFont(doc, 'normal');
     doc.setFontSize(PT_BODY - 1);
     doc.setTextColor(100, 100, 100);
     doc.text(`— ${source.trim()}`, centerX, sourceY, { align: 'center' });
@@ -339,11 +347,11 @@ function addSectionWithTitle(
 
   ensureOddPage(state);
 
-  const { doc, fontsAvailable } = state;
+  const { doc } = state;
   const tx = textStartX(state.absolutePage);
   const chapterTitleY = textAreaTop + 10;
 
-  applyFont(doc, fontsAvailable, 'normal');
+  applyFont(doc, 'normal');
   doc.setFontSize(PT_CHAPTER);
   doc.setTextColor(0, 0, 0);
   doc.text(sectionTitle, tx, chapterTitleY, { align: 'left' });
@@ -445,7 +453,6 @@ async function fetchCoverPhotoBase64(
 
 function drawPhotoCover(
   doc: jsPDF,
-  fontsAvailable: boolean,
   title: string,
   authorName: string,
   coverBase64: string,
@@ -469,7 +476,7 @@ function drawPhotoCover(
   const titleLineH = PT_TITLE * 0.352778 * 1.05;
   const authorHeightMm = PT_AUTHOR * 0.352778;
 
-  applyFont(doc, fontsAvailable, 'normal');
+  applyFont(doc, 'normal');
   doc.setFontSize(PT_TITLE);
   doc.setTextColor(0x12, 0x12, 0x12);
 
@@ -485,7 +492,7 @@ function drawPhotoCover(
     doc.text(line, BOX_X + PAD, titleStartY + i * titleLineH);
   });
 
-  applyFont(doc, fontsAvailable, 'normal');
+  applyFont(doc, 'normal');
   doc.setFontSize(PT_AUTHOR);
   doc.setTextColor(0x12, 0x12, 0x12);
 
@@ -550,13 +557,12 @@ export async function generateBiographyPDF(
     format: [B5_W, B5_H],
   });
 
-  const fontsAvailable = registerFonts(doc);
+  registerFonts(doc);
 
   const state: PdfState = {
     doc,
     absolutePage: 1,
     contentPageNum: 0,
-    fontsAvailable,
   };
 
   const textAreaTop = MARGIN_TOP;
@@ -567,7 +573,6 @@ export async function generateBiographyPDF(
   // ────────────────────────────────────────
   drawPhotoCover(
     doc,
-    fontsAvailable,
     biography.title,
     biography.author_name,
     coverPhoto.base64,
@@ -603,7 +608,7 @@ export async function generateBiographyPDF(
     allRights,
   ];
 
-  applyFont(doc, fontsAvailable, 'normal');
+  applyFont(doc, 'normal');
   doc.setFontSize(PT_CREDITS);
   doc.setTextColor(80, 80, 80);
 
@@ -620,12 +625,12 @@ export async function generateBiographyPDF(
 
   const coverSafeWidth = B5_W - 20;
 
-  applyFont(doc, fontsAvailable, 'normal');
+  applyFont(doc, 'normal');
   doc.setFontSize(PT_TITLE_PAGE_AUTHOR);
   doc.setTextColor(80, 80, 80);
   doc.text(biography.author_name, centerX, 40, { align: 'center' });
 
-  applyFont(doc, fontsAvailable, 'normal');
+  applyFont(doc, 'normal');
   doc.setFontSize(PT_TITLE_PAGE_TITLE);
   doc.setTextColor(0, 0, 0);
   const titlePageLines = doc.splitTextToSize(biography.title, coverSafeWidth);
@@ -701,7 +706,7 @@ export async function generateBiographyPDF(
       addNewPage(state, true);
     }
 
-    applyFont(doc, fontsAvailable, 'normal');
+    applyFont(doc, 'normal');
     doc.setFontSize(PT_CHAPTER);
     doc.setTextColor(0, 0, 0);
 
@@ -716,7 +721,7 @@ export async function generateBiographyPDF(
       if (!isOddPage(state.absolutePage)) {
         addNewPage(state, true);
       }
-      applyFont(doc, fontsAvailable, 'normal');
+      applyFont(doc, 'normal');
       doc.setFontSize(PT_CHAPTER);
       doc.setTextColor(0, 0, 0);
       doc.text(section.title, textStartX(state.absolutePage), chapterTitleY, { align: 'left' });
@@ -726,7 +731,7 @@ export async function generateBiographyPDF(
     drawRunningHeader(state, section.title);
     drawPageNumber(state);
 
-    applyFont(doc, fontsAvailable, 'normal');
+    applyFont(doc, 'normal');
     doc.setFontSize(PT_BODY);
     doc.setTextColor(0, 0, 0);
 
@@ -743,7 +748,7 @@ export async function generateBiographyPDF(
           addNewPage(state, true);
           drawRunningHeader(state, section.title);
           drawPageNumber(state);
-          applyFont(doc, fontsAvailable, 'normal');
+          applyFont(doc, 'normal');
           doc.setFontSize(PT_BODY);
           doc.setTextColor(0, 0, 0);
           y = textAreaTop;
