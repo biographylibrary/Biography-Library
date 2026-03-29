@@ -45,8 +45,6 @@ const PT_CHAPTER = 22;
 const PT_RUNNING = 9;
 const PT_PAGE_NUM = 10;
 const PT_CREDITS = 9;
-const PT_COVER_TITLE = 28;
-const PT_COVER_AUTHOR = 14;
 const PT_TITLE_PAGE_TITLE = 28;
 const PT_TITLE_PAGE_AUTHOR = 11;
 
@@ -402,6 +400,126 @@ function hasContent(value: string | null | undefined): boolean {
   return typeof value === 'string' && value.trim().length > 0;
 }
 
+function detectImageFormat(url: string, contentType: string | null): string {
+  if (contentType) {
+    if (contentType.includes('png')) return 'PNG';
+    if (contentType.includes('webp')) return 'WEBP';
+    if (contentType.includes('gif')) return 'GIF';
+  }
+  const ext = url.split('?')[0].split('.').pop()?.toLowerCase();
+  if (ext === 'png') return 'PNG';
+  if (ext === 'webp') return 'WEBP';
+  if (ext === 'gif') return 'GIF';
+  return 'JPEG';
+}
+
+async function fetchCoverPhotoBase64(
+  biographyId: string
+): Promise<{ base64: string; format: string }> {
+  const { data } = await supabase
+    .from('biography_media')
+    .select('file_url, storage_path')
+    .eq('biography_id', biographyId)
+    .eq('layout', 'cover')
+    .limit(1)
+    .maybeSingle();
+
+  const url = data?.file_url ?? data?.storage_path ?? null;
+
+  if (!url) {
+    throw new Error('MISSING_COVER_PHOTO');
+  }
+
+  try {
+    const resp = await fetch(url);
+    if (!resp.ok) throw new Error('MISSING_COVER_PHOTO');
+    const contentType = resp.headers.get('content-type');
+    const format = detectImageFormat(url, contentType);
+    const buf = await resp.arrayBuffer();
+    const base64 = arrayBufferToBase64(buf);
+    return { base64, format };
+  } catch {
+    throw new Error('MISSING_COVER_PHOTO');
+  }
+}
+
+function drawPhotoCover(
+  doc: jsPDF,
+  fontsAvailable: boolean,
+  title: string,
+  authorName: string,
+  coverBase64: string,
+  coverFormat: string
+): void {
+  doc.setFillColor(255, 255, 255);
+  doc.rect(0, 0, B5_W, B5_H, 'F');
+
+  const BOX_X = 10;
+  const BOX_Y = 10;
+  const BOX_W = 156;
+  const BOX_H = 70;
+  const RADIUS = 8;
+  const PAD = 10;
+
+  doc.setFillColor(0xec, 0xe9, 0xe4);
+  (doc as any).roundedRect(BOX_X, BOX_Y, BOX_W, BOX_H, RADIUS, RADIUS, 'F');
+
+  const PT_TITLE = 33;
+  const PT_AUTHOR = 18;
+  const titleLineH = PT_TITLE * 0.352778 * 1.05;
+  const authorHeightMm = PT_AUTHOR * 0.352778;
+
+  applyFont(doc, fontsAvailable, 'normal');
+  doc.setFontSize(PT_TITLE);
+  doc.setTextColor(0x12, 0x12, 0x12);
+
+  const textAreaW = BOX_W - PAD * 2;
+  const rawTitleLines = doc.splitTextToSize(title, textAreaW);
+  const titleLines = rawTitleLines.slice(0, 3);
+  if (rawTitleLines.length > 3) {
+    titleLines[2] = titleLines[2].replace(/\.{0,3}$/, '') + '\u2026';
+  }
+
+  const titleStartY = BOX_Y + PAD + titleLineH * 0.8;
+  titleLines.forEach((line: string, i: number) => {
+    doc.text(line, BOX_X + PAD, titleStartY + i * titleLineH);
+  });
+
+  applyFont(doc, fontsAvailable, 'normal');
+  doc.setFontSize(PT_AUTHOR);
+  doc.setTextColor(0x12, 0x12, 0x12);
+
+  const authorBaselineY = BOX_Y + BOX_H - PAD - authorHeightMm + authorHeightMm * 0.8;
+  doc.text(authorName, BOX_X + PAD, authorBaselineY);
+
+  const PHOTO_X = 10;
+  const PHOTO_Y = 84;
+  const PHOTO_W = 156;
+  const PHOTO_H = 156;
+
+  const docAny = doc as any;
+  const hasClipping =
+    typeof docAny.saveGraphicsState === 'function' &&
+    typeof docAny.restoreGraphicsState === 'function' &&
+    typeof docAny.clip === 'function';
+
+  if (hasClipping) {
+    docAny.saveGraphicsState();
+    (doc as any).roundedRect(PHOTO_X, PHOTO_Y, PHOTO_W, PHOTO_H, RADIUS, RADIUS, null);
+    docAny.clip();
+    doc.addImage(coverBase64, coverFormat, PHOTO_X, PHOTO_Y, PHOTO_W, PHOTO_H);
+    docAny.restoreGraphicsState();
+  } else {
+    doc.addImage(coverBase64, coverFormat, PHOTO_X, PHOTO_Y, PHOTO_W, PHOTO_H);
+
+    doc.setFillColor(255, 255, 255);
+    doc.rect(PHOTO_X, PHOTO_Y, RADIUS, RADIUS, 'F');
+    doc.rect(PHOTO_X + PHOTO_W - RADIUS, PHOTO_Y, RADIUS, RADIUS, 'F');
+    doc.rect(PHOTO_X, PHOTO_Y + PHOTO_H - RADIUS, RADIUS, RADIUS, 'F');
+    doc.rect(PHOTO_X + PHOTO_W - RADIUS, PHOTO_Y + PHOTO_H - RADIUS, RADIUS, RADIUS, 'F');
+  }
+}
+
 export async function generateBiographyPDF(
   biography: BiographyData,
   _variant?: string,
@@ -414,11 +532,15 @@ export async function generateBiographyPDF(
     specificCredits?: string;
   }
 ): Promise<void> {
-  await loadNotoSerifFonts();
+  if (!biography.id) {
+    throw new Error('MISSING_COVER_PHOTO');
+  }
 
-  const bookStructure = biography.id
-    ? await fetchBookStructure(biography.id)
-    : null;
+  const [, bookStructure, coverPhoto] = await Promise.all([
+    loadNotoSerifFonts(),
+    biography.id ? fetchBookStructure(biography.id) : Promise.resolve(null),
+    fetchCoverPhotoBase64(biography.id),
+  ]);
 
   const centerX = B5_W / 2;
 
@@ -441,33 +563,16 @@ export async function generateBiographyPDF(
   const textAreaBottom = B5_H - MARGIN_BOTTOM;
 
   // ────────────────────────────────────────
-  // PAGE 1 — COVER
+  // PAGE 1 — PHOTO COVER
   // ────────────────────────────────────────
-  doc.setFillColor(BRAND_COLOR[0], BRAND_COLOR[1], BRAND_COLOR[2]);
-  doc.rect(SAFE_MARGIN, SAFE_MARGIN, B5_W - SAFE_MARGIN * 2, B5_H - SAFE_MARGIN * 2, 'F');
-
-  const coverSafeWidth = B5_W - 20;
-  applyFont(doc, fontsAvailable, 'normal');
-  doc.setFontSize(PT_COVER_TITLE);
-  doc.setTextColor(255, 255, 255);
-
-  const coverTitleLines = doc.splitTextToSize(biography.title, coverSafeWidth);
-  let coverY = B5_H * 0.6;
-  coverTitleLines.forEach((line: string) => {
-    doc.text(line, centerX, coverY, { align: 'center' });
-    coverY += ptToMm(PT_COVER_TITLE * LINE_HEIGHT_BODY);
-  });
-
-  applyFont(doc, fontsAvailable, 'normal');
-  doc.setFontSize(PT_COVER_AUTHOR);
-  doc.setTextColor(255, 255, 255);
-  const coverAuthorY = coverY + ptToMm(PT_COVER_AUTHOR);
-  doc.text(biography.author_name, centerX, coverAuthorY, { align: 'center' });
-
-  const logoWCover = 20;
-  const logoHCover = logoWCover / 0.83;
-  const logoYCover = 228;
-  drawLogoSvg(doc, centerX, logoYCover + logoHCover / 2, logoWCover, '#FFFFFF');
+  drawPhotoCover(
+    doc,
+    fontsAvailable,
+    biography.title,
+    biography.author_name,
+    coverPhoto.base64,
+    coverPhoto.format
+  );
 
   // ────────────────────────────────────────
   // PAGE 2 — BLANK
@@ -513,6 +618,8 @@ export async function generateBiographyPDF(
   // ────────────────────────────────────────
   addNewPage(state, false);
 
+  const coverSafeWidth = B5_W - 20;
+
   applyFont(doc, fontsAvailable, 'normal');
   doc.setFontSize(PT_TITLE_PAGE_AUTHOR);
   doc.setTextColor(80, 80, 80);
@@ -536,7 +643,6 @@ export async function generateBiographyPDF(
 
   // ────────────────────────────────────────
   // FRONT MATTER — Dedication, Epigraph, Preface
-  // Inserted after page 6, before first chapter
   // ────────────────────────────────────────
 
   if (bookStructure) {
@@ -567,7 +673,6 @@ export async function generateBiographyPDF(
 
   // ────────────────────────────────────────
   // CHAPTERS
-  // First chapter must start on odd/right-hand page
   // ────────────────────────────────────────
 
   const getSections = () => {
@@ -652,7 +757,6 @@ export async function generateBiographyPDF(
 
   // ────────────────────────────────────────
   // BACK MATTER — Epilogue, Acknowledgements, Specific Credits
-  // Inserted after last chapter, before back cover
   // ────────────────────────────────────────
 
   if (bookStructure) {

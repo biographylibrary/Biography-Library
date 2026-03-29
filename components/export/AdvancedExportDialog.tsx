@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -15,7 +15,7 @@ import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
-import { Download, Loader as Loader2, Info, TriangleAlert as AlertTriangle, X } from 'lucide-react';
+import { Download, Loader as Loader2, Info, TriangleAlert as AlertTriangle, X, RefreshCw } from 'lucide-react';
 import { BIOGRAPHY_SECTIONS } from '@/lib/editor-constants';
 import { generateBiographyPDF } from '@/lib/pdf-export';
 import { exportAsPlainText, exportAsRTF, exportAsDOCX } from '@/lib/export-utils';
@@ -43,6 +43,7 @@ interface AdvancedExportDialogProps {
 
 type ExportFormat = 'pdf-b5-standard' | 'txt' | 'rtf' | 'docx';
 type ContentSelection = 'all' | 'completed' | 'custom';
+type CoverPhotoStatus = 'checking' | 'found' | 'missing';
 
 export function AdvancedExportDialog({
   open,
@@ -59,8 +60,29 @@ export function AdvancedExportDialog({
   const [separateFiles, setSeparateFiles] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
   const [noChaptersWarningDismissed, setNoChaptersWarningDismissed] = useState(false);
+  const [coverPhotoStatus, setCoverPhotoStatus] = useState<CoverPhotoStatus>('checking');
+  const [exportError, setExportError] = useState<string | null>(null);
 
   const isPdfFormat = format === 'pdf-b5-standard';
+
+  const checkCoverPhoto = useCallback(async () => {
+    if (!biography.id || !isPublished) return;
+    setCoverPhotoStatus('checking');
+    const { data } = await supabase
+      .from('biography_media')
+      .select('id')
+      .eq('biography_id', biography.id)
+      .eq('layout', 'cover')
+      .limit(1)
+      .maybeSingle();
+    setCoverPhotoStatus(data ? 'found' : 'missing');
+  }, [biography.id, isPublished]);
+
+  useEffect(() => {
+    if (open && isPublished) {
+      checkCoverPhoto();
+    }
+  }, [open, isPublished, checkCoverPhoto]);
 
   const toggleSection = (sectionKey: string) => {
     setSelectedSections((prev) =>
@@ -138,6 +160,7 @@ export function AdvancedExportDialog({
 
   const handleExport = async () => {
     setIsExporting(true);
+    setExportError(null);
     try {
       const isFreeFlow = biography.biography_mode === 'freeflow';
 
@@ -213,9 +236,13 @@ export function AdvancedExportDialog({
       }
 
       onOpenChange(false);
-    } catch (error) {
-      console.error('Export error:', error);
-      alert(t.exportDialog.exportError);
+    } catch (error: any) {
+      if (error?.message === 'MISSING_COVER_PHOTO') {
+        setCoverPhotoStatus('missing');
+        setExportError(t.exportDialog.noCoverPhotoWarning);
+      } else {
+        setExportError(t.exportDialog.exportError);
+      }
     } finally {
       setIsExporting(false);
     }
@@ -229,6 +256,14 @@ export function AdvancedExportDialog({
   ];
 
   const visibleFormats = allFormats.filter((f) => isPublished || !f.pdfOnly);
+
+  const pdfDisabled = isPdfFormat && isPublished && coverPhotoStatus === 'missing';
+  const downloadDisabled =
+    isExporting ||
+    (biography.biography_mode !== 'freeflow' &&
+      contentSelection === 'custom' &&
+      selectedSections.length === 0) ||
+    pdfDisabled;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -254,6 +289,30 @@ export function AdvancedExportDialog({
             >
               <X className="h-4 w-4" />
             </button>
+          </div>
+        )}
+
+        {isPublished && isPdfFormat && coverPhotoStatus === 'missing' && (
+          <div className="flex items-start gap-3 rounded-lg bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 px-4 py-3">
+            <AlertTriangle className="h-4 w-4 mt-0.5 shrink-0 text-amber-600 dark:text-amber-400" />
+            <p className="text-sm text-amber-800 dark:text-amber-200 leading-relaxed flex-1">
+              {t.exportDialog.noCoverPhotoWarning}
+            </p>
+            <button
+              type="button"
+              onClick={checkCoverPhoto}
+              className="shrink-0 text-amber-600 dark:text-amber-400 hover:text-amber-800 dark:hover:text-amber-200 transition-colors"
+              aria-label="Retry"
+            >
+              <RefreshCw className="h-4 w-4" />
+            </button>
+          </div>
+        )}
+
+        {exportError && exportError !== t.exportDialog.noCoverPhotoWarning && (
+          <div className="flex items-start gap-3 rounded-lg bg-destructive/10 border border-destructive/30 px-4 py-3">
+            <AlertTriangle className="h-4 w-4 mt-0.5 shrink-0 text-destructive" />
+            <p className="text-sm text-destructive leading-relaxed flex-1">{exportError}</p>
           </div>
         )}
 
@@ -405,7 +464,7 @@ export function AdvancedExportDialog({
           <Button
             type="button"
             onClick={handleExport}
-            disabled={isExporting || (biography.biography_mode !== 'freeflow' && contentSelection === 'custom' && selectedSections.length === 0)}
+            disabled={downloadDisabled}
           >
             {isExporting ? (
               <>

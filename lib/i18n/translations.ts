@@ -198,6 +198,7 @@ export interface Translations {
     epilogue: string;
     acknowledgements: string;
     specificCredits: string;
+    noCoverPhotoWarning: string;
   };
   sectionTitles: {
     childhood: string;
@@ -1253,6 +1254,7 @@ export const translations: Record<Language, Translations> = {
       epilogue: 'Epilogue',
       acknowledgements: 'Acknowledgements',
       specificCredits: 'Credits',
+      noCoverPhotoWarning: 'A cover photo is required to generate the PDF. Upload a photo and tag it as cover in the Photos section.',
     },
     sectionTitles: {
       childhood: 'Childhood & Early Years',
@@ -2306,6 +2308,7 @@ export const translations: Record<Language, Translations> = {
       epilogue: 'Epilogo',
       acknowledgements: 'Ringraziamenti',
       specificCredits: 'Crediti',
+      noCoverPhotoWarning: 'È necessaria una foto di copertina per generare il PDF. Carica una foto e contrassegnala come copertina nella sezione Foto.',
     },
     sectionTitles: {
       childhood: 'Infanzia e Primi Anni',
@@ -3359,6 +3362,7 @@ export const translations: Record<Language, Translations> = {
       epilogue: 'Épilogue',
       acknowledgements: 'Remerciements',
       specificCredits: 'Crédits',
+      noCoverPhotoWarning: 'Une photo de couverture est requise pour générer le PDF. Importez une photo et marquez-la comme couverture dans la section Photos.',
     },
     sectionTitles: {
       childhood: 'Enfance et Premières Années',
@@ -4412,6 +4416,7 @@ export const translations: Record<Language, Translations> = {
       epilogue: 'Nachwort',
       acknowledgements: 'Danksagung',
       specificCredits: 'Quellenangaben',
+      noCoverPhotoWarning: 'Ein Titelfoto ist erforderlich, um das PDF zu erstellen. Lade ein Foto hoch und markiere es als Titelbild im Fotos-Bereich.',
     },
     sectionTitles: {
       childhood: 'Kindheit und Frühe Jahre',
