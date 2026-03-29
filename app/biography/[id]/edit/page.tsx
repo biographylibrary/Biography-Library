@@ -1364,28 +1364,28 @@ const [isPublishing, setIsPublishing] = useState(false);
                   </div>
                 </div>
               )}
-            </div>
 
-            {editorMode === 'editor' && (
-              <div className="shrink-0">
-                <ShareLinkPanel
-                  biographyId={id}
-                  visibility={privacy}
-                  currentShareToken={shareToken}
-                  onTokenGenerated={setShareToken}
-                />
-                <BiographySettingsPanel
-                  biographyId={id}
-                  biographyType={biographyType}
-                  slug={slug}
-                  onBiographyTypeChange={setBiographyType}
-                  onSlugChange={setSlug}
-                  biographyTitle={title}
-                  authorName={biography.author_name ?? ''}
-                  onNavigateToPhotos={() => setShowPhotosPanel(true)}
-                />
-              </div>
-            )}
+              {editorMode === 'editor' && (
+                <div className="shrink-0">
+                  <ShareLinkPanel
+                    biographyId={id}
+                    visibility={privacy}
+                    currentShareToken={shareToken}
+                    onTokenGenerated={setShareToken}
+                  />
+                  <BiographySettingsPanel
+                    biographyId={id}
+                    biographyType={biographyType}
+                    slug={slug}
+                    onBiographyTypeChange={setBiographyType}
+                    onSlugChange={setSlug}
+                    biographyTitle={title}
+                    authorName={biography.author_name ?? ''}
+                    onNavigateToPhotos={() => setShowPhotosPanel(true)}
+                  />
+                </div>
+              )}
+            </div>
           </div>
 
           {editorMode === 'editor' && aiState.type && (
