@@ -20,7 +20,7 @@ interface BiographyViewData {
   title: string;
   author_name: string;
   content: BiographyContent;
-  privacy: string;
+  visibility: string;
   status: string;
   share_token: string | null;
   created_at: string;
@@ -82,9 +82,9 @@ export default function BiographyViewPage() {
 
       const publicQuery = await supabase
         .from('biographies')
-        .select('id, title, author_name, content, privacy, status, share_token, created_at, published_at, is_frozen, frozen_at')
+        .select('id, title, author_name, content, visibility, status, share_token, created_at, published_at, is_frozen, frozen_at')
         .eq('id', id)
-        .eq('privacy', 'public')
+        .eq('visibility', 'public')
         .eq('status', 'published')
         .maybeSingle();
 
@@ -94,13 +94,13 @@ export default function BiographyViewPage() {
       } else if (token) {
         const tokenQuery = await supabase
           .from('biographies')
-          .select('id, title, author_name, content, privacy, status, share_token, created_at, published_at, is_frozen, frozen_at')
+          .select('id, title, author_name, content, visibility, status, share_token, created_at, published_at, is_frozen, frozen_at')
           .eq('id', id)
           .eq('share_token', token)
           .maybeSingle();
 
         if (!tokenQuery.error && tokenQuery.data) {
-          if (tokenQuery.data.privacy === 'private') {
+          if (tokenQuery.data.visibility === 'private') {
             setError('private');
             setIsLoading(false);
             return;

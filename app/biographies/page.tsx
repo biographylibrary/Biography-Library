@@ -64,7 +64,7 @@ interface BiographyCardProps {
 }
 
 function BiographyCard({ bio, t, featured }: BiographyCardProps) {
-  const isMemorial = bio.frozen_reason === 'death';
+  const isMemorial = bio.biography_type === 'memorial';
   const lang = bio.content_language || 'en';
   const flag = LANGUAGE_FLAGS[lang] ?? '';
   const langLabel = LANGUAGE_LABELS[lang] ?? lang.toUpperCase();
@@ -246,8 +246,8 @@ export default function PublicBiographiesPage() {
         if (!inTitle && !inAuthor) return false;
       }
       if (langFilter !== 'all' && (bio.content_language || 'en') !== langFilter) return false;
-      if (typeFilter === 'autobiography' && bio.frozen_reason === 'death') return false;
-      if (typeFilter === 'memorial' && bio.frozen_reason !== 'death') return false;
+      if (typeFilter === 'autobiography' && bio.biography_type === 'memorial') return false;
+      if (typeFilter === 'memorial' && bio.biography_type !== 'memorial') return false;
       return true;
     });
   }, [allBios, search, langFilter, typeFilter, isSearchActive]);

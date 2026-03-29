@@ -9,14 +9,14 @@ import { supabase } from '@/lib/supabase';
 
 interface ShareLinkPanelProps {
   biographyId: string;
-  privacy: 'private' | 'family' | 'public';
+  visibility: 'private' | 'link-only' | 'public';
   currentShareToken: string | null;
   onTokenGenerated: (token: string) => void;
 }
 
 export function ShareLinkPanel({
   biographyId,
-  privacy,
+  visibility,
   currentShareToken,
   onTokenGenerated,
 }: ShareLinkPanelProps) {
@@ -24,7 +24,7 @@ export function ShareLinkPanel({
   const [copied, setCopied] = useState(false);
   const { t } = useTranslation();
 
-  if (privacy === 'private') {
+  if (visibility === 'private') {
     return null;
   }
 
@@ -86,7 +86,7 @@ export function ShareLinkPanel({
       ) : (
         <div className="space-y-2">
           <p className="text-xs text-muted-foreground">
-            {privacy === 'public'
+            {visibility === 'public'
               ? t.share.publicViewDescription
               : t.share.familyViewDescription}
           </p>

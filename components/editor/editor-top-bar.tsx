@@ -8,7 +8,7 @@ import { useTranslation } from '@/lib/i18n/i18n-context';
 import { ArrowLeft, Check, CloudOff, Loader as Loader2, Lock, Users, Globe, BookOpen, Snowflake } from 'lucide-react';
 
 type SaveStatus = 'saved' | 'saving' | 'unsaved' | 'error';
-type Privacy = 'private' | 'family' | 'public';
+type Privacy = 'private' | 'link-only' | 'public';
 
 interface EditorTopBarProps {
   title: string;
@@ -19,13 +19,13 @@ interface EditorTopBarProps {
   isFrozen?: boolean;
 }
 
-const privacyIcons = {
+const privacyIcons: Record<Privacy, typeof Lock> = {
   private: Lock,
-  family: Users,
+  'link-only': Users,
   public: Globe,
 };
 
-const privacyOrder: Privacy[] = ['private', 'family', 'public'];
+const privacyOrder: Privacy[] = ['private', 'link-only', 'public'];
 
 export function EditorTopBar({
   title,
@@ -43,7 +43,7 @@ export function EditorTopBar({
 
   const privacyLabels: Record<Privacy, string> = {
     private: t.dashboard.private,
-    family: t.dashboard.family,
+    'link-only': t.dashboard.family,
     public: t.dashboard.public,
   };
 
@@ -92,7 +92,7 @@ export function EditorTopBar({
 
   const status = saveStatusConfig[saveStatus];
   const StatusIcon = status.icon;
-  const CurrentPrivacyIcon = privacyIcons[privacy];
+  const CurrentPrivacyIcon = privacyIcons[privacy] ?? Lock;
   const currentIndex = privacyOrder.indexOf(privacy);
   const nextPrivacy = privacyOrder[(currentIndex + 1) % privacyOrder.length];
 

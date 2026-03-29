@@ -106,7 +106,7 @@ function AdminBiographiesContent() {
           author_email: profile?.email ?? null,
           type: isDeceased ? 'deceased' : 'autobiography',
           status: b.status ?? 'draft',
-          privacy: b.privacy ?? 'private',
+          visibility: b.visibility ?? 'private',
           share_token: b.share_token ?? null,
           created_at: b.created_at,
           updated_at: b.updated_at,

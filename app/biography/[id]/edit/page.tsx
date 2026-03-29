@@ -67,7 +67,7 @@ export default function BiographyEditorPage() {
   const [biography, setBiography] = useState<Biography | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [title, setTitle] = useState('');
-  const [privacy, setPrivacy] = useState<'private' | 'family' | 'public'>(
+  const [privacy, setPrivacy] = useState<'private' | 'link-only' | 'public'>(
     'private'
   );
   const [status, setStatus] = useState<'draft' | 'completed'>('draft');
@@ -172,7 +172,7 @@ const [isPublishing, setIsPublishing] = useState(false);
       if (data) {
         setBiography(data);
         setTitle(data.title);
-        setPrivacy(data.privacy);
+        setPrivacy((data.visibility as 'private' | 'link-only' | 'public') ?? 'private');
         setStatus(data.status || 'draft');
         setBiographyStatus(data.status || 'draft');
         setIsLocked(data.is_locked || false);
@@ -204,7 +204,7 @@ const [isPublishing, setIsPublishing] = useState(false);
       .from('biographies')
       .update({
         title: titleRef.current,
-        privacy: privacyRef.current,
+        visibility: privacyRef.current,
         content: contentRef.current,
         biography_mode: biographyModeRef.current,
         content_freeflow: contentFreeflowRef.current,
@@ -256,7 +256,7 @@ const [isPublishing, setIsPublishing] = useState(false);
   );
 
   const handlePrivacyChange = useCallback(
-    (newPrivacy: 'private' | 'family' | 'public') => {
+    (newPrivacy: 'private' | 'link-only' | 'public') => {
       setPrivacy(newPrivacy);
       markDirty();
     },
@@ -1261,7 +1261,7 @@ const [isPublishing, setIsPublishing] = useState(false);
               <div className="shrink-0">
                 <ShareLinkPanel
                   biographyId={id}
-                  privacy={privacy}
+                  visibility={privacy}
                   currentShareToken={shareToken}
                   onTokenGenerated={setShareToken}
                 />

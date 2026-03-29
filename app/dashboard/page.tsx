@@ -68,10 +68,10 @@ export default function DashboardPage() {
 
   const handleCreate = async (
     title: string,
-    privacy: 'private' | 'family' | 'public'
+    visibility: 'private' | 'link-only' | 'public'
   ) => {
     if (!user) return;
-    const { data, error } = await createBiography(user.id, title, privacy);
+    const { data, error } = await createBiography(user.id, title, visibility);
     if (error) throw new Error(error);
     setShowCreateModal(false);
     if (data) {

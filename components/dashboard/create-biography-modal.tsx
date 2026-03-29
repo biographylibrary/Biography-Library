@@ -13,13 +13,13 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useTranslation } from '@/lib/i18n/i18n-context';
-import { Lock, Users, Globe, Loader2 } from 'lucide-react';
+import { Lock, Users, Globe, Loader as Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface CreateBiographyModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onSubmit: (title: string, privacy: 'private' | 'family' | 'public') => Promise<void>;
+  onSubmit: (title: string, visibility: 'private' | 'link-only' | 'public') => Promise<void>;
   existingBiographiesCount?: number;
 }
 
@@ -30,7 +30,7 @@ export function CreateBiographyModal({
   existingBiographiesCount = 0,
 }: CreateBiographyModalProps) {
   const [title, setTitle] = useState('');
-  const [privacy, setPrivacy] = useState<'private' | 'family' | 'public'>('private');
+  const [privacy, setPrivacy] = useState<'private' | 'link-only' | 'public'>('private');
   const [isCreating, setIsCreating] = useState(false);
   const [error, setError] = useState('');
   const { t } = useTranslation();
@@ -43,7 +43,7 @@ export function CreateBiographyModal({
       description: t.biography.onlyYouCanAccess,
     },
     {
-      value: 'family' as const,
+      value: 'link-only' as const,
       icon: Users,
       label: t.dashboard.family,
       description: t.biography.shareWithFamily,
@@ -70,7 +70,7 @@ export function CreateBiographyModal({
     try {
       await onSubmit(title.trim(), privacy);
       setTitle('');
-      setPrivacy('private');
+      setPrivacy('private' as const);
     } catch (err: any) {
       setError(err.message || t.biography.failedToCreate);
     } finally {

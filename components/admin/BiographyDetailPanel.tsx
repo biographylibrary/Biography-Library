@@ -36,7 +36,7 @@ export interface AdminBiographyRow {
   author_email: string | null;
   type: string;
   status: string;
-  privacy: string;
+  visibility: string;
   share_token: string | null;
   created_at: string;
   updated_at: string;
@@ -77,7 +77,7 @@ function PrivacyBadge({ privacy }: { privacy: string }) {
   const { t } = useTranslation();
   const map: Record<string, { label: string; className: string }> = {
     private: { label: t.admin.bioPrivatePrivacy, className: 'bg-neutral-100 text-neutral-600 border-neutral-200 dark:bg-neutral-800 dark:text-neutral-400' },
-    family: { label: t.admin.bioFamilyPrivacy, className: 'bg-[#C4DAEB] text-[#121212] border-sky-200 dark:bg-[#C4DAEB]/20 dark:text-[#C4DAEB]' },
+    'link-only': { label: t.admin.bioFamilyPrivacy, className: 'bg-[#C4DAEB] text-[#121212] border-sky-200 dark:bg-[#C4DAEB]/20 dark:text-[#C4DAEB]' },
     public: { label: t.admin.bioPublicPrivacy, className: 'bg-[#C8DFBE] text-[#121212] border-emerald-200 dark:bg-[#C8DFBE]/20 dark:text-[#C8DFBE]' },
   };
   const cfg = map[privacy] ?? map['private'];
@@ -277,7 +277,7 @@ export function BiographyDetailPanel({ biography, onClose, onRefresh }: Biograph
                     </div>
                   </InfoRow>
                   <InfoRow label={t.admin.bioPanelPrivacy}>
-                    <PrivacyBadge privacy={biography.privacy} />
+                    <PrivacyBadge privacy={biography.visibility} />
                   </InfoRow>
                   <InfoRow label={t.admin.bioPanelCreated}>{fmt(biography.created_at)}</InfoRow>
                   <InfoRow label={t.admin.bioPanelUpdated}>{fmt(biography.updated_at)}</InfoRow>

@@ -6,7 +6,7 @@ export interface Biography {
   title: string;
   author_name: string;
   content: Record<string, unknown>;
-  privacy: 'private' | 'family' | 'public';
+  visibility: 'private' | 'link-only' | 'public';
   status: 'draft' | 'completed' | 'sections_complete' | 'final_version' | 'published' | 'under_review';
   share_token: string | null;
   completed_at: string | null;
@@ -22,6 +22,9 @@ export interface Biography {
   content_language?: string;
   chapters_count?: number;
   biography_mode?: 'sections' | 'freeflow';
+  biography_type: 'autobiography' | 'memorial';
+  cover_mode: 'photo' | 'graphic';
+  slug: string | null;
 }
 
 export interface PublishedBiography {
@@ -29,22 +32,23 @@ export interface PublishedBiography {
   title: string;
   author_name: string;
   content_language: string;
-  frozen_reason: string | null;
+  biography_type: 'autobiography' | 'memorial';
   chapters_count: number;
   published_at: string | null;
   view_count?: number;
   is_featured?: boolean;
   featured_at?: string | null;
+  slug: string | null;
 }
 
-const PUBLISHED_SELECT = 'id, title, author_name, content_language, frozen_reason, chapters_count, published_at, view_count, is_featured, featured_at';
+const PUBLISHED_SELECT = 'id, title, author_name, content_language, biography_type, chapters_count, published_at, view_count, is_featured, featured_at, slug';
 
 export async function fetchPublishedBiographies() {
   const { data, error } = await supabase
     .from('biographies')
     .select(PUBLISHED_SELECT)
     .eq('status', 'published')
-    .eq('privacy', 'public')
+    .eq('visibility', 'public')
     .order('published_at', { ascending: false });
 
   return {
@@ -58,7 +62,7 @@ export async function fetchFeaturedBiographies() {
     .from('biographies')
     .select(PUBLISHED_SELECT)
     .eq('status', 'published')
-    .eq('privacy', 'public')
+    .eq('visibility', 'public')
     .eq('is_featured', true)
     .order('featured_at', { ascending: false })
     .limit(6);
@@ -74,7 +78,7 @@ export async function fetchMostReadBiographies() {
     .from('biographies')
     .select(PUBLISHED_SELECT)
     .eq('status', 'published')
-    .eq('privacy', 'public')
+    .eq('visibility', 'public')
     .order('view_count', { ascending: false })
     .limit(10);
 
@@ -89,7 +93,7 @@ export async function fetchDiscoverBiographies(excludeIds: string[]) {
     .from('biographies')
     .select(PUBLISHED_SELECT)
     .eq('status', 'published')
-    .eq('privacy', 'public');
+    .eq('visibility', 'public');
 
   if (excludeIds.length > 0) {
     query = query.not('id', 'in', `(${excludeIds.join(',')})`);
@@ -121,14 +125,14 @@ export async function fetchBiographies(userId: string) {
 export async function createBiography(
   userId: string,
   title: string,
-  privacy: 'private' | 'family' | 'public'
+  visibility: 'private' | 'link-only' | 'public'
 ) {
   const { data, error } = await supabase
     .from('biographies')
     .insert({
       user_id: userId,
       title,
-      privacy,
+      visibility,
       status: 'draft',
       content: {},
     })

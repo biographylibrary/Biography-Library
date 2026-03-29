@@ -124,10 +124,10 @@ export function MainBiographyCard({ biography, userName, userId, onDeleteClick, 
     return t.coach.goodEvening;
   };
 
-  const getPrivacyIcon = (privacy: string) => {
-    switch (privacy) {
+  const getPrivacyIcon = (visibility: string) => {
+    switch (visibility) {
       case 'private': return { icon: Lock, text: t.dashboard.private };
-      case 'family': return { icon: Users, text: t.dashboard.family };
+      case 'link-only': return { icon: Users, text: t.dashboard.family };
       case 'public': return { icon: Globe, text: t.dashboard.public };
       default: return { icon: Lock, text: t.dashboard.private };
     }
@@ -268,7 +268,7 @@ export function MainBiographyCard({ biography, userName, userId, onDeleteClick, 
     );
   }
 
-  const privacyInfo = getPrivacyIcon(biography.privacy);
+  const privacyInfo = getPrivacyIcon(biography.visibility);
   const PrivacyIcon = privacyInfo.icon;
 
   return (

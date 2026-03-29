@@ -15,9 +15,9 @@ interface BiographyCardProps {
 export function BiographyCard({ biography, onEdit, onDelete }: BiographyCardProps) {
   const { t } = useTranslation();
 
-  const privacyConfig = {
+  const privacyConfig: Record<string, { icon: typeof Lock; label: string; className: string }> = {
     private: { icon: Lock, label: t.dashboard.private, className: 'text-slate-500 bg-slate-500/10' },
-    family: { icon: Users, label: t.dashboard.family, className: 'text-blue-500 bg-blue-500/10' },
+    'link-only': { icon: Users, label: t.dashboard.family, className: 'text-blue-500 bg-blue-500/10' },
     public: { icon: Globe, label: t.dashboard.public, className: 'text-emerald-500 bg-emerald-500/10' },
   };
 
@@ -31,7 +31,7 @@ export function BiographyCard({ biography, onEdit, onDelete }: BiographyCardProp
   };
 
   const isUnderReview = biography.status === 'under_review';
-  const privacy = privacyConfig[biography.privacy] || privacyConfig.private;
+  const privacy = privacyConfig[biography.visibility] || privacyConfig.private;
   const status = statusConfig[biography.status || 'draft'] || statusConfig.draft;
   const PrivacyIcon = privacy.icon;
 
