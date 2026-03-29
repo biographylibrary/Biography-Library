@@ -111,7 +111,6 @@ export default function BiographyEditorPage() {
   const [biographyMode, setBiographyMode] = useState<'sections' | 'freeflow'>('sections');
   const [contentFreeflow, setContentFreeflow] = useState<string>('');
   const [biographyType, setBiographyType] = useState<'autobiography' | 'memorial'>('autobiography');
-  const [coverMode, setCoverMode] = useState<'graphic' | 'photo'>('graphic');
   const [slug, setSlug] = useState<string | null>(null);
 const [isPublishing, setIsPublishing] = useState(false);
 
@@ -193,7 +192,6 @@ const [isPublishing, setIsPublishing] = useState(false);
         setBiographyMode((data.biography_mode as 'sections' | 'freeflow') || 'sections');
         setContentFreeflow(data.content_freeflow || '');
         setBiographyType((data.biography_type as 'autobiography' | 'memorial') || 'autobiography');
-        setCoverMode((data.cover_mode as 'graphic' | 'photo') || 'graphic');
         setSlug(data.slug || null);
         const loaded = data.content as BiographyContent | null;
         if (loaded && typeof loaded === 'object') {
@@ -1301,10 +1299,8 @@ const [isPublishing, setIsPublishing] = useState(false);
                 <BiographySettingsPanel
                   biographyId={id}
                   biographyType={biographyType}
-                  coverMode={coverMode}
                   slug={slug}
                   onBiographyTypeChange={setBiographyType}
-                  onCoverModeChange={setCoverMode}
                   onSlugChange={setSlug}
                   biographyTitle={title}
                 />

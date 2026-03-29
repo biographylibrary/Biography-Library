@@ -23,7 +23,6 @@ export interface Biography {
   chapters_count?: number;
   biography_mode?: 'sections' | 'freeflow';
   biography_type: 'autobiography' | 'memorial';
-  cover_mode: 'photo' | 'graphic';
   slug: string | null;
 }
 
@@ -33,7 +32,6 @@ export interface PublishedBiography {
   author_name: string;
   content_language: string;
   biography_type: 'autobiography' | 'memorial';
-  cover_mode: 'graphic' | 'photo';
   chapters_count: number;
   published_at: string | null;
   view_count?: number;
@@ -42,7 +40,7 @@ export interface PublishedBiography {
   slug: string | null;
 }
 
-const PUBLISHED_SELECT = 'id, title, author_name, content_language, biography_type, cover_mode, chapters_count, published_at, view_count, is_featured, featured_at, slug';
+const PUBLISHED_SELECT = 'id, title, author_name, content_language, biography_type, chapters_count, published_at, view_count, is_featured, featured_at, slug';
 
 export async function fetchPublishedBiographies() {
   const { data, error } = await supabase

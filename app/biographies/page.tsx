@@ -129,10 +129,6 @@ function BiographyCard({ bio, t, featured }: BiographyCardProps) {
   const [cover, setCover] = useState<CoverPhotoState>({ url: null, loaded: false });
 
   useEffect(() => {
-    if (bio.cover_mode !== 'photo') {
-      setCover({ url: null, loaded: true });
-      return;
-    }
     let cancelled = false;
     supabase
       .from('biography_media')
@@ -146,9 +142,9 @@ function BiographyCard({ bio, t, featured }: BiographyCardProps) {
         setCover({ url: url ?? null, loaded: true });
       });
     return () => { cancelled = true; };
-  }, [bio.id, bio.cover_mode]);
+  }, [bio.id]);
 
-  const showGraphic = bio.cover_mode !== 'photo' || !cover.url;
+  const showGraphic = !cover.url;
   const href = biographyHref(bio);
 
   return (
@@ -160,7 +156,7 @@ function BiographyCard({ bio, t, featured }: BiographyCardProps) {
       )}
     >
       <div className="relative w-full overflow-hidden rounded-t-2xl" style={{ aspectRatio: '176 / 250' }}>
-        {!cover.loaded && bio.cover_mode === 'photo' ? (
+        {!cover.loaded ? (
           <div className="w-full h-full" style={{ background: BRAND_TEAL }} />
         ) : showGraphic ? (
           <GraphicCover
