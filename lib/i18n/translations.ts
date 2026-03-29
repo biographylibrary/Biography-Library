@@ -892,6 +892,11 @@ export interface Translations {
     reviewLoadError: string;
     reviewApproveError: string;
     reviewRejectError: string;
+    reviewFlaggedPassages: string;
+    reviewApprovePassage: string;
+    reviewRejectPassage: string;
+    reviewAllPassagesReviewed: string;
+    reviewAiReason: string;
     aiStatsPageTitle: string;
     aiStatsPageSubtitle: string;
     aiStatsDataNote: string;
@@ -1980,6 +1985,11 @@ export const translations: Record<Language, Translations> = {
       reviewLoadError: 'Failed to load the review queue.',
       reviewApproveError: 'Failed to approve biography.',
       reviewRejectError: 'Failed to reject biography.',
+      reviewFlaggedPassages: 'flagged passages',
+      reviewApprovePassage: 'Approve passage',
+      reviewRejectPassage: 'Reject passage',
+      reviewAllPassagesReviewed: 'All passages reviewed — ready to decide',
+      reviewAiReason: 'AI reason',
       aiStatsPageTitle: 'AI Usage Statistics',
       aiStatsPageSubtitle: 'Monitor AI feature usage across all users',
       aiStatsDataNote: 'Note: usage data is retained for 30 days.',
@@ -3066,6 +3076,11 @@ export const translations: Record<Language, Translations> = {
       reviewLoadError: 'Impossibile caricare la coda di revisione.',
       reviewApproveError: 'Impossibile approvare la biografia.',
       reviewRejectError: 'Impossibile rifiutare la biografia.',
+      reviewFlaggedPassages: 'passaggi segnalati',
+      reviewApprovePassage: 'Approva passaggio',
+      reviewRejectPassage: 'Rifiuta passaggio',
+      reviewAllPassagesReviewed: 'Tutti i passaggi revisionati — pronto per decidere',
+      reviewAiReason: 'Motivazione AI',
       aiStatsPageTitle: 'Statistiche Utilizzo AI',
       aiStatsPageSubtitle: 'Monitora l\'utilizzo delle funzioni AI da parte di tutti gli utenti',
       aiStatsDataNote: 'Nota: i dati di utilizzo vengono conservati per 30 giorni.',
@@ -4152,6 +4167,11 @@ export const translations: Record<Language, Translations> = {
       reviewLoadError: 'Impossible de charger la file de révision.',
       reviewApproveError: 'Impossible d\'approuver la biographie.',
       reviewRejectError: 'Impossible de refuser la biographie.',
+      reviewFlaggedPassages: 'passages signalés',
+      reviewApprovePassage: 'Approuver le passage',
+      reviewRejectPassage: 'Rejeter le passage',
+      reviewAllPassagesReviewed: 'Tous les passages révisés — prêt à décider',
+      reviewAiReason: 'Raison de l\'IA',
       aiStatsPageTitle: 'Statistiques d\'utilisation de l\'IA',
       aiStatsPageSubtitle: 'Surveiller l\'utilisation des fonctions IA par tous les utilisateurs',
       aiStatsDataNote: 'Note : les données d\'utilisation sont conservées pendant 30 jours.',
@@ -5238,6 +5258,11 @@ export const translations: Record<Language, Translations> = {
       reviewLoadError: 'Überprüfungswarteschlange konnte nicht geladen werden.',
       reviewApproveError: 'Biografie konnte nicht genehmigt werden.',
       reviewRejectError: 'Biografie konnte nicht abgelehnt werden.',
+      reviewFlaggedPassages: 'markierte Passagen',
+      reviewApprovePassage: 'Passage genehmigen',
+      reviewRejectPassage: 'Passage ablehnen',
+      reviewAllPassagesReviewed: 'Alle Passagen überprüft — bereit zur Entscheidung',
+      reviewAiReason: 'KI-Begründung',
       aiStatsPageTitle: 'KI-Nutzungsstatistiken',
       aiStatsPageSubtitle: 'KI-Funktionsnutzung aller Benutzer überwachen',
       aiStatsDataNote: 'Hinweis: Nutzungsdaten werden 30 Tage lang aufbewahrt.',
