@@ -90,17 +90,26 @@ Deno.serve(async (req: Request) => {
 
     const whisperFormData = new FormData();
     whisperFormData.append("file", audioFile);
-    whisperFormData.append("model", "whisper-1");
+    whisperFormData.append("model", "whisper");
 
     const languageField = formData.get("language");
     if (languageField && typeof languageField === "string") {
       whisperFormData.append("language", languageField);
     }
 
+    // Infomaniak chat completions endpoint format:
+    //   https://api.infomaniak.com/2/ai/{product_id}/openai/v1/chat/completions
+    // Whisper transcription endpoint format (confirmed from Infomaniak developer portal):
+    //   https://api.infomaniak.com/1/ai/{product_id}/openai/audio/transcriptions
+    // Transform: strip /v1 suffix, replace API version 2->1, drop /chat/completions
     const infomaniakEndpointBase = Deno.env.get("INFOMANIAK_AI_ENDPOINT") || "";
-    const whisperEndpoint = infomaniakEndpointBase
-      ? infomaniakEndpointBase.replace(/\/chat\/completions\/?$/, "/audio/transcriptions")
-      : "https://api.infomaniak.com/1/ai/openai/audio/transcriptions";
+    let whisperEndpoint = "https://api.infomaniak.com/1/ai/openai/audio/transcriptions";
+    if (infomaniakEndpointBase) {
+      whisperEndpoint = infomaniakEndpointBase
+        .replace(/^https:\/\/api\.infomaniak\.com\/\d+\//, "https://api.infomaniak.com/1/")
+        .replace(/\/openai\/v\d+\/chat\/completions\/?$/, "/openai/audio/transcriptions")
+        .replace(/\/openai\/chat\/completions\/?$/, "/openai/audio/transcriptions");
+    }
 
     let whisperRes: Response;
     try {
