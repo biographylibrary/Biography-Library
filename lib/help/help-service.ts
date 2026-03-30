@@ -14,6 +14,25 @@ const FALLBACK_MESSAGES: Record<HelpLanguage, string> = {
   de: "Ich bin mir dabei nicht sicher. Ausführliche Anleitungen finden Sie in den FAQ oder beim Support.",
 };
 
+async function getValidAccessToken(): Promise<string | null> {
+  const { data: sessionData } = await supabase.auth.getSession();
+  const session = sessionData?.session;
+
+  if (!session) return null;
+
+  const expiresAt = session.expires_at ?? 0;
+  const nowSec = Math.floor(Date.now() / 1000);
+  const isExpiredOrNearExpiry = expiresAt - nowSec < 60;
+
+  if (isExpiredOrNearExpiry) {
+    const { data: refreshed, error } = await supabase.auth.refreshSession();
+    if (error || !refreshed?.session) return null;
+    return refreshed.session.access_token;
+  }
+
+  return session.access_token;
+}
+
 export async function askHelpBot(
   question: string,
   language: HelpLanguage = 'en'
@@ -23,16 +42,18 @@ export async function askHelpBot(
     return { answer: FALLBACK_MESSAGES[language], confidence: 'low' };
   }
 
-  const { data: sessionData } = await supabase.auth.getSession();
-  const accessToken = sessionData?.session?.access_token;
+  const accessToken = await getValidAccessToken();
 
   if (!accessToken) {
+    console.warn('[HelpChatbot] No valid access token — user may not be logged in or session expired');
     throw new Error('SESSION_EXPIRED');
   }
 
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
   const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
   const endpoint = `${supabaseUrl}/functions/v1/help-assistant`;
+
+  console.debug('[HelpChatbot] Sending request with Authorization header attached');
 
   let res: Response;
   try {
@@ -45,11 +66,13 @@ export async function askHelpBot(
       },
       body: JSON.stringify({ question: trimmed, language }),
     });
-  } catch {
+  } catch (networkErr) {
+    console.error('[HelpChatbot] Network error:', networkErr);
     return { answer: FALLBACK_MESSAGES[language], confidence: 'low' };
   }
 
   if (res.status === 401) {
+    console.warn('[HelpChatbot] 401 from edge function — session expired');
     throw new Error('SESSION_EXPIRED');
   }
 
@@ -58,7 +81,15 @@ export async function askHelpBot(
   }
 
   if (!res.ok) {
-    return { answer: FALLBACK_MESSAGES[language], confidence: 'low' };
+    let apiError = '';
+    try {
+      const errJson = await res.json();
+      apiError = errJson?.error ?? '';
+    } catch {
+      /* ignore parse errors */
+    }
+    console.error('[HelpChatbot] Edge function error:', res.status, apiError);
+    throw new Error(apiError || `Request failed with status ${res.status}`);
   }
 
   let json: { answer?: string; confidence?: 'high' | 'low'; error?: string };

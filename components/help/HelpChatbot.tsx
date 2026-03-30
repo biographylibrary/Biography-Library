@@ -76,8 +76,12 @@ export function HelpChatbot({ isOpen, onClose }: HelpChatbotProps) {
       const msg = err instanceof Error ? err.message : '';
       if (msg === 'SESSION_EXPIRED') {
         setError(t.helpChatbot.sessionExpired);
+      } else if (msg === 'NO_SESSION') {
+        setError('Sessione non disponibile. Ricarica la pagina e riprova.');
       } else if (msg.toLowerCase().includes('rate limit')) {
         setError(t.helpChatbot.rateLimitError);
+      } else if (msg) {
+        setError(msg);
       } else {
         setError(t.helpChatbot.genericError);
       }
