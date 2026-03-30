@@ -331,17 +331,22 @@ Deno.serve(async (req: Request) => {
     }
 
     const authHeader = req.headers.get("Authorization");
+    console.log("[help-assistant] Authorization header present:", !!authHeader, "| prefix:", authHeader?.slice(0, 10));
     if (!authHeader) {
       return errorResponse("Missing authorization header", 401);
     }
 
-    const token = authHeader.replace("Bearer ", "");
+    const token = authHeader.replace(/^Bearer\s+/i, "").trim();
+    console.log("[help-assistant] Token extracted, length:", token.length, "| starts with eyJ:", token.startsWith("eyJ"));
+
     const supabase = createClient(supabaseUrl, serviceRoleKey);
 
     const {
       data: { user },
       error: authError,
     } = await supabase.auth.getUser(token);
+
+    console.log("[help-assistant] getUser result — user:", !!user, "| error:", authError?.message ?? null);
 
     if (authError || !user) {
       const isExpiry =

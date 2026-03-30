@@ -97,7 +97,7 @@ export function HelpChatbot({ isOpen, onClose }: HelpChatbotProps) {
     } finally {
       setLoading(false);
     }
-  }, [input, loading, messages.length, language, t]);
+  }, [input, loading, messages.length, language, t, session]);
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === 'Enter' && !e.shiftKey) {
