@@ -1096,6 +1096,19 @@ export interface Translations {
     noCoverPhoto: string;
     goToPhotos: string;
   };
+  helpChatbot: {
+    title: string;
+    placeholder: string;
+    send: string;
+    loading: string;
+    lowConfidence: string;
+    clearChat: string;
+    openHelp: string;
+    closeHelp: string;
+    sessionExpired: string;
+    rateLimitError: string;
+    genericError: string;
+  };
 }
 
 export const translations: Record<Language, Translations> = {
@@ -2195,6 +2208,19 @@ export const translations: Record<Language, Translations> = {
       noCoverPhoto: 'No cover photo',
       goToPhotos: 'Add in Photos',
     },
+    helpChatbot: {
+      title: 'Help',
+      placeholder: 'Ask a question…',
+      send: 'Send',
+      loading: 'Thinking…',
+      lowConfidence: "I'm not 100% sure — try the full guide for more details.",
+      clearChat: 'Clear chat',
+      openHelp: 'Open help',
+      closeHelp: 'Close help',
+      sessionExpired: 'Your session has expired. Please sign in again.',
+      rateLimitError: 'Too many requests. Please wait a moment.',
+      genericError: 'Something went wrong. Please try again.',
+    },
   },
   it: {
     common: {
@@ -3291,6 +3317,19 @@ export const translations: Record<Language, Translations> = {
       coverPreview: 'Anteprima copertina',
       noCoverPhoto: 'Nessuna foto di copertina',
       goToPhotos: 'Aggiungi nelle Foto',
+    },
+    helpChatbot: {
+      title: 'Aiuto',
+      placeholder: 'Fai una domanda…',
+      send: 'Invia',
+      loading: 'Sto pensando…',
+      lowConfidence: 'Non sono sicuro al 100% — prova la guida completa per maggiori dettagli.',
+      clearChat: 'Cancella chat',
+      openHelp: 'Apri aiuto',
+      closeHelp: 'Chiudi aiuto',
+      sessionExpired: 'La sessione è scaduta. Accedi di nuovo.',
+      rateLimitError: 'Troppe richieste. Attendi un momento.',
+      genericError: 'Qualcosa è andato storto. Riprova.',
     },
   },
   fr: {
@@ -4389,6 +4428,19 @@ export const translations: Record<Language, Translations> = {
       noCoverPhoto: 'Aucune photo de couverture',
       goToPhotos: 'Ajouter dans Photos',
     },
+    helpChatbot: {
+      title: 'Aide',
+      placeholder: 'Posez une question…',
+      send: 'Envoyer',
+      loading: 'Je réfléchis…',
+      lowConfidence: "Je ne suis pas sûr à 100 % — consultez le guide complet pour plus de détails.",
+      clearChat: 'Effacer la conversation',
+      openHelp: 'Ouvrir l\'aide',
+      closeHelp: 'Fermer l\'aide',
+      sessionExpired: 'Votre session a expiré. Veuillez vous reconnecter.',
+      rateLimitError: 'Trop de requêtes. Veuillez patienter un moment.',
+      genericError: 'Une erreur est survenue. Veuillez réessayer.',
+    },
   },
   de: {
     common: {
@@ -5485,6 +5537,19 @@ export const translations: Record<Language, Translations> = {
       coverPreview: 'Vorschau Titelbild',
       noCoverPhoto: 'Kein Titelfoto',
       goToPhotos: 'In Fotos hinzufügen',
+    },
+    helpChatbot: {
+      title: 'Hilfe',
+      placeholder: 'Stellen Sie eine Frage…',
+      send: 'Senden',
+      loading: 'Ich denke nach…',
+      lowConfidence: 'Ich bin nicht 100 % sicher — schauen Sie in die vollständige Anleitung für weitere Details.',
+      clearChat: 'Chat leeren',
+      openHelp: 'Hilfe öffnen',
+      closeHelp: 'Hilfe schließen',
+      sessionExpired: 'Ihre Sitzung ist abgelaufen. Bitte melden Sie sich erneut an.',
+      rateLimitError: 'Zu viele Anfragen. Bitte warten Sie einen Moment.',
+      genericError: 'Etwas ist schiefgelaufen. Bitte versuchen Sie es erneut.',
     },
   },
 };

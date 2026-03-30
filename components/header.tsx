@@ -1,12 +1,13 @@
 'use client';
 
-import { Bell, LayoutDashboard, LogOut, Shield } from 'lucide-react';
+import { Bell, LayoutDashboard, LogOut, Shield, CircleHelp } from 'lucide-react';
 import { useAuth, ADMIN_ROLES } from '@/lib/auth-context';
 import { useTranslation } from '@/lib/i18n/i18n-context';
 import { useTheme } from 'next-themes';
 import { LanguageSelector } from '@/components/language-selector';
 import { FontSizeControl } from '@/components/accessibility/font-size-control';
 import { Logo } from '@/components/logo';
+import { HelpChatbot } from '@/components/help/HelpChatbot';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -31,6 +32,7 @@ export function Header() {
   const { resolvedTheme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
+  const [helpOpen, setHelpOpen] = useState(false);
 
   useEffect(() => {
     setMounted(true);
@@ -75,6 +77,11 @@ export function Header() {
   const isDark = mounted && resolvedTheme === 'dark';
   const showAdminLink = user && role && ADMIN_ROLES.includes(role);
 
+  const isPublicPage =
+    pathname === '/biographies' ||
+    (pathname?.includes('/biography/') && pathname?.includes('/view'));
+  const showHelpButton = !!user && !isPublicPage;
+
   const getInitials = (name: string) => {
     const parts = name.trim().split(/\s+/);
     if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
@@ -85,6 +92,7 @@ export function Header() {
   const initials = displayName ? getInitials(displayName) : '?';
 
   return (
+    <>
     <header className="border-b border-border bg-[#ECE9E4] dark:bg-[#1F2121] sticky top-0 z-50">
       <div className={cn(
         "h-16 flex items-center relative",
@@ -150,6 +158,19 @@ export function Header() {
                 <Link href="/register">{t.publicBiographies.startBiography}</Link>
               </Button>
             </div>
+          )}
+
+          {showHelpButton && (
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 rounded-full"
+              onClick={() => setHelpOpen(prev => !prev)}
+              title={t.helpChatbot.openHelp}
+              aria-pressed={helpOpen}
+            >
+              <CircleHelp className="h-4 w-4" />
+            </Button>
           )}
 
           {user && (
@@ -239,5 +260,10 @@ export function Header() {
         </div>
       </div>
     </header>
+
+    {showHelpButton && (
+      <HelpChatbot isOpen={helpOpen} onClose={() => setHelpOpen(false)} />
+    )}
+    </>
   );
 }
