@@ -135,7 +135,7 @@ Deno.serve(async (req: Request) => {
     console.log("File name:", namedFile.name);
     console.log("File type:", namedFile.type);
     console.log("File size:", namedFile.size);
-    console.log("Model field:", "openai/whisper-large-v3");
+    console.log("Model field:", "whisper");
 
     let whisperRes: Response;
     try {
@@ -155,12 +155,11 @@ Deno.serve(async (req: Request) => {
       );
     }
 
+    console.log("Infomaniak response status:", whisperRes.status);
+    const responseText = await whisperRes.text();
+    console.log("Infomaniak response body:", responseText);
+
     if (!whisperRes.ok) {
-      const errText = await whisperRes.text().catch(() => "");
-      console.error(`Infomaniak ${whisperRes.status} body:`, errText);
-      if (whisperRes.status === 422) {
-        console.error("Infomaniak 422 body:", errText);
-      }
       return errorResponse(
         `Transcription service returned error ${whisperRes.status}.`,
         502
@@ -169,7 +168,7 @@ Deno.serve(async (req: Request) => {
 
     let whisperJson: { text?: string };
     try {
-      whisperJson = await whisperRes.json();
+      whisperJson = JSON.parse(responseText);
     } catch {
       return errorResponse("Invalid response from transcription service", 502);
     }
