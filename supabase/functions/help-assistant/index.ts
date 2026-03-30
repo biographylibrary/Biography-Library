@@ -388,10 +388,15 @@ Deno.serve(async (req: Request) => {
 
     const models = [primaryModel, fallbackModel];
     let callSucceeded = false;
+    let lastAiErrorStatus = 0;
+    let lastAiErrorBody = "";
+
+    console.log("[help-assistant] Starting AI call — endpoint:", infomaniakEndpoint, "| primary model:", primaryModel, "| token length:", infomaniakToken.length);
 
     for (let i = 0; i < models.length; i++) {
       const model = models[i];
       try {
+        console.log(`[help-assistant] Calling model ${model} (attempt ${i + 1}/${models.length})`);
         const res = await callWithRetry(() =>
           fetch(infomaniakEndpoint, {
             method: "POST",
@@ -404,28 +409,41 @@ Deno.serve(async (req: Request) => {
           })
         );
 
+        console.log(`[help-assistant] Model ${model} responded with status:`, res.status);
+
         if (res.ok) {
           const data = await res.json();
           answerText = data?.choices?.[0]?.message?.content ?? "";
+          console.log("[help-assistant] AI success — answer length:", answerText.length);
           callSucceeded = true;
           break;
         }
 
         if (res.status >= 400 && res.status < 500 && res.status !== 429) {
           const errText = await res.text();
-          console.error("AI error:", { status: res.status, body: errText });
+          lastAiErrorStatus = res.status;
+          lastAiErrorBody = errText;
+          console.error("[help-assistant] AI 4xx error:", { model, status: res.status, body: errText });
           break;
         }
 
-        console.warn(`Model ${model} failed (${res.status}), ${i < models.length - 1 ? "trying fallback" : "no more fallbacks"}`);
+        lastAiErrorStatus = res.status;
+        lastAiErrorBody = await res.text().catch(() => "");
+        console.warn(`[help-assistant] Model ${model} failed (${res.status}): ${lastAiErrorBody.slice(0, 200)} — ${i < models.length - 1 ? "trying fallback" : "no more fallbacks"}`);
       } catch (err) {
+        lastAiErrorBody = String(err);
+        console.error(`[help-assistant] Model ${model} threw:`, err);
         if (i === models.length - 1) throw err;
-        console.warn(`Model ${model} threw, trying fallback: ${err}`);
+        console.warn(`[help-assistant] Trying fallback after throw`);
       }
     }
 
     if (!callSucceeded || !answerText.trim()) {
-      return errorResponse("AI service unavailable. Please try again later.", 502);
+      const detail = lastAiErrorBody
+        ? `AI service error (HTTP ${lastAiErrorStatus}): ${lastAiErrorBody.slice(0, 300)}`
+        : "AI service unavailable. Please try again later.";
+      console.error("[help-assistant] Returning failure to client:", detail);
+      return errorResponse(detail, 502);
     }
 
     const confidence = detectLowConfidence(answerText) ? "low" : "high";

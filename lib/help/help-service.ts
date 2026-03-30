@@ -74,7 +74,12 @@ export async function askHelpBot(
     return { answer: FALLBACK_MESSAGES[language], confidence: 'low' };
   }
 
-  if (json.error || !json.answer || json.answer.trim().length < 10) {
+  if (json.error) {
+    console.error('[HelpChatbot] Edge function returned error in 200 body:', json.error);
+    throw new Error(json.error);
+  }
+
+  if (!json.answer || json.answer.trim().length < 10) {
     return { answer: FALLBACK_MESSAGES[language], confidence: 'low' };
   }
 
