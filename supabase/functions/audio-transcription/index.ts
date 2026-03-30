@@ -90,7 +90,7 @@ Deno.serve(async (req: Request) => {
 
     const whisperFormData = new FormData();
     whisperFormData.append("file", audioFile);
-    whisperFormData.append("model", "whisper");
+    whisperFormData.append("model", "openai/whisper-large-v3");
 
     const languageField = formData.get("language");
     if (languageField && typeof languageField === "string") {
