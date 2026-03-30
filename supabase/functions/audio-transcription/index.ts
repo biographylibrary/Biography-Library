@@ -200,7 +200,8 @@ Deno.serve(async (req: Request) => {
 
       const status = pollJson.status;
       if (status === "complete" || status === "completed" || status === "success") {
-        const transcribedText = pollJson.text ?? pollJson.result?.text ?? "";
+        const dataObj = typeof pollJson.data === "string" ? JSON.parse(pollJson.data) : pollJson.data;
+        const transcribedText = dataObj?.text ?? pollJson.text ?? pollJson.result?.text ?? "";
         console.log("Transcription complete. Text length:", transcribedText.length);
         return new Response(JSON.stringify({ text: transcribedText }), {
           headers: { ...corsHeaders, "Content-Type": "application/json" },
