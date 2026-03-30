@@ -20,7 +20,6 @@ function extractProductId(endpoint: string): string | null {
   return match ? match[1] : null;
 }
 
-// CRITICAL: verifyJWT is false — JWT is validated internally via supabase.auth.getUser(token)
 Deno.serve(async (req: Request) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { status: 200, headers: corsHeaders });
@@ -76,37 +75,43 @@ Deno.serve(async (req: Request) => {
     }
 
     const contentType = req.headers.get("content-type") || "";
-    if (!contentType.includes("application/json")) {
-      return errorResponse("Expected application/json body", 400);
+    if (!contentType.includes("multipart/form-data")) {
+      return errorResponse("Expected multipart/form-data body", 400);
     }
 
-    let body: { audio?: string; language?: string };
+    let incomingForm: FormData;
     try {
-      body = await req.json();
+      incomingForm = await req.formData();
     } catch {
-      return errorResponse("Failed to parse JSON body", 400);
+      return errorResponse("Failed to parse multipart form data", 400);
     }
 
-    if (!body.audio || typeof body.audio !== "string") {
-      return errorResponse("Missing 'audio' base64 string in request body", 400);
+    const fileEntry = incomingForm.get("file");
+    if (!fileEntry || !(fileEntry instanceof File)) {
+      return errorResponse("Missing 'file' field in form data", 400);
     }
+
+    const language = incomingForm.get("language");
+
+    const audioBytes = await fileEntry.arrayBuffer();
+    const audioBlob = new Blob([audioBytes], { type: fileEntry.type || "audio/webm" });
+
+    const outboundForm = new FormData();
+    outboundForm.append("file", audioBlob, "recording.webm");
+    outboundForm.append("model", "whisper");
+    if (language && typeof language === "string" && language.trim()) {
+      outboundForm.append("language", language.trim());
+    }
+
+    console.log("File size (bytes):", audioBytes.byteLength);
+    console.log("File type:", fileEntry.type);
+    console.log("Language:", language || "not specified");
+    console.log("FormData fields sent to Infomaniak: file (audio blob, filename=recording.webm), model (whisper), language");
 
     const transcriptionUrl = `https://api.infomaniak.com/1/ai/${productId}/openai/audio/transcriptions`;
     const resultsBaseUrl = `https://api.infomaniak.com/1/ai/${productId}/results`;
 
     console.log("Transcription URL:", transcriptionUrl);
-    console.log("Language:", body.language || "not specified");
-    console.log("Audio base64 length:", body.audio.length);
-
-    const requestBody: Record<string, string> = {
-      file: body.audio,
-      model: "whisper",
-    };
-    if (body.language) {
-      requestBody.language = body.language;
-    }
-
-    console.log("Model field:", "whisper");
 
     let startRes: Response;
     try {
@@ -114,9 +119,8 @@ Deno.serve(async (req: Request) => {
         method: "POST",
         headers: {
           Authorization: `Bearer ${infomaniakToken}`,
-          "Content-Type": "application/json",
         },
-        body: JSON.stringify(requestBody),
+        body: outboundForm,
         signal: AbortSignal.timeout(30_000),
       });
     } catch (fetchErr: any) {
@@ -196,8 +200,7 @@ Deno.serve(async (req: Request) => {
 
       const status = pollJson.status;
       if (status === "complete" || status === "completed" || status === "success") {
-        const transcribedText =
-          pollJson.text ?? pollJson.result?.text ?? "";
+        const transcribedText = pollJson.text ?? pollJson.result?.text ?? "";
         console.log("Transcription complete. Text length:", transcribedText.length);
         return new Response(JSON.stringify({ text: transcribedText }), {
           headers: { ...corsHeaders, "Content-Type": "application/json" },
