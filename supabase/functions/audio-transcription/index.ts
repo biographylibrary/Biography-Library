@@ -88,8 +88,28 @@ Deno.serve(async (req: Request) => {
       return errorResponse("Audio file exceeds 25 MB limit", 413);
     }
 
+    // Determine MIME type and extension — preserve what was sent, fall back to webm
+    const rawMime = audioFile.type || "audio/webm";
+    const extMap: Record<string, string> = {
+      "audio/webm": "webm",
+      "audio/mp4": "mp4",
+      "audio/ogg": "ogg",
+      "audio/mpeg": "mp3",
+      "audio/wav": "wav",
+      "audio/x-wav": "wav",
+      "audio/flac": "flac",
+    };
+    const mimeBase = rawMime.split(";")[0].trim();
+    const ext = extMap[mimeBase] ?? "webm";
+    const filename = `recording.${ext}`;
+
+    // Re-wrap as a proper File with explicit name and type so the downstream
+    // multipart body has a recognizable filename and Content-Type part header.
+    const audioBlob = new Blob([await audioFile.arrayBuffer()], { type: mimeBase });
+    const namedFile = new File([audioBlob], filename, { type: mimeBase });
+
     const whisperFormData = new FormData();
-    whisperFormData.append("file", audioFile);
+    whisperFormData.append("file", namedFile, filename);
     whisperFormData.append("model", "openai/whisper-large-v3");
 
     const languageField = formData.get("language");
@@ -131,7 +151,10 @@ Deno.serve(async (req: Request) => {
 
     if (!whisperRes.ok) {
       const errText = await whisperRes.text().catch(() => "");
-      console.error("Whisper API error:", whisperRes.status, errText);
+      console.error(`Infomaniak ${whisperRes.status} body:`, errText);
+      if (whisperRes.status === 422) {
+        console.error("Infomaniak 422 body:", errText);
+      }
       return errorResponse(
         `Transcription service returned error ${whisperRes.status}.`,
         502
