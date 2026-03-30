@@ -26,6 +26,19 @@ function isMediaRecorderSupported(): boolean {
   return !!(window.MediaRecorder && navigator.mediaDevices?.getUserMedia);
 }
 
+async function blobToBase64(blob: Blob): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      const result = reader.result as string;
+      const base64 = result.split(',')[1];
+      resolve(base64);
+    };
+    reader.onerror = reject;
+    reader.readAsDataURL(blob);
+  });
+}
+
 export function VoiceRecorder({
   onTranscript,
   onClearTranscript,
@@ -118,9 +131,7 @@ export function VoiceRecorder({
         return;
       }
 
-      const form = new FormData();
-      form.append('audio', blob, 'recording.webm');
-      form.append('language', language);
+      const base64Audio = await blobToBase64(blob);
 
       const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
       const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
@@ -130,8 +141,9 @@ export function VoiceRecorder({
         headers: {
           Authorization: `Bearer ${token}`,
           Apikey: anonKey,
+          'Content-Type': 'application/json',
         },
-        body: form,
+        body: JSON.stringify({ audio: base64Audio, language }),
       });
 
       const json = await res.json().catch(() => null);

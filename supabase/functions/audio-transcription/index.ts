@@ -15,8 +15,12 @@ function errorResponse(message: string, status: number) {
   });
 }
 
-// CRITICAL: verifyJWT is false — JWT is validated internally via supabase.auth.getUser(token),
-// mirroring the exact pattern used in ai-assistant/index.ts.
+function extractProductId(endpoint: string): string | null {
+  const match = endpoint.match(/\/ai\/(\d+)\//);
+  return match ? match[1] : null;
+}
+
+// CRITICAL: verifyJWT is false — JWT is validated internally via supabase.auth.getUser(token)
 Deno.serve(async (req: Request) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { status: 200, headers: corsHeaders });
@@ -30,10 +34,19 @@ Deno.serve(async (req: Request) => {
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const infomaniakToken = Deno.env.get("INFOMANIAK_AI_TOKEN") || "";
+    const infomaniakEndpoint = Deno.env.get("INFOMANIAK_AI_ENDPOINT") || "";
 
     if (!infomaniakToken) {
       return errorResponse(
         "Infomaniak AI is not configured. Please set INFOMANIAK_AI_TOKEN in Supabase secrets.",
+        503
+      );
+    }
+
+    const productId = extractProductId(infomaniakEndpoint);
+    if (!productId) {
+      return errorResponse(
+        "Could not determine product_id from INFOMANIAK_AI_ENDPOINT.",
         503
       );
     }
@@ -63,121 +76,142 @@ Deno.serve(async (req: Request) => {
     }
 
     const contentType = req.headers.get("content-type") || "";
-    if (!contentType.includes("multipart/form-data")) {
-      return errorResponse("Expected multipart/form-data", 400);
+    if (!contentType.includes("application/json")) {
+      return errorResponse("Expected application/json body", 400);
     }
 
-    let formData: FormData;
+    let body: { audio?: string; language?: string };
     try {
-      formData = await req.formData();
+      body = await req.json();
     } catch {
-      return errorResponse("Failed to parse multipart form data", 400);
+      return errorResponse("Failed to parse JSON body", 400);
     }
 
-    const audioFile = formData.get("audio");
-    if (!audioFile || !(audioFile instanceof File)) {
-      return errorResponse("Missing 'audio' file field in form data", 400);
+    if (!body.audio || typeof body.audio !== "string") {
+      return errorResponse("Missing 'audio' base64 string in request body", 400);
     }
 
-    if (audioFile.size === 0) {
-      return errorResponse("Audio file is empty", 400);
-    }
+    const transcriptionUrl = `https://api.infomaniak.com/1/ai/${productId}/openai/audio/transcriptions`;
+    const resultsBaseUrl = `https://api.infomaniak.com/1/ai/${productId}/results`;
 
-    const MAX_SIZE_BYTES = 25 * 1024 * 1024;
-    if (audioFile.size > MAX_SIZE_BYTES) {
-      return errorResponse("Audio file exceeds 25 MB limit", 413);
-    }
+    console.log("Transcription URL:", transcriptionUrl);
+    console.log("Language:", body.language || "not specified");
+    console.log("Audio base64 length:", body.audio.length);
 
-    // Determine MIME type and extension — preserve what was sent, fall back to webm
-    const rawMime = audioFile.type || "audio/webm";
-    const extMap: Record<string, string> = {
-      "audio/webm": "webm",
-      "audio/mp4": "mp4",
-      "audio/ogg": "ogg",
-      "audio/mpeg": "mp3",
-      "audio/wav": "wav",
-      "audio/x-wav": "wav",
-      "audio/flac": "flac",
+    const requestBody: Record<string, string> = {
+      file: body.audio,
+      model: "whisper",
     };
-    const mimeBase = rawMime.split(";")[0].trim();
-    const ext = extMap[mimeBase] ?? "webm";
-    const filename = `recording.${ext}`;
-
-    // Re-wrap as a proper File with explicit name and type so the downstream
-    // multipart body has a recognizable filename and Content-Type part header.
-    const audioBlob = new Blob([await audioFile.arrayBuffer()], { type: mimeBase });
-    const namedFile = new File([audioBlob], filename, { type: mimeBase });
-
-    const whisperFormData = new FormData();
-    whisperFormData.append("file", namedFile, filename);
-    whisperFormData.append("model", "whisper");
-
-    const languageField = formData.get("language");
-    if (languageField && typeof languageField === "string") {
-      whisperFormData.append("language", languageField);
+    if (body.language) {
+      requestBody.language = body.language;
     }
 
-    // Infomaniak chat completions endpoint format:
-    //   https://api.infomaniak.com/2/ai/{product_id}/openai/v1/chat/completions
-    // Whisper transcription endpoint format (confirmed from Infomaniak developer portal):
-    //   https://api.infomaniak.com/1/ai/{product_id}/openai/audio/transcriptions
-    // Transform: strip /v1 suffix, replace API version 2->1, drop /chat/completions
-    const infomaniakEndpointBase = Deno.env.get("INFOMANIAK_AI_ENDPOINT") || "";
-    let whisperEndpoint = "https://api.infomaniak.com/1/ai/openai/audio/transcriptions";
-    if (infomaniakEndpointBase) {
-      whisperEndpoint = infomaniakEndpointBase
-        .replace(/^https:\/\/api\.infomaniak\.com\/\d+\//, "https://api.infomaniak.com/1/")
-        .replace(/\/openai\/v\d+\/chat\/completions\/?$/, "/openai/audio/transcriptions")
-        .replace(/\/openai\/chat\/completions\/?$/, "/openai/audio/transcriptions");
-    }
-
-    console.log("Whisper URL:", whisperEndpoint);
-    console.log("File name:", namedFile.name);
-    console.log("File type:", namedFile.type);
-    console.log("File size:", namedFile.size);
     console.log("Model field:", "whisper");
 
-    let whisperRes: Response;
+    let startRes: Response;
     try {
-      whisperRes = await fetch(whisperEndpoint, {
+      startRes = await fetch(transcriptionUrl, {
         method: "POST",
         headers: {
           Authorization: `Bearer ${infomaniakToken}`,
+          "Content-Type": "application/json",
         },
-        body: whisperFormData,
-        signal: AbortSignal.timeout(60_000),
+        body: JSON.stringify(requestBody),
+        signal: AbortSignal.timeout(30_000),
       });
     } catch (fetchErr: any) {
-      console.error("Whisper fetch error:", fetchErr);
+      console.error("Transcription start fetch error:", fetchErr);
       return errorResponse(
         "Failed to reach transcription service. Please try again.",
         502
       );
     }
 
-    console.log("Infomaniak response status:", whisperRes.status);
-    const responseText = await whisperRes.text();
-    console.log("Infomaniak response body:", responseText);
+    console.log("Infomaniak transcription start status:", startRes.status);
+    const startText = await startRes.text();
+    console.log("Infomaniak transcription start body:", startText);
 
-    if (!whisperRes.ok) {
+    if (!startRes.ok) {
       return errorResponse(
-        `Transcription service returned error ${whisperRes.status}.`,
+        `Transcription service returned error ${startRes.status}: ${startText}`,
         502
       );
     }
 
-    let whisperJson: { text?: string };
+    let startJson: { batch_id?: string };
     try {
-      whisperJson = JSON.parse(responseText);
+      startJson = JSON.parse(startText);
     } catch {
       return errorResponse("Invalid response from transcription service", 502);
     }
 
-    const transcribedText = whisperJson.text ?? "";
+    const batchId = startJson.batch_id;
+    if (!batchId) {
+      return errorResponse("Transcription service did not return a batch_id", 502);
+    }
 
-    return new Response(JSON.stringify({ text: transcribedText }), {
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
+    console.log("Batch ID:", batchId);
+
+    const pollUrl = `${resultsBaseUrl}/${batchId}`;
+    console.log("Polling URL:", pollUrl);
+
+    const POLL_INTERVAL_MS = 2000;
+    const MAX_WAIT_MS = 60_000;
+    const started = Date.now();
+
+    while (Date.now() - started < MAX_WAIT_MS) {
+      await new Promise((resolve) => setTimeout(resolve, POLL_INTERVAL_MS));
+
+      let pollRes: Response;
+      try {
+        pollRes = await fetch(pollUrl, {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${infomaniakToken}`,
+          },
+          signal: AbortSignal.timeout(15_000),
+        });
+      } catch (pollErr: any) {
+        console.error("Poll fetch error:", pollErr);
+        continue;
+      }
+
+      console.log("Infomaniak poll status:", pollRes.status);
+      const pollText = await pollRes.text();
+      console.log("Infomaniak poll body:", pollText);
+
+      if (!pollRes.ok) {
+        return errorResponse(
+          `Polling returned error ${pollRes.status}: ${pollText}`,
+          502
+        );
+      }
+
+      let pollJson: { status?: string; text?: string; result?: { text?: string } };
+      try {
+        pollJson = JSON.parse(pollText);
+      } catch {
+        return errorResponse("Invalid poll response from transcription service", 502);
+      }
+
+      const status = pollJson.status;
+      if (status === "complete" || status === "completed" || status === "success") {
+        const transcribedText =
+          pollJson.text ?? pollJson.result?.text ?? "";
+        console.log("Transcription complete. Text length:", transcribedText.length);
+        return new Response(JSON.stringify({ text: transcribedText }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
+      if (status === "failed" || status === "error") {
+        return errorResponse("Transcription job failed on server", 502);
+      }
+
+      console.log("Poll status:", status, "— continuing to wait...");
+    }
+
+    return errorResponse("Transcription timed out after 60 seconds", 504);
   } catch (e) {
     console.error("audio-transcription edge function error:", e);
     return errorResponse("Internal server error", 500);
