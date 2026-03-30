@@ -1,5 +1,4 @@
-import { callAI } from '@/lib/ai/ai-client';
-import { HELP_KB_TEXT } from './help-kb';
+import { supabase } from '@/lib/supabase';
 
 export type HelpLanguage = 'en' | 'it' | 'fr' | 'de';
 
@@ -15,48 +14,6 @@ const FALLBACK_MESSAGES: Record<HelpLanguage, string> = {
   de: "Ich bin mir dabei nicht sicher. Ausführliche Anleitungen finden Sie in den FAQ oder beim Support.",
 };
 
-const LANG_NAMES: Record<HelpLanguage, string> = {
-  en: 'English',
-  it: 'Italian',
-  fr: 'French',
-  de: 'German',
-};
-
-const LOW_CONFIDENCE_PHRASES = [
-  "i don't know",
-  "i'm not sure",
-  "i cannot answer",
-  "not covered",
-  "outside the scope",
-  "no information",
-  "non lo so",
-  "non sono sicuro",
-  "je ne sais pas",
-  "ich weiß nicht",
-  "cannot help",
-  "unable to answer",
-];
-
-function detectLowConfidence(text: string): boolean {
-  const lower = text.toLowerCase();
-  return LOW_CONFIDENCE_PHRASES.some((phrase) => lower.includes(phrase));
-}
-
-function buildHelpContent(question: string, language: HelpLanguage): string {
-  const langName = LANG_NAMES[language];
-  return `BIOGRAPHY LIBRARY — HELP KNOWLEDGE BASE:
-
-${HELP_KB_TEXT}
-
----
-
-TASK: Answer the following user question using ONLY the information in the knowledge base above. Do not invent features or steps that are not described. Respond in ${langName}. If the question is completely outside the scope of Biography Library features, say you cannot answer it. Keep the answer clear and helpful (3–6 sentences maximum).
-
-USER QUESTION: ${question}
-
-ANSWER:`;
-}
-
 export async function askHelpBot(
   question: string,
   language: HelpLanguage = 'en'
@@ -66,38 +23,57 @@ export async function askHelpBot(
     return { answer: FALLBACK_MESSAGES[language], confidence: 'low' };
   }
 
+  const { data: sessionData } = await supabase.auth.getSession();
+  const accessToken = sessionData?.session?.access_token;
+
+  if (!accessToken) {
+    throw new Error('SESSION_EXPIRED');
+  }
+
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+  const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+  const endpoint = `${supabaseUrl}/functions/v1/help-assistant`;
+
+  let res: Response;
   try {
-    const content = buildHelpContent(trimmed, language);
-
-    const result = await callAI({
-      action: 'summary',
-      sectionTitle: `Help: ${trimmed.slice(0, 80)}`,
-      content,
-      language,
+    res = await fetch(endpoint, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${accessToken}`,
+        'Content-Type': 'application/json',
+        'Apikey': anonKey,
+      },
+      body: JSON.stringify({ question: trimmed, language }),
     });
-
-    const rawAnswer: string = result.summary ?? '';
-
-    if (!rawAnswer || rawAnswer.trim().length < 10) {
-      return { answer: FALLBACK_MESSAGES[language], confidence: 'low' };
-    }
-
-    const isLowConfidence = detectLowConfidence(rawAnswer);
-
-    return {
-      answer: rawAnswer.trim(),
-      confidence: isLowConfidence ? 'low' : 'high',
-    };
-  } catch (err: any) {
-    const message = err?.message ?? '';
-    if (
-      message === 'SESSION_EXPIRED' ||
-      message === 'TOKEN_EXPIRED' ||
-      message.includes('Rate limit') ||
-      message.includes('AI_TIMEOUT')
-    ) {
-      throw err;
-    }
+  } catch {
     return { answer: FALLBACK_MESSAGES[language], confidence: 'low' };
   }
+
+  if (res.status === 401) {
+    throw new Error('SESSION_EXPIRED');
+  }
+
+  if (res.status === 429) {
+    throw new Error('Rate limit exceeded. Please wait a moment before trying again.');
+  }
+
+  if (!res.ok) {
+    return { answer: FALLBACK_MESSAGES[language], confidence: 'low' };
+  }
+
+  let json: { answer?: string; confidence?: 'high' | 'low'; error?: string };
+  try {
+    json = await res.json();
+  } catch {
+    return { answer: FALLBACK_MESSAGES[language], confidence: 'low' };
+  }
+
+  if (json.error || !json.answer || json.answer.trim().length < 10) {
+    return { answer: FALLBACK_MESSAGES[language], confidence: 'low' };
+  }
+
+  return {
+    answer: json.answer.trim(),
+    confidence: json.confidence ?? 'high',
+  };
 }

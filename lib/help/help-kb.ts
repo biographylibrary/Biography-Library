@@ -1,153 +1,195 @@
-export const HELP_TOPICS = [
-  {
-    topic: "Starting a biography",
-    content: `
-When you create a new biography you choose between two modes:
+export const HELP_KB = `
+# Biography Library — Help Knowledge Base
 
-1. Sections mode — the biography is divided into structured chapters (Childhood, Family, Education, Career, Life Events, Relationships, Challenges, Passions, Legacy). Each section has its own editor, AI writing prompts, voice recording, grammar check, and AI suggestions. This is the recommended mode for most users.
+---
 
-2. Freeflow mode — you import an existing document (DOCX, TXT, RTF) or paste raw text that is then assigned to sections automatically. Freeflow mode has NO AI writing assistance by design; it is intended for users who already have a written biography they want to structure and publish.
+## 1. How to Start a New Biography
 
-You cannot switch between modes after the biography has been created. Choose sections mode if you want to write from scratch with AI guidance.
-`,
-  },
-  {
-    topic: "Sections mode vs Freeflow mode",
-    content: `
-Sections mode:
-- Write each chapter one at a time in a guided editor.
-- AI prompts help you remember stories and fill in each section.
-- Grammar check, AI suggestions, voice recording, and conversation mode are all available.
-- Sections can be marked as In Progress, Ready for Review, or Complete.
-- The AI helps you with every step of writing.
+To create a new biography, click "New Biography" from your Dashboard or the Biographies page.
+You will be asked to:
+- Enter a title for the biography.
+- Choose the subject type: an autobiography (about yourself) or a biography of a deceased person.
+- Choose the writing mode: Sections mode or Freeflow mode (see section 2 for the difference).
 
-Freeflow mode:
-- Import a ready-made document (DOCX, TXT, RTF).
-- The platform reads the document and automatically assigns paragraphs to the matching biography sections.
-- There is NO AI writing assistance in freeflow mode — no prompts, no grammar check, no suggestions.
-- Freeflow is ideal if you already have a written biography and just want to publish it.
-- After import you can still edit the text manually in each section.
-`,
-  },
-  {
-    topic: "How to publish / submit for review",
-    content: `
-Publishing follows a review workflow:
+You cannot change the writing mode after the biography has been created, so choose carefully.
+Once created, the biography opens in the Workspace editor where you can start writing.
 
-1. Write and complete your biography sections in the workspace editor.
-2. When ready, click "Submit for Review". The biography text goes through an automatic AI content screening first.
-3. If the screening passes, the biography enters the "Under Review" queue for a human reviewer.
-4. The reviewer approves or requests edits. You receive a notification either way.
-5. If approved, the biography is published and becomes visible in the Biography Library according to its visibility setting (public, unlisted, or private).
-6. If the reviewer requests edits, you receive feedback and can revise the biography before resubmitting.
+---
 
-Before submitting you can run the AI content pre-check yourself from the editor to catch potential issues early.
-`,
-  },
-  {
-    topic: "How to import text — DOCX, TXT, voice",
-    content: `
-There are three ways to import content into your biography:
+## 2. Sections Mode vs Freeflow Mode
 
-Text file import (DOCX, TXT, RTF):
-- Open the biography workspace.
-- Click the Import button in the toolbar or the section editor.
-- Upload a DOCX, TXT, or RTF file.
-- The platform parses the document, splits it into chunks, and assigns each chunk to the most relevant biography section using AI.
-- You review the assignments in the Section Assignment Wizard and can move chunks between sections before confirming.
+**Sections mode** is the standard writing experience. The biography is divided into up to nine chapters:
+Childhood, Family, Education, Career, Life Events, Relationships, Challenges, Passions, and Legacy.
+Each section has its own editor with:
+- AI-powered writing prompts to help recall memories.
+- Grammar check and AI suggestions.
+- Voice recording with automatic transcription.
+- Conversation mode (guided interview).
+- Section status tracking (In Progress, Ready for Review, Complete).
+Sections mode is recommended when you want to write the biography from scratch with AI guidance.
 
-Voice recording:
-- In any section editor, click the microphone icon.
-- Record your voice. The audio is sent to a transcription service and the text is inserted into the section.
-- Review and edit the transcribed text after it is inserted.
+**Freeflow mode** is an import-only mode. There is NO AI writing assistance in Freeflow mode by design.
+It is intended for users who already have a complete written biography and want to import and publish it.
+In Freeflow mode you:
+- Import an existing document (DOCX, TXT, RTF) or paste raw text.
+- The platform automatically assigns content to the relevant sections.
+- You can then edit the text manually in each section, but no AI prompts or AI suggestions are available.
 
-Freeflow import:
-- Only available when the biography is in Freeflow mode.
-- Import a document from the Freeflow editor; the full document is processed and distributed across sections.
-`,
-  },
-  {
-    topic: "How to export — PDF, DOCX, TXT",
-    content: `
-You can export your biography in multiple formats from the workspace:
+Key difference: AI features (prompts, grammar check, suggestions, rewrite) are only available in Sections mode.
+Freeflow mode has no AI by design — it is purely for importing and publishing existing text.
 
-- Click the Export button in the editor top bar.
-- Choose the format: PDF, DOCX, or TXT.
+In Italian: Modalità sezioni vs Modalità freeflow.
+In French: Mode sections vs Mode libre.
+In German: Abschnittsmodus vs Freifluss-Modus.
 
-PDF export:
-- Generates a formatted PDF using the Noto Serif font for readability.
-- Includes section titles and all written content.
-- Suitable for printing or sharing as a polished document.
+---
 
-DOCX export:
-- Generates a Microsoft Word document.
-- Preserves section titles and body text.
-- Suitable for further editing in Word or Google Docs.
+## 3. Book Structure Panel (Dedication, Epigraph, Preface, Epilogue, Acknowledgements, Credits)
 
-TXT export:
-- Plain text with no formatting.
-- All sections concatenated with titles as separators.
+The Book Structure panel lets you add optional front-matter and back-matter elements to give your biography a professional book-like format.
 
-The Advanced Export dialog allows additional options such as choosing which sections to include.
-`,
-  },
-  {
-    topic: "How to manage photos",
-    content: `
-Each biography has a Photo Gallery where you can upload and manage images:
+To open it: click the "Book Structure" button in the editor sidebar or top bar.
 
-- Open the biography workspace.
-- Click the Photo Gallery panel (camera icon in the sidebar or top bar).
-- Upload photos from your device. Supported formats are common image types (JPEG, PNG, etc.).
-- Photos are stored securely in Supabase Storage linked to your biography.
-- You can view, reorder, and delete photos from the gallery panel.
-- Photos appear in the biography when published (depending on the viewer's layout).
+Available elements (each can be enabled or disabled independently):
+- **Dedication** (Dedica / Dédicace / Widmung): A short personal dedication to someone special.
+- **Epigraph** (Epigrafe / Épigraphe / Epigraph): A quote or verse that sets the tone, with an optional source attribution.
+- **Preface** (Prefazione / Préface / Vorwort): An introduction written by you or someone else, explaining the context of the biography.
+- **Epilogue** (Epilogo / Épilogue / Epilog): Closing reflections or an afterword at the end of the biography.
+- **Acknowledgements** (Ringraziamenti / Remerciements / Danksagungen): Thank-you notes to people who helped.
+- **Specific Credits** (Crediti / Crédits / Danksagungen): Credits for photos, research, or other contributions.
 
-Note: Only the biography owner can add or remove photos. Reviewers and admin can view them during the review process.
-`,
-  },
-  {
-    topic: "What happens during AI review (AI screening)",
-    content: `
-When you submit a biography for review, it goes through two stages:
+Each element has a rich text editor. Toggle the switch next to each element to include it in the published biography. Changes are saved automatically.
 
-Stage 1 — Automatic AI content screening:
-- The full biography text is analysed by AI for content policy violations.
-- Violations are classified into three levels:
-  Level 1 (automatic block): hate speech incitement, terrorism, CSAM, violence promotion, WMD content.
-  Level 2 (requires human review): targeted harassment, graphic violence without narrative context, copyright concerns.
-  Level 3 (publish with a note): controversial opinions, contested historical narratives.
-- If the screening detects a Level 1 violation, the biography is automatically blocked and you are notified.
-- If a Level 2 issue is found, it goes to a human moderator.
-- If it passes (Level 3 or clean), it moves to Stage 2.
+---
 
-Stage 2 — Human review:
-- A reviewer reads the biography and either approves it or requests edits.
-- The AI screening result and any flagged passages are shown to the reviewer.
-- You receive a notification with the outcome.
+## 4. How to Submit for Review and What Happens Next
 
-You can run the AI pre-publication check yourself from the editor before submitting, to see potential issues in advance.
-`,
-  },
-  {
-    topic: "How to handle a request edit rejection",
-    content: `
-If a reviewer requests edits:
+Publishing follows a multi-step review workflow:
 
-1. You receive a notification in the Notifications page explaining what needs to be changed.
-2. The biography status is set back to "Draft" or "Edit Requested".
-3. Open the biography in the workspace editor and make the requested changes.
-4. Once you are satisfied with the revisions, click "Submit for Review" again.
-5. The revised biography goes through the AI screening and human review process again.
+1. Finish writing your biography sections in the Workspace.
+2. Click "Submit for Review" in the editor top bar or status area.
+3. **AI content screening (automatic):** The full biography text is analysed by AI for content policy violations at three levels:
+   - Level 1 (automatic block): genocide glorification, terrorism, CSAM, direct violence incitement, WMD content.
+   - Level 2 (requires human review): hate speech, targeted harassment, graphic violence, copyright issues.
+   - Level 3 (publish with note): controversial opinions, contested historical narratives.
+   If a Level 1 violation is found, the biography is automatically blocked and you are notified.
+   If Level 2 is found, a human moderator reviews it.
+4. **Human review:** A reviewer reads the biography and either approves it or requests edits.
+5. **Published:** If approved, the biography becomes visible in the Biography Library according to its visibility setting.
+
+You can run the AI pre-publication check yourself from the editor before submitting to catch issues early.
+
+---
+
+## 5. What "Request Edit" Means and How to Respond
+
+If a reviewer requests edits, it means the biography was not approved in its current form and changes are needed before it can be published.
+
+What happens:
+- The biography status changes to "Edit Requested".
+- You receive a notification in the Notifications page with the reviewer's feedback and, if applicable, flagged passages.
+
+How to respond:
+1. Go to the Notifications page and read the reviewer's feedback carefully.
+2. Open the biography in the Workspace editor.
+3. Make the requested changes in the relevant sections.
+4. Optionally run the AI pre-publication check to verify the content passes screening.
+5. Click "Submit for Review" again when ready.
+6. The biography will go through the AI screening and human review process again.
+
+There is no limit to how many times you can resubmit after making edits.
+
+---
+
+## 6. How to Use Text Import (Paste or File Upload)
+
+You can import existing text into your biography in two ways:
+
+**File upload (DOCX, TXT, RTF):**
+- In the Workspace editor, click the Import button in the toolbar.
+- Select your file (supported formats: DOCX, TXT, RTF).
+- The platform reads the file, splits it into text chunks, and uses AI to assign each chunk to the most relevant biography section (Childhood, Family, Career, etc.).
+- The Section Assignment Wizard opens — review the AI-suggested assignments, move any chunks to a different section if needed, then confirm.
+- The text is inserted into the corresponding section editors.
+
+**Paste text:**
+- Some import dialogs also allow you to paste text directly instead of uploading a file.
+- The same assignment wizard applies.
+
+Note: File import with AI section detection is only available in Sections mode. In Freeflow mode, the full document is imported and distributed across sections without an assignment wizard.
+
+---
+
+## 7. How to Use Voice Recording and Transcription
+
+Voice recording allows you to dictate content directly into any biography section.
+
+Steps:
+1. Open the section you want to write in.
+2. Click the microphone icon in the section editor toolbar.
+3. Allow microphone access if prompted by your browser.
+4. Speak clearly. Your voice is recorded and sent to the transcription service.
+5. The transcribed text is automatically inserted into the section editor.
+6. Review and edit the transcribed text as needed — transcription is not always perfect.
 
 Tips:
-- Read the reviewer's feedback carefully before making changes.
-- If the feedback is unclear, check the flagged passages highlighted in the review notification.
-- You can run the AI pre-publication check yourself after editing to verify the content passes screening before resubmitting.
-`,
-  },
-];
+- Speak at a natural pace and avoid background noise for best results.
+- You can record in any of the four supported languages: English, Italian (Italiano), French (Français), German (Deutsch).
+- The language used for transcription follows the biography's language setting.
+- There is no time limit, but very long recordings may take a moment to process.
 
-export const HELP_KB_TEXT = HELP_TOPICS.map(
-  (t) => `## ${t.topic}\n${t.content.trim()}`
-).join("\n\n---\n\n");
+---
+
+## 8. How to Export (PDF, DOCX, TXT, RTF)
+
+You can export your biography at any time from the Workspace, regardless of its publication status.
+
+Steps:
+1. Click the Export button in the editor top bar.
+2. Choose the export format.
+
+Available formats:
+- **PDF:** A formatted, print-ready document using the Noto Serif font. Includes section titles, body text, and any enabled Book Structure elements (dedication, preface, etc.). Best for printing or sharing a polished version.
+- **DOCX:** A Microsoft Word document with section titles and body text. Best for further editing in Word or Google Docs.
+- **TXT:** Plain text with no formatting. Sections are concatenated with titles as separators. Best for simple sharing or archiving.
+- **RTF:** Rich Text Format, compatible with most word processors.
+
+The **Advanced Export** dialog provides additional options, such as choosing which sections to include or exclude, and whether to include Book Structure elements.
+
+---
+
+## 9. How to Manage Photos and Set the Cover Photo
+
+Each biography has a Photo Gallery for storing and managing images.
+
+To open the Photo Gallery:
+- Click the Photo Gallery button (camera icon) in the editor sidebar or top bar.
+
+What you can do:
+- **Upload photos:** Click "Upload" and select images from your device (JPEG, PNG, and other common formats are supported). Photos are stored securely and linked to your biography.
+- **View photos:** All uploaded photos are shown in the gallery grid.
+- **Set the cover photo:** Click on a photo and select "Set as Cover" to make it the cover image that appears on the biography's public page and in library listings.
+- **Delete photos:** Select a photo and click delete to remove it from the gallery.
+- **Reorder photos:** You can rearrange photos in the gallery.
+
+Only the biography owner can add, delete, or manage photos.
+Reviewers and admins can view photos during the review process.
+
+---
+
+## 10. Visibility Options (Private, Link-Only, Public)
+
+Each biography has a visibility setting that controls who can see it after it is published.
+
+Options:
+- **Private (Privato / Privé / Privat):** Only you (the owner) can view the biography. It does not appear in the Biography Library or any public listing. Useful for personal records or work in progress.
+- **Link-only (Solo link / Lien uniquement / Nur Link):** The biography is not listed publicly but anyone with the direct link can view it. Useful for sharing with family or friends without making it fully public.
+- **Public (Pubblico / Public / Öffentlich):** The biography is visible to everyone in the Biography Library and can be found through search or browsing.
+
+How to change visibility:
+- Open the biography in the Workspace editor.
+- Find the Visibility setting in the editor's settings or status area.
+- Select the desired option. The change takes effect immediately (for published biographies) or will apply when the biography is published.
+
+Note: Even if visibility is set to Public, the biography only becomes publicly visible after it has been approved through the review process.
+`;
