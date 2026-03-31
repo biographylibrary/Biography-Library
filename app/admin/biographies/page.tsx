@@ -90,38 +90,42 @@ function AdminBiographiesContent() {
           content_language,
           is_frozen,
           ai_screening_status,
-          profiles!biographies_user_id_fkey (
-            id,
-            name,
-            email
-          )
+          biography_type
         `)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
 
-      const rows: AdminBiographyRow[] = (data ?? []).map((b: any) => {
-        const profile = Array.isArray(b.profiles) ? b.profiles[0] : b.profiles;
-        const isDeceased = b.title?.toLowerCase().includes('memorial') ||
-          b.content_language?.startsWith('deceased') ||
-          false;
-        return {
-          id: b.id,
-          title: b.title ?? '',
-          author_id: b.user_id,
-          author_name: b.author_name ?? profile?.name ?? null,
-          author_email: profile?.email ?? null,
-          type: isDeceased ? 'deceased' : 'autobiography',
-          status: b.status ?? 'draft',
-          visibility: b.visibility ?? 'private',
-          share_token: b.share_token ?? null,
-          created_at: b.created_at,
-          updated_at: b.updated_at,
-          published_at: b.published_at ?? null,
-          is_frozen: b.is_frozen ?? false,
-          ai_screening_status: b.ai_screening_status ?? null,
-        };
-      });
+      const bios = data ?? [];
+
+      const userIds = Array.from(new Set(bios.map((b: any) => b.user_id).filter(Boolean)));
+      let emailMap: Record<string, string> = {};
+      if (userIds.length > 0) {
+        const { data: profileData } = await supabase
+          .from('profiles')
+          .select('id, email')
+          .in('id', userIds);
+        (profileData ?? []).forEach((p: any) => {
+          emailMap[p.id] = p.email;
+        });
+      }
+
+      const rows: AdminBiographyRow[] = bios.map((b: any) => ({
+        id: b.id,
+        title: b.title ?? '',
+        author_id: b.user_id,
+        author_name: b.author_name || null,
+        author_email: emailMap[b.user_id] ?? null,
+        type: b.biography_type === 'memorial' ? 'deceased' : 'autobiography',
+        status: b.status ?? 'draft',
+        visibility: b.visibility ?? 'private',
+        share_token: b.share_token ?? null,
+        created_at: b.created_at,
+        updated_at: b.updated_at,
+        published_at: b.published_at ?? null,
+        is_frozen: b.is_frozen ?? false,
+        ai_screening_status: b.ai_screening_status ?? null,
+      }));
 
       setBiographies(rows);
     } catch {
