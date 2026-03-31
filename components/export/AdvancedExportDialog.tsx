@@ -15,7 +15,17 @@ import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
-import { Download, Loader as Loader2, Info, TriangleAlert as AlertTriangle, X, RefreshCw } from 'lucide-react';
+import { Download, Loader as Loader2, Info, TriangleAlert as AlertTriangle, X, RefreshCw, FileWarning } from 'lucide-react';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { BIOGRAPHY_SECTIONS } from '@/lib/editor-constants';
 import { generateBiographyPDF, checkBiographyPdfReadiness, type PdfReadinessIssue } from '@/lib/pdf-export';
 import { exportAsPlainText, exportAsRTF, exportAsDOCX } from '@/lib/export-utils';
@@ -63,6 +73,9 @@ export function AdvancedExportDialog({
   const [readinessStatus, setReadinessStatus] = useState<ReadinessStatus>('checking');
   const [readinessIssues, setReadinessIssues] = useState<PdfReadinessIssue[]>([]);
   const [exportError, setExportError] = useState<string | null>(null);
+  const [draftIteration, setDraftIteration] = useState<number | null>(null);
+  const [contentLanguage, setContentLanguage] = useState<string>('en');
+  const [showFinalDraftConfirm, setShowFinalDraftConfirm] = useState(false);
 
   const isPdfFormat = format === 'pdf-b5-standard';
 
@@ -74,11 +87,25 @@ export function AdvancedExportDialog({
     setReadinessStatus(result.ok ? 'ready' : 'not-ready');
   }, [biography.id]);
 
+  const fetchDraftState = useCallback(async () => {
+    if (!biography.id) return;
+    const { data } = await supabase
+      .from('biographies')
+      .select('pdf_draft_iteration, content_language')
+      .eq('id', biography.id)
+      .maybeSingle();
+    setDraftIteration(data?.pdf_draft_iteration ?? null);
+    setContentLanguage(data?.content_language ?? 'en');
+  }, [biography.id]);
+
   useEffect(() => {
     if (open && isPdfFormat && biography.id) {
       checkReadiness();
+      if (!isPublished) {
+        fetchDraftState();
+      }
     }
-  }, [open, isPdfFormat, biography.id, checkReadiness]);
+  }, [open, isPdfFormat, biography.id, checkReadiness, fetchDraftState, isPublished]);
 
   const toggleSection = (sectionKey: string) => {
     setSelectedSections((prev) =>
@@ -154,7 +181,7 @@ export function AdvancedExportDialog({
     return formatted;
   };
 
-  const handleExport = async () => {
+  const performExport = async (iterationToUse: number | null) => {
     setIsExporting(true);
     setExportError(null);
     try {
@@ -162,14 +189,20 @@ export function AdvancedExportDialog({
 
       if (isFreeFlow) {
         if (isPdfFormat) {
-          await generateBiographyPDF(biography, 'b5-standard', {
-            createdWith: t.exportDialog.createdWith,
-            allRightsReserved: t.exportDialog.allRightsReserved,
-            preface: t.exportDialog.preface,
-            epilogue: t.exportDialog.epilogue,
-            acknowledgements: t.exportDialog.acknowledgements,
-            specificCredits: t.exportDialog.specificCredits,
-          });
+          await generateBiographyPDF(
+            biography,
+            'b5-standard',
+            {
+              createdWith: t.exportDialog.createdWith,
+              allRightsReserved: t.exportDialog.allRightsReserved,
+              preface: t.exportDialog.preface,
+              epilogue: t.exportDialog.epilogue,
+              acknowledgements: t.exportDialog.acknowledgements,
+              specificCredits: t.exportDialog.specificCredits,
+            },
+            iterationToUse,
+            contentLanguage
+          );
         } else if (format === 'txt') {
           await exportAsPlainText(biography, [], false);
         } else if (format === 'rtf') {
@@ -215,14 +248,20 @@ export function AdvancedExportDialog({
             sections.map((s) => [s.key, { text: s.content }])
           ),
         };
-        await generateBiographyPDF(filteredBiography, 'b5-standard', {
-          createdWith: t.exportDialog.createdWith,
-          allRightsReserved: t.exportDialog.allRightsReserved,
-          preface: t.exportDialog.preface,
-          epilogue: t.exportDialog.epilogue,
-          acknowledgements: t.exportDialog.acknowledgements,
-          specificCredits: t.exportDialog.specificCredits,
-        });
+        await generateBiographyPDF(
+          filteredBiography,
+          'b5-standard',
+          {
+            createdWith: t.exportDialog.createdWith,
+            allRightsReserved: t.exportDialog.allRightsReserved,
+            preface: t.exportDialog.preface,
+            epilogue: t.exportDialog.epilogue,
+            acknowledgements: t.exportDialog.acknowledgements,
+            specificCredits: t.exportDialog.specificCredits,
+          },
+          iterationToUse,
+          contentLanguage
+        );
       } else if (format === 'txt') {
         await exportAsPlainText(biography, sections, separateFiles);
       } else if (format === 'rtf') {
@@ -247,6 +286,48 @@ export function AdvancedExportDialog({
     }
   };
 
+  const handleExport = async () => {
+    if (!isPdfFormat || isPublished) {
+      await performExport(null);
+      return;
+    }
+
+    const nextIteration = (draftIteration ?? 0) + 1;
+
+    if (nextIteration > 3) {
+      setExportError(t.exportDialog.draftLimitReached);
+      return;
+    }
+
+    if (nextIteration === 3 && !showFinalDraftConfirm) {
+      setShowFinalDraftConfirm(true);
+      return;
+    }
+
+    if (biography.id) {
+      await supabase
+        .from('biographies')
+        .update({ pdf_draft_iteration: nextIteration })
+        .eq('id', biography.id);
+      setDraftIteration(nextIteration);
+    }
+
+    await performExport(nextIteration);
+  };
+
+  const handleConfirmFinalDraft = async () => {
+    setShowFinalDraftConfirm(false);
+    const nextIteration = 3;
+    if (biography.id) {
+      await supabase
+        .from('biographies')
+        .update({ pdf_draft_iteration: nextIteration })
+        .eq('id', biography.id);
+      setDraftIteration(nextIteration);
+    }
+    await performExport(nextIteration);
+  };
+
   const allFormats: { value: ExportFormat; label: string; pdfOnly?: boolean }[] = [
     { value: 'pdf-b5-standard', label: t.exportDialog.pdfB5Standard, pdfOnly: true },
     { value: 'txt', label: t.exportDialog.txtFormat },
@@ -257,14 +338,17 @@ export function AdvancedExportDialog({
   const visibleFormats = allFormats;
 
   const pdfNotReady = isPdfFormat && readinessStatus === 'not-ready';
+  const draftLimitExceeded = !isPublished && isPdfFormat && (draftIteration ?? 0) >= 3;
   const downloadDisabled =
     isExporting ||
     (biography.biography_mode !== 'freeflow' &&
       contentSelection === 'custom' &&
       selectedSections.length === 0) ||
-    pdfNotReady;
+    pdfNotReady ||
+    draftLimitExceeded;
 
   return (
+    <>
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl max-h-[90vh] flex flex-col">
         <DialogHeader>
@@ -340,8 +424,26 @@ export function AdvancedExportDialog({
             {!isPublished && isPdfFormat && (
               <div className="flex items-start gap-3 rounded-lg bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 px-4 py-3">
                 <Info className="h-4 w-4 mt-0.5 shrink-0 text-amber-700 dark:text-amber-400" />
-                <p className="text-sm text-amber-800 dark:text-amber-200 leading-relaxed">
-                  {t.exportDialog.pdfDraftNotice}
+                <div className="flex-1 space-y-1">
+                  <p className="text-sm text-amber-800 dark:text-amber-200 leading-relaxed">
+                    {t.exportDialog.pdfDraftNotice}
+                  </p>
+                  <p className="text-xs text-amber-700 dark:text-amber-300 font-medium">
+                    {draftIteration == null
+                      ? t.exportDialog.draftIterationNone
+                      : t.exportDialog.draftIterationCurrent
+                          .replace('{n}', String(draftIteration))
+                          .replace('{next}', String((draftIteration ?? 0) + 1))
+                          .replace('{max}', '3')}
+                  </p>
+                </div>
+              </div>
+            )}
+            {!isPublished && isPdfFormat && (draftIteration ?? 0) >= 3 && (
+              <div className="flex items-start gap-3 rounded-lg bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800 px-4 py-3">
+                <FileWarning className="h-4 w-4 mt-0.5 shrink-0 text-red-600 dark:text-red-400" />
+                <p className="text-sm text-red-800 dark:text-red-200 leading-relaxed">
+                  {t.exportDialog.draftLimitReached}
                 </p>
               </div>
             )}
@@ -500,5 +602,23 @@ export function AdvancedExportDialog({
         </DialogFooter>
       </DialogContent>
     </Dialog>
+
+    <AlertDialog open={showFinalDraftConfirm} onOpenChange={setShowFinalDraftConfirm}>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>{t.exportDialog.finalDraftConfirmTitle}</AlertDialogTitle>
+          <AlertDialogDescription>
+            {t.exportDialog.finalDraftConfirmDescription}
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel>{t.exportDialog.cancel}</AlertDialogCancel>
+          <AlertDialogAction onClick={handleConfirmFinalDraft}>
+            {t.exportDialog.export}
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+    </>
   );
 }

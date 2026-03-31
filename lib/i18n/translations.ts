@@ -202,6 +202,11 @@ export interface Translations {
     specificCredits: string;
     noCoverPhotoWarning: string;
     pdfDraftNotice: string;
+    draftIterationNone: string;
+    draftIterationCurrent: string;
+    draftLimitReached: string;
+    finalDraftConfirmTitle: string;
+    finalDraftConfirmDescription: string;
   };
   sectionTitles: {
     childhood: string;
@@ -1317,6 +1322,11 @@ export const translations: Record<Language, Translations> = {
       specificCredits: 'Credits',
       noCoverPhotoWarning: 'A cover photo is required to generate the PDF. Upload a photo and tag it as cover in the Photos section.',
       pdfDraftNotice: 'This is a draft proof PDF. It reflects the current state of your biography and lets you verify layout and content before submitting for review.',
+      draftIterationNone: 'No draft PDF generated yet. This will be Draft 1 of 3.',
+      draftIterationCurrent: 'Draft {n} of {max} already generated. Exporting will create Draft {next}.',
+      draftLimitReached: 'You have reached the maximum of 3 draft PDFs. Submit for review before generating additional drafts.',
+      finalDraftConfirmTitle: 'Generate Third and Final Draft',
+      finalDraftConfirmDescription: 'This is your third and final draft. No further draft revisions will be allowed after this export. Make sure your biography is ready before proceeding.',
     },
     sectionTitles: {
       childhood: 'Childhood & Early Years',
@@ -2430,6 +2440,11 @@ export const translations: Record<Language, Translations> = {
       specificCredits: 'Crediti',
       noCoverPhotoWarning: 'È necessaria una foto di copertina per generare il PDF. Carica una foto e contrassegnala come copertina nella sezione Foto.',
       pdfDraftNotice: 'Questo è un PDF di bozza. Riflette lo stato attuale della biografia e ti permette di verificare il layout e il contenuto prima di inviarlo alla revisione.',
+      draftIterationNone: 'Nessun PDF di bozza generato ancora. Questo sarà la Bozza 1 di 3.',
+      draftIterationCurrent: 'Bozza {n} di {max} già generata. Esportando si creerà la Bozza {next}.',
+      draftLimitReached: 'Hai raggiunto il limite massimo di 3 bozze PDF. Invia per revisione prima di generare ulteriori bozze.',
+      finalDraftConfirmTitle: 'Genera la Terza e Ultima Bozza',
+      finalDraftConfirmDescription: 'Questa è la tua terza e ultima bozza. Non sarà possibile generare ulteriori bozze dopo questa esportazione. Assicurati che la tua biografia sia pronta prima di procedere.',
     },
     sectionTitles: {
       childhood: 'Infanzia e Primi Anni',
@@ -3543,6 +3558,11 @@ export const translations: Record<Language, Translations> = {
       specificCredits: 'Crédits',
       noCoverPhotoWarning: 'Une photo de couverture est requise pour générer le PDF. Importez une photo et marquez-la comme couverture dans la section Photos.',
       pdfDraftNotice: 'Il s\'agit d\'un PDF de brouillon. Il reflète l\'état actuel de votre biographie et vous permet de vérifier la mise en page et le contenu avant de soumettre pour révision.',
+      draftIterationNone: 'Aucun PDF de brouillon généré pour l\'instant. Ce sera le Brouillon 1 sur 3.',
+      draftIterationCurrent: 'Brouillon {n} sur {max} déjà généré. L\'exportation créera le Brouillon {next}.',
+      draftLimitReached: 'Vous avez atteint le maximum de 3 brouillons PDF. Soumettez pour révision avant de générer d\'autres brouillons.',
+      finalDraftConfirmTitle: 'Générer le Troisième et Dernier Brouillon',
+      finalDraftConfirmDescription: 'Il s\'agit de votre troisième et dernier brouillon. Aucune révision supplémentaire ne sera autorisée après cette exportation. Assurez-vous que votre biographie est prête avant de continuer.',
     },
     sectionTitles: {
       childhood: 'Enfance et Premières Années',
@@ -4656,6 +4676,11 @@ export const translations: Record<Language, Translations> = {
       specificCredits: 'Quellenangaben',
       noCoverPhotoWarning: 'Ein Titelfoto ist erforderlich, um das PDF zu erstellen. Lade ein Foto hoch und markiere es als Titelbild im Fotos-Bereich.',
       pdfDraftNotice: 'Dies ist ein Entwurfs-PDF. Es spiegelt den aktuellen Stand der Biografie wider und ermöglicht es dir, Layout und Inhalt vor der Einreichung zur Überprüfung zu verifizieren.',
+      draftIterationNone: 'Noch kein Entwurfs-PDF generiert. Dies wird Entwurf 1 von 3 sein.',
+      draftIterationCurrent: 'Entwurf {n} von {max} bereits generiert. Beim Exportieren wird Entwurf {next} erstellt.',
+      draftLimitReached: 'Du hast das Maximum von 3 Entwurfs-PDFs erreicht. Reiche zur Überprüfung ein, bevor du weitere Entwürfe generierst.',
+      finalDraftConfirmTitle: 'Dritten und letzten Entwurf generieren',
+      finalDraftConfirmDescription: 'Dies ist dein dritter und letzter Entwurf. Nach diesem Export sind keine weiteren Entwurfsrevisionen möglich. Stelle sicher, dass deine Biografie bereit ist, bevor du fortfährst.',
     },
     sectionTitles: {
       childhood: 'Kindheit und Frühe Jahre',

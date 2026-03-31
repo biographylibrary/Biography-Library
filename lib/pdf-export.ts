@@ -12,6 +12,48 @@ interface BiographyData {
   created_at: string;
 }
 
+const DRAFT_WATERMARK_LABELS: Record<number, Record<string, string>> = {
+  1: { en: 'DRAFT', it: 'BOZZA', fr: 'BROUILLON', de: 'ENTWURF' },
+  2: { en: 'SECOND DRAFT', it: 'SECONDA BOZZA', fr: 'SECOND BROUILLON', de: 'ZWEITER ENTWURF' },
+  3: {
+    en: 'THIRD DRAFT — FINAL REVIEW',
+    it: 'TERZA BOZZA — REVISIONE FINALE',
+    fr: 'TROISIÈME BROUILLON — RÉVISION FINALE',
+    de: 'DRITTER ENTWURF — ABSCHLIESSENDE ÜBERPRÜFUNG',
+  },
+};
+
+function getDraftLabel(iteration: number, language: string): string {
+  const labels = DRAFT_WATERMARK_LABELS[iteration];
+  if (!labels) return '';
+  return labels[language] ?? labels['en'];
+}
+
+function drawDraftWatermark(doc: jsPDF, label: string): void {
+  const docAny = doc as any;
+  const savedGState = typeof docAny.saveGraphicsState === 'function';
+  if (savedGState) docAny.saveGraphicsState();
+
+  doc.setFont('NotoSerif', 'bold');
+  doc.setFontSize(28);
+  doc.setTextColor(200, 50, 50);
+
+  const centerX = B5_W / 2;
+  const centerY = B5_H / 2;
+
+  docAny.setGState ? docAny.setGState(new (docAny.GState ?? Object)({ opacity: 0.12 })) : null;
+
+  doc.text(label, centerX, centerY, {
+    align: 'center',
+    angle: 45,
+  });
+
+  if (savedGState) docAny.restoreGraphicsState();
+
+  doc.setFont('NotoSerif', 'normal');
+  doc.setTextColor(0, 0, 0);
+}
+
 interface BookStructure {
   dedication_content: string | null;
   dedication_enabled: boolean;
@@ -228,6 +270,7 @@ interface PdfState {
   doc: jsPDF;
   absolutePage: number;
   contentPageNum: number;
+  watermarkLabel?: string | null;
 }
 
 function addNewPage(state: PdfState, isContent: boolean): void {
@@ -236,6 +279,9 @@ function addNewPage(state: PdfState, isContent: boolean): void {
   state.absolutePage++;
   if (isContent) {
     state.contentPageNum++;
+  }
+  if (state.watermarkLabel) {
+    drawDraftWatermark(doc, state.watermarkLabel);
   }
 }
 
@@ -455,22 +501,41 @@ function detectImageFormat(url: string, contentType: string | null): string {
   return 'JPEG';
 }
 
+function storagePathFromFileUrl(fileUrl: string): string {
+  try {
+    const url = new URL(fileUrl);
+    const parts = url.pathname.split('/biography-photos/');
+    if (parts[1]) return parts[1];
+  } catch {
+  }
+  return fileUrl;
+}
+
+async function resolveSignedUrl(fileUrl: string): Promise<string> {
+  const storagePath = storagePathFromFileUrl(fileUrl);
+  const { data } = await supabase.storage
+    .from('biography-photos')
+    .createSignedUrl(storagePath, 300);
+  if (data?.signedUrl) return data.signedUrl;
+  return fileUrl;
+}
+
 async function fetchCoverPhotoBase64(
   biographyId: string
 ): Promise<{ base64: string; format: string }> {
   const { data } = await supabase
     .from('biography_media')
-    .select('file_url, storage_path')
+    .select('file_url')
     .eq('biography_id', biographyId)
     .eq('layout', 'cover')
     .limit(1)
     .maybeSingle();
 
-  const url = data?.file_url ?? data?.storage_path ?? null;
-
-  if (!url) {
+  if (!data?.file_url) {
     throw new Error('MISSING_COVER_PHOTO');
   }
+
+  const url = await resolveSignedUrl(data.file_url);
 
   try {
     const resp = await fetch(url);
@@ -687,7 +752,8 @@ export async function checkBiographyPdfReadiness(
     issues.push('missing-cover');
   } else if (checkCoverReachability && coverRow.file_url) {
     try {
-      const resp = await fetch(coverRow.file_url, { method: 'HEAD' });
+      const signedUrl = await resolveSignedUrl(coverRow.file_url);
+      const resp = await fetch(signedUrl, { method: 'HEAD' });
       if (!resp.ok) issues.push('cover-unreachable');
     } catch {
       issues.push('cover-unreachable');
@@ -707,7 +773,9 @@ export async function generateBiographyPDF(
     epilogue?: string;
     acknowledgements?: string;
     specificCredits?: string;
-  }
+  },
+  draftIteration?: number | null,
+  contentLanguage?: string
 ): Promise<void> {
   if (!biography.id) {
     throw new Error('MISSING_BIOGRAPHY_ID');
@@ -718,6 +786,10 @@ export async function generateBiographyPDF(
     biography.id ? fetchBookStructure(biography.id) : Promise.resolve(null),
     fetchCoverPhotoBase64(biography.id),
   ]);
+
+  const lang = contentLanguage ?? 'en';
+  const watermarkLabel =
+    draftIteration != null ? getDraftLabel(draftIteration, lang) : null;
 
   const centerX = B5_W / 2;
 
@@ -733,6 +805,7 @@ export async function generateBiographyPDF(
     doc,
     absolutePage: 1,
     contentPageNum: 0,
+    watermarkLabel,
   };
 
   const textAreaTop = MARGIN_TOP;
@@ -748,6 +821,10 @@ export async function generateBiographyPDF(
     coverPhoto.base64,
     coverPhoto.format
   );
+
+  if (watermarkLabel) {
+    drawDraftWatermark(doc, watermarkLabel);
+  }
 
   // ────────────────────────────────────────
   // PAGE 2 — BLANK
@@ -996,7 +1073,8 @@ export async function generateBiographyPDF(
 
   const safeName = biography.title.replace(/[^a-z0-9]/gi, '-').toLowerCase();
   const dateStamp = new Date().toISOString().split('T')[0];
-  doc.save(`${safeName}-${dateStamp}.pdf`);
+  const draftSuffix = draftIteration != null ? `-draft${draftIteration}` : '';
+  doc.save(`${safeName}${draftSuffix}-${dateStamp}.pdf`);
 }
 
 export type PdfVariant = 'b5-standard';
