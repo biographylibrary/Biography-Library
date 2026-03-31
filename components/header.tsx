@@ -91,10 +91,7 @@ export function Header() {
   return (
     <>
     <header className="border-b border-border bg-[#ECE9E4] dark:bg-[#1F2121] sticky top-0 z-50">
-      <div className={cn(
-        "h-16 flex items-center relative",
-        (isEditorPage || isDashboardPage) ? "px-4 sm:px-6 lg:px-8" : "max-w-7xl mx-auto px-4 sm:px-6 lg:px-8"
-      )}>
+      <div className="h-16 flex items-center relative px-4 sm:px-6 lg:px-8">
         <div className="flex-1 flex items-center">
           {showAdminLink && (
             <Link
