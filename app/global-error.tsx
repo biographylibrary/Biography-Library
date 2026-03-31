@@ -1,5 +1,8 @@
 'use client';
 
+import { useEffect } from 'react';
+import { logger } from '@/lib/logger';
+
 export default function GlobalError({
   error,
   reset,
@@ -7,6 +10,17 @@ export default function GlobalError({
   error: Error & { digest?: string };
   reset: () => void;
 }) {
+  useEffect(() => {
+    logger.critical('Unhandled app error', {
+      scope: 'global-error',
+      name: error?.name,
+      message: error?.message,
+      digest: error?.digest,
+      stack: error?.stack,
+      pathname: typeof window !== 'undefined' ? window.location.pathname : null,
+    });
+  }, [error]);
+
   return (
     <html>
       <body>

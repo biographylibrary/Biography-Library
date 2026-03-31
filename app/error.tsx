@@ -2,6 +2,7 @@
 
 import { useEffect } from 'react';
 import { Button } from '@/components/ui/button';
+import { logger } from '@/lib/logger';
 
 export default function Error({
   error,
@@ -12,6 +13,14 @@ export default function Error({
 }) {
   useEffect(() => {
     console.error('[App Error]', error);
+    logger.critical('Unhandled app error', {
+      scope: 'app-error',
+      name: error?.name,
+      message: error?.message,
+      digest: error?.digest,
+      stack: error?.stack,
+      pathname: typeof window !== 'undefined' ? window.location.pathname : null,
+    });
   }, [error]);
 
   return (
