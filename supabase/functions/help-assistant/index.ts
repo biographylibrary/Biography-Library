@@ -419,12 +419,20 @@ Deno.serve(async (req: Request) => {
           break;
         }
 
-        if (res.status >= 400 && res.status < 500 && res.status !== 429) {
+        if (res.status >= 400 && res.status < 500 && res.status !== 429 && res.status !== 400) {
           const errText = await res.text();
           lastAiErrorStatus = res.status;
           lastAiErrorBody = errText;
           console.error("[help-assistant] AI 4xx error:", { model, status: res.status, body: errText });
           break;
+        }
+
+        if (res.status === 400) {
+          const errText = await res.text();
+          lastAiErrorStatus = res.status;
+          lastAiErrorBody = errText;
+          console.warn(`[help-assistant] Model ${model} returned 400 (possibly invalid model name), ${i < models.length - 1 ? "trying fallback" : "no more fallbacks"}:`, errText.slice(0, 200));
+          continue;
         }
 
         lastAiErrorStatus = res.status;
