@@ -1022,11 +1022,16 @@ const [isPublishing, setIsPublishing] = useState(false);
         setRevisionPassages([]);
         setRevisionNote(null);
         setRevisionBannerDismissed(false);
-        fetch('/api/review/submit', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ biographyId: id }),
-        }).catch((err) => console.error('AI review trigger failed:', err));
+        supabase.auth.getSession().then(({ data: { session } }) => {
+          fetch('/api/review/submit', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              ...(session?.access_token ? { Authorization: `Bearer ${session.access_token}` } : {}),
+            },
+            body: JSON.stringify({ biographyId: id }),
+          }).catch((err) => console.error('AI review trigger failed:', err));
+        });
       }
     } catch (err) {
       console.error('Error submitting for review:', err);

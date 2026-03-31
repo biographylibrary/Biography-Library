@@ -8,6 +8,13 @@ const INFOMANIAK_MODEL = process.env.INFOMANIAK_AI_MODEL ?? 'mistral3';
 const MAX_CONTENT_CHARS = 6000;
 const AI_TIMEOUT_MS = 30_000;
 
+const STAFF_ROLES = new Set(['reviewer', 'admin', 'super_admin']);
+
+const SUBMIT_THROTTLE_WINDOW_MS = 60_000;
+const SUBMIT_THROTTLE_MAX = 3;
+
+const submitAttempts = new Map<string, { count: number; windowStart: number }>();
+
 const AUTO_PUBLISHED_MESSAGES: Record<string, string> = {
   en: 'Your biography has been reviewed and published automatically.',
   it: 'La tua biografia è stata revisionata e pubblicata automaticamente.',
@@ -39,6 +46,32 @@ function buildServiceClient(): AnyClient {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL!;
   const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
   return createClient(url, serviceKey, { auth: { persistSession: false } }) as AnyClient;
+}
+
+function buildAnonClient(jwt: string): AnyClient {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+  const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+  return createClient(url, anonKey, {
+    auth: { persistSession: false },
+    global: { headers: { Authorization: `Bearer ${jwt}` } },
+  }) as AnyClient;
+}
+
+function checkPerUserThrottle(userId: string): boolean {
+  const now = Date.now();
+  const entry = submitAttempts.get(userId);
+
+  if (!entry || now - entry.windowStart > SUBMIT_THROTTLE_WINDOW_MS) {
+    submitAttempts.set(userId, { count: 1, windowStart: now });
+    return true;
+  }
+
+  if (entry.count >= SUBMIT_THROTTLE_MAX) {
+    return false;
+  }
+
+  entry.count += 1;
+  return true;
 }
 
 async function fetchPreviousRejectionReport(
@@ -254,7 +287,27 @@ async function pickReviewer(supabase: AnyClient): Promise<string | null> {
 }
 
 export async function POST(req: NextRequest) {
+  const timestamp = new Date().toISOString();
+
   try {
+    const authHeader = req.headers.get('authorization') ?? '';
+    const jwt = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : '';
+
+    if (!jwt) {
+      console.warn('[review/submit] 401 — no token', { timestamp });
+      return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
+    }
+
+    const anonClient = buildAnonClient(jwt);
+    const { data: { user }, error: authError } = await anonClient.auth.getUser();
+
+    if (authError || !user) {
+      console.warn('[review/submit] 401 — invalid token', { timestamp });
+      return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
+    }
+
+    const callerId = user.id;
+
     const body = await req.json();
     const { biographyId } = body as { biographyId?: string };
 
@@ -262,9 +315,41 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'biographyId is required' }, { status: 400 });
     }
 
-    const supabase = buildServiceClient();
+    const serviceClient = buildServiceClient();
 
-    const previousRejection = await fetchPreviousRejectionReport(supabase, biographyId);
+    const { data: callerProfile } = await serviceClient
+      .from('profiles')
+      .select('role')
+      .eq('id', callerId)
+      .maybeSingle();
+
+    const callerRole: string = (callerProfile as any)?.role ?? 'user';
+    const isStaff = STAFF_ROLES.has(callerRole);
+
+    if (!isStaff) {
+      const { data: bio } = await serviceClient
+        .from('biographies')
+        .select('user_id')
+        .eq('id', biographyId)
+        .maybeSingle();
+
+      if (!bio) {
+        console.warn('[review/submit] 404 — biography not found', { timestamp, biographyId });
+        return NextResponse.json({ error: 'Biography not found' }, { status: 404 });
+      }
+
+      if ((bio as any).user_id !== callerId) {
+        console.warn('[review/submit] 403 — not owner', { timestamp, biographyId, callerId });
+        return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+      }
+    }
+
+    if (!checkPerUserThrottle(callerId)) {
+      console.warn('[review/submit] 429 — throttled', { timestamp, biographyId, callerId });
+      return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
+    }
+
+    const previousRejection = await fetchPreviousRejectionReport(serviceClient, biographyId);
     const isRescreen = previousRejection !== null;
 
     const targetSectionKeys = isRescreen
@@ -272,7 +357,7 @@ export async function POST(req: NextRequest) {
       : undefined;
 
     const { text, authorId, contentLanguage } = await fetchBiographyContent(
-      supabase,
+      serviceClient,
       biographyId,
       targetSectionKeys
     );
@@ -286,7 +371,7 @@ export async function POST(req: NextRequest) {
     if (screening.passages.length === 0) {
       const screeningStatus = screening.parseError ? 'parse_error' : 'passed';
 
-      await supabase
+      await serviceClient
         .from('biographies')
         .update({
           status: 'published',
@@ -296,7 +381,7 @@ export async function POST(req: NextRequest) {
         .eq('id', biographyId);
 
       if (isRescreen && previousRejection.id) {
-        await supabase
+        await serviceClient
           .from('moderation_reports')
           .update({
             status: 'decided',
@@ -308,7 +393,7 @@ export async function POST(req: NextRequest) {
 
       const autoMsg =
         AUTO_PUBLISHED_MESSAGES[contentLanguage] ?? AUTO_PUBLISHED_MESSAGES['en'];
-      await supabase
+      await serviceClient
         .from('user_notifications')
         .insert({ user_id: authorId, message: autoMsg });
 
@@ -322,13 +407,13 @@ export async function POST(req: NextRequest) {
       level: p.severity,
     }));
 
-    await supabase
+    await serviceClient
       .from('biographies')
       .update({ ai_screening_status: 'flagged' })
       .eq('id', biographyId);
 
     if (isRescreen && previousRejection.id) {
-      await supabase
+      await serviceClient
         .from('moderation_reports')
         .update({
           status: 'decided',
@@ -338,7 +423,7 @@ export async function POST(req: NextRequest) {
         .eq('id', previousRejection.id);
     }
 
-    const { data: newReport } = await supabase
+    const { data: newReport } = await serviceClient
       .from('moderation_reports')
       .insert({
         biography_id: biographyId,
@@ -357,10 +442,10 @@ export async function POST(req: NextRequest) {
       .select('id')
       .maybeSingle();
 
-    const reviewerId = await pickReviewer(supabase);
+    const reviewerId = await pickReviewer(serviceClient);
 
     if (reviewerId && (newReport as any)?.id) {
-      await supabase
+      await serviceClient
         .from('moderation_reports')
         .update({
           status: 'assigned',
@@ -371,7 +456,7 @@ export async function POST(req: NextRequest) {
 
       const assignMsg =
         REVIEW_ASSIGNED_MESSAGES[contentLanguage] ?? REVIEW_ASSIGNED_MESSAGES['en'];
-      await supabase
+      await serviceClient
         .from('user_notifications')
         .insert({ user_id: reviewerId, message: assignMsg });
     }
