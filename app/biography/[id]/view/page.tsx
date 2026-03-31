@@ -105,24 +105,33 @@ export default function BiographyViewPage() {
 
       let data: BiographyViewData | null = null;
       let loadError: ViewError = null;
+      let tokenSectionTimestamps: Record<string, string> | null = null;
 
       if (token) {
-        // --- Token path: use the SECURITY DEFINER RPC that enforces exact token
-        // match server-side. Works for any status (draft, under_review, published).
-        // Only returns rows where visibility = 'link-only' AND share_token = token.
+        // --- Token path: SECURITY DEFINER RPC enforces exact token match.
+        // Returns one row per biography_section (LEFT JOIN), so biography
+        // metadata is repeated. Section timestamps are embedded in the rows.
+        // No separate biography_sections query needed — and none is safe to do
+        // anonymously since the leaky anon policy has been removed.
         const tokenQuery = await supabase.rpc('get_biography_by_share_token', {
           p_biography_id: resolvedId,
           p_token: token,
         });
 
         if (!tokenQuery.error && tokenQuery.data && tokenQuery.data.length > 0) {
-          data = tokenQuery.data[0] as BiographyViewData;
+          const rows = tokenQuery.data as Array<BiographyViewData & { section_name: string | null; section_created_at: string | null }>;
+          data = rows[0] as BiographyViewData;
+          tokenSectionTimestamps = {};
+          for (const row of rows) {
+            if (row.section_name && row.section_created_at) {
+              tokenSectionTimestamps[row.section_name] = row.section_created_at;
+            }
+          }
           if (data.status === 'published') {
             supabase.rpc('increment_view_count', { biography_uuid: resolvedId });
           }
         } else {
           // Token present but no match — either wrong token, private, or not found.
-          // Show invalid-link rather than generic not-found to help the user understand.
           loadError = 'invalid-token';
         }
       } else {
@@ -162,20 +171,11 @@ export default function BiographyViewPage() {
         setPdfReady(result.ok);
       });
 
-      const sectionsQuery = await supabase
-        .from('biography_sections')
-        .select('section_name, created_at')
-        .eq('biography_id', resolvedId)
-        .order('created_at', { ascending: true });
-
-      const sectionTimestamps: Record<string, string> = {};
-      if (!sectionsQuery.error && sectionsQuery.data) {
-        for (const row of sectionsQuery.data) {
-          if (row.section_name && row.created_at) {
-            sectionTimestamps[row.section_name] = row.created_at;
-          }
-        }
-      }
+      // Section timestamps come from the RPC result for token-accessed biographies.
+      // For public (no-token) biographies, authenticated users see their own sections
+      // via existing RLS; anon users get no timestamps (graceful degradation — sections
+      // still display, just without date stamps).
+      const sectionTimestamps: Record<string, string> = tokenSectionTimestamps ?? {};
 
       const content = data.content as BiographyContent;
       const sections: SectionWithDate[] = Object.entries(content)
