@@ -1108,6 +1108,7 @@ export interface Translations {
     sessionExpired: string;
     rateLimitError: string;
     genericError: string;
+    signInRequired: string;
   };
 }
 
@@ -2220,6 +2221,7 @@ export const translations: Record<Language, Translations> = {
       sessionExpired: 'Your session has expired. Please sign in again.',
       rateLimitError: 'Too many requests. Please wait a moment.',
       genericError: 'Something went wrong. Please try again.',
+      signInRequired: 'Sign in to use the help assistant.',
     },
   },
   it: {
@@ -3330,6 +3332,7 @@ export const translations: Record<Language, Translations> = {
       sessionExpired: 'La sessione è scaduta. Accedi di nuovo.',
       rateLimitError: 'Troppe richieste. Attendi un momento.',
       genericError: 'Qualcosa è andato storto. Riprova.',
+      signInRequired: 'Accedi per usare l\'assistente.',
     },
   },
   fr: {
@@ -4440,6 +4443,7 @@ export const translations: Record<Language, Translations> = {
       sessionExpired: 'Votre session a expiré. Veuillez vous reconnecter.',
       rateLimitError: 'Trop de requêtes. Veuillez patienter un moment.',
       genericError: 'Une erreur est survenue. Veuillez réessayer.',
+      signInRequired: 'Connectez-vous pour utiliser l\'assistant.',
     },
   },
   de: {
@@ -5550,6 +5554,7 @@ export const translations: Record<Language, Translations> = {
       sessionExpired: 'Ihre Sitzung ist abgelaufen. Bitte melden Sie sich erneut an.',
       rateLimitError: 'Zu viele Anfragen. Bitte warten Sie einen Moment.',
       genericError: 'Etwas ist schiefgelaufen. Bitte versuchen Sie es erneut.',
+      signInRequired: 'Melden Sie sich an, um den Assistenten zu nutzen.',
     },
   },
 };

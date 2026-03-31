@@ -77,10 +77,7 @@ export function Header() {
   const isDark = mounted && resolvedTheme === 'dark';
   const showAdminLink = user && role && ADMIN_ROLES.includes(role);
 
-  const isPublicPage =
-    pathname === '/biographies' ||
-    (pathname?.includes('/biography/') && pathname?.includes('/view'));
-  const showHelpButton = !!user && !isPublicPage;
+  const showHelpButton = true;
 
   const getInitials = (name: string) => {
     const parts = name.trim().split(/\s+/);

@@ -1,12 +1,13 @@
 'use client';
 
 import { useState, useRef, useEffect, useCallback } from 'react';
-import { X, Send, Trash2, MessageCircleQuestion, Loader as Loader2 } from 'lucide-react';
+import { X, Send, Trash2, MessageCircleQuestion, Loader as Loader2, LogIn } from 'lucide-react';
 import { useTranslation } from '@/lib/i18n/i18n-context';
 import { useAuth } from '@/lib/auth-context';
 import { askHelpBot } from '@/lib/help/help-service';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import Link from 'next/link';
 
 interface Message {
   id: string;
@@ -166,7 +167,21 @@ export function HelpChatbot({ isOpen, onClose }: HelpChatbotProps) {
         </div>
 
         <div className="flex-1 overflow-y-auto px-4 py-4 space-y-3 min-h-0">
-          {messages.length === 0 && !loading && (
+          {!session && (
+            <div className="flex flex-col items-center justify-center h-full text-center gap-4 py-8">
+              <div className="h-12 w-12 rounded-full bg-muted flex items-center justify-center">
+                <LogIn className="h-6 w-6 text-muted-foreground" />
+              </div>
+              <p className="text-sm text-muted-foreground max-w-[220px] leading-relaxed">
+                {t.helpChatbot.signInRequired}
+              </p>
+              <Button size="sm" asChild onClick={onClose}>
+                <Link href="/login">{t.publicBiographies.signIn}</Link>
+              </Button>
+            </div>
+          )}
+
+          {session && messages.length === 0 && !loading && (
             <div className="flex flex-col items-center justify-center h-full text-center gap-3 py-8">
               <div className="h-12 w-12 rounded-full bg-muted flex items-center justify-center">
                 <MessageCircleQuestion className="h-6 w-6 text-muted-foreground" />
@@ -223,34 +238,36 @@ export function HelpChatbot({ isOpen, onClose }: HelpChatbotProps) {
           <div ref={bottomRef} />
         </div>
 
-        <div className="px-3 py-3 border-t border-border shrink-0">
-          <div className="flex items-end gap-2 bg-muted rounded-xl px-3 py-2">
-            <textarea
-              ref={inputRef}
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              onKeyDown={handleKeyDown}
-              placeholder={t.helpChatbot.placeholder}
-              rows={1}
-              disabled={loading}
-              className={cn(
-                'flex-1 resize-none bg-transparent text-sm outline-none placeholder:text-muted-foreground',
-                'min-h-[24px] max-h-[120px] leading-6 py-0',
-                'disabled:opacity-50'
-              )}
-              style={{ overflowY: input.split('\n').length > 3 ? 'auto' : 'hidden' }}
-            />
-            <Button
-              size="icon"
-              className="h-7 w-7 shrink-0 rounded-lg"
-              onClick={handleSend}
-              disabled={!input.trim() || loading}
-              title={t.helpChatbot.send}
-            >
-              <Send className="h-3.5 w-3.5" />
-            </Button>
+        {session && (
+          <div className="px-3 py-3 border-t border-border shrink-0">
+            <div className="flex items-end gap-2 bg-muted rounded-xl px-3 py-2">
+              <textarea
+                ref={inputRef}
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                onKeyDown={handleKeyDown}
+                placeholder={t.helpChatbot.placeholder}
+                rows={1}
+                disabled={loading}
+                className={cn(
+                  'flex-1 resize-none bg-transparent text-sm outline-none placeholder:text-muted-foreground',
+                  'min-h-[24px] max-h-[120px] leading-6 py-0',
+                  'disabled:opacity-50'
+                )}
+                style={{ overflowY: input.split('\n').length > 3 ? 'auto' : 'hidden' }}
+              />
+              <Button
+                size="icon"
+                className="h-7 w-7 shrink-0 rounded-lg"
+                onClick={handleSend}
+                disabled={!input.trim() || loading}
+                title={t.helpChatbot.send}
+              >
+                <Send className="h-3.5 w-3.5" />
+              </Button>
+            </div>
           </div>
-        </div>
+        )}
       </aside>
     </>
   );
