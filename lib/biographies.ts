@@ -48,7 +48,7 @@ export async function fetchPublishedBiographies() {
     .from('biographies')
     .select(PUBLISHED_SELECT)
     .eq('status', 'published')
-    .in('visibility', ['public', 'link-only'])
+    .eq('visibility', 'public')
     .order('published_at', { ascending: false });
 
   return {
@@ -62,7 +62,7 @@ export async function fetchFeaturedBiographies() {
     .from('biographies')
     .select(PUBLISHED_SELECT)
     .eq('status', 'published')
-    .in('visibility', ['public', 'link-only'])
+    .eq('visibility', 'public')
     .eq('is_featured', true)
     .order('featured_at', { ascending: false })
     .limit(6);
@@ -78,7 +78,7 @@ export async function fetchMostReadBiographies() {
     .from('biographies')
     .select(PUBLISHED_SELECT)
     .eq('status', 'published')
-    .in('visibility', ['public', 'link-only'])
+    .eq('visibility', 'public')
     .order('view_count', { ascending: false })
     .limit(10);
 
@@ -93,7 +93,7 @@ export async function fetchDiscoverBiographies(excludeIds: string[]) {
     .from('biographies')
     .select(PUBLISHED_SELECT)
     .eq('status', 'published')
-    .in('visibility', ['public', 'link-only']);
+    .eq('visibility', 'public');
 
   if (excludeIds.length > 0) {
     query = query.not('id', 'in', `(${excludeIds.join(',')})`);

@@ -38,7 +38,7 @@ interface SectionWithDate {
   sectionCreatedAt: string | null;
 }
 
-type ViewError = 'not-found' | 'private' | null;
+type ViewError = 'not-found' | 'private' | 'invalid-token' | null;
 
 function formatDate(dateStr: string, locale?: string): string {
   return new Date(dateStr).toLocaleDateString(locale, {
@@ -102,44 +102,54 @@ export default function BiographyViewPage() {
       }
 
       let data: BiographyViewData | null = null;
+      let loadError: ViewError = null;
 
-      const publicQuery = await supabase
-        .from('biographies')
-        .select('id, title, author_name, content, visibility, status, share_token, created_at, published_at, is_frozen, frozen_at')
-        .eq('id', resolvedId)
-        .in('visibility', ['public', 'link-only'])
-        .eq('status', 'published')
-        .maybeSingle();
+      if (token) {
+        // --- Token path: use the SECURITY DEFINER RPC that enforces exact token
+        // match server-side. Works for any status (draft, under_review, published).
+        // Only returns rows where visibility = 'link-only' AND share_token = token.
+        const tokenQuery = await supabase.rpc('get_biography_by_share_token', {
+          p_biography_id: resolvedId,
+          p_token: token,
+        });
 
-      if (!publicQuery.error && publicQuery.data) {
-        data = publicQuery.data as BiographyViewData;
-        supabase.rpc('increment_view_count', { biography_uuid: resolvedId });
-      } else if (token) {
-        const tokenQuery = await supabase
+        if (!tokenQuery.error && tokenQuery.data && tokenQuery.data.length > 0) {
+          data = tokenQuery.data[0] as BiographyViewData;
+          if (data.status === 'published') {
+            supabase.rpc('increment_view_count', { biography_uuid: resolvedId });
+          }
+        } else {
+          // Token present but no match — either wrong token, private, or not found.
+          // Show invalid-link rather than generic not-found to help the user understand.
+          loadError = 'invalid-token';
+        }
+      } else {
+        // --- No token: only show published public biographies.
+        // link-only biographies are NOT accessible without a token.
+        const publicQuery = await supabase
           .from('biographies')
           .select('id, title, author_name, content, visibility, status, share_token, created_at, published_at, is_frozen, frozen_at')
           .eq('id', resolvedId)
-          .eq('share_token', token)
+          .eq('visibility', 'public')
+          .eq('status', 'published')
           .maybeSingle();
 
-        if (!tokenQuery.error && tokenQuery.data) {
-          if (tokenQuery.data.visibility === 'private') {
-            setError('private');
-            setIsLoading(false);
-            return;
-          }
-          data = tokenQuery.data as BiographyViewData;
+        if (!publicQuery.error && publicQuery.data) {
+          data = publicQuery.data as BiographyViewData;
+          supabase.rpc('increment_view_count', { biography_uuid: resolvedId });
+        } else {
+          loadError = 'not-found';
         }
       }
 
       if (!data) {
-        logger.error('Share link load failed', {
+        logger.error('Biography view load failed', {
           feature: 'share-link',
           hasShareToken: !!token,
           route: typeof window !== 'undefined' ? window.location.pathname : null,
-          publicQueryError: publicQuery.error?.message ?? null,
+          reason: loadError,
         });
-        setError('not-found');
+        setError(loadError ?? 'not-found');
         setIsLoading(false);
         return;
       }
@@ -209,6 +219,7 @@ export default function BiographyViewPage() {
     switch (err) {
       case 'not-found': return t.view.notFoundOrDenied;
       case 'private': return t.view.biographyPrivate;
+      case 'invalid-token': return t.view.tokenMissing;
       default: return t.view.notAvailable;
     }
   };
