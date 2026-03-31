@@ -15,6 +15,7 @@ import { useTranslation } from '@/lib/i18n/i18n-context';
 import { ReportBiographyModal } from '@/components/editor/ReportBiographyModal';
 import { useToast } from '@/hooks/use-toast';
 import { Toaster } from '@/components/ui/toaster';
+import { logger } from '@/lib/logger';
 
 interface BiographyViewData {
   id: string;
@@ -132,6 +133,12 @@ export default function BiographyViewPage() {
       }
 
       if (!data) {
+        logger.error('Share link load failed', {
+          feature: 'share-link',
+          hasShareToken: !!token,
+          route: typeof window !== 'undefined' ? window.location.pathname : null,
+          publicQueryError: publicQuery.error?.message ?? null,
+        });
         setError('not-found');
         setIsLoading(false);
         return;

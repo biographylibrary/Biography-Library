@@ -1,4 +1,5 @@
 import { supabase } from './supabase';
+import { logger } from './logger';
 
 export interface ConversationMessage {
   id: string;
@@ -84,6 +85,10 @@ export async function saveCheckpoint(
     return { success: true };
   } catch (error) {
     console.error('Unexpected error saving checkpoint:', error);
+    logger.error('Editor save failed', {
+      feature: 'editor-save',
+      errorName: error instanceof Error ? error.name : 'unknown',
+    });
     return { success: false, error: 'Failed to save checkpoint' };
   }
 }

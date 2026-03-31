@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Mic, Square, Trash2, CircleAlert as AlertCircle, MicOff, Loader as Loader2, RefreshCw } from 'lucide-react';
 import { useTranslation } from '@/lib/i18n/i18n-context';
 import { supabase } from '@/lib/supabase';
+import { logger } from '@/lib/logger';
 
 const WHISPER_LANGUAGES = [
   { code: 'en', label: 'English' },
@@ -36,7 +37,16 @@ export function VoiceRecorder({
   const [isTranscribing, setIsTranscribing] = useState(false);
   const [permissionDenied, setPermissionDenied] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [supported] = useState(() => isMediaRecorderSupported());
+  const [supported] = useState(() => {
+    const s = isMediaRecorderSupported();
+    if (!s) {
+      logger.warn('Voice recorder not supported', {
+        feature: 'speech-recognition',
+        browserSupport: false,
+      });
+    }
+    return s;
+  });
 
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<Blob[]>([]);
@@ -60,8 +70,18 @@ export function VoiceRecorder({
     } catch (err: any) {
       if (err?.name === 'NotAllowedError' || err?.name === 'PermissionDeniedError') {
         setPermissionDenied(true);
+        logger.warn('Microphone permission denied', {
+          feature: 'speech-recognition',
+          errorCode: err?.name,
+          language,
+        });
       } else {
         setError(t.voice.microphoneNotFound);
+        logger.error('Microphone access failed', {
+          feature: 'speech-recognition',
+          errorCode: err?.name ?? 'unknown',
+          language,
+        });
       }
       return;
     }
@@ -137,6 +157,12 @@ export function VoiceRecorder({
       const json = await res.json().catch(() => null);
 
       if (!res.ok || !json) {
+        logger.error('Audio transcription request failed', {
+          feature: 'speech-recognition',
+          status: res.status,
+          language,
+          isListening: isRecording,
+        });
         setError(json?.error ?? t.voice.voiceUnknownError);
         return;
       }
@@ -145,9 +171,17 @@ export function VoiceRecorder({
       if (text.trim()) {
         onTranscript(text.trim());
       } else {
+        logger.warn('No speech detected in recording', {
+          feature: 'speech-recognition',
+          language,
+        });
         setError(t.voice.noSpeechDetected);
       }
     } catch {
+      logger.error('Audio transcription network error', {
+        feature: 'speech-recognition',
+        language,
+      });
       setError(t.voice.voiceNetworkError);
     } finally {
       setIsTranscribing(false);
