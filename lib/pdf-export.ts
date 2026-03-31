@@ -527,6 +527,20 @@ function drawPhotoCover(
   }
 }
 
+export async function checkPdfPreflight(
+  biographyId: string
+): Promise<{ ready: boolean; reason: 'missing-cover' | 'ok' }> {
+  const { data } = await supabase
+    .from('biography_media')
+    .select('id')
+    .eq('biography_id', biographyId)
+    .eq('layout', 'cover')
+    .limit(1)
+    .maybeSingle();
+  if (!data) return { ready: false, reason: 'missing-cover' };
+  return { ready: true, reason: 'ok' };
+}
+
 export async function generateBiographyPDF(
   biography: BiographyData,
   _variant?: string,

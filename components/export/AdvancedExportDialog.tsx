@@ -17,7 +17,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import { Download, Loader as Loader2, Info, TriangleAlert as AlertTriangle, X, RefreshCw } from 'lucide-react';
 import { BIOGRAPHY_SECTIONS } from '@/lib/editor-constants';
-import { generateBiographyPDF } from '@/lib/pdf-export';
+import { generateBiographyPDF, checkPdfPreflight } from '@/lib/pdf-export';
 import { exportAsPlainText, exportAsRTF, exportAsDOCX } from '@/lib/export-utils';
 import { useTranslation } from '@/lib/i18n/i18n-context';
 import { supabase } from '@/lib/supabase';
@@ -66,23 +66,17 @@ export function AdvancedExportDialog({
   const isPdfFormat = format === 'pdf-b5-standard';
 
   const checkCoverPhoto = useCallback(async () => {
-    if (!biography.id || !isPublished) return;
+    if (!biography.id) return;
     setCoverPhotoStatus('checking');
-    const { data } = await supabase
-      .from('biography_media')
-      .select('id')
-      .eq('biography_id', biography.id)
-      .eq('layout', 'cover')
-      .limit(1)
-      .maybeSingle();
-    setCoverPhotoStatus(data ? 'found' : 'missing');
-  }, [biography.id, isPublished]);
+    const preflight = await checkPdfPreflight(biography.id);
+    setCoverPhotoStatus(preflight.ready ? 'found' : 'missing');
+  }, [biography.id]);
 
   useEffect(() => {
-    if (open && isPublished) {
+    if (open && isPdfFormat && biography.id) {
       checkCoverPhoto();
     }
-  }, [open, isPublished, checkCoverPhoto]);
+  }, [open, isPdfFormat, biography.id, checkCoverPhoto]);
 
   const toggleSection = (sectionKey: string) => {
     setSelectedSections((prev) =>
@@ -259,7 +253,7 @@ export function AdvancedExportDialog({
 
   const visibleFormats = allFormats.filter((f) => isPublished || !f.pdfOnly);
 
-  const pdfDisabled = isPdfFormat && isPublished && coverPhotoStatus === 'missing';
+  const pdfDisabled = isPdfFormat && coverPhotoStatus === 'missing';
   const downloadDisabled =
     isExporting ||
     (biography.biography_mode !== 'freeflow' &&
@@ -294,7 +288,7 @@ export function AdvancedExportDialog({
           </div>
         )}
 
-        {isPublished && isPdfFormat && coverPhotoStatus === 'missing' && (
+        {isPdfFormat && coverPhotoStatus === 'missing' && (
           <div className="flex items-start gap-3 rounded-lg bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 px-4 py-3">
             <AlertTriangle className="h-4 w-4 mt-0.5 shrink-0 text-amber-600 dark:text-amber-400" />
             <p className="text-sm text-amber-800 dark:text-amber-200 leading-relaxed flex-1">

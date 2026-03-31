@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useParams, useSearchParams, useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 import { type BiographyContent } from '@/lib/editor-constants';
-import { generateBiographyPDF } from '@/lib/pdf-export';
+import { generateBiographyPDF, checkPdfPreflight } from '@/lib/pdf-export';
 import { exportAsRTF, exportAsPlainText } from '@/lib/export-utils';
 import { Button } from '@/components/ui/button';
 import { Logo } from '@/components/logo';
@@ -77,6 +77,7 @@ export default function BiographyViewPage() {
   const [reportOpen, setReportOpen] = useState(false);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const reportAutoOpenedRef = useRef(false);
+  const [pdfLoading, setPdfLoading] = useState(false);
 
   useEffect(() => {
     const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -240,9 +241,30 @@ export default function BiographyViewPage() {
         content: sectionData.text,
       }));
 
-  const handleExportPDF = () => {
-    if (!biography) return;
-    generateBiographyPDF(getBiographyExportData());
+  const handleExportPDF = async () => {
+    if (!biography || pdfLoading) return;
+    setPdfLoading(true);
+    try {
+      const preflight = await checkPdfPreflight(biography.id);
+      if (!preflight.ready) {
+        toast({
+          title: t.exportDialog.noCoverPhotoWarning,
+          variant: 'destructive',
+        });
+        return;
+      }
+      await generateBiographyPDF(getBiographyExportData());
+    } catch (err: any) {
+      const msg =
+        err?.message === 'MISSING_COVER_PHOTO'
+          ? t.exportDialog.noCoverPhotoWarning
+          : err?.message === 'FONT_LOAD_FAILED'
+          ? t.exportDialog.fontLoadError
+          : t.exportDialog.exportError;
+      toast({ title: msg, variant: 'destructive' });
+    } finally {
+      setPdfLoading(false);
+    }
   };
 
   const handleExportRTF = async () => {
@@ -319,9 +341,14 @@ export default function BiographyViewPage() {
               variant="outline"
               size="sm"
               onClick={handleExportPDF}
+              disabled={pdfLoading}
               className="gap-2"
             >
-              <FileDown className="h-4 w-4" />
+              {pdfLoading ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <FileDown className="h-4 w-4" />
+              )}
               <span className="hidden sm:inline">{t.view.downloadPdf}</span>
             </Button>
             <Button
