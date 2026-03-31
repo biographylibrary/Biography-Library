@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useParams, useSearchParams, useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 import { type BiographyContent } from '@/lib/editor-constants';
-import { generateBiographyPDF, checkPdfPreflight } from '@/lib/pdf-export';
+import { generateBiographyPDF, checkBiographyPdfReadiness } from '@/lib/pdf-export';
 import { exportAsRTF, exportAsPlainText } from '@/lib/export-utils';
 import { Button } from '@/components/ui/button';
 import { Logo } from '@/components/logo';
@@ -78,6 +78,7 @@ export default function BiographyViewPage() {
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const reportAutoOpenedRef = useRef(false);
   const [pdfLoading, setPdfLoading] = useState(false);
+  const [pdfReady, setPdfReady] = useState<boolean | null>(null);
 
   useEffect(() => {
     const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -156,6 +157,10 @@ export default function BiographyViewPage() {
       }
 
       setBiography(data);
+
+      checkBiographyPdfReadiness(resolvedId).then((result) => {
+        setPdfReady(result.ok);
+      });
 
       const sectionsQuery = await supabase
         .from('biography_sections')
@@ -245,18 +250,21 @@ export default function BiographyViewPage() {
     if (!biography || pdfLoading) return;
     setPdfLoading(true);
     try {
-      const preflight = await checkPdfPreflight(biography.id);
-      if (!preflight.ready) {
+      const readiness = await checkBiographyPdfReadiness(biography.id, true);
+      if (!readiness.ok) {
+        setPdfReady(false);
+        const hasCoverIssue = readiness.issues.includes('missing-cover') || readiness.issues.includes('cover-unreachable');
         toast({
-          title: t.exportDialog.noCoverPhotoWarning,
+          title: hasCoverIssue ? t.exportDialog.noCoverPhotoWarning : t.exportDialog.exportError,
           variant: 'destructive',
         });
         return;
       }
+      setPdfReady(true);
       await generateBiographyPDF(getBiographyExportData());
     } catch (err: any) {
       const msg =
-        err?.message === 'MISSING_COVER_PHOTO'
+        err?.message === 'MISSING_COVER_PHOTO' || err?.message === 'MISSING_BIOGRAPHY_ID'
           ? t.exportDialog.noCoverPhotoWarning
           : err?.message === 'FONT_LOAD_FAILED'
           ? t.exportDialog.fontLoadError
@@ -341,8 +349,9 @@ export default function BiographyViewPage() {
               variant="outline"
               size="sm"
               onClick={handleExportPDF}
-              disabled={pdfLoading}
+              disabled={pdfLoading || pdfReady === false}
               className="gap-2"
+              title={pdfReady === false ? (t.exportDialog.noCoverPhotoWarning ?? 'PDF not ready') : undefined}
             >
               {pdfLoading ? (
                 <Loader2 className="h-4 w-4 animate-spin" />

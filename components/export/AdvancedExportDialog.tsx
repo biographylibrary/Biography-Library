@@ -17,7 +17,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import { Download, Loader as Loader2, Info, TriangleAlert as AlertTriangle, X, RefreshCw } from 'lucide-react';
 import { BIOGRAPHY_SECTIONS } from '@/lib/editor-constants';
-import { generateBiographyPDF, checkPdfPreflight } from '@/lib/pdf-export';
+import { generateBiographyPDF, checkBiographyPdfReadiness, type PdfReadinessIssue } from '@/lib/pdf-export';
 import { exportAsPlainText, exportAsRTF, exportAsDOCX } from '@/lib/export-utils';
 import { useTranslation } from '@/lib/i18n/i18n-context';
 import { supabase } from '@/lib/supabase';
@@ -43,7 +43,7 @@ interface AdvancedExportDialogProps {
 
 type ExportFormat = 'pdf-b5-standard' | 'txt' | 'rtf' | 'docx';
 type ContentSelection = 'all' | 'completed' | 'custom';
-type CoverPhotoStatus = 'checking' | 'found' | 'missing';
+type ReadinessStatus = 'checking' | 'ready' | 'not-ready';
 
 export function AdvancedExportDialog({
   open,
@@ -60,23 +60,25 @@ export function AdvancedExportDialog({
   const [separateFiles, setSeparateFiles] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
   const [noChaptersWarningDismissed, setNoChaptersWarningDismissed] = useState(false);
-  const [coverPhotoStatus, setCoverPhotoStatus] = useState<CoverPhotoStatus>('checking');
+  const [readinessStatus, setReadinessStatus] = useState<ReadinessStatus>('checking');
+  const [readinessIssues, setReadinessIssues] = useState<PdfReadinessIssue[]>([]);
   const [exportError, setExportError] = useState<string | null>(null);
 
   const isPdfFormat = format === 'pdf-b5-standard';
 
-  const checkCoverPhoto = useCallback(async () => {
+  const checkReadiness = useCallback(async () => {
     if (!biography.id) return;
-    setCoverPhotoStatus('checking');
-    const preflight = await checkPdfPreflight(biography.id);
-    setCoverPhotoStatus(preflight.ready ? 'found' : 'missing');
+    setReadinessStatus('checking');
+    const result = await checkBiographyPdfReadiness(biography.id, true);
+    setReadinessIssues(result.issues);
+    setReadinessStatus(result.ok ? 'ready' : 'not-ready');
   }, [biography.id]);
 
   useEffect(() => {
     if (open && isPdfFormat && biography.id) {
-      checkCoverPhoto();
+      checkReadiness();
     }
-  }, [open, isPdfFormat, biography.id, checkCoverPhoto]);
+  }, [open, isPdfFormat, biography.id, checkReadiness]);
 
   const toggleSection = (sectionKey: string) => {
     setSelectedSections((prev) =>
@@ -231,8 +233,9 @@ export function AdvancedExportDialog({
 
       onOpenChange(false);
     } catch (error: any) {
-      if (error?.message === 'MISSING_COVER_PHOTO') {
-        setCoverPhotoStatus('missing');
+      if (error?.message === 'MISSING_COVER_PHOTO' || error?.message === 'MISSING_BIOGRAPHY_ID') {
+        setReadinessStatus('not-ready');
+        setReadinessIssues(['missing-cover']);
         setExportError(t.exportDialog.noCoverPhotoWarning);
       } else if (error?.message === 'FONT_LOAD_FAILED') {
         setExportError(t.exportDialog.fontLoadError);
@@ -253,13 +256,13 @@ export function AdvancedExportDialog({
 
   const visibleFormats = allFormats.filter((f) => isPublished || !f.pdfOnly);
 
-  const pdfDisabled = isPdfFormat && coverPhotoStatus === 'missing';
+  const pdfNotReady = isPdfFormat && readinessStatus === 'not-ready';
   const downloadDisabled =
     isExporting ||
     (biography.biography_mode !== 'freeflow' &&
       contentSelection === 'custom' &&
       selectedSections.length === 0) ||
-    pdfDisabled;
+    pdfNotReady;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -288,15 +291,28 @@ export function AdvancedExportDialog({
           </div>
         )}
 
-        {isPdfFormat && coverPhotoStatus === 'missing' && (
+        {isPdfFormat && readinessStatus === 'not-ready' && readinessIssues.length > 0 && (
           <div className="flex items-start gap-3 rounded-lg bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 px-4 py-3">
             <AlertTriangle className="h-4 w-4 mt-0.5 shrink-0 text-amber-600 dark:text-amber-400" />
-            <p className="text-sm text-amber-800 dark:text-amber-200 leading-relaxed flex-1">
-              {t.exportDialog.noCoverPhotoWarning}
-            </p>
+            <div className="flex-1 space-y-1">
+              {readinessIssues.map((issue) => {
+                let msg = '';
+                if (issue === 'missing-cover') msg = t.exportDialog.noCoverPhotoWarning;
+                else if (issue === 'cover-unreachable') msg = 'Cover photo cannot be reached. Please re-upload.';
+                else if (issue === 'missing-title') msg = 'Biography title is required.';
+                else if (issue === 'missing-author') msg = 'Author name is required.';
+                else if (issue === 'missing-content') msg = 'At least one section must have content.';
+                else if (issue === 'missing-mode') msg = 'Biography mode is not set.';
+                return (
+                  <p key={issue} className="text-sm text-amber-800 dark:text-amber-200 leading-relaxed">
+                    {msg}
+                  </p>
+                );
+              })}
+            </div>
             <button
               type="button"
-              onClick={checkCoverPhoto}
+              onClick={checkReadiness}
               className="shrink-0 text-amber-600 dark:text-amber-400 hover:text-amber-800 dark:hover:text-amber-200 transition-colors"
               aria-label="Retry"
             >

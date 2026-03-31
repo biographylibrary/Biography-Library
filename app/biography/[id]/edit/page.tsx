@@ -41,7 +41,7 @@ import { toast } from 'sonner';
 import { AiUsageIndicator } from '@/components/editor/ai-usage-indicator';
 import { recommendNextSection, type SectionRecommendation } from '@/lib/ai/next-section-recommender';
 import type { Biography } from '@/lib/biographies';
-import { generateBiographyPDF } from '@/lib/pdf-export';
+import { generateBiographyPDF, checkBiographyPdfReadiness } from '@/lib/pdf-export';
 import { AdvancedExportDialog } from '@/components/export/AdvancedExportDialog';
 import { useTranslation } from '@/lib/i18n/i18n-context';
 import { Loader as Loader2, Menu, X, Sparkles, Snowflake as SnowflakeIcon, Send as SendIcon, TriangleAlert, Lock } from 'lucide-react';
@@ -104,6 +104,7 @@ export default function BiographyEditorPage() {
   const [showPublishDialog, setShowPublishDialog] = useState(false);
   const [showSubmitForReviewDialog, setShowSubmitForReviewDialog] = useState(false);
   const [isSubmittingForReview, setIsSubmittingForReview] = useState(false);
+  const [submitReadinessError, setSubmitReadinessError] = useState<string | null>(null);
   const [aiLimitError, setAiLimitError] = useState<AiLimitError | null>(null);
   const [aiUsageRefresh, setAiUsageRefresh] = useState(0);
   const [isFrozen, setIsFrozen] = useState(false);
@@ -1010,7 +1011,24 @@ const [isPublishing, setIsPublishing] = useState(false);
   const handleSubmitForReview = useCallback(async () => {
     if (!user?.id) return;
     setIsSubmittingForReview(true);
+    setSubmitReadinessError(null);
     try {
+      const readiness = await checkBiographyPdfReadiness(id, true);
+      if (!readiness.ok) {
+        const issueMessages: string[] = readiness.issues.map((issue) => {
+          if (issue === 'missing-cover') return t.exportDialog.noCoverPhotoWarning ?? 'Cover photo is required.';
+          if (issue === 'cover-unreachable') return 'Cover photo cannot be reached. Please re-upload.';
+          if (issue === 'missing-title') return 'A biography title is required.';
+          if (issue === 'missing-author') return 'An author name is required.';
+          if (issue === 'missing-content') return 'At least one section must have content.';
+          if (issue === 'missing-mode') return 'Biography mode is not set.';
+          return issue;
+        });
+        setSubmitReadinessError(issueMessages.join(' '));
+        setIsSubmittingForReview(false);
+        return;
+      }
+
       const { error } = await supabase
         .from('biographies')
         .update({ status: 'under_review' })
@@ -1492,9 +1510,13 @@ const [isPublishing, setIsPublishing] = useState(false);
 
       <SubmitForReviewDialog
         open={showSubmitForReviewDialog}
-        onOpenChange={setShowSubmitForReviewDialog}
+        onOpenChange={(val) => {
+          setShowSubmitForReviewDialog(val);
+          if (!val) setSubmitReadinessError(null);
+        }}
         onConfirm={handleSubmitForReview}
         isSubmitting={isSubmittingForReview}
+        readinessError={submitReadinessError}
       />
 
       <Dialog open={!!aiLimitError} onOpenChange={(open) => { if (!open) setAiLimitError(null); }}>

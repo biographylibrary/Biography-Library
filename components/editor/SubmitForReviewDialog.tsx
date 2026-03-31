@@ -18,6 +18,7 @@ interface SubmitForReviewDialogProps {
   onOpenChange: (open: boolean) => void;
   onConfirm: () => void;
   isSubmitting?: boolean;
+  readinessError?: string | null;
 }
 
 const STEP_COUNT = 3;
@@ -124,6 +125,7 @@ export function SubmitForReviewDialog({
   onOpenChange,
   onConfirm,
   isSubmitting = false,
+  readinessError = null,
 }: SubmitForReviewDialogProps) {
   const { language } = useTranslation();
   const [step, setStep] = useState(0);
@@ -220,6 +222,13 @@ export function SubmitForReviewDialog({
             {label(current.title, language)}
           </DialogTitle>
         </DialogHeader>
+
+        {readinessError && (
+          <div className="flex items-start gap-2.5 rounded-lg border border-destructive/40 bg-destructive/10 px-3 py-2.5">
+            <AlertTriangle className="h-4 w-4 mt-0.5 shrink-0 text-destructive" />
+            <p className="text-sm text-destructive leading-relaxed">{readinessError}</p>
+          </div>
+        )}
 
         <div className="space-y-4 py-1">
           <DialogDescription asChild>

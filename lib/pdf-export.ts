@@ -28,7 +28,13 @@ interface BookStructure {
   specific_credits_enabled: boolean;
 }
 
-const BRAND_COLOR: [number, number, number] = [20, 184, 166];
+export type PdfReadinessIssue =
+  | 'missing-cover'
+  | 'cover-unreachable'
+  | 'missing-title'
+  | 'missing-author'
+  | 'missing-content'
+  | 'missing-mode';
 
 const B5_W = 176;
 const B5_H = 250;
@@ -61,6 +67,29 @@ let notoSerifBoldBase64: string | null = null;
 let notoSerifItalicBase64: string | null = null;
 let notoSerifBoldItalicBase64: string | null = null;
 let fontsLoaded = false;
+
+export function stripHtml(html: string): string {
+  if (!html) return '';
+  let text = html;
+  text = text.replace(/<\/p>/gi, '\n\n');
+  text = text.replace(/<br\s*\/?>/gi, '\n');
+  text = text.replace(/<\/li>/gi, '\n');
+  text = text.replace(/<\/h[1-6]>/gi, '\n\n');
+  text = text.replace(/<[^>]+>/g, '');
+  text = text.replace(/&amp;/g, '&');
+  text = text.replace(/&lt;/g, '<');
+  text = text.replace(/&gt;/g, '>');
+  text = text.replace(/&nbsp;/g, ' ');
+  text = text.replace(/&quot;/g, '"');
+  text = text.replace(/&#39;/g, "'");
+  text = text.replace(/[ \t]+/g, ' ');
+  text = text
+    .split('\n')
+    .map((line) => line.trim())
+    .join('\n');
+  text = text.replace(/\n{3,}/g, '\n\n');
+  return text.trim();
+}
 
 async function loadNotoSerifFonts(): Promise<void> {
   if (fontsLoaded) return;
@@ -151,7 +180,7 @@ function drawLogoSvg(
   logoW: number,
   fillHex: string
 ) {
-  const logoH = logoW / 0.83;
+  const logoH = logoW * (LOGO_SVG_VB_H / LOGO_SVG_VB_W);
   const x = centerX - logoW / 2;
   const y = centerY - logoH / 2;
 
@@ -259,7 +288,8 @@ function renderTextBlock(
   doc.setTextColor(0, 0, 0);
 
   let y = startY;
-  const paragraphs = text.split(/\n\n+/);
+  const cleanText = stripHtml(text);
+  const paragraphs = cleanText.split(/\n\n+/);
 
   for (const para of paragraphs) {
     if (!para.trim()) continue;
@@ -296,8 +326,9 @@ function addDedicationPage(state: PdfState, content: string): void {
   doc.setFontSize(PT_BODY);
   doc.setTextColor(0, 0, 0);
 
+  const clean = stripHtml(content);
   const tw = textAvailableWidth(state.absolutePage);
-  const lines = doc.splitTextToSize(content.trim(), tw);
+  const lines = doc.splitTextToSize(clean.trim(), tw);
   const centerX = B5_W / 2;
   const startY = 70;
   const lineH = ptToMm(PT_BODY * LINE_HEIGHT_BODY);
@@ -315,8 +346,9 @@ function addEpigraphPage(state: PdfState, content: string, source: string | null
   doc.setFontSize(PT_BODY);
   doc.setTextColor(0, 0, 0);
 
+  const clean = stripHtml(content);
   const tw = textAvailableWidth(state.absolutePage);
-  const lines = doc.splitTextToSize(content.trim(), tw);
+  const lines = doc.splitTextToSize(clean.trim(), tw);
   const centerX = B5_W / 2;
   const startY = 70;
   const lineH = ptToMm(PT_BODY * LINE_HEIGHT_BODY);
@@ -326,11 +358,12 @@ function addEpigraphPage(state: PdfState, content: string, source: string | null
   });
 
   if (source && source.trim()) {
+    const cleanSource = stripHtml(source);
     const sourceY = startY + lines.length * lineH + lineH * 0.8;
     applyFont(doc, 'normal');
     doc.setFontSize(PT_BODY - 1);
     doc.setTextColor(100, 100, 100);
-    doc.text(`— ${source.trim()}`, centerX, sourceY, { align: 'center' });
+    doc.text(`— ${cleanSource.trim()}`, centerX, sourceY, { align: 'center' });
   }
 }
 
@@ -405,7 +438,8 @@ async function fetchBookStructure(biographyId: string): Promise<BookStructure | 
 }
 
 function hasContent(value: string | null | undefined): boolean {
-  return typeof value === 'string' && value.trim().length > 0;
+  if (typeof value !== 'string') return false;
+  return stripHtml(value).trim().length > 0;
 }
 
 function detectImageFormat(url: string, contentType: string | null): string {
@@ -461,46 +495,55 @@ function drawPhotoCover(
   doc.setFillColor(255, 255, 255);
   doc.rect(0, 0, B5_W, B5_H, 'F');
 
-  const BOX_X = 10;
-  const BOX_Y = 10;
-  const BOX_W = 156;
-  const BOX_H = 70;
-  const RADIUS = 8;
+  const BORDER = 10;
+  const CARD_W = 156;
+  const RADIUS = 5;
   const PAD = 10;
 
-  doc.setFillColor(0xec, 0xe9, 0xe4);
-  (doc as any).roundedRect(BOX_X, BOX_Y, BOX_W, BOX_H, RADIUS, RADIUS, 'F');
+  const PT_TITLE_COVER = 34;
+  const PT_AUTHOR_COVER = 18;
 
-  const PT_TITLE = 33;
-  const PT_AUTHOR = 18;
-  const titleLineH = PT_TITLE * 0.352778 * 1.05;
-  const authorHeightMm = PT_AUTHOR * 0.352778;
+  const titleLineH = ptToMm(PT_TITLE_COVER * 1.25);
+  const authorLineH = ptToMm(PT_AUTHOR_COVER * 1.25);
 
   applyFont(doc, 'normal');
-  doc.setFontSize(PT_TITLE);
-  doc.setTextColor(0x12, 0x12, 0x12);
-
-  const textAreaW = BOX_W - PAD * 2;
+  doc.setFontSize(PT_TITLE_COVER);
+  const textAreaW = CARD_W - PAD * 2;
   const rawTitleLines = doc.splitTextToSize(title, textAreaW);
-  const titleLines = rawTitleLines.slice(0, 3);
+  const titleLines = rawTitleLines.slice(0, 3) as string[];
   if (rawTitleLines.length > 3) {
     titleLines[2] = titleLines[2].replace(/\.{0,3}$/, '') + '\u2026';
   }
 
-  const titleStartY = BOX_Y + PAD + titleLineH * 0.8;
+  const titleBlockH = titleLines.length * titleLineH;
+  const AUTHOR_GAP = 7;
+  const CARD_H = PAD + titleBlockH + AUTHOR_GAP + authorLineH + PAD;
+
+  const CARD_X = BORDER;
+  const CARD_Y = BORDER;
+
+  doc.setFillColor(0xec, 0xe9, 0xe4);
+  (doc as any).roundedRect(CARD_X, CARD_Y, CARD_W, CARD_H, RADIUS, RADIUS, 'F');
+
+  applyFont(doc, 'normal');
+  doc.setFontSize(PT_TITLE_COVER);
+  doc.setTextColor(0x12, 0x12, 0x12);
+
+  const titleStartY = CARD_Y + PAD + ptToMm(PT_TITLE_COVER * 0.75);
   titleLines.forEach((line: string, i: number) => {
-    doc.text(line, BOX_X + PAD, titleStartY + i * titleLineH);
+    doc.text(line, CARD_X + PAD, titleStartY + i * titleLineH);
   });
 
   applyFont(doc, 'normal');
-  doc.setFontSize(PT_AUTHOR);
+  doc.setFontSize(PT_AUTHOR_COVER);
   doc.setTextColor(0x12, 0x12, 0x12);
 
-  const authorBaselineY = BOX_Y + BOX_H - PAD - authorHeightMm + authorHeightMm * 0.8;
-  doc.text(authorName, BOX_X + PAD, authorBaselineY);
+  const authorY = titleStartY + titleLines.length * titleLineH + AUTHOR_GAP;
+  doc.text(authorName, CARD_X + PAD, authorY);
 
-  const PHOTO_X = 10;
-  const PHOTO_Y = 84;
+  const PHOTO_GAP = 5;
+  const PHOTO_X = BORDER;
+  const PHOTO_Y = CARD_Y + CARD_H + PHOTO_GAP;
   const PHOTO_W = 156;
   const PHOTO_H = 156;
 
@@ -527,6 +570,65 @@ function drawPhotoCover(
   }
 }
 
+function drawBackCover(
+  doc: jsPDF,
+  authorName: string,
+  createdWith: string,
+  allRightsReserved: string,
+  createdAt: string
+): void {
+  doc.setFillColor(255, 255, 255);
+  doc.rect(0, 0, B5_W, B5_H, 'F');
+
+  const BORDER = 10;
+  const CARD_W = 156;
+  const CARD_H = 230;
+  const CARD_X = BORDER;
+  const CARD_Y = BORDER;
+  const RADIUS = 5;
+
+  doc.setFillColor(0xec, 0xe9, 0xe4);
+  (doc as any).roundedRect(CARD_X, CARD_Y, CARD_W, CARD_H, RADIUS, RADIUS, 'F');
+
+  const centerX = CARD_X + CARD_W / 2;
+
+  const LOGO_W = 16;
+  const LOGO_H = LOGO_W * (LOGO_SVG_VB_H / LOGO_SVG_VB_W);
+  const LOGO_GAP_ABOVE_TEXT = 5;
+
+  const year = new Date().getFullYear();
+  const allRights = allRightsReserved.replace('{year}', String(year));
+
+  const legalLines = [
+    authorName,
+    formatBiographyDate(createdAt),
+    createdWith,
+    'biographylibrary.org',
+    allRights,
+  ];
+
+  applyFont(doc, 'normal');
+  doc.setFontSize(PT_CREDITS);
+  doc.setTextColor(0, 0, 0);
+
+  const creditsLineH = ptToMm(PT_CREDITS * LINE_HEIGHT_BODY);
+  const textBlockH = legalLines.length * creditsLineH;
+
+  const MAX_TEXT_W = 78;
+  const textBlockBottom = CARD_Y + CARD_H - 12;
+  const textBlockTop = textBlockBottom - textBlockH;
+
+  legalLines.forEach((line, i) => {
+    const wrapped = doc.splitTextToSize(line, MAX_TEXT_W) as string[];
+    wrapped.forEach((wl, wi) => {
+      doc.text(wl, centerX, textBlockTop + (i + wi) * creditsLineH, { align: 'center' });
+    });
+  });
+
+  const logoCenterY = textBlockTop - LOGO_GAP_ABOVE_TEXT - LOGO_H / 2;
+  drawLogoSvg(doc, centerX, logoCenterY, LOGO_W, '#000000');
+}
+
 export async function checkPdfPreflight(
   biographyId: string
 ): Promise<{ ready: boolean; reason: 'missing-cover' | 'ok' }> {
@@ -539,6 +641,60 @@ export async function checkPdfPreflight(
     .maybeSingle();
   if (!data) return { ready: false, reason: 'missing-cover' };
   return { ready: true, reason: 'ok' };
+}
+
+export async function checkBiographyPdfReadiness(
+  biographyId: string,
+  checkCoverReachability = false
+): Promise<{ ok: boolean; issues: PdfReadinessIssue[] }> {
+  const issues: PdfReadinessIssue[] = [];
+
+  const { data: bio } = await supabase
+    .from('biographies')
+    .select('title, author_name, biography_mode, content, content_freeflow')
+    .eq('id', biographyId)
+    .maybeSingle();
+
+  if (!bio) {
+    return { ok: false, issues: ['missing-content'] };
+  }
+
+  if (!bio.title?.trim()) issues.push('missing-title');
+  if (!bio.author_name?.trim()) issues.push('missing-author');
+  if (!bio.biography_mode) issues.push('missing-mode');
+
+  const mode = bio.biography_mode as 'sections' | 'freeflow' | undefined;
+  const hasText =
+    mode === 'freeflow'
+      ? !!bio.content_freeflow?.trim()
+      : mode === 'sections'
+      ? Object.values((bio.content as Record<string, { text: string }>) ?? {}).some(
+          (s) => stripHtml(s?.text ?? '').trim().length > 0
+        )
+      : false;
+
+  if (!hasText) issues.push('missing-content');
+
+  const { data: coverRow } = await supabase
+    .from('biography_media')
+    .select('id, file_url')
+    .eq('biography_id', biographyId)
+    .eq('layout', 'cover')
+    .limit(1)
+    .maybeSingle();
+
+  if (!coverRow) {
+    issues.push('missing-cover');
+  } else if (checkCoverReachability && coverRow.file_url) {
+    try {
+      const resp = await fetch(coverRow.file_url, { method: 'HEAD' });
+      if (!resp.ok) issues.push('cover-unreachable');
+    } catch {
+      issues.push('cover-unreachable');
+    }
+  }
+
+  return { ok: issues.length === 0, issues };
 }
 
 export async function generateBiographyPDF(
@@ -554,7 +710,7 @@ export async function generateBiographyPDF(
   }
 ): Promise<void> {
   if (!biography.id) {
-    throw new Error('MISSING_COVER_PHOTO');
+    throw new Error('MISSING_BIOGRAPHY_ID');
   }
 
   const [, bookStructure, coverPhoto] = await Promise.all([
@@ -696,12 +852,13 @@ export async function generateBiographyPDF(
 
   const getSections = () => {
     if (biography.biography_mode === 'freeflow') {
-      const text = biography.content_freeflow || '';
+      const rawText = biography.content_freeflow || '';
+      const text = stripHtml(rawText);
       if (!text.trim()) return [];
       return [{ key: 'freeflow', title: biography.title, text }];
     }
     return BIOGRAPHY_SECTIONS
-      .filter((s) => biography.content[s.key]?.text?.trim())
+      .filter((s) => stripHtml(biography.content[s.key]?.text ?? '').trim())
       .map((s) => ({
         key: s.key,
         title: s.title,
@@ -714,6 +871,7 @@ export async function generateBiographyPDF(
 
   for (let si = 0; si < sections.length; si++) {
     const section = sections[si];
+    const cleanSectionText = stripHtml(section.text);
 
     addNewPage(state, true);
     if (!isOddPage(state.absolutePage)) {
@@ -749,7 +907,7 @@ export async function generateBiographyPDF(
     doc.setFontSize(PT_BODY);
     doc.setTextColor(0, 0, 0);
 
-    const paragraphs = section.text.split(/\n\n+/);
+    const paragraphs = cleanSectionText.split(/\n\n+/);
 
     for (const para of paragraphs) {
       if (!para.trim()) continue;
@@ -828,8 +986,13 @@ export async function generateBiographyPDF(
     addNewPage(state, false);
   }
 
-  doc.setFillColor(BRAND_COLOR[0], BRAND_COLOR[1], BRAND_COLOR[2]);
-  doc.rect(SAFE_MARGIN, SAFE_MARGIN, B5_W - SAFE_MARGIN * 2, B5_H - SAFE_MARGIN * 2, 'F');
+  drawBackCover(
+    doc,
+    biography.author_name,
+    createdWith,
+    allRightsRaw,
+    biography.created_at
+  );
 
   const safeName = biography.title.replace(/[^a-z0-9]/gi, '-').toLowerCase();
   const dateStamp = new Date().toISOString().split('T')[0];
