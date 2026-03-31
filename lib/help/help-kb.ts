@@ -32,7 +32,7 @@ It is not a social network, not a marketing company, not a commercial data busin
 For centuries, preserving the story of a life was a privilege reserved for the wealthy or the famous. Biography Library exists to correct this injustice. The remaining 99.99% of humanity – 117 billion lives lived with the same intensity, the same loves, the same fears, the same dreams – has disappeared into silence. Not because those lives were not worth it. But because no one ever built a place for them.
 
 
-THE 10 PRINCIPLES
+THE MANIFESTO - THE 10 PRINCIPLES
 
 1. RIGHT TO MEMORY
    Every life, even the most "ordinary" one, deserves to be remembered. Biography Library is the correction of a millennial injustice: preserving the stories of the 99.99% who were never documented.
