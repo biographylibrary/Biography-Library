@@ -111,7 +111,7 @@ async function fetchBiographyContent(
 ): Promise<{ text: string; authorId: string; contentLanguage: string }> {
   const { data: bio } = await supabase
     .from('biographies')
-    .select('user_id, freeflow_content, content_language')
+    .select('user_id, content_freeflow, content_language')
     .eq('id', biographyId)
     .maybeSingle();
 
@@ -142,8 +142,8 @@ async function fetchBiographyContent(
   const isTargeted = targetSectionKeys && targetSectionKeys.length > 0;
   const includeFreeflow = !isTargeted || targetSectionKeys?.includes('freeflow');
 
-  if (includeFreeflow && (bio as any)?.freeflow_content?.trim()) {
-    parts.push(`[SECTION: freeflow]\n${(bio as any).freeflow_content.trim()}`);
+  if (includeFreeflow && (bio as any)?.content_freeflow?.trim()) {
+    parts.push(`[SECTION: freeflow]\n${(bio as any).content_freeflow.trim()}`);
   }
 
   let text = parts.join('\n\n');
