@@ -298,7 +298,7 @@ function ReviewQueueContent() {
           status: 'decided',
           decision: 'request_edit',
           decided_at: new Date().toISOString(),
-          moderator_notes: JSON.stringify({ rejectedPassages, note: reason }),
+          moderator_notes: { rejectedPassages, note: reason },
         })
         .eq('id', bio.report.id);
     }

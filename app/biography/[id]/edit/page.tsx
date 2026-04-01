@@ -234,13 +234,10 @@ const [isPublishing, setIsPublishing] = useState(false);
           .maybeSingle();
 
         if (report?.moderator_notes) {
-          try {
-            const parsed = JSON.parse(report.moderator_notes as string);
-            if (Array.isArray(parsed.rejectedPassages) && parsed.rejectedPassages.length > 0) {
-              setRevisionPassages(parsed.rejectedPassages);
-              setRevisionNote(typeof parsed.note === 'string' ? parsed.note : null);
-            }
-          } catch {
+          const notes = report.moderator_notes as { rejectedPassages?: unknown[]; note?: unknown };
+          if (Array.isArray(notes.rejectedPassages) && notes.rejectedPassages.length > 0) {
+            setRevisionPassages(notes.rejectedPassages as { section_key: string; ai_reason: string }[]);
+            setRevisionNote(typeof notes.note === 'string' ? notes.note : null);
           }
         }
       }
