@@ -41,7 +41,7 @@ import { toast } from 'sonner';
 import { AiUsageIndicator } from '@/components/editor/ai-usage-indicator';
 import { recommendNextSection, type SectionRecommendation } from '@/lib/ai/next-section-recommender';
 import type { Biography } from '@/lib/biographies';
-import { generateBiographyPDF, checkBiographyPdfReadiness } from '@/lib/pdf-export';
+import { generateBiographyPDF, checkBiographyPdfReadiness, checkPdfPreflight } from '@/lib/pdf-export';
 import { AdvancedExportDialog } from '@/components/export/AdvancedExportDialog';
 import { useTranslation } from '@/lib/i18n/i18n-context';
 import { Loader as Loader2, Menu, X, Sparkles, Snowflake as SnowflakeIcon, Send as SendIcon, TriangleAlert, Lock } from 'lucide-react';
@@ -70,7 +70,7 @@ export default function BiographyEditorPage() {
   const [privacy, setPrivacy] = useState<'private' | 'link-only' | 'public'>(
     'private'
   );
-  const [status, setStatus] = useState<'draft' | 'completed'>('draft');
+  const [status, setStatus] = useState<'draft' | 'sections_complete'>('draft');
   const [shareToken, setShareToken] = useState<string | null>(null);
   const [content, setContent] = useState<BiographyContent>(getEmptyContent());
   const [activeSection, setActiveSection] = useState<string>(
@@ -433,13 +433,13 @@ const [isPublishing, setIsPublishing] = useState(false);
   }, [activeSection]);
 
   const handleMarkComplete = useCallback(async () => {
-    const newStatus = status === 'completed' ? 'draft' : 'completed';
+    const newStatus = status === 'sections_complete' ? 'draft' : 'sections_complete';
     try {
       const { error } = await supabase
         .from('biographies')
         .update({
           status: newStatus,
-          completed_at: newStatus === 'completed' ? new Date().toISOString() : null,
+          completed_at: newStatus === 'sections_complete' ? new Date().toISOString() : null,
         })
         .eq('id', id);
 
@@ -1510,9 +1510,20 @@ const [isPublishing, setIsPublishing] = useState(false);
 
       <SubmitForReviewDialog
         open={showSubmitForReviewDialog}
-        onOpenChange={(val) => {
+        onOpenChange={async (val) => {
+          if (val) {
+            const preflight = await checkPdfPreflight(id);
+            if (!preflight.ready) {
+              setSubmitReadinessError(
+                t.exportDialog.noCoverPhotoWarning ?? 'Cover photo is required before submission.'
+              );
+            } else {
+              setSubmitReadinessError(null);
+            }
+          } else {
+            setSubmitReadinessError(null);
+          }
           setShowSubmitForReviewDialog(val);
-          if (!val) setSubmitReadinessError(null);
         }}
         onConfirm={handleSubmitForReview}
         isSubmitting={isSubmittingForReview}

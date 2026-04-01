@@ -1,6 +1,6 @@
 'use client';
 
-import { BookOpen, FileText, CheckCircle } from 'lucide-react';
+import { BookOpen, FileText, CircleCheck as CheckCircle } from 'lucide-react';
 import { useTranslation } from '@/lib/i18n/i18n-context';
 import type { Biography } from '@/lib/biographies';
 
@@ -21,14 +21,14 @@ export function StatsCards({ biographies }: StatsCardsProps) {
     },
     {
       label: t.dashboard.drafts,
-      value: biographies.filter((b) => b.status !== 'completed').length,
+      value: biographies.filter((b) => b.status !== 'sections_complete').length,
       icon: FileText,
       color: 'text-text-primary dark:text-dark-text-primary',
       bg: 'bg-status-warning',
     },
     {
       label: t.dashboard.completed,
-      value: biographies.filter((b) => b.status === 'completed').length,
+      value: biographies.filter((b) => b.status === 'sections_complete').length,
       icon: CheckCircle,
       color: 'text-text-primary dark:text-dark-text-primary',
       bg: 'bg-status-success',

@@ -295,7 +295,7 @@ export function SubmitForReviewDialog({
 
           <Button
             onClick={handleNext}
-            disabled={isSubmitting}
+            disabled={isSubmitting || (isLastStep && !!readinessError)}
             className={isLastStep ? 'gap-2 bg-primary hover:bg-primary/90' : 'gap-2'}
           >
             {isSubmitting ? (
