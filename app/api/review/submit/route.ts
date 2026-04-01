@@ -100,15 +100,12 @@ async function fetchPreviousRejectionReport(
 
   if (!report?.moderator_notes) return null;
 
-  try {
-    const parsed = JSON.parse(report.moderator_notes as string);
-    if (Array.isArray(parsed.rejectedPassages) && parsed.rejectedPassages.length > 0) {
-      return {
-        id: report.id as string,
-        rejectedPassages: parsed.rejectedPassages as RejectedPassage[],
-      };
-    }
-  } catch {
+  const notes = report.moderator_notes as { rejectedPassages?: RejectedPassage[] };
+  if (Array.isArray(notes.rejectedPassages) && notes.rejectedPassages.length > 0) {
+    return {
+      id: report.id as string,
+      rejectedPassages: notes.rejectedPassages,
+    };
   }
 
   return null;
