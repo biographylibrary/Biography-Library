@@ -5,12 +5,10 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/auth-context';
 import { supabase } from '@/lib/supabase';
 import { Button } from '@/components/ui/button';
-import { Separator } from '@/components/ui/separator';
 import { CreateBiographyModal } from '@/components/dashboard/create-biography-modal';
 import { DeleteBiographyDialog } from '@/components/dashboard/delete-biography-dialog';
 import { WelcomeLanguageModal } from '@/components/welcome-language-modal';
 import { MainBiographyCard } from '@/components/dashboard/MainBiographyCard';
-import { DeleteAccountDialog } from '@/components/settings/delete-account-dialog';
 import {
   fetchBiographies,
   createBiography,
@@ -31,7 +29,6 @@ export default function DashboardPage() {
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<Biography | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
-  const [isDeletingAccount, setIsDeletingAccount] = useState(false);
   const [resendLoading, setResendLoading] = useState(false);
   const [resendSuccess, setResendSuccess] = useState(false);
   const [mounted, setMounted] = useState(false);
@@ -97,28 +94,6 @@ export default function DashboardPage() {
     }
   };
 
-  const handleDeleteAccount = async () => {
-    if (!user) return;
-    setIsDeletingAccount(true);
-
-    try {
-      const { data, error } = await supabase.rpc('delete_user_account');
-
-      if (!error && data?.success) {
-        toast.success(t.deleteDialog.successMessageAccount);
-        await supabase.auth.signOut();
-        router.push('/');
-      } else {
-        toast.error('Failed to delete account');
-        console.error('Delete account error:', error || data?.error);
-      }
-    } catch (error) {
-      console.error('Error deleting account:', error);
-      toast.error('Failed to delete account');
-    } finally {
-      setIsDeletingAccount(false);
-    }
-  };
 
   const handleResendVerification = async () => {
     if (!user?.email) return;
@@ -221,19 +196,7 @@ export default function DashboardPage() {
 
             {biographies.length > 0 && (
               <>
-                <div className="px-4 sm:px-6 lg:px-8 py-8">
-                  <Separator />
-                </div>
-
                 <div className="flex flex-col items-center gap-6">
-                  <div className="text-center">
-                    <DeleteAccountDialog
-                      biographyCount={biographies.length}
-                      isDeleting={isDeletingAccount}
-                      onConfirm={handleDeleteAccount}
-                    />
-                  </div>
-
                   {biographies.some(b => b.status === 'published' && b.created_at) && (() => {
                 const publishedBios = biographies.filter(b => b.status === 'published' && b.created_at);
                 if (publishedBios.length === 0) return null;
