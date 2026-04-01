@@ -58,7 +58,6 @@ export async function addRevisionToHistory(
         .insert({
           biography_id: biographyId,
           section_key: sectionKey,
-          section_name: sectionKey,
           draft_version: newVersion,
           revision_history: updatedHistory,
           content: '',
