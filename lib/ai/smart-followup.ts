@@ -1,115 +1,79 @@
 import { callAI } from './ai-client';
 
-export interface AnalyzeResponse {
-  needsFollowUp: boolean;
-  followUpQuestion?: string;
-  acknowledgment: string;
-}
-
 export interface ConversationHistory {
   question: string;
   answer: string;
 }
 
-const SKIP_PHRASES = {
-  en: ['don\'t remember', 'can\'t remember', 'prefer not to say', 'rather not', 'skip'],
-  it: ['non ricordo', 'non mi ricordo', 'preferisco non dirlo', 'preferirei non', 'salta'],
-  fr: ['ne me souviens pas', 'préfère ne pas dire', 'je ne sais pas', 'passer'],
-  de: ['erinnere mich nicht', 'möchte nicht sagen', 'lieber nicht', 'überspringen'],
-};
-
-function detectSkipPhrase(answer: string, language: string): boolean {
-  const phrases = SKIP_PHRASES[language as keyof typeof SKIP_PHRASES] || SKIP_PHRASES.en;
-  const lowerAnswer = answer.toLowerCase();
-  return phrases.some(phrase => lowerAnswer.includes(phrase));
+interface AnalysisResult {
+  needsFollowUp: boolean;
+  followUpQuestion: string | null;
+  acknowledgment: string;
 }
 
-function countWords(text: string): number {
-  return text.trim().split(/\s+/).filter(word => word.length > 0).length;
+const fallbackAcknowledgments: Record<string, string[]> = {
+  en: [
+    'Thank you for sharing that.',
+    'Those are meaningful memories.',
+    'I appreciate you sharing those details.',
+    'Thank you for opening up about that.',
+    'Those are wonderful memories to preserve.',
+  ],
+  it: [
+    'Grazie per aver condiviso questo.',
+    'Sono ricordi molto significativi.',
+    'Apprezzo che tu abbia condiviso questi dettagli.',
+    'Grazie per esserti aperto su questo.',
+    'Sono ricordi meravigliosi da conservare.',
+  ],
+  fr: [
+    'Merci de partager cela.',
+    'Ce sont des souvenirs significatifs.',
+    'J\'apprécie que vous partagiez ces détails.',
+    'Merci de vous ouvrir à ce sujet.',
+    'Ce sont de beaux souvenirs à préserver.',
+  ],
+  de: [
+    'Danke, dass Sie das geteilt haben.',
+    'Das sind bedeutungsvolle Erinnerungen.',
+    'Ich schätze es, dass Sie diese Details teilen.',
+    'Danke, dass Sie sich darüber geöffnet haben.',
+    'Das sind wunderbare Erinnerungen, die es zu bewahren gilt.',
+  ],
+};
+
+function getFallbackAcknowledgment(language: string): string {
+  const options = fallbackAcknowledgments[language] ?? fallbackAcknowledgments.en;
+  return options[Math.floor(Math.random() * options.length)];
 }
 
 export async function analyzeAndRespond(
-  userAnswer: string,
-  originalQuestion: string,
+  answer: string,
+  question: string,
   conversationHistory: ConversationHistory[],
   language: string,
-  hasHadFollowUp: boolean = false
-): Promise<AnalyzeResponse> {
-  if (detectSkipPhrase(userAnswer, language)) {
-    const acknowledgments = {
-      en: 'I understand. Let\'s move on.',
-      it: 'Capisco. Passiamo avanti.',
-      fr: 'Je comprends. Continuons.',
-      de: 'Ich verstehe. Machen wir weiter.',
-    };
-
-    return {
-      needsFollowUp: false,
-      acknowledgment: acknowledgments[language as keyof typeof acknowledgments] || acknowledgments.en,
-    };
-  }
-
-  if (hasHadFollowUp) {
-    const acknowledgments = {
-      en: 'Thank you for sharing that.',
-      it: 'Grazie per aver condiviso questo.',
-      fr: 'Merci d\'avoir partagé cela.',
-      de: 'Danke, dass Sie das geteilt haben.',
-    };
-
-    return {
-      needsFollowUp: false,
-      acknowledgment: acknowledgments[language as keyof typeof acknowledgments] || acknowledgments.en,
-    };
-  }
-
-  const wordCount = countWords(userAnswer);
-
-  if (wordCount >= 80) {
-    const acknowledgments = {
-      en: 'Thank you for that wonderful detail.',
-      it: 'Grazie per tutti questi dettagli.',
-      fr: 'Merci pour tous ces détails.',
-      de: 'Vielen Dank für die Details.',
-    };
-
-    return {
-      needsFollowUp: false,
-      acknowledgment: acknowledgments[language as keyof typeof acknowledgments] || acknowledgments.en,
-    };
-  }
-
+  hasHadFollowUp: boolean
+): Promise<AnalysisResult> {
   try {
     const result = await callAI({
-      action: 'analyze-answer',
-      userAnswer,
-      originalQuestion,
-      conversationHistory: conversationHistory.slice(-3),
+      action: 'followup',
+      answer,
+      question,
+      conversationHistory,
       language,
+      hasHadFollowUp,
     });
 
-    if (!result || typeof result !== 'object') {
-      throw new Error('Invalid response format from AI service');
-    }
-
     return {
-      needsFollowUp: result.needsFollowUp || false,
-      followUpQuestion: result.followUpQuestion,
-      acknowledgment: result.acknowledgment || 'Grazie per aver condiviso questo.',
+      needsFollowUp: result.needsFollowUp ?? false,
+      followUpQuestion: result.followUpQuestion ?? null,
+      acknowledgment: result.acknowledgment ?? getFallbackAcknowledgment(language),
     };
-  } catch (error) {
-    console.error('Failed to analyze answer:', error);
-
-    const fallbackAcknowledgments = {
-      en: 'Thank you for sharing that.',
-      it: 'Grazie per aver condiviso questo.',
-      fr: 'Merci d\'avoir partagé cela.',
-      de: 'Danke, dass Sie das geteilt haben.',
-    };
-
+  } catch {
     return {
       needsFollowUp: false,
-      acknowledgment: fallbackAcknowledgments[language as keyof typeof fallbackAcknowledgments] || fallbackAcknowledgments.en,
+      followUpQuestion: null,
+      acknowledgment: getFallbackAcknowledgment(language),
     };
   }
 }
