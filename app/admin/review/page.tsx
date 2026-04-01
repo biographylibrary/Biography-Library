@@ -2,24 +2,27 @@
 
 import { useEffect, useState, useCallback } from 'react';
 import Link from 'next/link';
-import {
-  ClipboardList,
-  ExternalLink,
-  CircleCheck as CheckCircle,
-  Circle as XCircle,
-  Inbox,
-  ChevronDown,
-  ChevronRight,
-} from 'lucide-react';
+import { ClipboardList, ExternalLink, CircleCheck as CheckCircle, Circle as XCircle, Inbox, ChevronDown, ChevronRight, TriangleAlert as AlertTriangle } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { createNotification } from '@/lib/notifications-service';
 import { useTranslation } from '@/lib/i18n/i18n-context';
+import { useAuth } from '@/lib/auth-context';
 import { AdminGuard } from '@/components/admin/AdminGuard';
 import { AdminNav } from '@/components/admin/AdminNav';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { cn } from '@/lib/utils';
 
 interface FlaggedPassage {
@@ -48,10 +51,15 @@ interface ReviewBiography {
   biography_type: string | null;
   slug: string | null;
   updated_at: string;
+  reviewed_by: string | null;
   report: ModerationReport | null;
 }
 
 type PassageDecision = 'approved' | 'rejected';
+
+type PendingAction =
+  | { type: 'approve'; bio: ReviewBiography }
+  | { type: 'reject'; bio: ReviewBiography; reason: string; rejectedPassages: { section_key: string; ai_reason: string }[] };
 
 function fmtDate(iso: string) {
   return new Date(iso).toLocaleDateString(undefined, {
@@ -85,6 +93,7 @@ function SeverityBadge({ severity }: { severity: number }) {
 
 function ReviewQueueContent() {
   const { t } = useTranslation();
+  const { user } = useAuth();
   const [items, setItems] = useState<ReviewBiography[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
@@ -97,13 +106,18 @@ function ReviewQueueContent() {
   const [reasonError, setReasonError] = useState('');
   const [actionLoading, setActionLoading] = useState<string | null>(null);
 
+  const [conflictDialog, setConflictDialog] = useState<{ open: boolean; pendingAction: PendingAction | null }>({
+    open: false,
+    pendingAction: null,
+  });
+
   const load = useCallback(async () => {
     setLoading(true);
     setLoadError(null);
 
     const { data: bios, error } = await supabase
       .from('biographies')
-      .select('id, title, author_name, user_id, content_language, biography_type, slug, updated_at')
+      .select('id, title, author_name, user_id, content_language, biography_type, slug, updated_at, reviewed_by')
       .eq('status', 'under_review')
       .order('updated_at', { ascending: true });
 
@@ -122,6 +136,7 @@ function ReviewQueueContent() {
       biography_type: b.biography_type ?? null,
       slug: b.slug ?? null,
       updated_at: b.updated_at,
+      reviewed_by: b.reviewed_by ?? null,
       report: null as ModerationReport | null,
     }));
 
@@ -147,6 +162,34 @@ function ReviewQueueContent() {
   useEffect(() => {
     load();
   }, [load]);
+
+  const claimReview = useCallback(async (bioId: string) => {
+    if (!user?.id) return;
+    await supabase
+      .from('biographies')
+      .update({ reviewed_by: user.id, reviewed_at: new Date().toISOString() })
+      .eq('id', bioId);
+    setItems((prev) =>
+      prev.map((b) => (b.id === bioId ? { ...b, reviewed_by: user.id } : b))
+    );
+  }, [user?.id]);
+
+  const handleExpand = useCallback((bio: ReviewBiography) => {
+    const isExpanded = expandedId === bio.id;
+    if (isExpanded) {
+      setExpandedId(null);
+    } else {
+      setExpandedId(bio.id);
+      claimReview(bio.id);
+    }
+  }, [expandedId, claimReview]);
+
+  const handleOpenReject = useCallback((bio: ReviewBiography) => {
+    setRejectOpenId(bio.id);
+    setRejectReason('');
+    setReasonError('');
+    claimReview(bio.id);
+  }, [claimReview]);
 
   const viewHref = (bio: ReviewBiography) =>
     `/biography/${bio.slug || bio.id}/view`;
@@ -184,13 +227,29 @@ function ReviewQueueContent() {
     }));
   };
 
-  const handleApprove = async (bio: ReviewBiography) => {
+  const checkOwnership = async (bioId: string): Promise<'owned' | 'conflict' | 'free'> => {
+    const { data } = await supabase
+      .from('biographies')
+      .select('reviewed_by')
+      .eq('id', bioId)
+      .maybeSingle();
+
+    if (!data) return 'owned';
+    if (!data.reviewed_by) return 'free';
+    if (data.reviewed_by === user?.id) return 'owned';
+    return 'conflict';
+  };
+
+  const executeApprove = async (bio: ReviewBiography, force = false) => {
     setActionLoading(bio.id);
 
-    const { error } = await supabase
+    const updateQuery = supabase
       .from('biographies')
-      .update({ status: 'published', published_at: new Date().toISOString() })
-      .eq('id', bio.id);
+      .update({ status: 'published', published_at: new Date().toISOString(), reviewed_by: null, reviewed_at: null });
+
+    const { error } = force
+      ? await updateQuery.eq('id', bio.id)
+      : await updateQuery.eq('id', bio.id).eq('reviewed_by', user?.id ?? '');
 
     if (error) {
       setActionLoading(null);
@@ -210,10 +269,71 @@ function ReviewQueueContent() {
     setActionLoading(null);
   };
 
-  const openReject = (bio: ReviewBiography) => {
-    setRejectOpenId(bio.id);
+  const executeReject = async (
+    bio: ReviewBiography,
+    reason: string,
+    rejectedPassages: { section_key: string; ai_reason: string }[],
+    force = false
+  ) => {
+    setActionLoading(bio.id);
+
+    const updateQuery = supabase
+      .from('biographies')
+      .update({ status: 'draft', reviewed_by: null, reviewed_at: null });
+
+    const { error } = force
+      ? await updateQuery.eq('id', bio.id)
+      : await updateQuery.eq('id', bio.id).eq('reviewed_by', user?.id ?? '');
+
+    if (error) {
+      setActionLoading(null);
+      alert(t.admin.reviewRejectError);
+      return;
+    }
+
+    if (bio.report?.id) {
+      await supabase
+        .from('moderation_reports')
+        .update({
+          status: 'decided',
+          decision: 'request_edit',
+          decided_at: new Date().toISOString(),
+          moderator_notes: JSON.stringify({ rejectedPassages, note: reason }),
+        })
+        .eq('id', bio.report.id);
+    }
+
+    let notificationMessage: string;
+    if (rejectedPassages.length > 0) {
+      const passageLines = rejectedPassages
+        .map((p) => `- [${p.section_key}] ${p.ai_reason}`)
+        .join('\n');
+      notificationMessage = t.notifications.biographyRejectedWithPassages
+        .replace('{passages}', passageLines)
+        .replace('{note}', reason);
+    } else {
+      notificationMessage = t.notifications.biographyRejected + reason;
+    }
+
+    await createNotification(bio.author_id, notificationMessage);
+    setItems((prev) => prev.filter((b) => b.id !== bio.id));
+    setRejectOpenId(null);
     setRejectReason('');
-    setReasonError('');
+    setActionLoading(null);
+  };
+
+  const handleApprove = async (bio: ReviewBiography) => {
+    const ownership = await checkOwnership(bio.id);
+    if (ownership === 'conflict') {
+      setConflictDialog({ open: true, pendingAction: { type: 'approve', bio } });
+      return;
+    }
+    await executeApprove(bio);
+  };
+
+  const handleApproveFromExpanded = async (bio: ReviewBiography) => {
+    await claimReview(bio.id);
+    await handleApprove(bio);
   };
 
   const cancelReject = () => {
@@ -234,54 +354,38 @@ function ReviewQueueContent() {
       return;
     }
 
-    setActionLoading(bio.id);
-    const { error } = await supabase
-      .from('biographies')
-      .update({ status: 'draft' })
-      .eq('id', bio.id);
-
-    if (error) {
-      setActionLoading(null);
-      alert(t.admin.reviewRejectError);
-      return;
-    }
-
-    const note = rejectReason.trim();
+    const reason = rejectReason.trim();
     const rejectedPassages = getRejectedPassages(bio).map((p) => ({
       section_key: p.section_key,
       ai_reason: p.reason,
     }));
 
-    if (bio.report?.id) {
-      await supabase
-        .from('moderation_reports')
-        .update({
-          status: 'decided',
-          decision: 'request_edit',
-          decided_at: new Date().toISOString(),
-          moderator_notes: JSON.stringify({ rejectedPassages, note }),
-        })
-        .eq('id', bio.report.id);
+    const ownership = await checkOwnership(bio.id);
+    if (ownership === 'conflict') {
+      setConflictDialog({
+        open: true,
+        pendingAction: { type: 'reject', bio, reason, rejectedPassages },
+      });
+      return;
     }
 
-    let notificationMessage: string;
-    if (rejectedPassages.length > 0) {
-      const passageLines = rejectedPassages
-        .map((p) => `- [${p.section_key}] ${p.ai_reason}`)
-        .join('\n');
-      notificationMessage = t.notifications.biographyRejectedWithPassages
-        .replace('{passages}', passageLines)
-        .replace('{note}', note);
+    await executeReject(bio, reason, rejectedPassages);
+  };
+
+  const handleConflictProceed = async () => {
+    const action = conflictDialog.pendingAction;
+    setConflictDialog({ open: false, pendingAction: null });
+    if (!action) return;
+
+    if (action.type === 'approve') {
+      await executeApprove(action.bio, true);
     } else {
-      notificationMessage = t.notifications.biographyRejected + note;
+      await executeReject(action.bio, action.reason, action.rejectedPassages, true);
     }
+  };
 
-    await createNotification(bio.author_id, notificationMessage);
-
-    setItems((prev) => prev.filter((b) => b.id !== bio.id));
-    setRejectOpenId(null);
-    setRejectReason('');
-    setActionLoading(null);
+  const handleConflictCancel = () => {
+    setConflictDialog({ open: false, pendingAction: null });
   };
 
   return (
@@ -356,6 +460,7 @@ function ReviewQueueContent() {
                     const decisions = getPassageDecisionsForBio(bio.id);
                     const decided = allPassagesDecided(bio);
                     const hasRejected = anyPassageRejected(bio);
+                    const takenByOther = bio.reviewed_by !== null && bio.reviewed_by !== user?.id;
 
                     return (
                       <tbody key={bio.id} className="border-b border-border last:border-b-0">
@@ -368,7 +473,7 @@ function ReviewQueueContent() {
                           <td className="px-4 py-3 w-6">
                             {isAiReview && (
                               <button
-                                onClick={() => setExpandedId(isExpanded ? null : bio.id)}
+                                onClick={() => handleExpand(bio)}
                                 className="text-muted-foreground hover:text-foreground transition-colors"
                                 aria-label={isExpanded ? 'Collapse' : 'Expand'}
                               >
@@ -385,6 +490,12 @@ function ReviewQueueContent() {
                             {isAiReview && (
                               <span className="text-xs text-amber-600 dark:text-amber-400 mt-0.5 block">
                                 {passages.length} {t.admin.reviewFlaggedPassages}
+                              </span>
+                            )}
+                            {takenByOther && (
+                              <span className="inline-flex items-center gap-1 text-xs text-orange-600 dark:text-orange-400 mt-0.5">
+                                <AlertTriangle className="h-3 w-3" />
+                                In review
                               </span>
                             )}
                           </td>
@@ -432,7 +543,7 @@ function ReviewQueueContent() {
                                   className="h-8 text-xs gap-1.5 border-red-300 text-red-700 hover:bg-red-50 hover:text-red-800 dark:border-red-700 dark:text-red-400 dark:hover:bg-red-950/40"
                                   disabled={actionLoading === bio.id}
                                   onClick={() =>
-                                    rejectOpenId === bio.id ? cancelReject() : openReject(bio)
+                                    rejectOpenId === bio.id ? cancelReject() : handleOpenReject(bio)
                                   }
                                 >
                                   <XCircle className="h-3.5 w-3.5" />
@@ -447,7 +558,7 @@ function ReviewQueueContent() {
                                     variant="outline"
                                     className="h-8 text-xs gap-1.5 border-emerald-300 text-emerald-700 hover:bg-emerald-50 hover:text-emerald-800 dark:border-emerald-700 dark:text-emerald-400 dark:hover:bg-emerald-950/40"
                                     disabled={actionLoading === bio.id}
-                                    onClick={() => handleApprove(bio)}
+                                    onClick={() => handleApproveFromExpanded(bio)}
                                   >
                                     <CheckCircle className="h-3.5 w-3.5" />
                                     {t.admin.reviewApprove}
@@ -460,7 +571,7 @@ function ReviewQueueContent() {
                                     className="h-8 text-xs gap-1.5 border-red-300 text-red-700 hover:bg-red-50 hover:text-red-800 dark:border-red-700 dark:text-red-400 dark:hover:bg-red-950/40"
                                     disabled={actionLoading === bio.id}
                                     onClick={() =>
-                                      rejectOpenId === bio.id ? cancelReject() : openReject(bio)
+                                      rejectOpenId === bio.id ? cancelReject() : handleOpenReject(bio)
                                     }
                                   >
                                     <XCircle className="h-3.5 w-3.5" />
@@ -625,6 +736,29 @@ function ReviewQueueContent() {
           </div>
         )}
       </div>
+
+      <AlertDialog open={conflictDialog.open} onOpenChange={(open) => !open && handleConflictCancel()}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2">
+              <AlertTriangle className="h-5 w-5 text-orange-500" />
+              Another reviewer is working on this
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              Another reviewer has this biography open. Proceeding will override their lock and submit your decision.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={handleConflictCancel}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleConflictProceed}
+              className="bg-orange-600 hover:bg-orange-700 text-white"
+            >
+              Proceed anyway
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
