@@ -49,14 +49,14 @@ export default function LoginPage() {
 
   if (loading || user) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
+      <div className="h-full flex items-center justify-center bg-background">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-background">
+    <div className="h-full flex flex-col bg-background">
       <div className="absolute top-4 right-4 z-10">
         <ThemeToggle />
       </div>

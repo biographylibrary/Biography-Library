@@ -165,10 +165,12 @@ interface ScreeningResult {
   passages: Array<{ text: string; section_key: string; reason: string; severity: number }>;
   overall_severity: number;
   aiError?: boolean;
+  parseError?: boolean;
 }
 
 async function runAiScreening(biographyText: string): Promise<ScreeningResult> {
   const errorResult: ScreeningResult = { passages: [], overall_severity: 0, aiError: true };
+  const parseErrorResult: ScreeningResult = { passages: [], overall_severity: 0, aiError: true, parseError: true };
 
   if (!INFOMANIAK_TOKEN || !INFOMANIAK_ENDPOINT) {
     console.warn('[review/submit] Infomaniak AI not configured — routing to manual review');
@@ -232,7 +234,7 @@ async function runAiScreening(biographyText: string): Promise<ScreeningResult> {
     const match = rawText.match(/\{[\s\S]*\}/);
     if (!match) {
       console.error('[review/submit] Could not extract JSON from AI response. Raw text:', rawText);
-      return errorResult;
+      return parseErrorResult;
     }
 
     try {
@@ -243,7 +245,7 @@ async function runAiScreening(biographyText: string): Promise<ScreeningResult> {
       };
     } catch (parseErr) {
       console.error('[review/submit] JSON.parse failed. Raw AI text:', rawText, 'Error:', parseErr);
-      return errorResult;
+      return parseErrorResult;
     }
   } catch (err) {
     console.error('[review/submit] AI screening error:', err);
@@ -395,7 +397,7 @@ export async function POST(req: NextRequest) {
         .from('biographies')
         .update({
           status: 'under_review',
-          ai_screening_status: 'ai_error',
+          ai_screening_status: screening.parseError ? 'parse_error' : 'ai_error',
         })
         .eq('id', biographyId);
 

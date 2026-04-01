@@ -24,7 +24,7 @@ function ModerationContent() {
   const { reports, unassignedCount, loading: reportsLoading, error, refresh } = useModerationReports(filters);
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-full bg-background">
       <AdminNav />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">

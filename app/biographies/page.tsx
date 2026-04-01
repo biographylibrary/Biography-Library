@@ -305,7 +305,7 @@ export default function PublicBiographiesPage() {
   }, [allBios, search, langFilter, typeFilter, isSearchActive]);
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-full bg-background">
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
         <div className="mb-10 space-y-2">
           <h1 className="text-3xl font-serif font-semibold tracking-tight text-foreground">

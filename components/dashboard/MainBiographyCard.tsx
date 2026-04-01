@@ -136,24 +136,15 @@ export function MainBiographyCard({ biography, userName, userId, onDeleteClick, 
   const getStatusBadgeConfig = (status: string) => {
     switch (status) {
       case 'sections_complete':
-      case 'approved':
-      case 'ready_to_publish':
-        return {
-          text: status === 'sections_complete' ? t.dashboard.completed :
-                status === 'approved' ? t.dashboard.statusApproved :
-                t.dashboard.statusPublished,
-          className: 'bg-[#C8DFBE] text-[#121212]'
-        };
+        return { text: t.dashboard.sectionsComplete, className: 'bg-[#C8DFBE] text-[#121212]' };
+      case 'final_version':
+        return { text: t.dashboard.finalVersion, className: 'bg-[#C8DFBE] text-[#121212]' };
       case 'published':
         return { text: t.dashboard.statusPublished, className: 'bg-[#D3F1FF] text-[#121212]' };
       case 'under_review':
         return { text: t.dashboard.statusUnderReview, className: 'bg-[#FFE4C0] text-[#7C3A00]' };
-      case 'draft_1':
-        return { text: t.dashboard.statusDraft1, className: 'bg-[#DDCF88] text-[#121212]' };
-      case 'draft_2':
-        return { text: t.dashboard.statusDraft2, className: 'bg-[#DDCF88] text-[#121212]' };
-      case 'draft_3':
-        return { text: t.dashboard.statusDraft3, className: 'bg-[#DDCF88] text-[#121212]' };
+      case 'removed':
+        return { text: t.dashboard.statusRemoved, className: 'bg-red-700 text-white' };
       default:
         return { text: t.dashboard.draft, className: 'bg-[#DDCF88] text-[#121212]' };
     }

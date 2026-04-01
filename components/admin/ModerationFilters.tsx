@@ -53,6 +53,11 @@ export function ModerationFilters({ filters, onChange }: ModerationFiltersProps)
             <SelectItem value="level2_content">{t.admin.typeLevel2}</SelectItem>
             <SelectItem value="level3_content">{t.admin.typeLevel3}</SelectItem>
             <SelectItem value="user_report">{t.admin.typeUserReport}</SelectItem>
+            <SelectItem value="living_person">{t.admin.typeLivingPerson}</SelectItem>
+            <SelectItem value="right_to_oblivion">{t.admin.typeRightToOblivion}</SelectItem>
+            <SelectItem value="impersonation">{t.admin.typeImpersonation}</SelectItem>
+            <SelectItem value="copyright">{t.admin.typeCopyright}</SelectItem>
+            <SelectItem value="other">{t.admin.typeOther}</SelectItem>
           </SelectContent>
         </Select>
       </div>

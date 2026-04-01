@@ -1,6 +1,6 @@
 'use client';
 
-import { Bell, LayoutDashboard, LogOut, Shield, CircleHelp } from 'lucide-react';
+import { Bell, LayoutDashboard, LogOut, Shield, CircleHelp, Settings } from 'lucide-react';
 import { useAuth, ADMIN_ROLES } from '@/lib/auth-context';
 import { useTranslation } from '@/lib/i18n/i18n-context';
 import { useTheme } from 'next-themes';
@@ -237,6 +237,13 @@ export function Header() {
                     {unreadCount > 0 && (
                       <span className="ml-auto text-xs font-semibold text-red-500">{unreadCount}</span>
                     )}
+                  </Link>
+                </DropdownMenuItem>
+
+                <DropdownMenuItem asChild>
+                  <Link href="/settings" className="flex items-center gap-2 cursor-pointer">
+                    <Settings className="h-4 w-4" />
+                    <span>{t.nav.settings}</span>
                   </Link>
                 </DropdownMenuItem>
 

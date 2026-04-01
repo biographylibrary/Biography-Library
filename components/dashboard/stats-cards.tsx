@@ -27,7 +27,7 @@ export function StatsCards({ biographies }: StatsCardsProps) {
       bg: 'bg-status-warning',
     },
     {
-      label: t.dashboard.completed,
+      label: t.dashboard.sectionsComplete,
       value: biographies.filter((b) => b.status === 'sections_complete').length,
       icon: CheckCircle,
       color: 'text-text-primary dark:text-dark-text-primary',

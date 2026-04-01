@@ -86,7 +86,7 @@ export default function ResetPasswordPage() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-background">
+    <div className="h-full flex flex-col bg-background">
       <div className="absolute top-4 right-4 z-10">
         <ThemeToggle />
       </div>

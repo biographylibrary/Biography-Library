@@ -24,7 +24,12 @@ function getTypeLabel(type: ReportType, t: ReturnType<typeof useTranslation>['t'
     case 'level1_content': return t.admin.typeLevel1;
     case 'level2_content': return t.admin.typeLevel2;
     case 'level3_content': return t.admin.typeLevel3;
-    default: return t.admin.typeUserReport;
+    case 'user_report': return t.admin.typeUserReport;
+    case 'living_person': return t.admin.typeLivingPerson;
+    case 'right_to_oblivion': return t.admin.typeRightToOblivion;
+    case 'impersonation': return t.admin.typeImpersonation;
+    case 'copyright': return t.admin.typeCopyright;
+    case 'other': return t.admin.typeOther;
   }
 }
 

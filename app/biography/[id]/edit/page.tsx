@@ -100,11 +100,12 @@ export default function BiographyEditorPage() {
   const [finalVersion, setFinalVersion] = useState<string>('');
   const [narrativeOrder, setNarrativeOrder] = useState<string[]>([]);
   const [biographyStatus, setBiographyStatus] = useState<'draft' | 'sections_complete' | 'final_version' | 'published' | 'under_review'>('draft');
-  const [isLocked, setIsLocked] = useState(false);
   const [showPublishDialog, setShowPublishDialog] = useState(false);
   const [showSubmitForReviewDialog, setShowSubmitForReviewDialog] = useState(false);
   const [isSubmittingForReview, setIsSubmittingForReview] = useState(false);
   const [submitReadinessError, setSubmitReadinessError] = useState<string | null>(null);
+  const [submitPreflightError, setSubmitPreflightError] = useState<string | null>(null);
+  const [isPreflightChecking, setIsPreflightChecking] = useState(false);
   const [aiLimitError, setAiLimitError] = useState<AiLimitError | null>(null);
   const [aiUsageRefresh, setAiUsageRefresh] = useState(0);
   const [isFrozen, setIsFrozen] = useState(false);
@@ -186,7 +187,6 @@ const [isPublishing, setIsPublishing] = useState(false);
         setPrivacy((data.visibility as 'private' | 'link-only' | 'public') ?? 'private');
         setStatus(data.status || 'draft');
         setBiographyStatus(data.status || 'draft');
-        setIsLocked(data.is_locked || false);
         setIsFrozen(data.is_frozen || false);
         setShareToken(data.share_token || null);
         setEditorFontSize(data.editor_font_size || 16);
@@ -234,13 +234,10 @@ const [isPublishing, setIsPublishing] = useState(false);
           .maybeSingle();
 
         if (report?.moderator_notes) {
-          try {
-            const parsed = JSON.parse(report.moderator_notes as string);
-            if (Array.isArray(parsed.rejectedPassages) && parsed.rejectedPassages.length > 0) {
-              setRevisionPassages(parsed.rejectedPassages);
-              setRevisionNote(typeof parsed.note === 'string' ? parsed.note : null);
-            }
-          } catch {
+          const notes = report.moderator_notes as { rejectedPassages?: unknown[]; note?: unknown };
+          if (Array.isArray(notes.rejectedPassages) && notes.rejectedPassages.length > 0) {
+            setRevisionPassages(notes.rejectedPassages as { section_key: string; ai_reason: string }[]);
+            setRevisionNote(typeof notes.note === 'string' ? notes.note : null);
           }
         }
       }
@@ -969,7 +966,7 @@ const [isPublishing, setIsPublishing] = useState(false);
       });
       setIsPublishing(false);
       setShowPublishDialog(false);
-      setBiographyStatus('draft');
+      setBiographyStatus('under_review');
       toast.warning(t.toast.publishUnderReview);
       return;
     }
@@ -977,6 +974,7 @@ const [isPublishing, setIsPublishing] = useState(false);
     if (checkResult.violation_level === 3) {
       await supabase.from('moderation_reports').insert({
         biography_id: id,
+        reporter_id: null,
         report_type: 'other',
         status: 'decided',
         decision: 'publish',
@@ -990,7 +988,6 @@ const [isPublishing, setIsPublishing] = useState(false);
         .from('biographies')
         .update({
           status: 'published',
-          is_locked: true,
           published_at: new Date().toISOString(),
         })
         .eq('id', id);
@@ -998,7 +995,6 @@ const [isPublishing, setIsPublishing] = useState(false);
       if (!error) {
         await supabase.rpc('increment_biography_chapters', { biography_id: id });
         setBiographyStatus('published');
-        setIsLocked(true);
         setShowPublishDialog(false);
       }
     } catch (err) {
@@ -1058,7 +1054,25 @@ const [isPublishing, setIsPublishing] = useState(false);
     }
   }, [id, user]);
 
-  const effectivelyLocked = isLocked || isFrozen;
+  const handleOpenSubmitDialog = useCallback(async () => {
+    setSubmitPreflightError(null);
+    setIsPreflightChecking(true);
+    try {
+      const preflight = await checkPdfPreflight(id);
+      if (!preflight.ready) {
+        setSubmitPreflightError(
+          t.exportDialog.noCoverPhotoWarning ?? 'A cover photo is required before submission.'
+        );
+        return;
+      }
+      setSubmitReadinessError(null);
+      setShowSubmitForReviewDialog(true);
+    } finally {
+      setIsPreflightChecking(false);
+    }
+  }, [id, t]);
+
+  const effectivelyLocked = isFrozen;
 
   const isRevisionMode = revisionPassages.length > 0 && !revisionBannerDismissed && biographyStatus === 'draft';
   const editableSectionKeys = new Set(revisionPassages.map((p) => p.section_key));
@@ -1066,7 +1080,7 @@ const [isPublishing, setIsPublishing] = useState(false);
 
   if (authLoading || !user || isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#ECE9E4] dark:bg-[#1F2121]">
+      <div className="h-full flex items-center justify-center bg-[#ECE9E4] dark:bg-[#1F2121]">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
       </div>
     );
@@ -1074,7 +1088,7 @@ const [isPublishing, setIsPublishing] = useState(false);
 
   if (!biography) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-[#ECE9E4] dark:bg-[#1F2121] gap-4">
+      <div className="h-full flex flex-col items-center justify-center bg-[#ECE9E4] dark:bg-[#1F2121] gap-4">
         <p className="text-muted-foreground">{t.biography.notFound}</p>
         <Button variant="outline" onClick={() => router.push('/dashboard')}>
           {t.biography.returnToDashboard}
@@ -1206,18 +1220,29 @@ const [isPublishing, setIsPublishing] = useState(false);
                 {biographyStatus !== 'final_version' && (
                   <>
                     {biographyMode === 'freeflow' ? (
-                      <Button
-                        size="sm"
-                        onClick={() => setShowSubmitForReviewDialog(true)}
-                        disabled={!contentFreeflow.trim() || biographyStatus === 'under_review'}
-                        className="h-8 text-xs text-white rounded-md disabled:opacity-50 disabled:cursor-not-allowed"
-                        style={{ backgroundColor: '#944454', borderColor: '#944454' }}
-                      >
-                        {language === 'it' ? 'Invia per la Revisione' :
-                         language === 'fr' ? 'Soumettre pour Révision' :
-                         language === 'de' ? 'Zur Überprüfung Einreichen' :
-                         'Submit for Review'}
-                      </Button>
+                      <div className="flex flex-col gap-1">
+                        <Button
+                          size="sm"
+                          onClick={handleOpenSubmitDialog}
+                          disabled={!contentFreeflow.trim() || biographyStatus === 'under_review' || isPreflightChecking}
+                          className="h-8 text-xs text-white rounded-md disabled:opacity-50 disabled:cursor-not-allowed gap-1.5"
+                          style={{ backgroundColor: '#944454', borderColor: '#944454' }}
+                        >
+                          {isPreflightChecking ? (
+                            <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                          ) : null}
+                          {language === 'it' ? 'Invia per la Revisione' :
+                           language === 'fr' ? 'Soumettre pour Révision' :
+                           language === 'de' ? 'Zur Überprüfung Einreichen' :
+                           'Submit for Review'}
+                        </Button>
+                        {submitPreflightError && (
+                          <p className="text-xs text-destructive flex items-center gap-1">
+                            <TriangleAlert className="h-3 w-3 shrink-0" />
+                            {submitPreflightError}
+                          </p>
+                        )}
+                      </div>
                     ) : (
                       <>
                         <Button
@@ -1391,16 +1416,27 @@ const [isPublishing, setIsPublishing] = useState(false);
                       </Button>
                       <Button
                         size="lg"
-                        onClick={() => setShowSubmitForReviewDialog(true)}
+                        onClick={handleOpenSubmitDialog}
+                        disabled={isPreflightChecking}
                         className="gap-2"
                       >
-                        <SendIcon className="h-5 w-5" />
+                        {isPreflightChecking ? (
+                          <Loader2 className="h-5 w-5 animate-spin" />
+                        ) : (
+                          <SendIcon className="h-5 w-5" />
+                        )}
                         {language === 'it' ? 'Invia per la Revisione' :
                          language === 'fr' ? 'Soumettre pour Révision' :
                          language === 'de' ? 'Zur Überprüfung Einreichen' :
                          'Submit for Review'}
                       </Button>
                     </div>
+                    {submitPreflightError && (
+                      <div className="flex items-center justify-center gap-1.5 text-sm text-destructive">
+                        <TriangleAlert className="h-4 w-4 shrink-0" />
+                        <span>{submitPreflightError}</span>
+                      </div>
+                    )}
                   </div>
                 </div>
               )}
@@ -1461,6 +1497,9 @@ const [isPublishing, setIsPublishing] = useState(false);
             content: contentRef.current,
             content_freeflow: contentFreeflowRef.current,
             biography_mode: biographyModeRef.current,
+            narrative_order: narrativeOrder,
+            final_version: finalVersion,
+            status: biographyStatus,
             created_at: biography.created_at,
           }}
           isPublished={biographyStatus === 'published'}
@@ -1510,19 +1549,8 @@ const [isPublishing, setIsPublishing] = useState(false);
 
       <SubmitForReviewDialog
         open={showSubmitForReviewDialog}
-        onOpenChange={async (val) => {
-          if (val) {
-            const preflight = await checkPdfPreflight(id);
-            if (!preflight.ready) {
-              setSubmitReadinessError(
-                t.exportDialog.noCoverPhotoWarning ?? 'Cover photo is required before submission.'
-              );
-            } else {
-              setSubmitReadinessError(null);
-            }
-          } else {
-            setSubmitReadinessError(null);
-          }
+        onOpenChange={(val) => {
+          if (!val) setSubmitReadinessError(null);
           setShowSubmitForReviewDialog(val);
         }}
         onConfirm={handleSubmitForReview}

@@ -308,7 +308,7 @@ export default function BiographyViewPage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="h-full flex items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
       </div>
     );
@@ -316,7 +316,7 @@ export default function BiographyViewPage() {
 
   if (error || !biography) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center gap-4 p-4">
+      <div className="h-full flex flex-col items-center justify-center gap-4 p-4">
         <Lock className="h-12 w-12 text-muted-foreground" />
         <h1 className="text-2xl font-semibold">{t.view.accessDenied}</h1>
         <p className="text-muted-foreground text-center max-w-md">
@@ -335,7 +335,7 @@ export default function BiographyViewPage() {
     : null;
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-full bg-background">
       <header className="border-b border-border/50 bg-background/80 backdrop-blur-md sticky top-0 z-50">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
           <div className="flex items-center gap-3">

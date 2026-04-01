@@ -111,7 +111,9 @@ export interface Translations {
     completedSections: string;
     lastUpdated: string;
     draft: string;
-    completed: string;
+    sectionsComplete: string;
+    finalVersion: string;
+    statusRemoved: string;
     private: string;
     family: string;
     public: string;
@@ -123,10 +125,6 @@ export interface Translations {
     status: string;
     visibility: string;
     progress: string;
-    statusDraft1: string;
-    statusDraft2: string;
-    statusDraft3: string;
-    statusApproved: string;
     statusPublished: string;
     statusUnderReview: string;
     underReviewMessage: string;
@@ -788,6 +786,11 @@ export interface Translations {
     typeLevel2: string;
     typeLevel3: string;
     typeUserReport: string;
+    typeLivingPerson: string;
+    typeRightToOblivion: string;
+    typeImpersonation: string;
+    typeCopyright: string;
+    typeOther: string;
     colDate: string;
     colType: string;
     colBiography: string;
@@ -1231,7 +1234,9 @@ export const translations: Record<Language, Translations> = {
       completedSections: 'Completed Sections',
       lastUpdated: 'Last Updated',
       draft: 'Draft',
-      completed: 'Completed',
+      sectionsComplete: 'Sections Complete',
+      finalVersion: 'Final Version',
+      statusRemoved: 'Removed',
       private: 'Private',
       family: 'Family',
       public: 'Public',
@@ -1243,10 +1248,6 @@ export const translations: Record<Language, Translations> = {
       status: 'Status',
       visibility: 'Visibility',
       progress: 'Progress',
-      statusDraft1: 'Draft 1',
-      statusDraft2: 'Draft 2',
-      statusDraft3: 'Draft 3',
-      statusApproved: 'Approved',
       statusPublished: 'Published',
       statusUnderReview: 'Under review',
       underReviewMessage: 'Our team is reviewing your biography. You will be notified of the outcome.',
@@ -1908,6 +1909,11 @@ export const translations: Record<Language, Translations> = {
       typeLevel2: 'Level 2 – Review',
       typeLevel3: 'Level 3 – Warning',
       typeUserReport: 'User Report',
+      typeLivingPerson: 'Living Person',
+      typeRightToOblivion: 'Right to Oblivion',
+      typeImpersonation: 'Impersonation',
+      typeCopyright: 'Copyright',
+      typeOther: 'Other',
       colDate: 'Date',
       colType: 'Type',
       colBiography: 'Biography',
@@ -2349,7 +2355,9 @@ export const translations: Record<Language, Translations> = {
       completedSections: 'Sezioni Completate',
       lastUpdated: 'Ultimo Aggiornamento',
       draft: 'Bozza',
-      completed: 'Completata',
+      sectionsComplete: 'Sezioni Complete',
+      finalVersion: 'Versione Finale',
+      statusRemoved: 'Rimossa',
       private: 'Privata',
       family: 'Famiglia',
       public: 'Pubblica',
@@ -2361,10 +2369,6 @@ export const translations: Record<Language, Translations> = {
       status: 'Stato',
       visibility: 'Visibilità',
       progress: 'Progresso',
-      statusDraft1: 'Bozza 1',
-      statusDraft2: 'Bozza 2',
-      statusDraft3: 'Bozza 3',
-      statusApproved: 'Approvata',
       statusPublished: 'Pubblicata',
       statusUnderReview: 'In revisione',
       underReviewMessage: 'Il nostro team sta esaminando la tua biografia. Sarai informato dell\'esito.',
@@ -3026,6 +3030,11 @@ export const translations: Record<Language, Translations> = {
       typeLevel2: 'Livello 2 – Revisione',
       typeLevel3: 'Livello 3 – Avviso',
       typeUserReport: 'Segnalazione utente',
+      typeLivingPerson: 'Persona vivente',
+      typeRightToOblivion: 'Diritto all\'oblio',
+      typeImpersonation: 'Impersonificazione',
+      typeCopyright: 'Copyright',
+      typeOther: 'Altro',
       colDate: 'Data',
       colType: 'Tipo',
       colBiography: 'Biografia',
@@ -3467,7 +3476,9 @@ export const translations: Record<Language, Translations> = {
       completedSections: 'Sections Compl\u00e9t\u00e9es',
       lastUpdated: 'Derni\u00e8re Mise \u00e0 Jour',
       draft: 'Brouillon',
-      completed: 'Termin\u00e9e',
+      sectionsComplete: 'Sections Terminées',
+      finalVersion: 'Version Finale',
+      statusRemoved: 'Supprimée',
       private: 'Priv\u00e9e',
       family: 'Famille',
       public: 'Publique',
@@ -3479,10 +3490,6 @@ export const translations: Record<Language, Translations> = {
       status: 'Statut',
       visibility: 'Visibilité',
       progress: 'Progrès',
-      statusDraft1: 'Brouillon 1',
-      statusDraft2: 'Brouillon 2',
-      statusDraft3: 'Brouillon 3',
-      statusApproved: 'Approuvé',
       statusPublished: 'Publié',
       statusUnderReview: 'En cours d\'examen',
       underReviewMessage: 'Notre équipe examine votre biographie. Vous serez informé du résultat.',
@@ -4144,6 +4151,11 @@ export const translations: Record<Language, Translations> = {
       typeLevel2: 'Niveau 2 – Révision',
       typeLevel3: 'Niveau 3 – Avertissement',
       typeUserReport: 'Signalement utilisateur',
+      typeLivingPerson: 'Personne vivante',
+      typeRightToOblivion: 'Droit à l\'oubli',
+      typeImpersonation: 'Usurpation d\'identité',
+      typeCopyright: 'Droits d\'auteur',
+      typeOther: 'Autre',
       colDate: 'Date',
       colType: 'Type',
       colBiography: 'Biographie',
@@ -4585,7 +4597,9 @@ export const translations: Record<Language, Translations> = {
       completedSections: 'Abgeschlossene Abschnitte',
       lastUpdated: 'Zuletzt Aktualisiert',
       draft: 'Entwurf',
-      completed: 'Abgeschlossen',
+      sectionsComplete: 'Abschnitte Vollständig',
+      finalVersion: 'Endversion',
+      statusRemoved: 'Entfernt',
       private: 'Privat',
       family: 'Familie',
       public: '\u00d6ffentlich',
@@ -4597,10 +4611,6 @@ export const translations: Record<Language, Translations> = {
       status: 'Status',
       visibility: 'Sichtbarkeit',
       progress: 'Fortschritt',
-      statusDraft1: 'Entwurf 1',
-      statusDraft2: 'Entwurf 2',
-      statusDraft3: 'Entwurf 3',
-      statusApproved: 'Genehmigt',
       statusPublished: 'Veröffentlicht',
       statusUnderReview: 'In Prüfung',
       underReviewMessage: 'Unser Team prüft Ihre Biografie. Sie werden über das Ergebnis informiert.',
@@ -5262,6 +5272,11 @@ export const translations: Record<Language, Translations> = {
       typeLevel2: 'Stufe 2 – Prüfung',
       typeLevel3: 'Stufe 3 – Warnung',
       typeUserReport: 'Nutzermeldung',
+      typeLivingPerson: 'Lebende Person',
+      typeRightToOblivion: 'Recht auf Vergessen',
+      typeImpersonation: 'Identitätsmissbrauch',
+      typeCopyright: 'Urheberrecht',
+      typeOther: 'Sonstiges',
       colDate: 'Datum',
       colType: 'Typ',
       colBiography: 'Biografie',

@@ -298,7 +298,7 @@ function ReviewQueueContent() {
           status: 'decided',
           decision: 'request_edit',
           decided_at: new Date().toISOString(),
-          moderator_notes: JSON.stringify({ rejectedPassages, note: reason }),
+          moderator_notes: { rejectedPassages, note: reason },
         })
         .eq('id', bio.report.id);
     }
@@ -389,7 +389,7 @@ function ReviewQueueContent() {
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-full bg-background">
       <AdminNav />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">

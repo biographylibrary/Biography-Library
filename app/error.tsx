@@ -24,7 +24,7 @@ export default function Error({
   }, [error]);
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen gap-6 p-8 text-center">
+    <div className="flex flex-col items-center justify-center h-full gap-6 p-8 text-center">
       <h2 className="text-2xl font-semibold">Something went wrong</h2>
       <p className="text-muted-foreground max-w-md">
         An unexpected error occurred. Your work has been saved automatically.

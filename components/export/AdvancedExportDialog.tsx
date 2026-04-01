@@ -41,6 +41,9 @@ interface BiographyData {
   content: Record<string, { text: string }>;
   content_freeflow?: string;
   biography_mode?: 'sections' | 'freeflow';
+  narrative_order?: string[] | null;
+  final_version?: string | null;
+  status?: string;
   created_at: string;
 }
 
@@ -187,7 +190,41 @@ export function AdvancedExportDialog({
     setIsExporting(true);
     setExportError(null);
     try {
+      const isFinalOrPublished =
+        biography.status === 'final_version' || biography.status === 'published';
       const isFreeFlow = biography.biography_mode === 'freeflow';
+
+      if (isFinalOrPublished && biography.final_version) {
+        const finalBio = {
+          ...biography,
+          biography_mode: 'freeflow' as const,
+          content_freeflow: biography.final_version,
+        };
+        if (isPdfFormat) {
+          await generateBiographyPDF(
+            finalBio,
+            'b5-standard',
+            {
+              createdWith: t.exportDialog.createdWith,
+              allRightsReserved: t.exportDialog.allRightsReserved,
+              preface: t.exportDialog.preface,
+              epilogue: t.exportDialog.epilogue,
+              acknowledgements: t.exportDialog.acknowledgements,
+              specificCredits: t.exportDialog.specificCredits,
+            },
+            iterationToUse,
+            contentLanguage
+          );
+        } else if (format === 'txt') {
+          await exportAsPlainText(finalBio, [], false);
+        } else if (format === 'rtf') {
+          await exportAsRTF(finalBio, [], false);
+        } else if (format === 'docx') {
+          await exportAsDOCX(finalBio, [], false);
+        }
+        onOpenChange(false);
+        return;
+      }
 
       if (isFreeFlow) {
         if (isPdfFormat) {

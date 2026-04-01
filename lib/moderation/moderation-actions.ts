@@ -1,6 +1,6 @@
 import { supabase } from '@/lib/supabase';
 import { createNotification } from '@/lib/notifications-service';
-import { ModerationDecision } from './types';
+import { ModerationDecision, ModeratorNotes } from './types';
 
 export async function takeOwnership(reportId: string, moderatorId: string): Promise<{ error: string | null }> {
   const { error } = await supabase
@@ -49,9 +49,10 @@ export async function submitDecision(
 }
 
 export async function saveModeratorNotes(reportId: string, notes: string): Promise<{ error: string | null }> {
+  const payload: ModeratorNotes = { text: notes };
   const { error } = await supabase
     .from('moderation_reports')
-    .update({ moderator_notes: notes })
+    .update({ moderator_notes: payload })
     .eq('id', reportId);
 
   return { error: error?.message ?? null };
