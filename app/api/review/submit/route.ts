@@ -10,10 +10,9 @@ const AI_TIMEOUT_MS = 30_000;
 
 const STAFF_ROLES = new Set(['reviewer', 'admin', 'super_admin']);
 
-const SUBMIT_THROTTLE_WINDOW_MS = 60_000;
+const SUBMIT_THROTTLE_WINDOW_SECS = 60;
 const SUBMIT_THROTTLE_MAX = 3;
-
-const submitAttempts = new Map<string, { count: number; windowStart: number }>();
+const SUBMIT_CLEANUP_SECS = 300;
 
 const AUTO_PUBLISHED_MESSAGES: Record<string, string> = {
   en: 'Your biography has been reviewed and published automatically.',
@@ -57,20 +56,31 @@ function buildAnonClient(jwt: string): AnyClient {
   }) as AnyClient;
 }
 
-function checkPerUserThrottle(userId: string): boolean {
-  const now = Date.now();
-  const entry = submitAttempts.get(userId);
+async function checkPerUserThrottle(supabase: AnyClient, userId: string): Promise<boolean> {
+  const windowStart = new Date(Date.now() - SUBMIT_THROTTLE_WINDOW_SECS * 1000).toISOString();
+  const cleanupCutoff = new Date(Date.now() - SUBMIT_CLEANUP_SECS * 1000).toISOString();
 
-  if (!entry || now - entry.windowStart > SUBMIT_THROTTLE_WINDOW_MS) {
-    submitAttempts.set(userId, { count: 1, windowStart: now });
-    return true;
-  }
+  await supabase
+    .from('ai_rate_limits')
+    .delete()
+    .eq('user_id', userId)
+    .lt('created_at', cleanupCutoff);
 
-  if (entry.count >= SUBMIT_THROTTLE_MAX) {
+  const { count } = await supabase
+    .from('ai_rate_limits')
+    .select('id', { count: 'exact', head: true })
+    .eq('user_id', userId)
+    .eq('action', 'review_submit')
+    .gte('created_at', windowStart);
+
+  if ((count ?? 0) >= SUBMIT_THROTTLE_MAX) {
     return false;
   }
 
-  entry.count += 1;
+  await supabase
+    .from('ai_rate_limits')
+    .insert({ user_id: userId, action: 'review_submit' });
+
   return true;
 }
 
@@ -344,7 +354,7 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    if (!checkPerUserThrottle(callerId)) {
+    if (!await checkPerUserThrottle(serviceClient, callerId)) {
       console.warn('[review/submit] 429 — throttled', { timestamp, biographyId, callerId });
       return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
     }
