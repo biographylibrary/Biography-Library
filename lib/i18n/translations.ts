@@ -786,6 +786,11 @@ export interface Translations {
     typeLevel2: string;
     typeLevel3: string;
     typeUserReport: string;
+    typeLivingPerson: string;
+    typeRightToOblivion: string;
+    typeImpersonation: string;
+    typeCopyright: string;
+    typeOther: string;
     colDate: string;
     colType: string;
     colBiography: string;
@@ -1904,6 +1909,11 @@ export const translations: Record<Language, Translations> = {
       typeLevel2: 'Level 2 – Review',
       typeLevel3: 'Level 3 – Warning',
       typeUserReport: 'User Report',
+      typeLivingPerson: 'Living Person',
+      typeRightToOblivion: 'Right to Oblivion',
+      typeImpersonation: 'Impersonation',
+      typeCopyright: 'Copyright',
+      typeOther: 'Other',
       colDate: 'Date',
       colType: 'Type',
       colBiography: 'Biography',
@@ -3020,6 +3030,11 @@ export const translations: Record<Language, Translations> = {
       typeLevel2: 'Livello 2 – Revisione',
       typeLevel3: 'Livello 3 – Avviso',
       typeUserReport: 'Segnalazione utente',
+      typeLivingPerson: 'Persona vivente',
+      typeRightToOblivion: 'Diritto all\'oblio',
+      typeImpersonation: 'Impersonificazione',
+      typeCopyright: 'Copyright',
+      typeOther: 'Altro',
       colDate: 'Data',
       colType: 'Tipo',
       colBiography: 'Biografia',
@@ -4136,6 +4151,11 @@ export const translations: Record<Language, Translations> = {
       typeLevel2: 'Niveau 2 – Révision',
       typeLevel3: 'Niveau 3 – Avertissement',
       typeUserReport: 'Signalement utilisateur',
+      typeLivingPerson: 'Personne vivante',
+      typeRightToOblivion: 'Droit à l\'oubli',
+      typeImpersonation: 'Usurpation d\'identité',
+      typeCopyright: 'Droits d\'auteur',
+      typeOther: 'Autre',
       colDate: 'Date',
       colType: 'Type',
       colBiography: 'Biographie',
@@ -5252,6 +5272,11 @@ export const translations: Record<Language, Translations> = {
       typeLevel2: 'Stufe 2 – Prüfung',
       typeLevel3: 'Stufe 3 – Warnung',
       typeUserReport: 'Nutzermeldung',
+      typeLivingPerson: 'Lebende Person',
+      typeRightToOblivion: 'Recht auf Vergessen',
+      typeImpersonation: 'Identitätsmissbrauch',
+      typeCopyright: 'Urheberrecht',
+      typeOther: 'Sonstiges',
       colDate: 'Datum',
       colType: 'Typ',
       colBiography: 'Biografie',
