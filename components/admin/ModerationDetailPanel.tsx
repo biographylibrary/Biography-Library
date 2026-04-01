@@ -75,6 +75,12 @@ export function ModerationDetailPanel({ report, onClose, onRefresh }: Moderation
         setLockWarning(`This report is being reviewed by ${name}.`);
       }
     });
+    if (report) {
+      setNotes(report.moderator_notes?.text ?? '');
+      setNotesSaved(false);
+      setDialog(null);
+      setReturnMessage('');
+    }
   }, [report?.id]);
 
   if (!report) return null;
