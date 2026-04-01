@@ -157,15 +157,15 @@ async function fetchBiographyContent(
 interface ScreeningResult {
   passages: Array<{ text: string; section_key: string; reason: string; severity: number }>;
   overall_severity: number;
-  parseError?: boolean;
+  aiError?: boolean;
 }
 
 async function runAiScreening(biographyText: string): Promise<ScreeningResult> {
-  const fallback: ScreeningResult = { passages: [], overall_severity: 0 };
+  const errorResult: ScreeningResult = { passages: [], overall_severity: 0, aiError: true };
 
   if (!INFOMANIAK_TOKEN || !INFOMANIAK_ENDPOINT) {
-    console.warn('[review/submit] Infomaniak AI not configured — skipping screening');
-    return fallback;
+    console.warn('[review/submit] Infomaniak AI not configured — routing to manual review');
+    return errorResult;
   }
 
   const systemPrompt =
@@ -216,7 +216,7 @@ async function runAiScreening(biographyText: string): Promise<ScreeningResult> {
 
     if (!res.ok) {
       console.error('[review/submit] AI HTTP error:', res.status);
-      return fallback;
+      return errorResult;
     }
 
     const aiJson = await res.json();
@@ -225,7 +225,7 @@ async function runAiScreening(biographyText: string): Promise<ScreeningResult> {
     const match = rawText.match(/\{[\s\S]*\}/);
     if (!match) {
       console.error('[review/submit] Could not extract JSON from AI response. Raw text:', rawText);
-      return { ...fallback, parseError: true };
+      return errorResult;
     }
 
     try {
@@ -236,11 +236,11 @@ async function runAiScreening(biographyText: string): Promise<ScreeningResult> {
       };
     } catch (parseErr) {
       console.error('[review/submit] JSON.parse failed. Raw AI text:', rawText, 'Error:', parseErr);
-      return { ...fallback, parseError: true };
+      return errorResult;
     }
   } catch (err) {
     console.error('[review/submit] AI screening error:', err);
-    return fallback;
+    return errorResult;
   }
 }
 
@@ -368,15 +368,61 @@ export async function POST(req: NextRequest) {
 
     const screening = await runAiScreening(text);
 
-    if (screening.passages.length === 0) {
-      const screeningStatus = screening.parseError ? 'parse_error' : 'passed';
+    if (screening.aiError) {
+      await serviceClient
+        .from('biographies')
+        .update({
+          status: 'under_review',
+          ai_screening_status: 'ai_error',
+        })
+        .eq('id', biographyId);
 
+      const { data: errorReport } = await serviceClient
+        .from('moderation_reports')
+        .insert({
+          biography_id: biographyId,
+          reporter_id: null,
+          report_type: 'level2_content',
+          description: 'AI screening failed — routed to manual review',
+          status: 'unassigned',
+          ai_analysis: {
+            summary: 'AI screening could not complete. Manual review required.',
+            flagged_passages: [],
+          },
+          ai_violation_level: 0,
+        })
+        .select('id')
+        .maybeSingle();
+
+      const errorReviewerId = await pickReviewer(serviceClient);
+
+      if (errorReviewerId && (errorReport as any)?.id) {
+        await serviceClient
+          .from('moderation_reports')
+          .update({
+            status: 'assigned',
+            assigned_to: errorReviewerId,
+            assigned_at: new Date().toISOString(),
+          })
+          .eq('id', (errorReport as any).id);
+
+        const assignMsg =
+          REVIEW_ASSIGNED_MESSAGES[contentLanguage] ?? REVIEW_ASSIGNED_MESSAGES['en'];
+        await serviceClient
+          .from('user_notifications')
+          .insert({ user_id: errorReviewerId, message: assignMsg });
+      }
+
+      return NextResponse.json({ result: 'under_review', message: 'submitted for manual review', isRescreen });
+    }
+
+    if (screening.passages.length === 0) {
       await serviceClient
         .from('biographies')
         .update({
           status: 'published',
           published_at: new Date().toISOString(),
-          ai_screening_status: screeningStatus,
+          ai_screening_status: 'passed',
         })
         .eq('id', biographyId);
 
@@ -397,7 +443,7 @@ export async function POST(req: NextRequest) {
         .from('user_notifications')
         .insert({ user_id: authorId, message: autoMsg });
 
-      return NextResponse.json({ result: 'published', screeningStatus, isRescreen });
+      return NextResponse.json({ result: 'published', screeningStatus: 'passed', isRescreen });
     }
 
     const flaggedPassages = screening.passages.map((p) => ({
