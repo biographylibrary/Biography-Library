@@ -58,7 +58,7 @@ export function ModerationDetailPanel({ report, onClose, onRefresh }: Moderation
 
   useEffect(() => {
     if (report) {
-      setNotes(report.moderator_notes ?? '');
+      setNotes(report.moderator_notes?.text ?? '');
       setNotesSaved(false);
       setDialog(null);
       setReturnMessage('');

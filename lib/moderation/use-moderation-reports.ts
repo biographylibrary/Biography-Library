@@ -101,7 +101,7 @@ export function useModerationReports(filters: ModerationFilters): UseModerationR
           ai_violation_level: row.ai_violation_level,
           decision: row.decision,
           decision_reason: row.decision_reason,
-          moderator_notes: row.moderator_notes,
+          moderator_notes: row.moderator_notes as { text: string } | null,
           decided_by: row.decided_by,
           decided_at: row.decided_at,
           created_at: row.created_at,
