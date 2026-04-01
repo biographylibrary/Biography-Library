@@ -914,8 +914,9 @@ export async function generateBiographyPDF(
     specificCredits?: string;
   },
   draftIteration?: number | null,
-  contentLanguage?: string
-): Promise<void> {
+  contentLanguage?: string,
+  previewOnly?: boolean
+): Promise<void | string> {
   if (!biography.id) {
     throw new Error('MISSING_BIOGRAPHY_ID');
   }
@@ -1215,6 +1216,10 @@ export async function generateBiographyPDF(
     allRightsRaw,
     biography.created_at
   );
+
+  if (previewOnly) {
+    return doc.output('bloburl') as unknown as string;
+  }
 
   const safeName = biography.title.replace(/[^a-z0-9]/gi, '-').toLowerCase();
   const dateStamp = new Date().toISOString().split('T')[0];
