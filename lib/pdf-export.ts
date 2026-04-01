@@ -533,7 +533,7 @@ async function fetchGalleryPhotos(biographyId: string): Promise<GalleryPhoto[]> 
     .from('biography_media')
     .select('id, file_url, caption, layout, display_order')
     .eq('biography_id', biographyId)
-    .in('layout', ['full-page', 'two-vertical'])
+    .in('layout', ['full-page', 'two-vertical', 'two-horizontal', 'three-mixed'])
     .order('display_order', { ascending: true });
 
   return (data as GalleryPhoto[] | null) ?? [];
@@ -627,6 +627,90 @@ function renderTwoVerticalPhotos(
   }
 }
 
+function renderTwoHorizontalPhotos(
+  state: PdfState,
+  photoA: { base64: string; format: string; caption: string | null },
+  photoB: { base64: string; format: string; caption: string | null } | null
+): void {
+  addNewPage(state, false);
+
+  const { doc } = state;
+  const totalW = B5_W - MARGIN_INNER - MARGIN_OUTER;
+  const GAP = 4;
+  const captionH = ptToMm(PT_CAPTION * LINE_HEIGHT_BODY) + 3;
+  const photoH = (B5_H - MARGIN_TOP - MARGIN_BOTTOM - GAP - captionH * 2) / 2;
+
+  const topY = MARGIN_TOP;
+  const bottomY = MARGIN_TOP + photoH + GAP + captionH;
+
+  doc.addImage(photoA.base64, photoA.format, MARGIN_INNER, topY, totalW, photoH);
+  if (photoB) {
+    doc.addImage(photoB.base64, photoB.format, MARGIN_INNER, bottomY, totalW, photoH);
+  }
+
+  applyFont(doc, 'italic');
+  doc.setFontSize(PT_CAPTION);
+  doc.setTextColor(80, 80, 80);
+  const lineH = ptToMm(PT_CAPTION * LINE_HEIGHT_BODY);
+
+  if (photoA.caption?.trim()) {
+    const captionY = topY + photoH + 3;
+    const lines = doc.splitTextToSize(photoA.caption.trim(), totalW) as string[];
+    lines.forEach((line: string, i: number) => {
+      doc.text(line, MARGIN_INNER + totalW / 2, captionY + i * lineH, { align: 'center' });
+    });
+  }
+  if (photoB?.caption?.trim()) {
+    const captionY = bottomY + photoH + 3;
+    const lines = doc.splitTextToSize(photoB.caption.trim(), totalW) as string[];
+    lines.forEach((line: string, i: number) => {
+      doc.text(line, MARGIN_INNER + totalW / 2, captionY + i * lineH, { align: 'center' });
+    });
+  }
+}
+
+function renderThreeMixedPhotos(
+  state: PdfState,
+  photoA: { base64: string; format: string; caption: string | null },
+  photoB: { base64: string; format: string; caption: string | null } | null,
+  photoC: { base64: string; format: string; caption: string | null } | null
+): void {
+  addNewPage(state, false);
+
+  const { doc } = state;
+  const totalW = B5_W - MARGIN_INNER - MARGIN_OUTER;
+  const GAP = 4;
+  const captionH = ptToMm(PT_CAPTION * LINE_HEIGHT_BODY) + 3;
+  const totalH = B5_H - MARGIN_TOP - MARGIN_BOTTOM - captionH;
+
+  const topH = totalH * 0.55;
+  const bottomH = totalH - topH - GAP;
+  const halfW = (totalW - GAP) / 2;
+
+  const topY = MARGIN_TOP;
+  const bottomY = MARGIN_TOP + topH + GAP;
+
+  doc.addImage(photoA.base64, photoA.format, MARGIN_INNER, topY, totalW, topH);
+  if (photoB) {
+    doc.addImage(photoB.base64, photoB.format, MARGIN_INNER, bottomY, halfW, bottomH);
+  }
+  if (photoC) {
+    doc.addImage(photoC.base64, photoC.format, MARGIN_INNER + halfW + GAP, bottomY, halfW, bottomH);
+  }
+
+  if (photoA.caption?.trim()) {
+    applyFont(doc, 'italic');
+    doc.setFontSize(PT_CAPTION);
+    doc.setTextColor(80, 80, 80);
+    const captionY = topY + topH + 1;
+    const lines = doc.splitTextToSize(photoA.caption.trim(), totalW) as string[];
+    const lineH = ptToMm(PT_CAPTION * LINE_HEIGHT_BODY);
+    lines.forEach((line: string, i: number) => {
+      doc.text(line, MARGIN_INNER + totalW / 2, captionY + i * lineH, { align: 'center' });
+    });
+  }
+}
+
 async function renderGalleryPhotosForSection(
   state: PdfState,
   photos: GalleryPhoto[]
@@ -653,6 +737,39 @@ async function renderGalleryPhotosForSection(
         renderTwoVerticalPhotos(state, { ...resolvedA, caption: photo.caption }, resolvedB ? { ...resolvedB, caption: nextPhoto!.caption } : null);
       }
       i += nextPhoto ? 2 : 1;
+    } else if (photo.layout === 'two-horizontal') {
+      const nextPhoto = i + 1 < photos.length && photos[i + 1].layout === 'two-horizontal'
+        ? photos[i + 1]
+        : null;
+
+      const resolvedA = await fetchPhotoBase64(photo.file_url);
+      const resolvedB = nextPhoto ? await fetchPhotoBase64(nextPhoto.file_url) : null;
+
+      if (resolvedA) {
+        renderTwoHorizontalPhotos(state, { ...resolvedA, caption: photo.caption }, resolvedB ? { ...resolvedB, caption: nextPhoto!.caption } : null);
+      }
+      i += nextPhoto ? 2 : 1;
+    } else if (photo.layout === 'three-mixed') {
+      const photoB = i + 1 < photos.length && photos[i + 1].layout === 'three-mixed'
+        ? photos[i + 1]
+        : null;
+      const photoC = photoB && i + 2 < photos.length && photos[i + 2].layout === 'three-mixed'
+        ? photos[i + 2]
+        : null;
+
+      const resolvedA = await fetchPhotoBase64(photo.file_url);
+      const resolvedB = photoB ? await fetchPhotoBase64(photoB.file_url) : null;
+      const resolvedC = photoC ? await fetchPhotoBase64(photoC.file_url) : null;
+
+      if (resolvedA) {
+        renderThreeMixedPhotos(
+          state,
+          { ...resolvedA, caption: photo.caption },
+          resolvedB ? { ...resolvedB, caption: photoB!.caption } : null,
+          resolvedC ? { ...resolvedC, caption: photoC!.caption } : null
+        );
+      }
+      i += (photoC ? 3 : photoB ? 2 : 1);
     } else {
       i++;
     }
