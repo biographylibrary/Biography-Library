@@ -12,7 +12,6 @@ const STAFF_ROLES = new Set(['reviewer', 'admin', 'super_admin']);
 
 const SUBMIT_THROTTLE_WINDOW_SECS = 60;
 const SUBMIT_THROTTLE_MAX = 3;
-const SUBMIT_CLEANUP_SECS = 300;
 
 const AUTO_PUBLISHED_MESSAGES: Record<string, string> = {
   en: 'Your biography has been reviewed and published automatically.',
@@ -57,31 +56,16 @@ function buildAnonClient(jwt: string): AnyClient {
 }
 
 async function checkPerUserThrottle(supabase: AnyClient, userId: string): Promise<boolean> {
-  const windowStart = new Date(Date.now() - SUBMIT_THROTTLE_WINDOW_SECS * 1000).toISOString();
-  const cleanupCutoff = new Date(Date.now() - SUBMIT_CLEANUP_SECS * 1000).toISOString();
-
-  await supabase
-    .from('ai_rate_limits')
-    .delete()
-    .eq('user_id', userId)
-    .lt('created_at', cleanupCutoff);
-
-  const { count } = await supabase
-    .from('ai_rate_limits')
-    .select('id', { count: 'exact', head: true })
-    .eq('user_id', userId)
-    .eq('action', 'review_submit')
-    .gte('created_at', windowStart);
-
-  if ((count ?? 0) >= SUBMIT_THROTTLE_MAX) {
-    return false;
+  const { data, error } = await supabase.rpc('check_and_record_submit_attempt', {
+    p_user_id: userId,
+    p_window_secs: SUBMIT_THROTTLE_WINDOW_SECS,
+    p_max_attempts: SUBMIT_THROTTLE_MAX,
+  });
+  if (error) {
+    console.error('[review/submit] Throttle RPC error:', error);
+    return true;
   }
-
-  await supabase
-    .from('ai_rate_limits')
-    .insert({ user_id: userId, action: 'review_submit' });
-
-  return true;
+  return data === true;
 }
 
 async function fetchPreviousRejectionReport(
