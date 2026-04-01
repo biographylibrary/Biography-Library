@@ -15,7 +15,7 @@ import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
-import { Download, Loader as Loader2, Info, TriangleAlert as AlertTriangle, X, RefreshCw, FileWarning } from 'lucide-react';
+import { Download, Loader as Loader2, Info, TriangleAlert as AlertTriangle, X, RefreshCw, FileWarning, Eye } from 'lucide-react';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -76,6 +76,8 @@ export function AdvancedExportDialog({
   const [draftIteration, setDraftIteration] = useState<number | null>(null);
   const [contentLanguage, setContentLanguage] = useState<string>('en');
   const [showFinalDraftConfirm, setShowFinalDraftConfirm] = useState(false);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [isPreviewing, setIsPreviewing] = useState(false);
 
   const isPdfFormat = format === 'pdf-b5-standard';
 
@@ -328,6 +330,56 @@ export function AdvancedExportDialog({
     await performExport(nextIteration);
   };
 
+  const handlePreview = async () => {
+    setIsPreviewing(true);
+    setExportError(null);
+    try {
+      const isFreeFlow = biography.biography_mode === 'freeflow';
+
+      let biographyForPreview = biography;
+
+      if (!isFreeFlow) {
+        const sectionsToExport = getSectionsToExport();
+        if (sectionsToExport.length > 0) {
+          biographyForPreview = {
+            ...biography,
+            content: Object.fromEntries(
+              sectionsToExport.map((s) => [s.key, { text: biography.content[s.key]?.text ?? '' }])
+            ),
+          };
+        }
+      }
+
+      const url = await generateBiographyPDF(
+        biographyForPreview,
+        'b5-standard',
+        {
+          createdWith: t.exportDialog.createdWith,
+          allRightsReserved: t.exportDialog.allRightsReserved,
+          preface: t.exportDialog.preface,
+          epilogue: t.exportDialog.epilogue,
+          acknowledgements: t.exportDialog.acknowledgements,
+          specificCredits: t.exportDialog.specificCredits,
+        },
+        draftIteration,
+        contentLanguage,
+        true
+      ) as string;
+
+      setPreviewUrl(url);
+    } catch (error: any) {
+      if (error?.message === 'MISSING_COVER_PHOTO' || error?.message === 'MISSING_BIOGRAPHY_ID') {
+        setExportError(t.exportDialog.noCoverPhotoWarning);
+      } else if (error?.message === 'FONT_LOAD_FAILED') {
+        setExportError(t.exportDialog.fontLoadError);
+      } else {
+        setExportError(t.exportDialog.exportError);
+      }
+    } finally {
+      setIsPreviewing(false);
+    }
+  };
+
   const allFormats: { value: ExportFormat; label: string; pdfOnly?: boolean }[] = [
     { value: 'pdf-b5-standard', label: t.exportDialog.pdfB5Standard, pdfOnly: true },
     { value: 'txt', label: t.exportDialog.txtFormat },
@@ -565,6 +617,27 @@ export function AdvancedExportDialog({
           </div>
         </ScrollArea>
 
+        {previewUrl && (
+          <div className="border border-border rounded-lg overflow-hidden flex flex-col" style={{ height: '420px' }}>
+            <div className="flex items-center justify-between px-3 py-2 bg-muted/50 border-b border-border shrink-0">
+              <span className="text-xs font-medium text-muted-foreground">PDF Preview</span>
+              <button
+                type="button"
+                onClick={() => setPreviewUrl(null)}
+                className="text-muted-foreground hover:text-foreground transition-colors"
+                aria-label="Close preview"
+              >
+                <X className="h-3.5 w-3.5" />
+              </button>
+            </div>
+            <iframe
+              src={previewUrl}
+              className="flex-1 w-full"
+              title="PDF Preview"
+            />
+          </div>
+        )}
+
         <div className="px-1 pb-2">
           <p className="text-xs text-muted-foreground leading-relaxed">
             {biography.biography_mode === 'freeflow'
@@ -578,14 +651,34 @@ export function AdvancedExportDialog({
             type="button"
             variant="outline"
             onClick={() => onOpenChange(false)}
-            disabled={isExporting}
+            disabled={isExporting || isPreviewing}
           >
             {t.exportDialog.cancel}
           </Button>
+          {isPdfFormat && (
+            <Button
+              type="button"
+              variant="outline"
+              onClick={handlePreview}
+              disabled={isExporting || isPreviewing || pdfNotReady}
+            >
+              {isPreviewing ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Generating...
+                </>
+              ) : (
+                <>
+                  <Eye className="mr-2 h-4 w-4" />
+                  Preview
+                </>
+              )}
+            </Button>
+          )}
           <Button
             type="button"
             onClick={handleExport}
-            disabled={downloadDisabled}
+            disabled={downloadDisabled || isPreviewing}
           >
             {isExporting ? (
               <>
