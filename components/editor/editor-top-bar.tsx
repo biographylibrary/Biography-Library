@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { useTranslation } from '@/lib/i18n/i18n-context';
 import { ArrowLeft, Check, CloudOff, Loader as Loader2, Lock, Users, Globe, BookOpen, Snowflake } from 'lucide-react';
 
@@ -146,15 +147,24 @@ export function EditorTopBar({
           </div>
 
           {!isFrozen && (
-            <Button
-              variant="ghost"
-              size="sm"
-              className="gap-1.5 text-xs h-8"
-              onClick={() => onPrivacyChange(nextPrivacy)}
-            >
-              <CurrentPrivacyIcon className="h-3.5 w-3.5" />
-              <span className="hidden sm:inline">{privacyLabels[privacy]}</span>
-            </Button>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="gap-1.5 text-xs h-8"
+                    onClick={() => onPrivacyChange(nextPrivacy)}
+                  >
+                    <CurrentPrivacyIcon className="h-3.5 w-3.5" />
+                    <span className="hidden sm:inline">{privacyLabels[privacy]}</span>
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent side="bottom">
+                  {t.biography.privacyLabel}: {privacyLabels[privacy]}
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
           )}
 
           {isFrozen && (

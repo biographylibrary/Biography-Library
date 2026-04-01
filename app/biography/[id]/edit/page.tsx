@@ -331,8 +331,14 @@ const [isPublishing, setIsPublishing] = useState(false);
     (newPrivacy: 'private' | 'link-only' | 'public') => {
       setPrivacy(newPrivacy);
       markDirty();
+      const privacyLabels: Record<'private' | 'link-only' | 'public', string> = {
+        private: t.dashboard.private,
+        'link-only': t.dashboard.family,
+        public: t.dashboard.public,
+      };
+      toast.success(`${t.biography.privacyLabel}: ${privacyLabels[newPrivacy]}`);
     },
-    [markDirty]
+    [markDirty, t]
   );
 
   const handleModeChange = useCallback(

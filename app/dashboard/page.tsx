@@ -32,10 +32,14 @@ export default function DashboardPage() {
   const [resendLoading, setResendLoading] = useState(false);
   const [resendSuccess, setResendSuccess] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const [needsWelcome, setNeedsWelcome] = useState(false);
   const { t, language } = useTranslation();
 
   useEffect(() => {
     setMounted(true);
+    if (!localStorage.getItem('hasSeenWelcome')) {
+      setNeedsWelcome(true);
+    }
   }, []);
 
   useEffect(() => {
@@ -160,12 +164,19 @@ export default function DashboardPage() {
     );
   }
 
+  if (needsWelcome) {
+    return (
+      <div className="h-full bg-[#ECE9E4] dark:bg-[#1F2121] flex items-center justify-center">
+        <WelcomeLanguageModal open={true} onComplete={() => setNeedsWelcome(false)} />
+      </div>
+    );
+  }
+
   const displayName =
     user.user_metadata?.name || user.email?.split('@')[0] || 'there';
 
   return (
     <div className="h-full bg-[#ECE9E4] dark:bg-[#1F2121] flex items-center justify-center">
-      <WelcomeLanguageModal />
 
       <main className="w-full max-w-2xl px-4 sm:px-6 py-8">
         {isLoadingBios ? (

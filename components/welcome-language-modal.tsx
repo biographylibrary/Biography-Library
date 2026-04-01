@@ -13,29 +13,40 @@ import { useTranslation } from '@/lib/i18n/i18n-context';
 import { Language, languageNames, languageFlags } from '@/lib/i18n/translations';
 import { useAuth } from '@/lib/auth-context';
 
-export function WelcomeLanguageModal() {
-  const [isOpen, setIsOpen] = useState(false);
+interface WelcomeLanguageModalProps {
+  open?: boolean;
+  onComplete?: () => void;
+}
+
+export function WelcomeLanguageModal({ open, onComplete }: WelcomeLanguageModalProps = {}) {
+  const [internalOpen, setInternalOpen] = useState(false);
   const [selectedLang, setSelectedLang] = useState<Language>('en');
   const { setLanguage, t } = useTranslation();
   const { user } = useAuth();
 
+  const isControlled = open !== undefined;
+  const isOpen = isControlled ? open : internalOpen;
+
   useEffect(() => {
-    if (user) {
+    if (!isControlled && user) {
       const hasSeenWelcome = localStorage.getItem('hasSeenWelcome');
       if (!hasSeenWelcome) {
-        setIsOpen(true);
+        setInternalOpen(true);
       }
     }
-  }, [user]);
+  }, [user, isControlled]);
 
   const handleContinue = async () => {
     await setLanguage(selectedLang);
     localStorage.setItem('hasSeenWelcome', 'true');
-    setIsOpen(false);
+    if (!isControlled) {
+      setInternalOpen(false);
+    }
+    onComplete?.();
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={setIsOpen}>
+    <Dialog open={isOpen} onOpenChange={isControlled ? undefined : setInternalOpen}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle className="text-2xl">{t.welcome.title}</DialogTitle>

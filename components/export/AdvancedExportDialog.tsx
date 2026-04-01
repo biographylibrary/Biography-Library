@@ -683,7 +683,12 @@ export function AdvancedExportDialog({
           </p>
         </div>
 
-        <DialogFooter className="gap-2">
+        <DialogFooter className="gap-2 flex-col sm:flex-row items-end sm:items-center">
+          {!isPublished && isPdfFormat && (
+            <span className="text-xs text-muted-foreground sm:mr-auto">
+              {(draftIteration ?? 0)} of 3 drafts used
+            </span>
+          )}
           <Button
             type="button"
             variant="outline"
