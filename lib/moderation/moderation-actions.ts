@@ -51,7 +51,7 @@ export async function submitDecision(
 export async function saveModeratorNotes(reportId: string, notes: string): Promise<{ error: string | null }> {
   const { error } = await supabase
     .from('moderation_reports')
-    .update({ moderator_notes: { text: notes } })
+    .update({ moderator_notes: notes })
     .eq('id', reportId);
 
   return { error: error?.message ?? null };
