@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { ModerationReport, FlaggedPassage } from '@/lib/moderation/types';
-import { takeOwnership, submitDecision, saveModeratorNotes } from '@/lib/moderation/moderation-actions';
+import { takeOwnership, claimReportReview, submitDecision, saveModeratorNotes } from '@/lib/moderation/moderation-actions';
 import { useTranslation } from '@/lib/i18n/i18n-context';
 import { useAuth } from '@/lib/auth-context';
 import {
@@ -23,10 +23,9 @@ import {
 } from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { Separator } from '@/components/ui/separator';
 import { ReportTypeBadge } from './ReportTypeBadge';
 import { ReportStatusBadge } from './ReportStatusBadge';
-import { ExternalLink, TriangleAlert as AlertTriangle, FileText, MessageSquare, BookOpen } from 'lucide-react';
+import { ExternalLink, TriangleAlert as AlertTriangle, FileText, MessageSquare, BookOpen, CircleAlert as AlertCircle } from 'lucide-react';
 
 interface ModerationDetailPanelProps {
   report: ModerationReport | null;
@@ -55,21 +54,34 @@ export function ModerationDetailPanel({ report, onClose, onRefresh }: Moderation
   const [notes, setNotes] = useState('');
   const [savingNotes, setSavingNotes] = useState(false);
   const [notesSaved, setNotesSaved] = useState(false);
+  const [lockWarning, setLockWarning] = useState<string | null>(null);
+  const [conflictError, setConflictError] = useState(false);
 
   useEffect(() => {
-    if (report) {
-      setNotes(report.moderator_notes?.text ?? '');
-      setNotesSaved(false);
-      setDialog(null);
-      setReturnMessage('');
-    }
+    if (!report || !user) return;
+
+    setNotes(report.moderator_notes?.text ?? '');
+    setNotesSaved(false);
+    setDialog(null);
+    setReturnMessage('');
+    setLockWarning(null);
+    setConflictError(false);
+
+    if (report.status !== 'in_review' || report.assigned_moderator_id !== user.id) return;
+
+    claimReportReview(report.id, user.id).then((result) => {
+      if (!result.claimed && result.error === null) {
+        const name = result.claimedByName ?? 'another reviewer';
+        setLockWarning(`This report is being reviewed by ${name}.`);
+      }
+    });
   }, [report?.id]);
 
   if (!report) return null;
 
   const isAssignedToMe = report.assigned_moderator_id === user?.id;
   const isUnassigned = report.status === 'unassigned';
-  const canAct = report.status === 'in_review' && isAssignedToMe;
+  const canAct = report.status === 'in_review' && isAssignedToMe && !lockWarning;
   const isDecided = report.status === 'decided';
 
   const flaggedPassages: FlaggedPassage[] = Array.isArray(report.ai_analysis?.flagged_passages)
@@ -87,6 +99,7 @@ export function ModerationDetailPanel({ report, onClose, onRefresh }: Moderation
   async function handleDecision(type: DialogType) {
     if (!type || !user || !report) return;
     setSubmitting(true);
+    setConflictError(false);
 
     let decision: 'publish' | 'publish_warning' | 'returned' | 'removed';
     let biographyStatus: 'published' | 'draft' | 'removed';
@@ -115,7 +128,7 @@ export function ModerationDetailPanel({ report, onClose, onRefresh }: Moderation
         break;
     }
 
-    await submitDecision(
+    const result = await submitDecision(
       report.id,
       report.biography_id,
       report.biography_author_id!,
@@ -127,6 +140,14 @@ export function ModerationDetailPanel({ report, onClose, onRefresh }: Moderation
 
     setSubmitting(false);
     setDialog(null);
+
+    if (result.conflict) {
+      setConflictError(true);
+      return;
+    }
+
+    if (result.error) return;
+
     onRefresh();
     onClose();
   }
@@ -158,6 +179,25 @@ export function ModerationDetailPanel({ report, onClose, onRefresh }: Moderation
           </SheetHeader>
 
           <div className="flex-1 overflow-y-auto divide-y divide-border">
+
+            {(lockWarning || conflictError) && (
+              <div className="px-6 py-4 space-y-2">
+                {lockWarning && (
+                  <div className="flex items-start gap-3 rounded-lg border border-amber-300 bg-amber-50 dark:bg-amber-950/20 dark:border-amber-700 px-4 py-3">
+                    <AlertCircle className="h-4 w-4 text-amber-600 dark:text-amber-400 mt-0.5 shrink-0" />
+                    <p className="text-sm text-amber-800 dark:text-amber-200">{lockWarning}</p>
+                  </div>
+                )}
+                {conflictError && (
+                  <div className="flex items-start gap-3 rounded-lg border border-red-300 bg-red-50 dark:bg-red-950/20 dark:border-red-700 px-4 py-3">
+                    <AlertCircle className="h-4 w-4 text-red-600 dark:text-red-400 mt-0.5 shrink-0" />
+                    <p className="text-sm text-red-800 dark:text-red-200">
+                      Another reviewer submitted a decision while you were reviewing. Please reload.
+                    </p>
+                  </div>
+                )}
+              </div>
+            )}
 
             {/* SECTION 1 – Biography Info */}
             <section className="px-6 py-5 space-y-3">

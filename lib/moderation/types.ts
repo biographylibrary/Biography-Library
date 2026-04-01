@@ -64,6 +64,9 @@ export interface ModerationReport {
   moderator_notes: ModeratorNotes | null;
   decided_by: string | null;
   decided_at: string | null;
+  reviewed_by: string | null;
+  reviewed_at: string | null;
+  reviewed_by_name: string | null;
   created_at: string;
   updated_at: string;
   biography_title: string | null;

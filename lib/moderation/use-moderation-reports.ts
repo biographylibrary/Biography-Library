@@ -46,6 +46,8 @@ export function useModerationReports(filters: ModerationFilters): UseModerationR
             moderator_notes,
             decided_by,
             decided_at,
+            reviewed_by,
+            reviewed_at,
             created_at,
             updated_at,
             biographies!biography_id (
@@ -75,16 +77,19 @@ export function useModerationReports(filters: ModerationFilters): UseModerationR
         }
 
         const authorIds = Array.from(new Set((data ?? []).map((r: any) => r.biographies?.user_id).filter(Boolean)));
-        let authorMap: Record<string, string> = {};
-        if (authorIds.length > 0) {
+        const reviewerIds = Array.from(new Set((data ?? []).map((r: any) => r.reviewed_by).filter(Boolean)));
+        const profileIds = Array.from(new Set([...authorIds, ...reviewerIds]));
+        let profileMap: Record<string, string> = {};
+        if (profileIds.length > 0) {
           const { data: profiles } = await supabase
             .from('profiles')
             .select('id, name')
-            .in('id', authorIds);
+            .in('id', profileIds);
           for (const p of profiles ?? []) {
-            authorMap[p.id] = p.name;
+            profileMap[p.id] = p.name;
           }
         }
+        const authorMap = profileMap;
 
         const mapped: ModerationReport[] = (data ?? []).map((row: any) => ({
           id: row.id,
@@ -104,6 +109,9 @@ export function useModerationReports(filters: ModerationFilters): UseModerationR
           moderator_notes: row.moderator_notes,
           decided_by: row.decided_by,
           decided_at: row.decided_at,
+          reviewed_by: row.reviewed_by ?? null,
+          reviewed_at: row.reviewed_at ?? null,
+          reviewed_by_name: row.reviewed_by ? (profileMap[row.reviewed_by] ?? null) : null,
           created_at: row.created_at,
           updated_at: row.updated_at,
           biography_title: row.biographies?.title ?? null,
