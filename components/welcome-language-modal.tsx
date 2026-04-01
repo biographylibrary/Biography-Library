@@ -50,7 +50,7 @@ export function WelcomeLanguageModal() {
                 className={`flex items-center gap-3 p-4 rounded-lg border-2 transition-colors ${
                   selectedLang === lang
                     ? 'border-primary bg-primary/5'
-                    : 'border-border hover:border-primary/50'
+                    : 'border-border hover:border-[#C4DAEB] hover:bg-[#C4DAEB]/20'
                 }`}
               >
                 <span className="text-2xl">{languageFlags[lang]}</span>
