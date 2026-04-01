@@ -7,7 +7,7 @@ export interface Biography {
   author_name: string;
   content: Record<string, unknown>;
   visibility: 'private' | 'link-only' | 'public';
-  status: 'draft' | 'completed' | 'sections_complete' | 'final_version' | 'published' | 'under_review';
+  status: 'draft' | 'sections_complete' | 'final_version' | 'published' | 'under_review';
   share_token: string | null;
   completed_at: string | null;
   created_at: string;

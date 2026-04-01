@@ -135,11 +135,11 @@ export function MainBiographyCard({ biography, userName, userId, onDeleteClick, 
 
   const getStatusBadgeConfig = (status: string) => {
     switch (status) {
-      case 'completed':
+      case 'sections_complete':
       case 'approved':
       case 'ready_to_publish':
         return {
-          text: status === 'completed' ? t.dashboard.completed :
+          text: status === 'sections_complete' ? t.dashboard.completed :
                 status === 'approved' ? t.dashboard.statusApproved :
                 t.dashboard.statusPublished,
           className: 'bg-[#C8DFBE] text-[#121212]'

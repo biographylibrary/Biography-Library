@@ -129,7 +129,7 @@ export function AICoachCard({ biographies, userName, userId }: AICoachCardProps)
   const getMilestones = () => {
     const totalWords = getTotalWords();
     const completedSections = getCompletedSectionCount();
-    const completedBios = biographies.filter(b => b.status === 'completed').length;
+    const completedBios = biographies.filter(b => b.status === 'sections_complete').length;
 
     const milestones = [];
     if (totalWords >= 100) {

@@ -70,7 +70,7 @@ export default function BiographyEditorPage() {
   const [privacy, setPrivacy] = useState<'private' | 'link-only' | 'public'>(
     'private'
   );
-  const [status, setStatus] = useState<'draft' | 'completed'>('draft');
+  const [status, setStatus] = useState<'draft' | 'sections_complete'>('draft');
   const [shareToken, setShareToken] = useState<string | null>(null);
   const [content, setContent] = useState<BiographyContent>(getEmptyContent());
   const [activeSection, setActiveSection] = useState<string>(
@@ -433,13 +433,13 @@ const [isPublishing, setIsPublishing] = useState(false);
   }, [activeSection]);
 
   const handleMarkComplete = useCallback(async () => {
-    const newStatus = status === 'completed' ? 'draft' : 'completed';
+    const newStatus = status === 'sections_complete' ? 'draft' : 'sections_complete';
     try {
       const { error } = await supabase
         .from('biographies')
         .update({
           status: newStatus,
-          completed_at: newStatus === 'completed' ? new Date().toISOString() : null,
+          completed_at: newStatus === 'sections_complete' ? new Date().toISOString() : null,
         })
         .eq('id', id);
 
