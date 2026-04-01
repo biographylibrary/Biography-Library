@@ -1,192 +1,140 @@
 # Biography Library
 
-A modern, multilingual biography creation platform that helps preserve life stories and family memories. Built with Next.js, Supabase, and AI assistance.
+A multilingual, open-source platform for writing, preserving, and sharing personal biographies and memoirs. Authors write section-by-section with optional AI assistance; biographies pass through an AI screening and human moderation workflow before publication.
 
-## Features
+Developed by **Biography Library Association**, a Swiss non-profit based in Lugano, Ticino.
+Licensed under **AGPL v3** — see [LICENSE](./LICENSE).
 
-### Multi-Language Support
-- **Four Languages**: English, Italiano, Français, Deutsch
-- **UI Translation**: Complete interface translation for all supported languages
-- **Content Localization**: Each biography can be written in a different language
-- **AI Assistance**: AI-powered writing suggestions, grammar checking, and guided prompts in the user's selected language
-- **Language Persistence**: User language preference saved across sessions
+---
 
-### Biography Management
-- **Structured Sections**: Organized biography sections (Early Years, Family, Education, Career, etc.)
-- **Privacy Levels**: Private, Family, or Public sharing options
-- **Rich Editor**: Intuitive text editor with formatting toolbar
-- **Voice Recording**: Record memories and transcribe to text
-- **Draft & Completion Status**: Track biography progress
+## Key Features
 
-### AI-Powered Features
-- **Grammar Checking**: AI-powered grammar and style suggestions in multiple languages
-- **Content Expansion**: Get help expanding your stories with AI
-- **Guided Prompts**: Receive thoughtful questions to help spark memories
-- **Smart Suggestions**: Context-aware writing assistance
+- **Structured or free-flow editor** — write by life sections (Early Years, Family, Career…) or as a single narrative
+- **AI writing assistant** — grammar checks, content expansion, and guided memory prompts (Infomaniak / Mistral)
+- **Voice recording** — record and auto-transcribe memories directly in the editor
+- **Publication workflow** — AI pre-screening → human moderation → publish, with revision cycles
+- **PDF export** — professional multi-page PDF with cover photo, dedication, epilogue, and up to 3 draft watermarks
+- **Multilingual UI** — English, Italiano, Français, Deutsch; each biography can be in its own language
+- **Privacy controls** — private / link-only / public visibility with share-token access
+- **Admin panel** — moderation queue, user management, AI usage stats
+- **PWA** — installable on mobile
 
-### Sharing & Export
-- **Share Links**: Generate public links to share biographies with family
-- **PDF Export**: Export biographies to professional PDF format
+---
 
 ## Tech Stack
 
-- **Framework**: Next.js 13 (App Router)
-- **Database**: Supabase (PostgreSQL)
-- **Authentication**: Supabase Auth (email/password)
-- **Styling**: Tailwind CSS + shadcn/ui components
-- **AI**: Edge Functions with AI integration
-- **Internationalization**: Custom i18n solution
-- **Deployment**: Netlify
+| Layer | Technology |
+|---|---|
+| Framework | Next.js 13 (App Router) |
+| Database | Supabase (PostgreSQL + RLS) |
+| Auth | Supabase Auth (email/password) |
+| Serverless | Supabase Edge Functions (Deno) |
+| AI | Infomaniak AI Tools (OpenAI-compatible, Mistral) |
+| Editor | Tiptap |
+| Styling | Tailwind CSS + shadcn/ui |
+| PDF | jsPDF |
+| Deployment | Netlify |
+
+---
+
+## Local Setup
+
+### Prerequisites
+
+- Node.js 18+
+- A [Supabase](https://supabase.com) project (free tier is fine)
+
+### Steps
+
+```bash
+# 1. Clone
+git clone <repository-url>
+cd biography-library
+
+# 2. Install dependencies
+npm install
+
+# 3. Configure environment
+cp .env.example .env
+# Edit .env with your Supabase credentials (see below)
+
+# 4. Apply database migrations
+# Use the Supabase dashboard → SQL Editor, or the Supabase CLI:
+supabase db push
+
+# 5. Start the dev server
+npm run dev
+```
+
+Open [http://localhost:3000](http://localhost:3000).
+
+---
 
 ## Environment Variables
 
-Create a `.env` file in the project root with the following variables:
+Copy `.env.example` to `.env` and fill in:
 
 ```env
-# Supabase Configuration
-NEXT_PUBLIC_SUPABASE_URL=your_supabase_project_url
-NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+# Required — Supabase project
+NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your_anon_key
+
+# Required for AI features — set in Supabase Edge Function secrets
+INFOMANIAK_AI_TOKEN=your_token
+INFOMANIAK_AI_ENDPOINT=https://api.infomaniak.com/2/ai/107001/openai/v1/chat/completions
+INFOMANIAK_AI_MODEL=mistral3
+
+# Optional
+NEXT_PUBLIC_APP_URL=http://localhost:3000
+NEXT_PUBLIC_APP_ENV=development
 ```
 
-## Getting Started
+> **AI secrets** (`INFOMANIAK_AI_TOKEN` etc.) must also be added to your Supabase project's Edge Function secrets so the `ai-assistant` and `audio-transcription` functions can reach the AI endpoint.
 
-### Prerequisites
-- Node.js 18+ and npm
-- Supabase account and project
-
-### Installation
-
-1. **Clone the repository**
-   ```bash
-   git clone <repository-url>
-   cd biography-library
-   ```
-
-2. **Install dependencies**
-   ```bash
-   npm install
-   ```
-
-3. **Set up environment variables**
-   - Copy `.env.example` to `.env`
-   - Add your Supabase credentials
-
-4. **Run database migrations**
-   - Database migrations are automatically applied via Supabase
-   - Check `supabase/migrations/` for schema details
-
-5. **Start development server**
-   ```bash
-   npm run dev
-   ```
-
-   Open [http://localhost:3000](http://localhost:3000) in your browser.
-
-### Building for Production
-
-```bash
-npm run build
-npm run start
-```
+---
 
 ## Project Structure
 
 ```
-biography-library/
-├── app/                      # Next.js App Router pages
-│   ├── dashboard/           # Dashboard page
-│   ├── login/              # Authentication pages
-│   ├── register/
-│   ├── biography/          # Biography edit/view pages
-│   └── layout.tsx          # Root layout
-├── components/              # React components
-│   ├── dashboard/          # Dashboard-specific components
-│   ├── editor/            # Biography editor components
-│   ├── ui/                # shadcn/ui components
-│   └── ...                # Shared components
-├── lib/                    # Utilities and services
-│   ├── i18n/              # Internationalization
-│   │   ├── translations.ts # Translation strings
-│   │   └── i18n-context.tsx # i18n React context
-│   ├── ai-service.ts      # AI integration
-│   ├── supabase.ts        # Supabase client
-│   └── biographies.ts     # Biography CRUD operations
-├── supabase/
-│   ├── functions/         # Edge Functions
-│   │   └── ai-assistant/  # AI assistant endpoint
-│   └── migrations/        # Database migrations
-└── public/                # Static assets
+app/                    # Next.js pages (App Router)
+  biography/[id]/       # Editor and public view
+  admin/                # Moderation, users, AI stats
+  api/review/submit/    # Publication API route
+components/
+  editor/               # Section editor, AI panel, export dialogs
+  admin/                # Moderation UI
+  dashboard/            # Dashboard cards
+lib/
+  ai/                   # AI client, narrative service, smart follow-up
+  i18n/                 # Translation strings and context
+  moderation/           # Moderation actions and types
+  pdf-export.ts         # PDF generation
+supabase/
+  functions/            # Edge Functions (ai-assistant, audio-transcription, help-assistant)
+  migrations/           # Ordered SQL migrations
 ```
 
-## Available Languages
+---
 
-- **English (en)**: Full support for English-speaking users
-- **Italiano (it)**: Completo supporto per utenti italiani
-- **Français (fr)**: Support complet pour les utilisateurs francophones
-- **Deutsch (de)**: Vollständige Unterstützung für deutschsprachige Benutzer
+## Useful Scripts
 
-## Database Schema
-
-### Tables
-- **profiles**: User profiles with language preferences
-- **biographies**: Biography metadata and content
-- **biography_sections**: Individual biography sections
-- **ai_rate_limits**: AI usage tracking
-
-### Row Level Security
-All tables use RLS policies to ensure users can only access their own data.
-
-## Features in Detail
-
-### Language Selection
-- First-time users see a welcome modal to select their preferred language
-- Language can be changed anytime via the header dropdown
-- Each biography can be written in a language independent of the UI language
-
-### Privacy Levels
-- **Private**: Only you can see this biography
-- **Family**: Shareable via secure link
-- **Public**: Accessible to anyone with the link
-
-### AI Features
-- Grammar checking detects errors and suggests improvements
-- Content expansion helps elaborate on brief entries
-- Guided prompts ask thoughtful questions to inspire writing
-- All AI responses are generated in the biography's language
-
-## Development
-
-### Code Style
-- TypeScript for type safety
-- ESLint for code quality
-- Component-based architecture
-- Responsive design (mobile-first)
-
-### Testing
 ```bash
-npm run lint       # Lint code
-npm run typecheck  # Type checking
-npm run build      # Test production build
+npm run dev         # Start dev server
+npm run build       # Production build (run before opening a PR)
+npm run typecheck   # TypeScript check without emitting
+npm run lint        # ESLint
 ```
 
-## Contributing
+---
 
-Contributions are welcome! Please feel free to submit a Pull Request.
+## How to Contribute
 
-## License
+1. **Fork** the repository and create a branch from `main`.
+2. **Check existing issues** before starting — comment to claim one.
+3. **Follow conventions** — TypeScript strict, no comments unless logic is non-obvious, no new UI libraries.
+4. **Database changes** must be a new migration file in `supabase/migrations/` with a descriptive filename and SQL summary comment. Never use `DROP` or destructive operations.
+5. **Run `npm run build` and `npm run typecheck`** before pushing — the PR will be blocked otherwise.
+6. Open a **Pull Request** with a clear description of what changed and why.
+7. All contributions are subject to the AGPL v3 license.
 
-**AGPL v3** - Biography Library is free and open source software to ensure that the preservation of human memory remains a public good, accessible to all, controlled by none.
-
-This project is developed by **Biography Library Association**, a Swiss non-profit organization based in Lugano, Ticino, Switzerland.
-
-- Full license text: See [LICENSE](./LICENSE) file
-- Official website: biographylibrary.org
-- Read our [Manifesto](docs/manifesto.md) biographylibrary.org/manifesto
-
-### Why AGPL v3?
-
-The Affero GPL ensures that if anyone runs a modified version of this software as a service, they must share their modifications. This protects the commons and prevents proprietary forks.
-
-## Support
-
-For questions or support, please open an issue on GitHub or contact the project maintainers.
+For questions, open a GitHub issue or contact the maintainers at [biographylibrary.org](https://biographylibrary.org).
