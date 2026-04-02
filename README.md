@@ -17,7 +17,7 @@ Licensed under **AGPL v3** — see [LICENSE](./LICENSE).
 - **Multilingual UI** — English, Italiano, Français, Deutsch; each biography can be in its own language
 - **Privacy controls** — private / link-only / public visibility with share-token access
 - **Admin panel** — moderation queue, user management, AI usage stats
-- **PWA** — installable on mobile
+- **PWA** — installable on mobile devices
 
 ---
 
