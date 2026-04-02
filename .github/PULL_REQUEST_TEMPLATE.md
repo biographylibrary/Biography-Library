@@ -1,23 +1,23 @@
-## Cosa fa questa PR?
-<!-- Descrivi brevemente le modifiche -->
+## What does this PR do?
+<!-- Briefly describe the changes -->
 
-## Perché è necessaria?
-<!-- Collega l'Issue: Closes #numero -->
+## Why is it needed?
+<!-- Link the related Issue: Closes #number -->
 
-## Tipo di modifica
+## Type of change
 - [ ] Bug fix
-- [ ] Nuova funzionalità
-- [ ] Miglioramento UI/UX
-- [ ] Traduzione
-- [ ] Documentazione
-- [ ] Altro
+- [ ] New feature
+- [ ] UI/UX improvement
+- [ ] Translation
+- [ ] Documentation
+- [ ] Other
 
-## Ho verificato che:
-- [ ] Funziona in locale
-- [ ] Non rompe funzionalità esistenti
-- [ ] Ho testato in light mode e dark mode (per modifiche UI)
-- [ ] Non introduce nuove dipendenze non discusse
-- [ ] Non contiene chiavi API o credenziali
+## I have verified that:
+- [ ] It works locally
+- [ ] It does not break existing functionality
+- [ ] I tested in both light mode and dark mode (for UI changes)
+- [ ] It does not introduce new undiscussed dependencies
+- [ ] It does not contain API keys or credentials
 
-## Screenshot (se cambia la UI)
-<!-- Aggiungi screenshot prima/dopo -->
+## Screenshots (if UI changes)
+<!-- Add before/after screenshots -->
