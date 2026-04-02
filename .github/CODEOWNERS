@@ -1,0 +1,27 @@
+# CODEOWNERS - Biography Library
+# Definisce chi deve approvare le modifiche per area del progetto.
+# GitHub lo rispetta automaticamente per ogni PR.
+
+# Default: tutto il repo richiede approvazione di Claudio
+* @BiographyLibrary
+
+# Database e migrazioni — solo Claudio, sempre
+supabase/migrations/ @BiographyLibrary
+supabase/schema.sql @BiographyLibrary
+supabase/seed.sql @BiographyLibrary
+
+# Sicurezza e Auth — solo Claudio
+lib/auth/ @BiographyLibrary
+middleware.ts @BiographyLibrary
+app/api/auth/ @BiographyLibrary
+
+# AI integration — solo Claudio (scelta etica del provider)
+lib/ai/ @BiographyLibrary
+app/api/ai/ @BiographyLibrary
+
+# Workflow CI/CD — solo Claudio
+.github/workflows/ @BiographyLibrary
+
+# Traduzioni — può approvare anche un futuro maintainer
+# (aggiungere @futuro-maintainer quando sarà il momento)
+# messages/ @BiographyLibrary
