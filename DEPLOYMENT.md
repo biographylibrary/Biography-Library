@@ -105,7 +105,7 @@ Supabase is managed separately from the application host.
 
 **Edge Functions** — Deployed via the Supabase MCP `deploy_edge_function` tool or the Supabase dashboard. There is no CLI-based deploy in this workflow. After deploying, set or update secrets in the dashboard under Project Settings → Edge Functions → Secrets.
 
-**Auth** — Email/password only. Email confirmation is disabled. No OAuth providers. Session tokens are JWTs issued by Supabase Auth.
+**Auth** — Email/password; **email confirmation** is enforced in Supabase (production). Transactional mail uses **custom SMTP** (e.g. Resend) so messages come from the project domain (e.g. `biographylibrary.org`). No OAuth providers in-app. Session tokens are JWTs issued by Supabase Auth.
 
 ### 4. Infomaniak Jelastic (Next.js host)
 
@@ -159,6 +159,8 @@ To update a function: edit `supabase/functions/<slug>/index.ts` and redeploy via
 ---
 
 ## First-time production setup checklist
+
+Per una **sequenza operativa** (merge → migrazioni prod → env → deploy → smoke test su 5 flussi), usare anche [`docs/BETA_RELEASE_CHECKLIST.md`](./docs/BETA_RELEASE_CHECKLIST.md).
 
 - [ ] Supabase project created; URL and anon key copied to host env vars
 - [ ] All migrations applied in order
