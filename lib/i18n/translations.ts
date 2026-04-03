@@ -360,6 +360,15 @@ export interface Translations {
     bookStructureImportCancel: string;
     noChaptersWarning: string;
     revisionRequired: string;
+    /** Same banner list, when flags come from AI screening (under_review), not moderator request_edit */
+    revisionRequiredAiScreening: string;
+    /** Short line under the mustard “human review” banner when partial edit is available */
+    aiScreeningFlaggedEditHint: string;
+    /** Re-run AI screening after editing flagged passages (under_review) */
+    resubmitAiScreening: string;
+    resubmitAiScreeningPublishedToast: string;
+    resubmitAiScreeningStillFlaggedToast: string;
+    resubmitAiScreeningErrorToast: string;
     revisionFlaggedPassages: string;
     revisionReviewerNote: string;
     revisionDismiss: string;
@@ -503,6 +512,8 @@ export interface Translations {
     checkingContent: string;
     publishBlocked: string;
     publishUnderReview: string;
+    tooManyRequests: string;
+    requestFailed: string;
   };
   coach: {
     greeting: string;
@@ -1531,6 +1542,14 @@ export const translations: Record<Language, Translations> = {
       bookStructureImportCancel: 'Cancel',
       noChaptersWarning: 'No chapters defined. The book will be a continuous text without chapter breaks. To add chapters, switch to Sections mode.',
       revisionRequired: 'Revision required. The reviewer flagged the following:',
+      revisionRequiredAiScreening:
+        'Automatic screening flagged the passages below. Edit those parts—or your full final text in one place—then resubmit for screening when ready.',
+      aiScreeningFlaggedEditHint:
+        'You may edit only the sections listed below, or adjust the complete final text above. A reviewer will still verify the report.',
+      resubmitAiScreening: 'Resubmit for screening',
+      resubmitAiScreeningPublishedToast: 'Screening passed — your biography is now live.',
+      resubmitAiScreeningStillFlaggedToast: 'The screener still flagged passages. The list below is updated.',
+      resubmitAiScreeningErrorToast: 'Automatic screening did not finish. Retry in a few minutes, or wait for a moderator.',
       revisionFlaggedPassages: 'Flagged passages',
       revisionReviewerNote: 'Reviewer note',
       revisionDismiss: 'Dismiss',
@@ -1675,6 +1694,8 @@ export const translations: Record<Language, Translations> = {
       checkingContent: 'Checking content guidelines...',
       publishBlocked: 'Publication blocked. This biography contains content that violates our guidelines.',
       publishUnderReview: 'Your biography has been sent for review. You will be notified of the outcome.',
+      tooManyRequests: 'Too many attempts. Please wait a minute and try again.',
+      requestFailed: 'Something went wrong. Please try again.',
     },
     coach: {
       greeting: 'Welcome back',
@@ -2701,6 +2722,14 @@ export const translations: Record<Language, Translations> = {
       bookStructureImportCancel: 'Annulla',
       noChaptersWarning: 'Nessun capitolo definito. Il libro sarà un testo continuo senza interruzioni di capitolo. Per aggiungere capitoli, passa alla modalità Sezioni.',
       revisionRequired: 'Revisione richiesta. Il revisore ha segnalato quanto segue:',
+      revisionRequiredAiScreening:
+        'Lo screening automatico ha segnalato i passaggi seguenti. Modifica quelle parti (o l’intera versione finale in un unico testo), poi reinvia allo screening quando sei pronto.',
+      aiScreeningFlaggedEditHint:
+        'Puoi modificare solo le sezioni elencate o il testo finale completo; un revisore umano verificherà comunque la segnalazione.',
+      resubmitAiScreening: 'Reinvia allo screening',
+      resubmitAiScreeningPublishedToast: 'Screening superato — la biografia è online.',
+      resubmitAiScreeningStillFlaggedToast: 'Restano passaggi da rivedere. L’elenco qui sotto è aggiornato.',
+      resubmitAiScreeningErrorToast: 'Lo screening automatico non è terminato. Riprova tra qualche minuto o attendi un moderatore.',
       revisionFlaggedPassages: 'Passaggi segnalati',
       revisionReviewerNote: 'Nota del revisore',
       revisionDismiss: 'Chiudi',
@@ -2845,6 +2874,8 @@ export const translations: Record<Language, Translations> = {
       checkingContent: 'Verifica delle linee guida sui contenuti...',
       publishBlocked: 'Pubblicazione bloccata. Questa biografia contiene contenuti che violano le nostre linee guida.',
       publishUnderReview: 'La tua biografia \u00e8 stata inviata per la revisione. Sarai informato dell\'esito.',
+      tooManyRequests: 'Troppi tentativi. Attendi un minuto e riprova.',
+      requestFailed: 'Qualcosa \u00e8 andato storto. Riprova.',
     },
     coach: {
       greeting: 'Bentornato',
@@ -3871,6 +3902,14 @@ export const translations: Record<Language, Translations> = {
       bookStructureImportCancel: 'Annuler',
       noChaptersWarning: 'Aucun chapitre défini. Le livre sera un texte continu sans coupure de chapitre. Pour ajouter des chapitres, passez en mode Sections.',
       revisionRequired: 'Révision requise. Le réviseur a signalé ce qui suit :',
+      revisionRequiredAiScreening:
+        'Le filtrage automatique a signalé les passages ci-dessous. Modifiez ces parties ou la version finale complète, puis renvoyez au filtrage lorsque vous êtes prêt.',
+      aiScreeningFlaggedEditHint:
+        'Vous pouvez modifier uniquement les sections listées ou le texte final complet ; un réviseur vérifiera tout de même le signalement.',
+      resubmitAiScreening: 'Renvoyer au filtrage',
+      resubmitAiScreeningPublishedToast: 'Filtrage réussi — votre biographie est en ligne.',
+      resubmitAiScreeningStillFlaggedToast: 'Des passages sont encore signalés. La liste ci-dessous est à jour.',
+      resubmitAiScreeningErrorToast: 'Le filtrage automatique n’a pas abouti. Réessayez dans quelques minutes ou attendez un modérateur.',
       revisionFlaggedPassages: 'Passages signalés',
       revisionReviewerNote: 'Note du réviseur',
       revisionDismiss: 'Fermer',
@@ -4015,6 +4054,8 @@ export const translations: Record<Language, Translations> = {
       checkingContent: 'V\u00e9rification des r\u00e8gles de contenu...',
       publishBlocked: 'Publication bloqu\u00e9e. Cette biographie contient du contenu qui enfreint nos r\u00e8gles.',
       publishUnderReview: 'Votre biographie a \u00e9t\u00e9 envoy\u00e9e pour examen. Vous serez inform\u00e9 du r\u00e9sultat.',
+      tooManyRequests: 'Trop de tentatives. Attendez une minute et r\u00e9essayez.',
+      requestFailed: 'Une erreur s\'est produite. Veuillez r\u00e9essayer.',
     },
     coach: {
       greeting: 'Bon retour',
@@ -5041,6 +5082,14 @@ export const translations: Record<Language, Translations> = {
       bookStructureImportCancel: 'Abbrechen',
       noChaptersWarning: 'Keine Kapitel definiert. Das Buch wird ein fortlaufender Text ohne Kapitelunterbrechungen sein. Um Kapitel hinzuzufügen, wechseln Sie in den Abschnitte-Modus.',
       revisionRequired: 'Überarbeitung erforderlich. Der Prüfer hat Folgendes markiert:',
+      revisionRequiredAiScreening:
+        'Die automatische Prüfung hat die folgenden Passagen markiert. Bearbeiten Sie diese Teile oder den gesamten Endtext, und senden Sie danach erneut zum Screening.',
+      aiScreeningFlaggedEditHint:
+        'Sie können nur die aufgeführten Abschnitte oder den vollständigen Endtext anpassen; ein Prüfer wird den Bericht dennoch prüfen.',
+      resubmitAiScreening: 'Erneut zum Screening senden',
+      resubmitAiScreeningPublishedToast: 'Screening bestanden — Ihre Biografie ist live.',
+      resubmitAiScreeningStillFlaggedToast: 'Es gibt weiterhin markierte Passagen. Die Liste unten ist aktualisiert.',
+      resubmitAiScreeningErrorToast: 'Das automatische Screening wurde nicht abgeschlossen. In einigen Minuten erneut versuchen oder auf einen Prüfer warten.',
       revisionFlaggedPassages: 'Markierte Passagen',
       revisionReviewerNote: 'Hinweis des Prüfers',
       revisionDismiss: 'Schließen',
@@ -5185,6 +5234,8 @@ export const translations: Record<Language, Translations> = {
       checkingContent: 'Inhaltsrichtlinien werden \u00fcberpr\u00fcft...',
       publishBlocked: 'Ver\u00f6ffentlichung blockiert. Diese Biografie enth\u00e4lt Inhalte, die gegen unsere Richtlinien versto\u00dfen.',
       publishUnderReview: 'Ihre Biografie wurde zur \u00dcberpr\u00fcfung eingereicht. Sie werden \u00fcber das Ergebnis informiert.',
+      tooManyRequests: 'Zu viele Versuche. Bitte eine Minute warten und erneut versuchen.',
+      requestFailed: 'Etwas ist schiefgelaufen. Bitte erneut versuchen.',
     },
     coach: {
       greeting: 'Willkommen zurück',

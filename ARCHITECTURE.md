@@ -234,9 +234,9 @@ On re-submission after `returned`, the AI re-screens only the previously flagged
 
 Admins can freeze a biography (`is_frozen = true`). A `RESTRICTIVE` RLS policy blocks all UPDATE operations on a frozen biography regardless of other policies. This is used when a moderation hold requires no further edits.
 
-### 6a. Target publication flow (approved product spec — implementation in progress)
+### 6a. Target publication flow (approved product spec)
 
-This subsection records **agreed behaviour** for the workflow that will **replace** the current “Submit for review → immediate `POST /api/review/submit` screening” path. Until fully implemented, §6 above remains the source of truth for code behaviour.
+This subsection records **agreed behaviour** for the PDF-first workflow and legacy submit. Legacy §6 behaviour still applies where not superseded below.
 
 **States on `biographies.status` (target schema — see migration `20260403140000_publication_flow_phase_statuses.sql`)**
 
@@ -283,7 +283,7 @@ Watermarked PDF downloads are blocked while `status === 'final_version'` until t
 1. Content is locked; collateral files generated as above.
 2. **AI screening** runs on the content.
 3. **If AI finds no flags:** **publish** according to visibility (cover raster is already generated at approve-final); the biography appears in the public catalogue / search when visibility is public.
-4. **If AI finds flags:** the biography does **not** auto-publish. **Only the flagged sections** return to editable state (same as today’s partial unlock — not a full “new PDF draft cycle” unless product later extends this).
+4. **If AI finds flags:** the biography does **not** auto-publish. **Only the flagged sections** return to editable state (`under_review` + partial unlock in the editor from `moderation_reports.ai_analysis.flagged_passages`; authors with a long **final_version** use **FinalVersionEditor** unlocked for edits). **Re-screening** (`POST /api/review/submit` again) sends only the flagged section keys to the text builder when per-section rows exist; if the live text lives only in **`final_version`**, the pipeline falls back to that full HTML and passes the same section labels into the AI prompt as **focus hints** so `section_key` in the JSON stays aligned with the sidebar. Not a full new PDF draft cycle unless product extends this.
 
 **3. Human reviewer vs auto-publish**
 

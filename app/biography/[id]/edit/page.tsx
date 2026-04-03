@@ -108,6 +108,7 @@ export default function BiographyEditorPage() {
   const [showPublishDialog, setShowPublishDialog] = useState(false);
   const [showSubmitForReviewDialog, setShowSubmitForReviewDialog] = useState(false);
   const [isSubmittingForReview, setIsSubmittingForReview] = useState(false);
+  const [resubmitScreeningLoading, setResubmitScreeningLoading] = useState(false);
   const [submitReadinessError, setSubmitReadinessError] = useState<string | null>(null);
   const [submitPreflightError, setSubmitPreflightError] = useState<string | null>(null);
   const [isPreflightChecking, setIsPreflightChecking] = useState(false);
@@ -258,22 +259,51 @@ const [isPublishing, setIsPublishing] = useState(false);
       const completed = await getCompletedSections(id);
       setCompletedSections(completed);
 
-      if (data && data.status === 'draft') {
-        const { data: report } = await supabase
-          .from('moderation_reports')
-          .select('moderator_notes')
-          .eq('biography_id', id)
-          .eq('status', 'decided')
-          .eq('decision', 'request_edit')
-          .order('decided_at', { ascending: false })
-          .limit(1)
-          .maybeSingle();
+      if (data) {
+        const screening = data.ai_screening_status as string | null | undefined;
+        if (screening === 'passed') setAiScreeningResult('passed');
+        else if (screening === 'flagged') setAiScreeningResult('flagged');
+        else if (screening === 'pending') setAiScreeningResult('pending');
+        else if (screening === 'ai_error') setAiScreeningResult('ai_error');
+        else if (screening === 'parse_error') setAiScreeningResult('parse_error');
+        else setAiScreeningResult(null);
 
-        if (report?.moderator_notes) {
-          const notes = report.moderator_notes as { rejectedPassages?: unknown[]; note?: unknown };
-          if (Array.isArray(notes.rejectedPassages) && notes.rejectedPassages.length > 0) {
-            setRevisionPassages(notes.rejectedPassages as { section_key: string; ai_reason: string }[]);
-            setRevisionNote(typeof notes.note === 'string' ? notes.note : null);
+        if (data.status === 'draft') {
+          const { data: report } = await supabase
+            .from('moderation_reports')
+            .select('moderator_notes')
+            .eq('biography_id', id)
+            .eq('status', 'decided')
+            .eq('decision', 'request_edit')
+            .order('decided_at', { ascending: false })
+            .limit(1)
+            .maybeSingle();
+
+          if (report?.moderator_notes) {
+            const notes = report.moderator_notes as { rejectedPassages?: unknown[]; note?: unknown };
+            if (Array.isArray(notes.rejectedPassages) && notes.rejectedPassages.length > 0) {
+              setRevisionPassages(notes.rejectedPassages as { section_key: string; ai_reason: string }[]);
+              setRevisionNote(typeof notes.note === 'string' ? notes.note : null);
+            }
+          }
+        } else if (data.status === 'under_review' && screening === 'flagged') {
+          const { data: openReport } = await supabase
+            .from('moderation_reports')
+            .select('ai_analysis')
+            .eq('biography_id', id)
+            .in('status', ['unassigned', 'assigned'])
+            .order('created_at', { ascending: false })
+            .limit(1)
+            .maybeSingle();
+
+          const raw = (openReport?.ai_analysis as { flagged_passages?: unknown } | null)?.flagged_passages;
+          if (Array.isArray(raw) && raw.length > 0) {
+            setRevisionPassages(
+              raw.map((p: { section_key?: string; reason?: string }) => ({
+                section_key: typeof p.section_key === 'string' ? p.section_key : 'unknown',
+                ai_reason: typeof p.reason === 'string' ? p.reason : '',
+              }))
+            );
           }
         }
       }
@@ -1162,6 +1192,86 @@ const [isPublishing, setIsPublishing] = useState(false);
     }
   }, [id, user, t]);
 
+  const handleResubmitAiScreening = useCallback(async () => {
+    if (!user?.id || !id) return;
+    setResubmitScreeningLoading(true);
+    try {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      const res = await fetch('/api/review/submit', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(session?.access_token ? { Authorization: `Bearer ${session.access_token}` } : {}),
+        },
+        body: JSON.stringify({ biographyId: id }),
+      });
+      const apiResult = await res.json().catch(() => ({}));
+      if (res.status === 429) {
+        toast.error(t.toast.tooManyRequests);
+        return;
+      }
+      if (res.status === 400 && apiResult?.error === 'missing_cover') {
+        toast.error(t.exportDialog.noCoverPhotoWarning);
+        return;
+      }
+      if (!res.ok) {
+        toast.error(t.toast.requestFailed);
+        return;
+      }
+      if (apiResult.result === 'published') {
+        setBiographyStatus('published');
+        setAiScreeningResult('passed');
+        setRevisionPassages([]);
+        setRevisionBannerDismissed(false);
+        setBiography((prev) =>
+          prev
+            ? {
+                ...prev,
+                status: 'published',
+                published_at: new Date().toISOString(),
+                ai_screening_status: 'passed',
+              }
+            : prev
+        );
+        toast.success(t.editor.resubmitAiScreeningPublishedToast);
+        return;
+      }
+      const d = apiResult.screeningDetail as string | undefined;
+      if (d === 'ai_error' || d === 'parse_error') {
+        setAiScreeningResult(d as 'ai_error' | 'parse_error');
+        toast.warning(t.editor.resubmitAiScreeningErrorToast);
+        return;
+      }
+      setAiScreeningResult('flagged');
+      setBiography((prev) => (prev ? { ...prev, ai_screening_status: 'flagged' } : prev));
+      const { data: openReport } = await supabase
+        .from('moderation_reports')
+        .select('ai_analysis')
+        .eq('biography_id', id)
+        .in('status', ['unassigned', 'assigned'])
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      const raw = (openReport?.ai_analysis as { flagged_passages?: unknown } | null)?.flagged_passages;
+      if (Array.isArray(raw) && raw.length > 0) {
+        setRevisionPassages(
+          raw.map((p: { section_key?: string; reason?: string }) => ({
+            section_key: typeof p.section_key === 'string' ? p.section_key : 'unknown',
+            ai_reason: typeof p.reason === 'string' ? p.reason : '',
+          }))
+        );
+      }
+      toast.warning(t.editor.resubmitAiScreeningStillFlaggedToast);
+    } catch (e) {
+      console.error(e);
+      toast.error(t.toast.requestFailed);
+    } finally {
+      setResubmitScreeningLoading(false);
+    }
+  }, [user, id, t]);
+
   const handleOpenSubmitDialog = useCallback(async () => {
     setSubmitPreflightError(null);
     setIsPreflightChecking(true);
@@ -1320,6 +1430,23 @@ const [isPublishing, setIsPublishing] = useState(false);
           setAiScreeningResult(d as 'ai_error' | 'parse_error');
         } else {
           setAiScreeningResult('flagged');
+          const { data: openReport } = await supabase
+            .from('moderation_reports')
+            .select('ai_analysis')
+            .eq('biography_id', id)
+            .in('status', ['unassigned', 'assigned'])
+            .order('created_at', { ascending: false })
+            .limit(1)
+            .maybeSingle();
+          const raw = (openReport?.ai_analysis as { flagged_passages?: unknown } | null)?.flagged_passages;
+          if (Array.isArray(raw) && raw.length > 0) {
+            setRevisionPassages(
+              raw.map((p: { section_key?: string; reason?: string }) => ({
+                section_key: typeof p.section_key === 'string' ? p.section_key : 'unknown',
+                ai_reason: typeof p.reason === 'string' ? p.reason : '',
+              }))
+            );
+          }
         }
       }
     } catch (err) {
@@ -1332,9 +1459,42 @@ const [isPublishing, setIsPublishing] = useState(false);
 
   const effectivelyLocked = isFrozen || biographyStatus === 'locked_pending_screening';
 
-  const isRevisionMode = revisionPassages.length > 0 && !revisionBannerDismissed && biographyStatus === 'draft';
+  /** AI screening flagged passages: edit only listed sections (or freeflow) while under_review. */
+  const isUnderReviewAiFlagRevision =
+    biographyStatus === 'under_review' &&
+    (aiScreeningResult === 'flagged' || biography?.ai_screening_status === 'flagged') &&
+    revisionPassages.length > 0;
+
+  const isRevisionMode =
+    revisionPassages.length > 0 &&
+    !revisionBannerDismissed &&
+    (biographyStatus === 'draft' || isUnderReviewAiFlagRevision);
+
   const editableSectionKeys = new Set(revisionPassages.map((p) => p.section_key));
   const isActiveSectionRevisionLocked = isRevisionMode && !editableSectionKeys.has(activeSection);
+  const isSectionOrFreeflowRevisionLocked =
+    biographyMode === 'freeflow'
+      ? isRevisionMode && !editableSectionKeys.has('freeflow')
+      : isActiveSectionRevisionLocked;
+
+  /** Full editor lock from review queue, except partial edit when AI flagged specific sections. */
+  const reviewQueueLocksEditor =
+    isReviewOrScreeningLockStatus(biographyStatus) &&
+    !(biographyStatus === 'under_review' && isRevisionMode);
+
+  const showFinalVersionEditorLayout =
+    biographyStatus === 'final_version' ||
+    biographyStatus === 'published' ||
+    biographyStatus === 'pdf_draft' ||
+    biographyStatus === 'locked_pending_screening' ||
+    (biographyStatus === 'under_review' && (finalVersion?.trim().length ?? 0) >= 50);
+
+  const lockFinalVersionForScreeningErrors =
+    biographyStatus === 'under_review' &&
+    aiScreeningResult !== 'flagged' &&
+    (aiScreeningResult === 'ai_error' ||
+      aiScreeningResult === 'parse_error' ||
+      aiScreeningResult === 'pending');
 
   if (authLoading || !user || isLoading) {
     return (
@@ -1489,6 +1649,11 @@ const [isPublishing, setIsPublishing] = useState(false);
                  language === 'de' ? 'Sie werden benachrichtigt, wenn die Überprüfung abgeschlossen ist.' :
                  'You will be notified when the review is complete.'}
               </p>
+              {biographyStatus === 'under_review' && revisionPassages.length > 0 && (
+                <p className="text-xs text-brand-ink/85 dark:text-brand-beigeLight/90 mt-2 border-t border-brand-mustardDark/25 pt-2">
+                  {t.editor.aiScreeningFlaggedEditHint}
+                </p>
+              )}
             </div>
           </div>
         </div>
@@ -1580,7 +1745,9 @@ const [isPublishing, setIsPublishing] = useState(false);
               <TriangleAlert className="h-4 w-4 text-brand-mustardDark dark:text-brand-mustardLight shrink-0 mt-0.5" />
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium text-brand-ink dark:text-brand-beigeLight mb-2">
-                  {t.editor.revisionRequired}
+                  {isUnderReviewAiFlagRevision
+                    ? t.editor.revisionRequiredAiScreening
+                    : t.editor.revisionRequired}
                 </p>
                 <ul className="space-y-1 mb-2">
                   {revisionPassages.map((p, i) => (
@@ -1601,12 +1768,29 @@ const [isPublishing, setIsPublishing] = useState(false);
                   </p>
                 )}
               </div>
-              <button
-                onClick={() => setRevisionBannerDismissed(true)}
-                className="shrink-0 text-xs text-brand-mustardDark dark:text-brand-mustardLight hover:text-brand-ink dark:hover:text-brand-beigeLight transition-colors underline"
-              >
-                {t.editor.revisionDismiss}
-              </button>
+              <div className="flex flex-col items-end gap-2 shrink-0">
+                {isUnderReviewAiFlagRevision && (
+                  <Button
+                    type="button"
+                    size="sm"
+                    className="h-8 text-xs gap-1.5"
+                    disabled={resubmitScreeningLoading}
+                    onClick={() => void handleResubmitAiScreening()}
+                  >
+                    {resubmitScreeningLoading ? (
+                      <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                    ) : null}
+                    {t.editor.resubmitAiScreening}
+                  </Button>
+                )}
+                <button
+                  type="button"
+                  onClick={() => setRevisionBannerDismissed(true)}
+                  className="text-xs text-brand-mustardDark dark:text-brand-mustardLight hover:text-brand-ink dark:hover:text-brand-beigeLight transition-colors underline"
+                >
+                  {t.editor.revisionDismiss}
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -1668,7 +1852,9 @@ const [isPublishing, setIsPublishing] = useState(false);
             onFreeflowChange={handleFreeflowChange}
             biographyId={id}
             userId={user.id}
-            lockedSectionKeys={isRevisionMode ? editableSectionKeys : undefined}
+            lockedSectionKeys={
+              isRevisionMode && !showFinalVersionEditorLayout ? editableSectionKeys : undefined
+            }
           />
         </aside>
 
@@ -1752,15 +1938,12 @@ const [isPublishing, setIsPublishing] = useState(false);
             )}
 
             <div ref={editorContainerRef} className="flex-1 min-h-0 flex flex-col overflow-y-auto">
-              {biographyStatus === 'final_version' ||
-              biographyStatus === 'published' ||
-              biographyStatus === 'pdf_draft' ||
-              biographyStatus === 'locked_pending_screening' ? (
+              {showFinalVersionEditorLayout ? (
                 <FinalVersionEditor
                   content={finalVersion}
                   onContentChange={handleFinalVersionChange}
                   biographyId={id}
-                  isLocked={effectivelyLocked}
+                  isLocked={effectivelyLocked || lockFinalVersionForScreeningErrors}
                   onPublish={
                     biographyStatus === 'final_version'
                       ? handleStartPdfDraft
@@ -1808,7 +1991,8 @@ const [isPublishing, setIsPublishing] = useState(false);
                   isPublished={
                     (biographyStatus as string) === 'published' ||
                     isFrozen ||
-                    isReviewOrScreeningLockStatus(biographyStatus)
+                    isSectionOrFreeflowRevisionLocked ||
+                    reviewQueueLocksEditor
                   }
                   contentFreeflow={contentFreeflow}
                   biographyMode="freeflow"
@@ -1843,8 +2027,8 @@ const [isPublishing, setIsPublishing] = useState(false);
                   isPublished={
                     (biographyStatus as string) === 'published' ||
                     isFrozen ||
-                    isActiveSectionRevisionLocked ||
-                    isReviewOrScreeningLockStatus(biographyStatus)
+                    isSectionOrFreeflowRevisionLocked ||
+                    reviewQueueLocksEditor
                   }
                   contentFreeflow={contentFreeflow}
                   biographyMode="sections"

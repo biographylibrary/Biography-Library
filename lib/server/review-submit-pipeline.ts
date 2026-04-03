@@ -87,6 +87,53 @@ async function fetchPreviousRejectionReport(
   return null;
 }
 
+/**
+ * When status is `under_review` after AI flags, the latest open report carries
+ * `flagged_passages`; re-screen only those sections (same as moderator rescreen).
+ */
+async function fetchOpenAiFlaggedReportForRescreen(
+  supabase: AnyClient,
+  biographyId: string
+): Promise<{ id: string; sectionKeys: string[] } | null> {
+  const { data: bio } = await supabase
+    .from('biographies')
+    .select('status')
+    .eq('id', biographyId)
+    .maybeSingle();
+
+  if ((bio as { status?: string } | null)?.status !== 'under_review') {
+    return null;
+  }
+
+  const { data: report } = await supabase
+    .from('moderation_reports')
+    .select('id, ai_analysis')
+    .eq('biography_id', biographyId)
+    .in('status', ['unassigned', 'assigned'])
+    .order('created_at', { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  const raw = (report?.ai_analysis as { flagged_passages?: unknown } | null)?.flagged_passages;
+  if (!Array.isArray(raw) || raw.length === 0 || !report?.id) {
+    return null;
+  }
+
+  const keys = Array.from(
+    new Set(
+      raw
+        .map((p: { section_key?: string }) => p.section_key)
+        .filter((k): k is string => typeof k === 'string' && k.length > 0)
+    )
+  );
+
+  if (keys.length === 0) {
+    return null;
+  }
+
+  return { id: report.id as string, sectionKeys: keys };
+}
+
 async function fetchBiographyContent(
   supabase: AnyClient,
   biographyId: string,
@@ -110,6 +157,15 @@ async function fetchBiographyContent(
     }
     return { text, authorId, contentLanguage };
   }
+
+  /** Used below when targeted sections are empty but final_version holds the live text (PDF path). */
+  const finalVersionFallback = (): { text: string; authorId: string; contentLanguage: string } => {
+    let text = stripHtml(finalRaw ?? '');
+    if (text.length > MAX_CONTENT_CHARS) {
+      text = text.slice(0, MAX_CONTENT_CHARS);
+    }
+    return { text, authorId, contentLanguage };
+  };
 
   let query = supabase
     .from('biography_sections')
@@ -144,6 +200,10 @@ async function fetchBiographyContent(
     text = text.slice(0, MAX_CONTENT_CHARS);
   }
 
+  if (hasTargetKeys && !text.trim() && finalRaw) {
+    return finalVersionFallback();
+  }
+
   return { text, authorId, contentLanguage };
 }
 
@@ -154,7 +214,10 @@ interface ScreeningResult {
   parseError?: boolean;
 }
 
-async function runAiScreening(biographyText: string): Promise<ScreeningResult> {
+async function runAiScreening(
+  biographyText: string,
+  focusSectionKeys?: string[]
+): Promise<ScreeningResult> {
   const errorResult: ScreeningResult = { passages: [], overall_severity: 0, aiError: true };
   const parseErrorResult: ScreeningResult = { passages: [], overall_severity: 0, aiError: true, parseError: true };
 
@@ -162,6 +225,13 @@ async function runAiScreening(biographyText: string): Promise<ScreeningResult> {
     console.warn('[review-submit-pipeline] Infomaniak AI not configured — routing to manual review');
     return errorResult;
   }
+
+  const focusNote =
+    focusSectionKeys && focusSectionKeys.length > 0
+      ? `The text below may be one continuous “final version” without per-section headings. ` +
+        `Prioritize passages that relate to these labels; use these exact section_key values in your JSON when a passage clearly matches: ${focusSectionKeys.join(', ')}. ` +
+        `If a problem does not map to one label, pick the closest section_key or use the first label from the list.\n\n`
+      : '';
 
   const systemPrompt =
     'You are a content moderator for a biography publishing platform. ' +
@@ -185,6 +255,7 @@ async function runAiScreening(biographyText: string): Promise<ScreeningResult> {
     'Return ONLY this JSON:\n' +
     '{"passages":[],"overall_severity":0}\n\n' +
     'Biography:\n' +
+    focusNote +
     biographyText;
 
   try {
@@ -412,12 +483,23 @@ export async function runReviewSubmitScreening(
   serviceClient: AnyClient,
   biographyId: string
 ): Promise<ReviewSubmitPipelineResult> {
-  const previousRejection = await fetchPreviousRejectionReport(serviceClient, biographyId);
-  const isRescreen = previousRejection !== null;
+  const moderatorRejection = await fetchPreviousRejectionReport(serviceClient, biographyId);
+  const aiRescreen = !moderatorRejection
+    ? await fetchOpenAiFlaggedReportForRescreen(serviceClient, biographyId)
+    : null;
 
-  const targetSectionKeys = isRescreen
-    ? previousRejection!.rejectedPassages.map((p) => p.section_key)
-    : undefined;
+  let previousReportId: string | null = null;
+  let targetSectionKeys: string[] | undefined;
+
+  if (moderatorRejection) {
+    previousReportId = moderatorRejection.id;
+    targetSectionKeys = moderatorRejection.rejectedPassages.map((p) => p.section_key);
+  } else if (aiRescreen) {
+    previousReportId = aiRescreen.id;
+    targetSectionKeys = aiRescreen.sectionKeys;
+  }
+
+  const isRescreen = previousReportId !== null;
 
   const { text, authorId, contentLanguage } = await fetchBiographyContent(
     serviceClient,
@@ -429,18 +511,17 @@ export async function runReviewSubmitScreening(
     throw new Error('Biography not found');
   }
 
-  const previousReviewerId: string | null = isRescreen
-    ? await (async () => {
-        const { data: prevReport } = await serviceClient
-          .from('moderation_reports')
-          .select('assigned_to')
-          .eq('id', previousRejection!.id)
-          .maybeSingle();
-        return (prevReport as any)?.assigned_to ?? null;
-      })()
-    : null;
+  let previousReviewerId: string | null = null;
+  if (previousReportId) {
+    const { data: prevReport } = await serviceClient
+      .from('moderation_reports')
+      .select('assigned_to')
+      .eq('id', previousReportId)
+      .maybeSingle();
+    previousReviewerId = (prevReport as { assigned_to?: string } | null)?.assigned_to ?? null;
+  }
 
-  const screening = await runAiScreening(text);
+  const screening = await runAiScreening(text, targetSectionKeys);
 
   const priorStatus = await fetchBiographyStatus(serviceClient, biographyId);
 
@@ -504,7 +585,7 @@ export async function runReviewSubmitScreening(
       })
       .eq('id', biographyId);
 
-    if (isRescreen && previousRejection!.id) {
+    if (isRescreen && previousReportId) {
       await serviceClient
         .from('moderation_reports')
         .update({
@@ -512,7 +593,7 @@ export async function runReviewSubmitScreening(
           decision: 'publish',
           decided_at: new Date().toISOString(),
         })
-        .eq('id', previousRejection!.id);
+        .eq('id', previousReportId);
     }
 
     const autoMsg = AUTO_PUBLISHED_MESSAGES[contentLanguage] ?? AUTO_PUBLISHED_MESSAGES['en'];
@@ -534,7 +615,7 @@ export async function runReviewSubmitScreening(
   }
   await serviceClient.from('biographies').update(flaggedPatch).eq('id', biographyId);
 
-  if (isRescreen && previousRejection!.id) {
+  if (isRescreen && previousReportId) {
     await serviceClient
       .from('moderation_reports')
       .update({
@@ -542,7 +623,7 @@ export async function runReviewSubmitScreening(
         decision: 'no_action',
         decided_at: new Date().toISOString(),
       })
-      .eq('id', previousRejection!.id);
+      .eq('id', previousReportId);
   }
 
   const { data: newReport } = await serviceClient
