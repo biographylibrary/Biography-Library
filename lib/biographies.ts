@@ -121,12 +121,27 @@ export async function fetchBiographies(userId: string) {
   };
 }
 
+export async function resolveAuthorName(userId: string, userEmail?: string | null): Promise<string> {
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('name')
+    .eq('id', userId)
+    .maybeSingle();
+
+  if (profile?.name?.trim()) return profile.name.trim();
+  if (userEmail?.trim()) return userEmail.split('@')[0].trim();
+  return '';
+}
+
 export async function createBiography(
   userId: string,
   title: string,
   visibility: 'private' | 'link-only' | 'public',
-  biographyMode: 'sections' | 'freeflow' = 'sections'
+  biographyMode: 'sections' | 'freeflow' = 'sections',
+  authorName?: string
 ) {
+  const resolvedAuthor = authorName?.trim() || await resolveAuthorName(userId);
+
   const { data, error } = await supabase
     .from('biographies')
     .insert({
@@ -136,6 +151,7 @@ export async function createBiography(
       status: 'draft',
       content: {},
       biography_mode: biographyMode,
+      author_name: resolvedAuthor,
     })
     .select()
     .maybeSingle();

@@ -42,7 +42,7 @@ import { toast } from 'sonner';
 import { AiUsageIndicator } from '@/components/editor/ai-usage-indicator';
 import { recommendNextSection, type SectionRecommendation } from '@/lib/ai/next-section-recommender';
 import type { Biography } from '@/lib/biographies';
-import { generateBiographyPDF, checkBiographyPdfReadiness, checkPdfPreflight } from '@/lib/pdf-export';
+import { generateBiographyPDF, checkBiographyPdfReadiness, checkPdfPreflight, getPdfReadinessMessage } from '@/lib/pdf-export';
 import { AdvancedExportDialog } from '@/components/export/AdvancedExportDialog';
 import { useTranslation } from '@/lib/i18n/i18n-context';
 import { Loader as Loader2, Menu, X, Sparkles, Snowflake as SnowflakeIcon, Send as SendIcon, TriangleAlert, Lock } from 'lucide-react';
@@ -114,6 +114,7 @@ export default function BiographyEditorPage() {
   const [biographyMode, setBiographyMode] = useState<'sections' | 'freeflow'>('sections');
   const [contentFreeflow, setContentFreeflow] = useState<string>('');
   const [pendingModeSwitch, setPendingModeSwitch] = useState<'sections' | 'freeflow' | null>(null);
+  const [authorName, setAuthorName] = useState<string>('');
   const [biographyType, setBiographyType] = useState<'autobiography' | 'memorial'>('autobiography');
   const [slug, setSlug] = useState<string | null>(null);
 const [isPublishing, setIsPublishing] = useState(false);
@@ -149,6 +150,7 @@ const [isPublishing, setIsPublishing] = useState(false);
   const biographyModeRef = useRef(biographyMode);
   const contentFreeflowRef = useRef(contentFreeflow);
   const slugRef = useRef(slug);
+  const authorNameRef = useRef(authorName);
 
   useEffect(() => {
     contentRef.current = content;
@@ -169,6 +171,10 @@ const [isPublishing, setIsPublishing] = useState(false);
   useEffect(() => {
     slugRef.current = slug;
   }, [slug]);
+
+  useEffect(() => {
+    authorNameRef.current = authorName;
+  }, [authorName]);
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -198,10 +204,26 @@ const [isPublishing, setIsPublishing] = useState(false);
         setBiographyMode((data.biography_mode as 'sections' | 'freeflow') || 'sections');
         setContentFreeflow(data.content_freeflow || '');
         setBiographyType((data.biography_type as 'autobiography' | 'memorial') || 'autobiography');
+
+        let resolvedAuthorName = data.author_name ?? '';
+        if (!resolvedAuthorName.trim() && user) {
+          const fallback =
+            (user.user_metadata?.name as string | undefined)?.trim() ||
+            (user.email ?? '').split('@')[0].trim();
+          if (fallback) {
+            resolvedAuthorName = fallback;
+            await supabase
+              .from('biographies')
+              .update({ author_name: resolvedAuthorName })
+              .eq('id', id);
+          }
+        }
+        setAuthorName(resolvedAuthorName);
+
         if (data.slug) {
           setSlug(data.slug);
         } else {
-          const authorPart = data.author_name ?? '';
+          const authorPart = resolvedAuthorName;
           const combined = [authorPart, data.title].filter(Boolean).join(' ');
           const autoSlug = combined
             .toLowerCase()
@@ -260,6 +282,7 @@ const [isPublishing, setIsPublishing] = useState(false);
         content: contentRef.current,
         biography_mode: biographyModeRef.current,
         content_freeflow: contentFreeflowRef.current,
+        author_name: authorNameRef.current,
       })
       .eq('id', id);
     if (error) {
@@ -313,7 +336,7 @@ const [isPublishing, setIsPublishing] = useState(false);
       setTitle(newTitle);
       markDirty();
       if (!slugRef.current) {
-        const authorPart = biography?.author_name ?? '';
+        const authorPart = authorNameRef.current;
         const combined = [authorPart, newTitle].filter(Boolean).join(' ');
         const newSlug = generateSlugFromTitle(combined);
         if (newSlug) {
@@ -327,7 +350,15 @@ const [isPublishing, setIsPublishing] = useState(false);
         }
       }
     },
-    [id, markDirty, biography]
+    [id, markDirty]
+  );
+
+  const handleAuthorNameChange = useCallback(
+    (newName: string) => {
+      setAuthorName(newName);
+      markDirty();
+    },
+    [markDirty]
   );
 
   const handlePrivacyChange = useCallback(
@@ -1057,15 +1088,9 @@ const [isPublishing, setIsPublishing] = useState(false);
     try {
       const readiness = await checkBiographyPdfReadiness(id, true);
       if (!readiness.ok) {
-        const issueMessages: string[] = readiness.issues.map((issue) => {
-          if (issue === 'missing-cover') return t.exportDialog.noCoverPhotoWarning ?? 'Cover photo is required.';
-          if (issue === 'cover-unreachable') return 'Cover photo cannot be reached. Please re-upload.';
-          if (issue === 'missing-title') return 'A biography title is required.';
-          if (issue === 'missing-author') return 'An author name is required.';
-          if (issue === 'missing-content') return 'At least one section must have content.';
-          if (issue === 'missing-mode') return 'Biography mode is not set.';
-          return issue;
-        });
+        const issueMessages = readiness.issues.map((issue) =>
+          getPdfReadinessMessage(issue, t.exportDialog.noCoverPhotoWarning)
+        );
         setSubmitReadinessError(issueMessages.join(' '));
         setIsSubmittingForReview(false);
         return;
@@ -1154,6 +1179,8 @@ const [isPublishing, setIsPublishing] = useState(false);
         onTitleChange={handleTitleChange}
         onPrivacyChange={handlePrivacyChange}
         isFrozen={isFrozen}
+        authorName={authorName}
+        onAuthorNameChange={handleAuthorNameChange}
       />
 
       {isFrozen && (
@@ -1540,7 +1567,7 @@ const [isPublishing, setIsPublishing] = useState(false);
           biography={{
             id,
             title: titleRef.current,
-            author_name: biography.author_name,
+            author_name: authorNameRef.current,
             content: contentRef.current,
             content_freeflow: contentFreeflowRef.current,
             biography_mode: biographyModeRef.current,
@@ -1649,7 +1676,7 @@ const [isPublishing, setIsPublishing] = useState(false);
           toMode={pendingModeSwitch}
           biography={{
             title,
-            author_name: biography?.author_name ?? '',
+            author_name: authorNameRef.current,
             created_at: biography?.created_at ?? new Date().toISOString(),
             biography_mode: biographyMode,
             content,

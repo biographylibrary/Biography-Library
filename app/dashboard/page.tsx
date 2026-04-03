@@ -74,7 +74,7 @@ export default function DashboardPage() {
   ) => {
     if (!user) return;
     const biographyMode = mode === 'import' ? 'freeflow' : mode;
-    const { data, error } = await createBiography(user.id, title, visibility, biographyMode);
+    const { data, error } = await createBiography(user.id, title, visibility, biographyMode, user.user_metadata?.name || user.email || '');
     if (error) throw new Error(error);
     setShowCreateModal(false);
     if (data) {

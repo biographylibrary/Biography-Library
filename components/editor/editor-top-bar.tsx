@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { useTranslation } from '@/lib/i18n/i18n-context';
-import { ArrowLeft, Check, CloudOff, Loader as Loader2, Lock, Users, Globe, BookOpen, Snowflake } from 'lucide-react';
+import { ArrowLeft, Check, CloudOff, Loader as Loader2, Lock, Users, Globe, BookOpen, Snowflake, User } from 'lucide-react';
 
 type SaveStatus = 'saved' | 'saving' | 'unsaved' | 'error';
 type Privacy = 'private' | 'link-only' | 'public';
@@ -18,6 +18,8 @@ interface EditorTopBarProps {
   onTitleChange: (title: string) => void;
   onPrivacyChange: (privacy: Privacy) => void;
   isFrozen?: boolean;
+  authorName?: string;
+  onAuthorNameChange?: (name: string) => void;
 }
 
 const privacyIcons: Record<Privacy, typeof Lock> = {
@@ -35,12 +37,17 @@ export function EditorTopBar({
   onTitleChange,
   onPrivacyChange,
   isFrozen = false,
+  authorName = '',
+  onAuthorNameChange,
 }: EditorTopBarProps) {
   const router = useRouter();
   const { t } = useTranslation();
   const [isEditingTitle, setIsEditingTitle] = useState(false);
   const [editTitle, setEditTitle] = useState(title);
   const inputRef = useRef<HTMLInputElement>(null);
+  const [isEditingAuthor, setIsEditingAuthor] = useState(false);
+  const [editAuthor, setEditAuthor] = useState(authorName);
+  const authorInputRef = useRef<HTMLInputElement>(null);
 
   const privacyLabels: Record<Privacy, string> = {
     private: t.dashboard.private,
@@ -81,6 +88,17 @@ export function EditorTopBar({
     }
   }, [isEditingTitle]);
 
+  useEffect(() => {
+    if (isEditingAuthor && authorInputRef.current) {
+      authorInputRef.current.focus();
+      authorInputRef.current.select();
+    }
+  }, [isEditingAuthor]);
+
+  useEffect(() => {
+    if (!isEditingAuthor) setEditAuthor(authorName);
+  }, [authorName, isEditingAuthor]);
+
   const handleTitleSubmit = () => {
     const trimmed = editTitle.trim();
     if (trimmed && trimmed !== title) {
@@ -89,6 +107,14 @@ export function EditorTopBar({
       setEditTitle(title);
     }
     setIsEditingTitle(false);
+  };
+
+  const handleAuthorSubmit = () => {
+    const trimmed = editAuthor.trim();
+    if (onAuthorNameChange) {
+      onAuthorNameChange(trimmed);
+    }
+    setIsEditingAuthor(false);
   };
 
   const status = saveStatusConfig[saveStatus];
@@ -138,6 +164,39 @@ export function EditorTopBar({
           >
             {title || t.biography.untitled}
           </button>
+        )}
+
+        {onAuthorNameChange && !isFrozen && (
+          <>
+            <div className="h-4 w-px bg-border shrink-0 hidden sm:block" />
+            <User className="h-3.5 w-3.5 text-muted-foreground shrink-0 hidden sm:block" />
+            {isEditingAuthor ? (
+              <Input
+                ref={authorInputRef}
+                value={editAuthor}
+                onChange={(e) => setEditAuthor(e.target.value)}
+                onBlur={handleAuthorSubmit}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') handleAuthorSubmit();
+                  if (e.key === 'Escape') {
+                    setEditAuthor(authorName);
+                    setIsEditingAuthor(false);
+                  }
+                }}
+                className="h-8 text-sm max-w-[140px] sm:max-w-[200px]"
+              />
+            ) : (
+              <button
+                onClick={() => {
+                  setEditAuthor(authorName);
+                  setIsEditingAuthor(true);
+                }}
+                className="text-sm text-muted-foreground truncate max-w-[140px] sm:max-w-[200px] hover:text-foreground transition-colors text-left hidden sm:block"
+              >
+                {authorName || 'Add author name…'}
+              </button>
+            )}
+          </>
         )}
 
         <div className="ml-auto flex items-center gap-1">

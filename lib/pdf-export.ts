@@ -81,6 +81,18 @@ export type PdfReadinessIssue =
   | 'missing-content'
   | 'missing-mode';
 
+export function getPdfReadinessMessage(issue: PdfReadinessIssue, noCoverPhotoWarning?: string): string {
+  switch (issue) {
+    case 'missing-cover': return noCoverPhotoWarning ?? 'A cover photo is required.';
+    case 'cover-unreachable': return 'Cover photo cannot be reached. Please re-upload.';
+    case 'missing-title': return 'A biography title is required.';
+    case 'missing-author': return 'An author name is required.';
+    case 'missing-content': return 'At least one section must have content.';
+    case 'missing-mode': return 'Biography mode is not set.';
+    default: return issue;
+  }
+}
+
 const B5_W = 176;
 const B5_H = 250;
 

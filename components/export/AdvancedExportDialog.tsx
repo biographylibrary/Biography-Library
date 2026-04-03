@@ -27,7 +27,7 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { BIOGRAPHY_SECTIONS } from '@/lib/editor-constants';
-import { generateBiographyPDF, checkBiographyPdfReadiness, type PdfReadinessIssue } from '@/lib/pdf-export';
+import { generateBiographyPDF, checkBiographyPdfReadiness, getPdfReadinessMessage, type PdfReadinessIssue } from '@/lib/pdf-export';
 import { exportAsPlainText, exportAsDOCX } from '@/lib/export-utils';
 import { useTranslation } from '@/lib/i18n/i18n-context';
 import { supabase } from '@/lib/supabase';
@@ -362,6 +362,7 @@ export function AdvancedExportDialog({
   };
 
   const handlePreview = async () => {
+    if (readinessStatus === 'not-ready') return;
     setIsPreviewing(true);
     setExportError(null);
     try {
@@ -461,20 +462,11 @@ export function AdvancedExportDialog({
           <div className="flex items-start gap-3 rounded-lg bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 px-4 py-3">
             <AlertTriangle className="h-4 w-4 mt-0.5 shrink-0 text-amber-600 dark:text-amber-400" />
             <div className="flex-1 space-y-1">
-              {readinessIssues.map((issue) => {
-                let msg = '';
-                if (issue === 'missing-cover') msg = t.exportDialog.noCoverPhotoWarning;
-                else if (issue === 'cover-unreachable') msg = 'Cover photo cannot be reached. Please re-upload.';
-                else if (issue === 'missing-title') msg = 'Biography title is required.';
-                else if (issue === 'missing-author') msg = 'Author name is required.';
-                else if (issue === 'missing-content') msg = 'At least one section must have content.';
-                else if (issue === 'missing-mode') msg = 'Biography mode is not set.';
-                return (
-                  <p key={issue} className="text-sm text-amber-800 dark:text-amber-200 leading-relaxed">
-                    {msg}
-                  </p>
-                );
-              })}
+              {readinessIssues.map((issue) => (
+                <p key={issue} className="text-sm text-amber-800 dark:text-amber-200 leading-relaxed">
+                  {getPdfReadinessMessage(issue, t.exportDialog.noCoverPhotoWarning)}
+                </p>
+              ))}
             </div>
             <button
               type="button"
