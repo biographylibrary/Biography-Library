@@ -1,11 +1,12 @@
 'use client';
 
 import { useEffect, useState, useCallback, useRef } from 'react';
-import { useRouter, useParams } from 'next/navigation';
+import { useRouter, useParams, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/lib/auth-context';
 import { supabase } from '@/lib/supabase';
 import { EditorTopBar } from '@/components/editor/editor-top-bar';
 import { SectionSidebar } from '@/components/editor/section-sidebar';
+import { ModeSwitchWarningDialog } from '@/components/editor/ModeSwitchWarningDialog';
 import { SectionEditor } from '@/components/editor/section-editor';
 import { GlobalNotesPanel } from '@/components/editor/GlobalNotesPanel';
 import { AiSuggestionsPanel } from '@/components/editor/ai-suggestions-panel';
@@ -61,6 +62,7 @@ export default function BiographyEditorPage() {
   const { user, session, loading: authLoading } = useAuth();
   const router = useRouter();
   const params = useParams();
+  const searchParams = useSearchParams();
   const { t, language } = useTranslation();
   const id = params.id as string;
 
@@ -80,7 +82,7 @@ export default function BiographyEditorPage() {
   const [showMobileSidebar, setShowMobileSidebar] = useState(false);
   const [showGlobalNotesPanel, setShowGlobalNotesPanel] = useState(false);
   const [showPhotosPanel, setShowPhotosPanel] = useState(false);
-  const [showSidebarImport, setShowSidebarImport] = useState(false);
+  const [showSidebarImport, setShowSidebarImport] = useState(() => searchParams?.get('import') === '1');
   const [globalNotesCount, setGlobalNotesCount] = useState(0);
   const [globalTodosCount, setGlobalTodosCount] = useState(0);
   const [editorMode, setEditorMode] = useState<'editor' | 'conversation'>('editor');
@@ -111,6 +113,7 @@ export default function BiographyEditorPage() {
   const [isFrozen, setIsFrozen] = useState(false);
   const [biographyMode, setBiographyMode] = useState<'sections' | 'freeflow'>('sections');
   const [contentFreeflow, setContentFreeflow] = useState<string>('');
+  const [pendingModeSwitch, setPendingModeSwitch] = useState<'sections' | 'freeflow' | null>(null);
   const [biographyType, setBiographyType] = useState<'autobiography' | 'memorial'>('autobiography');
   const [slug, setSlug] = useState<string | null>(null);
 const [isPublishing, setIsPublishing] = useState(false);
@@ -348,6 +351,41 @@ const [isPublishing, setIsPublishing] = useState(false);
     },
     [markDirty]
   );
+
+  const handleModeChangeRequest = useCallback(
+    (mode: 'sections' | 'freeflow') => {
+      if (mode === biographyMode) return;
+      const hasContent = biographyMode === 'freeflow'
+        ? (contentFreeflowRef.current?.trim().length ?? 0) > 0
+        : Object.values(contentRef.current).some((s: any) => s?.text?.trim().length > 0);
+      if (!hasContent) {
+        setBiographyMode(mode);
+        markDirty();
+        return;
+      }
+      setPendingModeSwitch(mode);
+    },
+    [biographyMode, markDirty]
+  );
+
+  const handleModeSwitchConfirm = useCallback(async () => {
+    if (!pendingModeSwitch || !id) return;
+    const targetMode = pendingModeSwitch;
+    if (biographyMode === 'freeflow') {
+      await supabase.from('biographies').update({ content_freeflow: null }).eq('id', id);
+      setContentFreeflow('');
+      contentFreeflowRef.current = '';
+    } else {
+      await supabase.from('biography_sections').delete().eq('biography_id', id);
+      setContent(getEmptyContent());
+      setCompletedSections([]);
+    }
+    await supabase.from('biographies').update({ biography_mode: targetMode }).eq('id', id);
+    setBiographyMode(targetMode);
+    biographyModeRef.current = targetMode;
+    dirtyRef.current = false;
+    setPendingModeSwitch(null);
+  }, [pendingModeSwitch, biographyMode, id]);
 
   const handleFreeflowChange = useCallback(
     (value: string) => {
@@ -1212,6 +1250,7 @@ const [isPublishing, setIsPublishing] = useState(false);
             biographyMode={biographyMode}
             contentFreeflow={contentFreeflow}
             onModeChange={handleModeChange}
+            onModeChangeRequest={handleModeChangeRequest}
             onFreeflowChange={handleFreeflowChange}
             biographyId={id}
             userId={user.id}
@@ -1600,6 +1639,31 @@ const [isPublishing, setIsPublishing] = useState(false);
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {pendingModeSwitch && (
+        <ModeSwitchWarningDialog
+          open={pendingModeSwitch !== null}
+          fromMode={biographyMode}
+          toMode={pendingModeSwitch}
+          biography={{
+            title,
+            author_name: biography?.author_name ?? '',
+            created_at: biography?.created_at ?? new Date().toISOString(),
+            biography_mode: biographyMode,
+            content,
+            content_freeflow: contentFreeflow,
+            sections: BIOGRAPHY_SECTIONS
+              .filter((s) => content[s.key]?.text?.trim())
+              .map((s) => ({
+                key: s.key,
+                title: t.sectionTitles[s.key as keyof typeof t.sectionTitles] || s.title,
+                content: content[s.key]?.text ?? '',
+              })),
+          }}
+          onConfirm={handleModeSwitchConfirm}
+          onCancel={() => setPendingModeSwitch(null)}
+        />
+      )}
     </div>
   );
 }

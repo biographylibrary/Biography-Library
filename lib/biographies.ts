@@ -124,7 +124,8 @@ export async function fetchBiographies(userId: string) {
 export async function createBiography(
   userId: string,
   title: string,
-  visibility: 'private' | 'link-only' | 'public'
+  visibility: 'private' | 'link-only' | 'public',
+  biographyMode: 'sections' | 'freeflow' = 'sections'
 ) {
   const { data, error } = await supabase
     .from('biographies')
@@ -134,6 +135,7 @@ export async function createBiography(
       visibility,
       status: 'draft',
       content: {},
+      biography_mode: biographyMode,
     })
     .select()
     .maybeSingle();

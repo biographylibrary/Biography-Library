@@ -69,14 +69,19 @@ export default function DashboardPage() {
 
   const handleCreate = async (
     title: string,
-    visibility: 'private' | 'link-only' | 'public'
+    visibility: 'private' | 'link-only' | 'public',
+    mode: 'sections' | 'freeflow' | 'import'
   ) => {
     if (!user) return;
-    const { data, error } = await createBiography(user.id, title, visibility);
+    const biographyMode = mode === 'import' ? 'freeflow' : mode;
+    const { data, error } = await createBiography(user.id, title, visibility, biographyMode);
     if (error) throw new Error(error);
     setShowCreateModal(false);
     if (data) {
-      router.push(`/biography/${data.id}/edit`);
+      const url = mode === 'import'
+        ? `/biography/${data.id}/edit?import=1`
+        : `/biography/${data.id}/edit`;
+      router.push(url);
     }
   };
 

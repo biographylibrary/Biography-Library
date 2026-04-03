@@ -27,6 +27,7 @@ interface SectionSidebarProps {
   biographyMode: 'sections' | 'freeflow';
   contentFreeflow: string;
   onModeChange: (mode: 'sections' | 'freeflow') => void;
+  onModeChangeRequest?: (mode: 'sections' | 'freeflow') => void;
   onFreeflowChange: (value: string) => void;
   biographyId?: string;
   userId?: string;
@@ -49,6 +50,7 @@ export function SectionSidebar({
   biographyMode,
   contentFreeflow,
   onModeChange,
+  onModeChangeRequest,
   onFreeflowChange,
   biographyId,
   userId,
@@ -58,13 +60,21 @@ export function SectionSidebar({
 
   const totalCount = globalNotesCount + globalTodosCount;
   const isFreeflow = biographyMode === 'freeflow';
+  const handleModeClick = (mode: 'sections' | 'freeflow') => {
+    if (mode === biographyMode) return;
+    if (onModeChangeRequest) {
+      onModeChangeRequest(mode);
+    } else {
+      onModeChange(mode);
+    }
+  };
 
   return (
     <nav className="flex flex-col h-full overflow-hidden">
       <div className="px-3 py-2 border-b border-border/50 shrink-0">
         <div className="flex rounded-lg overflow-hidden border border-border/60 text-xs font-medium">
           <button
-            onClick={() => onModeChange('sections')}
+            onClick={() => handleModeClick('sections')}
             className={cn(
               'flex-1 py-1.5 px-2 transition-colors',
               biographyMode === 'sections'
@@ -75,7 +85,7 @@ export function SectionSidebar({
             {t.editor.sectionsTab}
           </button>
           <button
-            onClick={() => onModeChange('freeflow')}
+            onClick={() => handleModeClick('freeflow')}
             className={cn(
               'flex-1 py-1.5 px-2 transition-colors border-l border-border/60',
               biographyMode === 'freeflow'
