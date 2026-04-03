@@ -4,7 +4,8 @@ import { buildBiographyTxtContent, buildBiographyDocxBuffer } from '@/lib/export
 
 const INFOMANIAK_ENDPOINT = process.env.INFOMANIAK_AI_ENDPOINT ?? '';
 const INFOMANIAK_TOKEN = process.env.INFOMANIAK_AI_TOKEN ?? '';
-const INFOMANIAK_MODEL = process.env.INFOMANIAK_AI_MODEL ?? 'mistral3';
+const INFOMANIAK_MODEL =
+  process.env.INFOMANIAK_AI_MODEL ?? 'swiss-ai/Apertus-70B-Instruct-2509';
 
 const MAX_CONTENT_CHARS = 6000;
 const AI_TIMEOUT_MS = 30_000;
