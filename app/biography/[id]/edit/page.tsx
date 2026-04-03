@@ -108,6 +108,7 @@ export default function BiographyEditorPage() {
   const [submitReadinessError, setSubmitReadinessError] = useState<string | null>(null);
   const [submitPreflightError, setSubmitPreflightError] = useState<string | null>(null);
   const [isPreflightChecking, setIsPreflightChecking] = useState(false);
+  const [aiScreeningResult, setAiScreeningResult] = useState<'passed' | 'flagged' | 'pending' | null>(null);
   const [aiLimitError, setAiLimitError] = useState<AiLimitError | null>(null);
   const [aiUsageRefresh, setAiUsageRefresh] = useState(0);
   const [isFrozen, setIsFrozen] = useState(false);
@@ -1092,38 +1093,55 @@ const [isPublishing, setIsPublishing] = useState(false);
           getPdfReadinessMessage(issue, t.exportDialog.noCoverPhotoWarning)
         );
         setSubmitReadinessError(issueMessages.join(' '));
-        setIsSubmittingForReview(false);
         return;
       }
 
-      const { error } = await supabase
+      const { error: statusError } = await supabase
         .from('biographies')
-        .update({ status: 'under_review' })
+        .update({ status: 'under_review', ai_screening_status: 'pending' })
         .eq('id', id);
 
-      if (!error) {
-        setBiographyStatus('under_review');
-        setShowSubmitForReviewDialog(false);
-        setRevisionPassages([]);
-        setRevisionNote(null);
-        setRevisionBannerDismissed(false);
-        supabase.auth.getSession().then(({ data: { session } }) => {
-          fetch('/api/review/submit', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              ...(session?.access_token ? { Authorization: `Bearer ${session.access_token}` } : {}),
-            },
-            body: JSON.stringify({ biographyId: id }),
-          }).catch((err) => console.error('AI review trigger failed:', err));
+      if (statusError) {
+        setSubmitReadinessError(t.toast.publishUnderReview);
+        return;
+      }
+
+      setBiographyStatus('under_review');
+      setShowSubmitForReviewDialog(false);
+      setRevisionPassages([]);
+      setRevisionNote(null);
+      setRevisionBannerDismissed(false);
+      setAiScreeningResult('pending');
+
+      const { data: { session } } = await supabase.auth.getSession();
+      let apiResult: { result?: string; error?: string } = {};
+      try {
+        const res = await fetch('/api/review/submit', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            ...(session?.access_token ? { Authorization: `Bearer ${session.access_token}` } : {}),
+          },
+          body: JSON.stringify({ biographyId: id }),
         });
+        apiResult = await res.json();
+      } catch (fetchErr) {
+        console.error('AI review call failed:', fetchErr);
+        apiResult = { result: 'under_review' };
+      }
+
+      if (apiResult.result === 'published') {
+        setBiographyStatus('published');
+        setAiScreeningResult('passed');
+      } else if (apiResult.result === 'under_review') {
+        setAiScreeningResult('flagged');
       }
     } catch (err) {
       console.error('Error submitting for review:', err);
     } finally {
       setIsSubmittingForReview(false);
     }
-  }, [id, user]);
+  }, [id, user, t]);
 
   const handleOpenSubmitDialog = useCallback(async () => {
     setSubmitPreflightError(null);
@@ -1189,6 +1207,75 @@ const [isPublishing, setIsPublishing] = useState(false);
           <p className="text-xs text-blue-700 dark:text-blue-300">
             {t.admin.frozenBannerMessage}
           </p>
+        </div>
+      )}
+
+      {aiScreeningResult === 'pending' && biographyStatus === 'under_review' && (
+        <div className="shrink-0 bg-sky-50 dark:bg-sky-950/40 border-b border-sky-200 dark:border-sky-800 px-4 py-3">
+          <div className="max-w-5xl mx-auto flex items-center gap-3">
+            <Loader2 className="h-4 w-4 text-sky-600 dark:text-sky-400 animate-spin shrink-0" />
+            <p className="text-sm text-sky-700 dark:text-sky-300">
+              {language === 'it' ? 'Analisi automatica del testo in corso…' :
+               language === 'fr' ? 'Analyse automatique du texte en cours…' :
+               language === 'de' ? 'Automatische Textanalyse läuft…' :
+               'Running automatic text screening…'}
+            </p>
+          </div>
+        </div>
+      )}
+
+      {aiScreeningResult === 'passed' && biographyStatus === 'published' && (
+        <div className="shrink-0 bg-emerald-50 dark:bg-emerald-950/40 border-b border-emerald-200 dark:border-emerald-800 px-4 py-3">
+          <div className="max-w-5xl mx-auto flex items-start gap-3">
+            <Sparkles className="h-4 w-4 text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5" />
+            <div className="flex-1">
+              <p className="text-sm font-medium text-emerald-800 dark:text-emerald-300">
+                {language === 'it' ? 'Il testo ha superato la revisione automatica.' :
+                 language === 'fr' ? 'Le texte a passé la révision automatique.' :
+                 language === 'de' ? 'Der Text hat die automatische Prüfung bestanden.' :
+                 'Your text passed the automatic screening.'}
+              </p>
+              <p className="text-xs text-emerald-700 dark:text-emerald-400 mt-1">
+                {language === 'it' ? 'Ora puoi generare la bozza PDF dalla finestra di esportazione.' :
+                 language === 'fr' ? 'Vous pouvez maintenant générer le brouillon PDF depuis la fenêtre d\'exportation.' :
+                 language === 'de' ? 'Sie können jetzt den PDF-Entwurf im Export-Dialog erstellen.' :
+                 'You can now generate the PDF draft from the export dialog.'}
+              </p>
+            </div>
+            <Button
+              size="sm"
+              variant="outline"
+              className="shrink-0 h-8 text-xs border-emerald-300 text-emerald-700 hover:bg-emerald-100 dark:border-emerald-700 dark:text-emerald-400"
+              onClick={() => setShowExportDialog(true)}
+            >
+              {language === 'it' ? 'Genera PDF' :
+               language === 'fr' ? 'Générer le PDF' :
+               language === 'de' ? 'PDF erstellen' :
+               'Generate PDF'}
+            </Button>
+          </div>
+        </div>
+      )}
+
+      {aiScreeningResult === 'flagged' && biographyStatus === 'under_review' && (
+        <div className="shrink-0 bg-amber-50 dark:bg-amber-950/30 border-b border-amber-200 dark:border-amber-800 px-4 py-3">
+          <div className="max-w-5xl mx-auto flex items-start gap-3">
+            <TriangleAlert className="h-4 w-4 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
+            <div>
+              <p className="text-sm font-medium text-amber-800 dark:text-amber-300">
+                {language === 'it' ? 'Alcuni passaggi richiedono revisione umana.' :
+                 language === 'fr' ? 'Certains passages nécessitent une révision humaine.' :
+                 language === 'de' ? 'Einige Passagen erfordern eine manuelle Prüfung.' :
+                 'Some passages require human review before proceeding.'}
+              </p>
+              <p className="text-xs text-amber-700 dark:text-amber-400 mt-1">
+                {language === 'it' ? 'Riceverai una notifica quando la revisione sarà completata.' :
+                 language === 'fr' ? 'Vous serez notifié lorsque la révision sera terminée.' :
+                 language === 'de' ? 'Sie werden benachrichtigt, wenn die Überprüfung abgeschlossen ist.' :
+                 'You will be notified when the review is complete.'}
+              </p>
+            </div>
+          </div>
         </div>
       )}
 

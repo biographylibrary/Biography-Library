@@ -238,18 +238,53 @@ async function runAiScreening(biographyText: string): Promise<ScreeningResult> {
   }
 }
 
-async function pickReviewer(supabase: AnyClient): Promise<string | null> {
-  const { data: candidates } = await supabase
-    .from('profiles')
-    .select('id')
-    .in('role', ['reviewer', 'admin']);
-
-  if (!candidates || (candidates as any[]).length === 0) return null;
-
+async function pickReviewer(supabase: AnyClient, contentLanguage?: string, preferredReviewerId?: string | null): Promise<string | null> {
   const activeStatuses = ['unassigned', 'assigned', 'in_review'];
 
+  if (preferredReviewerId) {
+    const { data: preferred } = await supabase
+      .from('profiles')
+      .select('id, role')
+      .eq('id', preferredReviewerId)
+      .in('role', ['reviewer', 'admin'])
+      .maybeSingle();
+    if (preferred) return preferredReviewerId;
+  }
+
+  let candidates: { id: string }[] | null = null;
+
+  if (contentLanguage) {
+    const { data: langRows } = await supabase
+      .from('reviewer_languages')
+      .select('user_id')
+      .eq('language_code', contentLanguage);
+
+    if (langRows && (langRows as any[]).length > 0) {
+      const langUserIds = (langRows as any[]).map((r: any) => r.user_id);
+      const { data: langReviewers } = await supabase
+        .from('profiles')
+        .select('id')
+        .in('id', langUserIds)
+        .in('role', ['reviewer', 'admin']);
+
+      if (langReviewers && (langReviewers as any[]).length > 0) {
+        candidates = (langReviewers as any[]).map((r: any) => ({ id: r.id }));
+      }
+    }
+  }
+
+  if (!candidates || candidates.length === 0) {
+    const { data: allReviewers } = await supabase
+      .from('profiles')
+      .select('id')
+      .in('role', ['reviewer', 'admin']);
+    candidates = (allReviewers as { id: string }[] | null) ?? [];
+  }
+
+  if (!candidates || candidates.length === 0) return null;
+
   const loads = await Promise.all(
-    (candidates as any[]).map(async (c: { id: string }) => {
+    candidates.map(async (c: { id: string }) => {
       const { count } = await supabase
         .from('moderation_reports')
         .select('id', { count: 'exact', head: true })
@@ -455,13 +490,23 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Biography not found' }, { status: 404 });
     }
 
+    const previousReviewerId: string | null = isRescreen
+      ? await (async () => {
+          const { data: prevReport } = await serviceClient
+            .from('moderation_reports')
+            .select('assigned_to')
+            .eq('id', previousRejection!.id)
+            .maybeSingle();
+          return (prevReport as any)?.assigned_to ?? null;
+        })()
+      : null;
+
     const screening = await runAiScreening(text);
 
     if (screening.aiError) {
       await serviceClient
         .from('biographies')
         .update({
-          status: 'under_review',
           ai_screening_status: screening.parseError ? 'parse_error' : 'ai_error',
         })
         .eq('id', biographyId);
@@ -483,7 +528,7 @@ export async function POST(req: NextRequest) {
         .select('id')
         .maybeSingle();
 
-      const errorReviewerId = await pickReviewer(serviceClient);
+      const errorReviewerId = await pickReviewer(serviceClient, contentLanguage, previousReviewerId);
 
       if (errorReviewerId && (errorReport as any)?.id) {
         await serviceClient
@@ -577,7 +622,7 @@ export async function POST(req: NextRequest) {
       .select('id')
       .maybeSingle();
 
-    const reviewerId = await pickReviewer(serviceClient);
+    const reviewerId = await pickReviewer(serviceClient, contentLanguage, previousReviewerId);
 
     if (reviewerId && (newReport as any)?.id) {
       await serviceClient

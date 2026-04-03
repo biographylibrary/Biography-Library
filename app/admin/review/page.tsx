@@ -243,13 +243,10 @@ function ReviewQueueContent() {
   const executeApprove = async (bio: ReviewBiography, force = false) => {
     setActionLoading(bio.id);
 
-    const updateQuery = supabase
+    const { error } = await supabase
       .from('biographies')
-      .update({ status: 'published', published_at: new Date().toISOString(), reviewed_by: null, reviewed_at: null });
-
-    const { error } = force
-      ? await updateQuery.eq('id', bio.id)
-      : await updateQuery.eq('id', bio.id).eq('reviewed_by', user?.id ?? '');
+      .update({ status: 'published', published_at: new Date().toISOString(), reviewed_by: null, reviewed_at: null })
+      .eq('id', bio.id);
 
     if (error) {
       setActionLoading(null);
@@ -260,8 +257,14 @@ function ReviewQueueContent() {
     if (bio.report?.id) {
       await supabase
         .from('moderation_reports')
-        .update({ status: 'decided', decision: 'publish', decided_at: new Date().toISOString() })
+        .update({ status: 'decided', decision: 'publish', decided_at: new Date().toISOString(), reviewed_by: user?.id ?? null, reviewed_at: new Date().toISOString() })
         .eq('id', bio.report.id);
+    } else {
+      await supabase
+        .from('moderation_reports')
+        .update({ status: 'decided', decision: 'publish', decided_at: new Date().toISOString(), reviewed_by: user?.id ?? null, reviewed_at: new Date().toISOString() })
+        .eq('biography_id', bio.id)
+        .in('status', ['unassigned', 'assigned', 'in_review']);
     }
 
     await createNotification(bio.author_id, t.notifications.biographyApproved);
@@ -277,13 +280,10 @@ function ReviewQueueContent() {
   ) => {
     setActionLoading(bio.id);
 
-    const updateQuery = supabase
+    const { error } = await supabase
       .from('biographies')
-      .update({ status: 'draft', reviewed_by: null, reviewed_at: null });
-
-    const { error } = force
-      ? await updateQuery.eq('id', bio.id)
-      : await updateQuery.eq('id', bio.id).eq('reviewed_by', user?.id ?? '');
+      .update({ status: 'draft', reviewed_by: null, reviewed_at: null })
+      .eq('id', bio.id);
 
     if (error) {
       setActionLoading(null);
@@ -298,9 +298,24 @@ function ReviewQueueContent() {
           status: 'decided',
           decision: 'request_edit',
           decided_at: new Date().toISOString(),
+          reviewed_by: user?.id ?? null,
+          reviewed_at: new Date().toISOString(),
           moderator_notes: { rejectedPassages, note: reason },
         })
         .eq('id', bio.report.id);
+    } else {
+      await supabase
+        .from('moderation_reports')
+        .update({
+          status: 'decided',
+          decision: 'request_edit',
+          decided_at: new Date().toISOString(),
+          reviewed_by: user?.id ?? null,
+          reviewed_at: new Date().toISOString(),
+          moderator_notes: { rejectedPassages, note: reason },
+        })
+        .eq('biography_id', bio.id)
+        .in('status', ['unassigned', 'assigned', 'in_review']);
     }
 
     let notificationMessage: string;
