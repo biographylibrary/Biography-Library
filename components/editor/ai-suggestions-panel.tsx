@@ -40,7 +40,7 @@ function SuggestionCard({
     <div
       className={cn(
         'rounded-lg border p-3 transition-colors',
-        suggestion.status === 'accepted' && 'border-emerald-500/30 bg-emerald-500/5',
+        suggestion.status === 'accepted' && 'border-brand-greenLight/50 bg-brand-greenLight/10',
         suggestion.status === 'rejected' && 'border-muted bg-muted/30 opacity-50',
         suggestion.status === 'pending' && 'border-border bg-card'
       )}
@@ -71,7 +71,7 @@ function SuggestionCard({
           <Button
             size="sm"
             variant="outline"
-            className="h-7 text-xs gap-1 text-emerald-600 hover:text-emerald-700 hover:bg-emerald-500/10 border-emerald-500/30"
+            className="h-7 text-xs gap-1 text-brand-greenDark hover:text-brand-ink hover:bg-brand-greenLight/30 border-brand-greenLight/50 dark:text-brand-greenLight dark:hover:bg-brand-greenLight/10"
             onClick={onAccept}
           >
             <Check className="h-3 w-3" />
@@ -89,7 +89,7 @@ function SuggestionCard({
         </div>
       )}
       {suggestion.status === 'accepted' && (
-        <span className="text-xs text-emerald-600 font-medium flex items-center gap-1">
+        <span className="text-xs text-brand-greenDark dark:text-brand-greenLight font-medium flex items-center gap-1">
           <Check className="h-3 w-3" /> {t.editor.applied}
         </span>
       )}
@@ -205,7 +205,7 @@ export function AiSuggestionsPanel({
             <>
               {state.suggestions.length === 0 ? (
                 <div className="text-center py-8">
-                  <Check className="h-8 w-8 text-emerald-500 mx-auto mb-2" />
+                  <Check className="h-8 w-8 text-brand-greenDark dark:text-brand-greenLight mx-auto mb-2" />
                   <p className="text-sm font-medium">{t.editor.lookingGood}</p>
                   <p className="text-xs text-muted-foreground mt-1">
                     {t.editor.noGrammarIssues}

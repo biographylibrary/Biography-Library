@@ -535,6 +535,23 @@ async function resolveSignedUrl(fileUrl: string): Promise<string> {
   return fileUrl;
 }
 
+/** Signed URL for the cover image (web display), or null if none. */
+export async function getCoverPhotoDisplayUrl(biographyId: string): Promise<string | null> {
+  const { data } = await supabase
+    .from('biography_media')
+    .select('file_url')
+    .eq('biography_id', biographyId)
+    .eq('layout', 'cover')
+    .limit(1)
+    .maybeSingle();
+  if (!data?.file_url) return null;
+  try {
+    return await resolveSignedUrl(data.file_url);
+  } catch {
+    return null;
+  }
+}
+
 interface GalleryPhoto {
   id: string;
   file_url: string;

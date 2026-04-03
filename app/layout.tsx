@@ -6,7 +6,7 @@ import { Footer } from '@/components/footer';
 import { PwaInstallPrompt } from '@/components/pwa-install-prompt';
 
 export const metadata: Metadata = {
-  title: 'Biography Library - Preserving Stories in Switzerland',
+  title: 'Biography Library — Because every life deserves to be remembered',
   description: 'Because every life deserves to be remembered',
 };
 

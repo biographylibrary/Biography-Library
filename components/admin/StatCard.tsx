@@ -16,7 +16,7 @@ const accentMap = {
   emerald: 'bg-[#C8DFBE] text-[#121212] dark:bg-[#C8DFBE]/20 dark:text-[#C8DFBE]',
   amber: 'bg-[#DDCF88] dark:bg-[#DDCF88]/20 text-[#121212] dark:text-[#DDCF88]',
   red: 'bg-[#6D323E] text-white dark:bg-[#6D323E] dark:text-white',
-  neutral: 'bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400',
+  neutral: 'bg-brand-beigeBg dark:bg-brand-ink/40 text-brand-greenDark dark:text-brand-beigeLight/80',
 };
 
 export function StatCard({ icon, label, value, secondary, accent = 'sky' }: StatCardProps) {

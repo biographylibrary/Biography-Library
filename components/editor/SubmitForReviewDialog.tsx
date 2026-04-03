@@ -33,7 +33,7 @@ type StepConfig = {
 
 const steps: StepConfig[] = [
   {
-    icon: <Lock className="h-6 w-6 text-amber-500" />,
+    icon: <Lock className="h-6 w-6 text-brand-mustardDark dark:text-brand-mustardLight" />,
     title: {
       en: 'Your biography will become read-only',
       it: 'La tua biografia diventerà di sola lettura',
@@ -54,7 +54,7 @@ const steps: StepConfig[] = [
     },
   },
   {
-    icon: <Sparkles className="h-6 w-6 text-sky-500" />,
+    icon: <Sparkles className="h-6 w-6 text-brand-blue dark:text-brand-beigeLight" />,
     title: {
       en: 'What happens next',
       it: 'Cosa succede dopo',
@@ -95,7 +95,7 @@ const steps: StepConfig[] = [
     },
   },
   {
-    icon: <Download className="h-6 w-6 text-emerald-500" />,
+    icon: <Download className="h-6 w-6 text-brand-greenDark dark:text-brand-greenLight" />,
     title: {
       en: 'After screening: your book is ready',
       it: 'Dopo la verifica: il tuo libro è pronto',
@@ -231,9 +231,9 @@ export function SubmitForReviewDialog({
         </DialogHeader>
 
         {readinessError && (
-          <div className="flex items-start gap-2.5 rounded-lg border border-destructive/40 bg-destructive/10 px-3 py-2.5">
-            <AlertTriangle className="h-4 w-4 mt-0.5 shrink-0 text-destructive" />
-            <p className="text-sm text-destructive leading-relaxed">{readinessError}</p>
+          <div className="flex items-start gap-2.5 rounded-lg border border-brand-wine/40 bg-brand-wine/10 px-3 py-2.5">
+            <AlertTriangle className="h-4 w-4 mt-0.5 shrink-0 text-brand-wine" />
+            <p className="text-sm text-brand-wineDark dark:text-brand-beigeLight leading-relaxed">{readinessError}</p>
           </div>
         )}
 
@@ -248,7 +248,7 @@ export function SubmitForReviewDialog({
             <ul className="space-y-2">
               {(current.items[language] || current.items['en']).map((item, i) => (
                 <li key={i} className="flex items-start gap-2 text-sm text-foreground/80">
-                  <CheckCircle2 className="h-4 w-4 text-emerald-500 mt-0.5 shrink-0" />
+                  <CheckCircle2 className="h-4 w-4 text-brand-greenDark dark:text-brand-greenLight mt-0.5 shrink-0" />
                   {item}
                 </li>
               ))}
@@ -259,18 +259,18 @@ export function SubmitForReviewDialog({
             <div className={[
               'rounded-lg border p-3 flex items-start gap-2.5',
               isLastStep
-                ? 'bg-amber-50 border-amber-200 dark:bg-amber-950/20 dark:border-amber-800'
-                : 'bg-sky-50 border-sky-200 dark:bg-sky-950/20 dark:border-sky-800',
+                ? 'bg-brand-mustardLight/45 border-brand-mustardDark/40 dark:bg-brand-mustardDark/20 dark:border-brand-mustardDark/50'
+                : 'bg-brand-blue/25 border-brand-blue/55 dark:bg-brand-blue/15 dark:border-brand-blue/45',
             ].join(' ')}>
               <AlertTriangle className={[
                 'h-4 w-4 mt-0.5 shrink-0',
-                isLastStep ? 'text-amber-500' : 'text-sky-500',
+                isLastStep ? 'text-brand-mustardDark dark:text-brand-mustardLight' : 'text-brand-ink dark:text-brand-beigeLight',
               ].join(' ')} />
               <p className={[
                 'text-sm font-medium',
                 isLastStep
-                  ? 'text-amber-800 dark:text-amber-200'
-                  : 'text-sky-800 dark:text-sky-200',
+                  ? 'text-brand-ink dark:text-brand-beigeLight'
+                  : 'text-brand-ink dark:text-brand-beigeLight',
               ].join(' ')}>
                 {label(current.warning, language)}
               </p>

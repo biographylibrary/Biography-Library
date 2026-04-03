@@ -111,22 +111,22 @@ export function ModeSwitchWarningDialog({
           <>
             <DialogHeader>
               <div className="flex items-center gap-2 mb-1">
-                <div className="w-8 h-8 rounded-full bg-amber-100 dark:bg-amber-900/40 flex items-center justify-center flex-shrink-0">
-                  <AlertTriangle className="h-4 w-4 text-amber-600 dark:text-amber-400" />
+                <div className="w-8 h-8 rounded-full bg-brand-mustardLight/80 dark:bg-brand-mustardDark/30 flex items-center justify-center flex-shrink-0">
+                  <AlertTriangle className="h-4 w-4 text-brand-mustardDark dark:text-brand-mustardLight" />
                 </div>
-                <DialogTitle className="text-amber-900 dark:text-amber-200">
+                <DialogTitle className="text-brand-ink dark:text-brand-beigeLight">
                   {t.modeSwitchWarning.step1Title}
                 </DialogTitle>
               </div>
             </DialogHeader>
 
-            <div className="rounded-lg bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 px-4 py-3 text-xs text-amber-800 dark:text-amber-300 leading-relaxed">
+            <div className="rounded-lg bg-brand-mustardLight/45 border border-brand-mustardDark/40 p-4 text-xs text-brand-ink dark:bg-brand-mustardDark/20 dark:border-brand-mustardDark/50 dark:text-brand-beigeLight leading-relaxed break-words">
               {interpolate(t.modeSwitchWarning.step1Message)}
             </div>
 
             <DialogFooter className="flex-col gap-2">
               <Button
-                className="bg-amber-600 hover:bg-amber-700 text-white border-0 w-full"
+                className="bg-brand-wine hover:bg-brand-wineDark text-brand-paper border-0 w-full"
                 onClick={() => setStep(2)}
               >
                 {t.modeSwitchWarning.step1Confirm}
@@ -194,19 +194,20 @@ export function ModeSwitchWarningDialog({
               </div>
             </DialogHeader>
 
-            <div className="rounded-lg bg-destructive/5 border border-destructive/20 px-4 py-4 space-y-4">
-              <p className="text-sm text-destructive leading-relaxed">
+            <div className="rounded-lg bg-destructive/5 border border-destructive/20 p-4 sm:p-5 space-y-4 w-full min-w-0 box-border">
+              <p className="text-sm text-destructive leading-relaxed break-words">
                 {interpolate(t.modeSwitchWarning.step3Message)}
               </p>
-              <div className="flex items-start gap-3">
+              <div className="flex items-start gap-3 w-full min-w-0">
                 <Checkbox
                   id="delete-confirm"
+                  className="mt-0.5"
                   checked={deleteCheckbox}
                   onCheckedChange={(checked) => setDeleteCheckbox(checked as boolean)}
                 />
                 <Label
                   htmlFor="delete-confirm"
-                  className="text-sm leading-relaxed cursor-pointer text-foreground"
+                  className="text-sm leading-relaxed cursor-pointer text-foreground flex-1 min-w-0 break-words"
                 >
                   {t.modeSwitchWarning.step3Checkbox}
                 </Label>

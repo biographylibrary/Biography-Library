@@ -72,7 +72,7 @@ export function EditorTopBar({
     unsaved: {
       icon: CloudOff,
       text: t.editor.unsaved,
-      className: 'text-amber-600 dark:text-amber-400',
+      className: 'text-brand-mustardDark dark:text-brand-mustardLight',
     },
     error: {
       icon: CloudOff,
@@ -168,8 +168,8 @@ export function EditorTopBar({
 
         {onAuthorNameChange && !isFrozen && (
           <>
-            <div className="h-4 w-px bg-border shrink-0 hidden sm:block" />
-            <User className="h-3.5 w-3.5 text-muted-foreground shrink-0 hidden sm:block" />
+            <div className="h-4 w-px bg-border shrink-0" />
+            <User className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
             {isEditingAuthor ? (
               <Input
                 ref={authorInputRef}
@@ -191,7 +191,7 @@ export function EditorTopBar({
                   setEditAuthor(authorName);
                   setIsEditingAuthor(true);
                 }}
-                className="text-sm text-muted-foreground truncate max-w-[140px] sm:max-w-[200px] hover:text-foreground transition-colors text-left hidden sm:block"
+                className="text-sm text-muted-foreground truncate max-w-[120px] sm:max-w-[200px] hover:text-foreground transition-colors text-left"
               >
                 {authorName || 'Add author name…'}
               </button>
@@ -227,7 +227,7 @@ export function EditorTopBar({
           )}
 
           {isFrozen && (
-            <div className="flex items-center gap-1.5 px-2 text-xs text-blue-600 dark:text-blue-400">
+            <div className="flex items-center gap-1.5 px-2 text-xs text-brand-ink dark:text-brand-blue">
               <Snowflake className="h-3.5 w-3.5" />
               <span className="hidden sm:inline">{t.admin.frozenBannerTitle}</span>
             </div>

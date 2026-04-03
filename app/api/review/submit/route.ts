@@ -29,7 +29,6 @@ const REVIEW_ASSIGNED_MESSAGES: Record<string, string> = {
   de: 'Eine Biografie wurde Ihnen zur Überprüfung zugewiesen.',
 };
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 type AnyClient = SupabaseClient<any, any, any>;
 
 interface RejectedPassage {
@@ -548,7 +547,12 @@ export async function POST(req: NextRequest) {
           .insert({ user_id: errorReviewerId, message: assignMsg });
       }
 
-      return NextResponse.json({ result: 'under_review', message: 'submitted for manual review', isRescreen });
+      return NextResponse.json({
+        result: 'under_review',
+        message: 'submitted for manual review',
+        isRescreen,
+        screeningDetail: screening.parseError ? 'parse_error' : 'ai_error',
+      });
     }
 
     if (screening.passages.length === 0) {
@@ -642,7 +646,12 @@ export async function POST(req: NextRequest) {
         .insert({ user_id: reviewerId, message: assignMsg });
     }
 
-    return NextResponse.json({ result: 'under_review', flagCount: flaggedPassages.length, isRescreen });
+    return NextResponse.json({
+      result: 'under_review',
+      flagCount: flaggedPassages.length,
+      isRescreen,
+      screeningDetail: 'flagged',
+    });
   } catch (err) {
     console.error('[review/submit] Unhandled error:', err);
     return NextResponse.json({ error: 'Internal error' }, { status: 500 });

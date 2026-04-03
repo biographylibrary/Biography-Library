@@ -13,11 +13,18 @@ interface BeforeInstallPromptEvent extends Event {
 const DISMISS_KEY = 'pwa_install_dismissed_until';
 const IOS_DISMISS_KEY = 'pwa_ios_dismissed_until';
 const DISMISS_DAYS = 7;
-const SHOW_DELAY_MS = 30000;
+/** Shorter delay so users see the prompt before navigating away (was 30s). */
+const SHOW_DELAY_MS = 8000;
 
-function isIOS() {
+/** iPadOS 13+ often reports as desktop Safari; detect touch Macs. */
+function isAppleMobileOrTablet() {
   if (typeof navigator === 'undefined') return false;
-  return /iphone|ipad|ipod/i.test(navigator.userAgent);
+  const ua = navigator.userAgent;
+  if (/iPad|iPhone|iPod/i.test(ua)) return true;
+  const nav = navigator as Navigator & { maxTouchPoints?: number; userAgentData?: { platform?: string } };
+  if (nav.userAgentData?.platform === 'iOS') return true;
+  if (navigator.platform === 'MacIntel' && (nav.maxTouchPoints ?? 0) > 1) return true;
+  return false;
 }
 
 function isStandalone() {
@@ -44,6 +51,21 @@ function setDismissed(key: string) {
   }
 }
 
+/**
+ * Offer install on marketing/auth flows. Hide on app shell (editor, admin, etc.)
+ * so Chromium can still fire beforeinstallprompt on "/" while users browse elsewhere.
+ */
+function shouldOfferPwaInstall(pathname: string | null): boolean {
+  if (!pathname) return false;
+  const excluded =
+    pathname.startsWith('/dashboard') ||
+    pathname.startsWith('/admin') ||
+    pathname.startsWith('/biography/') ||
+    pathname.startsWith('/notifications') ||
+    pathname.startsWith('/settings');
+  return !excluded;
+}
+
 export function PwaInstallPrompt() {
   const { t } = useTranslation();
   const pathname = usePathname();
@@ -51,10 +73,11 @@ export function PwaInstallPrompt() {
   const [visible, setVisible] = useState(false);
   const [iosVisible, setIosVisible] = useState(false);
 
-  const isPublicPage = pathname === '/' || pathname === '/biographies';
+  const allowInstallUi = shouldOfferPwaInstall(pathname);
+  const isApple = isAppleMobileOrTablet();
 
   useEffect(() => {
-    if (!isPublicPage || isIOS() || isDismissed(DISMISS_KEY)) return;
+    if (!allowInstallUi || isApple || isDismissed(DISMISS_KEY)) return;
 
     const handler = (e: Event) => {
       e.preventDefault();
@@ -63,19 +86,19 @@ export function PwaInstallPrompt() {
 
     window.addEventListener('beforeinstallprompt', handler);
     return () => window.removeEventListener('beforeinstallprompt', handler);
-  }, [isPublicPage]);
+  }, [allowInstallUi, isApple]);
 
   useEffect(() => {
-    if (!deferredPrompt || !isPublicPage) return;
+    if (!deferredPrompt || !allowInstallUi) return;
     const timer = setTimeout(() => setVisible(true), SHOW_DELAY_MS);
     return () => clearTimeout(timer);
-  }, [deferredPrompt, isPublicPage]);
+  }, [deferredPrompt, allowInstallUi]);
 
   useEffect(() => {
-    if (!isPublicPage || !isIOS() || isStandalone() || isDismissed(IOS_DISMISS_KEY)) return;
+    if (!allowInstallUi || !isApple || isStandalone() || isDismissed(IOS_DISMISS_KEY)) return;
     const timer = setTimeout(() => setIosVisible(true), SHOW_DELAY_MS);
     return () => clearTimeout(timer);
-  }, [isPublicPage]);
+  }, [allowInstallUi, isApple, pathname]);
 
   const handleInstall = async () => {
     if (!deferredPrompt) return;

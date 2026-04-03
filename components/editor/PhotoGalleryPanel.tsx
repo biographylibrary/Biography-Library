@@ -103,13 +103,13 @@ function PhotoCard({
 
   useEffect(() => {
     setLocalCaption(item.caption ?? '');
-  }, [item.id]);
+  }, [item.id, item.caption]);
 
   useEffect(() => {
     if (debouncedCaption !== (item.caption ?? '')) {
       onCaptionChange(item.id, debouncedCaption);
     }
-  }, [debouncedCaption]);
+  }, [debouncedCaption, item.caption, item.id, onCaptionChange]);
 
   const displayUrl = item.previewUrl || item.file_url;
 
@@ -127,6 +127,7 @@ function PhotoCard({
     >
       <div className="relative bg-muted">
         {displayUrl ? (
+          // eslint-disable-next-line @next/next/no-img-element -- blob/data URLs and remote storage URLs; next/image would require full URL config
           <img
             src={displayUrl}
             alt={item.file_name ?? ''}
@@ -143,7 +144,7 @@ function PhotoCard({
         <button
           type="button"
           onClick={() => onDelete(item)}
-          className="absolute top-2 right-2 p-1.5 rounded bg-black/40 text-white opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-600/80"
+          className="absolute top-2 right-2 p-1.5 rounded bg-black/40 text-white opacity-0 group-hover:opacity-100 transition-opacity hover:bg-brand-wine/80"
           title={t.photos.deleteButton}
         >
           <Trash2 className="h-4 w-4" />
@@ -196,6 +197,8 @@ export function PhotoGalleryPanel({ biographyId, userId, onClose }: PhotoGallery
 
   useEffect(() => {
     return () => {
+      // Ref must be read when unmounting to revoke URLs pushed after mount; not the same as DOM refs.
+      // eslint-disable-next-line react-hooks/exhaustive-deps
       objectUrlsRef.current.forEach((u) => URL.revokeObjectURL(u));
     };
   }, []);
@@ -411,7 +414,7 @@ export function PhotoGalleryPanel({ biographyId, userId, onClose }: PhotoGallery
 
       <div className="flex-1 min-h-0 overflow-y-auto p-4 space-y-4">
         {errorMsg && (
-          <div className="text-sm text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-950/30 rounded-lg px-3 py-2">
+          <div className="text-sm text-brand-wineDark dark:text-brand-beigeLight bg-brand-wine/10 dark:bg-brand-wine/20 rounded-lg px-3 py-2 border border-brand-wine/25">
             {errorMsg}
           </div>
         )}
@@ -489,7 +492,7 @@ export function PhotoGalleryPanel({ biographyId, userId, onClose }: PhotoGallery
             <AlertDialogCancel>{t.common.cancel}</AlertDialogCancel>
             <AlertDialogAction
               onClick={handleDeleteConfirm}
-              className="bg-red-600 hover:bg-red-700 text-white"
+              className="bg-brand-wine hover:bg-brand-wineDark text-brand-paper"
             >
               {t.common.delete}
             </AlertDialogAction>

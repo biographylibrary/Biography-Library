@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -87,14 +87,32 @@ export function AISectionReview({
     })));
   }, [initialRewriteVersions]);
 
-  useEffect(() => {
-    if (open) {
-      loadSuggestions();
-      calculateStatistics();
-    }
-  }, [open, content]);
+  const calculateStatistics = useCallback(() => {
+    const text = content.trim();
+    const words = text.split(/\s+/).filter(w => w.length > 0);
+    const sentences = text.split(/[.!?]+/).filter(s => s.trim().length > 0);
+    const paragraphs = text.split(/\n\n+/).filter(p => p.trim().length > 0);
 
-  const loadSuggestions = async () => {
+    const wordCount = words.length;
+    const characterCount = text.length;
+    const sentenceCount = sentences.length;
+    const paragraphCount = paragraphs.length;
+    const avgWordsPerSentence = sentenceCount > 0 ? wordCount / sentenceCount : 0;
+
+    const avgWordLength = words.reduce((sum, word) => sum + word.length, 0) / wordCount || 0;
+    const readabilityScore = Math.max(0, Math.min(100, 100 - (avgWordsPerSentence * 2 + avgWordLength * 5)));
+
+    setStatistics({
+      wordCount,
+      characterCount,
+      sentenceCount,
+      paragraphCount,
+      avgWordsPerSentence: Math.round(avgWordsPerSentence * 10) / 10,
+      readabilityScore: Math.round(readabilityScore),
+    });
+  }, [content]);
+
+  const loadSuggestions = useCallback(async () => {
     if (!session) return;
 
     setLoading(true);
@@ -147,7 +165,14 @@ export function AISectionReview({
     } finally {
       setLoading(false);
     }
-  };
+  }, [session, content, sectionTitle, language, t]);
+
+  useEffect(() => {
+    if (open) {
+      loadSuggestions();
+      calculateStatistics();
+    }
+  }, [open, content, loadSuggestions, calculateStatistics]);
 
   const loadRewrite = async (tone: 'narrative' | 'formal' | 'intimate') => {
     if (!session) return;
@@ -196,31 +221,6 @@ export function AISectionReview({
         prev.map(v => v.tone === tone ? { ...v, loading: false } : v)
       );
     }
-  };
-
-  const calculateStatistics = () => {
-    const text = content.trim();
-    const words = text.split(/\s+/).filter(w => w.length > 0);
-    const sentences = text.split(/[.!?]+/).filter(s => s.trim().length > 0);
-    const paragraphs = text.split(/\n\n+/).filter(p => p.trim().length > 0);
-
-    const wordCount = words.length;
-    const characterCount = text.length;
-    const sentenceCount = sentences.length;
-    const paragraphCount = paragraphs.length;
-    const avgWordsPerSentence = sentenceCount > 0 ? wordCount / sentenceCount : 0;
-
-    const avgWordLength = words.reduce((sum, word) => sum + word.length, 0) / wordCount || 0;
-    const readabilityScore = Math.max(0, Math.min(100, 100 - (avgWordsPerSentence * 2 + avgWordLength * 5)));
-
-    setStatistics({
-      wordCount,
-      characterCount,
-      sentenceCount,
-      paragraphCount,
-      avgWordsPerSentence: Math.round(avgWordsPerSentence * 10) / 10,
-      readabilityScore: Math.round(readabilityScore),
-    });
   };
 
   const toggleImprovement = (id: string) => {
@@ -365,7 +365,7 @@ export function AISectionReview({
                 </div>
               ) : improvements.filter(imp => !imp.ignored).length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-12 text-center">
-                  <CheckCircle2 className="h-12 w-12 text-green-500 mb-4" />
+                  <CheckCircle2 className="h-12 w-12 text-brand-greenDark dark:text-brand-greenLight mb-4" />
                   <h3 className="text-lg font-semibold mb-2">{t.aiReview.looksGreat}</h3>
                   <p className="text-muted-foreground">{t.aiReview.noImprovementsNeeded}</p>
                 </div>
@@ -394,7 +394,7 @@ export function AISectionReview({
                               </div>
                               <div>
                                 <p className="text-sm text-muted-foreground mb-1">{t.aiReview.suggestion}</p>
-                                <p className="text-sm bg-green-50 dark:bg-green-950/20 p-2 rounded font-medium">{imp.suggestion}</p>
+                                <p className="text-sm bg-brand-greenLight/35 dark:bg-brand-greenLight/10 p-2 rounded font-medium text-brand-ink dark:text-brand-beigeLight">{imp.suggestion}</p>
                               </div>
                               <div className="flex gap-2">
                                 <Button
@@ -472,7 +472,7 @@ export function AISectionReview({
                           </div>
                           <div>
                             <p className="text-sm font-medium mb-2">{t.aiReview.rewrittenVersion}</p>
-                            <ScrollArea className="h-48 border rounded p-3 bg-green-50 dark:bg-green-950/20">
+                            <ScrollArea className="h-48 border rounded p-3 bg-brand-greenLight/30 dark:bg-brand-greenLight/10">
                               <p className="text-sm whitespace-pre-wrap">{version.content}</p>
                             </ScrollArea>
                           </div>

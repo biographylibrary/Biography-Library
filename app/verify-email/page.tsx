@@ -116,19 +116,19 @@ export default function VerifyEmailPage() {
           </div>
 
           {confirmed ? (
-            <div className="flex flex-col items-center gap-4 p-6 rounded-xl bg-green-50 dark:bg-green-950/30 border border-green-200 dark:border-green-800 text-center">
-              <div className="w-14 h-14 rounded-full bg-green-100 dark:bg-green-900/50 flex items-center justify-center">
-                <CheckCircle2 className="h-7 w-7 text-green-600 dark:text-green-400" />
+            <div className="flex flex-col items-center gap-4 p-6 rounded-xl bg-brand-greenLight/35 dark:bg-brand-greenLight/10 border border-brand-greenDark/35 dark:border-brand-greenDark/40 text-center">
+              <div className="w-14 h-14 rounded-full bg-brand-greenLight/50 dark:bg-brand-greenLight/15 flex items-center justify-center">
+                <CheckCircle2 className="h-7 w-7 text-brand-greenDark dark:text-brand-greenLight" />
               </div>
               <div className="space-y-1">
-                <h2 className="text-xl font-serif font-semibold text-green-900 dark:text-green-100">
+                <h2 className="text-xl font-serif font-semibold text-brand-ink dark:text-brand-beigeLight">
                   {t.auth.verifyEmailConfirmedTitle}
                 </h2>
-                <p className="text-sm text-green-800 dark:text-green-200">
+                <p className="text-sm text-brand-greenDark dark:text-brand-beigeLight/90">
                   {t.auth.verifyEmailConfirmedDetail}
                 </p>
               </div>
-              <Loader2 className="h-4 w-4 animate-spin text-green-600 dark:text-green-400" />
+              <Loader2 className="h-4 w-4 animate-spin text-brand-greenDark dark:text-brand-greenLight" />
             </div>
           ) : verifyError ? (
             <div className="flex flex-col items-center gap-4 p-6 rounded-xl bg-destructive/10 border border-destructive/20 text-center">

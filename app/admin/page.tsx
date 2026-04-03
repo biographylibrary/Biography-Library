@@ -118,8 +118,8 @@ function OverviewContent() {
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
         <div className="flex items-center gap-3 mb-10">
-          <div className="p-2.5 rounded-xl bg-sky-50 dark:bg-sky-950/30 shrink-0">
-            <LayoutDashboard className="h-5 w-5 text-sky-600 dark:text-sky-400" />
+          <div className="p-2.5 rounded-xl bg-brand-blue/25 dark:bg-brand-blue/15 shrink-0">
+            <LayoutDashboard className="h-5 w-5 text-brand-ink dark:text-brand-blue" />
           </div>
           <div>
             <h1 className="text-2xl font-serif font-semibold tracking-tight text-foreground">
@@ -130,16 +130,16 @@ function OverviewContent() {
         </div>
 
         {stats.parseErrorCount !== null && stats.parseErrorCount > 0 && (
-          <div className="mb-8 flex items-start gap-3 rounded-xl border border-amber-200 bg-amber-50 dark:border-amber-800 dark:bg-amber-950/30 px-4 py-3.5">
-            <TriangleAlert className="h-5 w-5 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
+          <div className="mb-8 flex items-start gap-3 rounded-xl border border-brand-mustardDark/45 bg-brand-mustardLight/50 dark:border-brand-mustardDark/40 dark:bg-brand-mustardDark/15 px-4 py-3.5">
+            <TriangleAlert className="h-5 w-5 text-brand-ink dark:text-brand-mustardLight shrink-0 mt-0.5" />
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-amber-800 dark:text-amber-300">
+              <p className="text-sm font-medium text-brand-ink dark:text-brand-beigeLight">
                 {stats.parseErrorCount} {stats.parseErrorCount === 1 ? 'biography' : 'biographies'} published in the last 7 days bypassed AI screening due to a parse error. These may require manual review.
               </p>
             </div>
             <Link
               href="/admin/biographies?screening=parse_error"
-              className="shrink-0 inline-flex items-center gap-1 text-xs font-medium text-amber-700 dark:text-amber-400 hover:text-amber-900 dark:hover:text-amber-200 transition-colors whitespace-nowrap"
+              className="shrink-0 inline-flex items-center gap-1 text-xs font-medium text-brand-wineDark dark:text-brand-mustardLight hover:text-brand-ink dark:hover:text-brand-beigeLight transition-colors whitespace-nowrap"
             >
               View affected biographies
               <ArrowRight className="h-3.5 w-3.5" />
@@ -242,21 +242,21 @@ function OverviewContent() {
             <div className="flex flex-wrap gap-3">
               <Button asChild variant="outline" className="gap-2 h-10">
                 <Link href="/admin/moderation">
-                  <Shield className="h-4 w-4 text-sky-600 dark:text-sky-400" />
+                  <Shield className="h-4 w-4 text-brand-ink dark:text-brand-blue" />
                   {t.admin.quickActionModeration}
                   <ArrowRight className="h-3.5 w-3.5 text-muted-foreground" />
                 </Link>
               </Button>
               <Button asChild variant="outline" className="gap-2 h-10">
                 <Link href="/admin/users">
-                  <Users className="h-4 w-4 text-sky-600 dark:text-sky-400" />
+                  <Users className="h-4 w-4 text-brand-ink dark:text-brand-blue" />
                   {t.admin.quickActionUsers}
                   <ArrowRight className="h-3.5 w-3.5 text-muted-foreground" />
                 </Link>
               </Button>
               <Button asChild variant="outline" className="gap-2 h-10">
                 <Link href="/admin/biographies">
-                  <BookOpen className="h-4 w-4 text-sky-600 dark:text-sky-400" />
+                  <BookOpen className="h-4 w-4 text-brand-ink dark:text-brand-blue" />
                   {t.admin.quickActionBiographies}
                   <ArrowRight className="h-3.5 w-3.5 text-muted-foreground" />
                 </Link>

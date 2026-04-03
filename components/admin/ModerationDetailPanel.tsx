@@ -81,6 +81,7 @@ export function ModerationDetailPanel({ report, onClose, onRefresh }: Moderation
       setDialog(null);
       setReturnMessage('');
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- re-run only when report id changes (avoid duplicate claimReview on unrelated reference updates)
   }, [report?.id]);
 
   if (!report) return null;
@@ -189,15 +190,15 @@ export function ModerationDetailPanel({ report, onClose, onRefresh }: Moderation
             {(lockWarning || conflictError) && (
               <div className="px-6 py-4 space-y-2">
                 {lockWarning && (
-                  <div className="flex items-start gap-3 rounded-lg border border-amber-300 bg-amber-50 dark:bg-amber-950/20 dark:border-amber-700 px-4 py-3">
-                    <AlertCircle className="h-4 w-4 text-amber-600 dark:text-amber-400 mt-0.5 shrink-0" />
-                    <p className="text-sm text-amber-800 dark:text-amber-200">{lockWarning}</p>
+                  <div className="flex items-start gap-3 rounded-lg border border-brand-mustardDark/45 bg-brand-mustardLight/45 dark:bg-brand-mustardDark/20 dark:border-brand-mustardDark/50 px-4 py-3">
+                    <AlertCircle className="h-4 w-4 text-brand-mustardDark dark:text-brand-mustardLight mt-0.5 shrink-0" />
+                    <p className="text-sm text-brand-ink dark:text-brand-beigeLight">{lockWarning}</p>
                   </div>
                 )}
                 {conflictError && (
-                  <div className="flex items-start gap-3 rounded-lg border border-red-300 bg-red-50 dark:bg-red-950/20 dark:border-red-700 px-4 py-3">
-                    <AlertCircle className="h-4 w-4 text-red-600 dark:text-red-400 mt-0.5 shrink-0" />
-                    <p className="text-sm text-red-800 dark:text-red-200">
+                  <div className="flex items-start gap-3 rounded-lg border border-brand-wine/40 bg-brand-wine/10 dark:bg-brand-wine/20 dark:border-brand-wine/45 px-4 py-3">
+                    <AlertCircle className="h-4 w-4 text-brand-wine dark:text-brand-beigeLight mt-0.5 shrink-0" />
+                    <p className="text-sm text-brand-wineDark dark:text-brand-beigeLight">
                       Another reviewer submitted a decision while you were reviewing. Please reload.
                     </p>
                   </div>
@@ -275,9 +276,11 @@ export function ModerationDetailPanel({ report, onClose, onRefresh }: Moderation
                     {flaggedPassages.map((fp, i) => (
                       <div
                         key={i}
-                        className="rounded-lg border-l-4 border-orange-400 bg-orange-50 dark:bg-orange-950/20 px-3 py-2.5 space-y-1"
+                        className="rounded-lg border-l-4 border-brand-mustardDark bg-brand-mustardLight/50 dark:bg-brand-mustardDark/25 dark:border-brand-mustardLight px-3 py-2.5 space-y-1"
                       >
-                        <p className="text-xs text-foreground italic leading-relaxed">"{fp.text}"</p>
+                        <p className="text-xs text-foreground italic leading-relaxed">
+                          {`\u201C${fp.text}\u201D`}
+                        </p>
                         {fp.reason && (
                           <p className="text-xs text-muted-foreground">
                             <span className="font-medium">{t.admin.flaggedPassageReason}:</span> {fp.reason}
@@ -342,7 +345,7 @@ export function ModerationDetailPanel({ report, onClose, onRefresh }: Moderation
               {canAct && (
                 <div className="space-y-2">
                   <Button
-                    className="w-full bg-emerald-600 hover:bg-emerald-700 text-white"
+                    className="w-full bg-brand-greenDark hover:bg-brand-ink text-brand-paper"
                     onClick={() => setDialog('approve')}
                     disabled={submitting}
                   >
@@ -350,7 +353,7 @@ export function ModerationDetailPanel({ report, onClose, onRefresh }: Moderation
                   </Button>
 
                   <Button
-                    className="w-full bg-yellow-500 hover:bg-yellow-600 text-white"
+                    className="w-full bg-brand-mustardDark hover:bg-brand-mustardDark/90 text-brand-ink"
                     onClick={() => setDialog('publishWarning')}
                     disabled={submitting}
                   >
@@ -367,7 +370,7 @@ export function ModerationDetailPanel({ report, onClose, onRefresh }: Moderation
                     />
                     <Button
                       variant="outline"
-                      className="w-full border-orange-400 text-orange-600 hover:bg-orange-50 dark:hover:bg-orange-950/20"
+                      className="w-full border-brand-mustardDark text-brand-ink hover:bg-brand-mustardLight/50 dark:border-brand-mustardLight dark:text-brand-beigeLight dark:hover:bg-brand-mustardDark/30"
                       onClick={() => {
                         if (returnMessage.trim()) setDialog('return');
                       }}
@@ -379,7 +382,7 @@ export function ModerationDetailPanel({ report, onClose, onRefresh }: Moderation
 
                   <Button
                     variant="outline"
-                    className="w-full border-red-400 text-red-600 hover:bg-red-50 dark:hover:bg-red-950/20"
+                    className="w-full border-brand-wine text-brand-wineDark hover:bg-brand-wine/10 dark:border-brand-wine dark:text-brand-beigeLight dark:hover:bg-brand-wine/20"
                     onClick={() => setDialog('remove')}
                     disabled={submitting}
                   >
@@ -428,7 +431,7 @@ export function ModerationDetailPanel({ report, onClose, onRefresh }: Moderation
           <AlertDialogFooter>
             <AlertDialogCancel onClick={() => setDialog(null)}>{t.admin.cancelAction}</AlertDialogCancel>
             <AlertDialogAction
-              className="bg-emerald-600 hover:bg-emerald-700 text-white"
+              className="bg-brand-greenDark hover:bg-brand-ink text-brand-paper"
               onClick={() => handleDecision('approve')}
             >
               {t.admin.confirmAction}
@@ -447,7 +450,7 @@ export function ModerationDetailPanel({ report, onClose, onRefresh }: Moderation
           <AlertDialogFooter>
             <AlertDialogCancel onClick={() => setDialog(null)}>{t.admin.cancelAction}</AlertDialogCancel>
             <AlertDialogAction
-              className="bg-yellow-500 hover:bg-yellow-600 text-white"
+              className="bg-brand-mustardDark hover:bg-brand-mustardDark/90 text-brand-ink"
               onClick={() => handleDecision('publishWarning')}
             >
               {t.admin.confirmAction}
@@ -466,7 +469,7 @@ export function ModerationDetailPanel({ report, onClose, onRefresh }: Moderation
           <AlertDialogFooter>
             <AlertDialogCancel onClick={() => setDialog(null)}>{t.admin.cancelAction}</AlertDialogCancel>
             <AlertDialogAction
-              className="bg-orange-500 hover:bg-orange-600 text-white"
+              className="bg-brand-mustardDark hover:bg-brand-mustardDark/90 text-brand-ink"
               onClick={() => handleDecision('return')}
             >
               {t.admin.confirmAction}
@@ -485,7 +488,7 @@ export function ModerationDetailPanel({ report, onClose, onRefresh }: Moderation
           <AlertDialogFooter>
             <AlertDialogCancel onClick={() => setDialog(null)}>{t.admin.cancelAction}</AlertDialogCancel>
             <AlertDialogAction
-              className="bg-red-600 hover:bg-red-700 text-white"
+              className="bg-brand-wineDark hover:bg-brand-wine text-brand-paper"
               onClick={() => handleDecision('remove')}
             >
               {t.admin.confirmAction}

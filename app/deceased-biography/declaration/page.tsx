@@ -105,12 +105,12 @@ export default function DeceasedDeclarationPage() {
             </p>
           </div>
 
-          <Alert className="border-amber-200 dark:border-amber-800 bg-amber-50 dark:bg-amber-950/30">
-            <Clock className="h-5 w-5 text-amber-600 dark:text-amber-500" />
-            <AlertTitle className="text-amber-900 dark:text-amber-100 font-semibold">
+          <Alert className="border-brand-mustardDark/45 dark:border-brand-mustardDark/40 bg-brand-mustardLight/50 dark:bg-brand-mustardDark/15">
+            <Clock className="h-5 w-5 text-brand-ink dark:text-brand-mustardLight" />
+            <AlertTitle className="text-brand-ink dark:text-brand-beigeLight font-semibold">
               {t.deceasedDeclaration.reviewPeriodTitle}
             </AlertTitle>
-            <AlertDescription className="text-sm text-amber-900 dark:text-amber-100 space-y-2 mt-2">
+            <AlertDescription className="text-sm text-brand-ink dark:text-brand-beigeLight space-y-2 mt-2">
               <p>{t.deceasedDeclaration.reviewPeriodText}</p>
               <ul className="list-disc list-inside space-y-1 ml-2">
                 <li>{t.deceasedDeclaration.reviewPeriodBullet1}</li>
@@ -124,7 +124,7 @@ export default function DeceasedDeclarationPage() {
           <Card>
             <CardContent className="p-6 md:p-8 space-y-6">
               <div className="space-y-6">
-                <div className="space-y-3 border-l-4 border-red-500 pl-4 bg-red-50 dark:bg-red-950/20 py-3 -ml-3">
+                <div className="space-y-3 border-l-4 border-brand-wine pl-4 bg-brand-wine/8 dark:bg-brand-wine/15 py-3 -ml-3">
                   <div className="flex items-start space-x-3">
                     <Checkbox
                       id="deceased"
@@ -139,7 +139,7 @@ export default function DeceasedDeclarationPage() {
                       >
                         {t.deceasedDeclaration.checkbox1}
                       </Label>
-                      <p className="text-sm text-red-700 dark:text-red-400 font-medium">
+                      <p className="text-sm text-brand-wineDark dark:text-brand-mustardLight font-medium">
                         {t.deceasedDeclaration.checkbox1Helper}
                       </p>
                     </div>
@@ -227,7 +227,7 @@ export default function DeceasedDeclarationPage() {
                       >
                         {renderCheckbox5Label()}
                       </Label>
-                      <p className="text-sm font-medium text-amber-600 dark:text-amber-500">
+                      <p className="text-sm font-medium text-brand-wineDark dark:text-brand-mustardLight">
                         {t.auth.mustAcceptTerms}
                       </p>
                     </div>
@@ -237,12 +237,12 @@ export default function DeceasedDeclarationPage() {
             </CardContent>
           </Card>
 
-          <Alert className="border-blue-200 dark:border-blue-800 bg-blue-50 dark:bg-blue-950/30">
-            <Info className="h-5 w-5 text-blue-600 dark:text-blue-500" />
-            <AlertTitle className="text-blue-900 dark:text-blue-100 font-semibold">
+          <Alert className="border-brand-blue/50 dark:border-brand-blue/35 bg-brand-blue/20 dark:bg-brand-blue/10">
+            <Info className="h-5 w-5 text-brand-ink dark:text-brand-blue" />
+            <AlertTitle className="text-brand-ink dark:text-brand-beigeLight font-semibold">
               {t.deceasedDeclaration.perspectivesTitle}
             </AlertTitle>
-            <AlertDescription className="text-sm text-blue-900 dark:text-blue-100 space-y-2 mt-2">
+            <AlertDescription className="text-sm text-brand-ink dark:text-brand-beigeLight space-y-2 mt-2">
               <p>{t.deceasedDeclaration.perspectivesText}</p>
               <ul className="list-disc list-inside space-y-1 ml-2">
                 <li>{t.deceasedDeclaration.perspectivesBullet1}</li>
@@ -252,12 +252,12 @@ export default function DeceasedDeclarationPage() {
             </AlertDescription>
           </Alert>
 
-          <Alert className="border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-950/30">
-            <Scale className="h-5 w-5 text-red-600 dark:text-red-500" />
-            <AlertTitle className="text-red-900 dark:text-red-100 font-semibold">
+          <Alert className="border-brand-wine/45 dark:border-brand-wine/40 bg-brand-wine/10 dark:bg-brand-wine/15">
+            <Scale className="h-5 w-5 text-brand-wine dark:text-brand-mustardLight" />
+            <AlertTitle className="text-brand-wineDark dark:text-brand-beigeLight font-semibold">
               {t.deceasedDeclaration.legalWarningTitle}
             </AlertTitle>
-            <AlertDescription className="text-sm text-red-900 dark:text-red-100 space-y-2 mt-2">
+            <AlertDescription className="text-sm text-brand-wineDark dark:text-brand-beigeLight space-y-2 mt-2">
               <p>{t.deceasedDeclaration.legalWarningText}</p>
               <ul className="list-disc list-inside space-y-1 ml-2">
                 <li>{t.deceasedDeclaration.legalWarningBullet1}</li>

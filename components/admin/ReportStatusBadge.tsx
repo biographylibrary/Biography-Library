@@ -8,7 +8,7 @@ interface ReportStatusBadgeProps {
 }
 
 const STATUS_STYLES: Record<ReportStatus, string> = {
-  unassigned: 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-300',
+  unassigned: 'bg-brand-beigeBg text-brand-greenDark dark:bg-brand-ink/35 dark:text-brand-beigeLight',
   assigned: 'bg-[#C4DAEB] text-[#121212] dark:bg-[#C4DAEB]/20 dark:text-[#C4DAEB]',
   in_review: 'bg-[#C4DAEB] text-[#121212] dark:bg-[#C4DAEB]/20 dark:text-[#C4DAEB]',
   decided: 'bg-[#C8DFBE] text-[#121212] dark:bg-[#C8DFBE]/20 dark:text-[#C8DFBE]',

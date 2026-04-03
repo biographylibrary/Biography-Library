@@ -29,38 +29,38 @@ export function TermsOfServiceContent() {
         <h2 className="text-xl font-semibold mb-3">{t.section2Title}</h2>
         <p>{t.section2Intro}</p>
 
-        <div className="bg-green-50 dark:bg-green-950/30 border-l-4 border-green-500 p-4 my-4">
+        <div className="bg-brand-greenLight/35 dark:bg-brand-greenLight/10 border-l-4 border-brand-greenDark p-4 my-4">
           <div className="flex items-start gap-2">
-            <CheckCircle2 className="h-5 w-5 text-green-600 dark:text-green-500 mt-0.5 flex-shrink-0" />
+            <CheckCircle2 className="h-5 w-5 text-brand-greenDark dark:text-brand-greenLight mt-0.5 flex-shrink-0" />
             <div>
-              <h3 className="font-semibold text-green-900 dark:text-green-100 mb-1">{t.section2Autobiography}</h3>
-              <p className="text-green-900 dark:text-green-100 text-sm">{t.section2AutobiographyDesc}</p>
+              <h3 className="font-semibold text-brand-ink dark:text-brand-greenLight mb-1">{t.section2Autobiography}</h3>
+              <p className="text-brand-ink dark:text-brand-beigeLight text-sm">{t.section2AutobiographyDesc}</p>
             </div>
           </div>
         </div>
 
-        <div className="bg-green-50 dark:bg-green-950/30 border-l-4 border-green-500 p-4 my-4">
+        <div className="bg-brand-greenLight/35 dark:bg-brand-greenLight/10 border-l-4 border-brand-greenDark p-4 my-4">
           <div className="flex items-start gap-2">
-            <CheckCircle2 className="h-5 w-5 text-green-600 dark:text-green-500 mt-0.5 flex-shrink-0" />
+            <CheckCircle2 className="h-5 w-5 text-brand-greenDark dark:text-brand-greenLight mt-0.5 flex-shrink-0" />
             <div>
-              <h3 className="font-semibold text-green-900 dark:text-green-100 mb-1">{t.section2Deceased}</h3>
-              <p className="text-green-900 dark:text-green-100 text-sm">{t.section2DeceasedDesc}</p>
+              <h3 className="font-semibold text-brand-ink dark:text-brand-greenLight mb-1">{t.section2Deceased}</h3>
+              <p className="text-brand-ink dark:text-brand-beigeLight text-sm">{t.section2DeceasedDesc}</p>
             </div>
           </div>
         </div>
 
-        <div className="bg-red-50 dark:bg-red-950/30 border-l-4 border-red-500 p-4 my-4">
+        <div className="bg-brand-wine/10 dark:bg-brand-wine/15 border-l-4 border-brand-wine p-4 my-4">
           <div className="flex items-start gap-2">
-            <XCircle className="h-5 w-5 text-red-600 dark:text-red-500 mt-0.5 flex-shrink-0" />
+            <XCircle className="h-5 w-5 text-brand-wine dark:text-brand-mustardLight mt-0.5 flex-shrink-0" />
             <div>
-              <h3 className="font-semibold text-red-900 dark:text-red-100 mb-2">{t.section2Prohibited}</h3>
-              <p className="text-red-900 dark:text-red-100 text-sm mb-2">You CANNOT publish biographies of:</p>
-              <ul className="list-disc list-inside space-y-1 text-red-900 dark:text-red-100 text-sm">
+              <h3 className="font-semibold text-brand-wineDark dark:text-brand-beigeLight mb-2">{t.section2Prohibited}</h3>
+              <p className="text-brand-wineDark dark:text-brand-beigeLight text-sm mb-2">You CANNOT publish biographies of:</p>
+              <ul className="list-disc list-inside space-y-1 text-brand-wineDark dark:text-brand-beigeLight text-sm">
                 {t.section2ProhibitedList.map((item, idx) => (
                   <li key={idx}>{item}</li>
                 ))}
               </ul>
-              <p className="text-red-900 dark:text-red-100 text-sm font-medium mt-3">{t.section2ProhibitedConsequence}</p>
+              <p className="text-brand-wineDark dark:text-brand-beigeLight text-sm font-medium mt-3">{t.section2ProhibitedConsequence}</p>
             </div>
           </div>
         </div>

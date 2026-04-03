@@ -71,9 +71,9 @@ export function PendingTodosCard() {
 
   const getPriorityColor = (priority: string) => {
     const colors = {
-      low: 'text-gray-600',
+      low: 'text-brand-greenDark dark:text-brand-beigeLight/75',
       medium: 'text-[#121212] dark:text-[#DDCF88]',
-      high: 'text-red-600',
+      high: 'text-brand-wine dark:text-brand-mustardLight',
     };
     return colors[priority as keyof typeof colors] || colors.medium;
   };
@@ -151,7 +151,7 @@ export function PendingTodosCard() {
                   key={todo.id}
                   className={cn(
                     'p-3 cursor-pointer hover:bg-muted/50 transition-colors',
-                    isOverdue && 'border-red-300 bg-red-50/50 dark:bg-red-950/20'
+                    isOverdue && 'border-brand-wine/45 bg-brand-wine/8 dark:bg-brand-wine/15'
                   )}
                   onClick={() => handleNavigate(todo.biography_id, todo.section)}
                 >
@@ -195,7 +195,7 @@ export function PendingTodosCard() {
                           variant="outline"
                           className={cn(
                             'gap-1 text-xs',
-                            isOverdue && 'border-red-500 text-red-700 bg-red-50 dark:bg-red-950/30'
+                            isOverdue && 'border-brand-wine text-brand-wineDark bg-brand-wine/10 dark:bg-brand-wine/20 dark:text-brand-mustardLight'
                           )}
                         >
                           <CalendarIcon className="h-3 w-3" />

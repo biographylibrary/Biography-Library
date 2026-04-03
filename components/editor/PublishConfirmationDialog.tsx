@@ -70,13 +70,13 @@ export function PublishConfirmationDialog({
       <AlertDialogContent>
         <AlertDialogHeader>
           <AlertDialogTitle className="flex items-center gap-2">
-            <AlertTriangle className="h-5 w-5 text-orange-500" />
+            <AlertTriangle className="h-5 w-5 text-brand-mustardDark dark:text-brand-mustardLight" />
             {title}
           </AlertDialogTitle>
           <AlertDialogDescription className="space-y-3">
             <p>{description}</p>
-            <div className="bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800 rounded-lg p-3">
-              <p className="text-sm font-semibold text-orange-800 dark:text-orange-200">
+            <div className="bg-brand-mustardLight/45 dark:bg-brand-mustardDark/25 border border-brand-mustardDark/40 dark:border-brand-mustardDark/50 rounded-lg p-3">
+              <p className="text-sm font-semibold text-brand-ink dark:text-brand-beigeLight">
                 {warningText}
               </p>
             </div>

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Card } from '@/components/ui/card';
@@ -76,7 +76,10 @@ export function ConversationMode({
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const autoSaveIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
-  const prompts = getFallbackPrompts(language)[sectionKey] || [];
+  const prompts = useMemo(
+    () => getFallbackPrompts(language)[sectionKey] || [],
+    [language, sectionKey]
+  );
   const section = BIOGRAPHY_SECTIONS.find((s) => s.key === sectionKey);
   const sectionTitle = section ? t.sectionTitles[sectionKey as keyof typeof t.sectionTitles] : '';
 
@@ -215,7 +218,7 @@ export function ConversationMode({
     ]);
   };
 
-  const generateAcknowledgment = (answer: string): string => {
+  const generateAcknowledgment = useCallback((_answer: string): string => {
     const acknowledgments = {
       en: [
         'Thank you for sharing these memories.',
@@ -250,7 +253,7 @@ export function ConversationMode({
     const langAcknowledgments = acknowledgments[language as keyof typeof acknowledgments] || acknowledgments.en;
     const randomIndex = Math.floor(Math.random() * langAcknowledgments.length);
     return langAcknowledgments[randomIndex];
-  };
+  }, [language]);
 
   const handleSendAnswer = useCallback(async () => {
     if (!currentAnswer.trim() || currentQuestionIndex >= prompts.length) return;
@@ -368,7 +371,7 @@ export function ConversationMode({
 
       textareaRef.current?.focus();
     }
-  }, [currentAnswer, currentQuestionIndex, prompts, answers, language, session, isFollowUp, hasHadFollowUp, messages]);
+  }, [currentAnswer, currentQuestionIndex, prompts, answers, language, session, isFollowUp, hasHadFollowUp, messages, generateAcknowledgment]);
 
   const handleSkipQuestion = () => {
     if (isFollowUp) {
@@ -479,7 +482,7 @@ export function ConversationMode({
             <span className={cn(
               "text-sm font-medium px-3 py-1 rounded-full",
               answers.length >= 8
-                ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
+                ? "bg-brand-greenLight/50 text-brand-greenDark dark:bg-brand-greenLight/15 dark:text-brand-greenLight"
                 : "bg-[#DDCF88] text-[#121212] dark:bg-[#DDCF88]/20 dark:text-[#DDCF88]"
             )}>
               {answers.length} {language === 'it' ? 'risposte' : language === 'fr' ? 'réponses' : language === 'de' ? 'Antworten' : 'answers'}
@@ -600,7 +603,7 @@ export function ConversationMode({
             <span className={cn(
               "text-xs font-medium px-3 py-1 rounded-full w-fit",
               answers.length >= 8
-                ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
+                ? "bg-brand-greenLight/50 text-brand-greenDark dark:bg-brand-greenLight/15 dark:text-brand-greenLight"
                 : "bg-[#DDCF88] text-[#121212] dark:bg-[#DDCF88]/20 dark:text-[#DDCF88]"
             )}>
               {answers.length >= 8 ? '✓ ' : ''}{answers.length} {language === 'it' ? 'risposte' : language === 'fr' ? 'réponses' : language === 'de' ? 'Antworten' : 'answers'}

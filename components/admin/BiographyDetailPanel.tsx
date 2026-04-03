@@ -61,10 +61,10 @@ interface BiographyDetailPanelProps {
 function StatusBadge({ status }: { status: string }) {
   const { t } = useTranslation();
   const map: Record<string, { label: string; className: string }> = {
-    draft: { label: t.admin.bioStatusDraft, className: 'bg-neutral-100 text-neutral-700 border-neutral-200 dark:bg-neutral-800 dark:text-neutral-300 dark:border-neutral-700' },
-    published: { label: t.admin.bioStatusPublished, className: 'bg-[#C8DFBE] text-[#121212] border-emerald-200 dark:bg-[#C8DFBE]/20 dark:text-[#C8DFBE] dark:border-emerald-800' },
-    under_review: { label: t.admin.bioStatusUnderReview, className: 'bg-[#DDCF88] text-[#121212] border-amber-200 dark:bg-[#DDCF88]/20 dark:text-[#DDCF88] dark:border-amber-800' },
-    removed: { label: t.admin.bioStatusRemoved, className: 'bg-[#6D323E] text-white border-red-200 dark:bg-[#6D323E] dark:text-white dark:border-red-800' },
+    draft: { label: t.admin.bioStatusDraft, className: 'bg-brand-beigeBg text-brand-ink border-brand-greenDark/25 dark:bg-brand-ink/35 dark:text-brand-beigeLight dark:border-brand-greenDark/40' },
+    published: { label: t.admin.bioStatusPublished, className: 'bg-[#C8DFBE] text-[#121212] border-[#C8DFBE] dark:bg-[#C8DFBE]/20 dark:text-[#C8DFBE] dark:border-[#5E685A]/50' },
+    under_review: { label: t.admin.bioStatusUnderReview, className: 'bg-[#DDCF88] text-[#121212] border-[#DDCF88] dark:bg-[#DDCF88]/20 dark:text-[#DDCF88] dark:border-[#DDCF88]/50' },
+    removed: { label: t.admin.bioStatusRemoved, className: 'bg-[#6D323E] text-white border-[#6D323E] dark:bg-[#6D323E] dark:text-white dark:border-[#944454]/50' },
   };
   const cfg = map[status] ?? map['draft'];
   return (
@@ -77,9 +77,9 @@ function StatusBadge({ status }: { status: string }) {
 function PrivacyBadge({ privacy }: { privacy: string }) {
   const { t } = useTranslation();
   const map: Record<string, { label: string; className: string }> = {
-    private: { label: t.admin.bioPrivatePrivacy, className: 'bg-neutral-100 text-neutral-600 border-neutral-200 dark:bg-neutral-800 dark:text-neutral-400' },
-    'link-only': { label: t.admin.bioFamilyPrivacy, className: 'bg-[#C4DAEB] text-[#121212] border-sky-200 dark:bg-[#C4DAEB]/20 dark:text-[#C4DAEB]' },
-    public: { label: t.admin.bioPublicPrivacy, className: 'bg-[#C8DFBE] text-[#121212] border-emerald-200 dark:bg-[#C8DFBE]/20 dark:text-[#C8DFBE]' },
+    private: { label: t.admin.bioPrivatePrivacy, className: 'bg-brand-beigeBg text-brand-ink/90 border-brand-greenDark/20 dark:bg-brand-ink/30 dark:text-brand-beigeLight/90 dark:border-brand-greenDark/35' },
+    'link-only': { label: t.admin.bioFamilyPrivacy, className: 'bg-[#C4DAEB] text-[#121212] border-[#C4DAEB] dark:bg-[#C4DAEB]/20 dark:text-[#C4DAEB]' },
+    public: { label: t.admin.bioPublicPrivacy, className: 'bg-[#C8DFBE] text-[#121212] border-[#C8DFBE] dark:bg-[#C8DFBE]/20 dark:text-[#C8DFBE]' },
   };
   const cfg = map[privacy] ?? map['private'];
   return (
@@ -270,7 +270,7 @@ export function BiographyDetailPanel({ biography, onClose, onRefresh }: Biograph
                     <div className="flex items-center gap-2 flex-wrap">
                       <StatusBadge status={biography.status} />
                       {biography.is_frozen && (
-                        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold border bg-[#C4DAEB] text-[#121212] border-blue-200 dark:bg-[#C4DAEB]/20 dark:text-[#C4DAEB] dark:border-blue-800">
+                        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold border bg-[#C4DAEB] text-[#121212] border-brand-blue/60 dark:bg-[#C4DAEB]/20 dark:text-[#C4DAEB] dark:border-brand-blue/40">
                           <Snowflake className="h-3 w-3" />
                           {t.admin.bioStatusFrozen}
                         </span>
@@ -335,7 +335,7 @@ export function BiographyDetailPanel({ biography, onClose, onRefresh }: Biograph
                   {biography.status !== 'published' && (
                     <Button
                       variant="outline"
-                      className="justify-start gap-2 border-emerald-200 text-emerald-700 hover:bg-emerald-50 dark:border-emerald-800 dark:text-emerald-300 dark:hover:bg-emerald-950/30"
+                      className="justify-start gap-2 border-brand-greenLight text-brand-greenDark hover:bg-brand-greenLight/40 dark:border-brand-greenDark/50 dark:text-brand-greenLight dark:hover:bg-brand-greenLight/10"
                       onClick={() => setConfirmAction('force_publish')}
                       disabled={saving}
                     >
@@ -345,7 +345,7 @@ export function BiographyDetailPanel({ biography, onClose, onRefresh }: Biograph
                   {biography.status !== 'draft' && biography.status !== 'removed' && (
                     <Button
                       variant="outline"
-                      className="justify-start gap-2 border-amber-200 text-amber-700 hover:bg-amber-50 dark:border-amber-800 dark:text-amber-300 dark:hover:bg-amber-950/30"
+                      className="justify-start gap-2 border-brand-mustardDark/45 text-brand-ink hover:bg-brand-mustardLight/45 dark:border-brand-mustardDark/50 dark:text-brand-beigeLight dark:hover:bg-brand-mustardDark/25"
                       onClick={() => setConfirmAction('set_draft')}
                       disabled={saving}
                     >
@@ -355,7 +355,7 @@ export function BiographyDetailPanel({ biography, onClose, onRefresh }: Biograph
                   {biography.status === 'draft' && (
                     <Button
                       variant="outline"
-                      className="justify-start gap-2 border-amber-200 text-amber-700 hover:bg-amber-50 dark:border-amber-800 dark:text-amber-300 dark:hover:bg-amber-950/30"
+                      className="justify-start gap-2 border-brand-mustardDark/45 text-brand-ink hover:bg-brand-mustardLight/45 dark:border-brand-mustardDark/50 dark:text-brand-beigeLight dark:hover:bg-brand-mustardDark/25"
                       onClick={() => setConfirmAction('set_draft')}
                       disabled={true}
                       style={{ display: 'none' }}
@@ -366,7 +366,7 @@ export function BiographyDetailPanel({ biography, onClose, onRefresh }: Biograph
                   {biography.status !== 'removed' && (
                     <Button
                       variant="outline"
-                      className="justify-start gap-2 border-red-200 text-red-700 hover:bg-red-50 dark:border-red-800 dark:text-red-300 dark:hover:bg-red-950/30"
+                      className="justify-start gap-2 border-brand-wine/40 text-brand-wineDark hover:bg-brand-wine/10 dark:border-brand-wine/45 dark:text-brand-beigeLight dark:hover:bg-brand-wine/20"
                       onClick={() => setConfirmAction('remove')}
                       disabled={saving}
                     >
@@ -376,7 +376,7 @@ export function BiographyDetailPanel({ biography, onClose, onRefresh }: Biograph
                   {biography.status === 'removed' && (
                     <Button
                       variant="outline"
-                      className="justify-start gap-2 border-sky-200 text-sky-700 hover:bg-sky-50 dark:border-sky-800 dark:text-sky-300 dark:hover:bg-sky-950/30"
+                      className="justify-start gap-2 border-brand-blue/60 text-brand-ink hover:bg-brand-blue/25 dark:border-brand-blue/45 dark:text-brand-beigeLight dark:hover:bg-brand-blue/15"
                       onClick={() => setConfirmAction('restore')}
                       disabled={saving}
                     >
@@ -386,7 +386,7 @@ export function BiographyDetailPanel({ biography, onClose, onRefresh }: Biograph
                   {!biography.is_frozen && (
                     <Button
                       variant="outline"
-                      className="justify-start gap-2 border-blue-200 text-blue-700 hover:bg-blue-50 dark:border-blue-800 dark:text-blue-300 dark:hover:bg-blue-950/30"
+                      className="justify-start gap-2 border-brand-blue/60 text-brand-ink hover:bg-brand-blue/25 dark:border-brand-blue/45 dark:text-brand-beigeLight dark:hover:bg-brand-blue/15"
                       onClick={() => setConfirmAction('freeze')}
                       disabled={saving}
                     >
@@ -397,7 +397,7 @@ export function BiographyDetailPanel({ biography, onClose, onRefresh }: Biograph
                   {biography.is_frozen && (
                     <Button
                       variant="outline"
-                      className="justify-start gap-2 border-blue-200 text-blue-700 hover:bg-blue-50 dark:border-blue-800 dark:text-blue-300 dark:hover:bg-blue-950/30"
+                      className="justify-start gap-2 border-brand-blue/60 text-brand-ink hover:bg-brand-blue/25 dark:border-brand-blue/45 dark:text-brand-beigeLight dark:hover:bg-brand-blue/15"
                       onClick={() => setConfirmAction('unfreeze')}
                       disabled={saving}
                     >

@@ -142,7 +142,7 @@ export function NextSectionPrompt({
         </div>
       </div>
 
-      <div className="space-y-2 pt-3 border-t border-green-200 dark:border-green-800">
+      <div className="space-y-2 pt-3 border-t border-brand-greenLight/60 dark:border-brand-greenDark/50">
         <p className="text-sm text-text-primary dark:text-dark-text-primary font-medium">
           {getMessage('orChooseAnother')}
         </p>

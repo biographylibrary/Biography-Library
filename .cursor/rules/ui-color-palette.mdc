@@ -1,0 +1,27 @@
+---
+description: Official brand colors for alerts, banners, dialogs, badges — no random Tailwind hues
+globs: "**/*.{tsx,ts,css}"
+alwaysApply: false
+---
+
+# Palette UI (alert / banner / dialog / badge)
+
+Usare **solo** i token Tailwind `brand.*` (definiti in `tailwind.config.ts`) e gli hex in `lib/ui-palette.ts`:
+
+| Token | Hex | Uso tipico |
+|-------|-----|------------|
+| `brand-ink` | #121212 | Testo su superfici chiare |
+| `brand-paper` | #FFFFFF | Sfondi pieni chiari |
+| `brand-beigeLight` | #FDFBF7 | Testo/su sfondi scuri |
+| `brand-beigeBg` | #ECE9E4 | Sfondo neutro |
+| `brand-greenLight` | #C8DFBE | Successo, positivo |
+| `brand-greenDark` | #5E685A | Testo successo |
+| `brand-blue` | #C4DAEB | Info, stato neutro / in corso |
+| `brand-mustardLight` | #EDE4B9 | Avvisi, warning |
+| `brand-mustardDark` | #DDCF88 | Bordi/enfasi warning |
+| `brand-wine` | #944454 | Errore, pericolo, destructive secondario |
+| `brand-wineDark` | #6D323E | Testo errore forte |
+
+**Non** introdurre per questi elementi classi `bg-amber-*`, `bg-sky-*`, `bg-emerald-*`, `bg-red-*`, `bg-orange-*`, `text-rose-*`, ecc. Usare `bg-brand-*`, `border-brand-*`, `text-brand-*` con opacità (`/10`, `/25`, …) se serve.
+
+Per stringhe composte riutilizzabili: `uiCallout` in `lib/ui-palette.ts`.

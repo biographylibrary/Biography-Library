@@ -590,7 +590,7 @@ export const privacyTranslations: Record<Language, PrivacyTranslations> = {
     lastRevisionDate: 'Date: February 9, 2026',
 
     footer: 'Biography Library',
-    footerTagline: 'Because every life deserves to be remembered.',
+    footerTagline: 'Because every life deserves to be remembered',
     footerHost: 'Hosted in Switzerland – Protected by Swiss Privacy Laws',
     footerOpenSource: 'Open Source (AGPL v3) – Transparent, Auditable, Forever'
   },

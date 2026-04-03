@@ -180,7 +180,7 @@ export function Header() {
                     {initials}
                   </span>
                   {unreadCount > 0 && (
-                    <span className="absolute -top-0.5 -right-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold text-white leading-none">
+                    <span className="absolute -top-0.5 -right-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-brand-wine px-1 text-[10px] font-bold text-brand-paper leading-none">
                       {unreadCount > 99 ? '99+' : unreadCount}
                     </span>
                   )}
@@ -228,14 +228,14 @@ export function Header() {
                     <div className="relative">
                       <Bell className="h-4 w-4" />
                       {unreadCount > 0 && (
-                        <span className="absolute -top-1 -right-1 flex h-3 min-w-3 items-center justify-center rounded-full bg-red-500 px-0.5 text-[9px] font-bold text-white leading-none">
+                        <span className="absolute -top-1 -right-1 flex h-3 min-w-3 items-center justify-center rounded-full bg-brand-wine px-0.5 text-[9px] font-bold text-brand-paper leading-none">
                           {unreadCount > 9 ? '9+' : unreadCount}
                         </span>
                       )}
                     </div>
                     <span>{t.nav.notifications}</span>
                     {unreadCount > 0 && (
-                      <span className="ml-auto text-xs font-semibold text-red-500">{unreadCount}</span>
+                      <span className="ml-auto text-xs font-semibold text-brand-wine dark:text-brand-mustardLight">{unreadCount}</span>
                     )}
                   </Link>
                 </DropdownMenuItem>

@@ -198,11 +198,11 @@ export function SectionAssignmentWizard({
                   key={index}
                   className={`p-4 ${
                     assignment.status === 'accepted'
-                      ? 'border-green-500 bg-green-50 dark:bg-green-950/20'
+                      ? 'border-brand-greenDark bg-brand-greenLight/30 dark:bg-brand-greenLight/10'
                       : assignment.status === 'modified'
-                      ? 'border-blue-500 bg-blue-50 dark:bg-blue-950/20'
+                      ? 'border-brand-blue/70 bg-brand-blue/20 dark:bg-brand-blue/10'
                       : assignment.status === 'skipped'
-                      ? 'border-gray-300 bg-gray-50 dark:bg-gray-900/20 opacity-60'
+                      ? 'border-brand-greenDark/25 bg-brand-beigeBg/80 dark:bg-brand-ink/25 opacity-60'
                       : ''
                   }`}
                 >
@@ -281,7 +281,7 @@ export function SectionAssignmentWizard({
 
                       {isProcessed && assignment.status !== 'skipped' && (
                         <div className="flex items-center gap-2 shrink-0">
-                          <Check className="h-5 w-5 text-green-600" />
+                          <Check className="h-5 w-5 text-brand-greenDark dark:text-brand-greenLight" />
                           <Button
                             size="sm"
                             variant="ghost"

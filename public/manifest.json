@@ -1,8 +1,10 @@
 {
+  "id": "/",
   "name": "Biography Library",
   "short_name": "BioLib",
   "description": "Because every life deserves to be remembered",
   "start_url": "/",
+  "scope": "/",
   "display": "standalone",
   "background_color": "#ede9e0",
   "theme_color": "#121212",

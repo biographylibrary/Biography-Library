@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { Bell, Check, CheckCheck } from 'lucide-react';
 import { useTranslation } from '@/lib/i18n/i18n-context';
 import { useAuth } from '@/lib/auth-context';
@@ -24,16 +24,16 @@ export default function NotificationsPage() {
   const [notifications, setNotifications] = useState<UserNotification[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  const load = async () => {
+  const load = useCallback(async () => {
     if (!user) return;
     const data = await fetchNotifications(user.id);
     setNotifications(data);
     setIsLoading(false);
-  };
+  }, [user]);
 
   useEffect(() => {
     load();
-  }, [user]);
+  }, [load]);
 
   useEffect(() => {
     if (!user) return;
@@ -48,7 +48,7 @@ export default function NotificationsPage() {
       .subscribe();
 
     return () => { supabase.removeChannel(channel); };
-  }, [user]);
+  }, [user, load]);
 
   const handleMarkRead = async (id: string) => {
     await markNotificationRead(id);
@@ -127,7 +127,7 @@ export default function NotificationsPage() {
               )}
             >
               {!notification.is_read && (
-                <span className="absolute left-3.5 top-1/2 -translate-y-1/2 h-2 w-2 rounded-full bg-blue-500 shrink-0" />
+                <span className="absolute left-3.5 top-1/2 -translate-y-1/2 h-2 w-2 rounded-full bg-brand-blue shrink-0" />
               )}
               <div className={cn('flex items-start justify-between gap-3', !notification.is_read && 'pl-4')}>
                 <div className="flex-1 min-w-0">

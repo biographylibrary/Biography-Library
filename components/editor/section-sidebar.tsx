@@ -21,6 +21,8 @@ interface SectionSidebarProps {
   onTogglePhotosPanel: () => void;
   onToggleImportText: () => void;
   onToggleExportText: () => void;
+  /** When true, export control is disabled (e.g. biography under review). */
+  exportDisabled?: boolean;
   showNotesPanel: boolean;
   showPhotosPanel: boolean;
   completedSections?: string[];
@@ -44,6 +46,7 @@ export function SectionSidebar({
   onTogglePhotosPanel,
   onToggleImportText,
   onToggleExportText,
+  exportDisabled = false,
   showNotesPanel,
   showPhotosPanel,
   completedSections = [],
@@ -196,8 +199,20 @@ export function SectionSidebar({
           <span>{t.notesAndTodos.importText}</span>
         </button>
         <button
+          type="button"
           onClick={onToggleExportText}
-          className="w-full flex items-center gap-2 px-3 py-1 lg:py-2 rounded-lg text-sm transition-colors text-muted-foreground hover:bg-muted/50 hover:text-foreground"
+          disabled={exportDisabled}
+          title={
+            exportDisabled
+              ? 'Export is unavailable while the biography is under review.'
+              : undefined
+          }
+          className={cn(
+            'w-full flex items-center gap-2 px-3 py-1 lg:py-2 rounded-lg text-sm transition-colors',
+            exportDisabled
+              ? 'text-muted-foreground/50 cursor-not-allowed'
+              : 'text-muted-foreground hover:bg-muted/50 hover:text-foreground'
+          )}
         >
           <Download className="h-4 w-4 shrink-0" />
           <span>{t.notesAndTodos.exportText}</span>

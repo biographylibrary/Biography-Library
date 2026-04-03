@@ -133,13 +133,13 @@ export function AICoachCard({ biographies, userName, userId }: AICoachCardProps)
 
     const milestones = [];
     if (totalWords >= 100) {
-      milestones.push({ icon: PartyPopper, label: t.coach.firstHundredWords, color: 'text-blue-500' });
+      milestones.push({ icon: PartyPopper, label: t.coach.firstHundredWords, color: 'text-brand-blue' });
     }
     if (completedSections >= 1) {
-      milestones.push({ icon: Star, label: t.coach.firstSectionComplete, color: 'text-yellow-500' });
+      milestones.push({ icon: Star, label: t.coach.firstSectionComplete, color: 'text-brand-mustardDark' });
     }
     if (completedBios >= 1) {
-      milestones.push({ icon: Trophy, label: t.coach.biographyComplete, color: 'text-green-500' });
+      milestones.push({ icon: Trophy, label: t.coach.biographyComplete, color: 'text-brand-greenDark dark:text-brand-greenLight' });
     }
     return milestones;
   };
@@ -229,21 +229,21 @@ export function AICoachCard({ biographies, userName, userId }: AICoachCardProps)
   const suggestion = getSmartSuggestion();
 
   return (
-    <Card className="p-6 bg-gradient-to-br from-blue-50/50 to-indigo-50/50 dark:from-blue-950/20 dark:to-indigo-950/20 border-blue-200 dark:border-blue-800">
+    <Card className="p-6 bg-gradient-to-br from-brand-blue/25 to-brand-greenLight/25 dark:from-brand-blue/15 dark:to-brand-greenLight/10 border-brand-blue/45 dark:border-brand-blue/35">
       <div className="flex items-start gap-3 mb-4">
-        <div className="flex items-center justify-center h-10 w-10 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 text-white flex-shrink-0">
+        <div className="flex items-center justify-center h-10 w-10 rounded-full bg-brand-blue text-brand-ink flex-shrink-0 dark:text-brand-beigeLight">
           <Sparkles className="h-5 w-5" />
         </div>
         <div className="flex-1">
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+          <h3 className="text-lg font-semibold text-brand-ink dark:text-brand-beigeLight">
             {getTimeBasedGreeting()}, {userName}!
           </h3>
           {totalWords > 0 && (
-            <div className="flex flex-wrap items-center gap-2 mt-1 text-sm text-gray-600 dark:text-gray-400">
-              <span className="font-medium text-blue-600 dark:text-blue-400">
+            <div className="flex flex-wrap items-center gap-2 mt-1 text-sm text-brand-greenDark dark:text-brand-beigeLight/80">
+              <span className="font-medium text-brand-ink dark:text-brand-blue">
                 {totalWords} {t.coach.wordsWritten}
               </span>
-              <span className="text-gray-400">•</span>
+              <span className="text-brand-greenDark/50">•</span>
               <span>
                 {(t.coach.inSections || 'in {count} sections').replace('{count}', String(sectionCount))}
               </span>
@@ -255,19 +255,19 @@ export function AICoachCard({ biographies, userName, userId }: AICoachCardProps)
       {biographies.length > 0 && totalWords > 0 && (
         <div className="mb-4 space-y-2">
           <div className="flex items-center justify-between text-sm">
-            <span className="text-gray-600 dark:text-gray-400">
+            <span className="text-brand-greenDark dark:text-brand-beigeLight/75">
               {progress}% {t.coach.progressComplete}
             </span>
             {lastActiveDate && (
-              <span className="text-gray-500 dark:text-gray-500 text-xs flex items-center gap-1">
+              <span className="text-brand-greenDark/80 dark:text-brand-beigeLight/60 text-xs flex items-center gap-1">
                 <Clock className="h-3 w-3" />
                 {t.coach.lastActivity}: {formatLastActivity(lastActiveDate)}
               </span>
             )}
           </div>
-          <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+          <div className="w-full bg-brand-beigeBg dark:bg-brand-ink/40 rounded-full h-2">
             <div
-              className="bg-blue-600 h-2 rounded-full transition-all"
+              className="bg-brand-greenDark dark:bg-brand-greenLight h-2 rounded-full transition-all"
               style={{ width: `${progress}%` }}
             />
           </div>
@@ -285,8 +285,8 @@ export function AICoachCard({ biographies, userName, userId }: AICoachCardProps)
         </div>
       )}
 
-      <div className="bg-white/60 dark:bg-gray-900/40 rounded-lg p-4 mb-4">
-        <p className="text-sm text-gray-700 dark:text-gray-300 mb-3">
+      <div className="bg-brand-paper/70 dark:bg-brand-ink/30 rounded-lg p-4 mb-4 border border-brand-beigeBg/80 dark:border-brand-greenDark/30">
+        <p className="text-sm text-brand-ink dark:text-brand-beigeLight/90 mb-3">
           {suggestion.message}
         </p>
         <div className="flex flex-wrap gap-2">
@@ -294,7 +294,7 @@ export function AICoachCard({ biographies, userName, userId }: AICoachCardProps)
             <Button
               onClick={() => router.push(`/biography/${suggestion.biographyId}/edit`)}
               size="sm"
-              className="gap-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700"
+              className="gap-2 bg-brand-greenDark hover:bg-brand-ink text-brand-paper"
             >
               <Play className="h-3.5 w-3.5" />
               {t.coach.continueConversation}
@@ -304,7 +304,7 @@ export function AICoachCard({ biographies, userName, userId }: AICoachCardProps)
             <Button
               onClick={handleContinue}
               size="sm"
-              className="gap-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700"
+              className="gap-2 bg-brand-greenDark hover:bg-brand-ink text-brand-paper"
             >
               <Play className="h-3.5 w-3.5" />
               {t.coach.continueWriting}
@@ -314,7 +314,7 @@ export function AICoachCard({ biographies, userName, userId }: AICoachCardProps)
             <Button
               onClick={handleContinue}
               size="sm"
-              className="gap-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700"
+              className="gap-2 bg-brand-greenDark hover:bg-brand-ink text-brand-paper"
             >
               <Play className="h-3.5 w-3.5" />
               {t.coach.continueWriting}

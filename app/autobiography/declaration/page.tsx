@@ -163,7 +163,7 @@ export default function AutobiographyDeclarationPage() {
                       >
                         {renderCheckbox3Label()}
                       </Label>
-                      <p className="text-sm font-medium text-amber-600 dark:text-amber-500">
+                      <p className="text-sm font-medium text-brand-wineDark dark:text-brand-mustardLight">
                         {t.auth.mustAcceptTerms}
                       </p>
                     </div>
@@ -195,9 +195,9 @@ export default function AutobiographyDeclarationPage() {
             </CardContent>
           </Card>
 
-          <Alert className="border-blue-200 dark:border-blue-800 bg-blue-50 dark:bg-blue-950/30">
-            <Info className="h-5 w-5 text-blue-600 dark:text-blue-500" />
-            <AlertDescription className="text-sm space-y-4 text-blue-900 dark:text-blue-100">
+          <Alert className="border-brand-blue/50 dark:border-brand-blue/35 bg-brand-blue/20 dark:bg-brand-blue/10">
+            <Info className="h-5 w-5 text-brand-ink dark:text-brand-blue" />
+            <AlertDescription className="text-sm space-y-4 text-brand-ink dark:text-brand-beigeLight">
               <div className="space-y-2">
                 <p className="font-semibold flex items-center gap-2">
                   <CheckCircle2 className="h-4 w-4" />

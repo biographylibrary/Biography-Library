@@ -60,7 +60,7 @@ export default function CreateBiographyPage() {
                   <div className="p-3 rounded-xl bg-primary/10">
                     <User className="h-8 w-8 text-primary" />
                   </div>
-                  <Badge variant="secondary" className="bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300">
+                  <Badge variant="secondary" className="bg-brand-greenLight/60 dark:bg-brand-greenLight/20 text-brand-greenDark dark:text-brand-greenLight">
                     {t.biographyType.mostPopular}
                   </Badge>
                 </div>
@@ -86,7 +86,7 @@ export default function CreateBiographyPage() {
                   <div className="p-3 rounded-xl bg-primary/10">
                     <Flame className="h-8 w-8 text-primary" />
                   </div>
-                  <Badge variant="secondary" className="bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300">
+                  <Badge variant="secondary" className="bg-brand-blue/45 dark:bg-brand-blue/15 text-brand-ink dark:text-brand-blue">
                     {t.biographyType.reviewPeriod}
                   </Badge>
                 </div>
@@ -107,9 +107,9 @@ export default function CreateBiographyPage() {
             </Card>
           </div>
 
-          <Alert className="border-amber-200 dark:border-amber-800 bg-amber-50 dark:bg-amber-950/30">
-            <AlertTriangle className="h-5 w-5 text-amber-600 dark:text-amber-500" />
-            <AlertDescription className="text-sm space-y-2 text-amber-900 dark:text-amber-100">
+          <Alert className="border-brand-mustardDark/45 dark:border-brand-mustardDark/40 bg-brand-mustardLight/50 dark:bg-brand-mustardDark/15">
+            <AlertTriangle className="h-5 w-5 text-brand-ink dark:text-brand-mustardLight" />
+            <AlertDescription className="text-sm space-y-2 text-brand-ink dark:text-brand-beigeLight">
               <p className="font-semibold">{t.biographyType.warningTitle}</p>
               <ul className="list-disc list-inside space-y-1 ml-2">
                 <li>{t.biographyType.warningLine1}</li>

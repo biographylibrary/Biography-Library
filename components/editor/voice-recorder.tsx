@@ -60,72 +60,6 @@ export function VoiceRecorder({
     };
   }, []);
 
-  const startRecording = useCallback(async () => {
-    setError(null);
-    setPermissionDenied(false);
-
-    let stream: MediaStream;
-    try {
-      stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-    } catch (err: any) {
-      if (err?.name === 'NotAllowedError' || err?.name === 'PermissionDeniedError') {
-        setPermissionDenied(true);
-        logger.warn('Microphone permission denied', {
-          feature: 'speech-recognition',
-          errorCode: err?.name,
-          language,
-        });
-      } else {
-        setError(t.voice.microphoneNotFound);
-        logger.error('Microphone access failed', {
-          feature: 'speech-recognition',
-          errorCode: err?.name ?? 'unknown',
-          language,
-        });
-      }
-      return;
-    }
-
-    streamRef.current = stream;
-    chunksRef.current = [];
-
-    const mimeType = MediaRecorder.isTypeSupported('audio/webm;codecs=opus')
-      ? 'audio/webm;codecs=opus'
-      : MediaRecorder.isTypeSupported('audio/webm')
-      ? 'audio/webm'
-      : '';
-
-    const recorder = new MediaRecorder(stream, mimeType ? { mimeType } : undefined);
-
-    recorder.ondataavailable = (e) => {
-      if (e.data.size > 0) chunksRef.current.push(e.data);
-    };
-
-    recorder.onstop = async () => {
-      stream.getTracks().forEach((track) => track.stop());
-      streamRef.current = null;
-
-      const blob = new Blob(chunksRef.current, {
-        type: recorder.mimeType || 'audio/webm',
-      });
-      chunksRef.current = [];
-
-      await transcribeBlob(blob);
-    };
-
-    recorder.start(250);
-    mediaRecorderRef.current = recorder;
-    setIsRecording(true);
-  }, [language, t]);
-
-  const stopRecording = useCallback(() => {
-    if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
-      mediaRecorderRef.current.stop();
-      mediaRecorderRef.current = null;
-    }
-    setIsRecording(false);
-  }, []);
-
   const transcribeBlob = useCallback(async (blob: Blob) => {
     setIsTranscribing(true);
     setError(null);
@@ -186,7 +120,74 @@ export function VoiceRecorder({
     } finally {
       setIsTranscribing(false);
     }
-  }, [language, onTranscript, t]);
+  }, [language, onTranscript, t, isRecording]);
+
+  const startRecording = useCallback(async () => {
+    setError(null);
+    setPermissionDenied(false);
+
+    let stream: MediaStream;
+    try {
+      stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    } catch (err: unknown) {
+      const name = err && typeof err === 'object' && 'name' in err ? String((err as { name?: string }).name) : '';
+      if (name === 'NotAllowedError' || name === 'PermissionDeniedError') {
+        setPermissionDenied(true);
+        logger.warn('Microphone permission denied', {
+          feature: 'speech-recognition',
+          errorCode: name,
+          language,
+        });
+      } else {
+        setError(t.voice.microphoneNotFound);
+        logger.error('Microphone access failed', {
+          feature: 'speech-recognition',
+          errorCode: name || 'unknown',
+          language,
+        });
+      }
+      return;
+    }
+
+    streamRef.current = stream;
+    chunksRef.current = [];
+
+    const mimeType = MediaRecorder.isTypeSupported('audio/webm;codecs=opus')
+      ? 'audio/webm;codecs=opus'
+      : MediaRecorder.isTypeSupported('audio/webm')
+      ? 'audio/webm'
+      : '';
+
+    const recorder = new MediaRecorder(stream, mimeType ? { mimeType } : undefined);
+
+    recorder.ondataavailable = (e) => {
+      if (e.data.size > 0) chunksRef.current.push(e.data);
+    };
+
+    recorder.onstop = async () => {
+      stream.getTracks().forEach((track) => track.stop());
+      streamRef.current = null;
+
+      const blob = new Blob(chunksRef.current, {
+        type: recorder.mimeType || 'audio/webm',
+      });
+      chunksRef.current = [];
+
+      await transcribeBlob(blob);
+    };
+
+    recorder.start(250);
+    mediaRecorderRef.current = recorder;
+    setIsRecording(true);
+  }, [language, t, transcribeBlob]);
+
+  const stopRecording = useCallback(() => {
+    if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
+      mediaRecorderRef.current.stop();
+      mediaRecorderRef.current = null;
+    }
+    setIsRecording(false);
+  }, []);
 
   if (!supported) {
     return (
@@ -268,13 +269,13 @@ export function VoiceRecorder({
       </div>
 
       {isRecording && (
-        <div className="flex items-center gap-3 px-3 py-2.5 rounded-lg bg-red-500/10 border border-red-500/20">
+        <div className="flex items-center gap-3 px-3 py-2.5 rounded-lg bg-brand-wine/10 border border-brand-wine/25">
           <div className="flex items-center gap-1.5 shrink-0">
             <span className="relative flex h-2.5 w-2.5">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-500 opacity-75" />
-              <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-red-500" />
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-brand-wine opacity-75" />
+              <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-brand-wine" />
             </span>
-            <span className="text-xs font-medium text-red-600 dark:text-red-400">
+            <span className="text-xs font-medium text-brand-wineDark dark:text-brand-beigeLight">
               {t.voice.recording}
             </span>
           </div>
@@ -283,7 +284,7 @@ export function VoiceRecorder({
             {[0, 1, 2, 3, 4].map((i) => (
               <div
                 key={i}
-                className="w-[3px] rounded-full bg-red-500/80"
+                className="w-[3px] rounded-full bg-brand-wine/80"
                 style={{
                   animation: `voiceBar 0.8s ease-in-out ${i * 0.12}s infinite alternate`,
                 }}

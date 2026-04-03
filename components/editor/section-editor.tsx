@@ -226,9 +226,9 @@ export function SectionEditor({
       </div>
 
       {isPublished && (
-        <div className="px-4 sm:px-6 py-2.5 border-b border-amber-200 bg-amber-50 dark:bg-amber-950/30 dark:border-amber-800 shrink-0 flex items-center gap-2">
-          <Lock className="h-3.5 w-3.5 text-amber-600 dark:text-amber-400 shrink-0" />
-          <p className="text-xs text-amber-700 dark:text-amber-400 font-medium">
+        <div className="px-4 sm:px-6 py-2.5 border-b border-brand-mustardDark/40 bg-brand-mustardLight/45 dark:bg-brand-mustardDark/20 dark:border-brand-mustardDark/50 shrink-0 flex items-center gap-2">
+          <Lock className="h-3.5 w-3.5 text-brand-mustardDark dark:text-brand-mustardLight shrink-0" />
+          <p className="text-xs text-brand-ink/85 dark:text-brand-beigeLight/85 font-medium">
             {t.editor.publishedChapterNotice}
           </p>
         </div>

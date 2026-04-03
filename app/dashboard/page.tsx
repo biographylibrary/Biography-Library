@@ -125,23 +125,23 @@ export default function DashboardPage() {
     return (
       <div className="h-full bg-[#ECE9E4] dark:bg-[#1F2121] flex items-center justify-center px-4">
         <div className="w-full max-w-[400px] animate-in fade-in slide-in-from-bottom-4 duration-500">
-          <div className="flex flex-col items-center gap-4 p-6 rounded-xl bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800 text-center">
-            <div className="w-14 h-14 rounded-full bg-blue-100 dark:bg-blue-900/50 flex items-center justify-center">
-              <Mail className="h-7 w-7 text-blue-600 dark:text-blue-400" />
+          <div className="flex flex-col items-center gap-4 p-6 rounded-xl bg-brand-blue/25 dark:bg-brand-blue/15 border border-brand-blue/50 dark:border-brand-blue/35 text-center">
+            <div className="w-14 h-14 rounded-full bg-brand-blue/40 dark:bg-brand-blue/20 flex items-center justify-center">
+              <Mail className="h-7 w-7 text-brand-ink dark:text-brand-blue" />
             </div>
             <div className="space-y-2">
-              <h2 className="text-xl font-serif font-semibold text-blue-900 dark:text-blue-100">
+              <h2 className="text-xl font-serif font-semibold text-brand-ink dark:text-brand-beigeLight">
                 {t.auth.emailNotVerified}
               </h2>
-              <p className="text-sm text-blue-800 dark:text-blue-200">
+              <p className="text-sm text-brand-ink/90 dark:text-brand-beigeLight/90">
                 {t.auth.emailNotVerifiedDetail}
               </p>
-              <p className="text-xs text-blue-700 dark:text-blue-300">
+              <p className="text-xs text-brand-greenDark dark:text-brand-blue/90">
                 {t.auth.verifyEmailDetail}
               </p>
             </div>
             {resendSuccess ? (
-              <div className="flex items-center gap-2 text-sm text-green-700 dark:text-green-400 font-medium">
+              <div className="flex items-center gap-2 text-sm text-brand-greenDark dark:text-brand-greenLight font-medium">
                 <CheckCircle2 className="h-4 w-4" />
                 {t.auth.resendVerificationSuccess}
               </div>
@@ -151,7 +151,7 @@ export default function DashboardPage() {
                 size="sm"
                 onClick={handleResendVerification}
                 disabled={resendLoading}
-                className="border-blue-300 dark:border-blue-700 text-blue-700 dark:text-blue-300 hover:bg-blue-100 dark:hover:bg-blue-900/30"
+                className="border-brand-blue/60 dark:border-brand-blue/45 text-brand-ink dark:text-brand-blue hover:bg-brand-blue/30 dark:hover:bg-brand-blue/20"
               >
                 {resendLoading ? (
                   <>

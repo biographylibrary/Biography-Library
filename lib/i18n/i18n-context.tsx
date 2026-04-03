@@ -1,6 +1,6 @@
 'use client';
 
-import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
 import { Language, translations, Translations } from './translations';
 import { useAuth } from '@/lib/auth-context';
 import { supabase } from '@/lib/supabase';
@@ -19,19 +19,7 @@ export function I18nProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
   const { user } = useAuth();
 
-  useEffect(() => {
-    if (user) {
-      loadUserLanguage();
-    } else {
-      const savedLang = localStorage.getItem('userLanguage') as Language;
-      if (savedLang && ['en', 'it', 'fr', 'de'].includes(savedLang)) {
-        setLanguageState(savedLang);
-      }
-      setIsLoading(false);
-    }
-  }, [user]);
-
-  const loadUserLanguage = async () => {
+  const loadUserLanguage = useCallback(async () => {
     try {
       if (!user) return;
 
@@ -50,7 +38,19 @@ export function I18nProvider({ children }: { children: ReactNode }) {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [user]);
+
+  useEffect(() => {
+    if (user) {
+      void loadUserLanguage();
+    } else {
+      const savedLang = localStorage.getItem('userLanguage') as Language;
+      if (savedLang && ['en', 'it', 'fr', 'de'].includes(savedLang)) {
+        setLanguageState(savedLang);
+      }
+      setIsLoading(false);
+    }
+  }, [user, loadUserLanguage]);
 
   const setLanguage = async (lang: Language) => {
     setLanguageState(lang);
