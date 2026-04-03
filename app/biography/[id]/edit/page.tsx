@@ -377,7 +377,9 @@ const [isPublishing, setIsPublishing] = useState(false);
       contentFreeflowRef.current = '';
     } else {
       await supabase.from('biography_sections').delete().eq('biography_id', id);
+      await supabase.from('biographies').update({ content: {} }).eq('id', id);
       setContent(getEmptyContent());
+      contentRef.current = getEmptyContent();
       setCompletedSections([]);
     }
     await supabase.from('biographies').update({ biography_mode: targetMode }).eq('id', id);

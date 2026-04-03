@@ -118,9 +118,6 @@ export function ModeSwitchWarningDialog({
                   {t.modeSwitchWarning.step1Title}
                 </DialogTitle>
               </div>
-              <DialogDescription className="text-sm leading-relaxed pt-1">
-                {interpolate(t.modeSwitchWarning.step1Message)}
-              </DialogDescription>
             </DialogHeader>
 
             <div className="rounded-lg bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 px-4 py-3 text-xs text-amber-800 dark:text-amber-300 leading-relaxed">
@@ -231,7 +228,7 @@ export function ModeSwitchWarningDialog({
                 {isConfirming ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    {t.biography.creating}
+                    {t.modeSwitchWarning.step3Deleting}
                   </>
                 ) : (
                   t.modeSwitchWarning.step3Confirm

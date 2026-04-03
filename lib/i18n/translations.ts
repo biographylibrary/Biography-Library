@@ -195,6 +195,7 @@ export interface Translations {
     step3Checkbox: string;
     step3Confirm: string;
     step3Cancel: string;
+    step3Deleting: string;
     fromSections: string;
     fromFreeflow: string;
     toSections: string;
@@ -1353,6 +1354,7 @@ export const translations: Record<Language, Translations> = {
       step3Checkbox: 'I understand that my content will be deleted and this cannot be undone.',
       step3Confirm: 'Delete and switch mode',
       step3Cancel: 'Keep my content, go back',
+      step3Deleting: 'Deleting...',
       fromSections: 'sections',
       fromFreeflow: 'free writing',
       toSections: 'sections',
@@ -2509,6 +2511,7 @@ export const translations: Record<Language, Translations> = {
       step3Checkbox: 'Capisco che i miei contenuti saranno eliminati e questa operazione non può essere annullata.',
       step3Confirm: 'Elimina e cambia modalità',
       step3Cancel: 'Mantieni i miei contenuti, torna indietro',
+      step3Deleting: 'Eliminazione in corso...',
       fromSections: 'sezioni',
       fromFreeflow: 'scrittura libera',
       toSections: 'sezioni',
@@ -3665,6 +3668,7 @@ export const translations: Record<Language, Translations> = {
       step3Checkbox: 'Je comprends que mon contenu sera supprimé et que cela ne peut pas être annulé.',
       step3Confirm: 'Supprimer et changer de mode',
       step3Cancel: 'Conserver mon contenu, revenir en arrière',
+      step3Deleting: 'Suppression en cours...',
       fromSections: 'sections',
       fromFreeflow: 'écriture libre',
       toSections: 'sections',
@@ -4821,6 +4825,7 @@ export const translations: Record<Language, Translations> = {
       step3Checkbox: 'Ich verstehe, dass meine Inhalte gelöscht werden und dies nicht rückgängig gemacht werden kann.',
       step3Confirm: 'Löschen und Modus wechseln',
       step3Cancel: 'Inhalte behalten, zurückgehen',
+      step3Deleting: 'Löschen...',
       fromSections: 'Abschnitte',
       fromFreeflow: 'freies Schreiben',
       toSections: 'Abschnitte',
