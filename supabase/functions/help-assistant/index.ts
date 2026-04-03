@@ -319,7 +319,8 @@ Deno.serve(async (req: Request) => {
     const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const infomaniakToken = Deno.env.get("INFOMANIAK_AI_TOKEN") || "";
     const infomaniakEndpoint = Deno.env.get("INFOMANIAK_AI_ENDPOINT") || "";
-    const primaryModel = Deno.env.get("INFOMANIAK_AI_MODEL_PRIMARY") ?? "Apertus-70B-Instruct-2509";
+    const primaryModel =
+      Deno.env.get("INFOMANIAK_AI_MODEL_PRIMARY") ?? "swiss-ai/Apertus-70B-Instruct-2509";
     const fallbackModel = Deno.env.get("INFOMANIAK_AI_MODEL_FALLBACK") ?? "mistral3";
 
     if (!infomaniakToken) {

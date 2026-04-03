@@ -72,20 +72,20 @@ function fmtDate(iso: string) {
 function SeverityBadge({ severity }: { severity: number }) {
   if (severity >= 3) {
     return (
-      <Badge className="bg-red-100 text-red-700 border-red-200 dark:bg-red-950/40 dark:text-red-400 dark:border-red-800 text-xs font-medium">
+      <Badge className="bg-brand-wine/15 text-brand-wineDark border border-brand-wine/35 dark:bg-brand-wine/25 dark:text-brand-beigeLight dark:border-brand-wine/45 text-xs font-medium">
         Severity {severity}
       </Badge>
     );
   }
   if (severity === 2) {
     return (
-      <Badge className="bg-orange-100 text-orange-700 border-orange-200 dark:bg-orange-950/40 dark:text-orange-400 dark:border-orange-800 text-xs font-medium">
+      <Badge className="bg-brand-mustardLight/70 text-brand-ink border border-brand-mustardDark/45 dark:bg-brand-mustardDark/25 dark:text-brand-beigeLight dark:border-brand-mustardDark/50 text-xs font-medium">
         Severity {severity}
       </Badge>
     );
   }
   return (
-    <Badge className="bg-amber-100 text-amber-700 border-amber-200 dark:bg-amber-950/40 dark:text-amber-400 dark:border-amber-800 text-xs font-medium">
+    <Badge className="bg-brand-mustardLight/45 text-brand-ink border border-brand-mustardDark/40 dark:bg-brand-mustardDark/20 dark:text-brand-mustardLight dark:border-brand-mustardDark/45 text-xs font-medium">
       Severity {severity}
     </Badge>
   );
@@ -191,8 +191,7 @@ function ReviewQueueContent() {
     claimReview(bio.id);
   }, [claimReview]);
 
-  const viewHref = (bio: ReviewBiography) =>
-    `/biography/${bio.slug || bio.id}/view`;
+  const viewHref = (bio: ReviewBiography) => `/admin/review/${bio.id}/read`;
 
   const getFlaggedPassages = (bio: ReviewBiography): FlaggedPassage[] => {
     return bio.report?.ai_analysis?.flagged_passages ?? [];
@@ -243,13 +242,10 @@ function ReviewQueueContent() {
   const executeApprove = async (bio: ReviewBiography, force = false) => {
     setActionLoading(bio.id);
 
-    const updateQuery = supabase
+    const { error } = await supabase
       .from('biographies')
-      .update({ status: 'published', published_at: new Date().toISOString(), reviewed_by: null, reviewed_at: null });
-
-    const { error } = force
-      ? await updateQuery.eq('id', bio.id)
-      : await updateQuery.eq('id', bio.id).eq('reviewed_by', user?.id ?? '');
+      .update({ status: 'published', published_at: new Date().toISOString(), reviewed_by: null, reviewed_at: null })
+      .eq('id', bio.id);
 
     if (error) {
       setActionLoading(null);
@@ -260,8 +256,14 @@ function ReviewQueueContent() {
     if (bio.report?.id) {
       await supabase
         .from('moderation_reports')
-        .update({ status: 'decided', decision: 'publish', decided_at: new Date().toISOString() })
+        .update({ status: 'decided', decision: 'publish', decided_at: new Date().toISOString(), reviewed_by: user?.id ?? null, reviewed_at: new Date().toISOString() })
         .eq('id', bio.report.id);
+    } else {
+      await supabase
+        .from('moderation_reports')
+        .update({ status: 'decided', decision: 'publish', decided_at: new Date().toISOString(), reviewed_by: user?.id ?? null, reviewed_at: new Date().toISOString() })
+        .eq('biography_id', bio.id)
+        .in('status', ['unassigned', 'assigned', 'in_review']);
     }
 
     await createNotification(bio.author_id, t.notifications.biographyApproved);
@@ -277,13 +279,10 @@ function ReviewQueueContent() {
   ) => {
     setActionLoading(bio.id);
 
-    const updateQuery = supabase
+    const { error } = await supabase
       .from('biographies')
-      .update({ status: 'draft', reviewed_by: null, reviewed_at: null });
-
-    const { error } = force
-      ? await updateQuery.eq('id', bio.id)
-      : await updateQuery.eq('id', bio.id).eq('reviewed_by', user?.id ?? '');
+      .update({ status: 'draft', reviewed_by: null, reviewed_at: null })
+      .eq('id', bio.id);
 
     if (error) {
       setActionLoading(null);
@@ -298,9 +297,24 @@ function ReviewQueueContent() {
           status: 'decided',
           decision: 'request_edit',
           decided_at: new Date().toISOString(),
+          reviewed_by: user?.id ?? null,
+          reviewed_at: new Date().toISOString(),
           moderator_notes: { rejectedPassages, note: reason },
         })
         .eq('id', bio.report.id);
+    } else {
+      await supabase
+        .from('moderation_reports')
+        .update({
+          status: 'decided',
+          decision: 'request_edit',
+          decided_at: new Date().toISOString(),
+          reviewed_by: user?.id ?? null,
+          reviewed_at: new Date().toISOString(),
+          moderator_notes: { rejectedPassages, note: reason },
+        })
+        .eq('biography_id', bio.id)
+        .in('status', ['unassigned', 'assigned', 'in_review']);
     }
 
     let notificationMessage: string;
@@ -406,7 +420,7 @@ function ReviewQueueContent() {
         </div>
 
         {loadError && (
-          <div className="mb-4 p-4 rounded-xl bg-red-50 dark:bg-red-950/30 text-sm text-red-700 dark:text-red-300">
+          <div className="mb-4 p-4 rounded-xl bg-brand-wine/10 border border-brand-wine/25 text-sm text-brand-wineDark dark:bg-brand-wine/20 dark:border-brand-wine/35 dark:text-brand-beigeLight">
             {loadError}
           </div>
         )}
@@ -488,12 +502,12 @@ function ReviewQueueContent() {
                               {bio.title.slice(0, 50)}{bio.title.length > 50 ? '…' : ''}
                             </span>
                             {isAiReview && (
-                              <span className="text-xs text-amber-600 dark:text-amber-400 mt-0.5 block">
+                              <span className="text-xs text-brand-mustardDark dark:text-brand-mustardLight mt-0.5 block">
                                 {passages.length} {t.admin.reviewFlaggedPassages}
                               </span>
                             )}
                             {takenByOther && (
-                              <span className="inline-flex items-center gap-1 text-xs text-orange-600 dark:text-orange-400 mt-0.5">
+                              <span className="inline-flex items-center gap-1 text-xs text-brand-wine dark:text-brand-beigeLight mt-0.5">
                                 <AlertTriangle className="h-3 w-3" />
                                 In review
                               </span>
@@ -516,8 +530,6 @@ function ReviewQueueContent() {
                           <td className="px-4 py-3 text-center">
                             <Link
                               href={viewHref(bio)}
-                              target="_blank"
-                              rel="noopener noreferrer"
                               className="inline-flex items-center justify-center h-8 w-8 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
                               title={t.admin.reviewColRead}
                             >
@@ -530,7 +542,7 @@ function ReviewQueueContent() {
                                 <Button
                                   size="sm"
                                   variant="outline"
-                                  className="h-8 text-xs gap-1.5 border-emerald-300 text-emerald-700 hover:bg-emerald-50 hover:text-emerald-800 dark:border-emerald-700 dark:text-emerald-400 dark:hover:bg-emerald-950/40"
+                                  className="h-8 text-xs gap-1.5 border-brand-greenDark/45 text-brand-greenDark hover:bg-brand-greenLight/40 hover:text-brand-ink dark:border-brand-greenLight dark:text-brand-greenLight dark:hover:bg-brand-greenLight/15"
                                   disabled={actionLoading === bio.id}
                                   onClick={() => handleApprove(bio)}
                                 >
@@ -540,7 +552,7 @@ function ReviewQueueContent() {
                                 <Button
                                   size="sm"
                                   variant="outline"
-                                  className="h-8 text-xs gap-1.5 border-red-300 text-red-700 hover:bg-red-50 hover:text-red-800 dark:border-red-700 dark:text-red-400 dark:hover:bg-red-950/40"
+                                  className="h-8 text-xs gap-1.5 border-brand-wine/45 text-brand-wineDark hover:bg-brand-wine/10 hover:text-brand-wineDark dark:border-brand-wine/50 dark:text-brand-beigeLight dark:hover:bg-brand-wine/20"
                                   disabled={actionLoading === bio.id}
                                   onClick={() =>
                                     rejectOpenId === bio.id ? cancelReject() : handleOpenReject(bio)
@@ -556,7 +568,7 @@ function ReviewQueueContent() {
                                   <Button
                                     size="sm"
                                     variant="outline"
-                                    className="h-8 text-xs gap-1.5 border-emerald-300 text-emerald-700 hover:bg-emerald-50 hover:text-emerald-800 dark:border-emerald-700 dark:text-emerald-400 dark:hover:bg-emerald-950/40"
+                                    className="h-8 text-xs gap-1.5 border-brand-greenDark/45 text-brand-greenDark hover:bg-brand-greenLight/40 hover:text-brand-ink dark:border-brand-greenLight dark:text-brand-greenLight dark:hover:bg-brand-greenLight/15"
                                     disabled={actionLoading === bio.id}
                                     onClick={() => handleApproveFromExpanded(bio)}
                                   >
@@ -568,7 +580,7 @@ function ReviewQueueContent() {
                                   <Button
                                     size="sm"
                                     variant="outline"
-                                    className="h-8 text-xs gap-1.5 border-red-300 text-red-700 hover:bg-red-50 hover:text-red-800 dark:border-red-700 dark:text-red-400 dark:hover:bg-red-950/40"
+                                    className="h-8 text-xs gap-1.5 border-brand-wine/45 text-brand-wineDark hover:bg-brand-wine/10 hover:text-brand-wineDark dark:border-brand-wine/50 dark:text-brand-beigeLight dark:hover:bg-brand-wine/20"
                                     disabled={actionLoading === bio.id}
                                     onClick={() =>
                                       rejectOpenId === bio.id ? cancelReject() : handleOpenReject(bio)
@@ -592,7 +604,7 @@ function ReviewQueueContent() {
                           <tr>
                             <td colSpan={8} className="px-6 pb-5 pt-2 bg-muted/10">
                               {decided && (
-                                <p className="text-xs text-emerald-600 dark:text-emerald-400 font-medium mb-3">
+                                <p className="text-xs text-brand-greenDark dark:text-brand-greenLight font-medium mb-3">
                                   {t.admin.reviewAllPassagesReviewed}
                                 </p>
                               )}
@@ -604,8 +616,8 @@ function ReviewQueueContent() {
                                       key={idx}
                                       className={cn(
                                         'rounded-lg border p-4 transition-colors',
-                                        decision === 'approved' && 'border-emerald-200 bg-emerald-50/50 dark:border-emerald-800 dark:bg-emerald-950/20',
-                                        decision === 'rejected' && 'border-red-200 bg-red-50/50 dark:border-red-800 dark:bg-red-950/20',
+                                        decision === 'approved' && 'border-brand-greenLight bg-brand-greenLight/35 dark:border-brand-greenDark/50 dark:bg-brand-greenLight/10',
+                                        decision === 'rejected' && 'border-brand-wine/35 bg-brand-wine/8 dark:border-brand-wine/45 dark:bg-brand-wine/15',
                                         !decision && 'border-border bg-background'
                                       )}
                                     >
@@ -616,7 +628,7 @@ function ReviewQueueContent() {
                                         <SeverityBadge severity={passage.severity} />
                                       </div>
 
-                                      <blockquote className="border-l-2 border-amber-400 dark:border-amber-600 pl-3 my-2 text-sm text-foreground italic leading-relaxed">
+                                      <blockquote className="border-l-2 border-brand-mustardDark dark:border-brand-mustardLight pl-3 my-2 text-sm text-foreground italic leading-relaxed">
                                         {passage.text.length > 400
                                           ? passage.text.slice(0, 400) + '…'
                                           : passage.text}
@@ -632,7 +644,7 @@ function ReviewQueueContent() {
                                           <Button
                                             size="sm"
                                             variant="outline"
-                                            className="h-7 text-xs gap-1.5 border-emerald-300 text-emerald-700 hover:bg-emerald-50 hover:text-emerald-800 dark:border-emerald-700 dark:text-emerald-400 dark:hover:bg-emerald-950/40"
+                                            className="h-7 text-xs gap-1.5 border-brand-greenDark/45 text-brand-greenDark hover:bg-brand-greenLight/40 hover:text-brand-ink dark:border-brand-greenLight dark:text-brand-greenLight dark:hover:bg-brand-greenLight/15"
                                             onClick={() => setPassageDecision(bio.id, idx, 'approved')}
                                           >
                                             <CheckCircle className="h-3 w-3" />
@@ -641,7 +653,7 @@ function ReviewQueueContent() {
                                           <Button
                                             size="sm"
                                             variant="outline"
-                                            className="h-7 text-xs gap-1.5 border-red-300 text-red-700 hover:bg-red-50 hover:text-red-800 dark:border-red-700 dark:text-red-400 dark:hover:bg-red-950/40"
+                                            className="h-7 text-xs gap-1.5 border-brand-wine/45 text-brand-wineDark hover:bg-brand-wine/10 hover:text-brand-wineDark dark:border-brand-wine/50 dark:text-brand-beigeLight dark:hover:bg-brand-wine/20"
                                             onClick={() => setPassageDecision(bio.id, idx, 'rejected')}
                                           >
                                             <XCircle className="h-3 w-3" />
@@ -654,7 +666,7 @@ function ReviewQueueContent() {
                                         <div className="flex items-center gap-2 mt-3">
                                           <span className={cn(
                                             'text-xs font-medium',
-                                            decision === 'approved' ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'
+                                            decision === 'approved' ? 'text-brand-greenDark dark:text-brand-greenLight' : 'text-brand-wine dark:text-brand-beigeLight'
                                           )}>
                                             {decision === 'approved' ? '✓ Approved' : '✗ Rejected'}
                                           </span>
@@ -741,7 +753,7 @@ function ReviewQueueContent() {
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle className="flex items-center gap-2">
-              <AlertTriangle className="h-5 w-5 text-orange-500" />
+              <AlertTriangle className="h-5 w-5 text-brand-mustardDark dark:text-brand-mustardLight" />
               Another reviewer is working on this
             </AlertDialogTitle>
             <AlertDialogDescription>
@@ -752,7 +764,7 @@ function ReviewQueueContent() {
             <AlertDialogCancel onClick={handleConflictCancel}>Cancel</AlertDialogCancel>
             <AlertDialogAction
               onClick={handleConflictProceed}
-              className="bg-orange-600 hover:bg-orange-700 text-white"
+              className="bg-brand-wine hover:bg-brand-wineDark text-brand-paper"
             >
               Proceed anyway
             </AlertDialogAction>

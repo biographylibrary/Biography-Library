@@ -46,8 +46,8 @@ export function AdminGuard({ children, requiredRole, redirectTo = '/dashboard' }
       <div className="min-h-[60vh] flex items-center justify-center px-4">
         <div className="text-center max-w-sm">
           <div className="flex justify-center mb-5">
-            <div className="p-4 rounded-2xl bg-red-50 dark:bg-red-950/30">
-              <ShieldOff className="h-8 w-8 text-red-500 dark:text-red-400" />
+            <div className="p-4 rounded-2xl bg-brand-wine/10 dark:bg-brand-wine/20">
+              <ShieldOff className="h-8 w-8 text-brand-wine dark:text-brand-mustardLight" />
             </div>
           </div>
           <h1 className="text-xl font-semibold text-foreground mb-2">Access Denied</h1>

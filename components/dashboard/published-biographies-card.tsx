@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useTranslation } from '@/lib/i18n/i18n-context';
@@ -27,11 +27,7 @@ export function PublishedBiographiesCard({ userId }: PublishedBiographiesCardPro
   const [publishedBiographies, setPublishedBiographies] = useState<PublishedBiography[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  useEffect(() => {
-    loadPublishedBiographies();
-  }, [userId]);
-
-  const loadPublishedBiographies = async () => {
+  const loadPublishedBiographies = useCallback(async () => {
     try {
       const { data, error } = await supabase
         .from('biographies')
@@ -48,7 +44,11 @@ export function PublishedBiographiesCard({ userId }: PublishedBiographiesCardPro
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [userId]);
+
+  useEffect(() => {
+    loadPublishedBiographies();
+  }, [loadPublishedBiographies]);
 
   if (isLoading) {
     return null;

@@ -29,10 +29,10 @@ type SortFilter = 'newest' | 'oldest' | 'recently_published';
 
 function StatusBadge({ status, t }: { status: string; t: any }) {
   const map: Record<string, string> = {
-    draft: 'bg-neutral-100 text-neutral-700 border-neutral-200 dark:bg-neutral-800 dark:text-neutral-300 dark:border-neutral-700',
-    published: 'bg-[#C8DFBE] text-[#121212] border-emerald-200 dark:bg-[#C8DFBE]/20 dark:text-[#C8DFBE] dark:border-emerald-800',
-    under_review: 'bg-[#DDCF88] text-[#121212] border-amber-200 dark:bg-[#DDCF88]/20 dark:text-[#DDCF88] dark:border-amber-800',
-    removed: 'bg-[#6D323E] text-white border-red-200 dark:bg-[#6D323E] dark:text-white dark:border-red-800',
+    draft: 'bg-brand-beigeBg text-brand-ink border-brand-greenDark/25 dark:bg-brand-ink/35 dark:text-brand-beigeLight dark:border-brand-greenDark/40',
+    published: 'bg-[#C8DFBE] text-[#121212] border-brand-greenDark/35 dark:bg-[#C8DFBE]/20 dark:text-[#C8DFBE] dark:border-brand-greenDark/45',
+    under_review: 'bg-[#DDCF88] text-[#121212] border-brand-mustardDark/50 dark:bg-[#DDCF88]/20 dark:text-[#DDCF88] dark:border-brand-mustardDark/40',
+    removed: 'bg-[#6D323E] text-white border-brand-wine/35 dark:bg-[#6D323E] dark:text-white dark:border-brand-wine/45',
   };
   const labels: Record<string, string> = {
     draft: t.admin.bioStatusDraft,
@@ -265,7 +265,7 @@ function AdminBiographiesContent() {
         </div>
 
         {loadError && (
-          <div className="mb-4 p-4 rounded-xl bg-red-50 dark:bg-red-950/30 text-sm text-red-700 dark:text-red-300">
+          <div className="mb-4 p-4 rounded-xl bg-brand-wine/10 dark:bg-brand-wine/15 text-sm text-brand-wineDark dark:text-brand-mustardLight">
             {loadError}
           </div>
         )}

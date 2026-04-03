@@ -45,8 +45,8 @@
     --btn-hover: #C8DFBE;
     --border-global: #616161;
     --error: #944454;
-    --status-info: #D3F1FF;
-    --status-warning: #FBDEC1;
+    --status-info: #C4DAEB;
+    --status-warning: #EDE4B9;
     --status-success: #C8DFBE;
   }
 
@@ -84,8 +84,8 @@
     --btn-primary-border: #EDEBE7;
     --btn-hover: #C8DFBE;
     --error: #944454;
-    --status-info: #D3F1FF;
-    --status-warning: #FBDEC1;
+    --status-info: #C4DAEB;
+    --status-warning: #EDE4B9;
     --status-success: #C8DFBE;
   }
 }

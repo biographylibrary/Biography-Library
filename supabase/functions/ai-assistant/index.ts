@@ -16,7 +16,8 @@ const WEEKLY_LIMIT = parseInt(Deno.env.get('AI_WEEKLY_LIMIT') ?? '200');
 
 const HEAVY_ACTIONS = new Set(["rewrite", "analyze-themes", "propose-structures"]);
 
-const PRIMARY_MODEL = Deno.env.get('INFOMANIAK_AI_MODEL_PRIMARY') ?? 'Apertus-70B-Instruct-2509';
+const PRIMARY_MODEL =
+  Deno.env.get('INFOMANIAK_AI_MODEL_PRIMARY') ?? 'swiss-ai/Apertus-70B-Instruct-2509';
 const FALLBACK_MODEL = Deno.env.get('INFOMANIAK_AI_MODEL_FALLBACK') ?? 'mistral3';
 
 const LANGUAGE_NAMES: Record<string, string> = {

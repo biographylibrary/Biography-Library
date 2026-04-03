@@ -1,7 +1,6 @@
 import { Document, Paragraph, TextRun, HeadingLevel, AlignmentType } from 'docx';
 import JSZip from 'jszip';
 import { saveAs } from 'file-saver';
-import { BIOGRAPHY_SECTIONS } from './editor-constants';
 
 interface BiographyData {
   title: string;
@@ -18,10 +17,122 @@ interface ExportSection {
   content: string;
 }
 
-function stripHtmlTags(html: string): string {
-  const tmp = document.createElement('div');
-  tmp.innerHTML = html;
-  return tmp.textContent || tmp.innerText || '';
+export function stripHtmlTags(html: string): string {
+  return html
+    .replace(/<p[^>]*>/gi, '')
+    .replace(/<\/p>/gi, '\n\n')
+    .replace(/<br\s*\/?>/gi, '\n')
+    .replace(/<[^>]+>/g, '')
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&nbsp;/g, ' ')
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
+    .replace(/\n{3,}/g, '\n\n')
+    .trim();
+}
+
+interface InlineRun {
+  text: string;
+  bold: boolean;
+  italic: boolean;
+}
+
+function parseHtmlIntoRuns(html: string): InlineRun[] {
+  const runs: InlineRun[] = [];
+  let pos = 0;
+  let bold = false;
+  let italic = false;
+
+  const tagRe = /<(\/?)(\w+)[^>]*>/gi;
+  let match: RegExpExecArray | null;
+
+  tagRe.lastIndex = 0;
+
+  while ((match = tagRe.exec(html)) !== null) {
+    const before = html.slice(pos, match.index);
+    if (before) {
+      const text = before
+        .replace(/&amp;/g, '&')
+        .replace(/&lt;/g, '<')
+        .replace(/&gt;/g, '>')
+        .replace(/&nbsp;/g, ' ')
+        .replace(/&quot;/g, '"')
+        .replace(/&#39;/g, "'");
+      if (text) runs.push({ text, bold, italic });
+    }
+    pos = match.index + match[0].length;
+
+    const closing = match[1] === '/';
+    const tag = match[2].toLowerCase();
+
+    if (tag === 'strong' || tag === 'b') {
+      bold = !closing;
+    } else if (tag === 'em' || tag === 'i') {
+      italic = !closing;
+    }
+  }
+
+  const remaining = html.slice(pos);
+  if (remaining) {
+    const text = remaining
+      .replace(/&amp;/g, '&')
+      .replace(/&lt;/g, '<')
+      .replace(/&gt;/g, '>')
+      .replace(/&nbsp;/g, ' ')
+      .replace(/&quot;/g, '"')
+      .replace(/&#39;/g, "'");
+    if (text.trim()) runs.push({ text, bold, italic });
+  }
+
+  return runs.filter((r) => r.text.trim() !== '' || r.text === ' ');
+}
+
+function htmlToParagraphs(html: string): InlineRun[][] {
+  const paragraphs: InlineRun[][] = [];
+
+  const normalized = html
+    .replace(/<\/p>\s*<p[^>]*>/gi, '\n\n')
+    .replace(/<p[^>]*>/gi, '')
+    .replace(/<\/p>/gi, '\n\n')
+    .replace(/<br\s*\/?>/gi, '\n');
+
+  const parts = normalized.split(/\n\n+/);
+
+  for (const part of parts) {
+    const trimmed = part.trim();
+    if (!trimmed) continue;
+    const runs = parseHtmlIntoRuns(trimmed);
+    if (runs.length > 0) paragraphs.push(runs);
+  }
+
+  return paragraphs;
+}
+
+function buildDocxParagraphsFromHtml(html: string): Paragraph[] {
+  const paragraphRuns = htmlToParagraphs(html);
+  const result: Paragraph[] = [];
+
+  for (const runs of paragraphRuns) {
+    result.push(
+      new Paragraph({
+        children: runs.map(
+          (r) =>
+            new TextRun({
+              text: r.text,
+              bold: r.bold,
+              italics: r.italic,
+              font: 'Times New Roman',
+              size: 24,
+            })
+        ),
+      })
+    );
+    result.push(new Paragraph({ text: '' }));
+  }
+
+  return result;
 }
 
 function buildHeader(biography: BiographyData): string[] {
@@ -209,99 +320,30 @@ export async function exportAsDOCX(
   const baseFileName = `${biography.title.replace(/[^a-z0-9]/gi, '-').toLowerCase()}_${date}`;
   const isFreeFlow = biography.biography_mode === 'freeflow';
 
-  const createDocument = (title: string, content: string, isComplete: boolean = false): Document => {
-    const children: Paragraph[] = [];
-
-    if (isComplete) {
-      children.push(
-        new Paragraph({
-          text: biography.title,
-          heading: HeadingLevel.TITLE,
-          alignment: AlignmentType.CENTER,
-        }),
-        new Paragraph({
-          text: `By ${biography.author_name}`,
-          alignment: AlignmentType.CENTER,
-        }),
-        new Paragraph({
-          text: new Date(biography.created_at).toLocaleDateString(),
-          alignment: AlignmentType.CENTER,
-        }),
-        new Paragraph({ text: '' }),
-        new Paragraph({ text: '' })
-      );
-    }
-
-    children.push(
-      new Paragraph({
-        text: title,
-        heading: HeadingLevel.HEADING_1,
-      }),
-      new Paragraph({ text: '' })
-    );
-
-    const plainText = stripHtmlTags(content);
-    const paragraphs = plainText.split('\n\n');
-
-    paragraphs.forEach((para) => {
-      if (para.trim()) {
-        children.push(
-          new Paragraph({
-            children: [
-              new TextRun({
-                text: para.trim(),
-                font: 'Times New Roman',
-                size: 24,
-              }),
-            ],
-          }),
-          new Paragraph({ text: '' })
-        );
-      }
-    });
-
-    return new Document({
-      sections: [{
-        properties: {},
-        children,
-      }],
-    });
-  };
+  const buildCoverParagraphs = (): Paragraph[] => [
+    new Paragraph({
+      text: biography.title,
+      heading: HeadingLevel.TITLE,
+      alignment: AlignmentType.CENTER,
+    }),
+    new Paragraph({
+      text: `By ${biography.author_name}`,
+      alignment: AlignmentType.CENTER,
+    }),
+    new Paragraph({
+      text: new Date(biography.created_at).toLocaleDateString(),
+      alignment: AlignmentType.CENTER,
+    }),
+    new Paragraph({ text: '' }),
+    new Paragraph({ text: '' }),
+  ];
 
   if (isFreeFlow) {
     const { Packer } = await import('docx');
     const children: Paragraph[] = [
-      new Paragraph({
-        text: biography.title,
-        heading: HeadingLevel.TITLE,
-        alignment: AlignmentType.CENTER,
-      }),
-      new Paragraph({
-        text: `By ${biography.author_name}`,
-        alignment: AlignmentType.CENTER,
-      }),
-      new Paragraph({
-        text: new Date(biography.created_at).toLocaleDateString(),
-        alignment: AlignmentType.CENTER,
-      }),
-      new Paragraph({ text: '' }),
-      new Paragraph({ text: '' }),
+      ...buildCoverParagraphs(),
+      ...buildDocxParagraphsFromHtml(biography.content_freeflow || ''),
     ];
-
-    const plainText = stripHtmlTags(biography.content_freeflow || '');
-    plainText.split('\n\n').forEach((para) => {
-      if (para.trim()) {
-        children.push(
-          new Paragraph({
-            children: [
-              new TextRun({ text: para.trim(), font: 'Times New Roman', size: 24 }),
-            ],
-          }),
-          new Paragraph({ text: '' })
-        );
-      }
-    });
-
     const doc = new Document({ sections: [{ properties: {}, children }] });
     const blob = await Packer.toBlob(doc);
     saveAs(blob, `${baseFileName}.docx`);
@@ -313,76 +355,86 @@ export async function exportAsDOCX(
     const { Packer } = await import('docx');
 
     for (const section of sections) {
-      const doc = createDocument(section.title, section.content);
+      const children: Paragraph[] = [
+        new Paragraph({ text: section.title, heading: HeadingLevel.HEADING_1 }),
+        new Paragraph({ text: '' }),
+        ...buildDocxParagraphsFromHtml(section.content),
+      ];
+      const doc = new Document({ sections: [{ properties: {}, children }] });
       const blob = await Packer.toBlob(doc);
-      const fileName = `${section.key}.docx`;
-      zip.file(fileName, blob);
+      zip.file(`${section.key}.docx`, blob);
     }
 
     const zipBlob = await zip.generateAsync({ type: 'blob' });
     saveAs(zipBlob, `${baseFileName}_sezioni.zip`);
   } else {
     const { Packer } = await import('docx');
-    const children: Paragraph[] = [];
-
-    children.push(
-      new Paragraph({
-        text: biography.title,
-        heading: HeadingLevel.TITLE,
-        alignment: AlignmentType.CENTER,
-      }),
-      new Paragraph({
-        text: `By ${biography.author_name}`,
-        alignment: AlignmentType.CENTER,
-      }),
-      new Paragraph({
-        text: new Date(biography.created_at).toLocaleDateString(),
-        alignment: AlignmentType.CENTER,
-      }),
-      new Paragraph({ text: '' }),
-      new Paragraph({ text: '' })
-    );
+    const children: Paragraph[] = [...buildCoverParagraphs()];
 
     sections.forEach((section) => {
       children.push(
-        new Paragraph({
-          text: section.title,
-          heading: HeadingLevel.HEADING_1,
-        }),
+        new Paragraph({ text: section.title, heading: HeadingLevel.HEADING_1 }),
+        new Paragraph({ text: '' }),
+        ...buildDocxParagraphsFromHtml(section.content),
         new Paragraph({ text: '' })
       );
-
-      const plainText = stripHtmlTags(section.content);
-      const paragraphs = plainText.split('\n\n');
-
-      paragraphs.forEach((para) => {
-        if (para.trim()) {
-          children.push(
-            new Paragraph({
-              children: [
-                new TextRun({
-                  text: para.trim(),
-                  font: 'Times New Roman',
-                  size: 24,
-                }),
-              ],
-            }),
-            new Paragraph({ text: '' })
-          );
-        }
-      });
-
-      children.push(new Paragraph({ text: '' }));
     });
 
-    const doc = new Document({
-      sections: [{
-        properties: {},
-        children,
-      }],
-    });
-
+    const doc = new Document({ sections: [{ properties: {}, children }] });
     const blob = await Packer.toBlob(doc);
     saveAs(blob, `${baseFileName}.docx`);
   }
+}
+
+export function buildBiographyTxtContent(
+  title: string,
+  authorName: string,
+  createdAt: string,
+  sections: Array<{ title: string; content: string }>
+): string {
+  const header = [
+    title,
+    `By ${authorName}`,
+    `Created: ${new Date(createdAt).toLocaleDateString()}`,
+    '',
+    '='.repeat(80),
+    '',
+  ].join('\n');
+
+  let content = header;
+  sections.forEach((section) => {
+    content += `\n\n=== ${section.title.toUpperCase()} ===\n\n`;
+    content += stripHtmlTags(section.content);
+  });
+
+  return content;
+}
+
+export async function buildBiographyDocxBuffer(
+  title: string,
+  authorName: string,
+  createdAt: string,
+  sections: Array<{ title: string; content: string }>
+): Promise<Buffer> {
+  const { Packer } = await import('docx');
+
+  const children: Paragraph[] = [
+    new Paragraph({ text: title, heading: HeadingLevel.TITLE, alignment: AlignmentType.CENTER }),
+    new Paragraph({ text: `By ${authorName}`, alignment: AlignmentType.CENTER }),
+    new Paragraph({ text: new Date(createdAt).toLocaleDateString(), alignment: AlignmentType.CENTER }),
+    new Paragraph({ text: '' }),
+    new Paragraph({ text: '' }),
+  ];
+
+  sections.forEach((section) => {
+    children.push(
+      new Paragraph({ text: section.title, heading: HeadingLevel.HEADING_1 }),
+      new Paragraph({ text: '' }),
+      ...buildDocxParagraphsFromHtml(section.content),
+      new Paragraph({ text: '' })
+    );
+  });
+
+  const doc = new Document({ sections: [{ properties: {}, children }] });
+  return Packer.toBuffer(doc);
 }

@@ -167,6 +167,41 @@ export interface Translations {
     titleLabel: string;
     privacyLabel: string;
   };
+  writingModeOnboarding: {
+    stepTitle: string;
+    stepSubtitle: string;
+    writeHereTitle: string;
+    writeHereDescription: string;
+    guidedChaptersLabel: string;
+    guidedChaptersDescription: string;
+    freewritingLabel: string;
+    freewritingDescription: string;
+    importTitle: string;
+    importDescription: string;
+    continueButton: string;
+    backButton: string;
+  };
+  modeSwitchWarning: {
+    step1Title: string;
+    step1Message: string;
+    step1Confirm: string;
+    step2Title: string;
+    step2Message: string;
+    step2ExportButton: string;
+    step2SkipButton: string;
+    step2Exporting: string;
+    step3Title: string;
+    step3Message: string;
+    step3Checkbox: string;
+    step3Confirm: string;
+    step3Cancel: string;
+    step3Deleting: string;
+    fromSections: string;
+    fromFreeflow: string;
+    toSections: string;
+    toFreeflow: string;
+    goBack: string;
+  };
   exportDialog: {
     title: string;
     description: string;
@@ -407,6 +442,7 @@ export interface Translations {
     downloadPdf: string;
     downloadRtf: string;
     downloadTxt: string;
+    downloadDocx: string;
     by: string;
     preservingStories: string;
     tokenMissing: string;
@@ -1290,6 +1326,41 @@ export const translations: Record<Language, Translations> = {
       titleLabel: 'Title',
       privacyLabel: 'Privacy',
     },
+    writingModeOnboarding: {
+      stepTitle: 'How would you like to write?',
+      stepSubtitle: 'Choose how you want to start your biography. You can always export and re-import your content later.',
+      writeHereTitle: 'Write inside Biography Library',
+      writeHereDescription: 'Compose your biography directly here. We will guide you through chapters, or you can write freely.',
+      guidedChaptersLabel: 'Guide me through chapters',
+      guidedChaptersDescription: 'Structured approach: childhood, family, education, career, and more — one chapter at a time.',
+      freewritingLabel: 'I\'ll write freely',
+      freewritingDescription: 'Open writing. No fixed structure. Write or dictate in your own style.',
+      importTitle: 'Import an existing text',
+      importDescription: 'You already have a written biography or document. Import it and use Biography Library as your archive.',
+      continueButton: 'Start Writing',
+      backButton: 'Back',
+    },
+    modeSwitchWarning: {
+      step1Title: 'Warning: switching mode will delete your current content',
+      step1Message: 'If you switch from {from} to {to}, all the text you have written in {from} will be permanently deleted. This action cannot be undone.',
+      step1Confirm: 'I understand, continue',
+      step2Title: 'Export your content before switching',
+      step2Message: 'Before deleting your {from} content, we strongly recommend exporting it. You can then re-import it into the new mode.',
+      step2ExportButton: 'Export my content now (.txt and .docx)',
+      step2SkipButton: 'I already have a copy, skip export',
+      step2Exporting: 'Exporting...',
+      step3Title: 'Permanently delete {from} content?',
+      step3Message: 'You are about to permanently delete all your {from} content. This cannot be recovered.',
+      step3Checkbox: 'I understand that my content will be deleted and this cannot be undone.',
+      step3Confirm: 'Delete and switch mode',
+      step3Cancel: 'Keep my content, go back',
+      step3Deleting: 'Deleting...',
+      fromSections: 'sections',
+      fromFreeflow: 'free writing',
+      toSections: 'sections',
+      toFreeflow: 'free writing',
+      goBack: 'Go back',
+    },
     exportDialog: {
       title: 'Export Biography',
       description: 'Choose format and sections to export',
@@ -1530,8 +1601,9 @@ export const translations: Record<Language, Translations> = {
       downloadPdf: 'Download PDF',
       downloadRtf: 'Download RTF',
       downloadTxt: 'Download TXT',
+      downloadDocx: 'Download DOCX',
       by: 'By',
-      preservingStories: 'Biography Library - Preserving Stories in Switzerland',
+      preservingStories: 'Because every life deserves to be remembered',
       tokenMissing: 'Access token is missing',
       notFoundOrDenied: 'Biography not found or access denied',
       biographyPrivate: 'This biography is private',
@@ -2411,6 +2483,41 @@ export const translations: Record<Language, Translations> = {
       titleLabel: 'Titolo',
       privacyLabel: 'Privacy',
     },
+    writingModeOnboarding: {
+      stepTitle: 'Come vuoi scrivere?',
+      stepSubtitle: 'Scegli come iniziare la tua biografia. Potrai sempre esportare e reimportare i tuoi contenuti in seguito.',
+      writeHereTitle: 'Scrivi su Biography Library',
+      writeHereDescription: 'Componi la tua biografia direttamente qui. Ti guideremo attraverso i capitoli, oppure puoi scrivere liberamente.',
+      guidedChaptersLabel: 'Guidami attraverso i capitoli',
+      guidedChaptersDescription: 'Approccio strutturato: infanzia, famiglia, istruzione, carriera e altro — un capitolo alla volta.',
+      freewritingLabel: 'Scrivo liberamente',
+      freewritingDescription: 'Scrittura libera. Nessuna struttura fissa. Scrivi o ditta nel tuo stile.',
+      importTitle: 'Importa un testo esistente',
+      importDescription: 'Hai già una biografia scritta o un documento. Importalo e usa Biography Library come archivio.',
+      continueButton: 'Inizia a Scrivere',
+      backButton: 'Indietro',
+    },
+    modeSwitchWarning: {
+      step1Title: 'Attenzione: cambiare modalità eliminerà i tuoi contenuti attuali',
+      step1Message: 'Se passi da {from} a {to}, tutto il testo che hai scritto in {from} sarà eliminato definitivamente. Questa azione non può essere annullata.',
+      step1Confirm: 'Ho capito, continua',
+      step2Title: 'Esporta i tuoi contenuti prima di cambiare',
+      step2Message: 'Prima di eliminare i tuoi contenuti in {from}, ti consigliamo vivamente di esportarli. Potrai reimportarli nella nuova modalità.',
+      step2ExportButton: 'Esporta i miei contenuti ora (.txt e .docx)',
+      step2SkipButton: 'Ho già una copia, salta l\'esportazione',
+      step2Exporting: 'Esportazione in corso...',
+      step3Title: 'Eliminare definitivamente i contenuti in {from}?',
+      step3Message: 'Stai per eliminare definitivamente tutti i tuoi contenuti in {from}. Questa operazione non può essere recuperata.',
+      step3Checkbox: 'Capisco che i miei contenuti saranno eliminati e questa operazione non può essere annullata.',
+      step3Confirm: 'Elimina e cambia modalità',
+      step3Cancel: 'Mantieni i miei contenuti, torna indietro',
+      step3Deleting: 'Eliminazione in corso...',
+      fromSections: 'sezioni',
+      fromFreeflow: 'scrittura libera',
+      toSections: 'sezioni',
+      toFreeflow: 'scrittura libera',
+      goBack: 'Torna indietro',
+    },
     exportDialog: {
       title: 'Esporta Biografia',
       description: 'Scegli il formato e le sezioni da esportare',
@@ -2651,8 +2758,9 @@ export const translations: Record<Language, Translations> = {
       downloadPdf: 'Scarica PDF',
       downloadRtf: 'Scarica RTF',
       downloadTxt: 'Scarica TXT',
+      downloadDocx: 'Scarica DOCX',
       by: 'Di',
-      preservingStories: 'Biography Library - Preservare Storie in Svizzera',
+      preservingStories: 'Perché ogni vita merita di essere ricordata',
       tokenMissing: 'Token di accesso mancante',
       notFoundOrDenied: 'Biografia non trovata o accesso negato',
       biographyPrivate: 'Questa biografia \u00e8 privata',
@@ -3532,6 +3640,41 @@ export const translations: Record<Language, Translations> = {
       titleLabel: 'Titre',
       privacyLabel: 'Confidentialité',
     },
+    writingModeOnboarding: {
+      stepTitle: 'Comment souhaitez-vous écrire?',
+      stepSubtitle: 'Choisissez comment démarrer votre biographie. Vous pourrez toujours exporter et réimporter votre contenu ultérieurement.',
+      writeHereTitle: 'Écrire sur Biography Library',
+      writeHereDescription: 'Composez votre biographie directement ici. Nous vous guiderons à travers les chapitres, ou vous pouvez écrire librement.',
+      guidedChaptersLabel: 'Guidez-moi à travers les chapitres',
+      guidedChaptersDescription: 'Approche structurée : enfance, famille, éducation, carrière et plus — un chapitre à la fois.',
+      freewritingLabel: "J'écris librement",
+      freewritingDescription: 'Écriture libre. Pas de structure fixe. Écrivez ou dictez dans votre propre style.',
+      importTitle: 'Importer un texte existant',
+      importDescription: 'Vous avez déjà une biographie écrite ou un document. Importez-le et utilisez Biography Library comme archive.',
+      continueButton: 'Commencer à Écrire',
+      backButton: 'Retour',
+    },
+    modeSwitchWarning: {
+      step1Title: 'Attention : changer de mode supprimera votre contenu actuel',
+      step1Message: 'Si vous passez de {from} à {to}, tout le texte que vous avez écrit en {from} sera définitivement supprimé. Cette action est irréversible.',
+      step1Confirm: "Je comprends, continuer",
+      step2Title: 'Exportez votre contenu avant de changer',
+      step2Message: 'Avant de supprimer votre contenu en {from}, nous vous recommandons vivement de l\'exporter. Vous pourrez ensuite le réimporter dans le nouveau mode.',
+      step2ExportButton: 'Exporter mon contenu maintenant (.txt et .docx)',
+      step2SkipButton: "J'ai déjà une copie, ignorer l'exportation",
+      step2Exporting: 'Exportation en cours...',
+      step3Title: 'Supprimer définitivement le contenu en {from}?',
+      step3Message: 'Vous êtes sur le point de supprimer définitivement tout votre contenu en {from}. Cela ne peut pas être récupéré.',
+      step3Checkbox: 'Je comprends que mon contenu sera supprimé et que cela ne peut pas être annulé.',
+      step3Confirm: 'Supprimer et changer de mode',
+      step3Cancel: 'Conserver mon contenu, revenir en arrière',
+      step3Deleting: 'Suppression en cours...',
+      fromSections: 'sections',
+      fromFreeflow: 'écriture libre',
+      toSections: 'sections',
+      toFreeflow: 'écriture libre',
+      goBack: 'Revenir en arrière',
+    },
     exportDialog: {
       title: 'Exporter la Biographie',
       description: 'Choisissez le format et les sections à exporter',
@@ -3772,8 +3915,9 @@ export const translations: Record<Language, Translations> = {
       downloadPdf: 'T\u00e9l\u00e9charger le PDF',
       downloadRtf: 'T\u00e9l\u00e9charger RTF',
       downloadTxt: 'T\u00e9l\u00e9charger TXT',
+      downloadDocx: 'T\u00e9l\u00e9charger DOCX',
       by: 'Par',
-      preservingStories: 'Biography Library - Pr\u00e9server des Histoires en Suisse',
+      preservingStories: 'Parce que chaque vie mérite d\'être rappelée',
       tokenMissing: 'Jeton d\'acc\u00e8s manquant',
       notFoundOrDenied: 'Biographie introuvable ou acc\u00e8s refus\u00e9',
       biographyPrivate: 'Cette biographie est priv\u00e9e',
@@ -4653,6 +4797,41 @@ export const translations: Record<Language, Translations> = {
       titleLabel: 'Titel',
       privacyLabel: 'Datenschutz',
     },
+    writingModeOnboarding: {
+      stepTitle: 'Wie möchten Sie schreiben?',
+      stepSubtitle: 'Wählen Sie, wie Sie Ihre Biografie beginnen möchten. Sie können Ihre Inhalte jederzeit exportieren und erneut importieren.',
+      writeHereTitle: 'In Biography Library schreiben',
+      writeHereDescription: 'Verfassen Sie Ihre Biografie direkt hier. Wir führen Sie durch die Kapitel, oder Sie schreiben frei.',
+      guidedChaptersLabel: 'Führen Sie mich durch die Kapitel',
+      guidedChaptersDescription: 'Strukturierter Ansatz: Kindheit, Familie, Bildung, Karriere und mehr — ein Kapitel nach dem anderen.',
+      freewritingLabel: 'Ich schreibe frei',
+      freewritingDescription: 'Freies Schreiben. Keine feste Struktur. Schreiben oder diktieren Sie in Ihrem eigenen Stil.',
+      importTitle: 'Einen vorhandenen Text importieren',
+      importDescription: 'Sie haben bereits eine geschriebene Biografie oder ein Dokument. Importieren Sie es und nutzen Sie Biography Library als Archiv.',
+      continueButton: 'Schreiben beginnen',
+      backButton: 'Zurück',
+    },
+    modeSwitchWarning: {
+      step1Title: 'Warnung: Das Wechseln des Modus löscht Ihre aktuellen Inhalte',
+      step1Message: 'Wenn Sie von {from} zu {to} wechseln, wird der gesamte Text, den Sie in {from} geschrieben haben, dauerhaft gelöscht. Diese Aktion kann nicht rückgängig gemacht werden.',
+      step1Confirm: 'Ich verstehe, weiter',
+      step2Title: 'Exportieren Sie Ihre Inhalte vor dem Wechsel',
+      step2Message: 'Bevor Sie Ihre Inhalte in {from} löschen, empfehlen wir dringend, sie zu exportieren. Sie können sie dann in den neuen Modus reimportieren.',
+      step2ExportButton: 'Inhalte jetzt exportieren (.txt und .docx)',
+      step2SkipButton: 'Ich habe bereits eine Kopie, Export überspringen',
+      step2Exporting: 'Exportieren...',
+      step3Title: '{from}-Inhalte dauerhaft löschen?',
+      step3Message: 'Sie sind dabei, alle Ihre {from}-Inhalte dauerhaft zu löschen. Dies kann nicht wiederhergestellt werden.',
+      step3Checkbox: 'Ich verstehe, dass meine Inhalte gelöscht werden und dies nicht rückgängig gemacht werden kann.',
+      step3Confirm: 'Löschen und Modus wechseln',
+      step3Cancel: 'Inhalte behalten, zurückgehen',
+      step3Deleting: 'Löschen...',
+      fromSections: 'Abschnitte',
+      fromFreeflow: 'freies Schreiben',
+      toSections: 'Abschnitte',
+      toFreeflow: 'freies Schreiben',
+      goBack: 'Zurückgehen',
+    },
     exportDialog: {
       title: 'Biografie exportieren',
       description: 'Format und Abschnitte zum Exportieren auswählen',
@@ -4893,8 +5072,9 @@ export const translations: Record<Language, Translations> = {
       downloadPdf: 'PDF Herunterladen',
       downloadRtf: 'RTF herunterladen',
       downloadTxt: 'TXT herunterladen',
+      downloadDocx: 'DOCX herunterladen',
       by: 'Von',
-      preservingStories: 'Biography Library - Geschichten Bewahren in der Schweiz',
+      preservingStories: 'Denn jedes Leben verdient es, in Erinnerung zu bleiben',
       tokenMissing: 'Zugriffstoken fehlt',
       notFoundOrDenied: 'Biografie nicht gefunden oder Zugriff verweigert',
       biographyPrivate: 'Diese Biografie ist privat',

@@ -128,15 +128,15 @@ export default function ResetPasswordPage() {
             </div>
           ) : success ? (
             <div className="space-y-6">
-              <div className="flex flex-col items-center gap-3 p-6 rounded-xl bg-green-50 dark:bg-green-950/30 border border-green-200 dark:border-green-800 text-center">
-                <div className="w-12 h-12 rounded-full bg-green-100 dark:bg-green-900/50 flex items-center justify-center">
-                  <CheckCircle2 className="h-6 w-6 text-green-600 dark:text-green-400" />
+              <div className="flex flex-col items-center gap-3 p-6 rounded-xl bg-brand-greenLight/35 dark:bg-brand-greenLight/10 border border-brand-greenDark/35 dark:border-brand-greenDark/40 text-center">
+                <div className="w-12 h-12 rounded-full bg-brand-greenLight/50 dark:bg-brand-greenLight/15 flex items-center justify-center">
+                  <CheckCircle2 className="h-6 w-6 text-brand-greenDark dark:text-brand-greenLight" />
                 </div>
                 <div>
-                  <p className="font-semibold text-green-900 dark:text-green-100">
+                  <p className="font-semibold text-brand-ink dark:text-brand-beigeLight">
                     {t.auth.resetPasswordSuccess}
                   </p>
-                  <p className="text-sm text-green-800 dark:text-green-200 mt-1">
+                  <p className="text-sm text-brand-greenDark dark:text-brand-beigeLight/90 mt-1">
                     {t.auth.resetPasswordSuccessDetail}
                   </p>
                 </div>

@@ -81,6 +81,18 @@ export type PdfReadinessIssue =
   | 'missing-content'
   | 'missing-mode';
 
+export function getPdfReadinessMessage(issue: PdfReadinessIssue, noCoverPhotoWarning?: string): string {
+  switch (issue) {
+    case 'missing-cover': return noCoverPhotoWarning ?? 'A cover photo is required.';
+    case 'cover-unreachable': return 'Cover photo cannot be reached. Please re-upload.';
+    case 'missing-title': return 'A biography title is required.';
+    case 'missing-author': return 'An author name is required.';
+    case 'missing-content': return 'At least one section must have content.';
+    case 'missing-mode': return 'Biography mode is not set.';
+    default: return issue;
+  }
+}
+
 const B5_W = 176;
 const B5_H = 250;
 
@@ -521,6 +533,23 @@ async function resolveSignedUrl(fileUrl: string): Promise<string> {
     .createSignedUrl(storagePath, 300);
   if (data?.signedUrl) return data.signedUrl;
   return fileUrl;
+}
+
+/** Signed URL for the cover image (web display), or null if none. */
+export async function getCoverPhotoDisplayUrl(biographyId: string): Promise<string | null> {
+  const { data } = await supabase
+    .from('biography_media')
+    .select('file_url')
+    .eq('biography_id', biographyId)
+    .eq('layout', 'cover')
+    .limit(1)
+    .maybeSingle();
+  if (!data?.file_url) return null;
+  try {
+    return await resolveSignedUrl(data.file_url);
+  } catch {
+    return null;
+  }
 }
 
 interface GalleryPhoto {

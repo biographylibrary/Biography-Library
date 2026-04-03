@@ -164,6 +164,7 @@ function BiographyCard({ bio, t, featured }: BiographyCardProps) {
             authorName={bio.author_name || t.publicBiographies.unknownAuthor}
           />
         ) : (
+          // eslint-disable-next-line @next/next/no-img-element -- cover URLs from storage/CDN; dynamic domains
           <img
             src={cover.url!}
             alt={bio.title || ''}
@@ -187,7 +188,7 @@ function BiographyCard({ bio, t, featured }: BiographyCardProps) {
           {bio.title || t.publicBiographies.untitled}
         </p>
         <div className="flex items-center gap-1.5 flex-wrap pt-1">
-          <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-sky-100 text-sky-700 dark:bg-sky-950/50 dark:text-sky-300">
+          <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-brand-blue/35 text-brand-ink dark:bg-brand-blue/20 dark:text-brand-blue">
             {flag} {langLabel}
           </span>
           <span
@@ -195,7 +196,7 @@ function BiographyCard({ bio, t, featured }: BiographyCardProps) {
               'text-xs font-medium px-2 py-0.5 rounded-full',
               isMemorial
                 ? 'bg-[#DDCF88]/60 text-[#6B5B1E] dark:bg-[#DDCF88]/20 dark:text-[#DDCF88]'
-                : 'bg-teal-50 text-teal-700 dark:bg-teal-950/40 dark:text-teal-300'
+                : 'bg-brand-greenLight/45 text-brand-greenDark dark:bg-brand-greenLight/15 dark:text-brand-greenLight'
             )}
           >
             {typeLabel}

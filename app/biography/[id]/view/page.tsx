@@ -4,8 +4,11 @@ import { useEffect, useRef, useState } from 'react';
 import { useParams, useSearchParams, useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 import { type BiographyContent } from '@/lib/editor-constants';
-import { generateBiographyPDF, checkBiographyPdfReadiness } from '@/lib/pdf-export';
-import { exportAsRTF, exportAsPlainText } from '@/lib/export-utils';
+import {
+  generateBiographyPDF,
+  checkBiographyPdfReadiness,
+  getCoverPhotoDisplayUrl,
+} from '@/lib/pdf-export';
 import { Button } from '@/components/ui/button';
 import { Logo } from '@/components/logo';
 import { ThemeToggle } from '@/components/theme-toggle';
@@ -29,6 +32,8 @@ interface BiographyViewData {
   published_at: string | null;
   is_frozen: boolean | null;
   frozen_at: string | null;
+  export_txt_url: string | null;
+  export_docx_url: string | null;
 }
 
 interface SectionWithDate {
@@ -79,6 +84,7 @@ export default function BiographyViewPage() {
   const reportAutoOpenedRef = useRef(false);
   const [pdfLoading, setPdfLoading] = useState(false);
   const [pdfReady, setPdfReady] = useState<boolean | null>(null);
+  const [coverImageUrl, setCoverImageUrl] = useState<string | null>(null);
 
   useEffect(() => {
     const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -120,7 +126,7 @@ export default function BiographyViewPage() {
 
         if (!tokenQuery.error && tokenQuery.data && tokenQuery.data.length > 0) {
           const rows = tokenQuery.data as Array<BiographyViewData & { section_name: string | null; section_created_at: string | null }>;
-          data = rows[0] as BiographyViewData;
+          data = { ...rows[0], export_txt_url: null, export_docx_url: null } as BiographyViewData;
           tokenSectionTimestamps = {};
           for (const row of rows) {
             if (row.section_name && row.section_created_at) {
@@ -139,7 +145,7 @@ export default function BiographyViewPage() {
         // link-only biographies are NOT accessible without a token.
         const publicQuery = await supabase
           .from('biographies')
-          .select('id, title, author_name, content, visibility, status, share_token, created_at, published_at, is_frozen, frozen_at')
+          .select('id, title, author_name, content, visibility, status, share_token, created_at, published_at, is_frozen, frozen_at, export_txt_url, export_docx_url')
           .eq('id', resolvedId)
           .eq('visibility', 'public')
           .eq('status', 'published')
@@ -170,6 +176,8 @@ export default function BiographyViewPage() {
       checkBiographyPdfReadiness(resolvedId).then((result) => {
         setPdfReady(result.ok);
       });
+
+      getCoverPhotoDisplayUrl(resolvedId).then(setCoverImageUrl);
 
       // Section timestamps come from the RPC result for token-accessed biographies.
       // For public (no-token) biographies, authenticated users see their own sections
@@ -237,15 +245,6 @@ export default function BiographyViewPage() {
     created_at: biography!.created_at,
   });
 
-  const getSectionsForExport = () =>
-    Object.entries(biography!.content)
-      .filter(([, sectionData]) => sectionData?.text?.trim())
-      .map(([key, sectionData]) => ({
-        key,
-        title: t.sectionTitles[key as keyof typeof t.sectionTitles] || key,
-        content: sectionData.text,
-      }));
-
   const handleExportPDF = async () => {
     if (!biography || pdfLoading) return;
     setPdfLoading(true);
@@ -273,16 +272,6 @@ export default function BiographyViewPage() {
     } finally {
       setPdfLoading(false);
     }
-  };
-
-  const handleExportRTF = async () => {
-    if (!biography) return;
-    await exportAsRTF(getBiographyExportData(), getSectionsForExport(), false);
-  };
-
-  const handleExportTXT = async () => {
-    if (!biography) return;
-    await exportAsPlainText(getBiographyExportData(), getSectionsForExport(), false);
   };
 
   const handleReportClick = () => {
@@ -345,39 +334,58 @@ export default function BiographyViewPage() {
             </h1>
           </div>
           <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleExportPDF}
-              disabled={pdfLoading || pdfReady === false}
-              className="gap-2"
-              title={pdfReady === false ? (t.exportDialog.noCoverPhotoWarning ?? 'PDF not ready') : undefined}
-            >
-              {pdfLoading ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : (
-                <FileDown className="h-4 w-4" />
+            <div className="flex flex-col items-end gap-0.5">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleExportPDF}
+                disabled={pdfLoading || pdfReady === false}
+                className="gap-2"
+                title={
+                  pdfReady === false
+                    ? (t.exportDialog.noCoverPhotoWarning ?? 'Add cover photo and author name to enable PDF.')
+                    : undefined
+                }
+              >
+                {pdfLoading ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <FileDown className="h-4 w-4" />
+                )}
+                <span className="hidden sm:inline">{t.view.downloadPdf}</span>
+              </Button>
+              {pdfReady === false && (
+                <span className="hidden sm:block text-[10px] text-muted-foreground max-w-[140px] text-right leading-tight">
+                  {t.exportDialog.noCoverPhotoWarning}
+                </span>
               )}
-              <span className="hidden sm:inline">{t.view.downloadPdf}</span>
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleExportRTF}
-              className="gap-2"
-            >
-              <FileDown className="h-4 w-4" />
-              <span className="hidden sm:inline">{t.view.downloadRtf}</span>
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleExportTXT}
-              className="gap-2"
-            >
-              <FileDown className="h-4 w-4" />
-              <span className="hidden sm:inline">{t.view.downloadTxt}</span>
-            </Button>
+            </div>
+            {biography.export_txt_url && (
+              <Button
+                variant="outline"
+                size="sm"
+                asChild
+                className="gap-2"
+              >
+                <a href={biography.export_txt_url} download>
+                  <FileDown className="h-4 w-4" />
+                  <span className="hidden sm:inline">{t.view.downloadTxt}</span>
+                </a>
+              </Button>
+            )}
+            {biography.export_docx_url && (
+              <Button
+                variant="outline"
+                size="sm"
+                asChild
+                className="gap-2"
+              >
+                <a href={biography.export_docx_url} download>
+                  <FileDown className="h-4 w-4" />
+                  <span className="hidden sm:inline">{t.view.downloadDocx}</span>
+                </a>
+              </Button>
+            )}
             <Button
               variant="ghost"
               size="sm"
@@ -393,6 +401,17 @@ export default function BiographyViewPage() {
       </header>
 
       <main className="max-w-4xl mx-auto px-4 sm:px-6 py-8">
+        {coverImageUrl && (
+          <div className="mb-10 rounded-lg overflow-hidden border border-border bg-muted max-h-[min(420px,50vh)]">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={coverImageUrl}
+              alt=""
+              className="w-full h-auto max-h-[min(420px,50vh)] object-cover"
+            />
+          </div>
+        )}
+
         {biography.is_frozen && (
           <div className="mb-4 flex items-center gap-2 text-sm text-muted-foreground bg-muted/40 border border-border/50 rounded-lg px-4 py-2.5">
             <Archive className="h-4 w-4 shrink-0" />
@@ -401,7 +420,7 @@ export default function BiographyViewPage() {
         )}
 
         {inReview && reviewEndDate && (
-          <div className="mb-6 flex items-start gap-2.5 text-sm bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 text-amber-800 dark:text-amber-200 rounded-lg px-4 py-3">
+          <div className="mb-6 flex items-start gap-2.5 text-sm bg-brand-mustardLight/45 border border-brand-mustardDark/40 text-brand-ink dark:bg-brand-mustardDark/20 dark:border-brand-mustardDark/50 dark:text-brand-beigeLight rounded-lg px-4 py-3">
             <Info className="h-4 w-4 shrink-0 mt-0.5" />
             <span>
               {t.view.reviewBannerPrefix}{' '}
@@ -424,6 +443,14 @@ export default function BiographyViewPage() {
                 {t.view.publishedOn} {formatDate(biography.published_at)}
               </p>
             )}
+            {biography.status === 'published' &&
+              !biography.export_txt_url &&
+              !biography.export_docx_url && (
+                <p className="text-sm text-muted-foreground mt-3 not-prose">
+                  Word and plain-text downloads are not available for this biography. You can still use
+                  the PDF button above if your cover and author details are complete.
+                </p>
+              )}
           </div>
 
           {orderedSections.map((section) => {

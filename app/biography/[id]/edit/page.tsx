@@ -1,11 +1,12 @@
 'use client';
 
 import { useEffect, useState, useCallback, useRef } from 'react';
-import { useRouter, useParams } from 'next/navigation';
+import { useRouter, useParams, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/lib/auth-context';
 import { supabase } from '@/lib/supabase';
 import { EditorTopBar } from '@/components/editor/editor-top-bar';
 import { SectionSidebar } from '@/components/editor/section-sidebar';
+import { ModeSwitchWarningDialog } from '@/components/editor/ModeSwitchWarningDialog';
 import { SectionEditor } from '@/components/editor/section-editor';
 import { GlobalNotesPanel } from '@/components/editor/GlobalNotesPanel';
 import { AiSuggestionsPanel } from '@/components/editor/ai-suggestions-panel';
@@ -41,7 +42,7 @@ import { toast } from 'sonner';
 import { AiUsageIndicator } from '@/components/editor/ai-usage-indicator';
 import { recommendNextSection, type SectionRecommendation } from '@/lib/ai/next-section-recommender';
 import type { Biography } from '@/lib/biographies';
-import { generateBiographyPDF, checkBiographyPdfReadiness, checkPdfPreflight } from '@/lib/pdf-export';
+import { generateBiographyPDF, checkBiographyPdfReadiness, checkPdfPreflight, getPdfReadinessMessage } from '@/lib/pdf-export';
 import { AdvancedExportDialog } from '@/components/export/AdvancedExportDialog';
 import { useTranslation } from '@/lib/i18n/i18n-context';
 import { Loader as Loader2, Menu, X, Sparkles, Snowflake as SnowflakeIcon, Send as SendIcon, TriangleAlert, Lock } from 'lucide-react';
@@ -61,6 +62,7 @@ export default function BiographyEditorPage() {
   const { user, session, loading: authLoading } = useAuth();
   const router = useRouter();
   const params = useParams();
+  const searchParams = useSearchParams();
   const { t, language } = useTranslation();
   const id = params.id as string;
 
@@ -80,7 +82,7 @@ export default function BiographyEditorPage() {
   const [showMobileSidebar, setShowMobileSidebar] = useState(false);
   const [showGlobalNotesPanel, setShowGlobalNotesPanel] = useState(false);
   const [showPhotosPanel, setShowPhotosPanel] = useState(false);
-  const [showSidebarImport, setShowSidebarImport] = useState(false);
+  const [showSidebarImport, setShowSidebarImport] = useState(() => searchParams?.get('import') === '1');
   const [globalNotesCount, setGlobalNotesCount] = useState(0);
   const [globalTodosCount, setGlobalTodosCount] = useState(0);
   const [editorMode, setEditorMode] = useState<'editor' | 'conversation'>('editor');
@@ -106,11 +108,16 @@ export default function BiographyEditorPage() {
   const [submitReadinessError, setSubmitReadinessError] = useState<string | null>(null);
   const [submitPreflightError, setSubmitPreflightError] = useState<string | null>(null);
   const [isPreflightChecking, setIsPreflightChecking] = useState(false);
+  const [aiScreeningResult, setAiScreeningResult] = useState<
+    'passed' | 'flagged' | 'pending' | 'ai_error' | 'parse_error' | null
+  >(null);
   const [aiLimitError, setAiLimitError] = useState<AiLimitError | null>(null);
   const [aiUsageRefresh, setAiUsageRefresh] = useState(0);
   const [isFrozen, setIsFrozen] = useState(false);
   const [biographyMode, setBiographyMode] = useState<'sections' | 'freeflow'>('sections');
   const [contentFreeflow, setContentFreeflow] = useState<string>('');
+  const [pendingModeSwitch, setPendingModeSwitch] = useState<'sections' | 'freeflow' | null>(null);
+  const [authorName, setAuthorName] = useState<string>('');
   const [biographyType, setBiographyType] = useState<'autobiography' | 'memorial'>('autobiography');
   const [slug, setSlug] = useState<string | null>(null);
 const [isPublishing, setIsPublishing] = useState(false);
@@ -146,6 +153,7 @@ const [isPublishing, setIsPublishing] = useState(false);
   const biographyModeRef = useRef(biographyMode);
   const contentFreeflowRef = useRef(contentFreeflow);
   const slugRef = useRef(slug);
+  const authorNameRef = useRef(authorName);
 
   useEffect(() => {
     contentRef.current = content;
@@ -166,6 +174,10 @@ const [isPublishing, setIsPublishing] = useState(false);
   useEffect(() => {
     slugRef.current = slug;
   }, [slug]);
+
+  useEffect(() => {
+    authorNameRef.current = authorName;
+  }, [authorName]);
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -195,10 +207,26 @@ const [isPublishing, setIsPublishing] = useState(false);
         setBiographyMode((data.biography_mode as 'sections' | 'freeflow') || 'sections');
         setContentFreeflow(data.content_freeflow || '');
         setBiographyType((data.biography_type as 'autobiography' | 'memorial') || 'autobiography');
+
+        let resolvedAuthorName = data.author_name ?? '';
+        if (!resolvedAuthorName.trim() && user) {
+          const fallback =
+            (user.user_metadata?.name as string | undefined)?.trim() ||
+            (user.email ?? '').split('@')[0].trim();
+          if (fallback) {
+            resolvedAuthorName = fallback;
+            await supabase
+              .from('biographies')
+              .update({ author_name: resolvedAuthorName })
+              .eq('id', id);
+          }
+        }
+        setAuthorName(resolvedAuthorName);
+
         if (data.slug) {
           setSlug(data.slug);
         } else {
-          const authorPart = data.author_name ?? '';
+          const authorPart = resolvedAuthorName;
           const combined = [authorPart, data.title].filter(Boolean).join(' ');
           const autoSlug = combined
             .toLowerCase()
@@ -257,6 +285,7 @@ const [isPublishing, setIsPublishing] = useState(false);
         content: contentRef.current,
         biography_mode: biographyModeRef.current,
         content_freeflow: contentFreeflowRef.current,
+        author_name: authorNameRef.current,
       })
       .eq('id', id);
     if (error) {
@@ -310,7 +339,7 @@ const [isPublishing, setIsPublishing] = useState(false);
       setTitle(newTitle);
       markDirty();
       if (!slugRef.current) {
-        const authorPart = biography?.author_name ?? '';
+        const authorPart = authorNameRef.current;
         const combined = [authorPart, newTitle].filter(Boolean).join(' ');
         const newSlug = generateSlugFromTitle(combined);
         if (newSlug) {
@@ -324,7 +353,15 @@ const [isPublishing, setIsPublishing] = useState(false);
         }
       }
     },
-    [id, markDirty, biography]
+    [id, markDirty]
+  );
+
+  const handleAuthorNameChange = useCallback(
+    (newName: string) => {
+      setAuthorName(newName);
+      markDirty();
+    },
+    [markDirty]
   );
 
   const handlePrivacyChange = useCallback(
@@ -348,6 +385,43 @@ const [isPublishing, setIsPublishing] = useState(false);
     },
     [markDirty]
   );
+
+  const handleModeChangeRequest = useCallback(
+    (mode: 'sections' | 'freeflow') => {
+      if (mode === biographyMode) return;
+      const hasContent = biographyMode === 'freeflow'
+        ? (contentFreeflowRef.current?.trim().length ?? 0) > 0
+        : Object.values(contentRef.current).some((s: any) => s?.text?.trim().length > 0);
+      if (!hasContent) {
+        setBiographyMode(mode);
+        markDirty();
+        return;
+      }
+      setPendingModeSwitch(mode);
+    },
+    [biographyMode, markDirty]
+  );
+
+  const handleModeSwitchConfirm = useCallback(async () => {
+    if (!pendingModeSwitch || !id) return;
+    const targetMode = pendingModeSwitch;
+    if (biographyMode === 'freeflow') {
+      await supabase.from('biographies').update({ content_freeflow: null }).eq('id', id);
+      setContentFreeflow('');
+      contentFreeflowRef.current = '';
+    } else {
+      await supabase.from('biography_sections').delete().eq('biography_id', id);
+      await supabase.from('biographies').update({ content: {} }).eq('id', id);
+      setContent(getEmptyContent());
+      contentRef.current = getEmptyContent();
+      setCompletedSections([]);
+    }
+    await supabase.from('biographies').update({ biography_mode: targetMode }).eq('id', id);
+    setBiographyMode(targetMode);
+    biographyModeRef.current = targetMode;
+    dirtyRef.current = false;
+    setPendingModeSwitch(null);
+  }, [pendingModeSwitch, biographyMode, id]);
 
   const handleFreeflowChange = useCallback(
     (value: string) => {
@@ -1017,48 +1091,68 @@ const [isPublishing, setIsPublishing] = useState(false);
     try {
       const readiness = await checkBiographyPdfReadiness(id, true);
       if (!readiness.ok) {
-        const issueMessages: string[] = readiness.issues.map((issue) => {
-          if (issue === 'missing-cover') return t.exportDialog.noCoverPhotoWarning ?? 'Cover photo is required.';
-          if (issue === 'cover-unreachable') return 'Cover photo cannot be reached. Please re-upload.';
-          if (issue === 'missing-title') return 'A biography title is required.';
-          if (issue === 'missing-author') return 'An author name is required.';
-          if (issue === 'missing-content') return 'At least one section must have content.';
-          if (issue === 'missing-mode') return 'Biography mode is not set.';
-          return issue;
-        });
+        const issueMessages = readiness.issues.map((issue) =>
+          getPdfReadinessMessage(issue, t.exportDialog.noCoverPhotoWarning)
+        );
         setSubmitReadinessError(issueMessages.join(' '));
-        setIsSubmittingForReview(false);
         return;
       }
 
-      const { error } = await supabase
+      const { error: statusError } = await supabase
         .from('biographies')
-        .update({ status: 'under_review' })
+        .update({ status: 'under_review', ai_screening_status: 'pending' })
         .eq('id', id);
 
-      if (!error) {
-        setBiographyStatus('under_review');
-        setShowSubmitForReviewDialog(false);
-        setRevisionPassages([]);
-        setRevisionNote(null);
-        setRevisionBannerDismissed(false);
-        supabase.auth.getSession().then(({ data: { session } }) => {
-          fetch('/api/review/submit', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              ...(session?.access_token ? { Authorization: `Bearer ${session.access_token}` } : {}),
-            },
-            body: JSON.stringify({ biographyId: id }),
-          }).catch((err) => console.error('AI review trigger failed:', err));
+      if (statusError) {
+        setSubmitReadinessError(t.toast.publishUnderReview);
+        return;
+      }
+
+      setBiographyStatus('under_review');
+      setShowSubmitForReviewDialog(false);
+      setRevisionPassages([]);
+      setRevisionNote(null);
+      setRevisionBannerDismissed(false);
+      setAiScreeningResult('pending');
+
+      const { data: { session } } = await supabase.auth.getSession();
+      let apiResult: {
+        result?: string;
+        error?: string;
+        screeningDetail?: 'flagged' | 'ai_error' | 'parse_error';
+      } = {};
+      try {
+        const res = await fetch('/api/review/submit', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            ...(session?.access_token ? { Authorization: `Bearer ${session.access_token}` } : {}),
+          },
+          body: JSON.stringify({ biographyId: id }),
         });
+        apiResult = await res.json();
+      } catch (fetchErr) {
+        console.error('AI review call failed:', fetchErr);
+        apiResult = { result: 'under_review', screeningDetail: 'ai_error' };
+      }
+
+      if (apiResult.result === 'published') {
+        setBiographyStatus('published');
+        setAiScreeningResult('passed');
+      } else if (apiResult.result === 'under_review') {
+        const d = apiResult.screeningDetail;
+        if (d === 'ai_error' || d === 'parse_error') {
+          setAiScreeningResult(d);
+        } else {
+          setAiScreeningResult('flagged');
+        }
       }
     } catch (err) {
       console.error('Error submitting for review:', err);
     } finally {
       setIsSubmittingForReview(false);
     }
-  }, [id, user]);
+  }, [id, user, t]);
 
   const handleOpenSubmitDialog = useCallback(async () => {
     setSubmitPreflightError(null);
@@ -1114,29 +1208,179 @@ const [isPublishing, setIsPublishing] = useState(false);
         onTitleChange={handleTitleChange}
         onPrivacyChange={handlePrivacyChange}
         isFrozen={isFrozen}
+        authorName={authorName}
+        onAuthorNameChange={handleAuthorNameChange}
       />
 
       {isFrozen && (
-        <div className="shrink-0 bg-blue-50 dark:bg-blue-950/40 border-b border-blue-200 dark:border-blue-800 px-4 py-2 flex items-center gap-3">
-          <SnowflakeIcon className="h-4 w-4 text-blue-600 dark:text-blue-400 shrink-0" />
-          <p className="text-xs text-blue-700 dark:text-blue-300">
+        <div className="shrink-0 bg-brand-blue/25 border-b border-brand-blue/50 px-4 py-2 flex items-center gap-3 dark:bg-brand-blue/15 dark:border-brand-blue/40">
+          <SnowflakeIcon className="h-4 w-4 text-brand-ink dark:text-brand-beigeLight shrink-0" />
+          <p className="text-xs text-brand-ink dark:text-brand-beigeLight">
             {t.admin.frozenBannerMessage}
           </p>
         </div>
       )}
 
+      {aiScreeningResult === 'pending' && biographyStatus === 'under_review' && (
+        <div className="shrink-0 bg-brand-blue/25 border-b border-brand-blue/50 px-4 py-3 dark:bg-brand-blue/15 dark:border-brand-blue/40">
+          <div className="max-w-5xl mx-auto flex items-center gap-3">
+            <Loader2 className="h-4 w-4 text-brand-ink dark:text-brand-beigeLight animate-spin shrink-0" />
+            <p className="text-sm text-brand-ink dark:text-brand-beigeLight">
+              {language === 'it' ? 'Analisi automatica del testo in corso…' :
+               language === 'fr' ? 'Analyse automatique du texte en cours…' :
+               language === 'de' ? 'Automatische Textanalyse läuft…' :
+               'Running automatic text screening…'}
+            </p>
+          </div>
+        </div>
+      )}
+
+      {aiScreeningResult === 'passed' && biographyStatus === 'published' && (
+        <div className="shrink-0 bg-brand-greenLight/45 border-b border-brand-greenLight px-4 py-3 dark:bg-brand-greenLight/15 dark:border-brand-greenDark/40">
+          <div className="max-w-5xl mx-auto flex items-start gap-3">
+            <Sparkles className="h-4 w-4 text-brand-greenDark dark:text-brand-greenLight shrink-0 mt-0.5" />
+            <div className="flex-1">
+              <p className="text-sm font-medium text-brand-greenDark dark:text-brand-greenLight">
+                {language === 'it' ? 'Il testo ha superato la revisione automatica.' :
+                 language === 'fr' ? 'Le texte a passé la révision automatique.' :
+                 language === 'de' ? 'Der Text hat die automatische Prüfung bestanden.' :
+                 'Your text passed the automatic screening.'}
+              </p>
+              <p className="text-xs text-brand-greenDark/90 dark:text-brand-greenLight/90 mt-1">
+                {language === 'it' ? 'Ora puoi generare la bozza PDF dalla finestra di esportazione.' :
+                 language === 'fr' ? 'Vous pouvez maintenant générer le brouillon PDF depuis la fenêtre d\'exportation.' :
+                 language === 'de' ? 'Sie können jetzt den PDF-Entwurf im Export-Dialog erstellen.' :
+                 'You can now generate the PDF draft from the export dialog.'}
+              </p>
+            </div>
+            <Button
+              size="sm"
+              variant="outline"
+              className="shrink-0 h-8 text-xs border-brand-greenDark/50 text-brand-greenDark hover:bg-brand-greenLight/50 dark:border-brand-greenLight dark:text-brand-greenLight"
+              onClick={() => setShowExportDialog(true)}
+            >
+              {language === 'it' ? 'Genera PDF' :
+               language === 'fr' ? 'Générer le PDF' :
+               language === 'de' ? 'PDF erstellen' :
+               'Generate PDF'}
+            </Button>
+          </div>
+        </div>
+      )}
+
+      {aiScreeningResult === 'flagged' && biographyStatus === 'under_review' && (
+        <div className="shrink-0 bg-brand-mustardLight/45 border-b border-brand-mustardDark/40 px-4 py-3 dark:bg-brand-mustardDark/20 dark:border-brand-mustardDark/50">
+          <div className="max-w-5xl mx-auto flex items-start gap-3">
+            <TriangleAlert className="h-4 w-4 text-brand-mustardDark dark:text-brand-mustardLight shrink-0 mt-0.5" />
+            <div>
+              <p className="text-sm font-medium text-brand-ink dark:text-brand-beigeLight">
+                {language === 'it' ? 'Alcuni passaggi richiedono revisione umana.' :
+                 language === 'fr' ? 'Certains passages nécessitent une révision humaine.' :
+                 language === 'de' ? 'Einige Passagen erfordern eine manuelle Prüfung.' :
+                 'Some passages require human review before proceeding.'}
+              </p>
+              <p className="text-xs text-brand-ink/80 dark:text-brand-beigeLight/85 mt-1">
+                {language === 'it' ? 'Riceverai una notifica quando la revisione sarà completata.' :
+                 language === 'fr' ? 'Vous serez notifié lorsque la révision sera terminée.' :
+                 language === 'de' ? 'Sie werden benachrichtigt, wenn die Überprüfung abgeschlossen ist.' :
+                 'You will be notified when the review is complete.'}
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {(aiScreeningResult === 'ai_error' || aiScreeningResult === 'parse_error') &&
+        biographyStatus === 'under_review' && (
+          <div className="shrink-0 bg-brand-wine/10 border-b border-brand-wine/35 px-4 py-3 dark:bg-brand-wine/20 dark:border-brand-wine/45">
+            <div className="max-w-5xl mx-auto flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
+              <div className="flex items-start gap-3">
+                <TriangleAlert className="h-4 w-4 text-brand-wine dark:text-brand-beigeLight shrink-0 mt-0.5" />
+                <div>
+                  <p className="text-sm font-medium text-brand-wineDark dark:text-brand-beigeLight">
+                    {aiScreeningResult === 'parse_error'
+                      ? language === 'it'
+                        ? 'La risposta dell’analisi automatica non è stata letta correttamente. È stata avviata una revisione umana.'
+                        : language === 'fr'
+                          ? 'La réponse de l’analyse automatique n’a pas pu être lue. Une révision humaine a été demandée.'
+                          : language === 'de'
+                            ? 'Die automatische Analyse konnte nicht ausgewertet werden. Eine manuelle Prüfung wurde eingeleitet.'
+                            : 'Automatic screening returned an unreadable response. Your biography was sent for human review.'
+                      : language === 'it'
+                        ? 'L’analisi automatica non è riuscita (servizio temporaneamente non disponibile). È stata avviata una revisione umana.'
+                        : language === 'fr'
+                          ? 'L’analyse automatique a échoué (service temporairement indisponible). Une révision humaine a été demandée.'
+                          : language === 'de'
+                            ? 'Die automatische Analyse ist fehlgeschlagen (Dienst vorübergehend nicht verfügbar). Eine manuelle Prüfung wurde eingeleitet.'
+                            : 'Automatic screening could not complete (service issue). Your biography was sent for human review.'}
+                  </p>
+                  <p className="text-xs text-brand-wineDark/90 dark:text-brand-beigeLight/85 mt-1">
+                    {language === 'it'
+                      ? 'Puoi riprovare l’analisi automatica tra qualche minuto, oppure attendere il moderatore.'
+                      : language === 'fr'
+                        ? 'Vous pouvez réessayer dans quelques minutes ou attendre le modérateur.'
+                        : language === 'de'
+                          ? 'Sie können es in einigen Minuten erneut versuchen oder auf die Moderation warten.'
+                          : 'You can retry automatic screening in a few minutes, or wait for a moderator.'}
+                  </p>
+                </div>
+              </div>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="shrink-0 border-brand-wine/50 text-brand-wineDark hover:bg-brand-wine/10 dark:border-brand-beigeLight/40 dark:text-brand-beigeLight"
+                disabled={isSubmittingForReview}
+                onClick={() => void handleSubmitForReview()}
+              >
+                {isSubmittingForReview ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : language === 'it' ? (
+                  'Riprova analisi'
+                ) : language === 'fr' ? (
+                  'Réessayer'
+                ) : language === 'de' ? (
+                  'Erneut versuchen'
+                ) : (
+                  'Retry screening'
+                )}
+              </Button>
+            </div>
+          </div>
+        )}
+
+      {editorMode === 'editor' &&
+        biographyMode === 'sections' &&
+        biographyStatus === 'draft' &&
+        !allSectionsComplete && (
+          <div className="shrink-0 bg-brand-beigeBg/80 border-b border-brand-mustardDark/25 px-4 py-2.5 dark:bg-brand-ink/5 dark:border-brand-mustardDark/30">
+            <div className="max-w-5xl mx-auto flex items-start gap-2 text-sm text-brand-ink/80 dark:text-brand-beigeLight/85">
+              <TriangleAlert className="h-4 w-4 shrink-0 mt-0.5 text-brand-mustardDark dark:text-brand-mustardLight" />
+              <p>
+                {language === 'it'
+                  ? 'Per inviare la biografia in revisione, completa tutte le sezioni e segnale come complete dalla barra laterale.'
+                  : language === 'fr'
+                    ? 'Pour soumettre, terminez toutes les sections et marquez-les comme complètes dans la barre latérale.'
+                    : language === 'de'
+                      ? 'Zum Einreichen alle Abschnitte ausfüllen und in der Seitenleiste als erledigt markieren.'
+                      : 'To submit for review, finish every section and mark each as complete in the sidebar.'}
+              </p>
+            </div>
+          </div>
+        )}
+
       {isRevisionMode && (
-        <div className="shrink-0 border-b border-amber-200 dark:border-amber-800 bg-amber-50 dark:bg-amber-950/30 px-4 py-3">
+        <div className="shrink-0 border-b border-brand-mustardDark/40 bg-brand-mustardLight/45 px-4 py-3 dark:border-brand-mustardDark/50 dark:bg-brand-mustardDark/20">
           <div className="max-w-5xl mx-auto">
             <div className="flex items-start gap-3">
-              <TriangleAlert className="h-4 w-4 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
+              <TriangleAlert className="h-4 w-4 text-brand-mustardDark dark:text-brand-mustardLight shrink-0 mt-0.5" />
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-amber-800 dark:text-amber-300 mb-2">
+                <p className="text-sm font-medium text-brand-ink dark:text-brand-beigeLight mb-2">
                   {t.editor.revisionRequired}
                 </p>
                 <ul className="space-y-1 mb-2">
                   {revisionPassages.map((p, i) => (
-                    <li key={i} className="flex items-start gap-2 text-xs text-amber-700 dark:text-amber-400">
+                    <li key={i} className="flex items-start gap-2 text-xs text-brand-ink/85 dark:text-brand-beigeLight/85">
                       <Lock className="h-3 w-3 shrink-0 mt-0.5" />
                       <span>
                         <span className="font-medium">{p.section_key}</span>
@@ -1147,7 +1391,7 @@ const [isPublishing, setIsPublishing] = useState(false);
                   ))}
                 </ul>
                 {revisionNote && (
-                  <p className="text-xs text-amber-700 dark:text-amber-400">
+                  <p className="text-xs text-brand-ink/85 dark:text-brand-beigeLight/85">
                     <span className="font-medium">{t.editor.revisionReviewerNote}:</span>{' '}
                     {revisionNote}
                   </p>
@@ -1155,7 +1399,7 @@ const [isPublishing, setIsPublishing] = useState(false);
               </div>
               <button
                 onClick={() => setRevisionBannerDismissed(true)}
-                className="shrink-0 text-xs text-amber-600 dark:text-amber-400 hover:text-amber-800 dark:hover:text-amber-200 transition-colors underline"
+                className="shrink-0 text-xs text-brand-mustardDark dark:text-brand-mustardLight hover:text-brand-ink dark:hover:text-brand-beigeLight transition-colors underline"
               >
                 {t.editor.revisionDismiss}
               </button>
@@ -1205,13 +1449,18 @@ const [isPublishing, setIsPublishing] = useState(false);
             onToggleNotesPanel={() => setShowGlobalNotesPanel(!showGlobalNotesPanel)}
             onTogglePhotosPanel={() => setShowPhotosPanel(!showPhotosPanel)}
             onToggleImportText={() => setShowSidebarImport(true)}
-            onToggleExportText={() => setShowExportDialog(true)}
+            onToggleExportText={() => {
+              if (biographyStatus === 'under_review') return;
+              setShowExportDialog(true);
+            }}
+            exportDisabled={biographyStatus === 'under_review'}
             showNotesPanel={showGlobalNotesPanel}
             showPhotosPanel={showPhotosPanel}
             completedSections={completedSections}
             biographyMode={biographyMode}
             contentFreeflow={contentFreeflow}
             onModeChange={handleModeChange}
+            onModeChangeRequest={handleModeChangeRequest}
             onFreeflowChange={handleFreeflowChange}
             biographyId={id}
             userId={user.id}
@@ -1319,7 +1568,11 @@ const [isPublishing, setIsPublishing] = useState(false);
                   onToggleNotes={() => setShowGlobalNotesPanel((v) => !v)}
                   openImportDialog={showSidebarImport}
                   onImportDialogOpenChange={(v) => { if (!v) setShowSidebarImport(false); }}
-                  isPublished={(biographyStatus as string) === 'published' || isFrozen}
+                  isPublished={
+                    (biographyStatus as string) === 'published' ||
+                    isFrozen ||
+                    (biographyStatus as string) === 'under_review'
+                  }
                   contentFreeflow={contentFreeflow}
                   biographyMode="freeflow"
                   onImportedToFreeflow={(newContent) => {
@@ -1350,7 +1603,12 @@ const [isPublishing, setIsPublishing] = useState(false);
                   onToggleNotes={() => setShowGlobalNotesPanel((v) => !v)}
                   openImportDialog={showSidebarImport}
                   onImportDialogOpenChange={(v) => { if (!v) setShowSidebarImport(false); }}
-                  isPublished={(biographyStatus as string) === 'published' || isFrozen || isActiveSectionRevisionLocked}
+                  isPublished={
+                    (biographyStatus as string) === 'published' ||
+                    isFrozen ||
+                    isActiveSectionRevisionLocked ||
+                    (biographyStatus as string) === 'under_review'
+                  }
                   contentFreeflow={contentFreeflow}
                   biographyMode="sections"
                   onImportedToSection={(sectionKey, newContent) => {
@@ -1499,7 +1757,7 @@ const [isPublishing, setIsPublishing] = useState(false);
           biography={{
             id,
             title: titleRef.current,
-            author_name: biography.author_name,
+            author_name: authorNameRef.current,
             content: contentRef.current,
             content_freeflow: contentFreeflowRef.current,
             biography_mode: biographyModeRef.current,
@@ -1507,8 +1765,10 @@ const [isPublishing, setIsPublishing] = useState(false);
             final_version: finalVersion,
             status: biographyStatus,
             created_at: biography.created_at,
+            content_language: biography.content_language ?? language,
           }}
           isPublished={biographyStatus === 'published'}
+          biographyStatus={biographyStatus}
         />
       )}
 
@@ -1600,6 +1860,31 @@ const [isPublishing, setIsPublishing] = useState(false);
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {pendingModeSwitch && (
+        <ModeSwitchWarningDialog
+          open={pendingModeSwitch !== null}
+          fromMode={biographyMode}
+          toMode={pendingModeSwitch}
+          biography={{
+            title,
+            author_name: authorNameRef.current,
+            created_at: biography?.created_at ?? new Date().toISOString(),
+            biography_mode: biographyMode,
+            content,
+            content_freeflow: contentFreeflow,
+            sections: BIOGRAPHY_SECTIONS
+              .filter((s) => content[s.key]?.text?.trim())
+              .map((s) => ({
+                key: s.key,
+                title: t.sectionTitles[s.key as keyof typeof t.sectionTitles] || s.title,
+                content: content[s.key]?.text ?? '',
+              })),
+          }}
+          onConfirm={handleModeSwitchConfirm}
+          onCancel={() => setPendingModeSwitch(null)}
+        />
+      )}
     </div>
   );
 }

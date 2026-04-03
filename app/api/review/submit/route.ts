@@ -1,9 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
+import { buildBiographyTxtContent, buildBiographyDocxBuffer } from '@/lib/export-server';
 
 const INFOMANIAK_ENDPOINT = process.env.INFOMANIAK_AI_ENDPOINT ?? '';
 const INFOMANIAK_TOKEN = process.env.INFOMANIAK_AI_TOKEN ?? '';
-const INFOMANIAK_MODEL = process.env.INFOMANIAK_AI_MODEL ?? 'mistral3';
+const INFOMANIAK_MODEL =
+  process.env.INFOMANIAK_AI_MODEL ?? 'swiss-ai/Apertus-70B-Instruct-2509';
 
 const MAX_CONTENT_CHARS = 6000;
 const AI_TIMEOUT_MS = 30_000;
@@ -27,7 +29,6 @@ const REVIEW_ASSIGNED_MESSAGES: Record<string, string> = {
   de: 'Eine Biografie wurde Ihnen zur Überprüfung zugewiesen.',
 };
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 type AnyClient = SupabaseClient<any, any, any>;
 
 interface RejectedPassage {
@@ -237,18 +238,53 @@ async function runAiScreening(biographyText: string): Promise<ScreeningResult> {
   }
 }
 
-async function pickReviewer(supabase: AnyClient): Promise<string | null> {
-  const { data: candidates } = await supabase
-    .from('profiles')
-    .select('id')
-    .in('role', ['reviewer', 'admin']);
-
-  if (!candidates || (candidates as any[]).length === 0) return null;
-
+async function pickReviewer(supabase: AnyClient, contentLanguage?: string, preferredReviewerId?: string | null): Promise<string | null> {
   const activeStatuses = ['unassigned', 'assigned', 'in_review'];
 
+  if (preferredReviewerId) {
+    const { data: preferred } = await supabase
+      .from('profiles')
+      .select('id, role')
+      .eq('id', preferredReviewerId)
+      .in('role', ['reviewer', 'admin'])
+      .maybeSingle();
+    if (preferred) return preferredReviewerId;
+  }
+
+  let candidates: { id: string }[] | null = null;
+
+  if (contentLanguage) {
+    const { data: langRows } = await supabase
+      .from('reviewer_languages')
+      .select('user_id')
+      .eq('language_code', contentLanguage);
+
+    if (langRows && (langRows as any[]).length > 0) {
+      const langUserIds = (langRows as any[]).map((r: any) => r.user_id);
+      const { data: langReviewers } = await supabase
+        .from('profiles')
+        .select('id')
+        .in('id', langUserIds)
+        .in('role', ['reviewer', 'admin']);
+
+      if (langReviewers && (langReviewers as any[]).length > 0) {
+        candidates = (langReviewers as any[]).map((r: any) => ({ id: r.id }));
+      }
+    }
+  }
+
+  if (!candidates || candidates.length === 0) {
+    const { data: allReviewers } = await supabase
+      .from('profiles')
+      .select('id')
+      .in('role', ['reviewer', 'admin']);
+    candidates = (allReviewers as { id: string }[] | null) ?? [];
+  }
+
+  if (!candidates || candidates.length === 0) return null;
+
   const loads = await Promise.all(
-    (candidates as any[]).map(async (c: { id: string }) => {
+    candidates.map(async (c: { id: string }) => {
       const { count } = await supabase
         .from('moderation_reports')
         .select('id', { count: 'exact', head: true })
@@ -277,6 +313,82 @@ async function pickReviewer(supabase: AnyClient): Promise<string | null> {
   });
 
   return loads[0].id;
+}
+
+async function generateAndStoreExports(
+  supabase: AnyClient,
+  biographyId: string
+): Promise<void> {
+  try {
+    const { data: bio } = await supabase
+      .from('biographies')
+      .select('title, author_name, created_at, content_freeflow, biography_mode')
+      .eq('id', biographyId)
+      .maybeSingle();
+
+    if (!bio) return;
+
+    const { data: sectionRows } = await supabase
+      .from('biography_sections')
+      .select('section_key, content')
+      .eq('biography_id', biographyId)
+      .not('content', 'is', null)
+      .order('section_key', { ascending: true });
+
+    const isFreeFlow = (bio as any).biography_mode === 'freeflow';
+
+    const sections: Array<{ title: string; content: string }> = isFreeFlow
+      ? [{ title: (bio as any).title, content: (bio as any).content_freeflow ?? '' }]
+      : ((sectionRows as any[]) ?? [])
+          .filter((r: any) => r.content?.trim())
+          .map((r: any) => ({ title: r.section_key, content: r.content }));
+
+    const title: string = (bio as any).title ?? '';
+    const authorName: string = (bio as any).author_name ?? '';
+    const createdAt: string = (bio as any).created_at ?? new Date().toISOString();
+
+    const txtContent = buildBiographyTxtContent(title, authorName, createdAt, sections);
+    const txtBytes = Buffer.from(txtContent, 'utf-8');
+    const docxBuffer = await buildBiographyDocxBuffer(title, authorName, createdAt, sections);
+
+    const txtPath = `biography-exports/${biographyId}/biography.txt`;
+    const docxPath = `biography-exports/${biographyId}/biography.docx`;
+
+    const [txtUpload, docxUpload] = await Promise.all([
+      supabase.storage.from('biography-exports').upload(txtPath, txtBytes, {
+        contentType: 'text/plain; charset=utf-8',
+        upsert: true,
+      }),
+      supabase.storage.from('biography-exports').upload(docxPath, docxBuffer, {
+        contentType: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+        upsert: true,
+      }),
+    ]);
+
+    if (txtUpload.error) {
+      console.error('[review/submit] TXT upload error:', txtUpload.error);
+    }
+    if (docxUpload.error) {
+      console.error('[review/submit] DOCX upload error:', docxUpload.error);
+    }
+
+    const { data: txtUrlData } = supabase.storage
+      .from('biography-exports')
+      .getPublicUrl(txtPath);
+    const { data: docxUrlData } = supabase.storage
+      .from('biography-exports')
+      .getPublicUrl(docxPath);
+
+    await supabase
+      .from('biographies')
+      .update({
+        export_txt_url: txtUrlData?.publicUrl ?? null,
+        export_docx_url: docxUrlData?.publicUrl ?? null,
+      })
+      .eq('id', biographyId);
+  } catch (err) {
+    console.error('[review/submit] Auto-export failed (non-blocking):', err);
+  }
 }
 
 export async function POST(req: NextRequest) {
@@ -357,6 +469,10 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    generateAndStoreExports(serviceClient, biographyId).catch((err) =>
+      console.error('[review/submit] generateAndStoreExports uncaught:', err)
+    );
+
     const previousRejection = await fetchPreviousRejectionReport(serviceClient, biographyId);
     const isRescreen = previousRejection !== null;
 
@@ -374,13 +490,23 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Biography not found' }, { status: 404 });
     }
 
+    const previousReviewerId: string | null = isRescreen
+      ? await (async () => {
+          const { data: prevReport } = await serviceClient
+            .from('moderation_reports')
+            .select('assigned_to')
+            .eq('id', previousRejection!.id)
+            .maybeSingle();
+          return (prevReport as any)?.assigned_to ?? null;
+        })()
+      : null;
+
     const screening = await runAiScreening(text);
 
     if (screening.aiError) {
       await serviceClient
         .from('biographies')
         .update({
-          status: 'under_review',
           ai_screening_status: screening.parseError ? 'parse_error' : 'ai_error',
         })
         .eq('id', biographyId);
@@ -402,7 +528,7 @@ export async function POST(req: NextRequest) {
         .select('id')
         .maybeSingle();
 
-      const errorReviewerId = await pickReviewer(serviceClient);
+      const errorReviewerId = await pickReviewer(serviceClient, contentLanguage, previousReviewerId);
 
       if (errorReviewerId && (errorReport as any)?.id) {
         await serviceClient
@@ -421,7 +547,12 @@ export async function POST(req: NextRequest) {
           .insert({ user_id: errorReviewerId, message: assignMsg });
       }
 
-      return NextResponse.json({ result: 'under_review', message: 'submitted for manual review', isRescreen });
+      return NextResponse.json({
+        result: 'under_review',
+        message: 'submitted for manual review',
+        isRescreen,
+        screeningDetail: screening.parseError ? 'parse_error' : 'ai_error',
+      });
     }
 
     if (screening.passages.length === 0) {
@@ -496,7 +627,7 @@ export async function POST(req: NextRequest) {
       .select('id')
       .maybeSingle();
 
-    const reviewerId = await pickReviewer(serviceClient);
+    const reviewerId = await pickReviewer(serviceClient, contentLanguage, previousReviewerId);
 
     if (reviewerId && (newReport as any)?.id) {
       await serviceClient
@@ -515,7 +646,12 @@ export async function POST(req: NextRequest) {
         .insert({ user_id: reviewerId, message: assignMsg });
     }
 
-    return NextResponse.json({ result: 'under_review', flagCount: flaggedPassages.length, isRescreen });
+    return NextResponse.json({
+      result: 'under_review',
+      flagCount: flaggedPassages.length,
+      isRescreen,
+      screeningDetail: 'flagged',
+    });
   } catch (err) {
     console.error('[review/submit] Unhandled error:', err);
     return NextResponse.json({ error: 'Internal error' }, { status: 500 });

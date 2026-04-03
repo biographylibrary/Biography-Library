@@ -82,6 +82,20 @@ const config: Config = {
         'dark-text-secondary': 'rgba(167, 169, 169, 0.7)',
         'dark-btn-primary-bg': '#1F2121',
         'dark-btn-primary-border': '#EDEBE7',
+        /** Official product palette — use for alerts, banners, callouts, badges (no random Tailwind hues). */
+        brand: {
+          ink: '#121212',
+          paper: '#FFFFFF',
+          beigeLight: '#FDFBF7',
+          beigeBg: '#ECE9E4',
+          greenLight: '#C8DFBE',
+          greenDark: '#5E685A',
+          blue: '#C4DAEB',
+          mustardLight: '#EDE4B9',
+          mustardDark: '#DDCF88',
+          wine: '#944454',
+          wineDark: '#6D323E',
+        },
       },
       keyframes: {
         'accordion-down': {

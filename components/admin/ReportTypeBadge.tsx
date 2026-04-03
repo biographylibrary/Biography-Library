@@ -16,7 +16,7 @@ const TYPE_STYLES: Record<string, string> = {
   right_to_oblivion: 'bg-[#DDCF88] text-[#121212] dark:bg-[#DDCF88]/20 dark:text-[#DDCF88]',
   impersonation: 'bg-[#DDCF88] text-[#121212] dark:bg-[#DDCF88]/20 dark:text-[#DDCF88]',
   copyright: 'bg-[#DDCF88] text-[#121212] dark:bg-[#DDCF88]/20 dark:text-[#DDCF88]',
-  other: 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-300',
+  other: 'bg-brand-beigeBg text-brand-greenDark dark:bg-brand-ink/35 dark:text-brand-beigeLight',
 };
 
 function getTypeLabel(type: ReportType, t: ReturnType<typeof useTranslation>['t']): string {

@@ -21,12 +21,15 @@ interface SectionSidebarProps {
   onTogglePhotosPanel: () => void;
   onToggleImportText: () => void;
   onToggleExportText: () => void;
+  /** When true, export control is disabled (e.g. biography under review). */
+  exportDisabled?: boolean;
   showNotesPanel: boolean;
   showPhotosPanel: boolean;
   completedSections?: string[];
   biographyMode: 'sections' | 'freeflow';
   contentFreeflow: string;
   onModeChange: (mode: 'sections' | 'freeflow') => void;
+  onModeChangeRequest?: (mode: 'sections' | 'freeflow') => void;
   onFreeflowChange: (value: string) => void;
   biographyId?: string;
   userId?: string;
@@ -43,12 +46,14 @@ export function SectionSidebar({
   onTogglePhotosPanel,
   onToggleImportText,
   onToggleExportText,
+  exportDisabled = false,
   showNotesPanel,
   showPhotosPanel,
   completedSections = [],
   biographyMode,
   contentFreeflow,
   onModeChange,
+  onModeChangeRequest,
   onFreeflowChange,
   biographyId,
   userId,
@@ -58,13 +63,21 @@ export function SectionSidebar({
 
   const totalCount = globalNotesCount + globalTodosCount;
   const isFreeflow = biographyMode === 'freeflow';
+  const handleModeClick = (mode: 'sections' | 'freeflow') => {
+    if (mode === biographyMode) return;
+    if (onModeChangeRequest) {
+      onModeChangeRequest(mode);
+    } else {
+      onModeChange(mode);
+    }
+  };
 
   return (
     <nav className="flex flex-col h-full overflow-hidden">
       <div className="px-3 py-2 border-b border-border/50 shrink-0">
         <div className="flex rounded-lg overflow-hidden border border-border/60 text-xs font-medium">
           <button
-            onClick={() => onModeChange('sections')}
+            onClick={() => handleModeClick('sections')}
             className={cn(
               'flex-1 py-1.5 px-2 transition-colors',
               biographyMode === 'sections'
@@ -75,7 +88,7 @@ export function SectionSidebar({
             {t.editor.sectionsTab}
           </button>
           <button
-            onClick={() => onModeChange('freeflow')}
+            onClick={() => handleModeClick('freeflow')}
             className={cn(
               'flex-1 py-1.5 px-2 transition-colors border-l border-border/60',
               biographyMode === 'freeflow'
@@ -186,8 +199,20 @@ export function SectionSidebar({
           <span>{t.notesAndTodos.importText}</span>
         </button>
         <button
+          type="button"
           onClick={onToggleExportText}
-          className="w-full flex items-center gap-2 px-3 py-1 lg:py-2 rounded-lg text-sm transition-colors text-muted-foreground hover:bg-muted/50 hover:text-foreground"
+          disabled={exportDisabled}
+          title={
+            exportDisabled
+              ? 'Export is unavailable while the biography is under review.'
+              : undefined
+          }
+          className={cn(
+            'w-full flex items-center gap-2 px-3 py-1 lg:py-2 rounded-lg text-sm transition-colors',
+            exportDisabled
+              ? 'text-muted-foreground/50 cursor-not-allowed'
+              : 'text-muted-foreground hover:bg-muted/50 hover:text-foreground'
+          )}
         >
           <Download className="h-4 w-4 shrink-0" />
           <span>{t.notesAndTodos.exportText}</span>

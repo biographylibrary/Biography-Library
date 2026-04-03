@@ -39,7 +39,7 @@ export default function PrivacyPolicyPage() {
             <section className="space-y-3">
               <h2 className="text-2xl font-bold text-foreground">{privacy.section1Title}</h2>
               <p className="text-muted-foreground leading-relaxed">
-                Biography Library è un'associazione svizzera senza scopo di lucro con sede legale a Lugano, Ticino, Svizzera, costituita ai sensi degli articoli 60 e seguenti del Codice Civile Svizzero.
+                Biography Library è un&apos;associazione svizzera senza scopo di lucro con sede legale a Lugano, Ticino, Svizzera, costituita ai sensi degli articoli 60 e seguenti del Codice Civile Svizzero.
               </p>
               <p className="text-muted-foreground leading-relaxed">
                 <strong className="text-foreground">Mission:</strong> {privacy.section1Mission}
@@ -75,7 +75,7 @@ export default function PrivacyPolicyPage() {
                   ))}
                 </ul>
 
-                <div className="bg-red-50 dark:bg-red-950/20 border-l-4 border-red-500 p-4 my-4">
+                <div className="bg-brand-wine/10 dark:bg-brand-wine/15 border-l-4 border-brand-wine p-4 my-4">
                   <p className="font-semibold text-foreground mb-2">{privacy.section3NeverCollect}</p>
                   <ul className="space-y-1 ml-6">
                     {privacy.section3NeverCollectList.map((item, idx) => (
@@ -152,7 +152,7 @@ export default function PrivacyPolicyPage() {
                 </ul>
               </div>
 
-              <div className="bg-red-50 dark:bg-red-950/20 border-l-4 border-red-500 p-4 my-4">
+              <div className="bg-brand-wine/10 dark:bg-brand-wine/15 border-l-4 border-brand-wine p-4 my-4">
                 <p className="font-semibold text-foreground mb-2">{privacy.section4Prohibited}</p>
                 <ul className="space-y-1 ml-6">
                   {privacy.section4ProhibitedList.map((item, idx) => (
@@ -175,7 +175,7 @@ export default function PrivacyPolicyPage() {
                     <li key={idx} className="text-muted-foreground">{item}</li>
                   ))}
                 </ul>
-                <p className="text-sm text-red-600 dark:text-red-400 mt-3">{privacy.section4FalseDeclarations}</p>
+                <p className="text-sm text-brand-wineDark dark:text-brand-mustardLight mt-3">{privacy.section4FalseDeclarations}</p>
               </div>
             </section>
 
@@ -191,7 +191,7 @@ export default function PrivacyPolicyPage() {
                 </ul>
               </div>
 
-              <div className="bg-green-50 dark:bg-green-950/20 border-l-4 border-green-500 p-4 my-4">
+              <div className="bg-brand-greenLight/30 dark:bg-brand-greenLight/10 border-l-4 border-brand-greenDark p-4 my-4">
                 <h3 className="text-xl font-semibold text-foreground mb-2">{privacy.section5Never}</h3>
                 <ul className="space-y-1 ml-6">
                   {privacy.section5NeverList.map((item, idx) => (

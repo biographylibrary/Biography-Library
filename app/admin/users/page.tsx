@@ -61,13 +61,13 @@ function getRoleBadge(role: UserRole, label: string) {
   const base = 'text-xs font-semibold px-2 py-0.5 rounded-full border';
   switch (role) {
     case 'super_admin':
-      return <span className={`${base} bg-[#6D323E] text-white border-red-200 dark:bg-[#6D323E] dark:text-white dark:border-red-800`}>{label}</span>;
+      return <span className={`${base} bg-[#6D323E] text-white border-brand-wine/35 dark:bg-[#6D323E] dark:text-white dark:border-brand-wine/45`}>{label}</span>;
     case 'admin':
-      return <span className={`${base} bg-[#DDCF88] text-[#121212] border-amber-200 dark:bg-[#DDCF88]/20 dark:text-[#DDCF88] dark:border-amber-800`}>{label}</span>;
+      return <span className={`${base} bg-[#DDCF88] text-[#121212] border-brand-mustardDark/50 dark:bg-[#DDCF88]/20 dark:text-[#DDCF88] dark:border-brand-mustardDark/40`}>{label}</span>;
     case 'reviewer':
-      return <span className={`${base} bg-[#C4DAEB] text-[#121212] border-sky-200 dark:bg-[#C4DAEB]/20 dark:text-[#C4DAEB] dark:border-sky-800`}>{label}</span>;
+      return <span className={`${base} bg-[#C4DAEB] text-[#121212] border-brand-blue/55 dark:bg-[#C4DAEB]/20 dark:text-[#C4DAEB] dark:border-brand-blue/40`}>{label}</span>;
     default:
-      return <span className={`${base} bg-neutral-100 text-neutral-600 border-neutral-200 dark:bg-neutral-800 dark:text-neutral-300 dark:border-neutral-700`}>{label}</span>;
+      return <span className={`${base} bg-brand-beigeBg text-brand-ink border-brand-greenDark/25 dark:bg-brand-ink/35 dark:text-brand-beigeLight dark:border-brand-greenDark/40`}>{label}</span>;
   }
 }
 
@@ -249,8 +249,8 @@ export default function AdminUsersPage() {
       <div className="min-h-[60vh] flex items-center justify-center px-4">
         <div className="text-center max-w-sm">
           <div className="flex justify-center mb-5">
-            <div className="p-4 rounded-2xl bg-red-50 dark:bg-red-950/30">
-              <ShieldOff className="h-8 w-8 text-red-500 dark:text-red-400" />
+            <div className="p-4 rounded-2xl bg-brand-wine/10 dark:bg-brand-wine/20">
+              <ShieldOff className="h-8 w-8 text-brand-wine dark:text-brand-mustardLight" />
             </div>
           </div>
           <h1 className="text-xl font-semibold text-foreground mb-2">{t.admin.usersAccessDenied}</h1>
@@ -298,7 +298,7 @@ export default function AdminUsersPage() {
           </div>
 
           {loadError && (
-            <div className="mb-4 p-4 rounded-xl bg-red-50 dark:bg-red-950/30 text-sm text-red-700 dark:text-red-300">
+            <div className="mb-4 p-4 rounded-xl bg-brand-wine/10 dark:bg-brand-wine/15 text-sm text-brand-wineDark dark:text-brand-mustardLight">
               {loadError}
             </div>
           )}

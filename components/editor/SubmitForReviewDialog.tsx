@@ -11,7 +11,7 @@ import {
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { useTranslation } from '@/lib/i18n/i18n-context';
-import { Send, Lock, FileCheck, Download, ChevronRight, TriangleAlert as AlertTriangle, CircleCheck as CheckCircle2, Loader as Loader2 } from 'lucide-react';
+import { Send, Lock, Sparkles, Download, ChevronRight, TriangleAlert as AlertTriangle, CircleCheck as CheckCircle2, Loader as Loader2 } from 'lucide-react';
 
 interface SubmitForReviewDialogProps {
   open: boolean;
@@ -33,7 +33,7 @@ type StepConfig = {
 
 const steps: StepConfig[] = [
   {
-    icon: <Lock className="h-6 w-6 text-amber-500" />,
+    icon: <Lock className="h-6 w-6 text-brand-mustardDark dark:text-brand-mustardLight" />,
     title: {
       en: 'Your biography will become read-only',
       it: 'La tua biografia diventerà di sola lettura',
@@ -41,72 +41,72 @@ const steps: StepConfig[] = [
       de: 'Ihre Biografie wird schreibgeschützt',
     },
     body: {
-      en: 'Once submitted for review, you will no longer be able to edit the content of your biography. The text will be locked pending approval by our editorial team.',
-      it: 'Una volta inviata per la revisione, non potrai più modificare il contenuto della tua biografia. Il testo verrà bloccato in attesa dell\'approvazione del nostro team editoriale.',
-      fr: 'Une fois soumise pour révision, vous ne pourrez plus modifier le contenu de votre biographie. Le texte sera verrouillé en attente d\'approbation par notre équipe éditoriale.',
-      de: 'Nach der Einreichung zur Überprüfung können Sie den Inhalt Ihrer Biografie nicht mehr bearbeiten. Der Text wird gesperrt, bis unsere Redaktion ihn genehmigt hat.',
+      en: 'Once submitted, you will no longer be able to edit the content of your biography. The text will be locked while the automatic screening runs.',
+      it: 'Una volta inviata, non potrai più modificare il contenuto della tua biografia. Il testo verrà bloccato durante l\'analisi automatica.',
+      fr: 'Une fois soumise, vous ne pourrez plus modifier le contenu de votre biographie. Le texte sera verrouillé pendant l\'analyse automatique.',
+      de: 'Nach der Einreichung können Sie den Inhalt Ihrer Biografie nicht mehr bearbeiten. Der Text wird während der automatischen Prüfung gesperrt.',
     },
     warning: {
-      en: 'Exception: if a section is rejected during review, editing will be temporarily re-enabled for that section only.',
-      it: 'Eccezione: se una sezione viene rifiutata durante la revisione, la modifica verrà temporaneamente riabilitata solo per quella sezione.',
-      fr: 'Exception : si une section est rejetée lors de la révision, l\'édition sera temporairement réactivée pour cette section uniquement.',
-      de: 'Ausnahme: Wird ein Abschnitt während der Überprüfung abgelehnt, wird die Bearbeitung nur für diesen Abschnitt vorübergehend wieder aktiviert.',
+      en: 'Exception: if passages are flagged for human review and returned, editing will be re-enabled for those sections only.',
+      it: 'Eccezione: se dei passaggi vengono segnalati per revisione umana e restituiti, la modifica verrà riabilitata solo per quelle sezioni.',
+      fr: 'Exception : si des passages sont signalés pour révision humaine et retournés, l\'édition sera réactivée uniquement pour ces sections.',
+      de: 'Ausnahme: Wenn Passagen zur manuellen Überprüfung markiert und zurückgeschickt werden, wird die Bearbeitung nur für diese Abschnitte wieder aktiviert.',
     },
   },
   {
-    icon: <FileCheck className="h-6 w-6 text-sky-500" />,
+    icon: <Sparkles className="h-6 w-6 text-brand-blue dark:text-brand-beigeLight" />,
     title: {
-      en: 'What happens during review',
-      it: 'Cosa succede durante la revisione',
-      fr: 'Ce qui se passe pendant la révision',
-      de: 'Was während der Überprüfung passiert',
+      en: 'What happens next',
+      it: 'Cosa succede dopo',
+      fr: 'Ce qui se passe ensuite',
+      de: 'Was als nächstes passiert',
     },
     body: {
-      en: 'Our editorial team will carefully review your biography to ensure it meets our quality and content guidelines. This process may take a few days.',
-      it: 'Il nostro team editoriale esaminerà attentamente la tua biografia per assicurarsi che rispetti le nostre linee guida sulla qualità e sui contenuti. Questo processo può richiedere alcuni giorni.',
-      fr: 'Notre équipe éditoriale examinera attentivement votre biographie pour s\'assurer qu\'elle respecte nos directives de qualité et de contenu. Ce processus peut prendre quelques jours.',
-      de: 'Unser Redaktionsteam wird Ihre Biografie sorgfältig prüfen, um sicherzustellen, dass sie unseren Qualitäts- und Inhaltsrichtlinien entspricht. Dieser Prozess kann einige Tage dauern.',
+      en: 'An automatic content screening will run immediately after you submit. This checks the text for policy compliance.',
+      it: 'Un\'analisi automatica del contenuto verrà eseguita subito dopo l\'invio. Controlla il testo per il rispetto delle policy.',
+      fr: 'Une analyse automatique du contenu s\'exécutera immédiatement après la soumission. Elle vérifie la conformité du texte aux règles.',
+      de: 'Eine automatische Inhaltsprüfung wird sofort nach der Einreichung durchgeführt. Sie überprüft den Text auf Richtlinienkonformität.',
     },
     items: {
       en: [
-        'You will receive a notification when the review begins',
-        'You will be notified of the final decision (approved or changes requested)',
-        'If changes are needed, you will be able to edit only the flagged sections',
-        'Once approved, the biography will be published and locked permanently',
+        'If the text passes: you proceed directly to PDF generation — no human reviewer needed',
+        'If passages are flagged: only those specific passages go to a human reviewer',
+        'You will see the result immediately on this screen',
+        'If revisions are requested, only the flagged sections need to be updated',
       ],
       it: [
-        'Riceverai una notifica quando inizia la revisione',
-        'Sarai notificato della decisione finale (approvata o modifiche richieste)',
-        'Se sono necessarie modifiche, potrai modificare solo le sezioni segnalate',
-        'Una volta approvata, la biografia verrà pubblicata e bloccata definitivamente',
+        'Se il testo supera l\'analisi: procedi direttamente alla generazione del PDF — nessun revisore umano necessario',
+        'Se dei passaggi vengono segnalati: solo quei passaggi specifici vanno a un revisore umano',
+        'Vedrai il risultato immediatamente su questo schermo',
+        'Se vengono richieste revisioni, solo le sezioni segnalate devono essere aggiornate',
       ],
       fr: [
-        'Vous recevrez une notification au début de la révision',
-        'Vous serez informé de la décision finale (approuvée ou modifications demandées)',
-        'Si des modifications sont nécessaires, vous ne pourrez modifier que les sections signalées',
-        'Une fois approuvée, la biographie sera publiée et définitivement verrouillée',
+        'Si le texte passe : vous accédez directement à la génération du PDF — aucun réviseur humain nécessaire',
+        'Si des passages sont signalés : seuls ces passages spécifiques sont transmis à un réviseur humain',
+        'Vous verrez le résultat immédiatement sur cet écran',
+        'Si des révisions sont demandées, seules les sections signalées doivent être mises à jour',
       ],
       de: [
-        'Sie erhalten eine Benachrichtigung, wenn die Überprüfung beginnt',
-        'Sie werden über die endgültige Entscheidung informiert (genehmigt oder Änderungen erforderlich)',
-        'Wenn Änderungen erforderlich sind, können Sie nur die markierten Abschnitte bearbeiten',
-        'Nach der Genehmigung wird die Biografie veröffentlicht und dauerhaft gesperrt',
+        'Wenn der Text besteht: Sie kommen direkt zur PDF-Erstellung — kein menschlicher Prüfer nötig',
+        'Wenn Passagen markiert werden: Nur diese spezifischen Passagen gehen an einen menschlichen Prüfer',
+        'Sie sehen das Ergebnis sofort auf diesem Bildschirm',
+        'Wenn Überarbeitungen angefordert werden, müssen nur die markierten Abschnitte aktualisiert werden',
       ],
     },
   },
   {
-    icon: <Download className="h-6 w-6 text-emerald-500" />,
+    icon: <Download className="h-6 w-6 text-brand-greenDark dark:text-brand-greenLight" />,
     title: {
-      en: 'After approval: your book is ready',
-      it: 'Dopo l\'approvazione: il tuo libro è pronto',
-      fr: 'Après approbation : votre livre est prêt',
-      de: 'Nach der Genehmigung: Ihr Buch ist fertig',
+      en: 'After screening: your book is ready',
+      it: 'Dopo la verifica: il tuo libro è pronto',
+      fr: 'Après la vérification : votre livre est prêt',
+      de: 'Nach der Prüfung: Ihr Buch ist fertig',
     },
     body: {
-      en: 'Once your biography is approved and published, you will be able to download the complete book as a beautifully formatted PDF — ready to print, share with family, or keep as a lasting personal archive.',
-      it: 'Una volta che la tua biografia sarà approvata e pubblicata, potrai scaricare il libro completo in formato PDF splendidamente impaginato — pronto per la stampa, da condividere con la famiglia o da conservare come archivio personale duraturo.',
-      fr: 'Une fois votre biographie approuvée et publiée, vous pourrez télécharger le livre complet en PDF magnifiquement mis en page — prêt à imprimer, à partager avec la famille ou à conserver comme archive personnelle durable.',
-      de: 'Sobald Ihre Biografie genehmigt und veröffentlicht ist, können Sie das vollständige Buch als wunderschön formatiertes PDF herunterladen — druckfertig, zum Teilen mit der Familie oder als dauerhaftes persönliches Archiv.',
+      en: 'If the text passes screening, you can immediately generate the complete book as a beautifully formatted PDF — ready to print, share with family, or keep as a lasting personal archive.',
+      it: 'Se il testo supera la verifica, puoi subito generare il libro completo in formato PDF splendidamente impaginato — pronto per la stampa, da condividere con la famiglia o da conservare come archivio personale duraturo.',
+      fr: 'Si le texte passe la vérification, vous pouvez immédiatement générer le livre complet en PDF magnifiquement mis en page — prêt à imprimer, à partager avec la famille ou à conserver comme archive personnelle durable.',
+      de: 'Wenn der Text die Prüfung besteht, können Sie sofort das vollständige Buch als wunderschön formatiertes PDF erstellen — druckfertig, zum Teilen mit der Familie oder als dauerhaftes persönliches Archiv.',
     },
     warning: {
       en: 'Are you ready to submit? This step cannot be undone.',
@@ -140,10 +140,17 @@ export function SubmitForReviewDialog({
   };
 
   const submitLabel: Record<string, string> = {
-    en: 'Submit for Review',
-    it: 'Invia per la Revisione',
-    fr: 'Soumettre pour Révision',
-    de: 'Zur Überprüfung Einreichen',
+    en: 'Run Screening & Submit',
+    it: 'Avvia Verifica e Invia',
+    fr: 'Lancer la Vérification',
+    de: 'Prüfung Starten',
+  };
+
+  const screeningLabel: Record<string, string> = {
+    en: 'Running screening…',
+    it: 'Analisi in corso…',
+    fr: 'Vérification en cours…',
+    de: 'Prüfung läuft…',
   };
 
   const cancelLabel: Record<string, string> = {
@@ -224,9 +231,9 @@ export function SubmitForReviewDialog({
         </DialogHeader>
 
         {readinessError && (
-          <div className="flex items-start gap-2.5 rounded-lg border border-destructive/40 bg-destructive/10 px-3 py-2.5">
-            <AlertTriangle className="h-4 w-4 mt-0.5 shrink-0 text-destructive" />
-            <p className="text-sm text-destructive leading-relaxed">{readinessError}</p>
+          <div className="flex items-start gap-2.5 rounded-lg border border-brand-wine/40 bg-brand-wine/10 px-3 py-2.5">
+            <AlertTriangle className="h-4 w-4 mt-0.5 shrink-0 text-brand-wine" />
+            <p className="text-sm text-brand-wineDark dark:text-brand-beigeLight leading-relaxed">{readinessError}</p>
           </div>
         )}
 
@@ -241,7 +248,7 @@ export function SubmitForReviewDialog({
             <ul className="space-y-2">
               {(current.items[language] || current.items['en']).map((item, i) => (
                 <li key={i} className="flex items-start gap-2 text-sm text-foreground/80">
-                  <CheckCircle2 className="h-4 w-4 text-emerald-500 mt-0.5 shrink-0" />
+                  <CheckCircle2 className="h-4 w-4 text-brand-greenDark dark:text-brand-greenLight mt-0.5 shrink-0" />
                   {item}
                 </li>
               ))}
@@ -252,18 +259,18 @@ export function SubmitForReviewDialog({
             <div className={[
               'rounded-lg border p-3 flex items-start gap-2.5',
               isLastStep
-                ? 'bg-amber-50 border-amber-200 dark:bg-amber-950/20 dark:border-amber-800'
-                : 'bg-sky-50 border-sky-200 dark:bg-sky-950/20 dark:border-sky-800',
+                ? 'bg-brand-mustardLight/45 border-brand-mustardDark/40 dark:bg-brand-mustardDark/20 dark:border-brand-mustardDark/50'
+                : 'bg-brand-blue/25 border-brand-blue/55 dark:bg-brand-blue/15 dark:border-brand-blue/45',
             ].join(' ')}>
               <AlertTriangle className={[
                 'h-4 w-4 mt-0.5 shrink-0',
-                isLastStep ? 'text-amber-500' : 'text-sky-500',
+                isLastStep ? 'text-brand-mustardDark dark:text-brand-mustardLight' : 'text-brand-ink dark:text-brand-beigeLight',
               ].join(' ')} />
               <p className={[
                 'text-sm font-medium',
                 isLastStep
-                  ? 'text-amber-800 dark:text-amber-200'
-                  : 'text-sky-800 dark:text-sky-200',
+                  ? 'text-brand-ink dark:text-brand-beigeLight'
+                  : 'text-brand-ink dark:text-brand-beigeLight',
               ].join(' ')}>
                 {label(current.warning, language)}
               </p>
@@ -299,7 +306,10 @@ export function SubmitForReviewDialog({
             className={isLastStep ? 'gap-2 bg-primary hover:bg-primary/90' : 'gap-2'}
           >
             {isSubmitting ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
+              <>
+                <Loader2 className="h-4 w-4 animate-spin" />
+                {label(screeningLabel, language)}
+              </>
             ) : isLastStep ? (
               <>
                 <Send className="h-4 w-4" />

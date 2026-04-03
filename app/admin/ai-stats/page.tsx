@@ -254,13 +254,13 @@ function AiStatsContent() {
           </Select>
         </div>
 
-        <div className="flex items-center gap-2 px-4 py-3 rounded-xl bg-sky-50 dark:bg-sky-950/20 border border-sky-200 dark:border-sky-900 text-sky-700 dark:text-sky-300 text-sm mb-8">
+        <div className="flex items-center gap-2 px-4 py-3 rounded-xl bg-brand-blue/25 dark:bg-brand-blue/10 border border-brand-blue/45 dark:border-brand-blue/35 text-brand-ink dark:text-brand-blue text-sm mb-8">
           <Info className="h-4 w-4 shrink-0" />
           <span>{t.admin.aiStatsDataNote}</span>
         </div>
 
         {error && (
-          <div className="mb-6 p-4 rounded-xl bg-red-50 dark:bg-red-950/30 text-sm text-red-700 dark:text-red-300">
+          <div className="mb-6 p-4 rounded-xl bg-brand-wine/10 dark:bg-brand-wine/15 text-sm text-brand-wineDark dark:text-brand-mustardLight">
             {error}
           </div>
         )}

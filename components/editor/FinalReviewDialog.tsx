@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -23,6 +23,8 @@ import { supabase } from '@/lib/supabase';
 import { BIOGRAPHY_SECTIONS } from '@/lib/editor-constants';
 import { useTranslation } from '@/lib/i18n/i18n-context';
 import { cn } from '@/lib/utils';
+
+const DEFAULT_BIOGRAPHY_SECTION_ORDER = BIOGRAPHY_SECTIONS.map((s) => s.key);
 
 interface FinalReviewDialogProps {
   open: boolean;
@@ -47,15 +49,7 @@ export function FinalReviewDialog({
   const [selectedProposal, setSelectedProposal] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  const originalOrder = BIOGRAPHY_SECTIONS.map(s => s.key);
-
-  useEffect(() => {
-    if (open && session && sections.length > 0) {
-      analyzeStructure();
-    }
-  }, [open, session, sections]);
-
-  const analyzeStructure = async () => {
+  const analyzeStructure = useCallback(async () => {
     if (!session) return;
 
     setIsAnalyzing(true);
@@ -71,12 +65,12 @@ export function FinalReviewDialog({
 
       const structureProposals = await proposeAlternativeStructures(
         themes,
-        originalOrder,
+        DEFAULT_BIOGRAPHY_SECTION_ORDER,
         language
       );
 
       setProposals(structureProposals);
-    } catch (err: any) {
+    } catch (err: unknown) {
       if (err instanceof AiLimitError) {
         const msg = err.limitType === 'daily' ? t.aiUsage.dailyLimitReached : t.aiUsage.weeklyLimitReached;
         const detail = err.limitType === 'daily' ? t.aiUsage.dailyLimitDetail : t.aiUsage.weeklyLimitDetail;
@@ -87,18 +81,24 @@ export function FinalReviewDialog({
         const { error: refreshError } = await supabase.auth.refreshSession();
         if (!refreshError) {
           setIsAnalyzing(false);
-          analyzeStructure();
+          void analyzeStructure();
           return;
         }
         setError('Session expired. Please sign in again.');
       } else {
         console.error('Error analyzing structure:', err);
-        setError(err.message || 'Failed to analyze narrative structure');
+        setError(err instanceof Error ? err.message : 'Failed to analyze narrative structure');
       }
     } finally {
       setIsAnalyzing(false);
     }
-  };
+  }, [session, sections, language, t]);
+
+  useEffect(() => {
+    if (open && session && sections.length > 0) {
+      void analyzeStructure();
+    }
+  }, [open, session, sections, analyzeStructure]);
 
   const handleApplyStructure = async () => {
     if (selectedProposal === null) return;
@@ -106,7 +106,7 @@ export function FinalReviewDialog({
     const proposal = selectedProposal === -1
       ? {
           structureType: 'chronological',
-          sectionOrder: originalOrder,
+          sectionOrder: DEFAULT_BIOGRAPHY_SECTION_ORDER,
           rationale: 'Original chronological order',
         }
       : proposals[selectedProposal];
@@ -125,7 +125,7 @@ export function FinalReviewDialog({
         .upsert({
           biography_id: biographyId,
           user_id: freshSession.user.id,
-          original_order: originalOrder,
+          original_order: DEFAULT_BIOGRAPHY_SECTION_ORDER,
           selected_order: proposal.sectionOrder,
           structure_type: proposal.structureType,
           rationale: proposal.rationale,
@@ -179,8 +179,8 @@ export function FinalReviewDialog({
           </div>
         ) : error ? (
           <div className="py-8">
-            <Card className="p-6 border-red-200 bg-red-50 dark:bg-red-900/10">
-              <p className="text-red-600 dark:text-red-400 text-sm">{error}</p>
+            <Card className="p-6 border-brand-wine/35 bg-brand-wine/8 dark:bg-brand-wine/15 dark:border-brand-wine/40">
+              <p className="text-brand-wineDark dark:text-brand-beigeLight text-sm">{error}</p>
               <Button
                 variant="outline"
                 size="sm"
@@ -229,12 +229,12 @@ export function FinalReviewDialog({
                      'Keep the traditional chronological structure of your biography.'}
                   </p>
                   <div className="flex flex-wrap items-center gap-2 pt-2">
-                    {originalOrder.map((key, index) => (
+                    {DEFAULT_BIOGRAPHY_SECTION_ORDER.map((key, index) => (
                       <div key={key} className="flex items-center gap-1">
                         <span className="text-xs bg-muted px-2 py-1 rounded">
                           {getSectionTitle(key)}
                         </span>
-                        {index < originalOrder.length - 1 && (
+                        {index < DEFAULT_BIOGRAPHY_SECTION_ORDER.length - 1 && (
                           <ArrowRight className="h-3 w-3 text-muted-foreground" />
                         )}
                       </div>

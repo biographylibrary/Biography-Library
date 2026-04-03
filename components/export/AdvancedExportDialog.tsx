@@ -27,8 +27,8 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { BIOGRAPHY_SECTIONS } from '@/lib/editor-constants';
-import { generateBiographyPDF, checkBiographyPdfReadiness, type PdfReadinessIssue } from '@/lib/pdf-export';
-import { exportAsPlainText, exportAsRTF, exportAsDOCX } from '@/lib/export-utils';
+import { generateBiographyPDF, checkBiographyPdfReadiness, getPdfReadinessMessage, type PdfReadinessIssue } from '@/lib/pdf-export';
+import { exportAsPlainText, exportAsDOCX } from '@/lib/export-utils';
 import { useTranslation } from '@/lib/i18n/i18n-context';
 import { supabase } from '@/lib/supabase';
 import { format as formatDate } from 'date-fns';
@@ -45,6 +45,8 @@ interface BiographyData {
   final_version?: string | null;
   status?: string;
   created_at: string;
+  /** Preferred UI language for watermarks (falls back to DB when dialog opens). */
+  content_language?: string | null;
 }
 
 interface AdvancedExportDialogProps {
@@ -52,9 +54,11 @@ interface AdvancedExportDialogProps {
   onOpenChange: (open: boolean) => void;
   biography: BiographyData;
   isPublished?: boolean;
+  /** When under review, show notice and block PDF generation until status changes. */
+  biographyStatus?: string;
 }
 
-type ExportFormat = 'pdf-b5-standard' | 'txt' | 'rtf' | 'docx';
+type ExportFormat = 'pdf-b5-standard' | 'txt' | 'docx';
 type ContentSelection = 'all' | 'completed' | 'custom';
 type ReadinessStatus = 'checking' | 'ready' | 'not-ready';
 
@@ -63,6 +67,7 @@ export function AdvancedExportDialog({
   onOpenChange,
   biography,
   isPublished = false,
+  biographyStatus,
 }: AdvancedExportDialogProps) {
   const { t } = useTranslation();
   const [format, setFormat] = useState<ExportFormat>('pdf-b5-standard');
@@ -94,14 +99,21 @@ export function AdvancedExportDialog({
 
   const fetchDraftState = useCallback(async () => {
     if (!biography.id) return;
+    if (biography.content_language) {
+      setContentLanguage(biography.content_language);
+    }
     const { data } = await supabase
       .from('biographies')
       .select('pdf_draft_iteration, content_language')
       .eq('id', biography.id)
       .maybeSingle();
     setDraftIteration(data?.pdf_draft_iteration ?? null);
-    setContentLanguage(data?.content_language ?? 'en');
-  }, [biography.id]);
+    if (data?.content_language) {
+      setContentLanguage(data.content_language);
+    } else if (!biography.content_language) {
+      setContentLanguage('en');
+    }
+  }, [biography.id, biography.content_language]);
 
   useEffect(() => {
     if (open && isPdfFormat && biography.id) {
@@ -217,8 +229,6 @@ export function AdvancedExportDialog({
           );
         } else if (format === 'txt') {
           await exportAsPlainText(finalBio, [], false);
-        } else if (format === 'rtf') {
-          await exportAsRTF(finalBio, [], false);
         } else if (format === 'docx') {
           await exportAsDOCX(finalBio, [], false);
         }
@@ -244,8 +254,6 @@ export function AdvancedExportDialog({
           );
         } else if (format === 'txt') {
           await exportAsPlainText(biography, [], false);
-        } else if (format === 'rtf') {
-          await exportAsRTF(biography, [], false);
         } else if (format === 'docx') {
           await exportAsDOCX(biography, [], false);
         }
@@ -303,8 +311,6 @@ export function AdvancedExportDialog({
         );
       } else if (format === 'txt') {
         await exportAsPlainText(biography, sections, separateFiles);
-      } else if (format === 'rtf') {
-        await exportAsRTF(biography, sections, separateFiles);
       } else if (format === 'docx') {
         await exportAsDOCX(biography, sections, separateFiles);
       }
@@ -368,6 +374,8 @@ export function AdvancedExportDialog({
   };
 
   const handlePreview = async () => {
+    if (biographyStatus === 'under_review') return;
+    if (readinessStatus === 'not-ready') return;
     setIsPreviewing(true);
     setExportError(null);
     try {
@@ -417,19 +425,20 @@ export function AdvancedExportDialog({
     }
   };
 
-  const allFormats: { value: ExportFormat; label: string; pdfOnly?: boolean }[] = [
+  const allFormats: { value: ExportFormat; label: string; description?: string; pdfOnly?: boolean }[] = [
     { value: 'pdf-b5-standard', label: t.exportDialog.pdfB5Standard, pdfOnly: true },
-    { value: 'txt', label: t.exportDialog.txtFormat },
-    { value: 'rtf', label: t.exportDialog.rtfFormat },
-    { value: 'docx', label: t.exportDialog.docxFormat },
+    { value: 'txt', label: 'Plain Text (.txt)', description: 'Plain text, no formatting preserved' },
+    { value: 'docx', label: 'Word Document (.docx)', description: 'Text with bold and italic preserved. Compatible with Word, Pages, Google Docs.' },
   ];
 
   const visibleFormats = allFormats;
 
+  const reviewLocked = biographyStatus === 'under_review';
   const pdfNotReady = isPdfFormat && readinessStatus === 'not-ready';
   const draftLimitExceeded = !isPublished && isPdfFormat && (draftIteration ?? 0) >= 3;
   const downloadDisabled =
     isExporting ||
+    reviewLocked ||
     (biography.biography_mode !== 'freeflow' &&
       contentSelection === 'custom' &&
       selectedSections.length === 0) ||
@@ -447,16 +456,26 @@ export function AdvancedExportDialog({
           </DialogDescription>
         </DialogHeader>
 
+        {reviewLocked && (
+          <div className="flex items-start gap-3 rounded-lg bg-brand-mustardLight/45 border border-brand-mustardDark/40 dark:bg-brand-mustardDark/20 dark:border-brand-mustardDark/50 px-4 py-3 text-sm text-brand-ink dark:text-brand-beigeLight">
+            <Info className="h-4 w-4 shrink-0 mt-0.5" />
+            <p>
+              Export is disabled while your biography is under review. You can download again after
+              moderation finishes.
+            </p>
+          </div>
+        )}
+
         {biography.biography_mode === 'freeflow' && !noChaptersWarningDismissed && (
-          <div className="flex items-start gap-3 rounded-lg bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 px-4 py-3">
-            <AlertTriangle className="h-4 w-4 mt-0.5 shrink-0 text-amber-600 dark:text-amber-400" />
-            <p className="text-sm text-amber-800 dark:text-amber-200 leading-relaxed flex-1">
+          <div className="flex items-start gap-3 rounded-lg bg-brand-mustardLight/45 border border-brand-mustardDark/40 dark:bg-brand-mustardDark/20 dark:border-brand-mustardDark/50 px-4 py-3">
+            <AlertTriangle className="h-4 w-4 mt-0.5 shrink-0 text-brand-mustardDark dark:text-brand-mustardLight" />
+            <p className="text-sm text-brand-ink dark:text-brand-beigeLight leading-relaxed flex-1">
               {t.editor.noChaptersWarning}
             </p>
             <button
               type="button"
               onClick={() => setNoChaptersWarningDismissed(true)}
-              className="shrink-0 text-amber-600 dark:text-amber-400 hover:text-amber-800 dark:hover:text-amber-200 transition-colors"
+              className="shrink-0 text-brand-mustardDark dark:text-brand-mustardLight hover:text-brand-ink dark:hover:text-brand-beigeLight transition-colors"
               aria-label={t.common.close}
             >
               <X className="h-4 w-4" />
@@ -465,28 +484,19 @@ export function AdvancedExportDialog({
         )}
 
         {isPdfFormat && readinessStatus === 'not-ready' && readinessIssues.length > 0 && (
-          <div className="flex items-start gap-3 rounded-lg bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 px-4 py-3">
-            <AlertTriangle className="h-4 w-4 mt-0.5 shrink-0 text-amber-600 dark:text-amber-400" />
+          <div className="flex items-start gap-3 rounded-lg bg-brand-mustardLight/45 border border-brand-mustardDark/40 dark:bg-brand-mustardDark/20 dark:border-brand-mustardDark/50 px-4 py-3">
+            <AlertTriangle className="h-4 w-4 mt-0.5 shrink-0 text-brand-mustardDark dark:text-brand-mustardLight" />
             <div className="flex-1 space-y-1">
-              {readinessIssues.map((issue) => {
-                let msg = '';
-                if (issue === 'missing-cover') msg = t.exportDialog.noCoverPhotoWarning;
-                else if (issue === 'cover-unreachable') msg = 'Cover photo cannot be reached. Please re-upload.';
-                else if (issue === 'missing-title') msg = 'Biography title is required.';
-                else if (issue === 'missing-author') msg = 'Author name is required.';
-                else if (issue === 'missing-content') msg = 'At least one section must have content.';
-                else if (issue === 'missing-mode') msg = 'Biography mode is not set.';
-                return (
-                  <p key={issue} className="text-sm text-amber-800 dark:text-amber-200 leading-relaxed">
-                    {msg}
-                  </p>
-                );
-              })}
+              {readinessIssues.map((issue) => (
+                <p key={issue} className="text-sm text-brand-ink dark:text-brand-beigeLight leading-relaxed">
+                  {getPdfReadinessMessage(issue, t.exportDialog.noCoverPhotoWarning)}
+                </p>
+              ))}
             </div>
             <button
               type="button"
               onClick={checkReadiness}
-              className="shrink-0 text-amber-600 dark:text-amber-400 hover:text-amber-800 dark:hover:text-amber-200 transition-colors"
+              className="shrink-0 text-brand-mustardDark dark:text-brand-mustardLight hover:text-brand-ink dark:hover:text-brand-beigeLight transition-colors"
               aria-label="Retry"
             >
               <RefreshCw className="h-4 w-4" />
@@ -495,29 +505,29 @@ export function AdvancedExportDialog({
         )}
 
         {exportError === t.exportDialog.fontLoadError && (
-          <div className="flex items-start gap-3 rounded-lg bg-destructive/10 border border-destructive/30 px-4 py-3">
-            <AlertTriangle className="h-4 w-4 mt-0.5 shrink-0 text-destructive" />
-            <p className="text-sm text-destructive leading-relaxed flex-1">{t.exportDialog.fontLoadError}</p>
+          <div className="flex items-start gap-3 rounded-lg bg-brand-wine/10 border border-brand-wine/35 px-4 py-3">
+            <AlertTriangle className="h-4 w-4 mt-0.5 shrink-0 text-brand-wine" />
+            <p className="text-sm text-brand-wineDark dark:text-brand-beigeLight leading-relaxed flex-1">{t.exportDialog.fontLoadError}</p>
           </div>
         )}
 
         {exportError && exportError !== t.exportDialog.noCoverPhotoWarning && exportError !== t.exportDialog.fontLoadError && (
-          <div className="flex items-start gap-3 rounded-lg bg-destructive/10 border border-destructive/30 px-4 py-3">
-            <AlertTriangle className="h-4 w-4 mt-0.5 shrink-0 text-destructive" />
-            <p className="text-sm text-destructive leading-relaxed flex-1">{exportError}</p>
+          <div className="flex items-start gap-3 rounded-lg bg-brand-wine/10 border border-brand-wine/35 px-4 py-3">
+            <AlertTriangle className="h-4 w-4 mt-0.5 shrink-0 text-brand-wine" />
+            <p className="text-sm text-brand-wineDark dark:text-brand-beigeLight leading-relaxed flex-1">{exportError}</p>
           </div>
         )}
 
         <ScrollArea className="flex-1 pr-4">
           <div className="space-y-6 py-4">
             {!isPublished && isPdfFormat && (
-              <div className="flex items-start gap-3 rounded-lg bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 px-4 py-3">
-                <Info className="h-4 w-4 mt-0.5 shrink-0 text-amber-700 dark:text-amber-400" />
+              <div className="flex items-start gap-3 rounded-lg bg-brand-mustardLight/45 border border-brand-mustardDark/40 dark:bg-brand-mustardDark/20 dark:border-brand-mustardDark/50 px-4 py-3">
+                <Info className="h-4 w-4 mt-0.5 shrink-0 text-brand-ink/85 dark:text-brand-mustardLight" />
                 <div className="flex-1 space-y-1">
-                  <p className="text-sm text-amber-800 dark:text-amber-200 leading-relaxed">
+                  <p className="text-sm text-brand-ink dark:text-brand-beigeLight leading-relaxed">
                     {t.exportDialog.pdfDraftNotice}
                   </p>
-                  <p className="text-xs text-amber-700 dark:text-amber-300 font-medium">
+                  <p className="text-xs text-brand-ink/80 dark:text-brand-beigeLight/85 font-medium">
                     {draftIteration == null
                       ? t.exportDialog.draftIterationNone
                       : t.exportDialog.draftIterationCurrent
@@ -529,9 +539,9 @@ export function AdvancedExportDialog({
               </div>
             )}
             {!isPublished && isPdfFormat && (draftIteration ?? 0) >= 3 && (
-              <div className="flex items-start gap-3 rounded-lg bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800 px-4 py-3">
-                <FileWarning className="h-4 w-4 mt-0.5 shrink-0 text-red-600 dark:text-red-400" />
-                <p className="text-sm text-red-800 dark:text-red-200 leading-relaxed">
+              <div className="flex items-start gap-3 rounded-lg bg-brand-wine/12 border border-brand-wine/40 px-4 py-3 dark:bg-brand-wine/20 dark:border-brand-wine/45">
+                <FileWarning className="h-4 w-4 mt-0.5 shrink-0 text-brand-wine dark:text-brand-beigeLight" />
+                <p className="text-sm text-brand-wineDark dark:text-brand-beigeLight leading-relaxed">
                   {t.exportDialog.draftLimitReached}
                 </p>
               </div>
@@ -541,11 +551,16 @@ export function AdvancedExportDialog({
               <Label className="text-base font-semibold">{t.exportDialog.formatLabel}</Label>
               <RadioGroup value={format} onValueChange={(v) => setFormat(v as ExportFormat)}>
                 {visibleFormats.map((fmt) => (
-                  <div key={fmt.value} className="flex items-center space-x-2">
-                    <RadioGroupItem value={fmt.value} id={`format-${fmt.value}`} />
-                    <Label htmlFor={`format-${fmt.value}`} className="font-normal cursor-pointer">
-                      {fmt.label}
-                    </Label>
+                  <div key={fmt.value} className="flex items-start space-x-2">
+                    <RadioGroupItem value={fmt.value} id={`format-${fmt.value}`} className="mt-0.5" />
+                    <div className="flex flex-col">
+                      <Label htmlFor={`format-${fmt.value}`} className="font-normal cursor-pointer">
+                        {fmt.label}
+                      </Label>
+                      {fmt.description && (
+                        <span className="text-xs text-muted-foreground">{fmt.description}</span>
+                      )}
+                    </div>
                   </div>
                 ))}
               </RadioGroup>

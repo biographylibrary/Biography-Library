@@ -140,11 +140,11 @@ export function MainBiographyCard({ biography, userName, userId, onDeleteClick, 
       case 'final_version':
         return { text: t.dashboard.finalVersion, className: 'bg-[#C8DFBE] text-[#121212]' };
       case 'published':
-        return { text: t.dashboard.statusPublished, className: 'bg-[#D3F1FF] text-[#121212]' };
+        return { text: t.dashboard.statusPublished, className: 'bg-brand-blue text-brand-ink' };
       case 'under_review':
-        return { text: t.dashboard.statusUnderReview, className: 'bg-[#FFE4C0] text-[#7C3A00]' };
+        return { text: t.dashboard.statusUnderReview, className: 'bg-brand-mustardLight text-brand-ink' };
       case 'removed':
-        return { text: t.dashboard.statusRemoved, className: 'bg-red-700 text-white' };
+        return { text: t.dashboard.statusRemoved, className: 'bg-brand-wineDark text-brand-paper' };
       default:
         return { text: t.dashboard.draft, className: 'bg-[#DDCF88] text-[#121212]' };
     }
@@ -292,7 +292,7 @@ export function MainBiographyCard({ biography, userName, userId, onDeleteClick, 
                 </Badge>
               </div>
               {biography.status === 'under_review' && (
-                <p className="text-xs text-orange-600/80 dark:text-orange-400/80 leading-relaxed pl-[calc(5rem+0.5rem)] sm:pl-[calc(6rem+0.5rem)]">
+                <p className="text-xs text-brand-wineDark/90 dark:text-brand-mustardLight/90 leading-relaxed pl-[calc(5rem+0.5rem)] sm:pl-[calc(6rem+0.5rem)]">
                   {t.dashboard.underReviewMessage}
                 </p>
               )}
@@ -390,7 +390,7 @@ export function MainBiographyCard({ biography, userName, userId, onDeleteClick, 
             {globalTodos.length > 0 && (
               <Card className={cn(
                 'p-3 border-0 bg-[#F8F6F2] dark:bg-white/5',
-                isDueDateOverdue(globalTodos[0].due_date) && 'border border-red-300 bg-red-50/50 dark:bg-red-950/20'
+                isDueDateOverdue(globalTodos[0].due_date) && 'border border-brand-wine/40 bg-brand-wine/8 dark:bg-brand-wine/15'
               )}>
                 <div className="flex items-start gap-2">
                   <CheckSquare className="h-4 w-4 shrink-0 mt-0.5 text-muted-foreground" />
@@ -405,7 +405,7 @@ export function MainBiographyCard({ biography, userName, userId, onDeleteClick, 
                       {globalTodos[0].due_date && (
                         <Badge variant="outline" className={cn(
                           'gap-1 text-xs',
-                          isDueDateOverdue(globalTodos[0].due_date) && 'border-red-500 text-red-700'
+                          isDueDateOverdue(globalTodos[0].due_date) && 'border-brand-wine text-brand-wineDark dark:text-brand-mustardLight'
                         )}>
                           <CalendarIcon className="h-3 w-3" />
                           {format(new Date(globalTodos[0].due_date), 'd MMM', { locale: dateLocales[language] })}

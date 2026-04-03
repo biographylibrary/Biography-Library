@@ -16,18 +16,18 @@ export function BiographyCard({ biography, onEdit, onDelete }: BiographyCardProp
   const { t } = useTranslation();
 
   const privacyConfig: Record<string, { icon: typeof Lock; label: string; className: string }> = {
-    private: { icon: Lock, label: t.dashboard.private, className: 'text-slate-500 bg-slate-500/10' },
-    'link-only': { icon: Users, label: t.dashboard.family, className: 'text-blue-500 bg-blue-500/10' },
-    public: { icon: Globe, label: t.dashboard.public, className: 'text-emerald-500 bg-emerald-500/10' },
+    private: { icon: Lock, label: t.dashboard.private, className: 'text-brand-ink bg-brand-beigeBg/80 dark:bg-brand-ink/30 dark:text-brand-beigeLight' },
+    'link-only': { icon: Users, label: t.dashboard.family, className: 'text-brand-ink bg-brand-blue/35 dark:bg-brand-blue/15 dark:text-brand-blue' },
+    public: { icon: Globe, label: t.dashboard.public, className: 'text-brand-greenDark bg-brand-greenLight/45 dark:bg-brand-greenLight/15 dark:text-brand-greenLight' },
   };
 
   const statusConfig: Record<string, { label: string; className: string }> = {
     draft: { label: t.dashboard.draft, className: 'text-[#121212] bg-[#DDCF88] dark:bg-[#DDCF88]/20 dark:text-[#DDCF88]' },
-    sections_complete: { label: t.dashboard.sectionsComplete, className: 'text-blue-600 bg-blue-500/10' },
-    final_version: { label: t.dashboard.finalVersion, className: 'text-sky-600 bg-sky-500/10' },
+    sections_complete: { label: t.dashboard.sectionsComplete, className: 'text-brand-ink bg-brand-blue/30 dark:bg-brand-blue/15 dark:text-brand-blue' },
+    final_version: { label: t.dashboard.finalVersion, className: 'text-brand-ink bg-brand-mustardLight/60 dark:bg-brand-mustardDark/25 dark:text-brand-mustardLight' },
     under_review: { label: t.dashboard.statusUnderReview, className: 'text-[#121212] bg-[#DDCF88] dark:bg-[#DDCF88]/20 dark:text-[#DDCF88]' },
-    published: { label: t.dashboard.statusPublished, className: 'text-green-600 bg-green-500/10' },
-    removed: { label: t.dashboard.statusRemoved, className: 'text-white bg-red-700' },
+    published: { label: t.dashboard.statusPublished, className: 'text-brand-greenDark bg-brand-greenLight/45 dark:bg-brand-greenLight/15 dark:text-brand-greenLight' },
+    removed: { label: t.dashboard.statusRemoved, className: 'text-brand-paper bg-brand-wineDark' },
   };
 
   const isUnderReview = biography.status === 'under_review';
@@ -46,7 +46,7 @@ export function BiographyCard({ biography, onEdit, onDelete }: BiographyCardProp
     <div className={cn(
       'group relative rounded-xl border bg-card hover:bg-card/80 transition-all duration-200',
       isUnderReview
-        ? 'border-orange-300/60 dark:border-orange-700/40'
+        ? 'border-brand-mustardDark/50 dark:border-brand-mustardDark/40'
         : 'border-border/50 hover:border-border'
     )}>
       <div className="p-5">
@@ -86,7 +86,7 @@ export function BiographyCard({ biography, onEdit, onDelete }: BiographyCardProp
         </div>
 
         {isUnderReview && (
-          <p className="text-xs text-orange-600/80 dark:text-orange-400/80 mb-4 leading-relaxed">
+          <p className="text-xs text-brand-wineDark/90 dark:text-brand-mustardLight/90 mb-4 leading-relaxed">
             {t.dashboard.underReviewMessage}
           </p>
         )}
