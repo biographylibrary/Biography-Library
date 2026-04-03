@@ -106,7 +106,7 @@ export function ModeSwitchWarningDialog({
 
   return (
     <Dialog open={open} onOpenChange={(v) => { if (!v) handleClose(); }}>
-      <DialogContent className="sm:max-w-[500px]">
+      <DialogContent className="sm:max-w-[560px] w-full">
         {step === 1 && (
           <>
             <DialogHeader>
@@ -124,15 +124,15 @@ export function ModeSwitchWarningDialog({
               {interpolate(t.modeSwitchWarning.step1Message)}
             </div>
 
-            <DialogFooter className="flex-col sm:flex-row gap-2">
-              <Button variant="outline" onClick={handleClose} className="sm:mr-auto">
-                {t.modeSwitchWarning.goBack}
-              </Button>
+            <DialogFooter className="flex-col gap-2">
               <Button
-                className="bg-amber-600 hover:bg-amber-700 text-white border-0"
+                className="bg-amber-600 hover:bg-amber-700 text-white border-0 w-full"
                 onClick={() => setStep(2)}
               >
                 {t.modeSwitchWarning.step1Confirm}
+              </Button>
+              <Button variant="outline" onClick={handleClose} className="w-full">
+                {t.modeSwitchWarning.goBack}
               </Button>
             </DialogFooter>
           </>
@@ -192,9 +192,6 @@ export function ModeSwitchWarningDialog({
                   {interpolate(t.modeSwitchWarning.step3Title)}
                 </DialogTitle>
               </div>
-              <DialogDescription className="text-sm leading-relaxed pt-1">
-                {interpolate(t.modeSwitchWarning.step3Message)}
-              </DialogDescription>
             </DialogHeader>
 
             <div className="rounded-lg bg-destructive/5 border border-destructive/20 px-4 py-4 space-y-4">
@@ -216,14 +213,12 @@ export function ModeSwitchWarningDialog({
               </div>
             </div>
 
-            <DialogFooter className="flex-col sm:flex-row gap-2">
-              <Button variant="outline" onClick={() => setStep(2)} className="sm:mr-auto" disabled={isConfirming}>
-                {t.modeSwitchWarning.step3Cancel}
-              </Button>
+            <DialogFooter className="flex-col gap-2">
               <Button
                 variant="destructive"
                 onClick={handleConfirm}
                 disabled={!deleteCheckbox || isConfirming}
+                className="w-full"
               >
                 {isConfirming ? (
                   <>
@@ -233,6 +228,9 @@ export function ModeSwitchWarningDialog({
                 ) : (
                   t.modeSwitchWarning.step3Confirm
                 )}
+              </Button>
+              <Button variant="outline" onClick={() => setStep(2)} disabled={isConfirming} className="w-full">
+                {t.modeSwitchWarning.step3Cancel}
               </Button>
             </DialogFooter>
           </>
