@@ -64,6 +64,11 @@ function StatusBadge({ status }: { status: string }) {
     draft: { label: t.admin.bioStatusDraft, className: 'bg-brand-beigeBg text-brand-ink border-brand-greenDark/25 dark:bg-brand-ink/35 dark:text-brand-beigeLight dark:border-brand-greenDark/40' },
     published: { label: t.admin.bioStatusPublished, className: 'bg-[#C8DFBE] text-[#121212] border-[#C8DFBE] dark:bg-[#C8DFBE]/20 dark:text-[#C8DFBE] dark:border-[#5E685A]/50' },
     under_review: { label: t.admin.bioStatusUnderReview, className: 'bg-[#DDCF88] text-[#121212] border-[#DDCF88] dark:bg-[#DDCF88]/20 dark:text-[#DDCF88] dark:border-[#DDCF88]/50' },
+    pdf_draft: { label: t.admin.bioStatusPdfDraft, className: 'bg-[#DDCF88]/90 text-[#121212] border-[#DDCF88] dark:bg-[#DDCF88]/25 dark:text-[#DDCF88] dark:border-[#DDCF88]/50' },
+    locked_pending_screening: {
+      label: t.admin.bioStatusLockedPendingScreening,
+      className: 'bg-[#C4DAEB] text-[#121212] border-[#C4DAEB] dark:bg-[#C4DAEB]/20 dark:text-[#C4DAEB] dark:border-brand-blue/40',
+    },
     removed: { label: t.admin.bioStatusRemoved, className: 'bg-[#6D323E] text-white border-[#6D323E] dark:bg-[#6D323E] dark:text-white dark:border-[#944454]/50' },
   };
   const cfg = map[status] ?? map['draft'];

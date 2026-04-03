@@ -15,6 +15,15 @@ const nextConfig = {
     ignoreDuringBuilds: true,
   },
   images: { unoptimized: true },
+  webpack: (config, { isServer }) => {
+    if (isServer) {
+      config.externals = config.externals ?? [];
+      if (Array.isArray(config.externals)) {
+        config.externals.push('pdfjs-dist', '@napi-rs/canvas');
+      }
+    }
+    return config;
+  },
 };
 
 module.exports = withPWA(nextConfig);

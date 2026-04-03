@@ -26,6 +26,11 @@ export function BiographyCard({ biography, onEdit, onDelete }: BiographyCardProp
     sections_complete: { label: t.dashboard.sectionsComplete, className: 'text-brand-ink bg-brand-blue/30 dark:bg-brand-blue/15 dark:text-brand-blue' },
     final_version: { label: t.dashboard.finalVersion, className: 'text-brand-ink bg-brand-mustardLight/60 dark:bg-brand-mustardDark/25 dark:text-brand-mustardLight' },
     under_review: { label: t.dashboard.statusUnderReview, className: 'text-[#121212] bg-[#DDCF88] dark:bg-[#DDCF88]/20 dark:text-[#DDCF88]' },
+    pdf_draft: { label: t.dashboard.statusPdfDraft, className: 'text-[#121212] bg-[#DDCF88]/90 dark:bg-[#DDCF88]/20 dark:text-[#DDCF88]' },
+    locked_pending_screening: {
+      label: t.dashboard.statusLockedPendingScreening,
+      className: 'text-brand-ink bg-brand-blue/30 dark:bg-brand-blue/15 dark:text-brand-blue',
+    },
     published: { label: t.dashboard.statusPublished, className: 'text-brand-greenDark bg-brand-greenLight/45 dark:bg-brand-greenLight/15 dark:text-brand-greenLight' },
     removed: { label: t.dashboard.statusRemoved, className: 'text-brand-paper bg-brand-wineDark' },
   };

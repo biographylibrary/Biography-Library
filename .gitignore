@@ -37,4 +37,8 @@ next-env.d.ts
 
 .cursor/mcp.json
 
-.env.local
+# Supabase CLI local cache (not committed; safe to delete)
+supabase/.temp/
+
+# Output di smoke test locale PDF→JPEG (non serve in repo; se un domani servisse versionarlo, togli questa riga e chiedi in review)
+scripts/.test-cover.jpg

@@ -32,12 +32,17 @@ function StatusBadge({ status, t }: { status: string; t: any }) {
     draft: 'bg-brand-beigeBg text-brand-ink border-brand-greenDark/25 dark:bg-brand-ink/35 dark:text-brand-beigeLight dark:border-brand-greenDark/40',
     published: 'bg-[#C8DFBE] text-[#121212] border-brand-greenDark/35 dark:bg-[#C8DFBE]/20 dark:text-[#C8DFBE] dark:border-brand-greenDark/45',
     under_review: 'bg-[#DDCF88] text-[#121212] border-brand-mustardDark/50 dark:bg-[#DDCF88]/20 dark:text-[#DDCF88] dark:border-brand-mustardDark/40',
+    pdf_draft: 'bg-[#DDCF88]/90 text-[#121212] border-brand-mustardDark/45 dark:bg-[#DDCF88]/25 dark:text-[#DDCF88] dark:border-brand-mustardDark/35',
+    locked_pending_screening:
+      'bg-[#C4DAEB] text-[#121212] border-brand-blue/40 dark:bg-[#C4DAEB]/20 dark:text-[#C4DAEB] dark:border-brand-blue/35',
     removed: 'bg-[#6D323E] text-white border-brand-wine/35 dark:bg-[#6D323E] dark:text-white dark:border-brand-wine/45',
   };
   const labels: Record<string, string> = {
     draft: t.admin.bioStatusDraft,
     published: t.admin.bioStatusPublished,
     under_review: t.admin.bioStatusUnderReview,
+    pdf_draft: t.admin.bioStatusPdfDraft,
+    locked_pending_screening: t.admin.bioStatusLockedPendingScreening,
     removed: t.admin.bioStatusRemoved,
   };
   const cls = map[status] ?? map['draft'];

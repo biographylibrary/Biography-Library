@@ -234,6 +234,62 @@ On re-submission after `returned`, the AI re-screens only the previously flagged
 
 Admins can freeze a biography (`is_frozen = true`). A `RESTRICTIVE` RLS policy blocks all UPDATE operations on a frozen biography regardless of other policies. This is used when a moderation hold requires no further edits.
 
+### 6a. Target publication flow (approved product spec)
+
+This subsection records **agreed behaviour** for the PDF-first workflow and legacy submit. Legacy §6 behaviour still applies where not superseded below.
+
+**States on `biographies.status` (target schema — see migration `20260403140000_publication_flow_phase_statuses.sql`)**
+
+| Status | Role |
+|--------|------|
+| `draft` | Work in progress |
+| `sections_complete` | All sections marked complete |
+| `final_version` | Author in final prose pass (pre–PDF workflow) |
+| `pdf_draft` | Watermarked PDF draft rounds; `pdf_draft_iteration` 1–3; optional `pdf_draft_started_at` |
+| `locked_pending_screening` | Final PDF approved; text locked; collateral generated; AI screening next; optional `final_pdf_approved_at` |
+| `under_review` | Human reviewer queue (after AI flags / errors), or legacy path |
+| `published` | Live per visibility |
+| `removed` | Moderation take-down |
+
+Helpers: `lib/publication-state.ts` (`isAuthorTextEditableStatus`, `isReviewOrScreeningLockStatus`, etc.).
+
+**API (phase 2 — implemented)**
+
+| Route | Purpose |
+|-------|---------|
+| `POST /api/publication/start-pdf-draft` | `final_version` → `pdf_draft`; sets `pdf_draft_started_at`, clears `pdf_draft_iteration` |
+| `POST /api/publication/approve-final-pdf` | Requires `pdf_draft` + `pdf_draft_iteration` 1–3; locks → `locked_pending_screening`; `await` TXT/DOCX export; runs AI screening (shared `lib/server/review-submit-pipeline.ts`) |
+| `POST /api/review/submit` | Legacy path + rescreen; uses same pipeline |
+
+Watermarked PDF downloads are blocked while `status === 'final_version'` until the author starts the PDF phase (export dialog shows `draftPhaseRequiredBeforeDraft`).
+
+**Final PDF + catalogue cover (phase 3)**
+
+- On **approve final PDF** (`POST /api/publication/approve-final-pdf`), before locking for screening, the server generates the **full book PDF** (no watermark) via `generateBiographyPDF(…, returnArrayBuffer: true)` with the service-role Supabase client (`lib/server/final-pdf-artifacts.ts`, `setPdfExportSupabaseClient`). Fonts load from `public/fonts/noto-serif` on the server filesystem.
+- The file is uploaded to **`biography-exports/{biography_id}/final.pdf`** and **`final_pdf_url`** is stored on `biographies`.
+- **`listing_cover_url`** is a **JPEG raster of PDF page 1** produced server-side with **`pdfjs-dist`** + **`@napi-rs/canvas`** (`lib/server/render-pdf-first-page-jpeg.ts`), uploaded as `biography-exports/{id}/listing-cover.jpg`. The public catalogue and the **reader view** prefer it when set; otherwise they fall back to the **`biography_media` cover photo** (`app/biographies/page.tsx`, `app/biography/[id]/view/page.tsx`). Link-only share links receive `listing_cover_url` via **`get_biography_by_share_token`** (migration `20260403210000_share_token_rpc_listing_cover.sql`).
+- Legacy **Submit for review** from **`draft`** or **`sections_complete`** (without final-version / PDF flow) remains available; the editor shows **`publicationLegacySubmitHint`** nudging authors toward Final Review → PDF path.
+
+**1. PDF draft rounds (replaces current submit)**
+
+- The author downloads a **full PDF** with draft watermark on **every** page (iterations 1–3 via `pdf_draft_iteration`, e.g. first / second / third draft; third round is the last chance to change content before locking).
+- After each download, the UI asks whether everything is OK or they want changes.
+- **If OK on the approved round:** generate the **final** PDF (no watermark), **lock text** definitively, and generate **.txt** and **.docx** collateral per existing export rules.
+- **“CSS rules” for cover / back cover** means the **layout rules already encoded in the PDF pipeline** (measurements, colours, fonts in `lib/pdf-export.ts` / jsPDF — not a separate HTML/CSS export). Implementation must be verified against this spec.
+- **Cover image assets for listings** (grid, biography page) are **rasterised from the first page of the approved final PDF** (e.g. JPG/WebP derivatives at defined sizes). The public biography page layout will be redesigned to show this asset at a **medium** size (not huge, not tiny).
+
+**2. After PDF approval (order of operations)**
+
+1. Content is locked; collateral files generated as above.
+2. **AI screening** runs on the content.
+3. **If AI finds no flags:** **publish** according to visibility (cover raster is already generated at approve-final); the biography appears in the public catalogue / search when visibility is public.
+4. **If AI finds flags:** the biography does **not** auto-publish. **Only the flagged sections** return to editable state (`under_review` + partial unlock in the editor from `moderation_reports.ai_analysis.flagged_passages`; authors with a long **final_version** use **FinalVersionEditor** unlocked for edits). **Re-screening** (`POST /api/review/submit` again) sends only the flagged section keys to the text builder when per-section rows exist; if the live text lives only in **`final_version`**, the pipeline falls back to that full HTML and passes the same section labels into the AI prompt as **focus hints** so `section_key` in the JSON stays aligned with the sidebar. Not a full new PDF draft cycle unless product extends this.
+
+**3. Human reviewer vs auto-publish**
+
+- If the **AI approves** (nothing to flag): **automatic publication** (no human reviewer queue for that path).
+- If the **AI does not approve** (flags): enter the **existing reviewer flow** — reviewer sees **only problematic excerpts**, not the full book; author is notified; author corrects **flagged sections**; re-review; approval or rejection as today.
+
 ---
 
 ## 7. PDF Export

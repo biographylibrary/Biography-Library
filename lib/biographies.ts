@@ -1,4 +1,7 @@
 import { supabase } from './supabase';
+import type { BiographyPublicationStatus } from './publication-state';
+
+export type { BiographyPublicationStatus } from './publication-state';
 
 export interface Biography {
   id: string;
@@ -7,7 +10,7 @@ export interface Biography {
   author_name: string;
   content: Record<string, unknown>;
   visibility: 'private' | 'link-only' | 'public';
-  status: 'draft' | 'sections_complete' | 'final_version' | 'under_review' | 'published' | 'removed';
+  status: BiographyPublicationStatus;
   share_token: string | null;
   completed_at: string | null;
   created_at: string;
@@ -24,6 +27,11 @@ export interface Biography {
   biography_type: 'autobiography' | 'memorial';
   slug: string | null;
   ai_screening_status?: 'pending' | 'passed' | 'flagged' | 'parse_error' | 'ai_error';
+  pdf_draft_iteration?: number | null;
+  pdf_draft_started_at?: string | null;
+  final_pdf_approved_at?: string | null;
+  final_pdf_url?: string | null;
+  listing_cover_url?: string | null;
 }
 
 export interface PublishedBiography {
@@ -38,9 +46,12 @@ export interface PublishedBiography {
   is_featured?: boolean;
   featured_at?: string | null;
   slug: string | null;
+  /** Raster of PDF page 1 for catalogue cards; falls back to cover photo when null */
+  listing_cover_url?: string | null;
 }
 
-const PUBLISHED_SELECT = 'id, title, author_name, content_language, biography_type, chapters_count, published_at, view_count, is_featured, featured_at, slug';
+const PUBLISHED_SELECT =
+  'id, title, author_name, content_language, biography_type, chapters_count, published_at, view_count, is_featured, featured_at, slug, listing_cover_url';
 
 export async function fetchPublishedBiographies() {
   const { data, error } = await supabase

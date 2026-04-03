@@ -130,6 +130,12 @@ function BiographyCard({ bio, t, featured }: BiographyCardProps) {
 
   useEffect(() => {
     let cancelled = false;
+    if (bio.listing_cover_url?.trim()) {
+      setCover({ url: bio.listing_cover_url.trim(), loaded: true });
+      return () => {
+        cancelled = true;
+      };
+    }
     supabase
       .from('biography_media')
       .select('storage_path, file_url')
@@ -141,8 +147,10 @@ function BiographyCard({ bio, t, featured }: BiographyCardProps) {
         const url = data?.file_url ?? data?.storage_path ?? null;
         setCover({ url: url ?? null, loaded: true });
       });
-    return () => { cancelled = true; };
-  }, [bio.id]);
+    return () => {
+      cancelled = true;
+    };
+  }, [bio.id, bio.listing_cover_url]);
 
   const showGraphic = !cover.url;
   const href = biographyHref(bio);

@@ -39,6 +39,8 @@ const BIOGRAPHY_STATUS_LABELS: Record<string, string> = {
   draft: 'Draft',
   sections_complete: 'Sections Complete',
   final_version: 'Final Version',
+  pdf_draft: 'PDF draft',
+  locked_pending_screening: 'Pending screening',
   under_review: 'Under Review',
   published: 'Published',
   removed: 'Removed',

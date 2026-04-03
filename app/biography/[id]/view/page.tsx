@@ -34,6 +34,8 @@ interface BiographyViewData {
   frozen_at: string | null;
   export_txt_url: string | null;
   export_docx_url: string | null;
+  /** Raster prima pagina PDF (catalogo); se assente si usa la foto copertina da biography_media */
+  listing_cover_url?: string | null;
 }
 
 interface SectionWithDate {
@@ -60,7 +62,7 @@ function getReviewEndDate(publishedAt: string): Date {
 }
 
 function isInReviewPeriod(biography: BiographyViewData): boolean {
-  if (biography.status === 'under_review') return true;
+  if (biography.status === 'under_review' || biography.status === 'locked_pending_screening') return true;
   if (!biography.published_at) return false;
   const reviewEnd = getReviewEndDate(biography.published_at);
   return new Date() < reviewEnd;
@@ -145,7 +147,9 @@ export default function BiographyViewPage() {
         // link-only biographies are NOT accessible without a token.
         const publicQuery = await supabase
           .from('biographies')
-          .select('id, title, author_name, content, visibility, status, share_token, created_at, published_at, is_frozen, frozen_at, export_txt_url, export_docx_url')
+          .select(
+            'id, title, author_name, content, visibility, status, share_token, created_at, published_at, is_frozen, frozen_at, export_txt_url, export_docx_url, listing_cover_url'
+          )
           .eq('id', resolvedId)
           .eq('visibility', 'public')
           .eq('status', 'published')
@@ -177,7 +181,12 @@ export default function BiographyViewPage() {
         setPdfReady(result.ok);
       });
 
-      getCoverPhotoDisplayUrl(resolvedId).then(setCoverImageUrl);
+      const listing = (data as BiographyViewData).listing_cover_url?.trim();
+      if (listing) {
+        setCoverImageUrl(listing);
+      } else {
+        getCoverPhotoDisplayUrl(resolvedId).then(setCoverImageUrl);
+      }
 
       // Section timestamps come from the RPC result for token-accessed biographies.
       // For public (no-token) biographies, authenticated users see their own sections
@@ -402,13 +411,15 @@ export default function BiographyViewPage() {
 
       <main className="max-w-4xl mx-auto px-4 sm:px-6 py-8">
         {coverImageUrl && (
-          <div className="mb-10 rounded-lg overflow-hidden border border-border bg-muted max-h-[min(420px,50vh)]">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={coverImageUrl}
-              alt=""
-              className="w-full h-auto max-h-[min(420px,50vh)] object-cover"
-            />
+          <div className="mb-10 flex justify-center">
+            <div className="w-full max-w-2xl rounded-lg overflow-hidden border border-border bg-muted shadow-sm">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={coverImageUrl}
+                alt=""
+                className="w-full h-auto max-h-[min(360px,42vh)] object-contain object-top bg-muted/50"
+              />
+            </div>
           </div>
         )}
 

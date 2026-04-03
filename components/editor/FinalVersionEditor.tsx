@@ -8,6 +8,7 @@ import {
   Lock,
   FileCheck,
   RotateCcw,
+  Loader2,
 } from 'lucide-react';
 
 interface FinalVersionEditorProps {
@@ -18,6 +19,11 @@ interface FinalVersionEditorProps {
   onPublish: () => void;
   editorFontSize?: number;
   onRevertToDraft?: () => void;
+  /** Hide the primary / publish row (e.g. PDF phase uses a banner in the parent). */
+  hidePrimaryActions?: boolean;
+  /** Override the primary button label (e.g. “Start PDF review”). */
+  primaryButtonLabel?: string;
+  primaryActionPending?: boolean;
 }
 
 export function FinalVersionEditor({
@@ -28,6 +34,9 @@ export function FinalVersionEditor({
   onPublish,
   editorFontSize = 16,
   onRevertToDraft,
+  hidePrimaryActions = false,
+  primaryButtonLabel,
+  primaryActionPending = false,
 }: FinalVersionEditorProps) {
   const { language } = useTranslation();
 
@@ -80,7 +89,7 @@ export function FinalVersionEditor({
             </p>
           </div>
 
-          {!isLocked && (
+          {!isLocked && !hidePrimaryActions && (
             <div className="flex items-center gap-2 flex-wrap shrink-0">
               {onRevertToDraft && (
                 <Button
@@ -97,10 +106,14 @@ export function FinalVersionEditor({
                 onClick={onPublish}
                 size="sm"
                 className="gap-2"
-                disabled={!content || content.trim().length < 100}
+                disabled={primaryActionPending || !content || content.trim().length < 100}
               >
-                <FileCheck className="h-4 w-4" />
-                {publishButtonText}
+                {primaryActionPending ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <FileCheck className="h-4 w-4" />
+                )}
+                {primaryButtonLabel ?? publishButtonText}
               </Button>
             </div>
           )}

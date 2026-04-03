@@ -33,6 +33,11 @@ import { useTranslation } from '@/lib/i18n/i18n-context';
 import { supabase } from '@/lib/supabase';
 import { format as formatDate } from 'date-fns';
 import { it } from 'date-fns/locale';
+import {
+  isFinalVersionSourceStatus,
+  isReviewOrScreeningLockStatus,
+  type BiographyPublicationStatus,
+} from '@/lib/publication-state';
 
 interface BiographyData {
   id?: string;
@@ -202,8 +207,8 @@ export function AdvancedExportDialog({
     setIsExporting(true);
     setExportError(null);
     try {
-      const isFinalOrPublished =
-        biography.status === 'final_version' || biography.status === 'published';
+      const st = biography.status as BiographyPublicationStatus | undefined;
+      const isFinalOrPublished = st ? isFinalVersionSourceStatus(st) : false;
       const isFreeFlow = biography.biography_mode === 'freeflow';
 
       if (isFinalOrPublished && biography.final_version) {
@@ -337,6 +342,11 @@ export function AdvancedExportDialog({
       return;
     }
 
+    if (isPdfFormat && biography.status === 'final_version') {
+      setExportError(t.exportDialog.draftPhaseRequiredBeforeDraft);
+      return;
+    }
+
     const nextIteration = (draftIteration ?? 0) + 1;
 
     if (nextIteration > 3) {
@@ -374,8 +384,12 @@ export function AdvancedExportDialog({
   };
 
   const handlePreview = async () => {
-    if (biographyStatus === 'under_review') return;
+    if (biographyStatus && isReviewOrScreeningLockStatus(biographyStatus as BiographyPublicationStatus)) return;
     if (readinessStatus === 'not-ready') return;
+    if (biography.status === 'final_version') {
+      setExportError(t.exportDialog.draftPhaseRequiredBeforeDraft);
+      return;
+    }
     setIsPreviewing(true);
     setExportError(null);
     try {
@@ -433,7 +447,8 @@ export function AdvancedExportDialog({
 
   const visibleFormats = allFormats;
 
-  const reviewLocked = biographyStatus === 'under_review';
+  const reviewLocked =
+    !!biographyStatus && isReviewOrScreeningLockStatus(biographyStatus as BiographyPublicationStatus);
   const pdfNotReady = isPdfFormat && readinessStatus === 'not-ready';
   const draftLimitExceeded = !isPublished && isPdfFormat && (draftIteration ?? 0) >= 3;
   const downloadDisabled =

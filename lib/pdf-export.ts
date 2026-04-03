@@ -1,8 +1,22 @@
 import jsPDF from 'jspdf';
+import type { SupabaseClient } from '@supabase/supabase-js';
+
+type PdfSupabase = SupabaseClient<any, any, any>;
 import { BIOGRAPHY_SECTIONS } from './editor-constants';
 import { supabase } from './supabase';
 
-interface BiographyData {
+/** Server-side PDF generation can inject the service-role client (cover/media/storage). */
+let pdfSupabaseOverride: PdfSupabase | null = null;
+
+export function setPdfExportSupabaseClient(client: PdfSupabase | null): void {
+  pdfSupabaseOverride = client;
+}
+
+function getPdfSupabase(): PdfSupabase {
+  return (pdfSupabaseOverride ?? supabase) as PdfSupabase;
+}
+
+export interface BiographyData {
   id?: string;
   title: string;
   author_name: string;
@@ -150,6 +164,32 @@ export function stripHtml(html: string): string {
 
 async function loadNotoSerifFonts(): Promise<void> {
   if (fontsLoaded) return;
+
+  if (typeof window === 'undefined') {
+    const { readFile } = await import('fs/promises');
+    const path = await import('path');
+    const dir = path.join(process.cwd(), 'public', 'fonts', 'noto-serif');
+    const files = [
+      'NotoSerif-Regular.ttf',
+      'NotoSerif-Bold.ttf',
+      'NotoSerif-Italic.ttf',
+      'NotoSerif-BoldItalic.ttf',
+    ];
+    const buffers = await Promise.all(files.map((f) => readFile(path.join(dir, f))));
+    for (const buf of buffers) {
+      if (buf.byteLength < 50000) {
+        throw new Error('FONT_LOAD_FAILED');
+      }
+    }
+    const toAb = (b: typeof buffers[0]) =>
+      b.buffer.slice(b.byteOffset, b.byteOffset + b.byteLength);
+    notoSerifRegularBase64 = arrayBufferToBase64(toAb(buffers[0]));
+    notoSerifBoldBase64 = arrayBufferToBase64(toAb(buffers[1]));
+    notoSerifItalicBase64 = arrayBufferToBase64(toAb(buffers[2]));
+    notoSerifBoldItalicBase64 = arrayBufferToBase64(toAb(buffers[3]));
+    fontsLoaded = true;
+    return;
+  }
 
   const base = '/fonts/noto-serif';
   const urls = [
@@ -483,7 +523,7 @@ function addSectionWithTitle(
 
 async function fetchBookStructure(biographyId: string): Promise<BookStructure | null> {
   try {
-    const { data, error } = await supabase
+    const { data, error } = await getPdfSupabase()
       .from('biography_book_structure')
       .select(
         'dedication_content, dedication_enabled, epigraph_content, epigraph_source, epigraph_enabled, preface_content, preface_enabled, epilogue_content, epilogue_enabled, acknowledgements_content, acknowledgements_enabled, specific_credits_content, specific_credits_enabled'
@@ -528,7 +568,7 @@ function storagePathFromFileUrl(fileUrl: string): string {
 
 async function resolveSignedUrl(fileUrl: string): Promise<string> {
   const storagePath = storagePathFromFileUrl(fileUrl);
-  const { data } = await supabase.storage
+  const { data } = await getPdfSupabase().storage
     .from('biography-photos')
     .createSignedUrl(storagePath, 300);
   if (data?.signedUrl) return data.signedUrl;
@@ -537,7 +577,7 @@ async function resolveSignedUrl(fileUrl: string): Promise<string> {
 
 /** Signed URL for the cover image (web display), or null if none. */
 export async function getCoverPhotoDisplayUrl(biographyId: string): Promise<string | null> {
-  const { data } = await supabase
+  const { data } = await getPdfSupabase()
     .from('biography_media')
     .select('file_url')
     .eq('biography_id', biographyId)
@@ -561,7 +601,7 @@ interface GalleryPhoto {
 }
 
 async function fetchGalleryPhotos(biographyId: string): Promise<GalleryPhoto[]> {
-  const { data } = await supabase
+  const { data } = await getPdfSupabase()
     .from('biography_media')
     .select('id, file_url, caption, layout, display_order')
     .eq('biography_id', biographyId)
@@ -811,7 +851,7 @@ async function renderGalleryPhotosForSection(
 async function fetchCoverPhotoBase64(
   biographyId: string
 ): Promise<{ base64: string; format: string }> {
-  const { data } = await supabase
+  const { data } = await getPdfSupabase()
     .from('biography_media')
     .select('file_url')
     .eq('biography_id', biographyId)
@@ -1064,8 +1104,10 @@ export async function generateBiographyPDF(
   },
   draftIteration?: number | null,
   contentLanguage?: string,
-  previewOnly?: boolean
-): Promise<void | string> {
+  previewOnly?: boolean,
+  /** Server: return PDF bytes instead of triggering a browser download. */
+  returnArrayBuffer?: boolean
+): Promise<void | string | ArrayBuffer> {
   if (!biography.id) {
     throw new Error('MISSING_BIOGRAPHY_ID');
   }
@@ -1219,7 +1261,11 @@ export async function generateBiographyPDF(
 
   const getSections = () => {
     const isFinalOrPublished =
-      biography.status === 'final_version' || biography.status === 'published';
+      biography.status === 'final_version' ||
+      biography.status === 'published' ||
+      biography.status === 'pdf_draft' ||
+      biography.status === 'locked_pending_screening' ||
+      biography.status === 'under_review';
     if (isFinalOrPublished && biography.final_version) {
       const text = stripHtml(biography.final_version);
       if (text.trim()) {
@@ -1385,6 +1431,10 @@ export async function generateBiographyPDF(
     allRightsRaw,
     biography.created_at
   );
+
+  if (returnArrayBuffer) {
+    return doc.output('arraybuffer') as ArrayBuffer;
+  }
 
   if (previewOnly) {
     return doc.output('bloburl') as unknown as string;
