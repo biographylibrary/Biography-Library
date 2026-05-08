@@ -100,6 +100,7 @@ export interface Translations {
     emailNotVerified: string;
     emailNotVerifiedDetail: string;
     mustAcceptTerms: string;
+    accountSuspended: string;
   };
   dashboard: {
     title: string;
@@ -934,6 +935,23 @@ export interface Translations {
     usersAccessDeniedMessage: string;
     usersRedirectingIn: string;
     usersLoadError: string;
+    usersPageRestrictedToAdmins: string;
+    usersColStatus: string;
+    usersStatusActive: string;
+    usersStatusSuspended: string;
+    usersSuspend: string;
+    usersReinstate: string;
+    usersDeleteUser: string;
+    usersConfirmSuspendTitle: string;
+    usersConfirmSuspendDetail: string;
+    usersConfirmReinstateTitle: string;
+    usersConfirmReinstateDetail: string;
+    usersConfirmDeleteTitle: string;
+    usersConfirmDeleteDetail: string;
+    usersToastSuspended: string;
+    usersToastReinstated: string;
+    usersToastDeleted: string;
+    usersActionFailed: string;
     overviewTitle: string;
     overviewSubtitle: string;
     navOverview: string;
@@ -1282,6 +1300,8 @@ export const translations: Record<Language, Translations> = {
       emailNotVerified: 'Email not verified',
       emailNotVerifiedDetail: 'Please verify your email address to access the dashboard.',
       mustAcceptTerms: 'Required — you must accept the terms to continue',
+      accountSuspended:
+        'Your account has been suspended. If you think this is a mistake, reply to the email you received.',
     },
     dashboard: {
       title: 'My Biographies',
@@ -2114,8 +2134,27 @@ export const translations: Record<Language, Translations> = {
       usersPageOf: 'of',
       usersAccessDenied: 'Access Denied',
       usersAccessDeniedMessage: 'This page is restricted to super administrators.',
+      usersPageRestrictedToAdmins: 'This page is restricted to administrators.',
       usersRedirectingIn: 'Redirecting in',
       usersLoadError: 'Failed to load users.',
+      usersColStatus: 'Account',
+      usersStatusActive: 'Active',
+      usersStatusSuspended: 'Suspended',
+      usersSuspend: 'Suspend',
+      usersReinstate: 'Reinstate',
+      usersDeleteUser: 'Delete user',
+      usersConfirmSuspendTitle: 'Suspend this account?',
+      usersConfirmSuspendDetail:
+        'The user will be signed out, unable to log in, and their public biography will be hidden. An email will be sent to the user.',
+      usersConfirmReinstateTitle: 'Reinstate this account?',
+      usersConfirmReinstateDetail: 'The user will be able to log in again. An email will be sent to the user.',
+      usersConfirmDeleteTitle: 'Delete this user permanently?',
+      usersConfirmDeleteDetail:
+        'This removes the account and associated data. This cannot be undone. An email will be sent to the user.',
+      usersToastSuspended: 'Account suspended.',
+      usersToastReinstated: 'Account reinstated.',
+      usersToastDeleted: 'User deleted.',
+      usersActionFailed: 'Action failed. Try again.',
       overviewTitle: 'Admin Overview',
       overviewSubtitle: 'Platform health and key statistics at a glance',
       navOverview: 'Overview',
@@ -2462,6 +2501,8 @@ export const translations: Record<Language, Translations> = {
       emailNotVerified: 'Email non verificata',
       emailNotVerifiedDetail: 'Per favore verifica il tuo indirizzo email per accedere alla dashboard.',
       mustAcceptTerms: 'Obbligatorio — devi accettare i termini per continuare',
+      accountSuspended:
+        'Il tuo account è stato sospeso. Se pensi sia un errore, rispondi all’email che hai ricevuto.',
     },
     dashboard: {
       title: 'Le Mie Biografie',
@@ -3294,8 +3335,27 @@ export const translations: Record<Language, Translations> = {
       usersPageOf: 'di',
       usersAccessDenied: 'Accesso Negato',
       usersAccessDeniedMessage: 'Questa pagina è riservata ai super amministratori.',
+      usersPageRestrictedToAdmins: 'Questa pagina è riservata agli amministratori.',
       usersRedirectingIn: 'Reindirizzamento tra',
       usersLoadError: 'Impossibile caricare gli utenti.',
+      usersColStatus: 'Account',
+      usersStatusActive: 'Attivo',
+      usersStatusSuspended: 'Sospeso',
+      usersSuspend: 'Sospendi',
+      usersReinstate: 'Riattiva',
+      usersDeleteUser: 'Elimina utente',
+      usersConfirmSuspendTitle: 'Sospendere questo account?',
+      usersConfirmSuspendDetail:
+        'L’utente verrà disconnesso, non potrà accedere e la biografia pubblica non sarà visibile. Verrà inviata un’email all’utente.',
+      usersConfirmReinstateTitle: 'Riattivare questo account?',
+      usersConfirmReinstateDetail: 'L’utente potrà di nuovo accedere. Verrà inviata un’email.',
+      usersConfirmDeleteTitle: 'Eliminare definitivamente questo utente?',
+      usersConfirmDeleteDetail:
+        'L’account e i dati associati verranno rimossi. Operazione irreversibile. Verrà inviata un’email all’utente.',
+      usersToastSuspended: 'Account sospeso.',
+      usersToastReinstated: 'Account riattivato.',
+      usersToastDeleted: 'Utente eliminato.',
+      usersActionFailed: 'Operazione non riuscita. Riprova.',
       overviewTitle: 'Panoramica Admin',
       overviewSubtitle: 'Stato della piattaforma e statistiche principali',
       navOverview: 'Panoramica',
@@ -3642,6 +3702,8 @@ export const translations: Record<Language, Translations> = {
       emailNotVerified: 'Email non v\u00e9rifi\u00e9',
       emailNotVerifiedDetail: 'Veuillez v\u00e9rifier votre adresse email pour acc\u00e9der au tableau de bord.',
       mustAcceptTerms: 'Obligatoire \u2014 vous devez accepter les conditions pour continuer',
+      accountSuspended:
+        'Votre compte a \u00e9t\u00e9 suspendu. Si vous pensez qu\u2019il s\u2019agit d\u2019une erreur, r\u00e9pondez \u00e0 l\u2019e-mail re\u00e7u.',
     },
     dashboard: {
       title: 'Mes Biographies',
@@ -4474,8 +4536,27 @@ export const translations: Record<Language, Translations> = {
       usersPageOf: 'sur',
       usersAccessDenied: 'Accès Refusé',
       usersAccessDeniedMessage: 'Cette page est réservée aux super administrateurs.',
+      usersPageRestrictedToAdmins: 'Cette page est réservée aux administrateurs.',
       usersRedirectingIn: 'Redirection dans',
       usersLoadError: 'Impossible de charger les utilisateurs.',
+      usersColStatus: 'Compte',
+      usersStatusActive: 'Actif',
+      usersStatusSuspended: 'Suspendu',
+      usersSuspend: 'Suspendre',
+      usersReinstate: 'Réactiver',
+      usersDeleteUser: 'Supprimer l’utilisateur',
+      usersConfirmSuspendTitle: 'Suspendre ce compte ?',
+      usersConfirmSuspendDetail:
+        'L’utilisateur sera déconnecté, ne pourra pas se connecter et sa biographie publique sera masquée. Un e-mail sera envoyé.',
+      usersConfirmReinstateTitle: 'Réactiver ce compte ?',
+      usersConfirmReinstateDetail: 'L’utilisateur pourra à nouveau se connecter. Un e-mail sera envoyé.',
+      usersConfirmDeleteTitle: 'Supprimer définitivement cet utilisateur ?',
+      usersConfirmDeleteDetail:
+        'Le compte et les données associées seront supprimés. Action irréversible. Un e-mail sera envoyé.',
+      usersToastSuspended: 'Compte suspendu.',
+      usersToastReinstated: 'Compte réactivé.',
+      usersToastDeleted: 'Utilisateur supprimé.',
+      usersActionFailed: 'Action impossible. Réessayez.',
       overviewTitle: 'Vue d\'ensemble Admin',
       overviewSubtitle: 'Santé de la plateforme et statistiques clés en un coup d\'œil',
       navOverview: 'Vue d\'ensemble',
@@ -4822,6 +4903,8 @@ export const translations: Record<Language, Translations> = {
       emailNotVerified: 'E-Mail nicht best\u00e4tigt',
       emailNotVerifiedDetail: 'Bitte best\u00e4tigen Sie Ihre E-Mail-Adresse, um auf das Dashboard zuzugreifen.',
       mustAcceptTerms: 'Erforderlich \u2014 Sie m\u00fcssen die Bedingungen akzeptieren, um fortzufahren',
+      accountSuspended:
+        'Ihr Konto wurde gesperrt. Wenn Sie glauben, dass dies ein Fehler ist, antworten Sie auf die erhaltene E-Mail.',
     },
     dashboard: {
       title: 'Meine Biografien',
@@ -5654,8 +5737,27 @@ export const translations: Record<Language, Translations> = {
       usersPageOf: 'von',
       usersAccessDenied: 'Zugriff verweigert',
       usersAccessDeniedMessage: 'Diese Seite ist nur für Super-Administratoren zugänglich.',
+      usersPageRestrictedToAdmins: 'Diese Seite ist nur für Administratoren zugänglich.',
       usersRedirectingIn: 'Weiterleitung in',
       usersLoadError: 'Benutzer konnten nicht geladen werden.',
+      usersColStatus: 'Konto',
+      usersStatusActive: 'Aktiv',
+      usersStatusSuspended: 'Gesperrt',
+      usersSuspend: 'Sperren',
+      usersReinstate: 'Wiederherstellen',
+      usersDeleteUser: 'Benutzer löschen',
+      usersConfirmSuspendTitle: 'Dieses Konto sperren?',
+      usersConfirmSuspendDetail:
+        'Der Benutzer wird abgemeldet, kann sich nicht anmelden und die öffentliche Biografie wird ausgeblendet. Eine E-Mail wird gesendet.',
+      usersConfirmReinstateTitle: 'Dieses Konto wiederherstellen?',
+      usersConfirmReinstateDetail: 'Der Benutzer kann sich wieder anmelden. Eine E-Mail wird gesendet.',
+      usersConfirmDeleteTitle: 'Diesen Benutzer dauerhaft löschen?',
+      usersConfirmDeleteDetail:
+        'Konto und zugehörige Daten werden entfernt. Nicht rückgängig zu machen. Eine E-Mail wird gesendet.',
+      usersToastSuspended: 'Konto gesperrt.',
+      usersToastReinstated: 'Konto wiederhergestellt.',
+      usersToastDeleted: 'Benutzer gelöscht.',
+      usersActionFailed: 'Aktion fehlgeschlagen. Bitte erneut versuchen.',
       overviewTitle: 'Admin-Übersicht',
       overviewSubtitle: 'Plattformzustand und wichtige Statistiken auf einen Blick',
       navOverview: 'Übersicht',

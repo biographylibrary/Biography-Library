@@ -223,6 +223,15 @@ export function Header() {
                   <span>{t.nav.dashboard}</span>
                 </DropdownMenuItem>
 
+                {showAdminLink && (
+                  <DropdownMenuItem asChild>
+                    <Link href="/admin" className="flex items-center gap-2 cursor-pointer">
+                      <Shield className="h-4 w-4" />
+                      <span>{adminLinkLabel}</span>
+                    </Link>
+                  </DropdownMenuItem>
+                )}
+
                 <DropdownMenuItem asChild>
                   <Link href="/notifications" className="flex items-center gap-2 cursor-pointer">
                     <div className="relative">

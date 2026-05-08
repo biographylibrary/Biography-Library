@@ -25,6 +25,7 @@ import {
   type BiographyContent,
   getEmptyContent,
   getSectionData,
+  lastBiographyEditorModeStorageKey,
 } from '@/lib/editor-constants';
 import {
   INITIAL_AI_STATE,
@@ -182,6 +183,15 @@ const [isPublishing, setIsPublishing] = useState(false);
   useEffect(() => {
     authorNameRef.current = authorName;
   }, [authorName]);
+
+  useEffect(() => {
+    if (!id || !biographyMode) return;
+    try {
+      localStorage.setItem(lastBiographyEditorModeStorageKey(id), biographyMode);
+    } catch {
+      /* ignore quota / private mode */
+    }
+  }, [id, biographyMode]);
 
   useEffect(() => {
     if (!authLoading && !user) {

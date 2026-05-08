@@ -6,13 +6,15 @@ How to run the project locally and how it is deployed to production.
 
 ## Stack at a glance
 
-| Layer | Service |
-|---|---|
-| Frontend + API routes | Next.js 13 (App Router), hosted on Infomaniak Jelastic (Node container) |
-| Database + Auth + Edge Functions | Supabase (managed Postgres + Deno runtime) |
-| AI provider | Infomaniak AI Tools (OpenAI-compatible, Mistral / Apertus models) |
-| Development environment | Bolt (browser-based IDE) → GitHub |
-| Static asset CDN | Supabase Storage (biography media / photos) |
+
+| Layer                            | Service                                                                 |
+| -------------------------------- | ----------------------------------------------------------------------- |
+| Frontend + API routes            | Next.js 13 (App Router), hosted on Infomaniak Jelastic (Node container) |
+| Database + Auth + Edge Functions | Supabase (managed Postgres + Deno runtime)                              |
+| AI provider                      | Infomaniak AI Tools (OpenAI-compatible, Mistral / Apertus models)       |
+| Development environment          | Bolt (browser-based IDE) → GitHub                                       |
+| Static asset CDN                 | Supabase Storage (biography media / photos)                             |
+
 
 ---
 
@@ -70,18 +72,20 @@ npm run lint       # ESLint
 
 See `.env.example` for the full annotated list. The short version:
 
-| Variable | Where it lives | Used by |
-|---|---|---|
-| `NEXT_PUBLIC_SUPABASE_URL` | `.env.local` / host env | Next.js (client + server) |
-| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | `.env.local` / host env | Next.js (client + server) |
-| `INFOMANIAK_AI_ENDPOINT` | `.env.local` / host env | `/api/review/submit` route |
-| `INFOMANIAK_AI_TOKEN` | `.env.local` / host env | `/api/review/submit` route |
-| `INFOMANIAK_AI_MODEL` | `.env.local` / host env | `/api/review/submit` route |
-| `NEXT_PUBLIC_APP_URL` | `.env.local` / host env | Canonical URL in meta tags |
-| `INFOMANIAK_AI_TOKEN` (secret) | Supabase Edge Function secrets | `ai-assistant`, `audio-transcription`, `help-assistant` |
-| `INFOMANIAK_AI_ENDPOINT` (secret) | Supabase Edge Function secrets | same functions |
-| `INFOMANIAK_AI_MODEL_PRIMARY` (secret) | Supabase Edge Function secrets | `ai-assistant` (default: Apertus-70B-Instruct-2509) |
-| `INFOMANIAK_AI_MODEL_FALLBACK` (secret) | Supabase Edge Function secrets | `ai-assistant` (default: mistral3) |
+
+| Variable                                | Where it lives                 | Used by                                                 |
+| --------------------------------------- | ------------------------------ | ------------------------------------------------------- |
+| `NEXT_PUBLIC_SUPABASE_URL`              | `.env.local` / host env        | Next.js (client + server)                               |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY`         | `.env.local` / host env        | Next.js (client + server)                               |
+| `INFOMANIAK_AI_ENDPOINT`                | `.env.local` / host env        | `/api/review/submit` route                              |
+| `INFOMANIAK_AI_TOKEN`                   | `.env.local` / host env        | `/api/review/submit` route                              |
+| `INFOMANIAK_AI_MODEL`                   | `.env.local` / host env        | `/api/review/submit` route                              |
+| `NEXT_PUBLIC_APP_URL`                   | `.env.local` / host env        | Canonical URL in meta tags                              |
+| `INFOMANIAK_AI_TOKEN` (secret)          | Supabase Edge Function secrets | `ai-assistant`, `audio-transcription`, `help-assistant` |
+| `INFOMANIAK_AI_ENDPOINT` (secret)       | Supabase Edge Function secrets | same functions                                          |
+| `INFOMANIAK_AI_MODEL_PRIMARY` (secret)  | Supabase Edge Function secrets | `ai-assistant` (default: Apertus-70B-Instruct-2509)     |
+| `INFOMANIAK_AI_MODEL_FALLBACK` (secret) | Supabase Edge Function secrets | `ai-assistant` (default: mistral3)                      |
+
 
 Note the split: the Next.js API route (`/api/review/submit`) reads AI credentials from host environment variables. The Supabase Edge Functions read them from Supabase secrets. Both need the same token and endpoint set in their respective locations.
 
@@ -106,6 +110,8 @@ Supabase is managed separately from the application host.
 **Edge Functions** — Deployed via the Supabase MCP `deploy_edge_function` tool or the Supabase dashboard. There is no CLI-based deploy in this workflow. After deploying, set or update secrets in the dashboard under Project Settings → Edge Functions → Secrets.
 
 **Auth** — Email/password; **email confirmation** is enforced in Supabase (production). Transactional mail uses **custom SMTP** (e.g. Resend) so messages come from the project domain (e.g. `biographylibrary.org`). No OAuth providers in-app. Session tokens are JWTs issued by Supabase Auth.
+
+**Next.js — account lifecycle emails** (suspend / reinstate / delete from `/admin/users`): set `RESEND_API_KEY` and `RESEND_FROM_EMAIL` in the app environment. If either is missing, admin actions still apply but emails are skipped (a warning is logged). Optional: `NEXT_PUBLIC_SITE_NAME`, `NEXT_PUBLIC_SITE_URL` for message copy and login links.
 
 ### 4. Infomaniak Jelastic (Next.js host)
 
@@ -145,12 +151,14 @@ Never use `DROP TABLE`, `DROP COLUMN`, or `TRUNCATE` in a migration without expl
 
 Four functions are deployed:
 
-| Slug | Purpose |
-|---|---|
-| `ai-assistant` | All writing AI actions (grammar, prompts, rewrite, follow-up, analysis) |
-| `audio-transcription` | Audio blob → transcript via Infomaniak Whisper endpoint |
-| `help-assistant` | In-app help chatbot; searches local KB before calling AI |
-| `log-error` | Receives client-side error reports and writes to `error_logs` table |
+
+| Slug                  | Purpose                                                                 |
+| --------------------- | ----------------------------------------------------------------------- |
+| `ai-assistant`        | All writing AI actions (grammar, prompts, rewrite, follow-up, analysis) |
+| `audio-transcription` | Audio blob → transcript via Infomaniak Whisper endpoint                 |
+| `help-assistant`      | In-app help chatbot; searches local KB before calling AI                |
+| `log-error`           | Receives client-side error reports and writes to `error_logs` table     |
+
 
 All functions require a valid Supabase JWT in the `Authorization` header (enforced by Supabase). The `log-error` function is the exception — it accepts anon tokens because errors may occur before login.
 
@@ -160,13 +168,14 @@ To update a function: edit `supabase/functions/<slug>/index.ts` and redeploy via
 
 ## First-time production setup checklist
 
-Per una **sequenza operativa** (merge → migrazioni prod → env → deploy → smoke test su 5 flussi), usare anche [`docs/BETA_RELEASE_CHECKLIST.md`](./docs/BETA_RELEASE_CHECKLIST.md).
+Per una **sequenza operativa** (merge → migrazioni prod → env → deploy → smoke test su 5 flussi), usare anche `[docs/BETA_RELEASE_CHECKLIST.md](./docs/BETA_RELEASE_CHECKLIST.md)`.
 
-- [ ] Supabase project created; URL and anon key copied to host env vars
-- [ ] All migrations applied in order
-- [ ] Edge Functions deployed (ai-assistant, audio-transcription, help-assistant, log-error)
-- [ ] Edge Function secrets set: `INFOMANIAK_AI_TOKEN`, `INFOMANIAK_AI_ENDPOINT`, `INFOMANIAK_AI_MODEL_PRIMARY`, `INFOMANIAK_AI_MODEL_FALLBACK`
-- [ ] Host environment variables set on Jelastic: `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `INFOMANIAK_AI_ENDPOINT`, `INFOMANIAK_AI_TOKEN`, `INFOMANIAK_AI_MODEL`, `NEXT_PUBLIC_APP_URL`
-- [ ] `npm run build` passes without errors on the container
-- [ ] First admin user created via Supabase Auth, then role set to `admin` directly in the `profiles` table
-- [ ] Supabase Storage bucket created for biography media with appropriate public/private access policy
+- Supabase project created; URL and anon key copied to host env vars
+- All migrations applied in order
+- Edge Functions deployed (ai-assistant, audio-transcription, help-assistant, log-error)
+- Edge Function secrets set: `INFOMANIAK_AI_TOKEN`, `INFOMANIAK_AI_ENDPOINT`, `INFOMANIAK_AI_MODEL_PRIMARY`, `INFOMANIAK_AI_MODEL_FALLBACK`
+- Host environment variables set on Jelastic: `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `INFOMANIAK_AI_ENDPOINT`, `INFOMANIAK_AI_TOKEN`, `INFOMANIAK_AI_MODEL`, `NEXT_PUBLIC_APP_URL`
+- `npm run build` passes without errors on the container
+- First admin user created via Supabase Auth, then role set to `admin` directly in the `profiles` table
+- Supabase Storage bucket created for biography media with appropriate public/private access policy
+

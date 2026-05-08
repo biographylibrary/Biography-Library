@@ -29,6 +29,18 @@ export default function LoginPage() {
     }
   }, [user, loading, router, returnTo]);
 
+  useEffect(() => {
+    try {
+      const n = sessionStorage.getItem('bl_auth_notice');
+      if (n === 'account_suspended') {
+        setError(t.auth.accountSuspended);
+        sessionStorage.removeItem('bl_auth_notice');
+      }
+    } catch {
+      /* ignore */
+    }
+  }, [t.auth.accountSuspended]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
@@ -40,7 +52,7 @@ export default function LoginPage() {
       return;
     }
     if (error) {
-      setError(error);
+      setError(error === 'ACCOUNT_SUSPENDED' ? t.auth.accountSuspended : error);
       setIsLoading(false);
     } else {
       router.push(returnTo || '/dashboard');
