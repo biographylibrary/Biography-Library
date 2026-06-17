@@ -42,6 +42,7 @@
     "@radix-ui/react-toggle-group": "^1.1.0",
     "@radix-ui/react-tooltip": "^1.1.2",
     "@supabase/supabase-js": "^2.58.0",
+    "@swc/helpers": "^0.5.23",
     "@tiptap/extension-character-count": "^3.19.0",
     "@tiptap/extension-placeholder": "^3.19.0",
     "@tiptap/extension-subscript": "^3.19.0",
