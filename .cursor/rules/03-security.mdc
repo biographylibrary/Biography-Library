@@ -1,0 +1,22 @@
+---
+description: Regole di sicurezza non negoziabili
+alwaysApply: true
+---
+
+## Segreti
+- Mai chiavi API, password o token nel codice sorgente.
+- Usa variabili d'ambiente; file locale `.env.local` mai committato.
+- `SUPABASE_SERVICE_ROLE_KEY` solo in route/server — mai esporla al client (`NEXT_PUBLIC_*`).
+
+## Database
+- Leggi ogni migrazione SQL riga per riga prima di applicarla.
+- Mai eseguire migrazioni su produzione senza conferma esplicita dell'utente.
+- Rispetta RLS: le policy Supabase proteggono i dati utente.
+
+## API e auth
+- Verifica ownership/autorizzazione su ogni API route sensibile.
+- Share-token: rispetta il flusso esistente (`get_biography_by_share_token`).
+- Rate limit AI: non bypassare i limiti in Edge Functions.
+
+## Dipendenze
+- Non aggiungere pacchetti senza conferma; controlla che non introducano vulnerabilità note.

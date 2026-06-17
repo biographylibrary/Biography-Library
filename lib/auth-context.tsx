@@ -32,14 +32,52 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [fontSize, setFontSize] = useState<FontSize>('normal');
 
   const loadProfile = useCallback(async (userId: string) => {
-    const { data } = await supabase
+    type ProfileRow = {
+      ui_font_size?: string | null;
+      role?: string | null;
+      account_status?: string | null;
+    };
+
+    let data: ProfileRow | null = null;
+
+    const full = await supabase
       .from('profiles')
-      .select('ui_font_size, role')
+      .select('ui_font_size, role, account_status')
       .eq('id', userId)
       .maybeSingle();
 
-    if (data?.role) {
+    if (full.error) {
+      const legacy = await supabase
+        .from('profiles')
+        .select('ui_font_size, role')
+        .eq('id', userId)
+        .maybeSingle();
+      data = legacy.data as ProfileRow | null;
+    } else {
+      data = full.data as ProfileRow | null;
+    }
+
+    if (!data) {
+      setRole(null);
+      return;
+    }
+
+    const status = data.account_status;
+    if (status === 'suspended') {
+      try {
+        sessionStorage.setItem('bl_auth_notice', 'account_suspended');
+      } catch {
+        /* ignore */
+      }
+      await supabase.auth.signOut();
+      setRole(null);
+      return;
+    }
+
+    if (data.role && ['user', 'reviewer', 'admin', 'super_admin'].includes(data.role)) {
       setRole(data.role as UserRole);
+    } else {
+      setRole(null);
     }
 
     if (data?.ui_font_size) {
@@ -82,9 +120,29 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signIn = useCallback(async (email: string, password: string) => {
     const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-    if (error) return { error: error.message };
+    if (error) {
+      const msg = error.message?.toLowerCase() ?? '';
+      if (msg.includes('banned') || msg.includes('ban')) {
+        return { error: 'ACCOUNT_SUSPENDED' };
+      }
+      return { error: error.message };
+    }
     if (data.user && !data.user.email_confirmed_at) {
       return { error: null, emailNotConfirmed: true };
+    }
+    if (data.user) {
+      const { data: prof, error: profErr } = await supabase
+        .from('profiles')
+        .select('account_status')
+        .eq('id', data.user.id)
+        .maybeSingle();
+      if (
+        !profErr &&
+        (prof as { account_status?: string } | null)?.account_status === 'suspended'
+      ) {
+        await supabase.auth.signOut();
+        return { error: 'ACCOUNT_SUSPENDED' };
+      }
     }
     return { error: null };
   }, []);

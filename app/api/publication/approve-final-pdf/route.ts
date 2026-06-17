@@ -50,7 +50,7 @@ export async function POST(req: NextRequest) {
 
     const { data: bio } = await serviceClient
       .from('biographies')
-      .select('user_id, status, pdf_draft_iteration, final_version, content_language')
+      .select('user_id, status, pdf_draft_iteration, final_version, content_language, draft_ai_feedback')
       .eq('id', biographyId)
       .maybeSingle();
 
@@ -90,7 +90,7 @@ export async function POST(req: NextRequest) {
       .from('biography_media')
       .select('id')
       .eq('biography_id', biographyId)
-      .eq('layout', 'cover')
+      .in('layout', ['cover', 'cover_a5'])
       .limit(1)
       .maybeSingle();
 
@@ -102,6 +102,15 @@ export async function POST(req: NextRequest) {
     }
 
     const contentLanguage: string = (bio as any).content_language ?? 'en';
+    const draftFeedback = (bio as any).draft_ai_feedback as
+      | {
+          red_flags?: Array<{ section_key?: string | null; issue?: string; severity?: number }>;
+        }
+      | null
+      | undefined;
+    const severity3Flags = (draftFeedback?.red_flags ?? []).filter(
+      (flag) => flag?.severity === 3 && typeof flag.issue === 'string' && flag.issue.trim().length > 0
+    );
 
     let finalPdfUrl: string;
     let listingCoverUrl: string | null = null;
@@ -138,6 +147,50 @@ export async function POST(req: NextRequest) {
     if (lockErr) {
       console.error('[approve-final-pdf] lock update error:', lockErr);
       return NextResponse.json({ error: 'Update failed' }, { status: 500 });
+    }
+
+    if (severity3Flags.length > 0) {
+      const flaggedPassages = severity3Flags.map((flag) => ({
+        section_key: typeof flag.section_key === 'string' ? flag.section_key : null,
+        text: flag.issue as string,
+        level: 3,
+      }));
+
+      const { data: report } = await serviceClient
+        .from('moderation_reports')
+        .insert({
+          biography_id: biographyId,
+          reporter_id: null,
+          report_type: 'level2_content',
+          description: 'Draft AI review flagged severity-3 content before final submission',
+          status: 'unassigned',
+          ai_analysis: {
+            summary: `${flaggedPassages.length} severity-3 draft AI flag(s)`,
+            flagged_passages: flaggedPassages,
+          },
+          ai_violation_level: 3,
+        })
+        .select('id')
+        .maybeSingle();
+
+      if (!(report as any)?.id) {
+        console.error('[approve-final-pdf] failed to create moderation report for severity-3 draft flags');
+      }
+      await serviceClient
+        .from('biographies')
+        .update({
+          status: 'under_review',
+          ai_screening_status: 'flagged',
+        })
+        .eq('id', biographyId);
+
+      return NextResponse.json({
+        result: 'under_review',
+        screeningDetail: 'flagged',
+        flagCount: flaggedPassages.length,
+        finalPdfUrl,
+        listingCoverUrl,
+      });
     }
 
     try {

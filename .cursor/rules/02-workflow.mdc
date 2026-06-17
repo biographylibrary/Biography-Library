@@ -1,0 +1,26 @@
+---
+description: Regole di workflow e git
+alwaysApply: true
+---
+
+## Git
+- Branch deploy produzione: `main` (push → GitHub Actions → Jelastic). Branch di lavoro: `main-sync` o feature branch.
+- Integrazione in `main` sempre via PR; **mai push diretto su `main`**.
+- Convenzione commit: `feat:`, `fix:`, `docs:`, `refactor:` + descrizione breve.
+- Prima di ogni commit: `npm run typecheck && npm run build` (e `npm run lint` se tocca UI).
+
+## Database
+- Ogni modifica schema = nuovo file in `supabase/migrations/` con timestamp e commento SQL.
+- Applicare prima in sviluppo; in produzione solo dopo revisione e checklist (`docs/BETA_RELEASE_CHECKLIST.md`).
+
+## Flusso Cursor
+1. **Esplora** (Ask/Piano) — capire il codice esistente
+2. **Pianifica** — piano approvato per task multi-file
+3. **Implementa** — agente in modalità Agent
+4. **Verifica** — typecheck, build, lint; smoke manuale o browser
+5. **Commit** — `/commit-push-pr` o comando equivalente
+
+## Sessioni
+- Salva piani in `.cursor/plans/` per contesto futuro.
+- Se lo stesso errore si ripete >2 volte, apri sessione nuova con prompt più preciso.
+- Committa solo quando richiesto esplicitamente dall'utente.

@@ -6,7 +6,7 @@ import { useAuth } from '@/lib/auth-context';
 import { useTranslation } from '@/lib/i18n/i18n-context';
 import { supabase } from '@/lib/supabase';
 import { useToast } from '@/hooks/use-toast';
-import { Users, ShieldOff, Search, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Users, ShieldOff, Search, ChevronLeft, ChevronRight, Ban, RotateCcw, Trash2 } from 'lucide-react';
 import { AdminNav } from '@/components/admin/AdminNav';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -37,11 +37,14 @@ import { Badge } from '@/components/ui/badge';
 
 type UserRole = 'user' | 'reviewer' | 'admin' | 'super_admin';
 
+type AccountStatus = 'active' | 'suspended';
+
 interface UserRow {
   id: string;
   full_name: string | null;
   email: string | null;
   role: UserRole;
+  account_status: AccountStatus;
   created_at: string;
   biography_count: number;
 }
@@ -53,7 +56,11 @@ interface PendingChange {
   newRole: UserRole;
 }
 
+type PendingAccountAction = 'suspend' | 'reinstate' | 'delete';
+
 const PAGE_SIZE = 20;
+
+const REVIEW_LANG_CODES = ['en', 'it', 'fr', 'de'] as const;
 
 const ROLE_ORDER: UserRole[] = ['user', 'reviewer', 'admin', 'super_admin'];
 
@@ -93,10 +100,25 @@ export default function AdminUsersPage() {
   const [page, setPage] = useState(1);
   const [pendingChanges, setPendingChanges] = useState<Record<string, UserRole>>({});
   const [confirmChange, setConfirmChange] = useState<PendingChange | null>(null);
+  const [confirmAccount, setConfirmAccount] = useState<{
+    action: PendingAccountAction;
+    user: UserRow;
+  } | null>(null);
   const [saving, setSaving] = useState<string | null>(null);
+  const [accountActionLoading, setAccountActionLoading] = useState<string | null>(null);
+  const [reviewerLangs, setReviewerLangs] = useState<Record<string, string[]>>({});
+  const [savingReviewerLangs, setSavingReviewerLangs] = useState<string | null>(null);
 
-  const isSuperAdmin = role === 'super_admin';
-  const isDenied = !loading && (!user || role !== 'super_admin');
+  const isStaffAdmin = role === 'admin' || role === 'super_admin';
+  const canEditRoles = role === 'super_admin';
+  const isDenied = !loading && (!user || !isStaffAdmin);
+
+  function canManageTargetRow(u: UserRow): boolean {
+    if (!user || u.id === user.id) return false;
+    if (role === 'super_admin') return true;
+    if (role === 'admin') return u.role === 'user' || u.role === 'reviewer';
+    return false;
+  }
 
   useEffect(() => {
     if (loading) return;
@@ -119,12 +141,23 @@ export default function AdminUsersPage() {
     setLoadingUsers(true);
     setLoadError(null);
     try {
-      const { data: profiles, error: profilesError } = await supabase
+      let profiles: unknown[] | null = null;
+
+      const full = await supabase
         .from('profiles')
-        .select('id, name, email, role, created_at')
+        .select('id, name, email, role, account_status, created_at')
         .order('created_at', { ascending: false });
 
-      if (profilesError) throw profilesError;
+      if (full.error) {
+        const legacy = await supabase
+          .from('profiles')
+          .select('id, name, email, role, created_at')
+          .order('created_at', { ascending: false });
+        if (legacy.error) throw legacy.error;
+        profiles = legacy.data as unknown[];
+      } else {
+        profiles = full.data as unknown[];
+      }
 
       const { data: bioCounts, error: bioError } = await supabase
         .from('biographies')
@@ -132,19 +165,45 @@ export default function AdminUsersPage() {
 
       if (bioError) throw bioError;
 
+      const { data: langRows, error: langError } = await supabase
+        .from('reviewer_languages')
+        .select('user_id, language_code');
+
+      if (langError) throw langError;
+
+      const langMap: Record<string, string[]> = {};
+      for (const row of langRows ?? []) {
+        const uid = (row as { user_id: string; language_code: string }).user_id;
+        const code = (row as { user_id: string; language_code: string }).language_code;
+        if (!langMap[uid]) langMap[uid] = [];
+        langMap[uid].push(code);
+      }
+      setReviewerLangs(langMap);
+
       const countMap: Record<string, number> = {};
       for (const b of bioCounts ?? []) {
         countMap[b.user_id] = (countMap[b.user_id] ?? 0) + 1;
       }
 
-      const rows: UserRow[] = (profiles ?? []).map((p) => ({
-        id: p.id,
-        full_name: p.name,
-        email: p.email ?? null,
-        role: p.role as UserRole,
-        created_at: p.created_at,
-        biography_count: countMap[p.id] ?? 0,
-      }));
+      const rows: UserRow[] = (profiles ?? []).map((p) => {
+        const row = p as {
+          id: string;
+          name: string | null;
+          email: string | null;
+          role: string;
+          account_status?: string;
+          created_at: string;
+        };
+        return {
+          id: row.id,
+          full_name: row.name,
+          email: row.email ?? null,
+          role: row.role as UserRole,
+          account_status: (row.account_status ?? 'active') as AccountStatus,
+          created_at: row.created_at,
+          biography_count: countMap[row.id] ?? 0,
+        };
+      });
 
       setUsers(rows);
     } catch {
@@ -155,10 +214,86 @@ export default function AdminUsersPage() {
   }, [t.admin.usersLoadError]);
 
   useEffect(() => {
-    if (isSuperAdmin) {
+    if (isStaffAdmin) {
       loadUsers();
     }
-  }, [isSuperAdmin, loadUsers]);
+  }, [isStaffAdmin, loadUsers]);
+
+  async function toggleReviewerLanguage(userId: string, code: string, enabled: boolean) {
+    if (!user || !isStaffAdmin) return;
+    setSavingReviewerLangs(userId);
+    try {
+      if (enabled) {
+        const { error } = await supabase.from('reviewer_languages').insert({
+          user_id: userId,
+          language_code: code,
+          assigned_by: user.id,
+        });
+        if (error) throw error;
+        setReviewerLangs((prev) => ({
+          ...prev,
+          [userId]: [...(prev[userId] ?? []).filter((c) => c !== code), code],
+        }));
+      } else {
+        const { error } = await supabase
+          .from('reviewer_languages')
+          .delete()
+          .eq('user_id', userId)
+          .eq('language_code', code);
+        if (error) throw error;
+        setReviewerLangs((prev) => ({
+          ...prev,
+          [userId]: (prev[userId] ?? []).filter((c) => c !== code),
+        }));
+      }
+      toast({ title: t.admin.usersReviewerLanguagesSaved });
+    } catch {
+      toast({ title: t.admin.usersReviewerLanguagesError, variant: 'destructive' });
+    } finally {
+      setSavingReviewerLangs(null);
+    }
+  }
+
+  async function callAdminUserApi(path: string, method: 'POST' | 'DELETE') {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session?.access_token) throw new Error('no_session');
+    const res = await fetch(path, {
+      method,
+      headers: { Authorization: `Bearer ${session.access_token}` },
+    });
+    const body = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error((body as { error?: string }).error ?? 'request_failed');
+  }
+
+  async function handleConfirmAccountAction() {
+    if (!confirmAccount) return;
+    const { action, user: u } = confirmAccount;
+    setAccountActionLoading(u.id);
+    try {
+      const base = `/api/admin/users/${u.id}`;
+      if (action === 'suspend') await callAdminUserApi(`${base}/suspend`, 'POST');
+      else if (action === 'reinstate') await callAdminUserApi(`${base}/reinstate`, 'POST');
+      else await callAdminUserApi(base, 'DELETE');
+
+      setUsers((prev) =>
+        action === 'delete'
+          ? prev.filter((x) => x.id !== u.id)
+          : prev.map((x) =>
+              x.id === u.id
+                ? { ...x, account_status: action === 'suspend' ? 'suspended' : 'active' }
+                : x
+            )
+      );
+      if (action === 'suspend') toast({ title: t.admin.usersToastSuspended });
+      else if (action === 'reinstate') toast({ title: t.admin.usersToastReinstated });
+      else toast({ title: t.admin.usersToastDeleted });
+    } catch {
+      toast({ title: t.admin.usersActionFailed, variant: 'destructive' });
+    } finally {
+      setAccountActionLoading(null);
+      setConfirmAccount(null);
+    }
+  }
 
   const filtered = useMemo(() => {
     const q = search.toLowerCase().trim();
@@ -183,6 +318,7 @@ export default function AdminUsersPage() {
   }
 
   function handleSaveClick(u: UserRow) {
+    if (!canEditRoles) return;
     if (u.id === user?.id) {
       toast({ title: t.admin.usersCannotChangeSelf, variant: 'destructive' });
       return;
@@ -254,7 +390,7 @@ export default function AdminUsersPage() {
             </div>
           </div>
           <h1 className="text-xl font-semibold text-foreground mb-2">{t.admin.usersAccessDenied}</h1>
-          <p className="text-sm text-muted-foreground mb-5">{t.admin.usersAccessDeniedMessage}</p>
+          <p className="text-sm text-muted-foreground mb-5">{t.admin.usersPageRestrictedToAdmins}</p>
           <p className="text-xs text-muted-foreground">
             {t.admin.usersRedirectingIn}{' '}
             <span className="font-semibold tabular-nums text-foreground">{countdown}</span>s…
@@ -312,6 +448,8 @@ export default function AdminUsersPage() {
                     <th className="px-4 py-3 text-left font-medium text-muted-foreground">{t.admin.usersColName}</th>
                     <th className="px-4 py-3 text-left font-medium text-muted-foreground hidden md:table-cell">{t.admin.usersColEmail}</th>
                     <th className="px-4 py-3 text-left font-medium text-muted-foreground">{t.admin.usersColRole}</th>
+                    <th className="px-4 py-3 text-left font-medium text-muted-foreground hidden lg:table-cell">{t.admin.usersReviewerLanguages}</th>
+                    <th className="px-4 py-3 text-left font-medium text-muted-foreground hidden xl:table-cell">{t.admin.usersColStatus}</th>
                     <th className="px-4 py-3 text-left font-medium text-muted-foreground hidden lg:table-cell">{t.admin.usersColJoined}</th>
                     <th className="px-4 py-3 text-center font-medium text-muted-foreground hidden sm:table-cell">{t.admin.usersColBiographies}</th>
                     <th className="px-4 py-3 text-right font-medium text-muted-foreground">{t.admin.usersColActions}</th>
@@ -325,6 +463,7 @@ export default function AdminUsersPage() {
                         <td className="px-4 py-3"><div className="h-4 w-32 bg-muted rounded animate-pulse" /></td>
                         <td className="px-4 py-3 hidden md:table-cell"><div className="h-4 w-44 bg-muted rounded animate-pulse" /></td>
                         <td className="px-4 py-3"><div className="h-8 w-28 bg-muted rounded animate-pulse" /></td>
+                        <td className="px-4 py-3 hidden xl:table-cell"><div className="h-4 w-16 bg-muted rounded animate-pulse" /></td>
                         <td className="px-4 py-3 hidden lg:table-cell"><div className="h-4 w-24 bg-muted rounded animate-pulse" /></td>
                         <td className="px-4 py-3 hidden sm:table-cell"><div className="h-4 w-8 bg-muted rounded animate-pulse mx-auto" /></td>
                         <td className="px-4 py-3"><div className="h-8 w-20 bg-muted rounded animate-pulse ml-auto" /></td>
@@ -332,7 +471,7 @@ export default function AdminUsersPage() {
                     ))
                   ) : pageUsers.length === 0 ? (
                     <tr>
-                      <td colSpan={7} className="px-4 py-12 text-center text-muted-foreground text-sm">
+                      <td colSpan={9} className="px-4 py-12 text-center text-muted-foreground text-sm">
                         No users found.
                       </td>
                     </tr>
@@ -344,6 +483,9 @@ export default function AdminUsersPage() {
                       const currentRole = pendingChanges[u.id] ?? u.role;
                       const hasChanged = pendingChanges[u.id] !== undefined && pendingChanges[u.id] !== u.role;
                       const isSavingThis = saving === u.id;
+                      const showRoleSelect = canEditRoles && !isSelf;
+                      const manage = canManageTargetRow(u);
+                      const busyAccount = accountActionLoading === u.id;
 
                       return (
                         <tr key={u.id} className="hover:bg-muted/30 transition-colors">
@@ -386,7 +528,7 @@ export default function AdminUsersPage() {
                                   <p>{t.admin.usersCannotChangeSelfTooltip}</p>
                                 </TooltipContent>
                               </Tooltip>
-                            ) : (
+                            ) : showRoleSelect ? (
                               <Select
                                 value={currentRole}
                                 onValueChange={(v) => handleRoleChange(u.id, v as UserRole)}
@@ -406,7 +548,48 @@ export default function AdminUsersPage() {
                                   ))}
                                 </SelectContent>
                               </Select>
+                            ) : (
+                              <span className="inline-flex">{getRoleBadge(currentRole, getRoleLabel(currentRole))}</span>
                             )}
+                          </td>
+                          <td className="px-4 py-3 hidden lg:table-cell">
+                            {(currentRole === 'reviewer' || currentRole === 'admin' || currentRole === 'super_admin') && isStaffAdmin ? (
+                              <div className="flex flex-wrap gap-1">
+                                {REVIEW_LANG_CODES.map((code) => {
+                                  const active = (reviewerLangs[u.id] ?? []).includes(code);
+                                  const busy = savingReviewerLangs === u.id;
+                                  return (
+                                    <button
+                                      key={code}
+                                      type="button"
+                                      disabled={busy || isSelf}
+                                      onClick={() => void toggleReviewerLanguage(u.id, code, !active)}
+                                      className={`text-[10px] uppercase px-1.5 py-0.5 rounded border transition-colors ${
+                                        active
+                                          ? 'bg-brand-blue/30 border-brand-blue/50 text-brand-ink'
+                                          : 'border-border text-muted-foreground hover:bg-muted/50'
+                                      } disabled:opacity-50`}
+                                    >
+                                      {code}
+                                    </button>
+                                  );
+                                })}
+                              </div>
+                            ) : (
+                              <span className="text-muted-foreground text-xs">—</span>
+                            )}
+                          </td>
+                          <td className="px-4 py-3 hidden xl:table-cell">
+                            <Badge
+                              variant="outline"
+                              className={
+                                u.account_status === 'suspended'
+                                  ? 'text-brand-wineDark border-brand-wine/40 bg-brand-wine/8'
+                                  : 'border-border'
+                              }
+                            >
+                              {u.account_status === 'suspended' ? t.admin.usersStatusSuspended : t.admin.usersStatusActive}
+                            </Badge>
                           </td>
                           <td className="px-4 py-3 text-muted-foreground hidden lg:table-cell text-xs">
                             {formatDate(u.created_at)}
@@ -415,18 +598,70 @@ export default function AdminUsersPage() {
                             <span className="text-sm font-medium text-foreground tabular-nums">{u.biography_count}</span>
                           </td>
                           <td className="px-4 py-3 text-right">
-                            {hasChanged && !isSelf ? (
-                              <Button
-                                size="sm"
-                                className="h-8 text-xs"
-                                disabled={isSavingThis}
-                                onClick={() => handleSaveClick(u)}
-                              >
-                                {isSavingThis ? '…' : t.admin.usersSaveRole}
-                              </Button>
-                            ) : (
-                              <span className="text-muted-foreground text-xs">—</span>
-                            )}
+                            <div className="flex flex-col items-end gap-1.5 min-w-[7rem]">
+                              {canEditRoles && hasChanged && !isSelf && (
+                                <Button
+                                  size="sm"
+                                  className="h-8 text-xs"
+                                  disabled={isSavingThis}
+                                  onClick={() => handleSaveClick(u)}
+                                >
+                                  {isSavingThis ? '…' : t.admin.usersSaveRole}
+                                </Button>
+                              )}
+                              {manage && (
+                                <div className="flex items-center justify-end gap-0.5">
+                                  {u.account_status === 'active' ? (
+                                    <Tooltip>
+                                      <TooltipTrigger asChild>
+                                        <button
+                                          type="button"
+                                          className="p-2 rounded-md text-muted-foreground hover:text-brand-wineDark hover:bg-brand-wine/10 disabled:opacity-50"
+                                          disabled={busyAccount}
+                                          onClick={() => setConfirmAccount({ action: 'suspend', user: u })}
+                                          aria-label={t.admin.usersSuspend}
+                                        >
+                                          <Ban className="h-4 w-4" />
+                                        </button>
+                                      </TooltipTrigger>
+                                      <TooltipContent>{t.admin.usersSuspend}</TooltipContent>
+                                    </Tooltip>
+                                  ) : (
+                                    <Tooltip>
+                                      <TooltipTrigger asChild>
+                                        <button
+                                          type="button"
+                                          className="p-2 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted disabled:opacity-50"
+                                          disabled={busyAccount}
+                                          onClick={() => setConfirmAccount({ action: 'reinstate', user: u })}
+                                          aria-label={t.admin.usersReinstate}
+                                        >
+                                          <RotateCcw className="h-4 w-4" />
+                                        </button>
+                                      </TooltipTrigger>
+                                      <TooltipContent>{t.admin.usersReinstate}</TooltipContent>
+                                    </Tooltip>
+                                  )}
+                                  <Tooltip>
+                                    <TooltipTrigger asChild>
+                                      <button
+                                        type="button"
+                                        className="p-2 rounded-md text-muted-foreground hover:text-destructive hover:bg-destructive/10 disabled:opacity-50"
+                                        disabled={busyAccount}
+                                        onClick={() => setConfirmAccount({ action: 'delete', user: u })}
+                                        aria-label={t.admin.usersDeleteUser}
+                                      >
+                                        <Trash2 className="h-4 w-4" />
+                                      </button>
+                                    </TooltipTrigger>
+                                    <TooltipContent>{t.admin.usersDeleteUser}</TooltipContent>
+                                  </Tooltip>
+                                </div>
+                              )}
+                              {!manage && !(canEditRoles && hasChanged && !isSelf) && (
+                                <span className="text-muted-foreground text-xs">—</span>
+                              )}
+                            </div>
                           </td>
                         </tr>
                       );
@@ -492,6 +727,38 @@ export default function AdminUsersPage() {
           <AlertDialogFooter>
             <AlertDialogCancel>{t.common.cancel}</AlertDialogCancel>
             <AlertDialogAction onClick={handleConfirmChange}>{t.common.confirm}</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <AlertDialog open={!!confirmAccount} onOpenChange={(open) => { if (!open) setConfirmAccount(null); }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              {confirmAccount?.action === 'suspend' && t.admin.usersConfirmSuspendTitle}
+              {confirmAccount?.action === 'reinstate' && t.admin.usersConfirmReinstateTitle}
+              {confirmAccount?.action === 'delete' && t.admin.usersConfirmDeleteTitle}
+            </AlertDialogTitle>
+            <AlertDialogDescription asChild>
+              <p className="text-sm text-muted-foreground">
+                {confirmAccount?.action === 'suspend' && t.admin.usersConfirmSuspendDetail}
+                {confirmAccount?.action === 'reinstate' && t.admin.usersConfirmReinstateDetail}
+                {confirmAccount?.action === 'delete' && t.admin.usersConfirmDeleteDetail}
+              </p>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={!!accountActionLoading}>{t.common.cancel}</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={(e) => {
+                e.preventDefault();
+                void handleConfirmAccountAction();
+              }}
+              disabled={!!accountActionLoading}
+              className={confirmAccount?.action === 'delete' ? 'bg-destructive text-destructive-foreground hover:bg-destructive/90' : undefined}
+            >
+              {accountActionLoading ? '…' : t.common.confirm}
+            </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>

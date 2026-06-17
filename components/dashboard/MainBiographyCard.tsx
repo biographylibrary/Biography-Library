@@ -16,7 +16,8 @@ import { Logo } from '@/components/logo';
 import { useTranslation } from '@/lib/i18n/i18n-context';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
-import { BIOGRAPHY_SECTIONS, type BiographyContent } from '@/lib/editor-constants';
+import { BIOGRAPHY_SECTIONS, type BiographyContent, lastBiographyEditorModeStorageKey } from '@/lib/editor-constants';
+import { isAuthorTextEditableStatus } from '@/lib/publication-state';
 import { getSectionTitle } from '@/lib/ai/next-section-recommender';
 import type { Biography } from '@/lib/biographies';
 import { GlobalNotesPanel } from '@/components/editor/GlobalNotesPanel';
@@ -66,6 +67,7 @@ export function MainBiographyCard({ biography, userName, userId, onDeleteClick, 
   const [showGlobalNotesPanel, setShowGlobalNotesPanel] = useState(false);
   const [globalNotesCount, setGlobalNotesCount] = useState(0);
   const [globalTodosCount, setGlobalTodosCount] = useState(0);
+  const [showSectionProgressBlock, setShowSectionProgressBlock] = useState(false);
 
   const dateLocales = {
     en: enUS,
@@ -116,6 +118,29 @@ export function MainBiographyCard({ biography, userName, userId, onDeleteClick, 
 
     loadData();
   }, [biography, userId]);
+
+  useEffect(() => {
+    if (!biography) {
+      setShowSectionProgressBlock(false);
+      return;
+    }
+    if (biography.biography_mode !== 'sections') {
+      setShowSectionProgressBlock(false);
+      return;
+    }
+    if (!isAuthorTextEditableStatus(biography.status)) {
+      setShowSectionProgressBlock(false);
+      return;
+    }
+    let last: string | null = null;
+    try {
+      last = localStorage.getItem(lastBiographyEditorModeStorageKey(biography.id));
+    } catch {
+      setShowSectionProgressBlock(true);
+      return;
+    }
+    setShowSectionProgressBlock(last !== 'freeflow');
+  }, [biography]);
 
   const getTimeBasedGreeting = () => {
     const hour = new Date().getHours();
@@ -283,11 +308,30 @@ export function MainBiographyCard({ biography, userName, userId, onDeleteClick, 
 
       <div className="space-y-6">
         <div>
-          <div className="flex items-start gap-2 mb-3">
+          <div className="flex items-start gap-2 mb-3 w-full">
             <BookOpen className="h-5 w-5 shrink-0 mt-0.5" />
-            <h2 className="text-lg font-semibold break-words line-clamp-4">
+            <h2 className="text-lg font-semibold break-words line-clamp-4 flex-1 min-w-0">
               {biography.title || t.dashboard.untitledBiography}
             </h2>
+            {!showSectionProgressBlock && onDeleteClick && (
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <button
+                      type="button"
+                      onClick={onDeleteClick}
+                      className="text-muted-foreground hover:text-destructive transition-colors shrink-0 mt-0.5"
+                      aria-label={t.deleteDialog.deleteBiographyLink}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>{t.deleteDialog.deleteBiographyLink}</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            )}
           </div>
 
           <div className="space-y-3 pl-4 sm:pl-7">
@@ -313,57 +357,62 @@ export function MainBiographyCard({ biography, userName, userId, onDeleteClick, 
               </div>
             </div>
 
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-muted-foreground">{t.dashboard.progress}:</span>
-                <span className="text-sm font-semibold text-foreground">{progress}%</span>
-              </div>
-              <div className="h-2 w-full bg-white dark:bg-white/10 rounded-full overflow-hidden">
-                <div
-                  className="h-full transition-all duration-300 ease-in-out"
-                  style={{ width: `${progress}%`, backgroundColor: getProgressColor(progress) }}
-                />
-              </div>
-            </div>
-
-            {biography.updated_at && (
-              <div className="flex items-center justify-between gap-2">
-                <div className="flex items-center gap-2 text-xs text-text-secondary dark:text-dark-text-secondary">
-                  <Clock className="h-3.5 w-3.5" />
-                  <span>
-                    {t.dashboard.lastUpdated}: {format(new Date(biography.updated_at), 'd MMM yyyy, HH:mm', { locale: dateLocales[language] })}
-                  </span>
+            {showSectionProgressBlock && (
+              <>
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-muted-foreground">{t.dashboard.progress}:</span>
+                    <span className="text-sm font-semibold text-foreground">{progress}%</span>
+                  </div>
+                  <div className="h-2 w-full bg-white dark:bg-white/10 rounded-full overflow-hidden">
+                    <div
+                      className="h-full transition-all duration-300 ease-in-out"
+                      style={{ width: `${progress}%`, backgroundColor: getProgressColor(progress) }}
+                    />
+                  </div>
                 </div>
-                {onDeleteClick && (
-                  <TooltipProvider>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <button
-                          onClick={onDeleteClick}
-                          className="text-muted-foreground hover:text-destructive transition-colors"
-                          aria-label={t.deleteDialog.deleteBiographyLink}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </button>
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <p>{t.deleteDialog.deleteBiographyLink}</p>
-                      </TooltipContent>
-                    </Tooltip>
-                  </TooltipProvider>
-                )}
-              </div>
-            )}
 
-            {milestones.length > 0 && (
-              <div className="flex items-center gap-2 flex-wrap pt-2">
-                {milestones.map((milestone, index) => (
-                  <Badge key={index} className="gap-1.5 py-1 bg-[#C8DFBE] text-[#121212]">
-                    <milestone.icon className="h-3.5 w-3.5" />
-                    <span className="text-xs">{milestone.label}</span>
-                  </Badge>
-                ))}
-              </div>
+                {biography.updated_at && (
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="flex items-center gap-2 text-xs text-text-secondary dark:text-dark-text-secondary">
+                      <Clock className="h-3.5 w-3.5" />
+                      <span>
+                        {t.dashboard.lastUpdated}: {format(new Date(biography.updated_at), 'd MMM yyyy, HH:mm', { locale: dateLocales[language] })}
+                      </span>
+                    </div>
+                    {onDeleteClick && (
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <button
+                              type="button"
+                              onClick={onDeleteClick}
+                              className="text-muted-foreground hover:text-destructive transition-colors"
+                              aria-label={t.deleteDialog.deleteBiographyLink}
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </button>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p>{t.deleteDialog.deleteBiographyLink}</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                    )}
+                  </div>
+                )}
+
+                {milestones.length > 0 && (
+                  <div className="flex items-center gap-2 flex-wrap pt-2">
+                    {milestones.map((milestone, index) => (
+                      <Badge key={index} className="gap-1.5 py-1 bg-[#C8DFBE] text-[#121212]">
+                        <milestone.icon className="h-3.5 w-3.5" />
+                        <span className="text-xs">{milestone.label}</span>
+                      </Badge>
+                    ))}
+                  </div>
+                )}
+              </>
             )}
           </div>
         </div>

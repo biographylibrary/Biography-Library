@@ -138,13 +138,14 @@ function BiographyCard({ bio, t, featured }: BiographyCardProps) {
     }
     supabase
       .from('biography_media')
-      .select('storage_path, file_url')
+      .select('storage_path, file_url, layout')
       .eq('biography_id', bio.id)
-      .eq('layout', 'cover')
-      .maybeSingle()
+      .in('layout', ['cover', 'cover_a5'])
       .then(({ data }) => {
         if (cancelled) return;
-        const url = data?.file_url ?? data?.storage_path ?? null;
+        const rows = (data as { file_url?: string | null; storage_path?: string | null; layout?: string }[] | null) ?? [];
+        const prefer = rows.find((r) => r.layout === 'cover') ?? rows[0];
+        const url = prefer?.file_url ?? prefer?.storage_path ?? null;
         setCover({ url: url ?? null, loaded: true });
       });
     return () => {

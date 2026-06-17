@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
-import { buildServiceClient } from '@/lib/server/review-submit-pipeline';
 
 type AnyClient = SupabaseClient<any, any, any>;
 
@@ -36,9 +35,9 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'biographyId is required' }, { status: 400 });
     }
 
-    const serviceClient = buildServiceClient();
+    const dbClient = anonClient;
 
-    const { data: bio } = await serviceClient
+    const { data: bio } = await dbClient
       .from('biographies')
       .select('user_id, status')
       .eq('id', biographyId)
@@ -57,11 +56,11 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const { data: coverMedia } = await serviceClient
+    const { data: coverMedia } = await dbClient
       .from('biography_media')
       .select('id')
       .eq('biography_id', biographyId)
-      .eq('layout', 'cover')
+      .in('layout', ['cover', 'cover_a5'])
       .limit(1)
       .maybeSingle();
 
@@ -73,12 +72,13 @@ export async function POST(req: NextRequest) {
     }
 
     const now = new Date().toISOString();
-    const { error: updErr } = await serviceClient
+    const { error: updErr } = await dbClient
       .from('biographies')
       .update({
         status: 'pdf_draft',
         pdf_draft_started_at: now,
         pdf_draft_iteration: null,
+        draft_ai_feedback: null,
       })
       .eq('id', biographyId);
 

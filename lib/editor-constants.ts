@@ -34,3 +34,8 @@ export function getSectionData(
 ): SectionData {
   return content[key] || { text: '', todo: false, audioTranscript: '' };
 }
+
+/** localStorage: ultimo `biography_mode` usato nell’editor (dashboard: blocco progresso sezioni). */
+export function lastBiographyEditorModeStorageKey(biographyId: string): string {
+  return `bl_last_biography_editor_mode_${biographyId}`;
+}

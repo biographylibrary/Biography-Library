@@ -25,6 +25,7 @@ import {
   type BiographyContent,
   getEmptyContent,
   getSectionData,
+  lastBiographyEditorModeStorageKey,
 } from '@/lib/editor-constants';
 import {
   INITIAL_AI_STATE,
@@ -104,7 +105,13 @@ export default function BiographyEditorPage() {
   const [narrativeOrder, setNarrativeOrder] = useState<string[]>([]);
   const [biographyStatus, setBiographyStatus] = useState<BiographyPublicationStatus>('draft');
   const [pdfDraftIteration, setPdfDraftIteration] = useState<number | null>(null);
+  const [draftAiFeedback, setDraftAiFeedback] = useState<{
+    ready_for_publication?: boolean;
+    red_flags?: Array<{ severity?: number }>;
+    aiError?: boolean;
+  } | null>(null);
   const [publicationActionLoading, setPublicationActionLoading] = useState<'start' | 'approve' | null>(null);
+  const [publicationActionError, setPublicationActionError] = useState<string | null>(null);
   const [showPublishDialog, setShowPublishDialog] = useState(false);
   const [showSubmitForReviewDialog, setShowSubmitForReviewDialog] = useState(false);
   const [isSubmittingForReview, setIsSubmittingForReview] = useState(false);
@@ -184,6 +191,15 @@ const [isPublishing, setIsPublishing] = useState(false);
   }, [authorName]);
 
   useEffect(() => {
+    if (!id || !biographyMode) return;
+    try {
+      localStorage.setItem(lastBiographyEditorModeStorageKey(id), biographyMode);
+    } catch {
+      /* ignore quota / private mode */
+    }
+  }, [id, biographyMode]);
+
+  useEffect(() => {
     if (!authLoading && !user) {
       router.push('/login');
     }
@@ -207,6 +223,12 @@ const [isPublishing, setIsPublishing] = useState(false);
         );
         setPdfDraftIteration(
           typeof data.pdf_draft_iteration === 'number' ? data.pdf_draft_iteration : null
+        );
+        setDraftAiFeedback(
+          (data.draft_ai_feedback as {
+            ready_for_publication?: boolean;
+            red_flags?: Array<{ severity?: number }>;
+          } | null) ?? null
         );
         setIsFrozen(data.is_frozen || false);
         setShareToken(data.share_token || null);
@@ -1293,6 +1315,7 @@ const [isPublishing, setIsPublishing] = useState(false);
   const handleStartPdfDraft = useCallback(async () => {
     if (!user) return;
     setPublicationActionLoading('start');
+    setPublicationActionError(null);
     try {
       const { data: { session } } = await supabase.auth.getSession();
       const res = await fetch('/api/publication/start-pdf-draft', {
@@ -1305,17 +1328,19 @@ const [isPublishing, setIsPublishing] = useState(false);
       });
       const payload = await res.json().catch(() => ({}));
       if (!res.ok) {
-        toast.error(
+        const msg =
           typeof payload?.message === 'string'
             ? payload.message
             : payload?.error === 'missing_cover'
               ? t.exportDialog.noCoverPhotoWarning
-              : 'Request failed'
-        );
+              : t.toast.requestFailed;
+        setPublicationActionError(msg);
+        toast.error(msg);
         return;
       }
       setBiographyStatus('pdf_draft');
       setPdfDraftIteration(null);
+      setDraftAiFeedback(null);
       setBiography((prev) =>
         prev
           ? {
@@ -1323,25 +1348,28 @@ const [isPublishing, setIsPublishing] = useState(false);
               status: 'pdf_draft',
               pdf_draft_started_at: payload.pdf_draft_started_at ?? prev.pdf_draft_started_at,
               pdf_draft_iteration: null,
+              draft_ai_feedback: null,
             }
           : prev
       );
+      setShowExportDialog(true);
       toast.success(
         language === 'it'
-          ? 'Fase bozze PDF avviata.'
+          ? 'Revisione PDF avviata.'
           : language === 'fr'
-            ? 'Phase de brouillons PDF démarrée.'
+            ? 'Révision PDF démarrée.'
             : language === 'de'
-              ? 'PDF-Entwurfsphase gestartet.'
-              : 'PDF draft phase started.'
+              ? 'PDF-Prüfung gestartet.'
+              : 'PDF review started.'
       );
     } catch (e) {
       console.error(e);
-      toast.error('Request failed');
+      setPublicationActionError(t.toast.requestFailed);
+      toast.error(t.toast.requestFailed);
     } finally {
       setPublicationActionLoading(null);
     }
-  }, [user, id, t.exportDialog.noCoverPhotoWarning, language]);
+  }, [user, id, t.exportDialog.noCoverPhotoWarning, t.toast.requestFailed, language]);
 
   const handleApproveFinalPdf = useCallback(async () => {
     if (!user?.id) return;
@@ -1386,6 +1414,7 @@ const [isPublishing, setIsPublishing] = useState(false);
         setBiographyStatus('published');
         setAiScreeningResult('passed');
         setPdfDraftIteration(null);
+        setDraftAiFeedback(null);
         setBiography((prev) =>
           prev
             ? {
@@ -1394,6 +1423,7 @@ const [isPublishing, setIsPublishing] = useState(false);
                 published_at: new Date().toISOString(),
                 ai_screening_status: 'passed',
                 pdf_draft_iteration: null,
+                draft_ai_feedback: null,
                 final_pdf_url: finalPdfUrlFromApi ?? prev.final_pdf_url,
               }
             : prev
@@ -1414,6 +1444,7 @@ const [isPublishing, setIsPublishing] = useState(false);
         const d = apiResult.screeningDetail as string | undefined;
         setBiographyStatus('under_review');
         setPdfDraftIteration(null);
+        setDraftAiFeedback(null);
         setBiography((prev) =>
           prev
             ? {
@@ -1422,6 +1453,7 @@ const [isPublishing, setIsPublishing] = useState(false);
                 ai_screening_status:
                   d === 'ai_error' || d === 'parse_error' ? d : 'flagged',
                 pdf_draft_iteration: null,
+                draft_ai_feedback: null,
                 final_pdf_url: finalPdfUrlFromApi ?? prev.final_pdf_url,
               }
             : prev
@@ -1481,6 +1513,14 @@ const [isPublishing, setIsPublishing] = useState(false);
   const reviewQueueLocksEditor =
     isReviewOrScreeningLockStatus(biographyStatus) &&
     !(biographyStatus === 'under_review' && isRevisionMode);
+  const draftHasSeverity3Flags = (draftAiFeedback?.red_flags ?? []).some((f) => f?.severity === 3);
+  const aiUnavailable = draftAiFeedback?.ready_for_publication !== undefined && draftAiFeedback?.red_flags !== undefined
+    ? (draftAiFeedback as { aiError?: boolean }).aiError === true
+    : false;
+  const canApproveFinalPdfFromDraftFeedback =
+    (pdfDraftIteration ?? 0) >= 1 &&
+    (aiUnavailable ||
+      (draftAiFeedback?.ready_for_publication === true && !draftHasSeverity3Flags));
 
   const showFinalVersionEditorLayout =
     biographyStatus === 'final_version' ||
@@ -1539,6 +1579,14 @@ const [isPublishing, setIsPublishing] = useState(false);
         </div>
       )}
 
+      {publicationActionError && (
+        <div className="shrink-0 bg-brand-wine/10 border-b border-brand-wine/35 px-4 py-2">
+          <div className="max-w-5xl mx-auto">
+            <p className="text-xs text-brand-wineDark dark:text-brand-mustardLight">{publicationActionError}</p>
+          </div>
+        </div>
+      )}
+
       {biographyStatus === 'pdf_draft' && !isFrozen && (
         <div className="shrink-0 bg-brand-mustardLight/40 border-b border-brand-mustardDark/35 px-4 py-3 dark:bg-brand-mustardDark/15 dark:border-brand-mustardDark/45">
           <div className="max-w-5xl mx-auto flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
@@ -1555,6 +1603,28 @@ const [isPublishing, setIsPublishing] = useState(false);
                       ? `Entwürfe erstellt: ${pdfDraftIteration ?? 0} / 3`
                       : `Drafts completed: ${pdfDraftIteration ?? 0} / 3`}
               </p>
+              {draftHasSeverity3Flags && (
+                <p className="text-xs text-brand-wineDark dark:text-brand-mustardLight mt-1">
+                  {language === 'it'
+                    ? 'Questa bozza contiene contenuti che possono bloccare la pubblicazione. Rivedi prima di procedere.'
+                    : language === 'fr'
+                    ? 'Ce brouillon contient du contenu pouvant bloquer la publication. Révisez avant de continuer.'
+                    : language === 'de'
+                    ? 'Dieser Entwurf enthält Inhalte, die die Veröffentlichung blockieren können. Bitte vor dem Fortfahren prüfen.'
+                    : 'This draft contains content that may block publication. Please review before proceeding.'}
+                </p>
+              )}
+              {aiUnavailable && (
+                <p className="text-xs text-brand-ink/80 dark:text-brand-beigeLight/85 mt-1">
+                  {language === 'it'
+                    ? 'Analisi AI non disponibile. Puoi comunque procedere alla pubblicazione.'
+                    : language === 'fr'
+                    ? 'Révision IA indisponible. Vous pouvez tout de même soumettre à publication.'
+                    : language === 'de'
+                    ? 'KI-Analyse nicht verfügbar. Sie können trotzdem zur Veröffentlichung fortfahren.'
+                    : 'AI review unavailable. You can still proceed to publication.'}
+                </p>
+              )}
             </div>
             <div className="flex flex-wrap items-center gap-2 shrink-0">
               <Button
@@ -1570,7 +1640,7 @@ const [isPublishing, setIsPublishing] = useState(false);
                 type="button"
                 size="sm"
                 className="gap-1.5 bg-brand-wine hover:bg-brand-wine/90 text-white"
-                disabled={publicationActionLoading !== null}
+                disabled={publicationActionLoading !== null || !canApproveFinalPdfFromDraftFeedback}
                 onClick={() => void handleApproveFinalPdf()}
               >
                 {publicationActionLoading === 'approve' ? (
@@ -2185,7 +2255,7 @@ const [isPublishing, setIsPublishing] = useState(false);
               void (async () => {
                 const { data } = await supabase
                   .from('biographies')
-                  .select('pdf_draft_iteration')
+                  .select('pdf_draft_iteration, draft_ai_feedback')
                   .eq('id', id)
                   .maybeSingle();
                 if (data && 'pdf_draft_iteration' in data) {
@@ -2193,6 +2263,12 @@ const [isPublishing, setIsPublishing] = useState(false);
                     typeof data.pdf_draft_iteration === 'number'
                       ? data.pdf_draft_iteration
                       : null
+                  );
+                  setDraftAiFeedback(
+                    (data.draft_ai_feedback as {
+                      ready_for_publication?: boolean;
+                      red_flags?: Array<{ severity?: number }>;
+                    } | null) ?? null
                   );
                 }
               })();

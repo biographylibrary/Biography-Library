@@ -15,6 +15,9 @@ const nextConfig = {
     ignoreDuringBuilds: true,
   },
   images: { unoptimized: true },
+  experimental: {
+    serverComponentsExternalPackages: ['docx'],
+  },
   webpack: (config, { isServer }) => {
     if (isServer) {
       config.externals = config.externals ?? [];

@@ -257,11 +257,17 @@ Helpers: `lib/publication-state.ts` (`isAuthorTextEditableStatus`, `isReviewOrSc
 
 | Route | Purpose |
 |-------|---------|
-| `POST /api/publication/start-pdf-draft` | `final_version` → `pdf_draft`; sets `pdf_draft_started_at`, clears `pdf_draft_iteration` |
-| `POST /api/publication/approve-final-pdf` | Requires `pdf_draft` + `pdf_draft_iteration` 1–3; locks → `locked_pending_screening`; `await` TXT/DOCX export; runs AI screening (shared `lib/server/review-submit-pipeline.ts`) |
+| `POST /api/publication/start-pdf-draft` | `final_version` → `pdf_draft`; sets `pdf_draft_started_at`, clears `pdf_draft_iteration` and `draft_ai_feedback` |
+| `POST /api/publication/draft-ai-review` | After each watermarked draft download: runs `runDraftAiReview`, increments `pdf_draft_iteration` (1–3), stores `draft_ai_feedback` jsonb |
+| `POST /api/publication/approve-final-pdf` | Requires `pdf_draft` + `pdf_draft_iteration` 1–3; locks → `locked_pending_screening`; `await` TXT/DOCX export; runs AI screening (shared `lib/server/review-submit-pipeline.ts`). Severity-3 draft AI flags force `under_review` before screening. |
 | `POST /api/review/submit` | Legacy path + rescreen; uses same pipeline |
 
-Watermarked PDF downloads are blocked while `status === 'final_version'` until the author starts the PDF phase (export dialog shows `draftPhaseRequiredBeforeDraft`).
+Watermarked PDF downloads are blocked while `status === 'final_version'` until the author starts the PDF phase (export dialog shows `draftPhaseRequiredBeforeDraft`). After each draft PDF export, the client calls `draft-ai-review`; feedback is shown in `AdvancedExportDialog` (severity 3 blocks final approval in UI).
+
+**Cover assets (v1)**
+
+- **`cover_a5`** layout on `biography_media` — full-bleed A5 cover for print PDF (`PhotoGalleryPanel`, migration `20260508120000_...`). `start-pdf-draft` and `approve-final-pdf` accept `cover` or `cover_a5`.
+- **`include_author_copyright_page`** on `biography_book_structure` — optional author/copyright sheet at book start (`BookStructurePanel`, `lib/pdf-export.ts`). See [`docs/DESIGN.md`](docs/DESIGN.md) for layout tokens.
 
 **Final PDF + catalogue cover (phase 3)**
 
@@ -338,3 +344,5 @@ Before generating, the function validates: cover photo exists, title and author 
 **i18n** — `I18nProvider` wraps the app and provides a `t()` translation function. Supported locales: `en`, `it`, `fr`, `de`. Biography content language is tracked separately from UI language — a French UI user can write an Italian biography.
 
 **Admin guards** — `AdminGuard` component checks `profile.role` on mount and redirects non-privileged users. Role checks use the profile loaded by `AuthProvider` at login; no additional round-trips.
+
+**Middleware** (`middleware.ts`) — defense in depth for staff routes: `/api/admin/*` requires Bearer JWT and staff role (`reviewer`, `admin`, `super_admin`); `/admin/*` enforces staff when a Supabase auth cookie is present (session is usually in localStorage, so client `AdminGuard` remains the primary gate for page routes). Does not replace Supabase RLS.

@@ -19,6 +19,7 @@ import { useTranslation } from '@/lib/i18n/i18n-context';
 
 interface BookStructureData {
   id?: string;
+  include_author_copyright_page: boolean;
   dedication_content: string;
   epigraph_content: string;
   epigraph_source: string;
@@ -35,6 +36,7 @@ interface BookStructureData {
 }
 
 const EMPTY_DATA: BookStructureData = {
+  include_author_copyright_page: false,
   dedication_content: '',
   epigraph_content: '',
   epigraph_source: '',
@@ -175,6 +177,8 @@ export function BookStructurePanel({ biographyId, userId }: BookStructurePanelPr
       if (existing) {
         setRecordId(existing.id);
         setData({
+          include_author_copyright_page:
+            (existing as { include_author_copyright_page?: boolean }).include_author_copyright_page === true,
           dedication_content: existing.dedication_content || '',
           epigraph_content: existing.epigraph_content || '',
           epigraph_source: existing.epigraph_source || '',
@@ -240,6 +244,19 @@ export function BookStructurePanel({ biographyId, userId }: BookStructurePanelPr
       <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider px-1 pt-2">
         {t.editor.bookStructureTitle}
       </p>
+
+      <div className="border border-border/60 rounded-lg overflow-hidden px-3 py-3">
+        <div className="flex items-center justify-between gap-3">
+          <span className="text-sm font-medium text-foreground leading-snug">
+            {t.editor.bookStructureAuthorCopyrightPage}
+          </span>
+          <Switch
+            checked={data.include_author_copyright_page}
+            onCheckedChange={(v) => handleToggle('include_author_copyright_page', v)}
+            className="shrink-0"
+          />
+        </div>
+      </div>
 
       <CollapsibleGroup title={t.editor.bookStructureFrontMatter}>
         <Block

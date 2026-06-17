@@ -89,7 +89,7 @@ export async function POST(req: NextRequest) {
       .from('biography_media')
       .select('id')
       .eq('biography_id', biographyId)
-      .eq('layout', 'cover')
+      .in('layout', ['cover', 'cover_a5'])
       .limit(1)
       .maybeSingle();
 

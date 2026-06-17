@@ -67,6 +67,24 @@ type ExportFormat = 'pdf-b5-standard' | 'txt' | 'docx';
 type ContentSelection = 'all' | 'completed' | 'custom';
 type ReadinessStatus = 'checking' | 'ready' | 'not-ready';
 
+type DraftSuggestionType = 'narrative' | 'completeness' | 'clarity' | 'style';
+interface DraftAiFeedback {
+  overall_quality: number;
+  strengths: string[];
+  suggestions: Array<{
+    type: DraftSuggestionType;
+    section_key: string | null;
+    text: string;
+  }>;
+  red_flags: Array<{
+    section_key: string | null;
+    issue: string;
+    severity: 1 | 2 | 3;
+  }>;
+  ready_for_publication: boolean;
+  aiError?: boolean;
+}
+
 export function AdvancedExportDialog({
   open,
   onOpenChange,
@@ -74,7 +92,7 @@ export function AdvancedExportDialog({
   isPublished = false,
   biographyStatus,
 }: AdvancedExportDialogProps) {
-  const { t } = useTranslation();
+  const { t, language } = useTranslation();
   const [format, setFormat] = useState<ExportFormat>('pdf-b5-standard');
   const [contentSelection, setContentSelection] = useState<ContentSelection>('all');
   const [selectedSections, setSelectedSections] = useState<string[]>([]);
@@ -91,6 +109,7 @@ export function AdvancedExportDialog({
   const [showFinalDraftConfirm, setShowFinalDraftConfirm] = useState(false);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [isPreviewing, setIsPreviewing] = useState(false);
+  const [draftFeedback, setDraftFeedback] = useState<DraftAiFeedback | null>(null);
 
   const isPdfFormat = format === 'pdf-b5-standard';
 
@@ -109,10 +128,11 @@ export function AdvancedExportDialog({
     }
     const { data } = await supabase
       .from('biographies')
-      .select('pdf_draft_iteration, content_language')
+      .select('pdf_draft_iteration, content_language, draft_ai_feedback')
       .eq('id', biography.id)
       .maybeSingle();
     setDraftIteration(data?.pdf_draft_iteration ?? null);
+    setDraftFeedback((data?.draft_ai_feedback as DraftAiFeedback | null) ?? null);
     if (data?.content_language) {
       setContentLanguage(data.content_language);
     } else if (!biography.content_language) {
@@ -207,6 +227,7 @@ export function AdvancedExportDialog({
     setIsExporting(true);
     setExportError(null);
     try {
+      const keepOpenForDraftFlow = isPdfFormat && !isPublished && biography.status === 'pdf_draft';
       const st = biography.status as BiographyPublicationStatus | undefined;
       const isFinalOrPublished = st ? isFinalVersionSourceStatus(st) : false;
       const isFreeFlow = biography.biography_mode === 'freeflow';
@@ -228,6 +249,10 @@ export function AdvancedExportDialog({
               epilogue: t.exportDialog.epilogue,
               acknowledgements: t.exportDialog.acknowledgements,
               specificCredits: t.exportDialog.specificCredits,
+              backCoverDescription: t.exportDialog.backCoverDescription,
+              backCoverPropertyStatement: t.exportDialog.backCoverPropertyStatement,
+              backCoverAiStatement: t.exportDialog.backCoverAiStatement,
+              backCoverFooter: t.exportDialog.backCoverFooter,
             },
             iterationToUse,
             contentLanguage
@@ -237,7 +262,7 @@ export function AdvancedExportDialog({
         } else if (format === 'docx') {
           await exportAsDOCX(finalBio, [], false);
         }
-        onOpenChange(false);
+        if (!keepOpenForDraftFlow) onOpenChange(false);
         return;
       }
 
@@ -253,6 +278,10 @@ export function AdvancedExportDialog({
               epilogue: t.exportDialog.epilogue,
               acknowledgements: t.exportDialog.acknowledgements,
               specificCredits: t.exportDialog.specificCredits,
+              backCoverDescription: t.exportDialog.backCoverDescription,
+              backCoverPropertyStatement: t.exportDialog.backCoverPropertyStatement,
+              backCoverAiStatement: t.exportDialog.backCoverAiStatement,
+              backCoverFooter: t.exportDialog.backCoverFooter,
             },
             iterationToUse,
             contentLanguage
@@ -262,7 +291,7 @@ export function AdvancedExportDialog({
         } else if (format === 'docx') {
           await exportAsDOCX(biography, [], false);
         }
-        onOpenChange(false);
+        if (!keepOpenForDraftFlow) onOpenChange(false);
         return;
       }
 
@@ -310,6 +339,10 @@ export function AdvancedExportDialog({
             epilogue: t.exportDialog.epilogue,
             acknowledgements: t.exportDialog.acknowledgements,
             specificCredits: t.exportDialog.specificCredits,
+            backCoverDescription: t.exportDialog.backCoverDescription,
+            backCoverPropertyStatement: t.exportDialog.backCoverPropertyStatement,
+            backCoverAiStatement: t.exportDialog.backCoverAiStatement,
+            backCoverFooter: t.exportDialog.backCoverFooter,
           },
           iterationToUse,
           contentLanguage
@@ -320,7 +353,7 @@ export function AdvancedExportDialog({
         await exportAsDOCX(biography, sections, separateFiles);
       }
 
-      onOpenChange(false);
+      if (!keepOpenForDraftFlow) onOpenChange(false);
     } catch (error: any) {
       if (error?.message === 'MISSING_COVER_PHOTO' || error?.message === 'MISSING_BIOGRAPHY_ID') {
         setReadinessStatus('not-ready');
@@ -359,28 +392,58 @@ export function AdvancedExportDialog({
       return;
     }
 
-    if (biography.id) {
-      await supabase
-        .from('biographies')
-        .update({ pdf_draft_iteration: nextIteration })
-        .eq('id', biography.id);
-      setDraftIteration(nextIteration);
-    }
-
     await performExport(nextIteration);
+
+    if (biography.id) {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        const res = await fetch('/api/publication/draft-ai-review', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            ...(session?.access_token ? { Authorization: `Bearer ${session.access_token}` } : {}),
+          },
+          body: JSON.stringify({ biographyId: biography.id }),
+        });
+        const payload = await res.json().catch(() => ({}));
+        if (res.ok) {
+          setDraftIteration(typeof payload.iteration === 'number' ? payload.iteration : nextIteration);
+          setDraftFeedback((payload.feedback as DraftAiFeedback) ?? null);
+        } else if ((payload as { error?: string }).error !== 'max_drafts_reached') {
+          setExportError(t.exportDialog.draftAiFeedbackUnavailable);
+        }
+      } catch {
+        setExportError(t.exportDialog.draftAiFeedbackUnavailable);
+      }
+    }
   };
 
   const handleConfirmFinalDraft = async () => {
     setShowFinalDraftConfirm(false);
     const nextIteration = 3;
-    if (biography.id) {
-      await supabase
-        .from('biographies')
-        .update({ pdf_draft_iteration: nextIteration })
-        .eq('id', biography.id);
-      setDraftIteration(nextIteration);
-    }
     await performExport(nextIteration);
+    if (biography.id) {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        const res = await fetch('/api/publication/draft-ai-review', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            ...(session?.access_token ? { Authorization: `Bearer ${session.access_token}` } : {}),
+          },
+          body: JSON.stringify({ biographyId: biography.id }),
+        });
+        const payload = await res.json().catch(() => ({}));
+        if (res.ok) {
+          setDraftIteration(typeof payload.iteration === 'number' ? payload.iteration : nextIteration);
+          setDraftFeedback((payload.feedback as DraftAiFeedback) ?? null);
+        } else if ((payload as { error?: string }).error !== 'max_drafts_reached') {
+          setExportError(t.exportDialog.draftAiFeedbackUnavailable);
+        }
+      } catch {
+        setExportError(t.exportDialog.draftAiFeedbackUnavailable);
+      }
+    }
   };
 
   const handlePreview = async () => {
@@ -419,6 +482,10 @@ export function AdvancedExportDialog({
           epilogue: t.exportDialog.epilogue,
           acknowledgements: t.exportDialog.acknowledgements,
           specificCredits: t.exportDialog.specificCredits,
+          backCoverDescription: t.exportDialog.backCoverDescription,
+          backCoverPropertyStatement: t.exportDialog.backCoverPropertyStatement,
+          backCoverAiStatement: t.exportDialog.backCoverAiStatement,
+          backCoverFooter: t.exportDialog.backCoverFooter,
         },
         draftIteration,
         contentLanguage,
@@ -451,6 +518,8 @@ export function AdvancedExportDialog({
     !!biographyStatus && isReviewOrScreeningLockStatus(biographyStatus as BiographyPublicationStatus);
   const pdfNotReady = isPdfFormat && readinessStatus === 'not-ready';
   const draftLimitExceeded = !isPublished && isPdfFormat && (draftIteration ?? 0) >= 3;
+  const hasSeverity3RedFlag = (draftFeedback?.red_flags ?? []).some((f) => f.severity === 3);
+  const aiUnavailable = draftFeedback?.aiError === true;
   const downloadDisabled =
     isExporting ||
     reviewLocked ||
@@ -559,6 +628,68 @@ export function AdvancedExportDialog({
                 <p className="text-sm text-brand-wineDark dark:text-brand-beigeLight leading-relaxed">
                   {t.exportDialog.draftLimitReached}
                 </p>
+              </div>
+            )}
+
+            {!isPublished && isPdfFormat && draftFeedback && (
+              <div className="space-y-3 rounded-lg border border-border bg-card p-4">
+                <div className="flex items-center justify-between gap-2">
+                  <h4 className="text-sm font-semibold">{t.exportDialog.draftAiReviewTitle}</h4>
+                  <span className="text-xs text-muted-foreground">
+                    {t.exportDialog.draftAiQuality.replace('{n}', String(draftFeedback.overall_quality))}
+                  </span>
+                </div>
+                {draftFeedback.aiError && (
+                  <p className="text-xs text-muted-foreground">
+                    {t.exportDialog.draftAiUnavailable}
+                  </p>
+                )}
+                {hasSeverity3RedFlag && (
+                  <div className="rounded-md border border-brand-wine/35 bg-brand-wine/10 px-3 py-2 text-xs text-brand-wineDark dark:text-brand-beigeLight">
+                    {t.exportDialog.draftAiSeverity3Block}
+                  </div>
+                )}
+                {draftFeedback.strengths.length > 0 && (
+                  <div className="space-y-1">
+                    <p className="text-xs font-medium text-muted-foreground">{t.exportDialog.draftAiStrengths}</p>
+                    <ul className="space-y-1 text-sm">
+                      {draftFeedback.strengths.map((s, i) => (
+                        <li key={`${s}-${i}`} className="text-foreground">
+                          ✓ {s}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+                {draftFeedback.suggestions.length > 0 && (
+                  <div className="space-y-2">
+                    <p className="text-xs font-medium text-muted-foreground">{t.exportDialog.draftAiSuggestions}</p>
+                    {(['narrative', 'completeness', 'clarity', 'style'] as const).map((type) => {
+                      const items = draftFeedback.suggestions.filter((s) => s.type === type);
+                      if (items.length === 0) return null;
+                      const typeLabel =
+                        type === 'narrative'
+                          ? t.exportDialog.draftAiSuggestionNarrative
+                          : type === 'completeness'
+                            ? t.exportDialog.draftAiSuggestionCompleteness
+                            : type === 'clarity'
+                              ? t.exportDialog.draftAiSuggestionClarity
+                              : t.exportDialog.draftAiSuggestionStyle;
+                      return (
+                        <div key={type} className="space-y-1">
+                          <p className="text-xs uppercase tracking-wide text-muted-foreground">{typeLabel}</p>
+                          <ul className="space-y-1 text-sm">
+                            {items.map((item, idx) => (
+                              <li key={`${type}-${idx}`} className="text-foreground">
+                                • {item.text}
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
               </div>
             )}
 
@@ -714,6 +845,17 @@ export function AdvancedExportDialog({
         </div>
 
         <DialogFooter className="gap-2 flex-col sm:flex-row items-end sm:items-center">
+          {aiUnavailable && (
+            <span className="text-xs text-muted-foreground sm:mr-auto">
+              {language === 'it'
+                ? 'Analisi AI non disponibile. Puoi comunque procedere alla pubblicazione.'
+                : language === 'fr'
+                ? 'Révision IA indisponible. Vous pouvez tout de même soumettre à publication.'
+                : language === 'de'
+                ? 'KI-Analyse nicht verfügbar. Sie können trotzdem zur Veröffentlichung fortfahren.'
+                : 'AI review unavailable. You can still proceed to publication.'}
+            </span>
+          )}
           {!isPublished && isPdfFormat && (
             <span className="text-xs text-muted-foreground sm:mr-auto">
               {(draftIteration ?? 0)} of 3 drafts used
