@@ -1,0 +1,25 @@
+---
+description: Convenzioni di codice del progetto
+alwaysApply: true
+---
+
+## Stile
+- TypeScript strict; ES modules (`import`/`export`).
+- Componenti React come funzioni; niente nuove librerie UI (solo shadcn/ui + Radix).
+- Nomi variabili in inglese; commenti solo se la logica non è ovvia.
+- **i18n obbligatorio:** nessuna stringa visibile hardcoded — aggiungere chiavi in `lib/i18n/translations.ts`.
+
+## Architettura
+- `app/` — pagine e API routes (App Router)
+- `components/` — UI (`editor/`, `admin/`, `ui/`)
+- `lib/` — logica condivisa (`ai/`, `pdf-export.ts`, `export-server.ts`, …)
+- `supabase/migrations/` — modifiche schema (file timestampati, mai DROP distruttivi)
+
+## Pattern di riferimento
+- Componenti UI: `@components/ui/button.tsx`
+- API route: `@app/api/review/submit/route.ts`
+- Palette e design system: `@.cursor/rules/ui-color-palette.mdc`, `@docs/DESIGN.md`
+- Prodotto e WIP: `@PRD.md`, `@SPEC.md`
+
+## Diff minimo
+- Cambia solo ciò che serve al task; non refactorare codice non correlato.

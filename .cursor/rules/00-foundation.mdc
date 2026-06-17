@@ -1,0 +1,31 @@
+---
+description: Identità del progetto, stack e comandi essenziali
+alwaysApply: true
+---
+
+## Identità
+- **Cosa fa:** piattaforma open-source per scrivere, moderare e pubblicare biografie personali multilingue (Biography Library Association).
+- **Stack:** Next.js 13 (App Router), Supabase (Postgres + Auth + Edge Functions), Tiptap, Tailwind/shadcn, Infomaniak AI, deploy Infomaniak Jelastic.
+- **Lingua chat:** italiano. Stringhe UI in `lib/i18n/translations.ts` (EN, IT, FR, DE).
+
+## Comandi essenziali
+- `npm run dev` — server locale
+- `npm run typecheck` — controllo TypeScript
+- `npm run build` — build produzione (obbligatorio prima di PR)
+- `npm run lint` — ESLint
+- **Non esiste `npm test`** — verifica con typecheck + build + lint + smoke manuale.
+
+## Variabili d'ambiente
+Copia `.env.example` → `.env.local` (mai committare). Obbligatorie: `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `INFOMANIAK_AI_*`. Dettagli in `.env.example` e `DEPLOYMENT.md`.
+
+## Documentazione di riferimento
+- `@README.md` — setup e struttura
+- `@PRD.md` — requisiti prodotto e scope
+- `@SPEC.md` — stato prodotto e lavoro in corso
+- `@DEPLOYMENT.md` — deploy e secrets
+- `@docs/DESIGN.md` — design system UI/PDF
+
+## Non fare mai
+- Installare librerie senza conferma
+- Modificare lo schema DB senza migrazione in `supabase/migrations/`
+- Committare chiavi API o `.env.local`

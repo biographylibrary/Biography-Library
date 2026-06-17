@@ -172,7 +172,6 @@ function PhotoCard({
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="full-page">{t.photos.layoutFullPage}</SelectItem>
-              <SelectItem value="cover">{t.photos.layoutCover}</SelectItem>
               <SelectItem value="two-vertical">{t.photos.layoutTwoVertical}</SelectItem>
               <SelectItem value="two-horizontal">{t.photos.layoutTwoHorizontal}</SelectItem>
               <SelectItem value="three-mixed">{t.photos.layoutThreeMixed}</SelectItem>
@@ -193,7 +192,15 @@ export function PhotoGalleryPanel({ biographyId, userId, onClose }: PhotoGallery
   const [deleteTarget, setDeleteTarget] = useState<MediaRow | null>(null);
   const [draggingId, setDraggingId] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const coverInputRef = useRef<HTMLInputElement>(null);
+  const coverA5InputRef = useRef<HTMLInputElement>(null);
   const objectUrlsRef = useRef<string[]>([]);
+
+  const coverComposite = items.find((i) => i.layout === 'cover') ?? null;
+  const coverA5Row = items.find((i) => i.layout === 'cover_a5') ?? null;
+  const galleryItems = items
+    .filter((i) => i.layout !== 'cover' && i.layout !== 'cover_a5')
+    .sort((a, b) => a.display_order - b.display_order);
 
   useEffect(() => {
     return () => {
@@ -229,6 +236,83 @@ export function PhotoGalleryPanel({ biographyId, userId, onClose }: PhotoGallery
     load();
   }, [load]);
 
+  const uploadSpecialCover = useCallback(
+    async (file: File, layout: 'cover' | 'cover_a5') => {
+      setErrorMsg(null);
+
+      if (!ACCEPTED_TYPES.includes(file.type)) {
+        setErrorMsg(t.photos.invalidFileType);
+        return;
+      }
+      if (file.size > MAX_BYTES) {
+        setErrorMsg(t.photos.fileTooLarge);
+        return;
+      }
+
+      const existing = items.find((i) => i.layout === layout);
+      const localPreview = URL.createObjectURL(file);
+      objectUrlsRef.current.push(localPreview);
+
+      setUploading(true);
+      setUploadProgress(10);
+
+      try {
+        if (existing) {
+          const path = storagePathFromUrl(existing.file_url);
+          if (path) await supabase.storage.from('biography-photos').remove([path]);
+          await supabase.from('biography_media').delete().eq('id', existing.id);
+        }
+
+        const ext = file.name.split('.').pop() ?? 'jpg';
+        const uniqueName = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+        const storagePath = `${userId}/${biographyId}/${uniqueName}`;
+
+        const { error: uploadError } = await supabase.storage
+          .from('biography-photos')
+          .upload(storagePath, file, { cacheControl: '3600', upsert: false });
+
+        setUploadProgress(70);
+
+        if (uploadError) {
+          setErrorMsg(t.photos.uploadError);
+          URL.revokeObjectURL(localPreview);
+          return;
+        }
+
+        const { data: urlData } = supabase.storage.from('biography-photos').getPublicUrl(storagePath);
+        const fileUrl = urlData?.publicUrl ?? storagePath;
+
+        const { data: inserted, error: insertError } = await supabase
+          .from('biography_media')
+          .insert({
+            biography_id: biographyId,
+            user_id: userId,
+            file_url: fileUrl,
+            file_name: file.name,
+            caption: '',
+            layout,
+            display_order: 0,
+          })
+          .select()
+          .maybeSingle();
+
+        setUploadProgress(100);
+
+        if (insertError || !inserted) {
+          await supabase.storage.from('biography-photos').remove([storagePath]);
+          setErrorMsg(t.photos.uploadError);
+          URL.revokeObjectURL(localPreview);
+        } else {
+          await load();
+        }
+      } finally {
+        setUploading(false);
+        setUploadProgress(0);
+      }
+    },
+    [biographyId, userId, items, t, load]
+  );
+
   const handleFileSelect = useCallback(
     async (file: File) => {
       setErrorMsg(null);
@@ -241,7 +325,7 @@ export function PhotoGalleryPanel({ biographyId, userId, onClose }: PhotoGallery
         setErrorMsg(t.photos.fileTooLarge);
         return;
       }
-      if (items.length >= 10) {
+      if (galleryItems.length >= 10) {
         setErrorMsg(t.photos.limitReached);
         return;
       }
@@ -277,7 +361,7 @@ export function PhotoGalleryPanel({ biographyId, userId, onClose }: PhotoGallery
       const fileUrl = urlData?.publicUrl ?? storagePath;
 
       const newOrder =
-        items.length > 0 ? Math.max(...items.map((i) => i.display_order)) + 1 : 0;
+        galleryItems.length > 0 ? Math.max(...galleryItems.map((i) => i.display_order)) + 1 : 0;
 
       const { data: inserted, error: insertError } = await supabase
         .from('biography_media')
@@ -309,7 +393,7 @@ export function PhotoGalleryPanel({ biographyId, userId, onClose }: PhotoGallery
       setUploading(false);
       setUploadProgress(0);
     },
-    [biographyId, userId, items, t]
+    [biographyId, userId, galleryItems, t]
   );
 
   const handleFileInput = useCallback(
@@ -365,13 +449,19 @@ export function PhotoGalleryPanel({ biographyId, userId, onClose }: PhotoGallery
       if (!draggingId || draggingId === targetId) return;
 
       setItems((prev) => {
-        const from = prev.findIndex((i) => i.id === draggingId);
-        const to = prev.findIndex((i) => i.id === targetId);
+        const coverRows = prev
+          .filter((i) => i.layout === 'cover' || i.layout === 'cover_a5')
+          .sort((a, b) => (a.layout === 'cover' ? 0 : 1) - (b.layout === 'cover' ? 0 : 1));
+        const gallery = prev
+          .filter((i) => i.layout !== 'cover' && i.layout !== 'cover_a5')
+          .sort((a, b) => a.display_order - b.display_order);
+        const from = gallery.findIndex((i) => i.id === draggingId);
+        const to = gallery.findIndex((i) => i.id === targetId);
         if (from === -1 || to === -1) return prev;
-        const next = [...prev];
-        const [moved] = next.splice(from, 1);
-        next.splice(to, 0, moved);
-        const reordered = next.map((item, idx) => ({ ...item, display_order: idx }));
+        const nextGallery = [...gallery];
+        const [moved] = nextGallery.splice(from, 1);
+        nextGallery.splice(to, 0, moved);
+        const reordered = nextGallery.map((item, idx) => ({ ...item, display_order: idx }));
 
         reordered.forEach((item) => {
           supabase
@@ -381,7 +471,7 @@ export function PhotoGalleryPanel({ biographyId, userId, onClose }: PhotoGallery
             .then(() => {});
         });
 
-        return reordered;
+        return [...coverRows, ...reordered];
       });
     },
     [draggingId]
@@ -391,7 +481,7 @@ export function PhotoGalleryPanel({ biographyId, userId, onClose }: PhotoGallery
     setDraggingId(null);
   }, []);
 
-  const counterText = t.photos.counter.replace('{count}', String(items.length));
+  const counterText = t.photos.counter.replace('{count}', String(galleryItems.length));
 
   return (
     <div className="flex flex-col h-full overflow-hidden">
@@ -431,8 +521,127 @@ export function PhotoGalleryPanel({ biographyId, userId, onClose }: PhotoGallery
           </div>
         )}
 
-        {items.length === 0 && !uploading && (
-          <div className="flex flex-col items-center justify-center py-12 text-center gap-3">
+        <div className="space-y-3 rounded-xl border border-border/60 bg-muted/30 p-3">
+          <p className="text-xs font-semibold text-foreground">{t.photos.coverCompositeTitle}</p>
+          <input
+            ref={coverInputRef}
+            type="file"
+            accept="image/jpeg,image/png,image/webp"
+            className="hidden"
+            onChange={(e) => {
+              const file = e.target.files?.[0];
+              if (file) void uploadSpecialCover(file, 'cover');
+              e.target.value = '';
+            }}
+          />
+          {coverComposite ? (
+            <div className="flex gap-3 items-start">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={coverComposite.previewUrl || coverComposite.file_url}
+                alt=""
+                className="w-24 h-32 object-cover rounded-md border border-border/60"
+              />
+              <div className="flex flex-col gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  className="text-xs"
+                  disabled={uploading}
+                  onClick={() => coverInputRef.current?.click()}
+                >
+                  {t.photos.uploadButton}
+                </Button>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  className="text-xs text-destructive"
+                  disabled={uploading}
+                  onClick={() => setDeleteTarget(coverComposite)}
+                >
+                  {t.common.delete}
+                </Button>
+              </div>
+            </div>
+          ) : (
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className="w-full text-xs"
+              disabled={uploading}
+              onClick={() => coverInputRef.current?.click()}
+            >
+              {t.photos.uploadButton}
+            </Button>
+          )}
+        </div>
+
+        <div className="space-y-2 rounded-xl border border-border/60 bg-muted/30 p-3">
+          <p className="text-xs font-semibold text-foreground">{t.photos.customA5CoverLabel}</p>
+          <p className="text-[11px] text-muted-foreground leading-snug">{t.photos.customA5CoverHint}</p>
+          <input
+            ref={coverA5InputRef}
+            type="file"
+            accept="image/jpeg,image/png,image/webp"
+            className="hidden"
+            onChange={(e) => {
+              const file = e.target.files?.[0];
+              if (file) void uploadSpecialCover(file, 'cover_a5');
+              e.target.value = '';
+            }}
+          />
+          {coverA5Row ? (
+            <div className="flex gap-3 items-start">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={coverA5Row.previewUrl || coverA5Row.file_url}
+                alt=""
+                className="w-24 h-36 object-cover rounded-md border border-border/60"
+              />
+              <div className="flex flex-col gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  className="text-xs"
+                  disabled={uploading}
+                  onClick={() => coverA5InputRef.current?.click()}
+                >
+                  {t.photos.uploadButton}
+                </Button>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  className="text-xs text-destructive"
+                  disabled={uploading}
+                  onClick={() => setDeleteTarget(coverA5Row)}
+                >
+                  {t.common.delete}
+                </Button>
+              </div>
+            </div>
+          ) : (
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className="w-full text-xs"
+              disabled={uploading}
+              onClick={() => coverA5InputRef.current?.click()}
+            >
+              {t.photos.uploadButton}
+            </Button>
+          )}
+        </div>
+
+        <p className="text-xs font-semibold text-foreground pt-1">{t.photos.galleryPhotosHeading}</p>
+
+        {galleryItems.length === 0 && !uploading && (
+          <div className="flex flex-col items-center justify-center py-8 text-center gap-3">
             <div className="rounded-full bg-muted p-4">
               <ImagePlus className="h-6 w-6 text-muted-foreground" />
             </div>
@@ -442,7 +651,7 @@ export function PhotoGalleryPanel({ biographyId, userId, onClose }: PhotoGallery
           </div>
         )}
 
-        {items.map((item) => (
+        {galleryItems.map((item) => (
           <PhotoCard
             key={item.id}
             item={item}
@@ -470,7 +679,7 @@ export function PhotoGalleryPanel({ biographyId, userId, onClose }: PhotoGallery
           variant="outline"
           className="w-full gap-2"
           onClick={() => fileInputRef.current?.click()}
-          disabled={uploading || items.length >= 10}
+          disabled={uploading || galleryItems.length >= 10}
         >
           <Upload className="h-4 w-4" />
           {t.photos.uploadButton}

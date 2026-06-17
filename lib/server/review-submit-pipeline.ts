@@ -1,5 +1,4 @@
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
-import { buildBiographyTxtContent, buildBiographyDocxBuffer } from '@/lib/export-server';
 import { stripHtml } from '@/lib/pdf-export';
 
 const INFOMANIAK_ENDPOINT = process.env.INFOMANIAK_AI_ENDPOINT ?? '';
@@ -134,7 +133,7 @@ async function fetchOpenAiFlaggedReportForRescreen(
   return { id: report.id as string, sectionKeys: keys };
 }
 
-async function fetchBiographyContent(
+export async function fetchBiographyContent(
   supabase: AnyClient,
   biographyId: string,
   targetSectionKeys?: string[]
@@ -212,6 +211,205 @@ interface ScreeningResult {
   overall_severity: number;
   aiError?: boolean;
   parseError?: boolean;
+}
+
+export interface DraftAiSuggestion {
+  type: 'narrative' | 'completeness' | 'clarity' | 'style';
+  section_key: string | null;
+  text: string;
+}
+
+export interface DraftAiRedFlag {
+  section_key: string | null;
+  issue: string;
+  severity: 1 | 2 | 3;
+}
+
+export interface DraftAiFeedback {
+  overall_quality: number;
+  strengths: string[];
+  suggestions: DraftAiSuggestion[];
+  red_flags: DraftAiRedFlag[];
+  ready_for_publication: boolean;
+  aiError?: boolean;
+}
+
+function normalizeDraftFeedback(input: unknown): DraftAiFeedback {
+  if (!input || typeof input !== 'object') {
+    return {
+      overall_quality: 0,
+      strengths: [],
+      suggestions: [],
+      red_flags: [],
+      ready_for_publication: false,
+      aiError: true,
+    };
+  }
+
+  const obj = input as Record<string, unknown>;
+  const quality =
+    typeof obj.overall_quality === 'number' && Number.isFinite(obj.overall_quality)
+      ? Math.max(0, Math.min(5, Math.round(obj.overall_quality)))
+      : 0;
+  const strengths = Array.isArray(obj.strengths)
+    ? obj.strengths.filter((s): s is string => typeof s === 'string').slice(0, 3)
+    : [];
+  const suggestions = Array.isArray(obj.suggestions)
+    ? obj.suggestions
+        .map((s): DraftAiSuggestion | null => {
+          if (!s || typeof s !== 'object') return null;
+          const rec = s as Record<string, unknown>;
+          const type = rec.type;
+          if (type !== 'narrative' && type !== 'completeness' && type !== 'clarity' && type !== 'style') {
+            return null;
+          }
+          const text = typeof rec.text === 'string' ? rec.text.slice(0, 200) : '';
+          if (!text) return null;
+          return {
+            type,
+            section_key: typeof rec.section_key === 'string' ? rec.section_key : null,
+            text,
+          };
+        })
+        .filter((s): s is DraftAiSuggestion => s !== null)
+    : [];
+  const redFlags = Array.isArray(obj.red_flags)
+    ? obj.red_flags
+        .map((r): DraftAiRedFlag | null => {
+          if (!r || typeof r !== 'object') return null;
+          const rec = r as Record<string, unknown>;
+          const sev = rec.severity;
+          const issue = typeof rec.issue === 'string' ? rec.issue : '';
+          if (!issue || (sev !== 1 && sev !== 2 && sev !== 3)) return null;
+          return {
+            section_key: typeof rec.section_key === 'string' ? rec.section_key : null,
+            issue,
+            severity: sev,
+          };
+        })
+        .filter((r): r is DraftAiRedFlag => r !== null)
+    : [];
+
+  return {
+    overall_quality: quality,
+    strengths,
+    suggestions,
+    red_flags: redFlags,
+    ready_for_publication: obj.ready_for_publication === true,
+  };
+}
+
+export async function runDraftAiReview(
+  biographyText: string,
+  iteration: 1 | 2 | 3
+): Promise<DraftAiFeedback> {
+  const errorResult: DraftAiFeedback = {
+    overall_quality: 0,
+    strengths: [],
+    suggestions: [],
+    red_flags: [],
+    ready_for_publication: false,
+    aiError: true,
+  };
+
+  if (!INFOMANIAK_TOKEN || !INFOMANIAK_ENDPOINT) {
+    console.warn('[review-submit-pipeline] Infomaniak AI not configured — draft review fallback');
+    return errorResult;
+  }
+
+  const systemPrompt =
+    'You are a biography editor reviewing a personal life story for publication. ' +
+    'Your role is to give constructive, encouraging feedback. The author may be elderly or not a professional writer. ' +
+    'Be kind but honest. Respond only with valid JSON.';
+  const jsonShapeBlock =
+    'Return ONLY this JSON shape (no markdown, no explanations):\n' +
+    '{\n' +
+    '  "overall_quality": 1-5,\n' +
+    '  "strengths": ["max 3 short strings"],\n' +
+    '  "suggestions": [\n' +
+    '    {\n' +
+    '      "type": "narrative" | "completeness" | "clarity" | "style",\n' +
+    '      "section_key": "string or null",\n' +
+    '      "text": "short actionable suggestion, max 200 chars"\n' +
+    '    }\n' +
+    '  ],\n' +
+    '  "red_flags": [\n' +
+    '    {\n' +
+    '      "section_key": "string or null",\n' +
+    '      "issue": "brief description",\n' +
+    '      "severity": 1 | 2 | 3\n' +
+    '    }\n' +
+    '  ],\n' +
+    '  "ready_for_publication": boolean\n' +
+    '}\n\n';
+
+  const iterationFocusBlock =
+    iteration === 1
+      ? 'This is the FIRST draft review. Focus exclusively on:\n' +
+        '- Narrative flow: does the story move naturally from beginning to end?\n' +
+        '- Completeness: are key life moments (childhood, family, work, turning points) present or clearly missing?\n' +
+        '- Emotional authenticity: does the voice feel genuine, not generic?\n' +
+        'Do NOT flag minor style or grammar issues at this stage.\n' +
+        'Flag as red_flag severity 3 ONLY content that is clearly defamatory or contains explicit personal data about a named living third party.'
+      : iteration === 2
+      ? 'This is the SECOND draft review. The narrative structure is already set. Focus on:\n' +
+        '- Clarity: are there sentences or paragraphs that are confusing or ambiguous?\n' +
+        '- Repetition: identify passages that repeat the same information unnecessarily\n' +
+        '- Pacing: flag sections that feel rushed (too short for their importance) or overlong (too detailed for their relevance)\n' +
+        'Do NOT re-evaluate narrative completeness already addressed in draft 1.\n' +
+        'Flag as red_flag severity 3 ONLY content that is clearly defamatory or makes unverified legal/criminal accusations about a named living person.'
+      : 'This is the THIRD and final draft review before publication. This is the last chance to catch problems. Focus on:\n' +
+        '- Final polish: anything that would embarrass the author if published as-is\n' +
+        '- Legal sensitivity: statements about living persons that could constitute defamation, privacy violations, or unverified criminal accusations — flag these as severity 3 (they will BLOCK publication and trigger human review)\n' +
+        '- AI training risk: if the text explicitly asks to be used for AI training, flag severity 3\n' +
+        'Be thorough. A missed severity-3 issue here goes to human moderators.';
+
+  const userPrompt =
+    jsonShapeBlock +
+    'Biography:\n' +
+    biographyText +
+    '\n\n' +
+    iterationFocusBlock;
+
+  try {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), AI_TIMEOUT_MS);
+    const res = await fetch(INFOMANIAK_ENDPOINT, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${INFOMANIAK_TOKEN}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: INFOMANIAK_MODEL,
+        max_tokens: 2048,
+        temperature: 0.2,
+        messages: [
+          { role: 'system', content: systemPrompt },
+          { role: 'user', content: userPrompt },
+        ],
+      }),
+      signal: controller.signal,
+    }).finally(() => clearTimeout(timer));
+
+    if (!res.ok) {
+      console.error('[review-submit-pipeline] Draft AI HTTP error:', res.status);
+      return errorResult;
+    }
+
+    const aiJson = await res.json();
+    const rawText: string = aiJson?.choices?.[0]?.message?.content ?? '';
+    const match = rawText.match(/\{[\s\S]*\}/);
+    if (!match) {
+      console.error('[review-submit-pipeline] Draft AI response has no JSON object');
+      return errorResult;
+    }
+    const parsed = JSON.parse(match[0]);
+    return normalizeDraftFeedback(parsed);
+  } catch (err) {
+    console.error('[review-submit-pipeline] Draft AI review error:', err);
+    return errorResult;
+  }
 }
 
 async function runAiScreening(
@@ -393,6 +591,7 @@ async function pickReviewer(
 
 export async function generateAndStoreExports(supabase: AnyClient, biographyId: string): Promise<void> {
   try {
+    const { buildBiographyTxtContent, buildBiographyDocxBuffer } = await import('@/lib/export-server');
     const { data: bio } = await supabase
       .from('biographies')
       .select('title, author_name, created_at, content_freeflow, biography_mode')

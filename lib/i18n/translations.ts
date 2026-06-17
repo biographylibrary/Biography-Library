@@ -236,6 +236,10 @@ export interface Translations {
     epilogue: string;
     acknowledgements: string;
     specificCredits: string;
+    backCoverDescription: string;
+    backCoverPropertyStatement: string;
+    backCoverAiStatement: string;
+    backCoverFooter: string;
     noCoverPhotoWarning: string;
     pdfDraftNotice: string;
     draftIterationNone: string;
@@ -245,6 +249,17 @@ export interface Translations {
     draftPhaseRequiredBeforeDraft: string;
     finalDraftConfirmTitle: string;
     finalDraftConfirmDescription: string;
+    draftAiReviewTitle: string;
+    draftAiQuality: string;
+    draftAiUnavailable: string;
+    draftAiSeverity3Block: string;
+    draftAiStrengths: string;
+    draftAiSuggestions: string;
+    draftAiSuggestionNarrative: string;
+    draftAiSuggestionCompleteness: string;
+    draftAiSuggestionClarity: string;
+    draftAiSuggestionStyle: string;
+    draftAiFeedbackUnavailable: string;
   };
   sectionTitles: {
     childhood: string;
@@ -326,6 +341,7 @@ export interface Translations {
     exportModeFreeFlow: string;
     exportModeSections: string;
     bookStructureTitle: string;
+    bookStructureAuthorCopyrightPage: string;
     bookStructureFrontMatter: string;
     bookStructureBackMatter: string;
     bookStructureDedication: string;
@@ -812,6 +828,10 @@ export interface Translations {
     layoutTwoVertical: string;
     layoutTwoHorizontal: string;
     layoutThreeMixed: string;
+    coverCompositeTitle: string;
+    customA5CoverLabel: string;
+    customA5CoverHint: string;
+    galleryPhotosHeading: string;
     deleteButton: string;
     deleteConfirmTitle: string;
     deleteConfirmMessage: string;
@@ -952,6 +972,9 @@ export interface Translations {
     usersToastReinstated: string;
     usersToastDeleted: string;
     usersActionFailed: string;
+    usersReviewerLanguages: string;
+    usersReviewerLanguagesSaved: string;
+    usersReviewerLanguagesError: string;
     overviewTitle: string;
     overviewSubtitle: string;
     navOverview: string;
@@ -1437,6 +1460,13 @@ export const translations: Record<Language, Translations> = {
       epilogue: 'Epilogue',
       acknowledgements: 'Acknowledgements',
       specificCredits: 'Credits',
+      backCoverDescription:
+        'This biography was managed with Biography Library, the digital archive of human memory that freely offers the tools to create and preserve your own story or that of a loved one.',
+      backCoverPropertyStatement:
+        'The text of this biography is the exclusive property of the author, who retains all rights to pursue any unauthorized use, including use for AI training purposes.',
+      backCoverAiStatement:
+        "Biography Library prohibits the use of content hosted on its servers for text mining, AI training or machine learning, pursuant to the Swiss Copyright Act (CopA/LDA) and the author's exclusive right of use under Swiss law.",
+      backCoverFooter: 'Biography Library · biographylibrary.org',
       noCoverPhotoWarning: 'A cover photo is required to generate the PDF. Upload a photo and tag it as cover in the Photos section.',
       pdfDraftNotice: 'This is a draft proof PDF. It reflects the current state of your biography and lets you verify layout and content before submitting for review.',
       draftIterationNone: 'No draft PDF generated yet. This will be Draft 1 of 3.',
@@ -1446,6 +1476,17 @@ export const translations: Record<Language, Translations> = {
         'Start the PDF review phase from the editor (Start PDF review) before downloading watermarked drafts.',
       finalDraftConfirmTitle: 'Generate Third and Final Draft',
       finalDraftConfirmDescription: 'This is your third and final draft. No further draft revisions will be allowed after this export. Make sure your biography is ready before proceeding.',
+      draftAiReviewTitle: 'AI Draft Review',
+      draftAiQuality: 'Quality: {n}/5',
+      draftAiUnavailable: 'AI review unavailable. You can still proceed to publication.',
+      draftAiSeverity3Block: 'This draft contains content that may block publication. Please review before proceeding.',
+      draftAiStrengths: 'Strengths',
+      draftAiSuggestions: 'Suggestions',
+      draftAiSuggestionNarrative: 'Narrative',
+      draftAiSuggestionCompleteness: 'Completeness',
+      draftAiSuggestionClarity: 'Clarity',
+      draftAiSuggestionStyle: 'Style',
+      draftAiFeedbackUnavailable: 'Draft AI feedback unavailable for this export.',
     },
     sectionTitles: {
       childhood: 'Childhood & Early Years',
@@ -1527,6 +1568,8 @@ export const translations: Record<Language, Translations> = {
       exportModeFreeFlow: 'Exporting in Free Flow mode — sections will not be included.',
       exportModeSections: 'Exporting in Sections mode — free flow text will not be included.',
       bookStructureTitle: 'Book Structure',
+      bookStructureAuthorCopyrightPage:
+        'Include short author credits page before the title leaf (PDF). Full legal statement remains on back cover.',
       bookStructureFrontMatter: 'Front matter',
       bookStructureBackMatter: 'Back matter',
       bookStructureDedication: 'Dedication',
@@ -2013,6 +2056,11 @@ export const translations: Record<Language, Translations> = {
       layoutTwoVertical: 'Two photos — vertical',
       layoutTwoHorizontal: 'Two photos — horizontal',
       layoutThreeMixed: 'Three photos (mixed)',
+      coverCompositeTitle: 'Cover photo (title card)',
+      customA5CoverLabel: 'Custom A5 cover (176×250mm)',
+      customA5CoverHint:
+        'Upload a pre-designed image in A5 format (176×250mm, 300dpi recommended). If the image has different proportions, it will be adapted to fit.',
+      galleryPhotosHeading: 'Photo gallery',
       deleteButton: 'Delete photo',
       deleteConfirmTitle: 'Delete photo',
       deleteConfirmMessage: 'Are you sure you want to delete this photo? This action cannot be undone.',
@@ -2155,6 +2203,9 @@ export const translations: Record<Language, Translations> = {
       usersToastReinstated: 'Account reinstated.',
       usersToastDeleted: 'User deleted.',
       usersActionFailed: 'Action failed. Try again.',
+      usersReviewerLanguages: 'Review languages',
+      usersReviewerLanguagesSaved: 'Reviewer languages updated.',
+      usersReviewerLanguagesError: 'Could not update reviewer languages.',
       overviewTitle: 'Admin Overview',
       overviewSubtitle: 'Platform health and key statistics at a glance',
       navOverview: 'Overview',
@@ -2638,6 +2689,13 @@ export const translations: Record<Language, Translations> = {
       epilogue: 'Epilogo',
       acknowledgements: 'Ringraziamenti',
       specificCredits: 'Crediti',
+      backCoverDescription:
+        'Questa biografia è stata gestita con Biography Library, l’archivio digitale della memoria umana che offre liberamente gli strumenti per creare e preservare la propria storia o quella di una persona cara.',
+      backCoverPropertyStatement:
+        'Il testo di questa biografia è proprietà esclusiva dell’autore, che mantiene ogni diritto di agire contro qualsiasi uso non autorizzato, incluso l’uso per addestramento di sistemi di IA.',
+      backCoverAiStatement:
+        "Biography Library vieta l’uso dei contenuti ospitati sui propri server per text mining, addestramento IA o machine learning, ai sensi della Legge svizzera sul diritto d’autore (LDA) e del diritto esclusivo d’uso dell’autore previsto dal diritto svizzero.",
+      backCoverFooter: 'Biography Library · biographylibrary.org',
       noCoverPhotoWarning: 'È necessaria una foto di copertina per generare il PDF. Carica una foto e contrassegnala come copertina nella sezione Foto.',
       pdfDraftNotice: 'Questo è un PDF di bozza. Riflette lo stato attuale della biografia e ti permette di verificare il layout e il contenuto prima di inviarlo alla revisione.',
       draftIterationNone: 'Nessun PDF di bozza generato ancora. Questo sarà la Bozza 1 di 3.',
@@ -2647,6 +2705,17 @@ export const translations: Record<Language, Translations> = {
         'Avvia la fase di revisione PDF dall\'editor (Avvia revisione PDF) prima di scaricare bozze con filigrana.',
       finalDraftConfirmTitle: 'Genera la Terza e Ultima Bozza',
       finalDraftConfirmDescription: 'Questa è la tua terza e ultima bozza. Non sarà possibile generare ulteriori bozze dopo questa esportazione. Assicurati che la tua biografia sia pronta prima di procedere.',
+      draftAiReviewTitle: 'Revisione AI della bozza',
+      draftAiQuality: 'Qualità: {n}/5',
+      draftAiUnavailable: 'Analisi AI non disponibile. Puoi comunque procedere alla pubblicazione.',
+      draftAiSeverity3Block: 'Questa bozza contiene contenuti che potrebbero bloccare la pubblicazione. Rivedila prima di procedere.',
+      draftAiStrengths: 'Punti di forza',
+      draftAiSuggestions: 'Suggerimenti',
+      draftAiSuggestionNarrative: 'Narrativa',
+      draftAiSuggestionCompleteness: 'Completezza',
+      draftAiSuggestionClarity: 'Chiarezza',
+      draftAiSuggestionStyle: 'Stile',
+      draftAiFeedbackUnavailable: 'Feedback AI della bozza non disponibile per questo export.',
     },
     sectionTitles: {
       childhood: 'Infanzia e Primi Anni',
@@ -2728,6 +2797,8 @@ export const translations: Record<Language, Translations> = {
       exportModeFreeFlow: 'Export in modalità Testo libero — le sezioni non saranno incluse.',
       exportModeSections: 'Export in modalità Sezioni — il testo libero non sarà incluso.',
       bookStructureTitle: 'Struttura del libro',
+      bookStructureAuthorCopyrightPage:
+        'Includi una breve pagina crediti autore prima del frontespizio (PDF). Il testo legale completo resta sulla quarta copertina.',
       bookStructureFrontMatter: 'Pagine d\'apertura',
       bookStructureBackMatter: 'Pagine di chiusura',
       bookStructureDedication: 'Dedica',
@@ -3214,6 +3285,11 @@ export const translations: Record<Language, Translations> = {
       layoutTwoVertical: 'Due foto — verticale',
       layoutTwoHorizontal: 'Due foto — orizzontale',
       layoutThreeMixed: 'Tre foto (misto)',
+      coverCompositeTitle: 'Foto di copertina (titolo)',
+      customA5CoverLabel: 'Copertina personalizzata A5 (176×250mm)',
+      customA5CoverHint:
+        "Carica un'immagine già impaginata in formato A5 (176×250mm, 300dpi consigliati). Se l'immagine ha proporzioni diverse, verrà adattata al formato.",
+      galleryPhotosHeading: 'Galleria foto',
       deleteButton: 'Elimina foto',
       deleteConfirmTitle: 'Elimina foto',
       deleteConfirmMessage: 'Sei sicuro di voler eliminare questa foto? Questa azione non può essere annullata.',
@@ -3356,6 +3432,9 @@ export const translations: Record<Language, Translations> = {
       usersToastReinstated: 'Account riattivato.',
       usersToastDeleted: 'Utente eliminato.',
       usersActionFailed: 'Operazione non riuscita. Riprova.',
+      usersReviewerLanguages: 'Lingue di revisione',
+      usersReviewerLanguagesSaved: 'Lingue revisore aggiornate.',
+      usersReviewerLanguagesError: 'Impossibile aggiornare le lingue revisore.',
       overviewTitle: 'Panoramica Admin',
       overviewSubtitle: 'Stato della piattaforma e statistiche principali',
       navOverview: 'Panoramica',
@@ -3839,6 +3918,13 @@ export const translations: Record<Language, Translations> = {
       epilogue: 'Épilogue',
       acknowledgements: 'Remerciements',
       specificCredits: 'Crédits',
+      backCoverDescription:
+        'Cette biographie a été gérée avec Biography Library, l’archive numérique de la mémoire humaine qui offre librement les outils pour créer et préserver votre propre histoire ou celle d’un proche.',
+      backCoverPropertyStatement:
+        "Le texte de cette biographie est la propriété exclusive de l’auteur, qui conserve tous les droits pour agir contre toute utilisation non autorisée, y compris l’usage à des fins d’entraînement d’IA.",
+      backCoverAiStatement:
+        "Biography Library interdit l’utilisation des contenus hébergés sur ses serveurs pour le text mining, l’entraînement d’IA ou le machine learning, conformément à la Loi suisse sur le droit d’auteur (LDA) et au droit d’usage exclusif de l’auteur en droit suisse.",
+      backCoverFooter: 'Biography Library · biographylibrary.org',
       noCoverPhotoWarning: 'Une photo de couverture est requise pour générer le PDF. Importez une photo et marquez-la comme couverture dans la section Photos.',
       pdfDraftNotice: 'Il s\'agit d\'un PDF de brouillon. Il reflète l\'état actuel de votre biographie et vous permet de vérifier la mise en page et le contenu avant de soumettre pour révision.',
       draftIterationNone: 'Aucun PDF de brouillon généré pour l\'instant. Ce sera le Brouillon 1 sur 3.',
@@ -3848,6 +3934,17 @@ export const translations: Record<Language, Translations> = {
         'Démarrez la phase de révision PDF depuis l’éditeur (Démarrer la révision PDF) avant de télécharger des brouillons filigranés.',
       finalDraftConfirmTitle: 'Générer le Troisième et Dernier Brouillon',
       finalDraftConfirmDescription: 'Il s\'agit de votre troisième et dernier brouillon. Aucune révision supplémentaire ne sera autorisée après cette exportation. Assurez-vous que votre biographie est prête avant de continuer.',
+      draftAiReviewTitle: 'Révision IA du brouillon',
+      draftAiQuality: 'Qualité : {n}/5',
+      draftAiUnavailable: 'Révision IA indisponible. Vous pouvez tout de même soumettre à publication.',
+      draftAiSeverity3Block: 'Ce brouillon contient du contenu susceptible de bloquer la publication. Veuillez le relire avant de continuer.',
+      draftAiStrengths: 'Points forts',
+      draftAiSuggestions: 'Suggestions',
+      draftAiSuggestionNarrative: 'Narratif',
+      draftAiSuggestionCompleteness: 'Complétude',
+      draftAiSuggestionClarity: 'Clarté',
+      draftAiSuggestionStyle: 'Style',
+      draftAiFeedbackUnavailable: 'Retour IA du brouillon indisponible pour cet export.',
     },
     sectionTitles: {
       childhood: 'Enfance et Premières Années',
@@ -3929,6 +4026,8 @@ export const translations: Record<Language, Translations> = {
       exportModeFreeFlow: 'Export en mode Texte libre — les sections ne seront pas incluses.',
       exportModeSections: 'Export en mode Sections — le texte libre ne sera pas inclus.',
       bookStructureTitle: 'Structure du livre',
+      bookStructureAuthorCopyrightPage:
+        'Inclure une courte page de crédits auteur avant le titre (PDF). Le texte légal complet reste en quatrième de couverture.',
       bookStructureFrontMatter: 'Pages liminaires',
       bookStructureBackMatter: 'Pages annexes',
       bookStructureDedication: 'Dédicace',
@@ -4415,6 +4514,11 @@ export const translations: Record<Language, Translations> = {
       layoutTwoVertical: 'Deux photos — vertical',
       layoutTwoHorizontal: 'Deux photos — horizontal',
       layoutThreeMixed: 'Trois photos (mixte)',
+      coverCompositeTitle: 'Photo de couverture (carte titre)',
+      customA5CoverLabel: 'Couverture personnalisée A5 (176×250mm)',
+      customA5CoverHint:
+        'Téléchargez une image déjà mise en page au format A5 (176×250mm, 300dpi recommandés). Si les proportions diffèrent, l’image sera adaptée.',
+      galleryPhotosHeading: 'Galerie photos',
       deleteButton: 'Supprimer la photo',
       deleteConfirmTitle: 'Supprimer la photo',
       deleteConfirmMessage: 'Êtes-vous sûr de vouloir supprimer cette photo ? Cette action est irréversible.',
@@ -4557,6 +4661,9 @@ export const translations: Record<Language, Translations> = {
       usersToastReinstated: 'Compte réactivé.',
       usersToastDeleted: 'Utilisateur supprimé.',
       usersActionFailed: 'Action impossible. Réessayez.',
+      usersReviewerLanguages: 'Langues de révision',
+      usersReviewerLanguagesSaved: 'Langues du réviseur mises à jour.',
+      usersReviewerLanguagesError: 'Impossible de mettre à jour les langues du réviseur.',
       overviewTitle: 'Vue d\'ensemble Admin',
       overviewSubtitle: 'Santé de la plateforme et statistiques clés en un coup d\'œil',
       navOverview: 'Vue d\'ensemble',
@@ -5040,6 +5147,13 @@ export const translations: Record<Language, Translations> = {
       epilogue: 'Nachwort',
       acknowledgements: 'Danksagung',
       specificCredits: 'Quellenangaben',
+      backCoverDescription:
+        'Diese Biografie wurde mit Biography Library erstellt, dem digitalen Archiv der menschlichen Erinnerung, das frei Werkzeuge anbietet, um die eigene Geschichte oder die eines geliebten Menschen zu erstellen und zu bewahren.',
+      backCoverPropertyStatement:
+        'Der Text dieser Biografie ist ausschließliches Eigentum des Autors, der alle Rechte behält, gegen jede unbefugte Nutzung vorzugehen, einschließlich der Nutzung für KI-Trainingszwecke.',
+      backCoverAiStatement:
+        'Biography Library untersagt die Nutzung von auf seinen Servern gehosteten Inhalten für Text-Mining, KI-Training oder maschinelles Lernen gemäß dem Schweizer Urheberrechtsgesetz (URG/LDA) und dem ausschließlichen Nutzungsrecht des Autors nach Schweizer Recht.',
+      backCoverFooter: 'Biography Library · biographylibrary.org',
       noCoverPhotoWarning: 'Ein Titelfoto ist erforderlich, um das PDF zu erstellen. Lade ein Foto hoch und markiere es als Titelbild im Fotos-Bereich.',
       pdfDraftNotice: 'Dies ist ein Entwurfs-PDF. Es spiegelt den aktuellen Stand der Biografie wider und ermöglicht es dir, Layout und Inhalt vor der Einreichung zur Überprüfung zu verifizieren.',
       draftIterationNone: 'Noch kein Entwurfs-PDF generiert. Dies wird Entwurf 1 von 3 sein.',
@@ -5049,6 +5163,17 @@ export const translations: Record<Language, Translations> = {
         'Starte zuerst die PDF-Prüfphase im Editor (PDF-Prüfung starten), bevor du Entwürfe mit Wasserzeichen herunterlädst.',
       finalDraftConfirmTitle: 'Dritten und letzten Entwurf generieren',
       finalDraftConfirmDescription: 'Dies ist dein dritter und letzter Entwurf. Nach diesem Export sind keine weiteren Entwurfsrevisionen möglich. Stelle sicher, dass deine Biografie bereit ist, bevor du fortfährst.',
+      draftAiReviewTitle: 'KI-Entwurfsprüfung',
+      draftAiQuality: 'Qualität: {n}/5',
+      draftAiUnavailable: 'KI-Analyse nicht verfügbar. Sie können trotzdem zur Veröffentlichung fortfahren.',
+      draftAiSeverity3Block: 'Dieser Entwurf enthält Inhalte, die die Veröffentlichung blockieren könnten. Bitte vor dem Fortfahren prüfen.',
+      draftAiStrengths: 'Stärken',
+      draftAiSuggestions: 'Vorschläge',
+      draftAiSuggestionNarrative: 'Erzählung',
+      draftAiSuggestionCompleteness: 'Vollständigkeit',
+      draftAiSuggestionClarity: 'Klarheit',
+      draftAiSuggestionStyle: 'Stil',
+      draftAiFeedbackUnavailable: 'KI-Feedback zum Entwurf für diesen Export nicht verfügbar.',
     },
     sectionTitles: {
       childhood: 'Kindheit und Frühe Jahre',
@@ -5130,6 +5255,8 @@ export const translations: Record<Language, Translations> = {
       exportModeFreeFlow: 'Export im Modus Freier Text — Abschnitte werden nicht einbezogen.',
       exportModeSections: 'Export im Modus Abschnitte — freier Text wird nicht einbezogen.',
       bookStructureTitle: 'Buchstruktur',
+      bookStructureAuthorCopyrightPage:
+        'Kurze Autoren-/Copyright-Seite vor dem Titelblatt einfügen (PDF). Der vollständige Rechtstext bleibt auf der Rückseite.',
       bookStructureFrontMatter: 'Vorspann',
       bookStructureBackMatter: 'Nachspann',
       bookStructureDedication: 'Widmung',
@@ -5616,6 +5743,11 @@ export const translations: Record<Language, Translations> = {
       layoutTwoVertical: 'Zwei Fotos — vertikal',
       layoutTwoHorizontal: 'Zwei Fotos — horizontal',
       layoutThreeMixed: 'Drei Fotos (gemischt)',
+      coverCompositeTitle: 'Titelbild (Titelseite)',
+      customA5CoverLabel: 'Benutzerdefiniertes A5-Cover (176×250mm)',
+      customA5CoverHint:
+        'Laden Sie ein fertig gestaltetes Bild im A5-Format hoch (176×250mm, 300dpi empfohlen). Bei abweichenden Proportionen wird es angepasst.',
+      galleryPhotosHeading: 'Fotogalerie',
       deleteButton: 'Foto löschen',
       deleteConfirmTitle: 'Foto löschen',
       deleteConfirmMessage: 'Möchten Sie dieses Foto wirklich löschen? Diese Aktion kann nicht rückgängig gemacht werden.',
@@ -5758,6 +5890,9 @@ export const translations: Record<Language, Translations> = {
       usersToastReinstated: 'Konto wiederhergestellt.',
       usersToastDeleted: 'Benutzer gelöscht.',
       usersActionFailed: 'Aktion fehlgeschlagen. Bitte erneut versuchen.',
+      usersReviewerLanguages: 'Prüfsprachen',
+      usersReviewerLanguagesSaved: 'Prüfersprachen aktualisiert.',
+      usersReviewerLanguagesError: 'Prüfersprachen konnten nicht aktualisiert werden.',
       overviewTitle: 'Admin-Übersicht',
       overviewSubtitle: 'Plattformzustand und wichtige Statistiken auf einen Blick',
       navOverview: 'Übersicht',

@@ -2,6 +2,8 @@
 
 How to run the project locally and how it is deployed to production.
 
+Related docs: [`README.md`](README.md) · [`PRD.md`](PRD.md) · [`SPEC.md`](SPEC.md) · [`docs/BETA_RELEASE_CHECKLIST.md`](docs/BETA_RELEASE_CHECKLIST.md) · [`.cursor/`](.cursor/)
+
 ---
 
 ## Stack at a glance

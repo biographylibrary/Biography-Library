@@ -60,6 +60,8 @@ type PendingAccountAction = 'suspend' | 'reinstate' | 'delete';
 
 const PAGE_SIZE = 20;
 
+const REVIEW_LANG_CODES = ['en', 'it', 'fr', 'de'] as const;
+
 const ROLE_ORDER: UserRole[] = ['user', 'reviewer', 'admin', 'super_admin'];
 
 function getRoleBadge(role: UserRole, label: string) {
@@ -104,6 +106,8 @@ export default function AdminUsersPage() {
   } | null>(null);
   const [saving, setSaving] = useState<string | null>(null);
   const [accountActionLoading, setAccountActionLoading] = useState<string | null>(null);
+  const [reviewerLangs, setReviewerLangs] = useState<Record<string, string[]>>({});
+  const [savingReviewerLangs, setSavingReviewerLangs] = useState<string | null>(null);
 
   const isStaffAdmin = role === 'admin' || role === 'super_admin';
   const canEditRoles = role === 'super_admin';
@@ -161,6 +165,21 @@ export default function AdminUsersPage() {
 
       if (bioError) throw bioError;
 
+      const { data: langRows, error: langError } = await supabase
+        .from('reviewer_languages')
+        .select('user_id, language_code');
+
+      if (langError) throw langError;
+
+      const langMap: Record<string, string[]> = {};
+      for (const row of langRows ?? []) {
+        const uid = (row as { user_id: string; language_code: string }).user_id;
+        const code = (row as { user_id: string; language_code: string }).language_code;
+        if (!langMap[uid]) langMap[uid] = [];
+        langMap[uid].push(code);
+      }
+      setReviewerLangs(langMap);
+
       const countMap: Record<string, number> = {};
       for (const b of bioCounts ?? []) {
         countMap[b.user_id] = (countMap[b.user_id] ?? 0) + 1;
@@ -199,6 +218,41 @@ export default function AdminUsersPage() {
       loadUsers();
     }
   }, [isStaffAdmin, loadUsers]);
+
+  async function toggleReviewerLanguage(userId: string, code: string, enabled: boolean) {
+    if (!user || !isStaffAdmin) return;
+    setSavingReviewerLangs(userId);
+    try {
+      if (enabled) {
+        const { error } = await supabase.from('reviewer_languages').insert({
+          user_id: userId,
+          language_code: code,
+          assigned_by: user.id,
+        });
+        if (error) throw error;
+        setReviewerLangs((prev) => ({
+          ...prev,
+          [userId]: [...(prev[userId] ?? []).filter((c) => c !== code), code],
+        }));
+      } else {
+        const { error } = await supabase
+          .from('reviewer_languages')
+          .delete()
+          .eq('user_id', userId)
+          .eq('language_code', code);
+        if (error) throw error;
+        setReviewerLangs((prev) => ({
+          ...prev,
+          [userId]: (prev[userId] ?? []).filter((c) => c !== code),
+        }));
+      }
+      toast({ title: t.admin.usersReviewerLanguagesSaved });
+    } catch {
+      toast({ title: t.admin.usersReviewerLanguagesError, variant: 'destructive' });
+    } finally {
+      setSavingReviewerLangs(null);
+    }
+  }
 
   async function callAdminUserApi(path: string, method: 'POST' | 'DELETE') {
     const { data: { session } } = await supabase.auth.getSession();
@@ -394,6 +448,7 @@ export default function AdminUsersPage() {
                     <th className="px-4 py-3 text-left font-medium text-muted-foreground">{t.admin.usersColName}</th>
                     <th className="px-4 py-3 text-left font-medium text-muted-foreground hidden md:table-cell">{t.admin.usersColEmail}</th>
                     <th className="px-4 py-3 text-left font-medium text-muted-foreground">{t.admin.usersColRole}</th>
+                    <th className="px-4 py-3 text-left font-medium text-muted-foreground hidden lg:table-cell">{t.admin.usersReviewerLanguages}</th>
                     <th className="px-4 py-3 text-left font-medium text-muted-foreground hidden xl:table-cell">{t.admin.usersColStatus}</th>
                     <th className="px-4 py-3 text-left font-medium text-muted-foreground hidden lg:table-cell">{t.admin.usersColJoined}</th>
                     <th className="px-4 py-3 text-center font-medium text-muted-foreground hidden sm:table-cell">{t.admin.usersColBiographies}</th>
@@ -416,7 +471,7 @@ export default function AdminUsersPage() {
                     ))
                   ) : pageUsers.length === 0 ? (
                     <tr>
-                      <td colSpan={8} className="px-4 py-12 text-center text-muted-foreground text-sm">
+                      <td colSpan={9} className="px-4 py-12 text-center text-muted-foreground text-sm">
                         No users found.
                       </td>
                     </tr>
@@ -495,6 +550,33 @@ export default function AdminUsersPage() {
                               </Select>
                             ) : (
                               <span className="inline-flex">{getRoleBadge(currentRole, getRoleLabel(currentRole))}</span>
+                            )}
+                          </td>
+                          <td className="px-4 py-3 hidden lg:table-cell">
+                            {(currentRole === 'reviewer' || currentRole === 'admin' || currentRole === 'super_admin') && isStaffAdmin ? (
+                              <div className="flex flex-wrap gap-1">
+                                {REVIEW_LANG_CODES.map((code) => {
+                                  const active = (reviewerLangs[u.id] ?? []).includes(code);
+                                  const busy = savingReviewerLangs === u.id;
+                                  return (
+                                    <button
+                                      key={code}
+                                      type="button"
+                                      disabled={busy || isSelf}
+                                      onClick={() => void toggleReviewerLanguage(u.id, code, !active)}
+                                      className={`text-[10px] uppercase px-1.5 py-0.5 rounded border transition-colors ${
+                                        active
+                                          ? 'bg-brand-blue/30 border-brand-blue/50 text-brand-ink'
+                                          : 'border-border text-muted-foreground hover:bg-muted/50'
+                                      } disabled:opacity-50`}
+                                    >
+                                      {code}
+                                    </button>
+                                  );
+                                })}
+                              </div>
+                            ) : (
+                              <span className="text-muted-foreground text-xs">—</span>
                             )}
                           </td>
                           <td className="px-4 py-3 hidden xl:table-cell">

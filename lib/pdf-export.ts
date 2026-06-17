@@ -72,6 +72,8 @@ function drawDraftWatermark(doc: jsPDF, label: string): void {
 }
 
 interface BookStructure {
+  /** When true, insert the short credits leaf (author, date, «Created with …»); default false */
+  include_author_copyright_page: boolean;
   dedication_content: string | null;
   dedication_enabled: boolean;
   epigraph_content: string | null;
@@ -116,6 +118,19 @@ const MARGIN_TOP = 15;
 const MARGIN_BOTTOM = 20;
 const MARGIN_INNER = 20;
 const MARGIN_OUTER = 15;
+
+/** Extra mm from inner text top for free-flow body paragraphs (lighter layout, no running title) */
+const FREEFLOW_EXTRA_TOP_MARGIN_MM = 10;
+
+/**
+ * Narrative section pages: repeat section title in small grey at the page top (running header).
+ * Default false — only body text and page numbers in the content block area.
+ */
+const PDF_DRAW_SECTION_RUNNING_HEADER = false;
+
+/** Section-mode chapter title start Y (large heading); clears top margin */
+const SECTION_HEADING_TOP_MM = MARGIN_TOP + 12;
+const CHAPTER_HEADING_BODY_GAP_MM = 6;
 
 const PT_BODY = 11;
 const PT_CHAPTER = 22;
@@ -270,31 +285,72 @@ function formatBiographyDate(dateStr: string): string {
   }
 }
 
-function drawLogoSvg(
+/**
+ * Draw BL logo: raster PNG in the browser (reliable). On the server, never import
+ * `@napi-rs/canvas` here — dynamic imports still get analyzed for the client bundle
+ * and webpack tries to load native `.node` binaries. Server path uses jsPDF’s SVG
+ * helper when present, else bold text.
+ */
+async function drawBiographyLibraryLogoMark(
   doc: jsPDF,
   centerX: number,
   centerY: number,
-  logoW: number,
+  logoWmm: number,
   fillHex: string
-) {
-  const logoH = logoW * (LOGO_SVG_VB_H / LOGO_SVG_VB_W);
-  const x = centerX - logoW / 2;
-  const y = centerY - logoH / 2;
+): Promise<void> {
+  const logoHmm = logoWmm * (LOGO_SVG_VB_H / LOGO_SVG_VB_W);
+  const x = centerX - logoWmm / 2;
+  const y = centerY - logoHmm / 2;
+
+  if (typeof window !== 'undefined' && typeof document !== 'undefined') {
+    const svgRaster = `<svg xmlns="http://www.w3.org/2000/svg" width="512" height="616" viewBox="0 0 ${LOGO_SVG_VB_W} ${LOGO_SVG_VB_H}"><path fill="${fillHex}" d="${LOGO_SVG_PATH}"/></svg>`;
+    const dataUrl = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svgRaster)}`;
+    try {
+      const img = await new Promise<HTMLImageElement>((resolve, reject) => {
+        const im = new Image();
+        im.onload = () => resolve(im);
+        im.onerror = () => reject(new Error('logo svg raster decode'));
+        im.src = dataUrl;
+      });
+      const canvas = document.createElement('canvas');
+      canvas.width = img.naturalWidth || img.width;
+      canvas.height = img.naturalHeight || img.height;
+      const ctx = canvas.getContext('2d');
+      if (!ctx) throw new Error('no canvas ctx');
+      ctx.drawImage(img, 0, 0);
+      doc.addImage(canvas.toDataURL('image/png'), 'PNG', x, y, logoWmm, logoHmm);
+      return;
+    } catch {
+      drawLogoFallback(doc, centerX, centerY);
+      return;
+    }
+  }
 
   const svgStr = [
     `<svg xmlns="http://www.w3.org/2000/svg"`,
-    ` width="${logoW}mm" height="${logoH}mm"`,
+    ` width="${logoWmm}mm" height="${logoHmm}mm"`,
     ` viewBox="0 0 ${LOGO_SVG_VB_W} ${LOGO_SVG_VB_H}">`,
     `<path fill="${fillHex}" d="${LOGO_SVG_PATH}"/>`,
     `</svg>`,
   ].join('');
-
   try {
-    (doc as any).addSvgAsImage(svgStr, x, y, logoW, logoH);
+    const anyDoc = doc as any;
+    if (typeof anyDoc.addSvgAsImage === 'function') {
+      anyDoc.addSvgAsImage(svgStr, x, y, logoWmm, logoHmm);
+      return;
+    }
   } catch {
-    doc.setFillColor(128, 128, 128);
-    doc.rect(x, y, logoW, logoH, 'F');
+    /* fall through */
   }
+  drawLogoFallback(doc, centerX, centerY);
+}
+
+/** Raster/text fallback when SVG import is unavailable (common in some jsPDF runtimes). */
+function drawLogoFallback(doc: jsPDF, centerX: number, centerY: number): void {
+  applyFont(doc, 'bold');
+  doc.setFontSize(11);
+  doc.setTextColor(0x12, 0x12, 0x12);
+  doc.text('Biography Library', centerX, centerY, { align: 'center' });
 }
 
 function isOddPage(absolutePage: number): boolean {
@@ -483,12 +539,17 @@ function addSectionWithTitle(
 
   const { doc } = state;
   const tx = textStartX(state.absolutePage);
-  const chapterTitleY = textAreaTop + 10;
+  const chapterTitleStartY = Math.max(textAreaTop + 10, SECTION_HEADING_TOP_MM);
+  const headingWidth = textAvailableWidth(state.absolutePage);
+  const headingLineH = ptToMm(PT_CHAPTER * LINE_HEIGHT_BODY);
 
   applyFont(doc, 'normal');
   doc.setFontSize(PT_CHAPTER);
   doc.setTextColor(0, 0, 0);
-  doc.text(sectionTitle, tx, chapterTitleY, { align: 'left' });
+  const headingLines = doc.splitTextToSize(sectionTitle, headingWidth) as string[];
+  headingLines.forEach((line, i) => {
+    doc.text(line, tx, chapterTitleStartY + i * headingLineH);
+  });
 
   state.contentPageNum++;
 
@@ -497,7 +558,8 @@ function addSectionWithTitle(
   }
   drawPageNumber(state);
 
-  const bodyStartY = chapterTitleY + ptToMm(PT_CHAPTER * LINE_HEIGHT_BODY) + 4;
+  const bodyStartY =
+    chapterTitleStartY + headingLines.length * headingLineH + CHAPTER_HEADING_BODY_GAP_MM;
 
   const drawHeader = drawRunningHeaderFn
     ? (s: PdfState) => {
@@ -525,14 +587,16 @@ async function fetchBookStructure(biographyId: string): Promise<BookStructure | 
   try {
     const { data, error } = await getPdfSupabase()
       .from('biography_book_structure')
-      .select(
-        'dedication_content, dedication_enabled, epigraph_content, epigraph_source, epigraph_enabled, preface_content, preface_enabled, epilogue_content, epilogue_enabled, acknowledgements_content, acknowledgements_enabled, specific_credits_content, specific_credits_enabled'
-      )
+      .select('*')
       .eq('biography_id', biographyId)
       .maybeSingle();
 
     if (error || !data) return null;
-    return data as BookStructure;
+    const row = data as BookStructure & { include_author_copyright_page?: boolean };
+    return {
+      ...row,
+      include_author_copyright_page: row.include_author_copyright_page === true,
+    };
   } catch {
     return null;
   }
@@ -541,6 +605,90 @@ async function fetchBookStructure(biographyId: string): Promise<BookStructure | 
 function hasContent(value: string | null | undefined): boolean {
   if (typeof value !== 'string') return false;
   return stripHtml(value).trim().length > 0;
+}
+
+/** True when at least one front-matter PDF page should render (toggle on + non-empty body). */
+function hasPdfFrontMatter(bs: BookStructure): boolean {
+  return (
+    (bs.dedication_enabled && hasContent(bs.dedication_content)) ||
+    (bs.epigraph_enabled && hasContent(bs.epigraph_content)) ||
+    (bs.preface_enabled && hasContent(bs.preface_content))
+  );
+}
+
+/** Data URI prefix for jsPDF `getImageProperties()` / aspect ratio logic. */
+function coverBase64ToDataUri(base64: string, coverFormat: string): string {
+  const f = coverFormat.toUpperCase();
+  const sub =
+    f === 'PNG'
+      ? 'png'
+      : f === 'WEBP'
+        ? 'webp'
+        : f === 'GIF'
+          ? 'gif'
+          : 'jpeg';
+  return `data:image/${sub};base64,${base64}`;
+}
+
+/** Ordered PDF assembly trace (debug blank-page issues). */
+function logPdfBuildStep(step: string): void {
+  console.log('[PDF build]', step);
+}
+
+async function resolveCoverImagePixelDimensions(
+  doc: jsPDF,
+  base64: string,
+  format: string
+): Promise<{ width: number; height: number }> {
+  const uri = coverBase64ToDataUri(base64, format);
+  let gpW = 0;
+  let gpH = 0;
+  try {
+    const props = doc.getImageProperties(uri);
+    gpW = Number(props.width) || 0;
+    gpH = Number(props.height) || 0;
+    console.log('[drawPhotoCover] getImageProperties', gpW, gpH);
+  } catch (e) {
+    console.warn('[drawPhotoCover] getImageProperties failed', e);
+  }
+
+  /** Prefer decode-based dimensions — jsPDF often misreports PNG/WebP sizes. */
+  if (typeof window !== 'undefined') {
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      img.onload = () => {
+        const imgWidth = img.naturalWidth;
+        const imgHeight = img.naturalHeight;
+        console.log('[drawPhotoCover] HTMLImageElement', imgWidth, imgHeight);
+        if (imgWidth > 0 && imgHeight > 0) {
+          resolve({ width: imgWidth, height: imgHeight });
+          return;
+        }
+        if (gpW > 0 && gpH > 0) resolve({ width: gpW, height: gpH });
+        else resolve({ width: 1, height: 1 });
+      };
+      img.onerror = () => {
+        if (gpW > 0 && gpH > 0) resolve({ width: gpW, height: gpH });
+        else reject(new Error('cover image decode failed'));
+      };
+      img.src = uri;
+    });
+  }
+
+  const cleanB64 = base64.replace(/\s/g, '');
+  const sizeOf = (await import('image-size')).default;
+  const buffer = Buffer.from(cleanB64, 'base64');
+  const dims = sizeOf(buffer);
+  const imgWidth = dims.width ?? 0;
+  const imgHeight = dims.height ?? 0;
+  console.log('[drawPhotoCover] image-size', imgWidth, imgHeight);
+  if (imgWidth > 0 && imgHeight > 0) {
+    return { width: imgWidth, height: imgHeight };
+  }
+  if (gpW > 0 && gpH > 0) {
+    return { width: gpW, height: gpH };
+  }
+  return { width: 1, height: 1 };
 }
 
 function detectImageFormat(url: string, contentType: string | null): string {
@@ -575,18 +723,20 @@ async function resolveSignedUrl(fileUrl: string): Promise<string> {
   return fileUrl;
 }
 
-/** Signed URL for the cover image (web display), or null if none. */
+/** Signed URL for the cover image (web display), or null if none. Prefer composite `cover`, then `cover_a5`. */
 export async function getCoverPhotoDisplayUrl(biographyId: string): Promise<string | null> {
   const { data } = await getPdfSupabase()
     .from('biography_media')
-    .select('file_url')
+    .select('file_url, layout')
     .eq('biography_id', biographyId)
-    .eq('layout', 'cover')
-    .limit(1)
-    .maybeSingle();
-  if (!data?.file_url) return null;
+    .in('layout', ['cover', 'cover_a5'])
+    .order('layout', { ascending: true })
+    .limit(2);
+  const rows = (data as { file_url: string; layout: string }[] | null) ?? [];
+  const preferCover = rows.find((r) => r.layout === 'cover') ?? rows.find((r) => r.layout === 'cover_a5');
+  if (!preferCover?.file_url) return null;
   try {
-    return await resolveSignedUrl(data.file_url);
+    return await resolveSignedUrl(preferCover.file_url);
   } catch {
     return null;
   }
@@ -848,34 +998,53 @@ async function renderGalleryPhotosForSection(
   }
 }
 
-async function fetchCoverPhotoBase64(
-  biographyId: string
-): Promise<{ base64: string; format: string }> {
+async function fetchMediaBase64ByLayout(
+  biographyId: string,
+  layout: string
+): Promise<{ base64: string; format: string } | null> {
   const { data } = await getPdfSupabase()
     .from('biography_media')
     .select('file_url')
     .eq('biography_id', biographyId)
-    .eq('layout', 'cover')
+    .eq('layout', layout)
     .limit(1)
     .maybeSingle();
 
-  if (!data?.file_url) {
-    throw new Error('MISSING_COVER_PHOTO');
-  }
+  if (!data?.file_url) return null;
 
   const url = await resolveSignedUrl(data.file_url);
 
   try {
     const resp = await fetch(url);
-    if (!resp.ok) throw new Error('MISSING_COVER_PHOTO');
+    if (!resp.ok) return null;
     const contentType = resp.headers.get('content-type');
     const format = detectImageFormat(url, contentType);
     const buf = await resp.arrayBuffer();
     const base64 = arrayBufferToBase64(buf);
     return { base64, format };
   } catch {
-    throw new Error('MISSING_COVER_PHOTO');
+    return null;
   }
+}
+
+async function fetchCoverCompositeOptional(
+  biographyId: string
+): Promise<{ base64: string; format: string } | null> {
+  return fetchMediaBase64ByLayout(biographyId, 'cover');
+}
+
+async function fetchCoverA5Optional(biographyId: string): Promise<{ base64: string; format: string } | null> {
+  return fetchMediaBase64ByLayout(biographyId, 'cover_a5');
+}
+
+function drawFullBleedCustomCover(
+  doc: jsPDF,
+  coverBase64: string,
+  coverFormat: string
+): void {
+  doc.setFillColor(255, 255, 255);
+  doc.rect(0, 0, B5_W, B5_H, 'F');
+  doc.addImage(coverBase64, coverFormat, 0, 0, B5_W, B5_H);
 }
 
 function drawPhotoCover(
@@ -883,63 +1052,111 @@ function drawPhotoCover(
   title: string,
   authorName: string,
   coverBase64: string,
-  coverFormat: string
+  coverFormat: string,
+  imgDims: { width: number; height: number }
 ): void {
   doc.setFillColor(255, 255, 255);
   doc.rect(0, 0, B5_W, B5_H, 'F');
 
   const BORDER = 10;
-  const CARD_W = 156;
-  const RADIUS = 5;
-  const PAD = 10;
-
-  const PT_TITLE_COVER = 34;
-  const PT_AUTHOR_COVER = 18;
-
-  const titleLineH = ptToMm(PT_TITLE_COVER * 1.25);
-  const authorLineH = ptToMm(PT_AUTHOR_COVER * 1.25);
-
-  applyFont(doc, 'normal');
-  doc.setFontSize(PT_TITLE_COVER);
-  const textAreaW = CARD_W - PAD * 2;
-  const rawTitleLines = doc.splitTextToSize(title, textAreaW);
-  const titleLines = rawTitleLines.slice(0, 3) as string[];
-  if (rawTitleLines.length > 3) {
-    titleLines[2] = titleLines[2].replace(/\.{0,3}$/, '') + '\u2026';
-  }
-
-  const titleBlockH = titleLines.length * titleLineH;
-  const AUTHOR_GAP = 7;
-  const CARD_H = PAD + titleBlockH + AUTHOR_GAP + authorLineH + PAD;
-
+  const CARD_RADIUS = 6;
   const CARD_X = BORDER;
   const CARD_Y = BORDER;
-
-  doc.setFillColor(0xec, 0xe9, 0xe4);
-  (doc as any).roundedRect(CARD_X, CARD_Y, CARD_W, CARD_H, RADIUS, RADIUS, 'F');
+  const CARD_W = B5_W - 2 * BORDER;
+  const innerPad = 10;
+  const PT_TITLE = 34;
+  const PT_AUTHOR = 18;
+  const lineHeightTitle = (PT_TITLE * 1.2) / 2.83465;
+  const lineHeightAuthor = (PT_AUTHOR * 1.2) / 2.83465;
+  const AUTHOR_GAP = 7;
+  const bottomPadding = 10;
 
   applyFont(doc, 'normal');
-  doc.setFontSize(PT_TITLE_COVER);
-  doc.setTextColor(0x12, 0x12, 0x12);
+  doc.setFontSize(PT_TITLE);
+  const titleLines = doc.splitTextToSize(title, CARD_W - 2 * innerPad) as string[];
 
-  const titleStartY = CARD_Y + PAD + ptToMm(PT_TITLE_COVER * 0.75);
+  const TITLE_Y = CARD_Y + innerPad;
+  const titleHeight = titleLines.length * lineHeightTitle;
+  const AUTHOR_Y = TITLE_Y + titleHeight + AUTHOR_GAP;
+
+  applyFont(doc, 'normal');
+  doc.setFontSize(PT_AUTHOR);
+  const authorLines = doc.splitTextToSize(authorName, CARD_W - 2 * innerPad) as string[];
+  const authorHeight = authorLines.length * lineHeightAuthor;
+
+  const CARD_H = AUTHOR_Y - CARD_Y + authorHeight + bottomPadding;
+
+  doc.setFillColor(0xec, 0xe9, 0xe4);
+  doc.setDrawColor(0xec, 0xe9, 0xe4);
+  (doc as any).roundedRect(CARD_X, CARD_Y, CARD_W, CARD_H, CARD_RADIUS, CARD_RADIUS, 'FD');
+
+  applyFont(doc, 'normal');
+  doc.setFontSize(PT_TITLE);
+  doc.setTextColor(0x12, 0x12, 0x12);
   titleLines.forEach((line: string, i: number) => {
-    doc.text(line, CARD_X + PAD, titleStartY + i * titleLineH);
+    doc.text(line, CARD_X + innerPad, TITLE_Y + i * lineHeightTitle);
   });
 
   applyFont(doc, 'normal');
-  doc.setFontSize(PT_AUTHOR_COVER);
+  doc.setFontSize(PT_AUTHOR);
   doc.setTextColor(0x12, 0x12, 0x12);
+  authorLines.forEach((line: string, i: number) => {
+    doc.text(line, CARD_X + innerPad, AUTHOR_Y + i * lineHeightAuthor);
+  });
 
-  const authorY = titleStartY + titleLines.length * titleLineH + AUTHOR_GAP;
-  doc.text(authorName, CARD_X + PAD, authorY);
+  const PHOTO_GAP_Y = 8;
+  const PHOTO_CARD_X = CARD_X;
+  const PHOTO_CARD_W = CARD_W;
+  const PHOTO_CARD_Y = CARD_Y + CARD_H + PHOTO_GAP_Y;
+  const PHOTO_CARD_H = 110;
+  const PHOTO_CARD_RADIUS = CARD_RADIUS;
 
-  const PHOTO_GAP = 5;
-  const PHOTO_X = BORDER;
-  const PHOTO_Y = CARD_Y + CARD_H + PHOTO_GAP;
-  const PHOTO_W = 156;
-  const PHOTO_H = 156;
+  doc.setFillColor(255, 255, 255);
+  doc.setDrawColor(255, 255, 255);
+  doc.setLineWidth(0.5);
+  (doc as any).roundedRect(
+    PHOTO_CARD_X,
+    PHOTO_CARD_Y,
+    PHOTO_CARD_W,
+    PHOTO_CARD_H,
+    PHOTO_CARD_RADIUS,
+    PHOTO_CARD_RADIUS,
+    'FD'
+  );
 
+  const IMG_MARGIN = 2;
+  const IMG_X = PHOTO_CARD_X + IMG_MARGIN;
+  const IMG_Y = PHOTO_CARD_Y + IMG_MARGIN;
+  const IMG_W = PHOTO_CARD_W - 2 * IMG_MARGIN;
+  const IMG_H = PHOTO_CARD_H - 2 * IMG_MARGIN;
+
+  let imgWidth = imgDims.width > 0 ? imgDims.width : 0;
+  let imgHeight = imgDims.height > 0 ? imgDims.height : 0;
+  if (imgWidth <= 0 || imgHeight <= 0) {
+    imgWidth = 1;
+    imgHeight = 1;
+  }
+
+  const imgRatio = imgWidth / imgHeight;
+  const slotRatio = IMG_W / IMG_H;
+
+  let drawW: number;
+  let drawH: number;
+  let drawX: number;
+  let drawY: number;
+  if (imgRatio > slotRatio) {
+    drawH = IMG_H;
+    drawW = IMG_H * imgRatio;
+    drawX = IMG_X - (drawW - IMG_W) / 2;
+    drawY = IMG_Y;
+  } else {
+    drawW = IMG_W;
+    drawH = IMG_W / imgRatio;
+    drawX = IMG_X;
+    drawY = IMG_Y - (drawH - IMG_H) / 2;
+  }
+
+  const clipR = Math.max(1, PHOTO_CARD_RADIUS - 1);
   const docAny = doc as any;
   const hasClipping =
     typeof docAny.saveGraphicsState === 'function' &&
@@ -948,28 +1165,26 @@ function drawPhotoCover(
 
   if (hasClipping) {
     docAny.saveGraphicsState();
-    (doc as any).roundedRect(PHOTO_X, PHOTO_Y, PHOTO_W, PHOTO_H, RADIUS, RADIUS, null);
+    (doc as any).roundedRect(IMG_X, IMG_Y, IMG_W, IMG_H, clipR, clipR, null);
     docAny.clip();
-    doc.addImage(coverBase64, coverFormat, PHOTO_X, PHOTO_Y, PHOTO_W, PHOTO_H);
+    doc.addImage(coverBase64, coverFormat, drawX, drawY, drawW, drawH);
     docAny.restoreGraphicsState();
   } else {
-    doc.addImage(coverBase64, coverFormat, PHOTO_X, PHOTO_Y, PHOTO_W, PHOTO_H);
-
-    doc.setFillColor(255, 255, 255);
-    doc.rect(PHOTO_X, PHOTO_Y, RADIUS, RADIUS, 'F');
-    doc.rect(PHOTO_X + PHOTO_W - RADIUS, PHOTO_Y, RADIUS, RADIUS, 'F');
-    doc.rect(PHOTO_X, PHOTO_Y + PHOTO_H - RADIUS, RADIUS, RADIUS, 'F');
-    doc.rect(PHOTO_X + PHOTO_W - RADIUS, PHOTO_Y + PHOTO_H - RADIUS, RADIUS, RADIUS, 'F');
+    doc.addImage(coverBase64, coverFormat, drawX, drawY, drawW, drawH);
+    doc.setDrawColor(230, 230, 230);
+    doc.setLineWidth(0.25);
+    (doc as any).roundedRect(IMG_X, IMG_Y, IMG_W, IMG_H, clipR, clipR, 'S');
   }
 }
 
-function drawBackCover(
+async function drawBackCover(
   doc: jsPDF,
   authorName: string,
-  createdWith: string,
-  allRightsReserved: string,
-  createdAt: string
-): void {
+  backCoverDescription: string,
+  backCoverPropertyStatement: string,
+  backCoverAiStatement: string,
+  backCoverFooter: string
+): Promise<void> {
   doc.setFillColor(255, 255, 255);
   doc.rect(0, 0, B5_W, B5_H, 'F');
 
@@ -978,48 +1193,113 @@ function drawBackCover(
   const CARD_H = 230;
   const CARD_X = BORDER;
   const CARD_Y = BORDER;
-  const RADIUS = 5;
+  const CARD_RADIUS = 5;
+  const CARD_INNER_PADDING_X = 16;
+  const CARD_INNER_PADDING_TOP = 32;
+  const CARD_INNER_PADDING_BOTTOM = 28;
+  const TEXT_X = CARD_X + CARD_INNER_PADDING_X;
+  const TEXT_W = CARD_W - 2 * CARD_INNER_PADDING_X;
+  const textCenterX = TEXT_X + TEXT_W / 2;
+  const LOGO_TEXT_GAP = 5;
+  const FOOTER_GAP_BEFORE = 4;
 
   doc.setFillColor(0xec, 0xe9, 0xe4);
-  (doc as any).roundedRect(CARD_X, CARD_Y, CARD_W, CARD_H, RADIUS, RADIUS, 'F');
-
-  const centerX = CARD_X + CARD_W / 2;
+  (doc as any).roundedRect(CARD_X, CARD_Y, CARD_W, CARD_H, CARD_RADIUS, CARD_RADIUS, 'F');
 
   const LOGO_W = 16;
-  const LOGO_H = LOGO_W * (LOGO_SVG_VB_H / LOGO_SVG_VB_W);
-  const LOGO_GAP_ABOVE_TEXT = 5;
+  const logoHmm = LOGO_W * (LOGO_SVG_VB_H / LOGO_SVG_VB_W);
 
   const year = new Date().getFullYear();
-  const allRights = allRightsReserved.replace('{year}', String(year));
-
-  const legalLines = [
-    authorName,
-    formatBiographyDate(createdAt),
-    createdWith,
-    'biographylibrary.org',
-    allRights,
+  const rightsLine = `© ${year} ${authorName} — All rights reserved.`;
+  /** Legal body only; footer line drawn last */
+  const legalSegments = [
+    rightsLine,
+    '',
+    backCoverDescription,
+    '',
+    backCoverPropertyStatement,
+    '',
+    backCoverAiStatement,
   ];
 
+  type FitCfg = { fs: number; lineMult: number; maxW: number };
+  const tryConfigs: FitCfg[] = [
+    { fs: 9, lineMult: 1.6, maxW: TEXT_W },
+    { fs: 9, lineMult: 1.4, maxW: TEXT_W },
+    { fs: 8, lineMult: 1.4, maxW: TEXT_W },
+    { fs: 8, lineMult: 1.35, maxW: TEXT_W },
+    { fs: 7.5, lineMult: 1.3, maxW: TEXT_W },
+    { fs: 7.5, lineMult: 1.25, maxW: TEXT_W },
+    { fs: 7, lineMult: 1.25, maxW: TEXT_W },
+    { fs: 6.5, lineMult: 1.2, maxW: TEXT_W },
+  ];
+
+  const usableHeight = CARD_H - CARD_INNER_PADDING_TOP - CARD_INNER_PADDING_BOTTOM;
+  const maxBlockHeight = usableHeight;
+
+  function measureBlockHeight(cfg: FitCfg): number {
+    applyFont(doc, 'normal');
+    doc.setFontSize(cfg.fs);
+    const lineH = ptToMm(cfg.fs * cfg.lineMult);
+    let total = logoHmm + LOGO_TEXT_GAP;
+    for (const p of legalSegments) {
+      if (!p) {
+        total += lineH;
+      } else {
+        const lines = doc.splitTextToSize(p, cfg.maxW) as string[];
+        total += lines.length * lineH;
+      }
+    }
+    total += FOOTER_GAP_BEFORE;
+    const footerLines = doc.splitTextToSize(backCoverFooter, cfg.maxW) as string[];
+    total += footerLines.length * lineH;
+    return total;
+  }
+
+  let chosen: FitCfg | null = null;
+  for (const cfg of tryConfigs) {
+    if (measureBlockHeight(cfg) <= maxBlockHeight) {
+      chosen = cfg;
+      break;
+    }
+  }
+
+  const cfg = chosen ?? tryConfigs[tryConfigs.length - 1]!;
+  const lineH = ptToMm(cfg.fs * cfg.lineMult);
+  const totalTextBlockHeight = measureBlockHeight(cfg);
+
+  const blockStartY =
+    CARD_Y + CARD_INNER_PADDING_TOP + (usableHeight - totalTextBlockHeight);
+
   applyFont(doc, 'normal');
-  doc.setFontSize(PT_CREDITS);
-  doc.setTextColor(0, 0, 0);
+  doc.setFontSize(cfg.fs);
+  doc.setTextColor(0x12, 0x12, 0x12);
 
-  const creditsLineH = ptToMm(PT_CREDITS * LINE_HEIGHT_BODY);
-  const textBlockH = legalLines.length * creditsLineH;
+  let y = blockStartY;
+  const logoCenterY = y + logoHmm / 2;
+  await drawBiographyLibraryLogoMark(doc, textCenterX, logoCenterY, LOGO_W, '#000000');
+  y += logoHmm + LOGO_TEXT_GAP;
 
-  const MAX_TEXT_W = 78;
-  const textBlockBottom = CARD_Y + CARD_H - 12;
-  const textBlockTop = textBlockBottom - textBlockH;
+  for (const p of legalSegments) {
+    if (!p) {
+      y += lineH;
+      continue;
+    }
+    const lines = doc.splitTextToSize(p, TEXT_W) as string[];
+    for (const line of lines) {
+      doc.text(line, textCenterX, y, { align: 'center' });
+      y += lineH;
+    }
+  }
 
-  legalLines.forEach((line, i) => {
-    const wrapped = doc.splitTextToSize(line, MAX_TEXT_W) as string[];
-    wrapped.forEach((wl, wi) => {
-      doc.text(wl, centerX, textBlockTop + (i + wi) * creditsLineH, { align: 'center' });
-    });
-  });
-
-  const logoCenterY = textBlockTop - LOGO_GAP_ABOVE_TEXT - LOGO_H / 2;
-  drawLogoSvg(doc, centerX, logoCenterY, LOGO_W, '#000000');
+  y += FOOTER_GAP_BEFORE;
+  applyFont(doc, 'normal');
+  doc.setFontSize(cfg.fs);
+  const footerLines = doc.splitTextToSize(backCoverFooter, TEXT_W) as string[];
+  for (const line of footerLines) {
+    doc.text(line, textCenterX, y, { align: 'center' });
+    y += lineH;
+  }
 }
 
 export async function checkPdfPreflight(
@@ -1029,7 +1309,7 @@ export async function checkPdfPreflight(
     .from('biography_media')
     .select('id')
     .eq('biography_id', biographyId)
-    .eq('layout', 'cover')
+    .in('layout', ['cover', 'cover_a5'])
     .limit(1)
     .maybeSingle();
   if (!data) return { ready: false, reason: 'missing-cover' };
@@ -1072,7 +1352,7 @@ export async function checkBiographyPdfReadiness(
     .from('biography_media')
     .select('id, file_url')
     .eq('biography_id', biographyId)
-    .eq('layout', 'cover')
+    .in('layout', ['cover', 'cover_a5'])
     .limit(1)
     .maybeSingle();
 
@@ -1101,6 +1381,10 @@ export async function generateBiographyPDF(
     epilogue?: string;
     acknowledgements?: string;
     specificCredits?: string;
+    backCoverDescription?: string;
+    backCoverPropertyStatement?: string;
+    backCoverAiStatement?: string;
+    backCoverFooter?: string;
   },
   draftIteration?: number | null,
   contentLanguage?: string,
@@ -1112,12 +1396,17 @@ export async function generateBiographyPDF(
     throw new Error('MISSING_BIOGRAPHY_ID');
   }
 
-  const [, bookStructure, coverPhoto, galleryPhotos] = await Promise.all([
+  const [, bookStructure, coverComposite, coverA5, galleryPhotos] = await Promise.all([
     loadNotoSerifFonts(),
     biography.id ? fetchBookStructure(biography.id) : Promise.resolve(null),
-    fetchCoverPhotoBase64(biography.id),
+    fetchCoverCompositeOptional(biography.id),
+    fetchCoverA5Optional(biography.id),
     fetchGalleryPhotos(biography.id),
   ]);
+
+  if (!coverA5 && !coverComposite) {
+    throw new Error('MISSING_COVER_PHOTO');
+  }
 
   const lang = contentLanguage ?? 'en';
   const watermarkLabel =
@@ -1144,62 +1433,62 @@ export async function generateBiographyPDF(
   const textAreaBottom = B5_H - MARGIN_BOTTOM;
 
   // ────────────────────────────────────────
-  // PAGE 1 — PHOTO COVER
+  // PAGE 1 — COVER (custom A5 full bleed OR composite card + photo)
   // ────────────────────────────────────────
-  drawPhotoCover(
-    doc,
-    biography.title,
-    biography.author_name,
-    coverPhoto.base64,
-    coverPhoto.format
-  );
+  if (coverA5) {
+    logPdfBuildStep('page 1: full-bleed custom A5 cover (cover_a5)');
+    drawFullBleedCustomCover(doc, coverA5.base64, coverA5.format);
+  } else {
+    logPdfBuildStep('page 1: composite cover (layout=cover)');
+    const dims = await resolveCoverImagePixelDimensions(doc, coverComposite!.base64, coverComposite!.format);
+    drawPhotoCover(
+      doc,
+      biography.title,
+      biography.author_name,
+      coverComposite!.base64,
+      coverComposite!.format,
+      dims
+    );
+  }
 
   if (watermarkLabel) {
     drawDraftWatermark(doc, watermarkLabel);
   }
 
   // ────────────────────────────────────────
-  // PAGE 2 — BLANK
+  // Optional short author credits (book structure flag only)
   // ────────────────────────────────────────
-  addNewPage(state, false);
+  if (bookStructure?.include_author_copyright_page) {
+    logPdfBuildStep('optional: author copyright page');
+    addNewPage(state, false);
+    const createdWith = translations?.createdWith ?? 'Created with Biography Library';
+    const allRightsRaw = translations?.allRightsReserved ?? '© {year} all rights reserved';
+    const year = new Date().getFullYear();
+    const allRights = allRightsRaw.replace('{year}', String(year));
+
+    const creditsLines = [
+      biography.author_name,
+      formatBiographyDate(biography.created_at),
+      createdWith,
+      'biographylibrary.org',
+      allRights,
+    ];
+
+    applyFont(doc, 'normal');
+    doc.setFontSize(PT_CREDITS);
+    doc.setTextColor(80, 80, 80);
+
+    const creditsLineH = ptToMm(PT_CREDITS * 1.8);
+    const creditsStartY = B5_H * 0.67;
+    creditsLines.forEach((line, i) => {
+      doc.text(line, centerX, creditsStartY + i * creditsLineH, { align: 'center' });
+    });
+  }
 
   // ────────────────────────────────────────
-  // PAGE 3 — LOGO PAGE (black logo centered)
+  // Inner title page (author + title)
   // ────────────────────────────────────────
-  addNewPage(state, false);
-  const logoWBig = 40;
-  drawLogoSvg(doc, centerX, B5_H / 2, logoWBig, '#000000');
-
-  // ────────────────────────────────────────
-  // PAGE 4 — CREDITS
-  // ────────────────────────────────────────
-  addNewPage(state, false);
-  const createdWith = translations?.createdWith ?? 'Created with Biography Library';
-  const allRightsRaw = translations?.allRightsReserved ?? '© {year} all rights reserved';
-  const year = new Date().getFullYear();
-  const allRights = allRightsRaw.replace('{year}', String(year));
-
-  const creditsLines = [
-    biography.author_name,
-    formatBiographyDate(biography.created_at),
-    createdWith,
-    'biographylibrary.org',
-    allRights,
-  ];
-
-  applyFont(doc, 'normal');
-  doc.setFontSize(PT_CREDITS);
-  doc.setTextColor(80, 80, 80);
-
-  const creditsLineH = ptToMm(PT_CREDITS * 1.8);
-  const creditsStartY = B5_H * 0.67;
-  creditsLines.forEach((line, i) => {
-    doc.text(line, centerX, creditsStartY + i * creditsLineH, { align: 'center' });
-  });
-
-  // ────────────────────────────────────────
-  // PAGE 5 — TITLE PAGE (FRONTESPIZIO)
-  // ────────────────────────────────────────
+  logPdfBuildStep('inner title page (author + title)');
   addNewPage(state, false);
 
   const coverSafeWidth = B5_W - 20;
@@ -1213,36 +1502,33 @@ export async function generateBiographyPDF(
   doc.setFontSize(PT_TITLE_PAGE_TITLE);
   doc.setTextColor(0, 0, 0);
   const titlePageLines = doc.splitTextToSize(biography.title, coverSafeWidth);
-  const titlePageBlockH = titlePageLines.length * ptToMm(PT_TITLE_PAGE_TITLE * LINE_HEIGHT_BODY);
-  let titlePageY = B5_H / 2 - titlePageBlockH / 2;
+  let titlePageY = B5_H / 2 - (titlePageLines.length * ptToMm(PT_TITLE_PAGE_TITLE * LINE_HEIGHT_BODY)) / 2;
   titlePageLines.forEach((line: string) => {
     doc.text(line, centerX, titlePageY, { align: 'center' });
     titlePageY += ptToMm(PT_TITLE_PAGE_TITLE * LINE_HEIGHT_BODY);
   });
 
   // ────────────────────────────────────────
-  // PAGE 6 — BLANK
-  // ────────────────────────────────────────
-  addNewPage(state, false);
-
-  // ────────────────────────────────────────
-  // FRONT MATTER — Dedication, Epigraph, Preface
+  // FRONT MATTER — only when toggle on and content non-empty
   // ────────────────────────────────────────
 
-  if (bookStructure) {
+  if (bookStructure && hasPdfFrontMatter(bookStructure)) {
     const bs = bookStructure;
 
     if (bs.dedication_enabled && hasContent(bs.dedication_content)) {
+      logPdfBuildStep('front matter: dedication');
       addNewPage(state, false);
       addDedicationPage(state, bs.dedication_content!);
     }
 
     if (bs.epigraph_enabled && hasContent(bs.epigraph_content)) {
+      logPdfBuildStep('front matter: epigraph');
       addNewPage(state, false);
       addEpigraphPage(state, bs.epigraph_content!, bs.epigraph_source);
     }
 
     if (bs.preface_enabled && hasContent(bs.preface_content)) {
+      logPdfBuildStep('front matter: preface');
       addNewPage(state, false);
       addSectionWithTitle(
         state,
@@ -1301,39 +1587,59 @@ export async function generateBiographyPDF(
 
   const sections = getSections();
   const lineH = bodyLineH();
+  const isFreeflowContent = biography.biography_mode === 'freeflow';
+  const continuationBodyTop = isFreeflowContent ? textAreaTop + FREEFLOW_EXTRA_TOP_MARGIN_MM : textAreaTop;
 
   for (let si = 0; si < sections.length; si++) {
     const section = sections[si];
     const cleanSectionText = stripHtml(section.text);
 
+    logPdfBuildStep(`main body start: section "${section.key}" (${section.title})`);
     addNewPage(state, true);
-    if (!isOddPage(state.absolutePage)) {
+    if (!isFreeflowContent && !isOddPage(state.absolutePage)) {
       addNewPage(state, true);
     }
 
-    applyFont(doc, 'normal');
-    doc.setFontSize(PT_CHAPTER);
-    doc.setTextColor(0, 0, 0);
+    let y: number;
 
-    const tx = textStartX(state.absolutePage);
-    const chapterTitleY = textAreaTop + 10;
-    doc.text(section.title, tx, chapterTitleY, { align: 'left' });
+    if (!isFreeflowContent) {
+      const headingWidth = textAvailableWidth(state.absolutePage);
+      const headingLineH = ptToMm(PT_CHAPTER * LINE_HEIGHT_BODY);
+      const chapterTitleStartY = Math.max(textAreaTop + 10, SECTION_HEADING_TOP_MM);
 
-    let y = chapterTitleY + ptToMm(PT_CHAPTER * LINE_HEIGHT_BODY) + 4;
-
-    if (y + 3 * lineH > textAreaBottom) {
-      addNewPage(state, true);
-      if (!isOddPage(state.absolutePage)) {
-        addNewPage(state, true);
-      }
       applyFont(doc, 'normal');
       doc.setFontSize(PT_CHAPTER);
       doc.setTextColor(0, 0, 0);
-      doc.text(section.title, textStartX(state.absolutePage), chapterTitleY, { align: 'left' });
-      y = chapterTitleY + ptToMm(PT_CHAPTER * LINE_HEIGHT_BODY) + 4;
+
+      let headingLines = doc.splitTextToSize(section.title, headingWidth) as string[];
+
+      let headingBlockH =
+        headingLines.length * headingLineH + CHAPTER_HEADING_BODY_GAP_MM;
+      if (chapterTitleStartY + headingBlockH + 3 * lineH > textAreaBottom) {
+        addNewPage(state, true);
+        if (!isOddPage(state.absolutePage)) {
+          addNewPage(state, true);
+        }
+        applyFont(doc, 'normal');
+        doc.setFontSize(PT_CHAPTER);
+        doc.setTextColor(0, 0, 0);
+        headingLines = doc.splitTextToSize(section.title, textAvailableWidth(state.absolutePage)) as string[];
+        headingBlockH =
+          headingLines.length * headingLineH + CHAPTER_HEADING_BODY_GAP_MM;
+      }
+
+      headingLines.forEach((line, i) => {
+        doc.text(line, textStartX(state.absolutePage), chapterTitleStartY + i * headingLineH);
+      });
+      y = chapterTitleStartY + headingLines.length * headingLineH + CHAPTER_HEADING_BODY_GAP_MM;
+
+      if (PDF_DRAW_SECTION_RUNNING_HEADER) {
+        drawRunningHeader(state, section.title);
+      }
+    } else {
+      y = continuationBodyTop;
     }
 
-    drawRunningHeader(state, section.title);
     drawPageNumber(state);
 
     applyFont(doc, 'normal');
@@ -1351,12 +1657,14 @@ export async function generateBiographyPDF(
       for (const line of lines) {
         if (y + lineH > textAreaBottom) {
           addNewPage(state, true);
-          drawRunningHeader(state, section.title);
+          if (!isFreeflowContent && PDF_DRAW_SECTION_RUNNING_HEADER) {
+            drawRunningHeader(state, section.title);
+          }
           drawPageNumber(state);
           applyFont(doc, 'normal');
           doc.setFontSize(PT_BODY);
           doc.setTextColor(0, 0, 0);
-          y = textAreaTop;
+          y = continuationBodyTop;
         }
         doc.text(line, textStartX(state.absolutePage), y);
         y += lineH;
@@ -1367,6 +1675,7 @@ export async function generateBiographyPDF(
   }
 
   if (galleryPhotos.length > 0) {
+    logPdfBuildStep(`gallery: ${galleryPhotos.length} media row(s)`);
     await renderGalleryPhotosForSection(state, galleryPhotos);
   }
 
@@ -1378,6 +1687,7 @@ export async function generateBiographyPDF(
     const bs = bookStructure;
 
     if (bs.epilogue_enabled && hasContent(bs.epilogue_content)) {
+      logPdfBuildStep('back matter: epilogue');
       addNewPage(state, false);
       addSectionWithTitle(
         state,
@@ -1390,6 +1700,7 @@ export async function generateBiographyPDF(
     }
 
     if (bs.acknowledgements_enabled && hasContent(bs.acknowledgements_content)) {
+      logPdfBuildStep('back matter: acknowledgements');
       addNewPage(state, false);
       addSectionWithTitle(
         state,
@@ -1402,6 +1713,7 @@ export async function generateBiographyPDF(
     }
 
     if (bs.specific_credits_enabled && hasContent(bs.specific_credits_content)) {
+      logPdfBuildStep('back matter: specific credits');
       addNewPage(state, false);
       addSectionWithTitle(
         state,
@@ -1415,21 +1727,21 @@ export async function generateBiographyPDF(
   }
 
   // ────────────────────────────────────────
-  // BACK COVER (must be even page)
+  // BACK COVER — single fresh page (no blank spreads)
   // ────────────────────────────────────────
-  if (isOddPage(state.absolutePage)) {
-    addNewPage(state, false);
-    addNewPage(state, false);
-  } else {
-    addNewPage(state, false);
-  }
+  logPdfBuildStep('back cover legal page');
+  addNewPage(state, false);
 
-  drawBackCover(
+  await drawBackCover(
     doc,
     biography.author_name,
-    createdWith,
-    allRightsRaw,
-    biography.created_at
+    translations?.backCoverDescription ??
+      'This biography was managed with Biography Library, the digital archive of human memory that freely offers the tools to create and preserve your own story or that of a loved one.',
+    translations?.backCoverPropertyStatement ??
+      'The text of this biography is the exclusive property of the author, who retains all rights to pursue any unauthorized use, including use for AI training purposes.',
+    translations?.backCoverAiStatement ??
+      "Biography Library prohibits the use of content hosted on its servers for text mining, AI training or machine learning, pursuant to the Swiss Copyright Act (CopA/LDA) and the author's exclusive right of use under Swiss law.",
+    translations?.backCoverFooter ?? 'Biography Library · biographylibrary.org'
   );
 
   if (returnArrayBuffer) {

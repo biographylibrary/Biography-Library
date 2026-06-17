@@ -7,7 +7,7 @@ This document provides comprehensive instructions for testing all AI features po
 Before testing AI features, ensure:
 
 1. **Supabase Configuration**
-   - Project is configured with valid Supabase URL and keys in `.env`
+   - Project is configured with valid Supabase URL and keys in `.env.local` (copy from `.env.example`)
    - Database migrations have been applied
    - User authentication is working
 
@@ -392,6 +392,41 @@ Before deploying to production:
 - [ ] Performance acceptable for all features
 - [ ] Security verification complete
 - [ ] Browser compatibility verified
+
+---
+
+## Publication PDF flow
+
+Manual smoke test for the PDF-first publication path (author account + optional admin).
+
+### Prerequisites
+
+- Biography in **`final_version`** with final text (≥ 50 chars) and at least one section with content
+- Infomaniak AI env vars on Next server (`INFOMANIAK_AI_*`) for `draft-ai-review` and screening
+- Migrations `20260508*` applied on target Supabase project
+
+### Steps
+
+| # | Action | Expected |
+|---|--------|----------|
+| 1 | Editor → Final review → **Start PDF phase** | `status` → `pdf_draft`; `pdf_draft_iteration` cleared |
+| 2 | Upload **cover_a5** in photo gallery; toggle **author copyright page** in book structure | Rows persisted in `biography_media` / `biography_book_structure` |
+| 3 | Advanced export → download **draft PDF** (round 1) | Watermark "DRAFT"; POST `/api/publication/draft-ai-review` returns `feedback` |
+| 4 | Export dialog | Draft AI panel shows strengths/issues; severity 3 shows blocking banner |
+| 5 | Repeat draft rounds 2–3 if needed | `pdf_draft_iteration` increments; max 3 |
+| 6 | **Approve final PDF** | `locked_pending_screening` → screening → `published` or `under_review`; `final_pdf_url` + `listing_cover_url` set |
+| 7 | Public listing + `/biography/[id]/view` | Cover from `listing_cover_url` or media fallback |
+
+### API checks (curl / browser network)
+
+- `POST /api/publication/draft-ai-review` without `Authorization` → **401**
+- Wrong `biographyId` owner → **403**
+- `status !== pdf_draft` → **400**
+
+### Admin (optional)
+
+- `/admin/users` → toggle reviewer language codes (EN/IT/FR/DE) for reviewer/admin
+- `GET /api/admin/users` without Bearer → **401** (middleware)
 
 ---
 

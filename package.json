@@ -64,6 +64,7 @@
     "eslint": "8.49.0",
     "eslint-config-next": "13.5.1",
     "file-saver": "^2.0.5",
+    "image-size": "^2.0.2",
     "input-otp": "^1.2.4",
     "jspdf": "^4.1.0",
     "jszip": "^3.10.1",

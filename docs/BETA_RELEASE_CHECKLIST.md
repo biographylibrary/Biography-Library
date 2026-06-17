@@ -66,12 +66,14 @@ Eseguire in **produzione** (o staging identico) con account di test dedicati.
 | **1** | **Registrazione e conferma email** | Nuovo utente → riceve email (Resend / dominio corretto) → link conferma → accesso ok. |
 | **2** | **Login e creazione biografia** | Login → dashboard → crea biografia → salvataggio base (titolo, modalità). |
 | **3** | **Editor e (opzionale) IA** | Apertura editor, salvataggio testo, una azione IA se i token/quota lo permettono. |
-| **4** | **Verso pubblicazione** | Percorso reale scelto dal team: es. *Final review → PDF draft → approve* **oppure** *Submit for review* legacy → screening non in errore 500; stato biografia coerente. |
+| **4** | **Verso pubblicazione (PDF)** | Final review → **Start PDF phase** (`start-pdf-draft`) → upload `cover_a5` + toggle copyright page → export draft PDF (round 1–3) → **`draft-ai-review`** salva feedback → approve final PDF → screening → `published` o `under_review`; stati e `listing_cover_url` coerenti. |
 | **5** | **Lettura pubblica** | Biografia `published` + `public`: comparsa in elenco pubblico e/o pagina view; oppure link **link-only** con token. |
 
 Opzionale:
 
 - [ ] **Admin**: login reviewer/admin → coda moderazione raggiungibile.
+- [ ] **Reviewer languages**: in `/admin/users`, assegnare IT a un reviewer → biografia IT in coda assegnata correttamente (`pickReviewer` + `reviewer_languages`).
+- [ ] **Middleware**: `GET /api/admin/users` senza Bearer → 401; utente non-staff → 403.
 - [ ] **Segnalazione errori**: verifica che `log-error` (se usato) non fallisca in modo silenzioso.
 
 ---
