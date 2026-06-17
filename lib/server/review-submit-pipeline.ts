@@ -14,6 +14,14 @@ const STAFF_ROLES = new Set(['reviewer', 'admin', 'super_admin']);
 export const SUBMIT_THROTTLE_WINDOW_SECS = 60;
 export const SUBMIT_THROTTLE_MAX = 3;
 
+const FINAL_VERSION_EXPORT_STATUSES = new Set([
+  'final_version',
+  'published',
+  'pdf_draft',
+  'locked_pending_screening',
+  'under_review',
+]);
+
 const AUTO_PUBLISHED_MESSAGES: Record<string, string> = {
   en: 'Your biography has been reviewed and published automatically.',
   it: 'La tua biografia è stata revisionata e pubblicata automaticamente.',
@@ -594,7 +602,7 @@ export async function generateAndStoreExports(supabase: AnyClient, biographyId: 
     const { buildBiographyTxtContent, buildBiographyDocxBuffer } = await import('@/lib/export-server');
     const { data: bio } = await supabase
       .from('biographies')
-      .select('title, author_name, created_at, content_freeflow, biography_mode')
+      .select('title, author_name, created_at, content_freeflow, biography_mode, final_version, status')
       .eq('id', biographyId)
       .maybeSingle();
 
@@ -608,12 +616,22 @@ export async function generateAndStoreExports(supabase: AnyClient, biographyId: 
       .order('section_key', { ascending: true });
 
     const isFreeFlow = (bio as any).biography_mode === 'freeflow';
+    const finalVersion = typeof (bio as any).final_version === 'string' ? (bio as any).final_version : '';
+    const shouldUseFinalVersion =
+      FINAL_VERSION_EXPORT_STATUSES.has((bio as any).status) && finalVersion.trim().length > 0;
 
     const sections: Array<{ title: string; content: string }> = isFreeFlow
-      ? [{ title: (bio as any).title, content: (bio as any).content_freeflow ?? '' }]
-      : ((sectionRows as any[]) ?? [])
-          .filter((r: any) => r.content?.trim())
-          .map((r: any) => ({ title: r.section_key, content: r.content }));
+      ? [
+          {
+            title: (bio as any).title,
+            content: shouldUseFinalVersion ? finalVersion : (bio as any).content_freeflow ?? '',
+          },
+        ]
+      : shouldUseFinalVersion
+        ? [{ title: (bio as any).title, content: finalVersion }]
+        : ((sectionRows as any[]) ?? [])
+            .filter((r: any) => r.content?.trim())
+            .map((r: any) => ({ title: r.section_key, content: r.content }));
 
     const title: string = (bio as any).title ?? '';
     const authorName: string = (bio as any).author_name ?? '';
