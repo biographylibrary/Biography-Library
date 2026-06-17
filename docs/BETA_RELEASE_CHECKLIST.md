@@ -13,17 +13,17 @@ Usare come elenco da spuntare in team. Ordine consigliato: **merge → migrazion
 
 ## 1. Merge e qualità codice
 
-- [ ] Branch di lavoro integrato in `main` (es. PR approvata, **nessun marker di conflitto** `<<<<<<<` nel repo).
-- [ ] `npm run typecheck` e `npm run build` eseguiti su commit di `main` (localmente o in CI).
-- [ ] (Opzionale ma consigliato) `npm run lint` — il build Next può ignorare ESLint; il lint va eseguito esplicitamente.
+- [ ] Branch di lavoro integrato in `main` — PR [#16](https://github.com/biographylibrary/Biography-Library/pull/16) (`main-sync` → `main`)
+- [x] `npm run typecheck` e `npm run build` eseguiti su commit di `main-sync` (localmente)
+- [x] Workflow CI (`.github/workflows/ci.yml`) — typecheck, lint, build su PR e push `main`
+- [x] (Opzionale ma consigliato) `npm run lint` — PASS
 
 ---
 
 ## 2. Migrazioni database (Supabase **produzione**)
 
-- [ ] Elenco migrazioni da applicare allineato a `supabase/migrations/` su `main`.
-- [ ] Migrazioni applicate **in ordine di timestamp** (dashboard SQL / CLI / strumento interno).
-- [ ] Verifica rapida post-migrazione (a campione): colonne nuove su `biographies`, funzione `get_biography_by_share_token` aggiornata se previsto, bucket storage esistente.
+- [x] Migrazioni v1 applicate su Supabase dev (`20260508_add_draft_ai_feedback_to_biographies`, `20260508120000_biography_media_cover_a5_layout`, `20260508180000_biography_book_structure_author_copyright_page`)
+- [ ] Stesse migrazioni applicate su Supabase **produzione** (se progetto separato da dev)
 
 ---
 
