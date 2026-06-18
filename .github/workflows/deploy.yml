@@ -16,6 +16,7 @@ jobs:
       - name: Deploy via SSH to Jelastic
         uses: appleboy/ssh-action@v1.0.3
         with:
+          command_timeout: 30m 
           host: ${{ secrets.JELASTIC_HOST }}
           username: ${{ secrets.JELASTIC_USER }}
           key: ${{ secrets.JELASTIC_SSH_KEY }}
