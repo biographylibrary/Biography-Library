@@ -144,7 +144,7 @@ All AI calls from the browser go through **Supabase Edge Functions** (Deno). The
 | `audio-transcription` | Audio file → transcript via Infomaniak Whisper endpoint |
 | `help-assistant` | In-app help chatbot; searches a local knowledge base before calling AI |
 
-The AI provider is **Infomaniak AI Tools** (OpenAI-compatible endpoint). Primary model: `mistral3` (configurable via `INFOMANIAK_AI_MODEL`). The endpoint URL and token are stored as Supabase Edge Function secrets — never in the client bundle.
+The AI provider is **Infomaniak AI Services** (OpenAI-compatible endpoint, CH). Default models (2026): `google/gemma-4-31B-it` for `ai-assistant` and screening routes; `nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B-FP8` for `help-assistant`. Configurable via Edge Function secrets or host env (`INFOMANIAK_AI_MODEL` on Next.js). Credentials are never in the client bundle.
 
 ### Client call flow (`lib/ai/ai-client.ts`)
 

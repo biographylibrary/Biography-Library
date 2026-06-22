@@ -4,7 +4,7 @@ import { stripHtml } from '@/lib/pdf-export';
 const INFOMANIAK_ENDPOINT = process.env.INFOMANIAK_AI_ENDPOINT ?? '';
 const INFOMANIAK_TOKEN = process.env.INFOMANIAK_AI_TOKEN ?? '';
 const INFOMANIAK_MODEL =
-  process.env.INFOMANIAK_AI_MODEL ?? 'swiss-ai/Apertus-70B-Instruct-2509';
+  process.env.INFOMANIAK_AI_MODEL ?? 'google/gemma-4-31B-it';
 
 const MAX_CONTENT_CHARS = 6000;
 const AI_TIMEOUT_MS = 30_000;

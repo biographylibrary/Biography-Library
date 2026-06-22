@@ -320,8 +320,13 @@ Deno.serve(async (req: Request) => {
     const infomaniakToken = Deno.env.get("INFOMANIAK_AI_TOKEN") || "";
     const infomaniakEndpoint = Deno.env.get("INFOMANIAK_AI_ENDPOINT") || "";
     const primaryModel =
-      Deno.env.get("INFOMANIAK_AI_MODEL_PRIMARY") ?? "swiss-ai/Apertus-70B-Instruct-2509";
-    const fallbackModel = Deno.env.get("INFOMANIAK_AI_MODEL_FALLBACK") ?? "mistral3";
+      Deno.env.get("INFOMANIAK_AI_MODEL_HELP_PRIMARY") ??
+      Deno.env.get("INFOMANIAK_AI_MODEL_PRIMARY") ??
+      "nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B-FP8";
+    const fallbackModel =
+      Deno.env.get("INFOMANIAK_AI_MODEL_HELP_FALLBACK") ??
+      Deno.env.get("INFOMANIAK_AI_MODEL_FALLBACK") ??
+      "mistralai/Ministral-3-14B-Instruct-2512";
 
     if (!infomaniakToken) {
       return errorResponse("AI service is not configured.", 503);

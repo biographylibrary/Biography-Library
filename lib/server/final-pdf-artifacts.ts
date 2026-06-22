@@ -5,6 +5,7 @@ import {
   type BiographyData,
 } from '@/lib/pdf-export';
 import { renderPdfFirstPageToJpegBuffer } from '@/lib/server/render-pdf-first-page-jpeg';
+import '@/lib/server/register-pdf-cover-rasterizer';
 
 type AnyClient = SupabaseClient<any, any, any>;
 
