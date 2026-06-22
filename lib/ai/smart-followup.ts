@@ -56,7 +56,7 @@ export async function analyzeAndRespond(
 ): Promise<AnalysisResult> {
   try {
     const result = await callAI({
-      action: 'followup',
+      action: 'analyze-answer',
       answer,
       question,
       conversationHistory,

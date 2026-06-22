@@ -1,5 +1,15 @@
 import jsPDF from 'jspdf';
 import type { SupabaseClient } from '@supabase/supabase-js';
+import {
+  COVER_BORDER,
+  COVER_INNER_PAD,
+  COVER_PAGE_W,
+  COVER_PT_AUTHOR,
+  COVER_PT_TITLE,
+  computeCoverCompositeLayout,
+  splitTitleAuthorLines,
+} from '@/lib/pdf/cover-composite-layout';
+import { rasterizeCoverPhotoRoundedBrowser } from '@/lib/pdf/cover-photo-raster';
 
 type PdfSupabase = SupabaseClient<any, any, any>;
 import { BIOGRAPHY_SECTIONS } from './editor-constants';
@@ -111,6 +121,26 @@ export function getPdfReadinessMessage(issue: PdfReadinessIssue, noCoverPhotoWar
 
 const B5_W = 176;
 const B5_H = 250;
+
+/** Reset page MediaBox after cover drawing — oversized addImage can widen page 1 in some viewers. */
+function enforceB5PageDimensions(doc: jsPDF): void {
+  const internal = (doc as any).internal;
+  if (!internal) return;
+  const pageNum = internal.getNumberOfPages?.() ?? 1;
+  if (typeof internal.setPage === 'function') {
+    internal.setPage(pageNum);
+  }
+  const ps = internal.pageSize;
+  if (ps) {
+    if (typeof ps.setWidth === 'function' && typeof ps.setHeight === 'function') {
+      ps.setWidth(B5_W);
+      ps.setHeight(B5_H);
+    } else {
+      ps.width = B5_W;
+      ps.height = B5_H;
+    }
+  }
+}
 
 const SAFE_MARGIN = 5;
 
@@ -630,6 +660,20 @@ function coverBase64ToDataUri(base64: string, coverFormat: string): string {
   return `data:image/${sub};base64,${base64}`;
 }
 
+/** Optional server hook — registered from `lib/server/register-pdf-cover-rasterizer.ts` only. */
+export type CoverPhotoRasterizer = (
+  coverBase64: string,
+  outputWidthPx: number,
+  outputHeightPx: number,
+  cornerRadiusPx: number
+) => Promise<{ dataUrl: string; format: string }>;
+
+let coverPhotoRasterizer: CoverPhotoRasterizer | null = null;
+
+export function setCoverPhotoRasterizer(fn: CoverPhotoRasterizer | null): void {
+  coverPhotoRasterizer = fn;
+}
+
 /** Ordered PDF assembly trace (debug blank-page issues). */
 function logPdfBuildStep(step: string): void {
   console.log('[PDF build]', step);
@@ -1045,136 +1089,99 @@ function drawFullBleedCustomCover(
   doc.setFillColor(255, 255, 255);
   doc.rect(0, 0, B5_W, B5_H, 'F');
   doc.addImage(coverBase64, coverFormat, 0, 0, B5_W, B5_H);
+  enforceB5PageDimensions(doc);
 }
 
-function drawPhotoCover(
+async function drawPhotoCover(
   doc: jsPDF,
   title: string,
   authorName: string,
   coverBase64: string,
   coverFormat: string,
   imgDims: { width: number; height: number }
-): void {
+): Promise<void> {
   doc.setFillColor(255, 255, 255);
   doc.rect(0, 0, B5_W, B5_H, 'F');
 
-  const BORDER = 10;
-  const CARD_RADIUS = 6;
-  const CARD_X = BORDER;
-  const CARD_Y = BORDER;
-  const CARD_W = B5_W - 2 * BORDER;
-  const innerPad = 10;
-  const PT_TITLE = 34;
-  const PT_AUTHOR = 18;
-  const lineHeightTitle = (PT_TITLE * 1.2) / 2.83465;
-  const lineHeightAuthor = (PT_AUTHOR * 1.2) / 2.83465;
-  const AUTHOR_GAP = 7;
-  const bottomPadding = 10;
-
+  const innerWidth = COVER_PAGE_W - 2 * COVER_BORDER - 2 * COVER_INNER_PAD;
   applyFont(doc, 'normal');
-  doc.setFontSize(PT_TITLE);
-  const titleLines = doc.splitTextToSize(title, CARD_W - 2 * innerPad) as string[];
-
-  const TITLE_Y = CARD_Y + innerPad;
-  const titleHeight = titleLines.length * lineHeightTitle;
-  const AUTHOR_Y = TITLE_Y + titleHeight + AUTHOR_GAP;
-
-  applyFont(doc, 'normal');
-  doc.setFontSize(PT_AUTHOR);
-  const authorLines = doc.splitTextToSize(authorName, CARD_W - 2 * innerPad) as string[];
-  const authorHeight = authorLines.length * lineHeightAuthor;
-
-  const CARD_H = AUTHOR_Y - CARD_Y + authorHeight + bottomPadding;
+  const { titleLines, authorLines } = splitTitleAuthorLines(doc, title, authorName, innerWidth);
+  const layout = computeCoverCompositeLayout(titleLines.length, authorLines.length);
+  const { titleCard, photoCard, textX, titleFirstBaselineY, cornerRadius } = layout;
 
   doc.setFillColor(0xec, 0xe9, 0xe4);
   doc.setDrawColor(0xec, 0xe9, 0xe4);
-  (doc as any).roundedRect(CARD_X, CARD_Y, CARD_W, CARD_H, CARD_RADIUS, CARD_RADIUS, 'FD');
-
-  applyFont(doc, 'normal');
-  doc.setFontSize(PT_TITLE);
-  doc.setTextColor(0x12, 0x12, 0x12);
-  titleLines.forEach((line: string, i: number) => {
-    doc.text(line, CARD_X + innerPad, TITLE_Y + i * lineHeightTitle);
-  });
-
-  applyFont(doc, 'normal');
-  doc.setFontSize(PT_AUTHOR);
-  doc.setTextColor(0x12, 0x12, 0x12);
-  authorLines.forEach((line: string, i: number) => {
-    doc.text(line, CARD_X + innerPad, AUTHOR_Y + i * lineHeightAuthor);
-  });
-
-  const PHOTO_GAP_Y = 8;
-  const PHOTO_CARD_X = CARD_X;
-  const PHOTO_CARD_W = CARD_W;
-  const PHOTO_CARD_Y = CARD_Y + CARD_H + PHOTO_GAP_Y;
-  const PHOTO_CARD_H = 110;
-  const PHOTO_CARD_RADIUS = CARD_RADIUS;
-
-  doc.setFillColor(255, 255, 255);
-  doc.setDrawColor(255, 255, 255);
-  doc.setLineWidth(0.5);
   (doc as any).roundedRect(
-    PHOTO_CARD_X,
-    PHOTO_CARD_Y,
-    PHOTO_CARD_W,
-    PHOTO_CARD_H,
-    PHOTO_CARD_RADIUS,
-    PHOTO_CARD_RADIUS,
+    titleCard.x,
+    titleCard.y,
+    titleCard.w,
+    titleCard.h,
+    cornerRadius,
+    cornerRadius,
     'FD'
   );
 
-  const IMG_MARGIN = 2;
-  const IMG_X = PHOTO_CARD_X + IMG_MARGIN;
-  const IMG_Y = PHOTO_CARD_Y + IMG_MARGIN;
-  const IMG_W = PHOTO_CARD_W - 2 * IMG_MARGIN;
-  const IMG_H = PHOTO_CARD_H - 2 * IMG_MARGIN;
+  applyFont(doc, 'normal');
+  doc.setFontSize(COVER_PT_TITLE);
+  doc.setTextColor(0x12, 0x12, 0x12);
+  let y = titleFirstBaselineY;
+  for (const line of titleLines) {
+    doc.text(line, textX, y);
+    y += layout.lineHeightTitle;
+  }
+  y += layout.authorGap;
 
-  let imgWidth = imgDims.width > 0 ? imgDims.width : 0;
-  let imgHeight = imgDims.height > 0 ? imgDims.height : 0;
-  if (imgWidth <= 0 || imgHeight <= 0) {
-    imgWidth = 1;
-    imgHeight = 1;
+  applyFont(doc, 'normal');
+  doc.setFontSize(COVER_PT_AUTHOR);
+  doc.setTextColor(0x12, 0x12, 0x12);
+  for (const line of authorLines) {
+    doc.text(line, textX, y);
+    y += layout.lineHeightAuthor;
   }
 
-  const imgRatio = imgWidth / imgHeight;
-  const slotRatio = IMG_W / IMG_H;
+  doc.setFillColor(255, 255, 255);
+  doc.setDrawColor(255, 255, 255);
+  (doc as any).roundedRect(
+    photoCard.x,
+    photoCard.y,
+    photoCard.w,
+    photoCard.h,
+    cornerRadius,
+    cornerRadius,
+    'FD'
+  );
 
-  let drawW: number;
-  let drawH: number;
-  let drawX: number;
-  let drawY: number;
-  if (imgRatio > slotRatio) {
-    drawH = IMG_H;
-    drawW = IMG_H * imgRatio;
-    drawX = IMG_X - (drawW - IMG_W) / 2;
-    drawY = IMG_Y;
-  } else {
-    drawW = IMG_W;
-    drawH = IMG_W / imgRatio;
-    drawX = IMG_X;
-    drawY = IMG_Y - (drawH - IMG_H) / 2;
+  const outputWPx = Math.max(400, Math.round(photoCard.w * 10));
+  const outputHPx = Math.max(200, Math.round(photoCard.h * 10));
+  const radiusPx = Math.max(1, Math.round((cornerRadius / photoCard.w) * outputWPx));
+
+  const placePhoto = (dataUrl: string, format: string) => {
+    doc.addImage(dataUrl, format, photoCard.x, photoCard.y, photoCard.w, photoCard.h);
+  };
+
+  try {
+    if (typeof window !== 'undefined' && typeof document !== 'undefined') {
+      const raster = await rasterizeCoverPhotoRoundedBrowser(
+        coverBase64,
+        coverFormat,
+        imgDims,
+        outputWPx,
+        outputHPx,
+        radiusPx
+      );
+      placePhoto(raster.dataUrl, raster.format);
+    } else if (coverPhotoRasterizer) {
+      const raster = await coverPhotoRasterizer(coverBase64, outputWPx, outputHPx, radiusPx);
+      placePhoto(raster.dataUrl, raster.format);
+    } else {
+      placePhoto(coverBase64, coverFormat);
+    }
+  } catch (e) {
+    console.warn('[drawPhotoCover] raster failed, drawing fitted image', e);
+    placePhoto(coverBase64, coverFormat);
   }
 
-  const clipR = Math.max(1, PHOTO_CARD_RADIUS - 1);
-  const docAny = doc as any;
-  const hasClipping =
-    typeof docAny.saveGraphicsState === 'function' &&
-    typeof docAny.restoreGraphicsState === 'function' &&
-    typeof docAny.clip === 'function';
-
-  if (hasClipping) {
-    docAny.saveGraphicsState();
-    (doc as any).roundedRect(IMG_X, IMG_Y, IMG_W, IMG_H, clipR, clipR, null);
-    docAny.clip();
-    doc.addImage(coverBase64, coverFormat, drawX, drawY, drawW, drawH);
-    docAny.restoreGraphicsState();
-  } else {
-    doc.addImage(coverBase64, coverFormat, drawX, drawY, drawW, drawH);
-    doc.setDrawColor(230, 230, 230);
-    doc.setLineWidth(0.25);
-    (doc as any).roundedRect(IMG_X, IMG_Y, IMG_W, IMG_H, clipR, clipR, 'S');
-  }
+  enforceB5PageDimensions(doc);
 }
 
 async function drawBackCover(
@@ -1441,7 +1448,7 @@ export async function generateBiographyPDF(
   } else {
     logPdfBuildStep('page 1: composite cover (layout=cover)');
     const dims = await resolveCoverImagePixelDimensions(doc, coverComposite!.base64, coverComposite!.format);
-    drawPhotoCover(
+    await drawPhotoCover(
       doc,
       biography.title,
       biography.author_name,
