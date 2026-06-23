@@ -76,6 +76,7 @@ export function HelpChatbot({ isOpen, onClose }: HelpChatbotProps) {
               agentType="platform_guide"
               className="flex-1 min-h-0"
               emptyState={t.helpChatbot.placeholder}
+              loadHistory
               fallbackToHelpEdge
             />
           )}

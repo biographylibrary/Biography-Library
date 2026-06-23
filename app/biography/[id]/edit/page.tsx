@@ -15,6 +15,7 @@ import { PhotoGalleryPanel } from '@/components/editor/PhotoGalleryPanel';
 import { CoachConversationMode } from '@/components/editor/coach-conversation-mode';
 import { NextSectionPrompt } from '@/components/editor/next-section-prompt';
 import { AISectionReview } from '@/components/editor/AISectionReview';
+import { ApertusReviewDialog } from '@/components/editor/ApertusReviewDialog';
 import { FinalReviewDialog } from '@/components/editor/FinalReviewDialog';
 import { FinalVersionEditor } from '@/components/editor/FinalVersionEditor';
 import { PublishConfirmationDialog } from '@/components/editor/PublishConfirmationDialog';
@@ -99,6 +100,7 @@ export default function BiographyEditorPage() {
   const [completedSectionKey, setCompletedSectionKey] = useState<string | null>(null);
   const [showExportDialog, setShowExportDialog] = useState(false);
   const [showReviewDialog, setShowReviewDialog] = useState(false);
+  const [showApertusDialog, setShowApertusDialog] = useState(false);
   const [completedSections, setCompletedSections] = useState<string[]>([]);
   const [showFinalReview, setShowFinalReview] = useState(false);
   const [finalVersion, setFinalVersion] = useState<string>('');
@@ -568,6 +570,16 @@ const [isPublishing, setIsPublishing] = useState(false);
     if (!sectionData.text.trim()) return;
     setShowReviewDialog(true);
   }, [activeSection]);
+
+  const handleApertusReview = useCallback(() => {
+    if (biographyMode === 'freeflow') {
+      if (!contentFreeflow.trim()) return;
+    } else {
+      const sectionData = getSectionData(contentRef.current, activeSection);
+      if (!sectionData.text.trim()) return;
+    }
+    setShowApertusDialog(true);
+  }, [activeSection, biographyMode, contentFreeflow]);
 
   const handleMarkComplete = useCallback(async () => {
     const newStatus = status === 'sections_complete' ? 'draft' : 'sections_complete';
@@ -2026,6 +2038,7 @@ const [isPublishing, setIsPublishing] = useState(false);
                   onGuidedPrompts={handleGuidedPrompts}
                   onSummarize={handleSummarize}
                   onReviewWithAi={handleReviewWithAi}
+                  onApertusReview={aiEnabled ? handleApertusReview : undefined}
                   aiLoading={aiState.loading}
                   biographyId={id}
                   editorFontSize={editorFontSize}
@@ -2059,6 +2072,7 @@ const [isPublishing, setIsPublishing] = useState(false);
                   onGuidedPrompts={handleGuidedPrompts}
                   onSummarize={handleSummarize}
                   onReviewWithAi={handleReviewWithAi}
+                  onApertusReview={aiEnabled ? handleApertusReview : undefined}
                   aiLoading={aiState.loading}
                   biographyId={id}
                   editorFontSize={editorFontSize}
@@ -2281,6 +2295,20 @@ const [isPublishing, setIsPublishing] = useState(false);
         content={activeSectionData.text}
         language={language}
         onApplyChanges={handleApplyReviewChanges}
+      />
+
+      <ApertusReviewDialog
+        open={showApertusDialog}
+        onOpenChange={setShowApertusDialog}
+        biographyId={id}
+        sectionKey={biographyMode === 'freeflow' ? 'freeflow' : activeSection}
+        sectionTitle={
+          biographyMode === 'freeflow'
+            ? t.editor.freeFlowTab
+            : t.sectionTitles[activeSection as keyof typeof t.sectionTitles] ||
+              BIOGRAPHY_SECTIONS.find((s) => s.key === activeSection)?.title ||
+              ''
+        }
       />
 
       <GlobalNotesPanel

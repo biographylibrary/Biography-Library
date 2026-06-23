@@ -10,9 +10,15 @@ import {
 } from '@/lib/agents/thread-service';
 import type { ChatMessage, ToolDefinition } from '@/lib/agents/infomaniak-client';
 import { COACH_TOOL_DEFINITIONS } from '@/lib/agents/tools/coach-tools';
+import { REVIEWER_CHAT_TOOL_DEFINITIONS } from '@/lib/agents/tools/reviewer-tools';
 import { buildCoachSystemPrompt } from '@/lib/agents/prompts/coach';
 import { buildPlatformGuideSystemPrompt } from '@/lib/agents/prompts/platform-guide';
+import { buildReviewerChatSystemPrompt } from '@/lib/agents/prompts/reviewer';
 import { indexBiography, retrieveBiographyContext } from '@/lib/agents/rag/biography-rag';
+import {
+  ensureHelpKbIndexed,
+  retrieveKbContext,
+} from '@/lib/agents/rag/kb-rag';
 import { historyToChatMessages } from '@/lib/agents/run-agent-turn';
 import { BIOGRAPHY_SECTIONS } from '@/lib/editor-constants';
 
@@ -43,6 +49,7 @@ export type PreparedTurnResult =
       tools?: ToolDefinition[];
       biographyId?: string;
       userId: string;
+      kbSources?: string[];
     };
 
 export async function authenticateAgentRequest(req: NextRequest): Promise<AuthResult> {
@@ -84,11 +91,11 @@ const COACH_SECTIONS_ONLY: Record<string, string> = {
   de: 'Der Biografie-Coach ist nur im Abschnittsmodus verfügbar. Wechseln Sie in den Abschnittsmodus, um den Schreib-Coach zu nutzen.',
 };
 
-const NOT_IMPLEMENTED: Record<string, string> = {
-  en: 'This agent is not available yet. Please try again later.',
-  it: 'Questo agente non è ancora disponibile. Riprova più tardi.',
-  fr: 'Cet agent n’est pas encore disponible. Réessayez plus tard.',
-  de: 'Dieser Agent ist noch nicht verfügbar. Bitte versuchen Sie es später erneut.',
+const REVIEWER_UNAVAILABLE: Record<string, string> = {
+  en: 'The publication reviewer is not available for this biography.',
+  it: 'Il revisore di pubblicazione non è disponibile per questa biografia.',
+  fr: 'Le réviseur de publication n’est pas disponible pour cette biographie.',
+  de: 'Der Publikationsprüfer ist für diese Biografie nicht verfügbar.',
 };
 
 const SECTION_TITLE_FALLBACK: Record<string, Record<string, string>> = {
@@ -144,15 +151,14 @@ export async function prepareAgentTurn(
         message: COACH_SECTIONS_ONLY[locale] ?? COACH_SECTIONS_ONLY.en,
       };
     }
-  }
-
-  if (agentType === 'publication_reviewer') {
-    return {
-      ok: false,
-      status: 501,
-      error: 'not_implemented',
-      message: NOT_IMPLEMENTED[locale] ?? NOT_IMPLEMENTED.en,
-    };
+    if (agentType === 'publication_reviewer' && ownership.biography_mode === 'freeflow') {
+      return {
+        ok: false,
+        status: 400,
+        error: 'reviewer_sections_only',
+        message: REVIEWER_UNAVAILABLE[locale] ?? REVIEWER_UNAVAILABLE.en,
+      };
+    }
   }
 
   const thread = await getOrCreateThread(serviceClient, {
@@ -205,7 +211,62 @@ export async function prepareAgentTurn(
     };
   }
 
+  if (agentType === 'publication_reviewer' && biographyId) {
+    try {
+      await indexBiography(serviceClient, biographyId);
+    } catch (err) {
+      console.warn('[agents] indexBiography failed:', err);
+    }
+
+    let ragContext = '';
+    try {
+      ragContext = await retrieveBiographyContext(serviceClient, biographyId, message, 4);
+    } catch (err) {
+      console.warn('[agents] retrieveBiographyContext failed:', err);
+    }
+
+    let systemPrompt = buildReviewerChatSystemPrompt(locale);
+    if (ragContext) {
+      systemPrompt += `\n\nRelevant excerpts from this biography:\n${ragContext}`;
+    }
+
+    return {
+      ok: true,
+      threadId: thread.id,
+      history,
+      userMessage: message,
+      locale,
+      systemPrompt,
+      role: 'reviewer',
+      agentType,
+      tools: REVIEWER_CHAT_TOOL_DEFINITIONS,
+      biographyId,
+      userId,
+    };
+  }
+
   const systemPrompt = buildPlatformGuideSystemPrompt(locale);
+
+  try {
+    await ensureHelpKbIndexed(serviceClient, locale);
+  } catch (err) {
+    console.warn('[agents] ensureHelpKbIndexed failed:', err);
+  }
+
+  let kbContext = '';
+  let kbSources: string[] = [];
+  try {
+    const kb = await retrieveKbContext(serviceClient, message, locale, 4);
+    kbContext = kb.context;
+    kbSources = kb.sources;
+  } catch (err) {
+    console.warn('[agents] retrieveKbContext failed:', err);
+  }
+
+  let fullSystemPrompt = systemPrompt;
+  if (kbContext) {
+    fullSystemPrompt += `\n\nRelevant knowledge base excerpts:\n${kbContext}`;
+  }
 
   return {
     ok: true,
@@ -213,10 +274,11 @@ export async function prepareAgentTurn(
     history,
     userMessage: message,
     locale,
-    systemPrompt,
+    systemPrompt: fullSystemPrompt,
     role: 'onboarding',
     agentType,
     userId,
+    kbSources,
   };
 }
 

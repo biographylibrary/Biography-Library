@@ -63,6 +63,9 @@ export async function POST(req: NextRequest) {
 
       try {
         send('thread', { threadId: prepared.threadId });
+        if (prepared.kbSources?.length) {
+          send('kb_sources', { sources: prepared.kbSources });
+        }
         await runStreamingAgentTurn(
           {
             threadId: prepared.threadId,

@@ -6,7 +6,7 @@ import { RichTextEditor } from './rich-text-editor';
 import { VoiceRecorder } from './voice-recorder';
 import { ImportTextDialog } from './import-text-dialog';
 import { useTranslation } from '@/lib/i18n/i18n-context';
-import { Sparkles, Flag, Mic, SpellCheck, MessageSquareText, FileText, Power, Wand as Wand2, CircleCheck as CheckCircle2, Lock } from 'lucide-react';
+import { Sparkles, Flag, Mic, SpellCheck, MessageSquareText, FileText, Power, Wand as Wand2, CircleCheck as CheckCircle2, Lock, Landmark } from 'lucide-react';
 import { BIOGRAPHY_SECTIONS, type SectionData } from '@/lib/editor-constants';
 import { cn } from '@/lib/utils';
 
@@ -22,6 +22,7 @@ interface SectionEditorProps {
   onGuidedPrompts: () => void;
   onSummarize: () => void;
   onReviewWithAi?: () => void;
+  onApertusReview?: () => void;
   aiLoading: boolean;
   biographyId?: string;
   editorFontSize?: number;
@@ -53,6 +54,7 @@ export function SectionEditor({
   onGuidedPrompts,
   onSummarize,
   onReviewWithAi,
+  onApertusReview,
   aiLoading,
   biographyId,
   editorFontSize = 16,
@@ -169,6 +171,19 @@ export function SectionEditor({
                 >
                   <Wand2 className="h-3.5 w-3.5" />
                   <span className="hidden xl:inline">{t.aiReview.reviewButton}</span>
+                </Button>
+              )}
+              {onApertusReview && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="gap-1 text-xs h-7 px-2"
+                  disabled={aiLoading || !data.text.trim()}
+                  onClick={onApertusReview}
+                  title={t.aiReview.apertusButton}
+                >
+                  <Landmark className="h-3.5 w-3.5" />
+                  <span className="hidden xl:inline">{t.aiReview.apertusButton}</span>
                 </Button>
               )}
             </>

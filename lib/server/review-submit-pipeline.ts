@@ -1,5 +1,6 @@
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { purgeAgentMemoryForBiography } from '@/lib/agents/purge-agent-memory';
+import { runPublicationScreening } from '@/lib/agents/screening/run-publication-screening';
 import { stripHtml } from '@/lib/pdf-export';
 
 const INFOMANIAK_ENDPOINT = process.env.INFOMANIAK_AI_ENDPOINT ?? '';
@@ -215,13 +216,6 @@ export async function fetchBiographyContent(
   return { text, authorId, contentLanguage };
 }
 
-interface ScreeningResult {
-  passages: Array<{ text: string; section_key: string; reason: string; severity: number }>;
-  overall_severity: number;
-  aiError?: boolean;
-  parseError?: boolean;
-}
-
 export interface DraftAiSuggestion {
   type: 'narrative' | 'completeness' | 'clarity' | 'style';
   section_key: string | null;
@@ -417,102 +411,6 @@ export async function runDraftAiReview(
     return normalizeDraftFeedback(parsed);
   } catch (err) {
     console.error('[review-submit-pipeline] Draft AI review error:', err);
-    return errorResult;
-  }
-}
-
-async function runAiScreening(
-  biographyText: string,
-  focusSectionKeys?: string[]
-): Promise<ScreeningResult> {
-  const errorResult: ScreeningResult = { passages: [], overall_severity: 0, aiError: true };
-  const parseErrorResult: ScreeningResult = { passages: [], overall_severity: 0, aiError: true, parseError: true };
-
-  if (!INFOMANIAK_TOKEN || !INFOMANIAK_ENDPOINT) {
-    console.warn('[review-submit-pipeline] Infomaniak AI not configured — routing to manual review');
-    return errorResult;
-  }
-
-  const focusNote =
-    focusSectionKeys && focusSectionKeys.length > 0
-      ? `The text below may be one continuous “final version” without per-section headings. ` +
-        `Prioritize passages that relate to these labels; use these exact section_key values in your JSON when a passage clearly matches: ${focusSectionKeys.join(', ')}. ` +
-        `If a problem does not map to one label, pick the closest section_key or use the first label from the list.\n\n`
-      : '';
-
-  const systemPrompt =
-    'You are a content moderator for a biography publishing platform. ' +
-    'Respond only with valid JSON. No explanations, no markdown, no code blocks. Only the raw JSON object.';
-
-  const userPrompt =
-    'Analyze this biography text for potentially problematic content. ' +
-    'Identify passages that:\n' +
-    '- Make unverified factual claims about living persons\n' +
-    '- Contain potentially defamatory statements\n' +
-    '- Include explicit personal details about third parties without apparent consent\n' +
-    '- Contain hate speech or discriminatory content\n' +
-    '- Make unverified legal or criminal accusations\n\n' +
-    'For each problematic passage, include:\n' +
-    '- text: the exact sentence (max 400 chars)\n' +
-    '- section_key: which section it came from\n' +
-    '- reason: brief explanation (max 150 chars)\n' +
-    '- severity: 1 (minor), 2 (moderate), or 3 (serious)\n\n' +
-    'If no issues are found, return an empty passages array. ' +
-    'overall_severity should be the max severity found, or 0.\n\n' +
-    'Return ONLY this JSON:\n' +
-    '{"passages":[],"overall_severity":0}\n\n' +
-    'Biography:\n' +
-    focusNote +
-    biographyText;
-
-  try {
-    const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), AI_TIMEOUT_MS);
-
-    const res = await fetch(INFOMANIAK_ENDPOINT, {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${INFOMANIAK_TOKEN}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        model: INFOMANIAK_MODEL,
-        max_tokens: 2048,
-        temperature: 0.2,
-        messages: [
-          { role: 'system', content: systemPrompt },
-          { role: 'user', content: userPrompt },
-        ],
-      }),
-      signal: controller.signal,
-    }).finally(() => clearTimeout(timer));
-
-    if (!res.ok) {
-      console.error('[review-submit-pipeline] AI HTTP error:', res.status);
-      return errorResult;
-    }
-
-    const aiJson = await res.json();
-    const rawText: string = aiJson?.choices?.[0]?.message?.content ?? '';
-
-    const match = rawText.match(/\{[\s\S]*\}/);
-    if (!match) {
-      console.error('[review-submit-pipeline] Could not extract JSON from AI response. Raw text:', rawText);
-      return parseErrorResult;
-    }
-
-    try {
-      const parsed = JSON.parse(match[0]);
-      return {
-        passages: Array.isArray(parsed.passages) ? parsed.passages : [],
-        overall_severity: typeof parsed.overall_severity === 'number' ? parsed.overall_severity : 0,
-      };
-    } catch (parseErr) {
-      console.error('[review-submit-pipeline] JSON.parse failed. Raw AI text:', rawText, 'Error:', parseErr);
-      return parseErrorResult;
-    }
-  } catch (err) {
-    console.error('[review-submit-pipeline] AI screening error:', err);
     return errorResult;
   }
 }
@@ -739,7 +637,7 @@ export async function runReviewSubmitScreening(
     previousReviewerId = (prevReport as { assigned_to?: string } | null)?.assigned_to ?? null;
   }
 
-  const screening = await runAiScreening(text, targetSectionKeys);
+  const screening = await runPublicationScreening(text, targetSectionKeys);
 
   const priorStatus = await fetchBiographyStatus(serviceClient, biographyId);
 

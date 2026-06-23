@@ -4,6 +4,7 @@ export type AgentStreamEvent =
   | { event: 'thread'; data: { threadId: string } }
   | { event: 'token'; data: { content: string } }
   | { event: 'tool_result'; data: { tool: string; sectionKey?: string; contentLength?: number } }
+  | { event: 'kb_sources'; data: { sources: string[] } }
   | { event: 'done'; data: { threadId: string } }
   | { event: 'error'; data: { message: string } };
 

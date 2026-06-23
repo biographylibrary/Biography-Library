@@ -780,6 +780,12 @@ export interface Translations {
     appliedImprovements: string;
     failedToApply: string;
     appliedRewrite: string;
+    apertusButton: string;
+    apertusTitle: string;
+    apertusSubtitle: string;
+    apertusLoading: string;
+    apertusError: string;
+    apertusModelNote: string;
   };
   deleteDialog: {
     deleteBiographyLink: string;
@@ -2008,6 +2014,12 @@ export const translations: Record<Language, Translations> = {
       appliedImprovements: 'Applied {count} improvements',
       failedToApply: 'Failed to apply improvements',
       appliedRewrite: 'Applied {tone} rewrite',
+      apertusButton: 'Swiss model review',
+      apertusTitle: 'Review with Swiss model',
+      apertusSubtitle: 'Editorial feedback on «{section}» via Apertus (Swiss open-source AI)',
+      apertusLoading: 'Apertus is reading your section…',
+      apertusError: 'Swiss model review is unavailable. Please try again later.',
+      apertusModelNote: 'Model: {model}',
     },
     deleteDialog: {
       deleteBiographyLink: 'Delete biography',
@@ -3237,6 +3249,12 @@ export const translations: Record<Language, Translations> = {
       appliedImprovements: 'Applicati {count} miglioramenti',
       failedToApply: 'Impossibile applicare i miglioramenti',
       appliedRewrite: 'Applicata riscrittura {tone}',
+      apertusButton: 'Rilettura modello svizzero',
+      apertusTitle: 'Rilettura con modello svizzero',
+      apertusSubtitle: 'Feedback editoriale su «{section}» tramite Apertus (IA open source svizzera)',
+      apertusLoading: 'Apertus sta leggendo la sezione…',
+      apertusError: 'Rilettura con modello svizzero non disponibile. Riprova più tardi.',
+      apertusModelNote: 'Modello: {model}',
     },
     deleteDialog: {
       deleteBiographyLink: 'Elimina biografia',
@@ -4466,6 +4484,12 @@ export const translations: Record<Language, Translations> = {
       appliedImprovements: '{count} améliorations appliquées',
       failedToApply: 'Échec de l\'application des améliorations',
       appliedRewrite: 'Réécriture {tone} appliquée',
+      apertusButton: 'Relecture modèle suisse',
+      apertusTitle: 'Relecture avec modèle suisse',
+      apertusSubtitle: 'Retour éditorial sur « {section} » via Apertus (IA open source suisse)',
+      apertusLoading: 'Apertus lit votre section…',
+      apertusError: 'Relecture avec modèle suisse indisponible. Réessayez plus tard.',
+      apertusModelNote: 'Modèle : {model}',
     },
     deleteDialog: {
       deleteBiographyLink: 'Supprimer la biographie',
@@ -5695,6 +5719,12 @@ export const translations: Record<Language, Translations> = {
       appliedImprovements: '{count} Verbesserungen angewendet',
       failedToApply: 'Verbesserungen konnten nicht angewendet werden',
       appliedRewrite: '{tone} Umschreibung angewendet',
+      apertusButton: 'Schweizer Modell-Lektüre',
+      apertusTitle: 'Lektüre mit Schweizer Modell',
+      apertusSubtitle: 'Redaktionelles Feedback zu «{section}» via Apertus (Schweizer Open-Source-KI)',
+      apertusLoading: 'Apertus liest Ihren Abschnitt…',
+      apertusError: 'Lektüre mit Schweizer Modell nicht verfügbar. Bitte später erneut versuchen.',
+      apertusModelNote: 'Modell: {model}',
     },
     deleteDialog: {
       deleteBiographyLink: 'Biografie löschen',

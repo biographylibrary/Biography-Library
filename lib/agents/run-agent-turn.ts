@@ -8,6 +8,7 @@ import {
 import type { AgentRole, AgentType } from '@/lib/agents/models';
 import { appendMessage } from '@/lib/agents/thread-service';
 import { executeCoachTool } from '@/lib/agents/tools/coach-tools';
+import { executeReviewerTool } from '@/lib/agents/tools/reviewer-tools';
 
 export type PreparedAgentTurn = {
   threadId: string;
@@ -130,13 +131,15 @@ export async function runStreamingAgentTurn(
       ];
 
       for (const tc of first.tool_calls) {
-        const { content, event } = await executeCoachTool(
+        const execTool =
+          prepared.agentType === 'publication_reviewer' ? executeReviewerTool : executeCoachTool;
+        const { content, event } = await execTool(
           tc.function.name,
           tc.function.arguments,
           {
             serviceClient,
             userId: prepared.userId,
-            biographyId: prepared.biographyId,
+            biographyId: prepared.biographyId!,
           }
         );
         if (event) send('tool_result', event);
