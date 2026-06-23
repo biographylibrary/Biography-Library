@@ -19,13 +19,13 @@ todos:
     status: completed
   - id: s5-coach
     content: "Step 5: coach Gemma (solo biography_mode=sections), 4 tool, propose_draft con sync editor"
-    status: pending
+    status: completed
   - id: s6-rag
     content: "Step 6: RAG biography_chunks + indexBiography/retrieve"
-    status: pending
+    status: completed
   - id: s6b-purge
     content: "Step 6b: purgeAgentMemoryOnPublished su transizione a published"
-    status: pending
+    status: completed
   - id: s7-onboarding
     content: "Step 7: onboarding Nemotron completo + kb_chunks multilingue + sostituisce HelpChatbot"
     status: pending

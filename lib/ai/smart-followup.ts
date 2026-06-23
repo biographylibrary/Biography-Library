@@ -57,11 +57,10 @@ export async function analyzeAndRespond(
   try {
     const result = await callAI({
       action: 'analyze-answer',
-      answer,
-      question,
+      userAnswer: answer,
+      originalQuestion: question,
       conversationHistory,
       language,
-      hasHadFollowUp,
     });
 
     return {

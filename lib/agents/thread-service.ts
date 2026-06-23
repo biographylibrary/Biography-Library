@@ -180,6 +180,33 @@ export async function verifyThreadOwnership(
   return (data as AgentThreadRow | null) ?? null;
 }
 
+export async function getActiveThread(
+  serviceClient: SupabaseClient,
+  params: {
+    userId: string;
+    agentType: AgentType;
+    biographyId?: string | null;
+  }
+): Promise<AgentThreadRow | null> {
+  const { userId, agentType, biographyId = null } = params;
+
+  let query = serviceClient
+    .from('agent_threads')
+    .select('*')
+    .eq('user_id', userId)
+    .eq('agent_type', agentType)
+    .eq('status', 'active');
+
+  if (biographyId) {
+    query = query.eq('biography_id', biographyId);
+  } else {
+    query = query.is('biography_id', null);
+  }
+
+  const { data } = await query.maybeSingle();
+  return (data as AgentThreadRow | null) ?? null;
+}
+
 export async function verifyBiographyOwnership(
   serviceClient: SupabaseClient,
   biographyId: string,

@@ -1,14 +1,20 @@
 import { NextRequest } from 'next/server';
 import { getBearerJwt, buildUserClient } from '@/lib/server/admin-api-auth';
 import { buildServiceClient } from '@/lib/server/review-submit-pipeline';
-import type { AgentType } from '@/lib/agents/models';
+import type { AgentType, AgentRole } from '@/lib/agents/models';
 import {
   checkAgentRateLimit,
   getOrCreateThread,
   loadThreadMessages,
   verifyBiographyOwnership,
 } from '@/lib/agents/thread-service';
-import type { ChatMessage } from '@/lib/agents/infomaniak-client';
+import type { ChatMessage, ToolDefinition } from '@/lib/agents/infomaniak-client';
+import { COACH_TOOL_DEFINITIONS } from '@/lib/agents/tools/coach-tools';
+import { buildCoachSystemPrompt } from '@/lib/agents/prompts/coach';
+import { buildPlatformGuideSystemPrompt } from '@/lib/agents/prompts/platform-guide';
+import { indexBiography, retrieveBiographyContext } from '@/lib/agents/rag/biography-rag';
+import { historyToChatMessages } from '@/lib/agents/run-agent-turn';
+import { BIOGRAPHY_SECTIONS } from '@/lib/editor-constants';
 
 export type AgentChatRequest = {
   agentType: AgentType;
@@ -16,11 +22,28 @@ export type AgentChatRequest = {
   biographyId?: string;
   language?: string;
   threadId?: string;
+  activeSection?: string;
 };
 
 export type AuthResult =
   | { ok: false; status: number; error: string }
   | { ok: true; userId: string; jwt: string };
+
+export type PreparedTurnResult =
+  | { ok: false; status: number; error: string; message?: string }
+  | {
+      ok: true;
+      threadId: string;
+      history: ChatMessage[];
+      userMessage: string;
+      locale: string;
+      systemPrompt: string;
+      role: AgentRole;
+      agentType: AgentType;
+      tools?: ToolDefinition[];
+      biographyId?: string;
+      userId: string;
+    };
 
 export async function authenticateAgentRequest(req: NextRequest): Promise<AuthResult> {
   const jwt = getBearerJwt(req);
@@ -50,6 +73,7 @@ export async function parseAgentChatBody(req: NextRequest): Promise<AgentChatReq
     biographyId: body?.biographyId as string | undefined,
     language: (body?.language as string | undefined) ?? 'en',
     threadId: body?.threadId as string | undefined,
+    activeSection: body?.activeSection as string | undefined,
   };
 }
 
@@ -67,24 +91,33 @@ const NOT_IMPLEMENTED: Record<string, string> = {
   de: 'Dieser Agent ist noch nicht verfügbar. Bitte versuchen Sie es später erneut.',
 };
 
+const SECTION_TITLE_FALLBACK: Record<string, Record<string, string>> = {
+  en: Object.fromEntries(BIOGRAPHY_SECTIONS.map((s) => [s.key, s.title])),
+  it: {
+    childhood: 'Infanzia e Primi Anni',
+    family: 'Famiglia e Origini',
+    education: 'Educazione',
+    career: 'Carriera e Lavoro',
+    'life-events': 'Eventi Importanti',
+    relationships: 'Relazioni e Amore',
+    challenges: 'Sfide e Lezioni',
+    passions: 'Passioni e Hobby',
+    legacy: 'Eredità e Riflessioni',
+  },
+};
+
+function sectionTitleFor(locale: string, sectionKey: string): string {
+  const titles = SECTION_TITLE_FALLBACK[locale] ?? SECTION_TITLE_FALLBACK.en;
+  return titles[sectionKey] ?? BIOGRAPHY_SECTIONS.find((s) => s.key === sectionKey)?.title ?? sectionKey;
+}
+
 export async function prepareAgentTurn(
   userId: string,
   payload: AgentChatRequest
-): Promise<
-  | { ok: false; status: number; error: string; message?: string }
-  | {
-      ok: true;
-      threadId: string;
-      history: ChatMessage[];
-      userMessage: string;
-      locale: string;
-      systemPrompt: string;
-      role: 'onboarding' | 'coach' | 'reviewer';
-    }
-> {
+): Promise<PreparedTurnResult> {
   const serviceClient = buildServiceClient();
   const locale = (payload.language ?? 'en').slice(0, 2);
-  const { agentType, message, biographyId } = payload;
+  const { agentType, message, biographyId, activeSection } = payload;
 
   const rate = await checkAgentRateLimit(serviceClient, userId);
   if (!rate.allowed) {
@@ -113,7 +146,7 @@ export async function prepareAgentTurn(
     }
   }
 
-  if (agentType === 'biography_coach' || agentType === 'publication_reviewer') {
+  if (agentType === 'publication_reviewer') {
     return {
       ok: false,
       status: 501,
@@ -130,12 +163,48 @@ export async function prepareAgentTurn(
   });
 
   const rows = await loadThreadMessages(serviceClient, thread.id);
-  const history: ChatMessage[] = rows.map((r) => ({
-    role: r.role,
-    content: r.content,
-  }));
+  const history = historyToChatMessages(rows);
 
-  const { buildPlatformGuideSystemPrompt } = await import('@/lib/agents/prompts/platform-guide');
+  if (agentType === 'biography_coach' && biographyId) {
+    const sectionKey = activeSection ?? 'childhood';
+    if (!BIOGRAPHY_SECTIONS.some((s) => s.key === sectionKey)) {
+      return { ok: false, status: 400, error: 'Invalid activeSection' };
+    }
+
+    try {
+      await indexBiography(serviceClient, biographyId);
+    } catch (err) {
+      console.warn('[agents] indexBiography failed:', err);
+    }
+
+    let ragContext = '';
+    try {
+      ragContext = await retrieveBiographyContext(serviceClient, biographyId, message, 4);
+    } catch (err) {
+      console.warn('[agents] retrieveBiographyContext failed:', err);
+    }
+
+    const title = sectionTitleFor(locale, sectionKey);
+    let systemPrompt = buildCoachSystemPrompt(locale, sectionKey, title);
+    if (ragContext) {
+      systemPrompt += `\n\nRelevant excerpts from this biography (for context only):\n${ragContext}`;
+    }
+
+    return {
+      ok: true,
+      threadId: thread.id,
+      history,
+      userMessage: message,
+      locale,
+      systemPrompt,
+      role: 'coach',
+      agentType,
+      tools: COACH_TOOL_DEFINITIONS,
+      biographyId,
+      userId,
+    };
+  }
+
   const systemPrompt = buildPlatformGuideSystemPrompt(locale);
 
   return {
@@ -146,6 +215,8 @@ export async function prepareAgentTurn(
     locale,
     systemPrompt,
     role: 'onboarding',
+    agentType,
+    userId,
   };
 }
 
