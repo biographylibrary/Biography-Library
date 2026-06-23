@@ -62,16 +62,32 @@ export async function runStreamingAgentTurn(
 
   const streamTokens = async (msgs: ChatMessage[]) => {
     let fullContent = '';
-    for await (const chunk of chatStream({
-      role: prepared.role,
-      messages: msgs,
-      stream: true,
-    })) {
-      if (chunk.type === 'token' && chunk.content) {
-        fullContent += chunk.content;
-        send('token', { content: chunk.content });
+    try {
+      for await (const chunk of chatStream({
+        role: prepared.role,
+        messages: msgs,
+        stream: true,
+      })) {
+        if (chunk.type === 'token' && chunk.content) {
+          fullContent += chunk.content;
+          send('token', { content: chunk.content });
+        }
       }
+    } catch (streamErr) {
+      console.warn('[agents] chatStream failed, falling back to non-stream:', streamErr);
+      const result = await chat({
+        role: prepared.role,
+        messages: msgs,
+        stream: false,
+      });
+      fullContent = result.content ?? '';
+      if (fullContent) send('token', { content: fullContent });
     }
+
+    if (!fullContent.trim()) {
+      throw new Error('AI returned an empty response');
+    }
+
     await appendMessage(serviceClient, prepared.threadId, {
       role: 'assistant',
       content: fullContent,

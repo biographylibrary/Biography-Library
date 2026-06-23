@@ -79,8 +79,9 @@ export async function POST(req: NextRequest) {
           send
         );
       } catch (err) {
+        const msg = err instanceof Error ? err.message : 'Stream failed';
         console.error('[agents/chat/stream]', err);
-        send('error', { message: 'Stream failed' });
+        send('error', { message: msg.slice(0, 300) });
       } finally {
         controller.close();
       }

@@ -174,11 +174,10 @@ export async function* chatStream(options: ChatOptions): AsyncGenerator<ChatStre
       const res = await postJson('/chat/completions', buildPayload(options, model, true), timeoutMs);
       if (!res.ok) {
         const text = await res.text();
-        if (res.status >= 500 || res.status === 429) {
-          lastError = new Error(`AI HTTP ${res.status}: ${text.slice(0, 200)}`);
-          continue;
-        }
-        throw new Error(`AI HTTP ${res.status}: ${text.slice(0, 200)}`);
+        console.error(`[infomaniak] stream model=${model} HTTP ${res.status}:`, text.slice(0, 300));
+        lastError = new Error(`AI HTTP ${res.status}: ${text.slice(0, 200)}`);
+        if (model === models[models.length - 1]) break;
+        continue;
       }
       if (!res.body) throw new Error('No response body for stream');
 
