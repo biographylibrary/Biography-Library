@@ -119,6 +119,11 @@ async function resolveModels(options: ChatOptions): Promise<[string, string]> {
   const { primary, fallback } = getModelForRole(role);
   const primaryModel = options.model ?? primary;
   const fallbackModel = options.fallbackModel ?? fallback;
+
+  if (process.env.AGENT_SKIP_MODEL_CATALOG === 'true') {
+    return [primaryModel, fallbackModel];
+  }
+
   try {
     const available = await listAvailableModelIds(fetchModelIds);
     const p = available.has(primaryModel) ? primaryModel : fallbackModel;
@@ -140,11 +145,10 @@ export async function chat(options: ChatOptions): Promise<ChatCompletionResult> 
       const res = await postJson('/chat/completions', buildPayload(options, model, false), timeoutMs);
       if (!res.ok) {
         const text = await res.text();
-        if (res.status >= 500 || res.status === 429) {
-          lastError = new Error(`AI HTTP ${res.status}: ${text.slice(0, 200)}`);
-          continue;
-        }
-        throw new Error(`AI HTTP ${res.status}: ${text.slice(0, 200)}`);
+        console.error(`[infomaniak] chat model=${model} HTTP ${res.status}:`, text.slice(0, 300));
+        lastError = new Error(`AI HTTP ${res.status}: ${text.slice(0, 200)}`);
+        if (model === models[models.length - 1]) break;
+        continue;
       }
       const json = await res.json();
       const choice = json?.choices?.[0];

@@ -97,13 +97,21 @@ export async function runStreamingAgentTurn(
   };
 
   if (prepared.tools?.length && prepared.biographyId) {
-    const first = await chat({
-      role: prepared.role,
-      messages,
-      tools: prepared.tools,
-      tool_choice: 'auto',
-      stream: false,
-    });
+    let first;
+    try {
+      first = await chat({
+        role: prepared.role,
+        messages,
+        tools: prepared.tools,
+        tool_choice: 'auto',
+        stream: false,
+      });
+    } catch (toolErr) {
+      console.warn('[agents] tool pass failed, continuing without tools:', toolErr);
+      await streamTokens(messages);
+      send('done', { threadId: prepared.threadId });
+      return;
+    }
 
     if (first.tool_calls?.length) {
       await appendMessage(serviceClient, prepared.threadId, {
