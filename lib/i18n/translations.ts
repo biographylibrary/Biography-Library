@@ -1226,6 +1226,32 @@ export interface Translations {
     genericError: string;
     signInRequired: string;
   };
+  echo: {
+    hubEmpty: string;
+    resumeBiography: string;
+    resumeButton: string;
+    newGuided: string;
+    newImport: string;
+    newPublishOnly: string;
+    myBiographies: string;
+    pickBiography: string;
+    untitledBiography: string;
+    inputPlaceholder: string;
+    statusListening: string;
+    statusSpeaking: string;
+    statusThinking: string;
+    errorGeneric: string;
+    openEcho: string;
+    closeEcho: string;
+    aiToolsMenu: string;
+    changePath: string;
+    changePathTitle: string;
+    changePathDescription: string;
+    exportBeforeChange: string;
+    confirmPathChange: string;
+    onboardingWelcome: string;
+    pathChanged: string;
+  };
 }
 
 export const translations: Record<Language, Translations> = {
@@ -2463,6 +2489,32 @@ export const translations: Record<Language, Translations> = {
       genericError: 'Something went wrong. Please try again.',
       signInRequired: 'Sign in to use the help assistant.',
     },
+    echo: {
+      hubEmpty: 'Hello! I\'m Echo. I\'ll guide you through writing your biography — by voice or text.',
+      resumeBiography: 'Continue: {title}',
+      resumeButton: 'Resume biography',
+      newGuided: 'Tell my story step by step with Echo',
+      newImport: 'I already have text to import',
+      newPublishOnly: 'Prepare an existing text for publication',
+      myBiographies: 'My biographies',
+      pickBiography: 'Select biography',
+      untitledBiography: 'Untitled',
+      inputPlaceholder: 'Type or use the microphone…',
+      statusListening: 'Echo is listening…',
+      statusSpeaking: 'Echo is speaking…',
+      statusThinking: 'Echo is thinking…',
+      errorGeneric: 'Something went wrong. Please try again.',
+      openEcho: 'Ask Echo',
+      closeEcho: 'Close',
+      aiToolsMenu: 'AI tools',
+      changePath: 'Change writing path',
+      changePathTitle: 'Change writing path',
+      changePathDescription: 'Your content will be preserved. You can export first if you prefer.',
+      exportBeforeChange: 'Export copy first',
+      confirmPathChange: 'Convert and continue',
+      onboardingWelcome: 'Welcome to Biography Library. I\'m Echo — let\'s get started.',
+      pathChanged: 'Writing path updated.',
+    },
   },
   it: {
     common: {
@@ -3697,6 +3749,32 @@ export const translations: Record<Language, Translations> = {
       rateLimitError: 'Troppe richieste. Attendi un momento.',
       genericError: 'Qualcosa è andato storto. Riprova.',
       signInRequired: 'Accedi per usare l\'assistente.',
+    },
+    echo: {
+      hubEmpty: 'Ciao! Sono Echo. Ti guido nella biografia — a voce o per iscritto.',
+      resumeBiography: 'Continua: {title}',
+      resumeButton: 'Riprendi biografia',
+      newGuided: 'Racconta la storia passo passo con Echo',
+      newImport: 'Ho già un testo da importare',
+      newPublishOnly: 'Prepara un testo esistente per la pubblicazione',
+      myBiographies: 'Le mie biografie',
+      pickBiography: 'Seleziona biografia',
+      untitledBiography: 'Senza titolo',
+      inputPlaceholder: 'Scrivi o usa il microfono…',
+      statusListening: 'Echo ti ascolta…',
+      statusSpeaking: 'Echo sta parlando…',
+      statusThinking: 'Echo sta pensando…',
+      errorGeneric: 'Qualcosa è andato storto. Riprova.',
+      openEcho: 'Chiedi a Echo',
+      closeEcho: 'Chiudi',
+      aiToolsMenu: 'Strumenti AI',
+      changePath: 'Cambia percorso',
+      changePathTitle: 'Cambia percorso di scrittura',
+      changePathDescription: 'Il contenuto sarà conservato. Puoi esportare una copia prima.',
+      exportBeforeChange: 'Esporta copia prima',
+      confirmPathChange: 'Converti e continua',
+      onboardingWelcome: 'Benvenuto in Biography Library. Sono Echo — iniziamo.',
+      pathChanged: 'Percorso aggiornato.',
     },
   },
   fr: {
@@ -4933,6 +5011,32 @@ export const translations: Record<Language, Translations> = {
       genericError: 'Une erreur est survenue. Veuillez réessayer.',
       signInRequired: 'Connectez-vous pour utiliser l\'assistant.',
     },
+    echo: {
+      hubEmpty: 'Bonjour ! Je suis Echo. Je vous guide pour votre biographie — à voix ou par écrit.',
+      resumeBiography: 'Continuer : {title}',
+      resumeButton: 'Reprendre la biographie',
+      newGuided: 'Raconter mon histoire pas à pas avec Echo',
+      newImport: 'J\'ai déjà un texte à importer',
+      newPublishOnly: 'Préparer un texte existant pour publication',
+      myBiographies: 'Mes biographies',
+      pickBiography: 'Choisir une biographie',
+      untitledBiography: 'Sans titre',
+      inputPlaceholder: 'Écrivez ou utilisez le micro…',
+      statusListening: 'Echo vous écoute…',
+      statusSpeaking: 'Echo parle…',
+      statusThinking: 'Echo réfléchit…',
+      errorGeneric: 'Une erreur s\'est produite. Réessayez.',
+      openEcho: 'Demander à Echo',
+      closeEcho: 'Fermer',
+      aiToolsMenu: 'Outils IA',
+      changePath: 'Changer de parcours',
+      changePathTitle: 'Changer de parcours d\'écriture',
+      changePathDescription: 'Votre contenu sera conservé. Vous pouvez exporter une copie avant.',
+      exportBeforeChange: 'Exporter une copie d\'abord',
+      confirmPathChange: 'Convertir et continuer',
+      onboardingWelcome: 'Bienvenue sur Biography Library. Je suis Echo — commençons.',
+      pathChanged: 'Parcours mis à jour.',
+    },
   },
   de: {
     common: {
@@ -6167,6 +6271,32 @@ export const translations: Record<Language, Translations> = {
       rateLimitError: 'Zu viele Anfragen. Bitte warten Sie einen Moment.',
       genericError: 'Etwas ist schiefgelaufen. Bitte versuchen Sie es erneut.',
       signInRequired: 'Melden Sie sich an, um den Assistenten zu nutzen.',
+    },
+    echo: {
+      hubEmpty: 'Hallo! Ich bin Echo. Ich begleite Sie bei Ihrer Biografie — per Sprache oder Text.',
+      resumeBiography: 'Fortsetzen: {title}',
+      resumeButton: 'Biografie fortsetzen',
+      newGuided: 'Geschichte Schritt für Schritt mit Echo erzählen',
+      newImport: 'Ich habe bereits Text zum Importieren',
+      newPublishOnly: 'Vorhandenen Text zur Veröffentlichung vorbereiten',
+      myBiographies: 'Meine Biografien',
+      pickBiography: 'Biografie wählen',
+      untitledBiography: 'Ohne Titel',
+      inputPlaceholder: 'Tippen oder Mikrofon nutzen…',
+      statusListening: 'Echo hört zu…',
+      statusSpeaking: 'Echo spricht…',
+      statusThinking: 'Echo denkt nach…',
+      errorGeneric: 'Etwas ist schiefgelaufen. Bitte erneut versuchen.',
+      openEcho: 'Echo fragen',
+      closeEcho: 'Schließen',
+      aiToolsMenu: 'KI-Werkzeuge',
+      changePath: 'Schreibweg wechseln',
+      changePathTitle: 'Schreibweg ändern',
+      changePathDescription: 'Ihr Inhalt bleibt erhalten. Sie können vorher exportieren.',
+      exportBeforeChange: 'Zuerst Kopie exportieren',
+      confirmPathChange: 'Konvertieren und fortfahren',
+      onboardingWelcome: 'Willkommen bei Biography Library. Ich bin Echo — legen wir los.',
+      pathChanged: 'Schreibweg aktualisiert.',
     },
   },
 };

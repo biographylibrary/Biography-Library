@@ -1,5 +1,6 @@
 import { SupabaseClient } from '@supabase/supabase-js';
 import type { AgentType } from './models';
+import { threadAgentTypeForStorage } from './echo-thread-storage';
 
 export type AgentThreadRow = {
   id: string;
@@ -79,12 +80,13 @@ export async function getOrCreateThread(
   }
 ): Promise<AgentThreadRow> {
   const { userId, agentType, biographyId = null, locale = 'en' } = params;
+  const storedAgentType = threadAgentTypeForStorage(agentType);
 
   let query = serviceClient
     .from('agent_threads')
     .select('*')
     .eq('user_id', userId)
-    .eq('agent_type', agentType)
+    .eq('agent_type', storedAgentType)
     .eq('status', 'active');
 
   if (biographyId) {
@@ -101,7 +103,7 @@ export async function getOrCreateThread(
     .insert({
       user_id: userId,
       biography_id: biographyId,
-      agent_type: agentType,
+      agent_type: storedAgentType,
       locale,
     })
     .select('*')
@@ -189,12 +191,13 @@ export async function getActiveThread(
   }
 ): Promise<AgentThreadRow | null> {
   const { userId, agentType, biographyId = null } = params;
+  const storedAgentType = threadAgentTypeForStorage(agentType);
 
   let query = serviceClient
     .from('agent_threads')
     .select('*')
     .eq('user_id', userId)
-    .eq('agent_type', agentType)
+    .eq('agent_type', storedAgentType)
     .eq('status', 'active');
 
   if (biographyId) {

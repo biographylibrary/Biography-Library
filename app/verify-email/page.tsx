@@ -41,7 +41,7 @@ export default function VerifyEmailPage() {
       if (currentUser?.email_confirmed_at) {
         if (pollRef.current) clearInterval(pollRef.current);
         setConfirmed(true);
-        setTimeout(() => router.push('/dashboard'), 2500);
+        setTimeout(() => router.push('/echo'), 2500);
       }
     }, 4000);
 
@@ -52,7 +52,7 @@ export default function VerifyEmailPage() {
 
   useEffect(() => {
     if (user?.email_confirmed_at && !verifyError) {
-      router.push('/dashboard');
+      router.push('/echo');
     }
   }, [user, verifyError, router]);
 

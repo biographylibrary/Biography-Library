@@ -39,6 +39,7 @@ interface ImportTextDialogProps {
   currentFreeflowContent: string;
   onImportedToSection: (sectionKey: string, newContent: string) => void;
   onImportedToFreeflow: (newContent: string) => void;
+  onImportMultipleSections?: (sections: Array<{ title: string; content: string }>) => void;
   biographyMode?: 'sections' | 'freeflow';
 }
 
@@ -53,6 +54,7 @@ export function ImportTextDialog({
   currentFreeflowContent,
   onImportedToSection,
   onImportedToFreeflow,
+  onImportMultipleSections,
   biographyMode = 'sections',
 }: ImportTextDialogProps) {
   const { t } = useTranslation();
@@ -223,6 +225,14 @@ export function ImportTextDialog({
 
   const handleImportConfirm = useCallback(() => {
     if (!parsedContent) return;
+    if (parsedContent.hasSections && parsedContent.sections?.length && onImportMultipleSections) {
+      onImportMultipleSections(
+        parsedContent.sections.map((s) => ({ title: s.title, content: s.content }))
+      );
+      resetDialog();
+      onOpenChange(false);
+      return;
+    }
     if (biographyMode === 'freeflow') {
       doSave(freeflowImportMode);
     } else if (destinationHasContent()) {
@@ -230,7 +240,7 @@ export function ImportTextDialog({
     } else {
       doSave('replace');
     }
-  }, [parsedContent, biographyMode, freeflowImportMode, destinationHasContent, doSave]);
+  }, [parsedContent, biographyMode, freeflowImportMode, destinationHasContent, doSave, onImportMultipleSections, resetDialog, onOpenChange]);
 
   const handleOpenChange = useCallback(
     (newOpen: boolean) => {
@@ -293,7 +303,7 @@ export function ImportTextDialog({
                 <input
                   ref={fileInputRef}
                   type="file"
-                  accept=".txt"
+                  accept=".txt,.docx,.rtf"
                   onChange={handleFileInputChange}
                   className="hidden"
                 />

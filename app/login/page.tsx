@@ -25,7 +25,7 @@ export default function LoginPage() {
 
   useEffect(() => {
     if (!loading && user) {
-      router.push(returnTo || '/dashboard');
+      router.push(returnTo || '/echo');
     }
   }, [user, loading, router, returnTo]);
 
@@ -55,7 +55,7 @@ export default function LoginPage() {
       setError(error === 'ACCOUNT_SUSPENDED' ? t.auth.accountSuspended : error);
       setIsLoading(false);
     } else {
-      router.push(returnTo || '/dashboard');
+      router.push(returnTo || '/echo');
     }
   };
 

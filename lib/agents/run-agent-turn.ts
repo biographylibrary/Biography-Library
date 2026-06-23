@@ -9,6 +9,7 @@ import type { AgentRole, AgentType } from '@/lib/agents/models';
 import { appendMessage } from '@/lib/agents/thread-service';
 import { executeCoachTool } from '@/lib/agents/tools/coach-tools';
 import { executeReviewerTool } from '@/lib/agents/tools/reviewer-tools';
+import { executeEchoTool } from '@/lib/agents/tools/echo-tools';
 
 export type PreparedAgentTurn = {
   threadId: string;
@@ -20,6 +21,8 @@ export type PreparedAgentTurn = {
   tools?: ToolDefinition[];
   biographyId?: string;
   userId: string;
+  echoPage?: string;
+  biographyMode?: 'sections' | 'freeflow';
 };
 
 export function historyToChatMessages(
@@ -97,7 +100,7 @@ export async function runStreamingAgentTurn(
     return fullContent;
   };
 
-  if (prepared.tools?.length && prepared.biographyId) {
+  if (prepared.tools?.length && (prepared.biographyId || prepared.agentType === 'echo')) {
     let first;
     try {
       first = await chat({
@@ -131,17 +134,30 @@ export async function runStreamingAgentTurn(
       ];
 
       for (const tc of first.tool_calls) {
-        const execTool =
-          prepared.agentType === 'publication_reviewer' ? executeReviewerTool : executeCoachTool;
-        const { content, event } = await execTool(
-          tc.function.name,
-          tc.function.arguments,
-          {
+        let content: string;
+        let event: { tool: string; sectionKey?: string; contentLength?: number } | undefined;
+
+        if (prepared.agentType === 'echo') {
+          const result = await executeEchoTool(tc.function.name, tc.function.arguments, {
+            serviceClient,
+            userId: prepared.userId,
+            biographyId: prepared.biographyId,
+            echoPage: prepared.echoPage,
+            biographyMode: prepared.biographyMode,
+          });
+          content = result.content;
+          event = result.event;
+        } else {
+          const execTool =
+            prepared.agentType === 'publication_reviewer' ? executeReviewerTool : executeCoachTool;
+          const result = await execTool(tc.function.name, tc.function.arguments, {
             serviceClient,
             userId: prepared.userId,
             biographyId: prepared.biographyId!,
-          }
-        );
+          });
+          content = result.content;
+          event = result.event;
+        }
         if (event) send('tool_result', event);
         await appendMessage(serviceClient, prepared.threadId, {
           role: 'tool',

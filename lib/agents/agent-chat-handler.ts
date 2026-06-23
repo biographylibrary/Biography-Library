@@ -13,7 +13,9 @@ import { COACH_TOOL_DEFINITIONS } from '@/lib/agents/tools/coach-tools';
 import { REVIEWER_CHAT_TOOL_DEFINITIONS } from '@/lib/agents/tools/reviewer-tools';
 import { buildCoachSystemPrompt } from '@/lib/agents/prompts/coach';
 import { buildPlatformGuideSystemPrompt } from '@/lib/agents/prompts/platform-guide';
+import { buildEchoSystemPrompt } from '@/lib/agents/prompts/echo';
 import { buildReviewerChatSystemPrompt } from '@/lib/agents/prompts/reviewer';
+import { getEchoToolsForContext } from '@/lib/agents/tools/echo-tools';
 import { indexBiography, retrieveBiographyContext } from '@/lib/agents/rag/biography-rag';
 import {
   ensureHelpKbIndexed,
@@ -29,6 +31,8 @@ export type AgentChatRequest = {
   language?: string;
   threadId?: string;
   activeSection?: string;
+  echoPage?: 'hub' | 'editor_sections' | 'editor_freeflow' | 'publication' | 'dashboard' | 'other';
+  onboardingIncomplete?: boolean;
 };
 
 export type AuthResult =
@@ -50,6 +54,8 @@ export type PreparedTurnResult =
       biographyId?: string;
       userId: string;
       kbSources?: string[];
+      echoPage?: AgentChatRequest['echoPage'];
+      biographyMode?: 'sections' | 'freeflow';
     };
 
 export async function authenticateAgentRequest(req: NextRequest): Promise<AuthResult> {
@@ -70,7 +76,7 @@ export async function parseAgentChatBody(req: NextRequest): Promise<AgentChatReq
   const body = await req.json();
   const agentType = body?.agentType as AgentType | undefined;
   const message = typeof body?.message === 'string' ? body.message.trim() : '';
-  if (!agentType || !['platform_guide', 'biography_coach', 'publication_reviewer'].includes(agentType)) {
+  if (!agentType || !['platform_guide', 'biography_coach', 'publication_reviewer', 'echo'].includes(agentType)) {
     return { error: 'Invalid agentType' };
   }
   if (!message) return { error: 'message is required' };
@@ -81,6 +87,8 @@ export async function parseAgentChatBody(req: NextRequest): Promise<AgentChatReq
     language: (body?.language as string | undefined) ?? 'en',
     threadId: body?.threadId as string | undefined,
     activeSection: body?.activeSection as string | undefined,
+    echoPage: body?.echoPage as AgentChatRequest['echoPage'],
+    onboardingIncomplete: body?.onboardingIncomplete === true,
   };
 }
 
@@ -242,6 +250,88 @@ export async function prepareAgentTurn(
       tools: REVIEWER_CHAT_TOOL_DEFINITIONS,
       biographyId,
       userId,
+    };
+  }
+
+  if (agentType === 'echo') {
+    const echoPage = payload.echoPage ?? 'hub';
+    let biographyMode: 'sections' | 'freeflow' | undefined;
+    let publicationStatus: string | undefined;
+
+    if (biographyId) {
+      const ownership = await verifyBiographyOwnership(serviceClient, biographyId, userId);
+      if (!ownership.ok) {
+        return { ok: false, status: 403, error: 'Forbidden' };
+      }
+      biographyMode = ownership.biography_mode as 'sections' | 'freeflow' | undefined;
+      publicationStatus = ownership.status;
+
+      try {
+        await indexBiography(serviceClient, biographyId);
+      } catch (err) {
+        console.warn('[agents] indexBiography failed:', err);
+      }
+    }
+
+    let ragContext = '';
+    let kbContext = '';
+    let kbSources: string[] = [];
+
+    if (biographyId && message) {
+      try {
+        ragContext = await retrieveBiographyContext(serviceClient, biographyId, message, 4);
+      } catch (err) {
+        console.warn('[agents] retrieveBiographyContext failed:', err);
+      }
+    }
+
+    try {
+      await ensureHelpKbIndexed(serviceClient, locale);
+      const kb = await retrieveKbContext(serviceClient, message, locale, 4);
+      kbContext = kb.context;
+      kbSources = kb.sources;
+    } catch (err) {
+      console.warn('[agents] kb retrieve failed:', err);
+    }
+
+    let systemPrompt = buildEchoSystemPrompt(locale, {
+      page: echoPage,
+      biographyMode,
+      publicationStatus,
+      onboardingIncomplete: payload.onboardingIncomplete,
+    });
+
+    if (ragContext) {
+      systemPrompt += `\n\nRelevant biography excerpts:\n${ragContext}`;
+    }
+    if (kbContext) {
+      systemPrompt += `\n\nKnowledge base excerpts:\n${kbContext}`;
+    }
+
+    if (echoPage === 'editor_sections' && biographyId && activeSection) {
+      const title = sectionTitleFor(locale, activeSection);
+      systemPrompt += `\n\nActive section: ${activeSection} (${title})`;
+    }
+
+    return {
+      ok: true,
+      threadId: thread.id,
+      history,
+      userMessage: message,
+      locale,
+      systemPrompt,
+      role: 'onboarding',
+      agentType,
+      tools: getEchoToolsForContext({
+        echoPage,
+        biographyId,
+        onboardingIncomplete: payload.onboardingIncomplete,
+      }),
+      biographyId,
+      userId,
+      kbSources,
+      echoPage,
+      biographyMode,
     };
   }
 

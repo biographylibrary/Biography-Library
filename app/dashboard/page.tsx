@@ -7,7 +7,7 @@ import { supabase } from '@/lib/supabase';
 import { Button } from '@/components/ui/button';
 import { CreateBiographyModal } from '@/components/dashboard/create-biography-modal';
 import { DeleteBiographyDialog } from '@/components/dashboard/delete-biography-dialog';
-import { WelcomeLanguageModal } from '@/components/welcome-language-modal';
+import { EchoShell } from '@/components/echo/EchoShell';
 import { MainBiographyCard } from '@/components/dashboard/MainBiographyCard';
 import {
   fetchBiographies,
@@ -33,6 +33,7 @@ export default function DashboardPage() {
   const [resendSuccess, setResendSuccess] = useState(false);
   const [mounted, setMounted] = useState(false);
   const [needsWelcome, setNeedsWelcome] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
   const { t, language } = useTranslation();
 
   useEffect(() => {
@@ -85,8 +86,6 @@ export default function DashboardPage() {
     }
   };
 
-  const [deleteError, setDeleteError] = useState<string | null>(null);
-
   const handleDelete = async () => {
     if (!deleteTarget || !user) return;
     setIsDeleting(true);
@@ -104,6 +103,12 @@ export default function DashboardPage() {
   };
 
 
+  useEffect(() => {
+    if (needsWelcome && user && mounted) {
+      router.replace('/echo');
+    }
+  }, [needsWelcome, user, mounted, router]);
+
   const handleResendVerification = async () => {
     if (!user?.email) return;
     setResendLoading(true);
@@ -117,6 +122,14 @@ export default function DashboardPage() {
     return (
       <div className="h-full flex items-center justify-center bg-[#ECE9E4] dark:bg-[#1F2121]">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  if (needsWelcome) {
+    return (
+      <div className="h-full flex items-center justify-center">
+        <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
       </div>
     );
   }
@@ -169,18 +182,11 @@ export default function DashboardPage() {
     );
   }
 
-  if (needsWelcome) {
-    return (
-      <div className="h-full bg-[#ECE9E4] dark:bg-[#1F2121] flex items-center justify-center">
-        <WelcomeLanguageModal open={true} onComplete={() => setNeedsWelcome(false)} />
-      </div>
-    );
-  }
-
   const displayName =
     user.user_metadata?.name || user.email?.split('@')[0] || 'there';
 
   return (
+    <EchoShell>
     <div className="h-full bg-[#ECE9E4] dark:bg-[#1F2121] flex items-center justify-center">
 
       <main className="w-full max-w-2xl px-4 sm:px-6 py-8">
@@ -265,5 +271,6 @@ export default function DashboardPage() {
         onCancel={() => { setDeleteTarget(null); setDeleteError(null); }}
       />
     </div>
+    </EchoShell>
   );
 }

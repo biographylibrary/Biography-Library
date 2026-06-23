@@ -16,7 +16,7 @@ export async function GET(req: NextRequest) {
   const agentType = url.searchParams.get('agentType') as AgentType | null;
   const biographyId = url.searchParams.get('biographyId');
 
-  if (!agentType || !['platform_guide', 'biography_coach', 'publication_reviewer'].includes(agentType)) {
+  if (!agentType || !['platform_guide', 'biography_coach', 'publication_reviewer', 'echo'].includes(agentType)) {
     return NextResponse.json({ error: 'Invalid agentType' }, { status: 400 });
   }
 

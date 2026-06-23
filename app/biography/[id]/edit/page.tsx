@@ -6,13 +6,14 @@ import { useAuth } from '@/lib/auth-context';
 import { supabase } from '@/lib/supabase';
 import { EditorTopBar } from '@/components/editor/editor-top-bar';
 import { SectionSidebar } from '@/components/editor/section-sidebar';
-import { ModeSwitchWarningDialog } from '@/components/editor/ModeSwitchWarningDialog';
-import { SectionEditor } from '@/components/editor/section-editor';
+import { PathChangeDialog } from '@/components/echo/PathChangeDialog';
+import { GuidedSectionWorkspace } from '@/components/echo/GuidedSectionWorkspace';
+import { EchoShell } from '@/components/echo/EchoShell';
 import { GlobalNotesPanel } from '@/components/editor/GlobalNotesPanel';
 import { AiSuggestionsPanel } from '@/components/editor/ai-suggestions-panel';
 import { ShareLinkPanel } from '@/components/editor/share-link-panel';
 import { PhotoGalleryPanel } from '@/components/editor/PhotoGalleryPanel';
-import { CoachConversationMode } from '@/components/editor/coach-conversation-mode';
+import { SectionEditor } from '@/components/editor/section-editor';
 import { NextSectionPrompt } from '@/components/editor/next-section-prompt';
 import { AISectionReview } from '@/components/editor/AISectionReview';
 import { ApertusReviewDialog } from '@/components/editor/ApertusReviewDialog';
@@ -88,7 +89,7 @@ export default function BiographyEditorPage() {
   const [showSidebarImport, setShowSidebarImport] = useState(() => searchParams?.get('import') === '1');
   const [globalNotesCount, setGlobalNotesCount] = useState(0);
   const [globalTodosCount, setGlobalTodosCount] = useState(0);
-  const [editorMode, setEditorMode] = useState<'editor' | 'conversation'>('editor');
+  const [editorPeekOpen, setEditorPeekOpen] = useState(false);
   const [editorFontSize, setEditorFontSize] = useState<number>(16);
 
   const [aiEnabled, setAiEnabled] = useState(false);
@@ -465,25 +466,41 @@ const [isPublishing, setIsPublishing] = useState(false);
   );
 
   const handleModeSwitchConfirm = useCallback(async () => {
-    if (!pendingModeSwitch || !id) return;
+    if (!pendingModeSwitch || !id || !session?.access_token) return;
     const targetMode = pendingModeSwitch;
-    if (biographyMode === 'freeflow') {
-      await supabase.from('biographies').update({ content_freeflow: null }).eq('id', id);
-      setContentFreeflow('');
-      contentFreeflowRef.current = '';
-    } else {
-      await supabase.from('biography_sections').delete().eq('biography_id', id);
-      await supabase.from('biographies').update({ content: {} }).eq('id', id);
-      setContent(getEmptyContent());
-      contentRef.current = getEmptyContent();
-      setCompletedSections([]);
+
+    const res = await fetch('/api/biography/convert-mode', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${session.access_token}`,
+      },
+      body: JSON.stringify({ biographyId: id, toMode: targetMode }),
+    });
+
+    if (!res.ok) {
+      toast.error(t.echo.errorGeneric);
+      return;
     }
-    await supabase.from('biographies').update({ biography_mode: targetMode }).eq('id', id);
+
     setBiographyMode(targetMode);
     biographyModeRef.current = targetMode;
-    dirtyRef.current = false;
     setPendingModeSwitch(null);
-  }, [pendingModeSwitch, biographyMode, id]);
+    toast.success(t.echo.pathChanged);
+
+    const { data: bio } = await supabase
+      .from('biographies')
+      .select('content, content_freeflow, biography_mode')
+      .eq('id', id)
+      .maybeSingle();
+    if (bio) {
+      if (targetMode === 'freeflow') {
+        setContentFreeflow((bio as { content_freeflow?: string }).content_freeflow ?? '');
+      } else {
+        setContent((bio as { content?: BiographyContent }).content ?? getEmptyContent());
+      }
+    }
+  }, [pendingModeSwitch, id, session, t.echo.errorGeneric, t.echo.pathChanged]);
 
   const handleFreeflowChange = useCallback(
     (value: string) => {
@@ -884,7 +901,7 @@ const [isPublishing, setIsPublishing] = useState(false);
         contentRef.current = nextContent;
       }
       setActiveSection(sectionKey);
-      setEditorMode('editor');
+      setEditorPeekOpen(true);
       markDirty();
 
       const completedSections = BIOGRAPHY_SECTIONS.map((s) => s.key).filter((key) => {
@@ -1546,6 +1563,7 @@ const [isPublishing, setIsPublishing] = useState(false);
   const activeSectionData = getSectionData(content, activeSection);
 
   return (
+    <EchoShell biographyId={id} sectionKey={activeSection} biographyMode={biographyMode}>
     <div className="h-full flex flex-col bg-[#ECE9E4] dark:bg-[#1F2121] overflow-hidden">
       <EditorTopBar
         title={title}
@@ -1776,8 +1794,7 @@ const [isPublishing, setIsPublishing] = useState(false);
           </div>
         )}
 
-      {editorMode === 'editor' &&
-        biographyMode === 'sections' &&
+      {biographyMode === 'sections' &&
         biographyStatus === 'draft' &&
         !allSectionsComplete && (
           <div className="shrink-0 bg-brand-beigeBg/80 border-b border-brand-mustardDark/25 px-4 py-2.5 dark:bg-brand-ink/5 dark:border-brand-mustardDark/30">
@@ -1957,26 +1974,7 @@ const [isPublishing, setIsPublishing] = useState(false);
                           </p>
                         )}
                       </div>
-                    ) : (
-                      <>
-                        <Button
-                          variant={editorMode === 'editor' ? 'default' : 'ghost'}
-                          size="sm"
-                          onClick={() => setEditorMode('editor')}
-                          className="h-8 text-xs"
-                        >
-                          {t.editor.editorMode}
-                        </Button>
-                        <Button
-                          variant={editorMode === 'conversation' ? 'default' : 'ghost'}
-                          size="sm"
-                          onClick={() => setEditorMode('conversation')}
-                          className="h-8 text-xs"
-                        >
-                          {t.editor.conversationMode}
-                        </Button>
-                      </>
-                    )}
+                    ) : null}
                   </>
                 )}
                 {aiEnabled && biographyMode !== 'freeflow' && (
@@ -2017,12 +2015,23 @@ const [isPublishing, setIsPublishing] = useState(false);
                   editorFontSize={editorFontSize}
                   onRevertToDraft={!effectivelyLocked ? handleRevertToDraft : undefined}
                 />
-              ) : editorMode === 'conversation' && !isFrozen ? (
-                <CoachConversationMode
+                    ) : biographyMode === 'sections' && !isFrozen ? (
+                <GuidedSectionWorkspace
                   biographyId={id}
-                  sectionKey={activeSection}
-                  onBackToEditor={() => setEditorMode('editor')}
+                  activeSection={activeSection}
+                  sectionText={activeSectionData.text}
+                  onSectionTextChange={(text) => handleTextChange(text)}
                   onDraftApplied={handleCoachDraftApplied}
+                  editorFontSize={editorFontSize}
+                  onEditorFontSizeChange={setEditorFontSize}
+                  isPublished={
+                    (biographyStatus as string) === 'published' ||
+                    isFrozen ||
+                    isSectionOrFreeflowRevisionLocked ||
+                    reviewQueueLocksEditor
+                  }
+                  editorPeekOpen={editorPeekOpen}
+                  onEditorPeekOpenChange={setEditorPeekOpen}
                 />
               ) : biographyMode === 'freeflow' ? (
                 <SectionEditor
@@ -2105,7 +2114,7 @@ const [isPublishing, setIsPublishing] = useState(false);
                 />
               )}
 
-              {editorMode === 'editor' && showNextSectionPrompt && completedSectionKey && (
+              {biographyMode === 'sections' && showNextSectionPrompt && completedSectionKey && (
                 <div className="p-4 border-b border-border/50 shrink-0">
                   <NextSectionPrompt
                     completedSectionKey={completedSectionKey}
@@ -2129,7 +2138,7 @@ const [isPublishing, setIsPublishing] = useState(false);
                 </div>
               )}
 
-              {editorMode === 'editor' &&
+              {biographyMode === 'sections' &&
                 allSectionsComplete &&
                 (biographyStatus === 'draft' || biographyStatus === 'sections_complete') && (
                 <div className="p-6 border-t border-border/50 bg-gradient-to-br from-primary/5 to-primary/10 shrink-0">
@@ -2191,7 +2200,7 @@ const [isPublishing, setIsPublishing] = useState(false);
                 </div>
               )}
 
-              {editorMode === 'editor' && (
+              {biographyMode === 'sections' && (
                 <div className="shrink-0">
                   <ShareLinkPanel
                     biographyId={id}
@@ -2204,7 +2213,7 @@ const [isPublishing, setIsPublishing] = useState(false);
             </div>
           </div>
 
-          {editorMode === 'editor' && aiState.type && (
+          {biographyMode === 'sections' && aiState.type && (
             <AiSuggestionsPanel
               state={aiState}
               onClose={handleCloseAiPanel}
@@ -2386,29 +2395,31 @@ const [isPublishing, setIsPublishing] = useState(false);
       </Dialog>
 
       {pendingModeSwitch && (
-        <ModeSwitchWarningDialog
+        <PathChangeDialog
           open={pendingModeSwitch !== null}
           fromMode={biographyMode}
           toMode={pendingModeSwitch}
-          biography={{
+          biographyTitle={title}
+          biographySnapshot={{
             title,
             author_name: authorNameRef.current,
             created_at: biography?.created_at ?? new Date().toISOString(),
             biography_mode: biographyMode,
             content,
             content_freeflow: contentFreeflow,
-            sections: BIOGRAPHY_SECTIONS
-              .filter((s) => content[s.key]?.text?.trim())
-              .map((s) => ({
+            sections: BIOGRAPHY_SECTIONS.filter((s) => content[s.key]?.text?.trim()).map(
+              (s) => ({
                 key: s.key,
                 title: t.sectionTitles[s.key as keyof typeof t.sectionTitles] || s.title,
                 content: content[s.key]?.text ?? '',
-              })),
+              })
+            ),
           }}
           onConfirm={handleModeSwitchConfirm}
           onCancel={() => setPendingModeSwitch(null)}
         />
       )}
     </div>
+    </EchoShell>
   );
 }

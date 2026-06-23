@@ -29,7 +29,7 @@ export default function AuthCallbackPage() {
         if (error) {
           router.replace(`/verify-email?error=${encodeURIComponent(error.message)}`);
         } else {
-          router.replace('/dashboard');
+          router.replace('/echo');
         }
         return;
       }
@@ -42,7 +42,7 @@ export default function AuthCallbackPage() {
         } else if (type === 'recovery') {
           router.replace('/reset-password');
         } else {
-          router.replace('/dashboard');
+          router.replace('/echo');
         }
         return;
       }
@@ -60,7 +60,7 @@ export default function AuthCallbackPage() {
           } else if (hashType === 'recovery') {
             router.replace('/reset-password');
           } else {
-            router.replace('/dashboard');
+            router.replace('/echo');
           }
           return;
         }
