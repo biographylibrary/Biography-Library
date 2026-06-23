@@ -19,8 +19,10 @@ export interface AgentChatMessage {
 export interface AgentChatProps {
   agentType: AgentType;
   biographyId?: string;
+  activeSection?: string;
   className?: string;
   emptyState?: string;
+  loadHistory?: boolean;
   onDraftApplied?: (sectionKey: string) => void;
   onThreadId?: (threadId: string) => void;
 }
@@ -28,8 +30,10 @@ export interface AgentChatProps {
 export function AgentChat({
   agentType,
   biographyId,
+  activeSection,
   className,
   emptyState,
+  loadHistory = false,
   onDraftApplied,
   onThreadId,
 }: AgentChatProps) {
@@ -46,6 +50,38 @@ export function AgentChat({
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, loading]);
+
+  useEffect(() => {
+    if (!loadHistory || !session?.access_token) return;
+
+    const params = new URLSearchParams({ agentType });
+    if (biographyId) params.set('biographyId', biographyId);
+
+    fetch(`/api/agents/threads/active?${params}`, {
+      headers: { Authorization: `Bearer ${session.access_token}` },
+    })
+      .then((res) => (res.ok ? res.json() : null))
+      .then((json) => {
+        if (!json?.messages?.length) return;
+        if (json.thread?.id) {
+          setThreadId(json.thread.id);
+          onThreadId?.(json.thread.id);
+        }
+        setMessages(
+          json.messages
+            .filter((m: { role: string; content: string }) => m.role === 'user' || m.role === 'assistant')
+            .filter((m: { content: string }) => m.content?.trim())
+            .map((m: { id: string; role: string; content: string }) => ({
+              id: m.id,
+              role: m.role as 'user' | 'assistant',
+              content: m.content,
+            }))
+        );
+      })
+      .catch(() => {
+        /* ignore */
+      });
+  }, [loadHistory, session?.access_token, agentType, biographyId, onThreadId]);
 
   const handleSend = useCallback(async () => {
     const trimmed = input.trim();
@@ -69,6 +105,7 @@ export function AgentChat({
           agentType,
           message: trimmed,
           biographyId,
+          activeSection,
           language,
           threadId,
           accessToken: session.access_token,
@@ -111,6 +148,7 @@ export function AgentChat({
     session,
     agentType,
     biographyId,
+    activeSection,
     language,
     threadId,
     onDraftApplied,

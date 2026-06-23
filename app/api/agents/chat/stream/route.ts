@@ -7,7 +7,7 @@ import {
 } from '@/lib/agents/agent-chat-handler';
 import { buildServiceClient } from '@/lib/server/review-submit-pipeline';
 import { appendMessage } from '@/lib/agents/thread-service';
-import { chatStream } from '@/lib/agents/infomaniak-client';
+import { runStreamingAgentTurn } from '@/lib/agents/run-agent-turn';
 
 export const runtime = 'nodejs';
 
@@ -54,12 +54,6 @@ export async function POST(req: NextRequest) {
     tool_calls: null,
   });
 
-  const messages = [
-    { role: 'system' as const, content: prepared.systemPrompt },
-    ...prepared.history,
-    { role: 'user' as const, content: prepared.userMessage },
-  ];
-
   const stream = new ReadableStream({
     async start(controller) {
       const encoder = new TextEncoder();
@@ -69,26 +63,21 @@ export async function POST(req: NextRequest) {
 
       try {
         send('thread', { threadId: prepared.threadId });
-        let fullContent = '';
-
-        for await (const chunk of chatStream({
-          role: prepared.role,
-          messages,
-          stream: true,
-        })) {
-          if (chunk.type === 'token' && chunk.content) {
-            fullContent += chunk.content;
-            send('token', { content: chunk.content });
-          }
-        }
-
-        await appendMessage(serviceClient, prepared.threadId, {
-          role: 'assistant',
-          content: fullContent,
-          tool_calls: null,
-        });
-
-        send('done', { threadId: prepared.threadId });
+        await runStreamingAgentTurn(
+          {
+            threadId: prepared.threadId,
+            history: prepared.history,
+            userMessage: prepared.userMessage,
+            systemPrompt: prepared.systemPrompt,
+            role: prepared.role,
+            agentType: prepared.agentType,
+            tools: prepared.tools,
+            biographyId: prepared.biographyId,
+            userId: prepared.userId,
+          },
+          serviceClient,
+          send
+        );
       } catch (err) {
         console.error('[agents/chat/stream]', err);
         send('error', { message: 'Stream failed' });

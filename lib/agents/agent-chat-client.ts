@@ -12,6 +12,7 @@ export async function streamAgentChat(
     agentType: AgentType;
     message: string;
     biographyId?: string;
+    activeSection?: string;
     language: string;
     threadId?: string;
     accessToken: string;
@@ -28,6 +29,7 @@ export async function streamAgentChat(
       agentType: params.agentType,
       message: params.message,
       biographyId: params.biographyId,
+      activeSection: params.activeSection,
       language: params.language,
       threadId: params.threadId,
     }),
