@@ -31,7 +31,7 @@ export const DEFAULT_MODELS: Record<AgentRole, { primary: string; fallback: stri
     fallback: 'mistralai/Mistral-Small-4-119B-2603',
   },
   onboarding: {
-    primary: 'nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B-FP8',
+    primary: 'google/gemma-4-31B-it',
     fallback: 'mistralai/Ministral-3-14B-Instruct-2512',
   },
   apertus: {

@@ -47,8 +47,10 @@ export function CoachConversationMode({
         agentType="biography_coach"
         biographyId={biographyId}
         activeSection={sectionKey}
+        sectionTitle={sectionTitle}
         emptyState={emptyState}
         loadHistory
+        fallbackToCoachEdge
         onDraftApplied={onDraftApplied}
       />
     </div>

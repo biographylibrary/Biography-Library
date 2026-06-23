@@ -23,6 +23,11 @@ export interface AgentChatProps {
   className?: string;
   emptyState?: string;
   loadHistory?: boolean;
+  /** Help chat: retry via help-assistant edge if agent stream fails */
+  fallbackToHelpEdge?: boolean;
+  /** Coach chat: retry via ai-assistant edge if agent stream fails */
+  fallbackToCoachEdge?: boolean;
+  sectionTitle?: string;
   onDraftApplied?: (sectionKey: string) => void;
   onThreadId?: (threadId: string) => void;
 }
@@ -34,6 +39,9 @@ export function AgentChat({
   className,
   emptyState,
   loadHistory = false,
+  fallbackToHelpEdge = false,
+  fallbackToCoachEdge = false,
+  sectionTitle,
   onDraftApplied,
   onThreadId,
 }: AgentChatProps) {
@@ -99,7 +107,64 @@ export function AgentChat({
     setError(null);
     setLoading(true);
 
+    const priorHistory = messages
+      .filter((m) => m.content.trim())
+      .slice(-10)
+      .map((m) => ({ role: m.role, content: m.content }));
+
+    const tryEdgeFallback = async (): Promise<boolean> => {
+      if (!session?.access_token) return false;
+
+      if (fallbackToHelpEdge && agentType === 'platform_guide') {
+        try {
+          const { askHelpBot } = await import('@/lib/help/help-service');
+          const result = await askHelpBot(trimmed, language, session.access_token);
+          setMessages((prev) =>
+            prev.map((m) =>
+              m.id === assistantId
+                ? { ...m, content: result.answer, streaming: false }
+                : m
+            )
+          );
+          setError(null);
+          return true;
+        } catch {
+          return false;
+        }
+      }
+
+      if (
+        fallbackToCoachEdge &&
+        agentType === 'biography_coach' &&
+        activeSection &&
+        sectionTitle
+      ) {
+        try {
+          const { askCoachViaEdge } = await import('@/lib/agents/agent-edge-fallback');
+          const reply = await askCoachViaEdge({
+            message: trimmed,
+            sectionTitle,
+            language,
+            history: priorHistory,
+          });
+          setMessages((prev) =>
+            prev.map((m) =>
+              m.id === assistantId ? { ...m, content: reply, streaming: false } : m
+            )
+          );
+          setError(null);
+          return true;
+        } catch {
+          return false;
+        }
+      }
+
+      return false;
+    };
+
     try {
+      let streamFailed = false;
+      let receivedTokens = false;
       await streamAgentChat(
         {
           agentType,
@@ -116,6 +181,7 @@ export function AgentChat({
             onThreadId?.(ev.data.threadId);
           }
           if (ev.event === 'token') {
+            receivedTokens = true;
             setMessages((prev) =>
               prev.map((m) =>
                 m.id === assistantId
@@ -128,17 +194,30 @@ export function AgentChat({
             onDraftApplied?.(ev.data.sectionKey);
           }
           if (ev.event === 'error') {
+            streamFailed = true;
             setError(ev.data.message);
           }
         }
       );
+
       setMessages((prev) =>
         prev.map((m) => (m.id === assistantId ? { ...m, streaming: false } : m))
       );
+
+      if (streamFailed || !receivedTokens) {
+        const recovered = await tryEdgeFallback();
+        if (!recovered && (streamFailed || !receivedTokens)) {
+          setMessages((prev) => prev.filter((m) => m.id !== assistantId));
+          if (!streamFailed) setError('Request failed');
+        }
+      }
     } catch (err) {
-      const msg = err instanceof Error ? err.message : 'Request failed';
-      setError(msg);
-      setMessages((prev) => prev.filter((m) => m.id !== assistantId));
+      const recovered = await tryEdgeFallback();
+      if (!recovered) {
+        const msg = err instanceof Error ? err.message : 'Request failed';
+        setError(msg);
+        setMessages((prev) => prev.filter((m) => m.id !== assistantId));
+      }
     } finally {
       setLoading(false);
     }
@@ -151,6 +230,9 @@ export function AgentChat({
     activeSection,
     language,
     threadId,
+    fallbackToHelpEdge,
+    fallbackToCoachEdge,
+    sectionTitle,
     onDraftApplied,
     onThreadId,
   ]);

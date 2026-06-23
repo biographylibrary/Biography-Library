@@ -62,16 +62,32 @@ export async function runStreamingAgentTurn(
 
   const streamTokens = async (msgs: ChatMessage[]) => {
     let fullContent = '';
-    for await (const chunk of chatStream({
-      role: prepared.role,
-      messages: msgs,
-      stream: true,
-    })) {
-      if (chunk.type === 'token' && chunk.content) {
-        fullContent += chunk.content;
-        send('token', { content: chunk.content });
+    try {
+      for await (const chunk of chatStream({
+        role: prepared.role,
+        messages: msgs,
+        stream: true,
+      })) {
+        if (chunk.type === 'token' && chunk.content) {
+          fullContent += chunk.content;
+          send('token', { content: chunk.content });
+        }
       }
+    } catch (streamErr) {
+      console.warn('[agents] chatStream failed, falling back to non-stream:', streamErr);
+      const result = await chat({
+        role: prepared.role,
+        messages: msgs,
+        stream: false,
+      });
+      fullContent = result.content ?? '';
+      if (fullContent) send('token', { content: fullContent });
     }
+
+    if (!fullContent.trim()) {
+      throw new Error('AI returned an empty response');
+    }
+
     await appendMessage(serviceClient, prepared.threadId, {
       role: 'assistant',
       content: fullContent,
@@ -81,13 +97,21 @@ export async function runStreamingAgentTurn(
   };
 
   if (prepared.tools?.length && prepared.biographyId) {
-    const first = await chat({
-      role: prepared.role,
-      messages,
-      tools: prepared.tools,
-      tool_choice: 'auto',
-      stream: false,
-    });
+    let first;
+    try {
+      first = await chat({
+        role: prepared.role,
+        messages,
+        tools: prepared.tools,
+        tool_choice: 'auto',
+        stream: false,
+      });
+    } catch (toolErr) {
+      console.warn('[agents] tool pass failed, continuing without tools:', toolErr);
+      await streamTokens(messages);
+      send('done', { threadId: prepared.threadId });
+      return;
+    }
 
     if (first.tool_calls?.length) {
       await appendMessage(serviceClient, prepared.threadId, {
