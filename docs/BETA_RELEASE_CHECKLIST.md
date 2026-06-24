@@ -42,7 +42,11 @@ Controllare che sul **processo che esegue Next** siano impostate (non committate
 **Supabase Dashboard** (progetto produzione):
 
 - [ ] **Auth**: conferma email attiva come da policy prodotto; redirect URL / Site URL coerenti con il dominio pubblico.
-- [ ] **SMTP custom** (es. Resend) operativo per `biographylibrary.org`.
+- [ ] `RESEND_API_KEY`, `RESEND_FROM_EMAIL` su Jelastic **e** secrets Edge Functions
+- [ ] `CRON_SECRET`, `AUTH_HOOK_SECRET`, `ENGAGEMENT_EMAILS_ENABLED=true`
+- [ ] **Auth Send Email Hook** → `auth-send-email` (disabilitare template SMTP built-in dopo verifica)
+- [ ] Edge Functions email deployate: `auth-send-email`, `user-email-confirmed`, `send-engagement-emails`
+- [ ] Cron giornaliero su `send-engagement-emails`
 
 **Edge Functions** (secrets nel progetto Supabase):
 
@@ -67,7 +71,7 @@ Eseguire in **produzione** (o staging identico) con account di test dedicati.
 
 | # | Flusso | Cosa verificare |
 |---|--------|------------------|
-| **1** | **Registrazione e conferma email** | Nuovo utente → riceve email (Resend / dominio corretto) → link conferma → accesso ok. |
+| **1** | **Registrazione e conferma email** | Nuovo utente → email conferma (Resend/hook, lingua browser) → link conferma → **email benvenuto** → accesso ok. |
 | **2** | **Login e creazione biografia** | Login → dashboard → crea biografia → salvataggio base (titolo, modalità). |
 | **3** | **Editor e (opzionale) IA** | Apertura editor, salvataggio testo, una azione IA se i token/quota lo permettono. |
 | **4** | **Verso pubblicazione (PDF)** | Final review → **Start PDF phase** (`start-pdf-draft`) → upload `cover_a5` + toggle copyright page → export draft PDF (round 1–3) → **`draft-ai-review`** salva feedback → approve final PDF → screening → `published` o `under_review`; stati e `listing_cover_url` coerenti. |

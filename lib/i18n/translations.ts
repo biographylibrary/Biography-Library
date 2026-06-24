@@ -1,3 +1,9 @@
+import {
+  getEchoGuideCopy,
+  getEchoIcebreakerPools,
+  type EchoIcebreakerPoolsByContext,
+} from '@/lib/i18n/echo-guide-content';
+
 export type Language = 'en' | 'it' | 'fr' | 'de';
 
 export interface Translations {
@@ -43,7 +49,6 @@ export interface Translations {
     loggingIn: string;
     creatingAccount: string;
     welcomeBack: string;
-    signInSubtitle: string;
     createYourAccount: string;
     registerSubtitle: string;
     fullName: string;
@@ -135,6 +140,11 @@ export interface Translations {
     goToWorkspace: string;
     continueLastSection: string;
     updateAvailabilityMessage: string;
+    oneBiographyLimit: string;
+    nextChapterAvailableNow: string;
+    nextChapterAvailableOn: string;
+    nextChapterCooldownDays: string;
+    chapterCooldownBlocked: string;
   };
   biography: {
     newBiography: string;
@@ -244,6 +254,7 @@ export interface Translations {
     pdfDraftNotice: string;
     draftIterationNone: string;
     draftIterationCurrent: string;
+    draftIterationWarning: string;
     draftLimitReached: string;
     /** Must enter pdf_draft status before watermarked draft downloads */
     draftPhaseRequiredBeforeDraft: string;
@@ -395,6 +406,44 @@ export interface Translations {
     publicationExportPdf: string;
     /** Hint when user can still use legacy “submit for review” from draft */
     publicationLegacySubmitHint: string;
+    reviewPublication: {
+      menuItem: string;
+      title: string;
+      description: string;
+      incompleteMessage: string;
+      freeflowEmptyHint: string;
+      statusUnderReview: string;
+      statusLockedPendingScreening: string;
+      underReviewHint: string;
+      lockedPendingScreeningHint: string;
+      screeningPendingHint: string;
+      revisionFlaggedHint: string;
+      stepAiReviewTitle: string;
+      stepAiReviewDesc: string;
+      stepAiReviewButton: string;
+      stepFreeflowPrepareTitle: string;
+      stepFreeflowPrepareDesc: string;
+      stepFreeflowPrepareButton: string;
+      stepSubmitTitle: string;
+      stepSubmitDesc: string;
+      stepSubmitButton: string;
+      stepPdfDraftTitle: string;
+      stepPdfDraftDesc: string;
+      stepPdfDraftButton: string;
+      stepExportTitle: string;
+      stepExportDesc: string;
+      stepExportButton: string;
+      stepApproveTitle: string;
+      stepApproveDesc: string;
+      stepApproveButton: string;
+      approveDisabledHint: string;
+      approveAiPendingHint: string;
+      approveAiSuggestionsHint: string;
+      severity3BlockHint: string;
+      publishedTitle: string;
+      publishedDesc: string;
+      draftProgress: string;
+    };
   };
   formatting: {
     bold: string;
@@ -437,6 +486,8 @@ export interface Translations {
     draftBiography: string;
     markCompleteWhenFinished: string;
     markComplete: string;
+    markIncomplete: string;
+    sectionCompletedHint: string;
     markAsDraft: string;
     updating: string;
     confirmCompleteTitle: string;
@@ -678,6 +729,27 @@ export interface Translations {
     aiDetectionError: string;
     multiImportUnavailable: string;
     loading: string;
+    fileTooLarge: string;
+    docUnsupported: string;
+    formatUnsupported: string;
+    tooManyFiles: string;
+    filesQueued: string;
+  };
+  importMapping: {
+    title: string;
+    description: string;
+    suggestAi: string;
+    aiError: string;
+    sourceAi: string;
+    sourceTitle: string;
+    sourceManual: string;
+    confidenceHigh: string;
+    confidenceMedium: string;
+    confidenceLow: string;
+    skipBlock: string;
+    confirmImport: string;
+    reviewRequired: string;
+    untitledBlock: string;
   };
   notesAndTodos: {
     title: string;
@@ -780,6 +852,12 @@ export interface Translations {
     appliedImprovements: string;
     failedToApply: string;
     appliedRewrite: string;
+    apertusButton: string;
+    apertusTitle: string;
+    apertusSubtitle: string;
+    apertusLoading: string;
+    apertusError: string;
+    apertusModelNote: string;
   };
   deleteDialog: {
     deleteBiographyLink: string;
@@ -1220,6 +1298,102 @@ export interface Translations {
     genericError: string;
     signInRequired: string;
   };
+  onboardingWizard: {
+    stepProgress: string;
+    typeSubtitle: string;
+    legalSubtitle: string;
+    pathTitle: string;
+    pathSubtitle: string;
+    pathHint: string;
+    publishReadyDescription: string;
+    skipForNow: string;
+    startTour: string;
+    resumeIntro: string;
+    resumeIntroDescription: string;
+    reviewIntro: string;
+    tourCompleted: string;
+    tourSkip: string;
+    tourNext: string;
+    tourBack: string;
+    tourFinish: string;
+    tourStepOptional: string;
+    tourTryStep: string;
+    tryActionHint: string;
+  };
+  onboardingTour: {
+    sectionsOverviewTitle: string;
+    sectionsOverviewDesc: string;
+    sectionsEditorTitle: string;
+    sectionsEditorDesc: string;
+    echoPanelTitle: string;
+    echoPanelDesc: string;
+    echoTryTitle: string;
+    echoTryDesc: string;
+    bookStructureTitle: string;
+    bookStructureDesc: string;
+    exportPdfTitle: string;
+    exportPdfDesc: string;
+    reviewPublicationTitle: string;
+    reviewPublicationDesc: string;
+    importOverviewTitle: string;
+    importOverviewDesc: string;
+    importTryTitle: string;
+    importTryDesc: string;
+    publishImportTitle: string;
+    publishImportDesc: string;
+    publishFinalTitle: string;
+    publishFinalDesc: string;
+    publishExportTitle: string;
+    publishExportDesc: string;
+    sampleImportText: string;
+  };
+  echo: {
+    hubEmpty: string;
+    resumeBiography: string;
+    resumeButton: string;
+    newGuided: string;
+    newImport: string;
+    newPublishOnly: string;
+    myBiographies: string;
+    pickBiography: string;
+    untitledBiography: string;
+    inputPlaceholder: string;
+    statusListening: string;
+    statusSpeaking: string;
+    statusThinking: string;
+    errorGeneric: string;
+    openEcho: string;
+    closeEcho: string;
+    aiToolsMenu: string;
+    changePath: string;
+    changePathTitle: string;
+    changePathDescription: string;
+    exportBeforeChange: string;
+    confirmPathChange: string;
+    onboardingWelcome: string;
+    pathChanged: string;
+    concentrationMode: string;
+    exitConcentration: string;
+    consultEcho: string;
+    stopSpeaking: string;
+    muteVoice: string;
+    unmuteVoice: string;
+    speakingBanner: string;
+    activeSectionContext: string;
+    sectionSwitchPrefix: string;
+    icebreakerHint: string;
+    icebreakerGuideHint: string;
+    icebreakerDefaultSection: string;
+    usageGuide: string;
+    usageGuideIcebreaker: string;
+    insertDraftPrompt: string;
+    insertDraftConfirm: string;
+    insertDraftDismiss: string;
+    insertDraftDone: string;
+    loadOlderMessages: string;
+    loadingOlderMessages: string;
+    icebreakerPools: EchoIcebreakerPoolsByContext;
+  };
 }
 
 export const translations: Record<Language, Translations> = {
@@ -1266,7 +1440,6 @@ export const translations: Record<Language, Translations> = {
       loggingIn: 'Signing in...',
       creatingAccount: 'Creating account...',
       welcomeBack: 'Welcome back',
-      signInSubtitle: 'Sign in to continue writing and preserving life stories',
       createYourAccount: 'Create your account',
       registerSubtitle: 'Start preserving and sharing life stories today',
       fullName: 'Full name',
@@ -1358,7 +1531,12 @@ export const translations: Record<Language, Translations> = {
       untitledBiography: 'Untitled Biography',
       goToWorkspace: 'Go to Workspace',
       continueLastSection: 'Continue Last Section',
-      updateAvailabilityMessage: 'Once your biography is live, you can add a new yearly update to showcase your latest year of activity.',
+      updateAvailabilityMessage: 'You can add a new chapter to your biography once a year to capture what has changed in your life.',
+      oneBiographyLimit: 'You already have a biography. Each account is limited to one biography to maintain focus and quality.',
+      nextChapterAvailableNow: 'You can add a new chapter to your biography now.',
+      nextChapterAvailableOn: 'Next chapter available on {date}.',
+      nextChapterCooldownDays: '{days} days until you can add a new chapter.',
+      chapterCooldownBlocked: 'You can publish a new chapter one year after your last publication.',
     },
     biography: {
       newBiography: 'New Biography',
@@ -1469,9 +1647,10 @@ export const translations: Record<Language, Translations> = {
       backCoverFooter: 'Biography Library · biographylibrary.org',
       noCoverPhotoWarning: 'A cover photo is required to generate the PDF. Upload a photo and tag it as cover in the Photos section.',
       pdfDraftNotice: 'This is a draft proof PDF. It reflects the current state of your biography and lets you verify layout and content before submitting for review.',
-      draftIterationNone: 'No draft PDF generated yet. This will be Draft 1 of 3.',
-      draftIterationCurrent: 'Draft {n} of {max} already generated. Exporting will create Draft {next}.',
-      draftLimitReached: 'You have reached the maximum of 3 draft PDFs. Submit for review before generating additional drafts.',
+      draftIterationNone: 'No draft PDF generated yet. Exporting will create your first draft.',
+      draftIterationCurrent: 'Draft {n} already generated. Exporting will create draft {next}.',
+      draftIterationWarning: 'You have already generated {n} draft PDFs. Consider submitting for review soon.',
+      draftLimitReached: 'You have reached the maximum number of draft PDFs for this biography. Submit for review before generating more.',
       draftPhaseRequiredBeforeDraft:
         'Start the PDF review phase from the editor (Start PDF review) before downloading watermarked drafts.',
       finalDraftConfirmTitle: 'Generate Third and Final Draft',
@@ -1623,6 +1802,56 @@ export const translations: Record<Language, Translations> = {
       publicationExportPdf: 'Export PDF',
       publicationLegacySubmitHint:
         'For the full print-ready path (PDF drafts → automatic screening), use “Final Review with AI” first, then Start PDF review. You can still submit from here for a quicker check without the PDF phase.',
+      reviewPublication: {
+        menuItem: 'Review & Publication',
+        title: 'Review & Publication',
+        description: 'Complete the review workflow and export your biography as a print-ready PDF.',
+        incompleteMessage:
+          'Before you can start review and publication, complete every chapter in the sidebar. Each section should have your story written and marked complete.',
+        freeflowEmptyHint: 'Add your biography text in the editor before starting review and publication.',
+        statusUnderReview: 'Under review',
+        statusLockedPendingScreening: 'Screening in progress',
+        underReviewHint:
+          'Your biography is being reviewed. You can return here when the review is complete to continue with PDF export.',
+        lockedPendingScreeningHint:
+          'Your final PDF was approved and automatic screening is running. You will be notified when it completes.',
+        screeningPendingHint: 'Automatic text screening is running…',
+        revisionFlaggedHint:
+          'Some passages were flagged. Edit the highlighted sections in the editor, then resubmit for screening when ready.',
+        stepAiReviewTitle: 'Optional: AI narrative review',
+        stepAiReviewDesc:
+          'Explore alternative chapter orders and narrative structures suggested by AI before submitting.',
+        stepAiReviewButton: 'Open AI final review',
+        stepFreeflowPrepareTitle: 'Prepare final text for PDF',
+        stepFreeflowPrepareDesc:
+          'Lock your free-flow text as the final version so you can start watermarked PDF drafts.',
+        stepFreeflowPrepareButton: 'Prepare final text',
+        stepSubmitTitle: 'Quick submit (legacy)',
+        stepSubmitDesc:
+          'Skip the PDF draft phase and send directly for automatic screening. For print-ready PDFs, use the steps above first.',
+        stepSubmitButton: 'Submit for review',
+        stepPdfDraftTitle: 'Start PDF review',
+        stepPdfDraftDesc:
+          'Generate watermarked PDF drafts, check layout and cover, then approve the final version.',
+        stepPdfDraftButton: 'Start PDF review',
+        stepExportTitle: 'Export PDF draft',
+        stepExportDesc: 'Download and preview your watermarked PDF draft before final approval.',
+        stepExportButton: 'Open export',
+        stepApproveTitle: 'Approve final PDF',
+        stepApproveDesc: 'Confirm the PDF is ready and run automatic content screening.',
+        stepApproveButton: 'Approve & run screening',
+        approveDisabledHint:
+          'Export at least one watermarked PDF draft before approving. Open Export to generate your first draft.',
+        approveAiPendingHint:
+          'Wait for the AI draft review to finish after exporting, or export a new draft if needed.',
+        approveAiSuggestionsHint:
+          'AI suggested improvements in Export. You can still approve if you are satisfied with this draft.',
+        severity3BlockHint:
+          'This draft contains critical issues flagged by AI. Review the feedback and export a new draft before approving.',
+        publishedTitle: 'Published',
+        publishedDesc: 'Your biography passed screening. You can export the final PDF at any time.',
+        draftProgress: 'Drafts generated: {count}',
+      },
     },
     formatting: {
       bold: 'Bold',
@@ -1665,6 +1894,8 @@ export const translations: Record<Language, Translations> = {
       draftBiography: 'Draft Biography',
       markCompleteWhenFinished: 'Mark as complete when finished',
       markComplete: 'Mark Complete',
+      markIncomplete: 'Reopen for editing',
+      sectionCompletedHint: 'This section is marked complete. Click «Reopen for editing» to change it again.',
       markAsDraft: 'Mark as Draft',
       updating: 'Updating...',
       confirmCompleteTitle: 'Mark Biography as Complete?',
@@ -1881,7 +2112,7 @@ export const translations: Record<Language, Translations> = {
       description: 'Upload a file or paste text to import',
       dragFile: 'Drag a file here or click to select',
       dragFileHint: 'Supported format: .txt (max 5MB)',
-      formats: 'Supported format: .txt (max 5MB)',
+      formats: 'Supported formats: .txt, .docx, .rtf (max 5MB each, up to 10 files)',
       selectFile: 'Select File',
       or: 'or',
       pasteLabel: 'Paste text directly',
@@ -1906,6 +2137,27 @@ export const translations: Record<Language, Translations> = {
       aiDetectionError: 'Error during automatic section detection',
       multiImportUnavailable: 'Multiple section import not available',
       loading: 'Loading...',
+      fileTooLarge: 'File too large. Maximum size: 5MB',
+      docUnsupported: 'Unsupported .doc format. Convert to .docx or .txt',
+      formatUnsupported: 'Unsupported format. Use .txt, .docx or .rtf',
+      tooManyFiles: 'Too many files. Maximum 10 per import',
+      filesQueued: '{count} file(s) ready to import',
+    },
+    importMapping: {
+      title: 'Map chapters to sections',
+      description: 'Review how imported chapters will be placed in your biography sections. Adjust assignments or use AI suggestions.',
+      suggestAi: 'Suggest with AI',
+      aiError: 'AI suggestion failed. Choose a section manually.',
+      sourceAi: 'AI suggested',
+      sourceTitle: 'Title match',
+      sourceManual: 'Manual',
+      confidenceHigh: 'High confidence',
+      confidenceMedium: 'Medium confidence',
+      confidenceLow: 'Low confidence',
+      skipBlock: 'Skip',
+      confirmImport: 'Confirm import',
+      reviewRequired: 'Some blocks have low confidence. Review assignments or use AI before importing.',
+      untitledBlock: 'Untitled block',
     },
     notesAndTodos: {
       title: 'Notes & Reminders',
@@ -2008,6 +2260,12 @@ export const translations: Record<Language, Translations> = {
       appliedImprovements: 'Applied {count} improvements',
       failedToApply: 'Failed to apply improvements',
       appliedRewrite: 'Applied {tone} rewrite',
+      apertusButton: 'Swiss model review',
+      apertusTitle: 'Review with Swiss model',
+      apertusSubtitle: 'Editorial feedback on «{section}» via Apertus (Swiss open-source AI)',
+      apertusLoading: 'Apertus is reading your section…',
+      apertusError: 'Swiss model review is unavailable. Please try again later.',
+      apertusModelNote: 'Model: {model}',
     },
     deleteDialog: {
       deleteBiographyLink: 'Delete biography',
@@ -2053,9 +2311,9 @@ export const translations: Record<Language, Translations> = {
       layoutLabel: 'Layout',
       layoutFullPage: 'Full page',
       layoutCover: 'Cover',
-      layoutTwoVertical: 'Two photos — vertical',
-      layoutTwoHorizontal: 'Two photos — horizontal',
-      layoutThreeMixed: 'Three photos (mixed)',
+      layoutTwoVertical: 'Two photos — stacked',
+      layoutTwoHorizontal: 'Two photos — stacked (pair)',
+      layoutThreeMixed: 'Three photos — wide top, two below',
       coverCompositeTitle: 'Cover photo (title card)',
       customA5CoverLabel: 'Custom A5 cover (176×250mm)',
       customA5CoverHint:
@@ -2451,6 +2709,102 @@ export const translations: Record<Language, Translations> = {
       genericError: 'Something went wrong. Please try again.',
       signInRequired: 'Sign in to use the help assistant.',
     },
+    onboardingWizard: {
+      stepProgress: 'Step {current} of {total}',
+      typeSubtitle: 'Tell us who this biography is for. You will confirm your legal rights on the next step.',
+      legalSubtitle: 'Please read and confirm each statement to continue.',
+      pathTitle: 'How would you like to work?',
+      pathSubtitle: 'Choose your starting path. You can change approach later.',
+      pathHint: 'After this step you will get a short guided tour of the editor in your chosen language.',
+      publishReadyDescription: 'Import finished text and move quickly toward publication and PDF export.',
+      skipForNow: 'Skip for now',
+      startTour: 'Create and start tour',
+      resumeIntro: 'Resume introduction',
+      resumeIntroDescription: 'Pick up the guided setup where you left off.',
+      reviewIntro: 'Review introduction',
+      tourCompleted: 'Tour completed — happy writing!',
+      tourSkip: 'Skip tour',
+      tourNext: 'Next',
+      tourBack: 'Back',
+      tourFinish: 'Finish',
+      tourStepOptional: 'You can try the highlighted action now, or press Next to continue without it.',
+      tourTryStep: 'Try it',
+      tryActionHint: 'Try the highlighted action to continue.',
+    },
+    onboardingTour: {
+      sectionsOverviewTitle: 'Your biography workspace',
+      sectionsOverviewDesc: 'Chapters appear on the left. Echo assists you on the right.',
+      sectionsEditorTitle: 'Write in a chapter',
+      sectionsEditorDesc: 'Click a chapter and type a sentence — try it now.',
+      echoPanelTitle: 'Write with Echo',
+      echoPanelDesc:
+        'Echo is right here in your workspace. Type a question below — for example “How should I start this chapter?” — or use the microphone. Press “Try it” to focus the chat field.',
+      echoTryTitle: 'Meet Echo (optional)',
+      echoTryDesc: 'Open Echo from the button at the bottom right. You can chat when you are ready — no message is required to continue the tour.',
+      bookStructureTitle: 'Book structure & photos',
+      bookStructureDesc: 'Set cover, credits, and photo gallery before exporting PDF.',
+      exportPdfTitle: 'Export PDF draft',
+      exportPdfDesc: 'Open the export dialog to preview how your book will look.',
+      reviewPublicationTitle: 'Review & publication',
+      reviewPublicationDesc:
+        'Open this panel to submit your biography for review, verify PDF drafts, and export the final book.',
+      importOverviewTitle: 'Free writing mode',
+      importOverviewDesc: 'Ideal for pasting or importing existing text.',
+      importTryTitle: 'Import sample text',
+      importTryDesc: 'Open Import and paste the sample text provided.',
+      publishImportTitle: 'Import your finished text',
+      publishImportDesc: 'Start by bringing your biography into the platform.',
+      publishFinalTitle: 'Final version & review',
+      publishFinalDesc: 'Polish the text, then move to PDF draft rounds.',
+      publishExportTitle: 'PDF export & publication',
+      publishExportDesc: 'Open export to check readiness and download a draft PDF.',
+      sampleImportText: 'This is a sample paragraph for your biography import tour.',
+    },
+    echo: {
+      hubEmpty: 'Hello! I\'m Echo. I\'ll guide you through writing your biography — by voice or text.',
+      resumeBiography: 'Continue: {title}',
+      resumeButton: 'Resume biography',
+      newGuided: 'Tell your story with Echo, your personal AI guide, step by step.',
+      newImport: 'I already have text to import',
+      newPublishOnly: 'Prepare an existing text for publication',
+      myBiographies: 'My biographies',
+      pickBiography: 'Select biography',
+      untitledBiography: 'Untitled',
+      inputPlaceholder: 'Type or use the microphone…',
+      statusListening: 'Echo is listening…',
+      statusSpeaking: 'Echo is speaking…',
+      statusThinking: 'Echo is thinking…',
+      errorGeneric: 'Something went wrong. Please try again.',
+      openEcho: 'Ask Echo',
+      closeEcho: 'Close',
+      aiToolsMenu: 'AI tools',
+      changePath: 'Change writing path',
+      changePathTitle: 'Change writing path',
+      changePathDescription: 'Your content will be preserved. You can export first if you prefer.',
+      exportBeforeChange: 'Export copy first',
+      confirmPathChange: 'Convert and continue',
+      onboardingWelcome: 'Welcome to Biography Library. I\'m Echo — let\'s get started.',
+      pathChanged: 'Writing path updated.',
+      concentrationMode: 'Concentration mode',
+      exitConcentration: 'Exit concentration mode',
+      consultEcho: 'Echo',
+      stopSpeaking: 'Stop',
+      muteVoice: 'Mute Echo voice',
+      unmuteVoice: 'Unmute Echo voice',
+      speakingBanner: 'Echo is reading aloud…',
+      activeSectionContext: 'Now working on: {section}',
+      sectionSwitchPrefix: '[Now on section «{section}»]',
+      icebreakerHint: 'You could ask, for example:',
+      icebreakerDefaultSection: 'this chapter',
+      insertDraftPrompt: 'Insert this text into the editor?',
+      insertDraftConfirm: 'Insert in editor',
+      insertDraftDismiss: 'Not now',
+      insertDraftDone: 'Text inserted in the editor.',
+      loadOlderMessages: 'Load older messages',
+      loadingOlderMessages: 'Loading…',
+      ...getEchoGuideCopy('en'),
+      icebreakerPools: getEchoIcebreakerPools('en'),
+    },
   },
   it: {
     common: {
@@ -2495,7 +2849,6 @@ export const translations: Record<Language, Translations> = {
       loggingIn: 'Accesso in corso...',
       creatingAccount: 'Creazione account...',
       welcomeBack: 'Bentornato',
-      signInSubtitle: 'Accedi per continuare a scrivere e preservare storie di vita',
       createYourAccount: 'Crea il tuo account',
       registerSubtitle: 'Inizia a preservare e condividere storie di vita oggi',
       fullName: 'Nome completo',
@@ -2587,7 +2940,12 @@ export const translations: Record<Language, Translations> = {
       untitledBiography: 'Biografia senza titolo',
       goToWorkspace: 'Vai al Workspace',
       continueLastSection: 'Continua Ultima Sezione',
-      updateAvailabilityMessage: 'Una volta che la tua biografia è pubblicata, puoi aggiungere un nuovo aggiornamento annuale per mostrare le tue attività dell\'ultimo anno.',
+      updateAvailabilityMessage: 'Puoi aggiungere un nuovo capitolo alla tua biografia una volta all\'anno, per raccontare ciò che è cambiato nella tua vita.',
+      oneBiographyLimit: 'Hai già una biografia. Ogni account può averne una sola, per mantenere focus e qualità.',
+      nextChapterAvailableNow: 'Puoi aggiungere un nuovo capitolo alla tua biografia.',
+      nextChapterAvailableOn: 'Prossimo capitolo disponibile il {date}.',
+      nextChapterCooldownDays: 'Mancano {days} giorni al prossimo capitolo.',
+      chapterCooldownBlocked: 'Puoi pubblicare un nuovo capitolo un anno dopo l\'ultima pubblicazione.',
     },
     biography: {
       newBiography: 'Nuova Biografia',
@@ -2698,9 +3056,10 @@ export const translations: Record<Language, Translations> = {
       backCoverFooter: 'Biography Library · biographylibrary.org',
       noCoverPhotoWarning: 'È necessaria una foto di copertina per generare il PDF. Carica una foto e contrassegnala come copertina nella sezione Foto.',
       pdfDraftNotice: 'Questo è un PDF di bozza. Riflette lo stato attuale della biografia e ti permette di verificare il layout e il contenuto prima di inviarlo alla revisione.',
-      draftIterationNone: 'Nessun PDF di bozza generato ancora. Questo sarà la Bozza 1 di 3.',
-      draftIterationCurrent: 'Bozza {n} di {max} già generata. Esportando si creerà la Bozza {next}.',
-      draftLimitReached: 'Hai raggiunto il limite massimo di 3 bozze PDF. Invia per revisione prima di generare ulteriori bozze.',
+      draftIterationNone: 'Nessun PDF di bozza generato ancora. Esportando creerai la prima bozza.',
+      draftIterationCurrent: 'Bozza {n} già generata. Esportando si creerà la bozza {next}.',
+      draftIterationWarning: 'Hai già generato {n} bozze PDF. Valuta di inviare presto per la revisione.',
+      draftLimitReached: 'Hai raggiunto il numero massimo di bozze PDF per questa biografia. Invia per revisione prima di generarne altre.',
       draftPhaseRequiredBeforeDraft:
         'Avvia la fase di revisione PDF dall\'editor (Avvia revisione PDF) prima di scaricare bozze con filigrana.',
       finalDraftConfirmTitle: 'Genera la Terza e Ultima Bozza',
@@ -2852,6 +3211,58 @@ export const translations: Record<Language, Translations> = {
       publicationExportPdf: 'Esporta PDF',
       publicationLegacySubmitHint:
         'Per il percorso completo pronto per la stampa (bozze PDF → screening automatico), usa prima “Revisione Finale con IA”, poi Avvia revisione PDF. Puoi ancora inviare da qui per un controllo più rapido senza fase PDF.',
+      reviewPublication: {
+        menuItem: 'Revisione e Pubblicazione',
+        title: 'Revisione e Pubblicazione',
+        description:
+          'Completa il percorso di revisione e pubblica la biografia con export PDF pronto per la stampa.',
+        incompleteMessage:
+          'Prima di avviare revisione e pubblicazione, completa ogni capitolo nella barra laterale. Ogni sezione deve contenere il testo e risultare completata.',
+        freeflowEmptyHint:
+          'Aggiungi il testo della biografia nell\'editor prima di avviare revisione e pubblicazione.',
+        statusUnderReview: 'In revisione',
+        statusLockedPendingScreening: 'Screening in corso',
+        underReviewHint:
+          'La biografia è in revisione. Torna qui al termine per continuare con l\'export PDF.',
+        lockedPendingScreeningHint:
+          'Il PDF finale è stato approvato e lo screening automatico è in corso. Riceverai una notifica al termine.',
+        screeningPendingHint: 'Analisi automatica del testo in corso…',
+        revisionFlaggedHint:
+          'Alcuni passaggi sono stati segnalati. Modifica le sezioni evidenziate nell\'editor, poi reinvia per lo screening quando sei pronto.',
+        stepAiReviewTitle: 'Facoltativo: revisione narrativa con IA',
+        stepAiReviewDesc:
+          'Esplora ordini alternativi dei capitoli e strutture narrative suggerite dall\'IA prima dell\'invio.',
+        stepAiReviewButton: 'Apri revisione finale IA',
+        stepFreeflowPrepareTitle: 'Prepara il testo finale per il PDF',
+        stepFreeflowPrepareDesc:
+          'Blocca il testo in modalità libera come versione finale per avviare le bozze PDF con filigrana.',
+        stepFreeflowPrepareButton: 'Prepara testo finale',
+        stepSubmitTitle: 'Invio rapido (legacy)',
+        stepSubmitDesc:
+          'Salta la fase bozza PDF e invia direttamente allo screening automatico. Per PDF pronti per la stampa, usa prima i passaggi sopra.',
+        stepSubmitButton: 'Invia per la revisione',
+        stepPdfDraftTitle: 'Avvia revisione PDF',
+        stepPdfDraftDesc:
+          'Genera bozze PDF con filigrana, verifica impaginazione e copertina, poi approva la versione finale.',
+        stepPdfDraftButton: 'Avvia revisione PDF',
+        stepExportTitle: 'Esporta bozza PDF',
+        stepExportDesc: 'Scarica e anteprima la bozza PDF con filigrana prima dell\'approvazione finale.',
+        stepExportButton: 'Apri export',
+        stepApproveTitle: 'Approva PDF finale',
+        stepApproveDesc: 'Conferma che il PDF è pronto ed esegui lo screening automatico dei contenuti.',
+        stepApproveButton: 'Approva ed esegui screening',
+        approveDisabledHint:
+          'Esporta almeno una bozza PDF con filigrana prima di approvare. Apri Export per generare la prima bozza.',
+        approveAiPendingHint:
+          'Attendi il termine della revisione IA della bozza dopo l\'export, oppure esporta una nuova bozza se necessario.',
+        approveAiSuggestionsHint:
+          'L\'IA ha suggerito miglioramenti in Export. Puoi comunque approvare se sei soddisfatto di questa bozza.',
+        severity3BlockHint:
+          'Questa bozza contiene problemi critici segnalati dall\'IA. Rivedi il feedback ed esporta una nuova bozza prima di approvare.',
+        publishedTitle: 'Pubblicata',
+        publishedDesc: 'La biografia ha superato lo screening. Puoi esportare il PDF finale in qualsiasi momento.',
+        draftProgress: 'Bozze generate: {count}',
+      },
     },
     formatting: {
       bold: 'Grassetto',
@@ -2894,6 +3305,8 @@ export const translations: Record<Language, Translations> = {
       draftBiography: 'Biografia in Bozza',
       markCompleteWhenFinished: 'Contrassegna come completa quando hai finito',
       markComplete: 'Segna come Completa',
+      markIncomplete: 'Riapri per modificare',
+      sectionCompletedHint: 'Questa sezione è segnata come completa. Clicca «Riapri per modificare» per modificarla di nuovo.',
       markAsDraft: 'Segna come Bozza',
       updating: 'Aggiornamento...',
       confirmCompleteTitle: 'Contrassegnare la Biografia come Completa?',
@@ -3110,7 +3523,7 @@ export const translations: Record<Language, Translations> = {
       description: 'Carica un file o incolla il testo da importare',
       dragFile: 'Trascina un file qui o clicca per selezionare',
       dragFileHint: 'Formato supportato: .txt (max 5MB)',
-      formats: 'Formato supportato: .txt (max 5MB)',
+      formats: 'Formati supportati: .txt, .docx, .rtf (max 5MB ciascuno, fino a 10 file)',
       selectFile: 'Seleziona File',
       or: 'oppure',
       pasteLabel: 'Incolla il testo direttamente',
@@ -3135,6 +3548,27 @@ export const translations: Record<Language, Translations> = {
       aiDetectionError: 'Errore durante il rilevamento automatico delle sezioni',
       multiImportUnavailable: 'Importazione multipla sezioni non disponibile',
       loading: 'Caricamento...',
+      fileTooLarge: 'File troppo grande. Dimensione massima: 5MB',
+      docUnsupported: 'Formato .doc non supportato. Converti in .docx o .txt',
+      formatUnsupported: 'Formato non supportato. Usa .txt, .docx o .rtf',
+      tooManyFiles: 'Troppi file. Massimo 10 per importazione',
+      filesQueued: '{count} file pronti per l\'importazione',
+    },
+    importMapping: {
+      title: 'Mappa i capitoli alle sezioni',
+      description: 'Verifica come i capitoli importati verranno inseriti nelle sezioni della biografia. Modifica le assegnazioni o usa i suggerimenti AI.',
+      suggestAi: 'Suggerisci con AI',
+      aiError: 'Suggerimento AI non riuscito. Scegli una sezione manualmente.',
+      sourceAi: 'Suggerito da AI',
+      sourceTitle: 'Match titolo',
+      sourceManual: 'Manuale',
+      confidenceHigh: 'Alta confidenza',
+      confidenceMedium: 'Media confidenza',
+      confidenceLow: 'Bassa confidenza',
+      skipBlock: 'Salta',
+      confirmImport: 'Conferma importazione',
+      reviewRequired: 'Alcuni blocchi hanno bassa confidenza. Rivedi le assegnazioni o usa l\'AI prima di importare.',
+      untitledBlock: 'Blocco senza titolo',
     },
     notesAndTodos: {
       title: 'Note e Promemoria',
@@ -3237,6 +3671,12 @@ export const translations: Record<Language, Translations> = {
       appliedImprovements: 'Applicati {count} miglioramenti',
       failedToApply: 'Impossibile applicare i miglioramenti',
       appliedRewrite: 'Applicata riscrittura {tone}',
+      apertusButton: 'Rilettura modello svizzero',
+      apertusTitle: 'Rilettura con modello svizzero',
+      apertusSubtitle: 'Feedback editoriale su «{section}» tramite Apertus (IA open source svizzera)',
+      apertusLoading: 'Apertus sta leggendo la sezione…',
+      apertusError: 'Rilettura con modello svizzero non disponibile. Riprova più tardi.',
+      apertusModelNote: 'Modello: {model}',
     },
     deleteDialog: {
       deleteBiographyLink: 'Elimina biografia',
@@ -3282,9 +3722,9 @@ export const translations: Record<Language, Translations> = {
       layoutLabel: 'Layout',
       layoutFullPage: 'Pagina intera',
       layoutCover: 'Copertina',
-      layoutTwoVertical: 'Due foto — verticale',
-      layoutTwoHorizontal: 'Due foto — orizzontale',
-      layoutThreeMixed: 'Tre foto (misto)',
+      layoutTwoVertical: 'Due foto — una sopra l\'altra',
+      layoutTwoHorizontal: 'Due foto — impilate (coppia)',
+      layoutThreeMixed: 'Tre foto — una larga sopra, due sotto',
       coverCompositeTitle: 'Foto di copertina (titolo)',
       customA5CoverLabel: 'Copertina personalizzata A5 (176×250mm)',
       customA5CoverHint:
@@ -3680,6 +4120,102 @@ export const translations: Record<Language, Translations> = {
       genericError: 'Qualcosa è andato storto. Riprova.',
       signInRequired: 'Accedi per usare l\'assistente.',
     },
+    onboardingWizard: {
+      stepProgress: 'Passo {current} di {total}',
+      typeSubtitle: 'Indica per chi è questa biografia. Al passo successivo confermerai i tuoi diritti legali.',
+      legalSubtitle: 'Leggi e conferma ogni dichiarazione per continuare.',
+      pathTitle: 'Come vuoi lavorare?',
+      pathSubtitle: 'Scegli il percorso iniziale. Potrai cambiare approccio in seguito.',
+      pathHint: 'Dopo questo passo vedrai un breve tour guidato dell\'editor nella lingua scelta.',
+      publishReadyDescription: 'Importa un testo già pronto e procedi verso pubblicazione ed export PDF.',
+      skipForNow: 'Salta per ora',
+      startTour: 'Crea e avvia il tour',
+      resumeIntro: 'Riprendi introduzione',
+      resumeIntroDescription: 'Continua la configurazione guidata da dove l\'avevi interrotta.',
+      reviewIntro: 'Rivedi introduzione',
+      tourCompleted: 'Tour completato — buona scrittura!',
+      tourSkip: 'Salta tour',
+      tourNext: 'Avanti',
+      tourBack: 'Indietro',
+      tourFinish: 'Fine',
+      tourStepOptional: 'Puoi provare l\'azione evidenziata ora, oppure premere Avanti per continuare senza.',
+      tourTryStep: 'Provalo',
+      tryActionHint: 'Prova l\'azione evidenziata per continuare.',
+    },
+    onboardingTour: {
+      sectionsOverviewTitle: 'Il tuo spazio di lavoro',
+      sectionsOverviewDesc: 'I capitoli sono a sinistra. Echo ti assiste a destra.',
+      sectionsEditorTitle: 'Scrivi in un capitolo',
+      sectionsEditorDesc: 'Clicca un capitolo e scrivi una frase — provalo ora.',
+      echoPanelTitle: 'Scrivi con Echo',
+      echoPanelDesc:
+        'Echo è qui nel tuo spazio di lavoro. Scrivi una domanda nel campo sotto — ad esempio «Come inizio questo capitolo?» — oppure usa il microfono. Premi «Provalo» per mettere il focus sulla chat.',
+      echoTryTitle: 'Conosci Echo (facoltativo)',
+      echoTryDesc: 'Apri Echo dal pulsante in basso a destra. Puoi chattare quando vuoi — non serve inviare un messaggio per continuare il tour.',
+      bookStructureTitle: 'Struttura libro e foto',
+      bookStructureDesc: 'Imposta copertina, crediti e galleria prima dell\'export PDF.',
+      exportPdfTitle: 'Export bozza PDF',
+      exportPdfDesc: 'Apri la finestra di export per vedere l\'anteprima del libro.',
+      reviewPublicationTitle: 'Revisione e pubblicazione',
+      reviewPublicationDesc:
+        'Apri questo pannello per inviare la biografia in revisione, verificare le bozze PDF ed esportare il libro finale.',
+      importOverviewTitle: 'Modalità scrittura libera',
+      importOverviewDesc: 'Ideale per incollare o importare testo esistente.',
+      importTryTitle: 'Importa testo di esempio',
+      importTryDesc: 'Apri Importa e incolla il testo di esempio fornito.',
+      publishImportTitle: 'Importa il testo finito',
+      publishImportDesc: 'Inizia portando la biografia sulla piattaforma.',
+      publishFinalTitle: 'Versione finale e revisione',
+      publishFinalDesc: 'Rifinisci il testo, poi passa ai round di bozza PDF.',
+      publishExportTitle: 'Export PDF e pubblicazione',
+      publishExportDesc: 'Apri export per verificare la readiness e scaricare una bozza PDF.',
+      sampleImportText: 'Questo è un paragrafo di esempio per il tour di importazione.',
+    },
+    echo: {
+      hubEmpty: 'Ciao! Sono Echo. Ti guido nella biografia — a voce o per iscritto.',
+      resumeBiography: 'Continua: {title}',
+      resumeButton: 'Riprendi biografia',
+      newGuided: 'Racconta con l\'assistenza di Echo, la tua AI personale che ti guida passo passo.',
+      newImport: 'Ho già un testo da importare',
+      newPublishOnly: 'Prepara un testo esistente per la pubblicazione',
+      myBiographies: 'Le mie biografie',
+      pickBiography: 'Seleziona biografia',
+      untitledBiography: 'Senza titolo',
+      inputPlaceholder: 'Scrivi o usa il microfono…',
+      statusListening: 'Echo ti ascolta…',
+      statusSpeaking: 'Echo sta parlando…',
+      statusThinking: 'Echo sta pensando…',
+      errorGeneric: 'Qualcosa è andato storto. Riprova.',
+      openEcho: 'Chiedi a Echo',
+      closeEcho: 'Chiudi',
+      aiToolsMenu: 'Strumenti AI',
+      changePath: 'Cambia percorso',
+      changePathTitle: 'Cambia percorso di scrittura',
+      changePathDescription: 'Il contenuto sarà conservato. Puoi esportare una copia prima.',
+      exportBeforeChange: 'Esporta copia prima',
+      confirmPathChange: 'Converti e continua',
+      onboardingWelcome: 'Benvenuto in Biography Library. Sono Echo — iniziamo.',
+      pathChanged: 'Percorso aggiornato.',
+      concentrationMode: 'Modalità concentrazione',
+      exitConcentration: 'Esci dalla concentrazione',
+      consultEcho: 'Echo',
+      stopSpeaking: 'Interrompi',
+      muteVoice: 'Disattiva voce di Echo',
+      unmuteVoice: 'Attiva voce di Echo',
+      speakingBanner: 'Echo sta leggendo ad alta voce…',
+      activeSectionContext: 'Ora stai lavorando su: {section}',
+      sectionSwitchPrefix: '[Ora sulla sezione «{section}»]',
+      icebreakerHint: 'Puoi chiedere, per esempio:',
+      icebreakerDefaultSection: 'questo capitolo',
+      insertDraftPrompt: 'Inserire questo testo nell\'editor?',
+      insertDraftConfirm: 'Inserisci nell\'editor',
+      insertDraftDismiss: 'Non ora',
+      insertDraftDone: 'Testo inserito nell\'editor.',
+      loadOlderMessages: 'Carica messaggi precedenti',
+      loadingOlderMessages: 'Caricamento…',
+      ...getEchoGuideCopy('it'),
+      icebreakerPools: getEchoIcebreakerPools('it'),
+    },
   },
   fr: {
     common: {
@@ -3724,7 +4260,6 @@ export const translations: Record<Language, Translations> = {
       loggingIn: 'Connexion en cours...',
       creatingAccount: 'Cr\u00e9ation du compte...',
       welcomeBack: 'Bon retour',
-      signInSubtitle: 'Connectez-vous pour continuer \u00e0 \u00e9crire et pr\u00e9server des histoires de vie',
       createYourAccount: 'Cr\u00e9ez votre compte',
       registerSubtitle: 'Commencez \u00e0 pr\u00e9server et partager des histoires de vie',
       fullName: 'Nom complet',
@@ -3816,7 +4351,12 @@ export const translations: Record<Language, Translations> = {
       untitledBiography: 'Biographie sans titre',
       goToWorkspace: 'Aller au Workspace',
       continueLastSection: 'Continuer Dernière Section',
-      updateAvailabilityMessage: 'Une fois votre biographie publiée, vous pouvez ajouter une nouvelle mise à jour annuelle pour présenter vos activités de la dernière année.',
+      updateAvailabilityMessage: 'Vous pouvez ajouter un nouveau chapitre à votre biographie une fois par an, pour raconter ce qui a changé dans votre vie.',
+      oneBiographyLimit: 'Vous avez déjà une biographie. Chaque compte est limité à une biographie pour préserver la qualité.',
+      nextChapterAvailableNow: 'Vous pouvez ajouter un nouveau chapitre à votre biographie.',
+      nextChapterAvailableOn: 'Prochain chapitre disponible le {date}.',
+      nextChapterCooldownDays: 'Encore {days} jours avant le prochain chapitre.',
+      chapterCooldownBlocked: 'Vous pouvez publier un nouveau chapitre un an après votre dernière publication.',
     },
     biography: {
       newBiography: 'Nouvelle Biographie',
@@ -3927,9 +4467,10 @@ export const translations: Record<Language, Translations> = {
       backCoverFooter: 'Biography Library · biographylibrary.org',
       noCoverPhotoWarning: 'Une photo de couverture est requise pour générer le PDF. Importez une photo et marquez-la comme couverture dans la section Photos.',
       pdfDraftNotice: 'Il s\'agit d\'un PDF de brouillon. Il reflète l\'état actuel de votre biographie et vous permet de vérifier la mise en page et le contenu avant de soumettre pour révision.',
-      draftIterationNone: 'Aucun PDF de brouillon généré pour l\'instant. Ce sera le Brouillon 1 sur 3.',
-      draftIterationCurrent: 'Brouillon {n} sur {max} déjà généré. L\'exportation créera le Brouillon {next}.',
-      draftLimitReached: 'Vous avez atteint le maximum de 3 brouillons PDF. Soumettez pour révision avant de générer d\'autres brouillons.',
+      draftIterationNone: 'Aucun PDF de brouillon généré pour l\'instant. L\'exportation créera votre premier brouillon.',
+      draftIterationCurrent: 'Brouillon {n} déjà généré. L\'exportation créera le brouillon {next}.',
+      draftIterationWarning: 'Vous avez déjà généré {n} brouillons PDF. Pensez à soumettre bientôt pour révision.',
+      draftLimitReached: 'Vous avez atteint le nombre maximum de brouillons PDF pour cette biographie. Soumettez pour révision avant d\'en générer d\'autres.',
       draftPhaseRequiredBeforeDraft:
         'Démarrez la phase de révision PDF depuis l’éditeur (Démarrer la révision PDF) avant de télécharger des brouillons filigranés.',
       finalDraftConfirmTitle: 'Générer le Troisième et Dernier Brouillon',
@@ -4081,6 +4622,58 @@ export const translations: Record<Language, Translations> = {
       publicationExportPdf: 'Exporter PDF',
       publicationLegacySubmitHint:
         'Pour le parcours prêt à l’impression (brouillons PDF → filtrage automatique), utilisez d’abord « Révision finale avec IA », puis Démarrer la révision PDF. Vous pouvez encore soumettre ici pour un contrôle plus rapide sans phase PDF.',
+      reviewPublication: {
+        menuItem: 'Révision et publication',
+        title: 'Révision et publication',
+        description:
+          'Complétez le parcours de révision et publiez votre biographie avec un export PDF prêt à l’impression.',
+        incompleteMessage:
+          'Avant de lancer la révision et la publication, complétez chaque chapitre dans la barre latérale. Chaque section doit contenir votre texte et être marquée comme terminée.',
+        freeflowEmptyHint:
+          'Ajoutez le texte de votre biographie dans l’éditeur avant de lancer la révision et la publication.',
+        statusUnderReview: 'En révision',
+        statusLockedPendingScreening: 'Filtrage en cours',
+        underReviewHint:
+          'Votre biographie est en cours de révision. Revenez ici une fois terminé pour continuer avec l’export PDF.',
+        lockedPendingScreeningHint:
+          'Votre PDF final a été approuvé et le filtrage automatique est en cours. Vous serez notifié à la fin.',
+        screeningPendingHint: 'Analyse automatique du texte en cours…',
+        revisionFlaggedHint:
+          'Certains passages ont été signalés. Modifiez les sections concernées dans l’éditeur, puis renvoyez pour le filtrage lorsque vous êtes prêt.',
+        stepAiReviewTitle: 'Facultatif : révision narrative IA',
+        stepAiReviewDesc:
+          'Explorez des ordres de chapitres alternatifs et des structures narratives suggérées par l’IA avant l’envoi.',
+        stepAiReviewButton: 'Ouvrir la révision finale IA',
+        stepFreeflowPrepareTitle: 'Préparer le texte final pour le PDF',
+        stepFreeflowPrepareDesc:
+          'Verrouillez votre texte en flux libre comme version finale pour démarrer les brouillons PDF filigranés.',
+        stepFreeflowPrepareButton: 'Préparer le texte final',
+        stepSubmitTitle: 'Envoi rapide (legacy)',
+        stepSubmitDesc:
+          'Ignorez la phase brouillon PDF et envoyez directement au filtrage automatique. Pour des PDF prêts à imprimer, utilisez d’abord les étapes ci-dessus.',
+        stepSubmitButton: 'Soumettre pour révision',
+        stepPdfDraftTitle: 'Démarrer la révision PDF',
+        stepPdfDraftDesc:
+          'Générez des brouillons PDF filigranés, vérifiez la mise en page et la couverture, puis approuvez la version finale.',
+        stepPdfDraftButton: 'Démarrer la révision PDF',
+        stepExportTitle: 'Exporter le brouillon PDF',
+        stepExportDesc: 'Téléchargez et prévisualisez votre brouillon PDF filigrané avant l’approbation finale.',
+        stepExportButton: 'Ouvrir l’export',
+        stepApproveTitle: 'Approuver le PDF final',
+        stepApproveDesc: 'Confirmez que le PDF est prêt et lancez le filtrage automatique du contenu.',
+        stepApproveButton: 'Approuver et lancer le filtrage',
+        approveDisabledHint:
+          'Exportez au moins un brouillon PDF filigrané avant d’approuver. Ouvrez Export pour générer votre premier brouillon.',
+        approveAiPendingHint:
+          'Attendez la fin de la révision IA du brouillon après l’export, ou exportez un nouveau brouillon si nécessaire.',
+        approveAiSuggestionsHint:
+          'L’IA a suggéré des améliorations dans Export. Vous pouvez tout de même approuver si ce brouillon vous convient.',
+        severity3BlockHint:
+          'Ce brouillon contient des problèmes critiques signalés par l’IA. Consultez les retours et exportez un nouveau brouillon avant d’approuver.',
+        publishedTitle: 'Publiée',
+        publishedDesc: 'Votre biographie a passé le filtrage. Vous pouvez exporter le PDF final à tout moment.',
+        draftProgress: 'Brouillons générés : {count}',
+      },
     },
     formatting: {
       bold: 'Gras',
@@ -4123,6 +4716,8 @@ export const translations: Record<Language, Translations> = {
       draftBiography: 'Biographie en Brouillon',
       markCompleteWhenFinished: 'Marquer comme termin\u00e9e une fois finie',
       markComplete: 'Marquer comme Termin\u00e9e',
+      markIncomplete: 'Rouvrir pour modifier',
+      sectionCompletedHint: 'Cette section est marquée comme terminée. Cliquez sur « Rouvrir pour modifier » pour la modifier à nouveau.',
       markAsDraft: 'Marquer comme Brouillon',
       updating: 'Mise \u00e0 jour...',
       confirmCompleteTitle: 'Marquer la Biographie comme Termin\u00e9e ?',
@@ -4339,7 +4934,7 @@ export const translations: Record<Language, Translations> = {
       description: 'Téléchargez un fichier ou collez le texte à importer',
       dragFile: 'Glissez un fichier ici ou cliquez pour sélectionner',
       dragFileHint: 'Format supporté : .txt (max 5MB)',
-      formats: 'Format supporté : .txt (max 5MB)',
+      formats: 'Formats supportés : .txt, .docx, .rtf (max 5 Mo chacun, jusqu\'à 10 fichiers)',
       selectFile: 'Sélectionner un Fichier',
       or: 'ou',
       pasteLabel: 'Coller le texte directement',
@@ -4364,6 +4959,27 @@ export const translations: Record<Language, Translations> = {
       aiDetectionError: 'Erreur lors de la détection automatique des sections',
       multiImportUnavailable: 'Importation de plusieurs sections non disponible',
       loading: 'Chargement...',
+      fileTooLarge: 'Fichier trop volumineux. Taille maximale : 5 Mo',
+      docUnsupported: 'Format .doc non pris en charge. Convertissez en .docx ou .txt',
+      formatUnsupported: 'Format non pris en charge. Utilisez .txt, .docx ou .rtf',
+      tooManyFiles: 'Trop de fichiers. Maximum 10 par importation',
+      filesQueued: '{count} fichier(s) prêt(s) à importer',
+    },
+    importMapping: {
+      title: 'Associer les chapitres aux sections',
+      description: 'Vérifiez comment les chapitres importés seront placés dans les sections de la biographie.',
+      suggestAi: 'Suggérer avec l\'IA',
+      aiError: 'Échec de la suggestion IA. Choisissez une section manuellement.',
+      sourceAi: 'Suggéré par l\'IA',
+      sourceTitle: 'Correspondance titre',
+      sourceManual: 'Manuel',
+      confidenceHigh: 'Haute confiance',
+      confidenceMedium: 'Confiance moyenne',
+      confidenceLow: 'Faible confiance',
+      skipBlock: 'Ignorer',
+      confirmImport: 'Confirmer l\'importation',
+      reviewRequired: 'Certains blocs ont une faible confiance. Vérifiez avant d\'importer.',
+      untitledBlock: 'Bloc sans titre',
     },
     notesAndTodos: {
       title: 'Notes et Rappels',
@@ -4466,6 +5082,12 @@ export const translations: Record<Language, Translations> = {
       appliedImprovements: '{count} améliorations appliquées',
       failedToApply: 'Échec de l\'application des améliorations',
       appliedRewrite: 'Réécriture {tone} appliquée',
+      apertusButton: 'Relecture modèle suisse',
+      apertusTitle: 'Relecture avec modèle suisse',
+      apertusSubtitle: 'Retour éditorial sur « {section} » via Apertus (IA open source suisse)',
+      apertusLoading: 'Apertus lit votre section…',
+      apertusError: 'Relecture avec modèle suisse indisponible. Réessayez plus tard.',
+      apertusModelNote: 'Modèle : {model}',
     },
     deleteDialog: {
       deleteBiographyLink: 'Supprimer la biographie',
@@ -4511,9 +5133,9 @@ export const translations: Record<Language, Translations> = {
       layoutLabel: 'Mise en page',
       layoutFullPage: 'Pleine page',
       layoutCover: 'Couverture',
-      layoutTwoVertical: 'Deux photos — vertical',
-      layoutTwoHorizontal: 'Deux photos — horizontal',
-      layoutThreeMixed: 'Trois photos (mixte)',
+      layoutTwoVertical: 'Deux photos — empilées',
+      layoutTwoHorizontal: 'Deux photos — empilées (paire)',
+      layoutThreeMixed: 'Trois photos — large en haut, deux en bas',
       coverCompositeTitle: 'Photo de couverture (carte titre)',
       customA5CoverLabel: 'Couverture personnalisée A5 (176×250mm)',
       customA5CoverHint:
@@ -4909,6 +5531,102 @@ export const translations: Record<Language, Translations> = {
       genericError: 'Une erreur est survenue. Veuillez réessayer.',
       signInRequired: 'Connectez-vous pour utiliser l\'assistant.',
     },
+    onboardingWizard: {
+      stepProgress: 'Étape {current} sur {total}',
+      typeSubtitle: 'Indiquez pour qui est cette biographie. Vous confirmerez vos droits légaux à l\'étape suivante.',
+      legalSubtitle: 'Veuillez lire et confirmer chaque déclaration pour continuer.',
+      pathTitle: 'Comment souhaitez-vous travailler ?',
+      pathSubtitle: 'Choisissez votre parcours initial. Vous pourrez changer d\'approche plus tard.',
+      pathHint: 'Après cette étape, un court tour guidé de l\'éditeur s\'affichera dans votre langue.',
+      publishReadyDescription: 'Importez un texte terminé et avancez vers la publication et l\'export PDF.',
+      skipForNow: 'Passer pour l\'instant',
+      startTour: 'Créer et lancer le tour',
+      resumeIntro: 'Reprendre l\'introduction',
+      resumeIntroDescription: 'Reprenez la configuration guidée là où vous l\'avez laissée.',
+      reviewIntro: 'Revoir l\'introduction',
+      tourCompleted: 'Tour terminé — bonne écriture !',
+      tourSkip: 'Passer le tour',
+      tourNext: 'Suivant',
+      tourBack: 'Retour',
+      tourFinish: 'Terminer',
+      tourStepOptional: 'Vous pouvez essayer l\'action mise en évidence, ou appuyer sur Suivant pour continuer sans.',
+      tourTryStep: 'Essayer',
+      tryActionHint: 'Essayez l\'action mise en évidence pour continuer.',
+    },
+    onboardingTour: {
+      sectionsOverviewTitle: 'Votre espace de travail',
+      sectionsOverviewDesc: 'Les chapitres sont à gauche. Echo vous assiste à droite.',
+      sectionsEditorTitle: 'Écrire dans un chapitre',
+      sectionsEditorDesc: 'Cliquez sur un chapitre et tapez une phrase — essayez maintenant.',
+      echoPanelTitle: 'Écrire avec Echo',
+      echoPanelDesc:
+        'Echo est ici dans votre espace de travail. Tapez une question ci-dessous — par exemple « Comment commencer ce chapitre ? » — ou utilisez le micro. Appuyez sur « Essayer » pour activer le champ de chat.',
+      echoTryTitle: 'Découvrir Echo (facultatif)',
+      echoTryDesc: 'Ouvrez Echo via le bouton en bas à droite. Vous pourrez discuter quand vous voulez — aucun message n\'est requis pour continuer.',
+      bookStructureTitle: 'Structure du livre et photos',
+      bookStructureDesc: 'Définissez couverture, crédits et galerie avant l\'export PDF.',
+      exportPdfTitle: 'Export brouillon PDF',
+      exportPdfDesc: 'Ouvrez la fenêtre d\'export pour prévisualiser le livre.',
+      reviewPublicationTitle: 'Révision et publication',
+      reviewPublicationDesc:
+        'Ouvrez ce panneau pour soumettre votre biographie à la révision, vérifier les brouillons PDF et exporter le livre final.',
+      importOverviewTitle: 'Mode écriture libre',
+      importOverviewDesc: 'Idéal pour coller ou importer un texte existant.',
+      importTryTitle: 'Importer un texte d\'exemple',
+      importTryDesc: 'Ouvrez Importer et collez le texte d\'exemple fourni.',
+      publishImportTitle: 'Importer votre texte terminé',
+      publishImportDesc: 'Commencez par amener la biographie sur la plateforme.',
+      publishFinalTitle: 'Version finale et révision',
+      publishFinalDesc: 'Peaufinez le texte, puis passez aux tours de brouillon PDF.',
+      publishExportTitle: 'Export PDF et publication',
+      publishExportDesc: 'Ouvrez l\'export pour vérifier la préparation et télécharger un brouillon PDF.',
+      sampleImportText: 'Ceci est un paragraphe d\'exemple pour le tour d\'importation.',
+    },
+    echo: {
+      hubEmpty: 'Bonjour ! Je suis Echo. Je vous guide pour votre biographie — à voix ou par écrit.',
+      resumeBiography: 'Continuer : {title}',
+      resumeButton: 'Reprendre la biographie',
+      newGuided: 'Racontez avec Echo, votre IA personnelle qui vous guide pas à pas.',
+      newImport: 'J\'ai déjà un texte à importer',
+      newPublishOnly: 'Préparer un texte existant pour publication',
+      myBiographies: 'Mes biographies',
+      pickBiography: 'Choisir une biographie',
+      untitledBiography: 'Sans titre',
+      inputPlaceholder: 'Écrivez ou utilisez le micro…',
+      statusListening: 'Echo vous écoute…',
+      statusSpeaking: 'Echo parle…',
+      statusThinking: 'Echo réfléchit…',
+      errorGeneric: 'Une erreur s\'est produite. Réessayez.',
+      openEcho: 'Demander à Echo',
+      closeEcho: 'Fermer',
+      aiToolsMenu: 'Outils IA',
+      changePath: 'Changer de parcours',
+      changePathTitle: 'Changer de parcours d\'écriture',
+      changePathDescription: 'Votre contenu sera conservé. Vous pouvez exporter une copie avant.',
+      exportBeforeChange: 'Exporter une copie d\'abord',
+      confirmPathChange: 'Convertir et continuer',
+      onboardingWelcome: 'Bienvenue sur Biography Library. Je suis Echo — commençons.',
+      pathChanged: 'Parcours mis à jour.',
+      concentrationMode: 'Mode concentration',
+      exitConcentration: 'Quitter le mode concentration',
+      consultEcho: 'Echo',
+      stopSpeaking: 'Arrêter',
+      muteVoice: 'Couper la voix d\'Echo',
+      unmuteVoice: 'Activer la voix d\'Echo',
+      speakingBanner: 'Echo lit à voix haute…',
+      activeSectionContext: 'Vous travaillez sur : {section}',
+      sectionSwitchPrefix: '[Section active : « {section} »]',
+      icebreakerHint: 'Vous pouvez demander, par exemple :',
+      icebreakerDefaultSection: 'ce chapitre',
+      insertDraftPrompt: 'Insérer ce texte dans l\'éditeur ?',
+      insertDraftConfirm: 'Insérer dans l\'éditeur',
+      insertDraftDismiss: 'Pas maintenant',
+      insertDraftDone: 'Texte inséré dans l\'éditeur.',
+      loadOlderMessages: 'Charger les messages précédents',
+      loadingOlderMessages: 'Chargement…',
+      ...getEchoGuideCopy('fr'),
+      icebreakerPools: getEchoIcebreakerPools('fr'),
+    },
   },
   de: {
     common: {
@@ -4953,7 +5671,6 @@ export const translations: Record<Language, Translations> = {
       loggingIn: 'Anmeldung l\u00e4uft...',
       creatingAccount: 'Konto wird erstellt...',
       welcomeBack: 'Willkommen zur\u00fcck',
-      signInSubtitle: 'Melden Sie sich an, um Lebensgeschichten zu schreiben und zu bewahren',
       createYourAccount: 'Erstellen Sie Ihr Konto',
       registerSubtitle: 'Beginnen Sie noch heute, Lebensgeschichten zu bewahren und zu teilen',
       fullName: 'Vollst\u00e4ndiger Name',
@@ -5045,7 +5762,12 @@ export const translations: Record<Language, Translations> = {
       untitledBiography: 'Biografie ohne Titel',
       goToWorkspace: 'Zum Workspace',
       continueLastSection: 'Letzte Sektion Fortsetzen',
-      updateAvailabilityMessage: 'Sobald Ihre Biografie veröffentlicht ist, können Sie ein neues jährliches Update hinzufügen, um Ihre Aktivitäten des letzten Jahres zu präsentieren.',
+      updateAvailabilityMessage: 'Sie können Ihrer Biografie einmal im Jahr ein neues Kapitel hinzufügen, um zu erzählen, was sich in Ihrem Leben verändert hat.',
+      oneBiographyLimit: 'Sie haben bereits eine Biografie. Jedes Konto ist auf eine Biografie beschränkt, um Fokus und Qualität zu bewahren.',
+      nextChapterAvailableNow: 'Sie können jetzt ein neues Kapitel zu Ihrer Biografie hinzufügen.',
+      nextChapterAvailableOn: 'Nächstes Kapitel verfügbar am {date}.',
+      nextChapterCooldownDays: 'Noch {days} Tage bis zum nächsten Kapitel.',
+      chapterCooldownBlocked: 'Sie können ein neues Kapitel ein Jahr nach Ihrer letzten Veröffentlichung veröffentlichen.',
     },
     biography: {
       newBiography: 'Neue Biografie',
@@ -5156,9 +5878,10 @@ export const translations: Record<Language, Translations> = {
       backCoverFooter: 'Biography Library · biographylibrary.org',
       noCoverPhotoWarning: 'Ein Titelfoto ist erforderlich, um das PDF zu erstellen. Lade ein Foto hoch und markiere es als Titelbild im Fotos-Bereich.',
       pdfDraftNotice: 'Dies ist ein Entwurfs-PDF. Es spiegelt den aktuellen Stand der Biografie wider und ermöglicht es dir, Layout und Inhalt vor der Einreichung zur Überprüfung zu verifizieren.',
-      draftIterationNone: 'Noch kein Entwurfs-PDF generiert. Dies wird Entwurf 1 von 3 sein.',
-      draftIterationCurrent: 'Entwurf {n} von {max} bereits generiert. Beim Exportieren wird Entwurf {next} erstellt.',
-      draftLimitReached: 'Du hast das Maximum von 3 Entwurfs-PDFs erreicht. Reiche zur Überprüfung ein, bevor du weitere Entwürfe generierst.',
+      draftIterationNone: 'Noch kein Entwurfs-PDF generiert. Beim Exportieren wird dein erster Entwurf erstellt.',
+      draftIterationCurrent: 'Entwurf {n} bereits generiert. Beim Exportieren wird Entwurf {next} erstellt.',
+      draftIterationWarning: 'Du hast bereits {n} Entwurfs-PDFs generiert. Reiche die Biografie bald zur Überprüfung ein.',
+      draftLimitReached: 'Du hast die maximale Anzahl an Entwurfs-PDFs für diese Biografie erreicht. Reiche zur Überprüfung ein, bevor du weitere erstellst.',
       draftPhaseRequiredBeforeDraft:
         'Starte zuerst die PDF-Prüfphase im Editor (PDF-Prüfung starten), bevor du Entwürfe mit Wasserzeichen herunterlädst.',
       finalDraftConfirmTitle: 'Dritten und letzten Entwurf generieren',
@@ -5310,6 +6033,58 @@ export const translations: Record<Language, Translations> = {
       publicationExportPdf: 'PDF exportieren',
       publicationLegacySubmitHint:
         'Für den vollen druckfertigen Ablauf (PDF-Entwürfe → automatisches Screening) nutzen Sie zuerst „Abschließende Überprüfung mit KI“, dann „PDF-Prüfung starten“. Sie können hier weiterhin zur schnelleren Prüfung ohne PDF-Phase einreichen.',
+      reviewPublication: {
+        menuItem: 'Überprüfung & Veröffentlichung',
+        title: 'Überprüfung & Veröffentlichung',
+        description:
+          'Schließen Sie den Überprüfungsablauf ab und veröffentlichen Sie Ihre Biografie mit druckfertigem PDF-Export.',
+        incompleteMessage:
+          'Bevor Sie mit Überprüfung und Veröffentlichung beginnen, vervollständigen Sie jedes Kapitel in der Seitenleiste. Jeder Abschnitt sollte Ihren Text enthalten und als abgeschlossen markiert sein.',
+        freeflowEmptyHint:
+          'Fügen Sie Ihren Biografietext im Editor hinzu, bevor Sie mit Überprüfung und Veröffentlichung beginnen.',
+        statusUnderReview: 'In Überprüfung',
+        statusLockedPendingScreening: 'Screening läuft',
+        underReviewHint:
+          'Ihre Biografie wird überprüft. Kehren Sie hierher zurück, wenn die Überprüfung abgeschlossen ist, um mit dem PDF-Export fortzufahren.',
+        lockedPendingScreeningHint:
+          'Ihr finales PDF wurde genehmigt und das automatische Screening läuft. Sie werden benachrichtigt, wenn es abgeschlossen ist.',
+        screeningPendingHint: 'Automatische Textanalyse läuft…',
+        revisionFlaggedHint:
+          'Einige Passagen wurden markiert. Bearbeiten Sie die hervorgehobenen Abschnitte im Editor und senden Sie erneut zum Screening, wenn Sie bereit sind.',
+        stepAiReviewTitle: 'Optional: narrative KI-Überprüfung',
+        stepAiReviewDesc:
+          'Erkunden Sie alternative Kapitelreihenfolgen und Erzählstrukturen, die von der KI vorgeschlagen werden, bevor Sie einreichen.',
+        stepAiReviewButton: 'KI-Abschlussüberprüfung öffnen',
+        stepFreeflowPrepareTitle: 'Endtext für PDF vorbereiten',
+        stepFreeflowPrepareDesc:
+          'Sperren Sie Ihren Freitext als Endversion, um PDF-Entwürfe mit Wasserzeichen zu starten.',
+        stepFreeflowPrepareButton: 'Endtext vorbereiten',
+        stepSubmitTitle: 'Schnelleinreichung (Legacy)',
+        stepSubmitDesc:
+          'Überspringen Sie die PDF-Entwurfsphase und senden Sie direkt zum automatischen Screening. Für druckfertige PDFs nutzen Sie zuerst die Schritte oben.',
+        stepSubmitButton: 'Zur Überprüfung einreichen',
+        stepPdfDraftTitle: 'PDF-Prüfung starten',
+        stepPdfDraftDesc:
+          'Erstellen Sie PDF-Entwürfe mit Wasserzeichen, prüfen Sie Layout und Cover und genehmigen Sie die Endversion.',
+        stepPdfDraftButton: 'PDF-Prüfung starten',
+        stepExportTitle: 'PDF-Entwurf exportieren',
+        stepExportDesc: 'Laden Sie Ihren PDF-Entwurf mit Wasserzeichen herunter und prüfen Sie die Vorschau vor der endgültigen Freigabe.',
+        stepExportButton: 'Export öffnen',
+        stepApproveTitle: 'Endgültiges PDF genehmigen',
+        stepApproveDesc: 'Bestätigen Sie, dass das PDF bereit ist, und starten Sie das automatische Inhalts-Screening.',
+        stepApproveButton: 'Genehmigen & Screening starten',
+        approveDisabledHint:
+          'Exportieren Sie mindestens einen PDF-Entwurf mit Wasserzeichen, bevor Sie genehmigen. Öffnen Sie Export, um Ihren ersten Entwurf zu erstellen.',
+        approveAiPendingHint:
+          'Warten Sie nach dem Export auf die KI-Entwurfsprüfung oder exportieren Sie bei Bedarf einen neuen Entwurf.',
+        approveAiSuggestionsHint:
+          'Die KI hat in Export Verbesserungen vorgeschlagen. Sie können trotzdem genehmigen, wenn Sie mit diesem Entwurf zufrieden sind.',
+        severity3BlockHint:
+          'Dieser Entwurf enthält kritische Probleme, die von der KI markiert wurden. Prüfen Sie das Feedback und exportieren Sie einen neuen Entwurf, bevor Sie genehmigen.',
+        publishedTitle: 'Veröffentlicht',
+        publishedDesc: 'Ihre Biografie hat das Screening bestanden. Sie können das finale PDF jederzeit exportieren.',
+        draftProgress: 'Entwürfe erstellt: {count}',
+      },
     },
     formatting: {
       bold: 'Fett',
@@ -5352,6 +6127,8 @@ export const translations: Record<Language, Translations> = {
       draftBiography: 'Biografie-Entwurf',
       markCompleteWhenFinished: 'Als abgeschlossen markieren, wenn fertig',
       markComplete: 'Als Abgeschlossen Markieren',
+      markIncomplete: 'Zur Bearbeitung öffnen',
+      sectionCompletedHint: 'Dieser Abschnitt ist als abgeschlossen markiert. Klicken Sie auf «Zur Bearbeitung öffnen», um ihn erneut zu bearbeiten.',
       markAsDraft: 'Als Entwurf Markieren',
       updating: 'Aktualisierung...',
       confirmCompleteTitle: 'Biografie als Abgeschlossen markieren?',
@@ -5568,7 +6345,7 @@ export const translations: Record<Language, Translations> = {
       description: 'Datei hochladen oder Text einfügen zum Importieren',
       dragFile: 'Datei hierher ziehen oder klicken zum Auswählen',
       dragFileHint: 'Unterstütztes Format: .txt (max 5MB)',
-      formats: 'Unterstütztes Format: .txt (max 5MB)',
+      formats: 'Unterstützte Formate: .txt, .docx, .rtf (max. 5 MB je Datei, bis zu 10 Dateien)',
       selectFile: 'Datei Auswählen',
       or: 'oder',
       pasteLabel: 'Text direkt einfügen',
@@ -5593,6 +6370,27 @@ export const translations: Record<Language, Translations> = {
       aiDetectionError: 'Fehler bei der automatischen Abschnittserkennung',
       multiImportUnavailable: 'Import mehrerer Abschnitte nicht verfügbar',
       loading: 'Laden...',
+      fileTooLarge: 'Datei zu groß. Maximale Größe: 5 MB',
+      docUnsupported: 'Nicht unterstütztes .doc-Format. In .docx oder .txt konvertieren',
+      formatUnsupported: 'Nicht unterstütztes Format. Verwenden Sie .txt, .docx oder .rtf',
+      tooManyFiles: 'Zu viele Dateien. Maximal 10 pro Import',
+      filesQueued: '{count} Datei(en) bereit zum Import',
+    },
+    importMapping: {
+      title: 'Kapitel den Abschnitten zuordnen',
+      description: 'Prüfen Sie, wie importierte Kapitel in die Biografie-Abschnitte eingefügt werden.',
+      suggestAi: 'Mit KI vorschlagen',
+      aiError: 'KI-Vorschlag fehlgeschlagen. Wählen Sie manuell einen Abschnitt.',
+      sourceAi: 'KI-Vorschlag',
+      sourceTitle: 'Titelabgleich',
+      sourceManual: 'Manuell',
+      confidenceHigh: 'Hohe Sicherheit',
+      confidenceMedium: 'Mittlere Sicherheit',
+      confidenceLow: 'Geringe Sicherheit',
+      skipBlock: 'Überspringen',
+      confirmImport: 'Import bestätigen',
+      reviewRequired: 'Einige Blöcke haben geringe Sicherheit. Bitte vor dem Import prüfen.',
+      untitledBlock: 'Block ohne Titel',
     },
     notesAndTodos: {
       title: 'Notizen & Erinnerungen',
@@ -5695,6 +6493,12 @@ export const translations: Record<Language, Translations> = {
       appliedImprovements: '{count} Verbesserungen angewendet',
       failedToApply: 'Verbesserungen konnten nicht angewendet werden',
       appliedRewrite: '{tone} Umschreibung angewendet',
+      apertusButton: 'Schweizer Modell-Lektüre',
+      apertusTitle: 'Lektüre mit Schweizer Modell',
+      apertusSubtitle: 'Redaktionelles Feedback zu «{section}» via Apertus (Schweizer Open-Source-KI)',
+      apertusLoading: 'Apertus liest Ihren Abschnitt…',
+      apertusError: 'Lektüre mit Schweizer Modell nicht verfügbar. Bitte später erneut versuchen.',
+      apertusModelNote: 'Modell: {model}',
     },
     deleteDialog: {
       deleteBiographyLink: 'Biografie löschen',
@@ -5740,9 +6544,9 @@ export const translations: Record<Language, Translations> = {
       layoutLabel: 'Layout',
       layoutFullPage: 'Ganze Seite',
       layoutCover: 'Titelseite',
-      layoutTwoVertical: 'Zwei Fotos — vertikal',
-      layoutTwoHorizontal: 'Zwei Fotos — horizontal',
-      layoutThreeMixed: 'Drei Fotos (gemischt)',
+      layoutTwoVertical: 'Zwei Fotos — übereinander',
+      layoutTwoHorizontal: 'Zwei Fotos — gestapelt (Paar)',
+      layoutThreeMixed: 'Drei Fotos — breit oben, zwei unten',
       coverCompositeTitle: 'Titelbild (Titelseite)',
       customA5CoverLabel: 'Benutzerdefiniertes A5-Cover (176×250mm)',
       customA5CoverHint:
@@ -6137,6 +6941,102 @@ export const translations: Record<Language, Translations> = {
       rateLimitError: 'Zu viele Anfragen. Bitte warten Sie einen Moment.',
       genericError: 'Etwas ist schiefgelaufen. Bitte versuchen Sie es erneut.',
       signInRequired: 'Melden Sie sich an, um den Assistenten zu nutzen.',
+    },
+    onboardingWizard: {
+      stepProgress: 'Schritt {current} von {total}',
+      typeSubtitle: 'Geben Sie an, für wen diese Biografie ist. Im nächsten Schritt bestätigen Sie Ihre rechtlichen Angaben.',
+      legalSubtitle: 'Bitte lesen und bestätigen Sie jede Erklärung, um fortzufahren.',
+      pathTitle: 'Wie möchten Sie arbeiten?',
+      pathSubtitle: 'Wählen Sie Ihren Startweg. Sie können den Ansatz später ändern.',
+      pathHint: 'Danach erhalten Sie eine kurze geführte Tour im Editor in Ihrer Sprache.',
+      publishReadyDescription: 'Importieren Sie fertigen Text und gehen Sie schnell zur Veröffentlichung und PDF-Export.',
+      skipForNow: 'Jetzt überspringen',
+      startTour: 'Erstellen und Tour starten',
+      resumeIntro: 'Einführung fortsetzen',
+      resumeIntroDescription: 'Setzen Sie die geführte Einrichtung dort fort, wo Sie aufgehört haben.',
+      reviewIntro: 'Einführung erneut ansehen',
+      tourCompleted: 'Tour abgeschlossen — viel Erfolg beim Schreiben!',
+      tourSkip: 'Tour überspringen',
+      tourNext: 'Weiter',
+      tourBack: 'Zurück',
+      tourFinish: 'Fertig',
+      tourStepOptional: 'Sie können die hervorgehobene Aktion jetzt ausprobieren oder mit Weiter ohne Aktion fortfahren.',
+      tourTryStep: 'Ausprobieren',
+      tryActionHint: 'Probieren Sie die hervorgehobene Aktion aus, um fortzufahren.',
+    },
+    onboardingTour: {
+      sectionsOverviewTitle: 'Ihr Biografie-Arbeitsbereich',
+      sectionsOverviewDesc: 'Kapitel links. Echo unterstützt Sie rechts.',
+      sectionsEditorTitle: 'In einem Kapitel schreiben',
+      sectionsEditorDesc: 'Klicken Sie ein Kapitel an und tippen Sie einen Satz — probieren Sie es jetzt.',
+      echoPanelTitle: 'Mit Echo schreiben',
+      echoPanelDesc:
+        'Echo ist hier in Ihrem Arbeitsbereich. Tippen Sie unten eine Frage — z. B. „Wie beginne ich dieses Kapitel?“ — oder nutzen Sie das Mikrofon. Drücken Sie „Ausprobieren“, um das Chatfeld zu fokussieren.',
+      echoTryTitle: 'Echo kennenlernen (optional)',
+      echoTryDesc: 'Öffnen Sie Echo über die Schaltfläche unten rechts. Sie können chatten, wann Sie möchten — zum Fortfahren ist keine Nachricht nötig.',
+      bookStructureTitle: 'Buchstruktur & Fotos',
+      bookStructureDesc: 'Legen Sie Cover, Credits und Galerie vor dem PDF-Export fest.',
+      exportPdfTitle: 'PDF-Entwurf exportieren',
+      exportPdfDesc: 'Öffnen Sie den Export-Dialog für eine Vorschau des Buches.',
+      reviewPublicationTitle: 'Überprüfung & Veröffentlichung',
+      reviewPublicationDesc:
+        'Öffnen Sie dieses Panel, um Ihre Biografie zur Überprüfung einzureichen, PDF-Entwürfe zu prüfen und das finale Buch zu exportieren.',
+      importOverviewTitle: 'Freier Schreibmodus',
+      importOverviewDesc: 'Ideal zum Einfügen oder Importieren bestehenden Texts.',
+      importTryTitle: 'Beispieltext importieren',
+      importTryDesc: 'Öffnen Sie Import und fügen Sie den bereitgestellten Beispieltext ein.',
+      publishImportTitle: 'Fertigen Text importieren',
+      publishImportDesc: 'Bringen Sie die Biografie zuerst auf die Plattform.',
+      publishFinalTitle: 'Endversion & Review',
+      publishFinalDesc: 'Feilen Sie am Text, dann PDF-Entwurfsrunden.',
+      publishExportTitle: 'PDF-Export & Veröffentlichung',
+      publishExportDesc: 'Öffnen Sie Export, prüfen Sie die Bereitschaft und laden Sie einen PDF-Entwurf.',
+      sampleImportText: 'Dies ist ein Beispielabsatz für die Import-Tour.',
+    },
+    echo: {
+      hubEmpty: 'Hallo! Ich bin Echo. Ich begleite Sie bei Ihrer Biografie — per Sprache oder Text.',
+      resumeBiography: 'Fortsetzen: {title}',
+      resumeButton: 'Biografie fortsetzen',
+      newGuided: 'Erzählen Sie mit Echo, Ihrer persönlichen KI, die Sie Schritt für Schritt begleitet.',
+      newImport: 'Ich habe bereits Text zum Importieren',
+      newPublishOnly: 'Vorhandenen Text zur Veröffentlichung vorbereiten',
+      myBiographies: 'Meine Biografien',
+      pickBiography: 'Biografie wählen',
+      untitledBiography: 'Ohne Titel',
+      inputPlaceholder: 'Tippen oder Mikrofon nutzen…',
+      statusListening: 'Echo hört zu…',
+      statusSpeaking: 'Echo spricht…',
+      statusThinking: 'Echo denkt nach…',
+      errorGeneric: 'Etwas ist schiefgelaufen. Bitte erneut versuchen.',
+      openEcho: 'Echo fragen',
+      closeEcho: 'Schließen',
+      aiToolsMenu: 'KI-Werkzeuge',
+      changePath: 'Schreibweg wechseln',
+      changePathTitle: 'Schreibweg ändern',
+      changePathDescription: 'Ihr Inhalt bleibt erhalten. Sie können vorher exportieren.',
+      exportBeforeChange: 'Zuerst Kopie exportieren',
+      confirmPathChange: 'Konvertieren und fortfahren',
+      onboardingWelcome: 'Willkommen bei Biography Library. Ich bin Echo — legen wir los.',
+      pathChanged: 'Schreibweg aktualisiert.',
+      concentrationMode: 'Konzentrationsmodus',
+      exitConcentration: 'Konzentrationsmodus beenden',
+      consultEcho: 'Echo',
+      stopSpeaking: 'Stoppen',
+      muteVoice: 'Echo-Stimme stummschalten',
+      unmuteVoice: 'Echo-Stimme aktivieren',
+      speakingBanner: 'Echo liest vor…',
+      activeSectionContext: 'Sie arbeiten an: {section}',
+      sectionSwitchPrefix: '[Aktiver Abschnitt: «{section}»]',
+      icebreakerHint: 'Sie können zum Beispiel fragen:',
+      icebreakerDefaultSection: 'dieses Kapitel',
+      insertDraftPrompt: 'Diesen Text in den Editor einfügen?',
+      insertDraftConfirm: 'In den Editor einfügen',
+      insertDraftDismiss: 'Nicht jetzt',
+      insertDraftDone: 'Text im Editor eingefügt.',
+      loadOlderMessages: 'Ältere Nachrichten laden',
+      loadingOlderMessages: 'Laden…',
+      ...getEchoGuideCopy('de'),
+      icebreakerPools: getEchoIcebreakerPools('de'),
     },
   },
 };

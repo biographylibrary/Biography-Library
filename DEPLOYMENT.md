@@ -116,9 +116,28 @@ Supabase is managed separately from the application host.
 
 **Edge Functions** — Deployed via the Supabase MCP `deploy_edge_function` tool or the Supabase dashboard. There is no CLI-based deploy in this workflow. After deploying, set or update secrets in the dashboard under Project Settings → Edge Functions → Secrets.
 
-**Auth** — Email/password; **email confirmation** is enforced in Supabase (production). Transactional mail uses **custom SMTP** (e.g. Resend) so messages come from the project domain (e.g. `biographylibrary.org`). No OAuth providers in-app. Session tokens are JWTs issued by Supabase Auth.
+**Auth** — Email/password; **email confirmation** is enforced in Supabase (production). Auth emails (confirm signup, reset password) are sent via the **Send Email Hook** → Edge Function `auth-send-email` → **Resend API** (multilingual en/it/fr/de). Configure the hook in Supabase Dashboard → Authentication → Hooks. Set `AUTH_HOOK_SECRET` on the Edge Function and disable built-in SMTP templates once the hook is verified.
 
-**Next.js — account lifecycle emails** (suspend / reinstate / delete from `/admin/users`): set `RESEND_API_KEY` and `RESEND_FROM_EMAIL` in the app environment. If either is missing, admin actions still apply but emails are skipped (a warning is logged). Optional: `NEXT_PUBLIC_SITE_NAME`, `NEXT_PUBLIC_SITE_URL` for message copy and login links.
+**Transactional email (Resend API)** — All app emails (welcome, publication, admin account, engagement G1/G2) use `lib/server/email/` and `shared/email/`. Required env on **Jelastic** and **Edge Function secrets**:
+
+- `RESEND_API_KEY`
+- `RESEND_FROM_EMAIL` (e.g. `Biography Library <noreply@biographylibrary.org>`)
+- `NEXT_PUBLIC_SITE_NAME`, `NEXT_PUBLIC_APP_URL` (or `NEXT_PUBLIC_SITE_URL`)
+- `CRON_SECRET` (protects `send-engagement-emails` and `user-email-confirmed` webhooks)
+- `ENGAGEMENT_EMAILS_ENABLED=true` (optional, default on)
+- `PDF_DRAFT_REMINDER_DAYS=7` (optional)
+
+**Edge Functions (email):**
+
+| Function | Purpose |
+|----------|---------|
+| `auth-send-email` | Supabase Auth Hook → Resend (A1–A2) |
+| `user-email-confirmed` | Database webhook on `auth.users` → welcome email (B1) |
+| `send-engagement-emails` | Daily cron → chapter available (G1) + PDF draft reminder (G2) |
+
+Schedule engagement job: call `POST /functions/v1/send-engagement-emails` daily with `Authorization: Bearer $CRON_SECRET` (Jelastic cron or Supabase pg_cron).
+
+**Next.js — account lifecycle emails** (suspend / reinstate / delete from `/admin/users`): same `RESEND_*` vars; sends via unified email module.
 
 ### 4. Infomaniak Jelastic (Next.js host)
 

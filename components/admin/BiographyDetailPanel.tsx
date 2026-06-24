@@ -7,6 +7,8 @@ import { useTranslation } from '@/lib/i18n/i18n-context';
 import { useAuth } from '@/lib/auth-context';
 import { supabase } from '@/lib/supabase';
 import { createNotification } from '@/lib/notifications-service';
+import { sendAuthorEmailFromClient } from '@/lib/client/send-author-email';
+import type { EmailTemplateId } from '@/lib/server/email';
 import { useToast } from '@/hooks/use-toast';
 import {
   Sheet,
@@ -170,6 +172,12 @@ export function BiographyDetailPanel({ biography, onClose, onRefresh }: Biograph
         if (error) throw error;
         const notifyMsg = isFreezing ? t.admin.bioNotifyFrozen : t.admin.bioNotifyUnfrozen;
         await createNotification(biography.author_id, notifyMsg);
+        void sendAuthorEmailFromClient({
+          userId: biography.author_id,
+          email: biography.author_email,
+          templateId: isFreezing ? 'admin_bio_frozen' : 'admin_bio_unfrozen',
+          biographyId: biography.id,
+        });
         await logAction(action, biography.id, { is_frozen: isFreezing });
         toast({ title: t.admin.bioActionSuccess });
         onRefresh();
@@ -212,6 +220,23 @@ export function BiographyDetailPanel({ biography, onClose, onRefresh }: Biograph
       if (error) throw error;
 
       await createNotification(biography.author_id, notifyMsg);
+
+      const adminTemplateByAction: Partial<Record<NonNullable<ConfirmAction>, EmailTemplateId>> = {
+        force_publish: 'admin_bio_force_published',
+        set_draft: 'admin_bio_set_draft',
+        remove: 'admin_bio_removed',
+        restore: 'admin_bio_restored',
+      };
+      const adminTemplate = adminTemplateByAction[action];
+      if (adminTemplate) {
+        void sendAuthorEmailFromClient({
+          userId: biography.author_id,
+          email: biography.author_email,
+          templateId: adminTemplate,
+          biographyId: biography.id,
+        });
+      }
+
       await logAction(action, biography.id, { old_status: oldStatus, new_status: newStatus });
 
       toast({ title: t.admin.bioActionSuccess });

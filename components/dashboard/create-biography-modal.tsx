@@ -65,7 +65,7 @@ export function CreateBiographyModal({
 
   const handleDetailsNext = () => {
     if (existingBiographiesCount > 0) {
-      setError('You already have a biography. Each account is limited to one biography to maintain focus and quality.');
+      setError(t.dashboard.oneBiographyLimit);
       return;
     }
     if (!title.trim()) {

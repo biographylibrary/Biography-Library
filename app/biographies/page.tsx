@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useMemo } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useTranslation } from '@/lib/i18n/i18n-context';
 import {
   fetchPublishedBiographies,
@@ -240,7 +241,15 @@ function BiographySection({ title, bios, t, featured }: SectionProps) {
   );
 }
 
-export default function PublicBiographiesPage() {
+export default function BiographiesPage() {
+  const router = useRouter();
+  useEffect(() => {
+    router.replace('/');
+  }, [router]);
+  return null;
+}
+
+function PublicBiographiesPage() {
   const { t } = useTranslation();
   const [allBios, setAllBios] = useState<PublishedBiography[]>([]);
   const [featured, setFeatured] = useState<PublishedBiography[]>([]);

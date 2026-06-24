@@ -139,7 +139,7 @@ export default function RegisterPage() {
 
             <p className="text-center text-sm text-muted-foreground mt-6">
               <Link
-                href="/login"
+                href="/"
                 className="font-medium text-primary hover:text-primary/80 transition-colors"
               >
                 {t.auth.backToLogin}
@@ -164,9 +164,6 @@ export default function RegisterPage() {
               <Logo height={64} />
             </div>
             <h1 className="text-2xl font-serif font-semibold tracking-tight">{t.auth.createYourAccount}</h1>
-            <p className="text-sm text-muted-foreground">
-              {t.auth.registerSubtitle}
-            </p>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-4">
@@ -251,7 +248,7 @@ export default function RegisterPage() {
           <p className="text-center text-sm text-muted-foreground mt-6">
             {t.auth.alreadyHaveAccount}{' '}
             <Link
-              href="/login"
+              href="/"
               className="font-medium text-primary hover:text-primary/80 transition-colors"
             >
               {t.auth.signIn}

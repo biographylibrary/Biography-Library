@@ -21,7 +21,7 @@ export async function POST(
   const service = buildServiceClient();
   const { data: target, error: targetErr } = await service
     .from('profiles')
-    .select('id, email, role, account_status')
+    .select('id, email, role, account_status, language')
     .eq('id', targetId)
     .maybeSingle();
 
@@ -61,7 +61,7 @@ export async function POST(
 
   if (email) {
     try {
-      await sendAccountReinstatedEmail(email);
+      await sendAccountReinstatedEmail(email, (target as { language?: string }).language);
     } catch (e) {
       console.error('[admin/reinstate] email', e);
     }

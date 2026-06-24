@@ -16,7 +16,7 @@ const nextConfig = {
   },
   images: { unoptimized: true },
   experimental: {
-    serverComponentsExternalPackages: ['docx'],
+    serverComponentsExternalPackages: ['docx', '@supabase/supabase-js'],
   },
   webpack: (config, { isServer }) => {
     if (isServer) {

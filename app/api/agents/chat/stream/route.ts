@@ -4,6 +4,7 @@ import {
   parseAgentChatBody,
   prepareAgentTurn,
   sseEncode,
+  type PreparedTurnResult,
 } from '@/lib/agents/agent-chat-handler';
 import { buildServiceClient } from '@/lib/server/review-submit-pipeline';
 import { appendMessage } from '@/lib/agents/thread-service';
@@ -36,23 +37,50 @@ export async function POST(req: NextRequest) {
     });
   }
 
-  const prepared = await prepareAgentTurn(auth.userId, payload);
-  if (!prepared.ok) {
+  let turnResult: PreparedTurnResult;
+  try {
+    turnResult = await prepareAgentTurn(auth.userId, payload);
+  } catch (err) {
+    console.error('[agents/chat/stream] prepareAgentTurn failed:', err);
     return new Response(
       JSON.stringify({
-        error: prepared.error,
-        message: prepared.message,
+        error: 'server_error',
+        message:
+          'Echo could not start a conversation. Check server logs and Supabase agent tables.',
       }),
-      { status: prepared.status, headers: { 'Content-Type': 'application/json' } }
+      { status: 500, headers: { 'Content-Type': 'application/json' } }
+    );
+  }
+  if (!turnResult.ok) {
+    return new Response(
+      JSON.stringify({
+        error: turnResult.error,
+        message: turnResult.message,
+      }),
+      { status: turnResult.status, headers: { 'Content-Type': 'application/json' } }
     );
   }
 
+  const prepared = turnResult;
+
   const serviceClient = buildServiceClient();
-  await appendMessage(serviceClient, prepared.threadId, {
-    role: 'user',
-    content: prepared.userMessage,
-    tool_calls: null,
-  });
+  let threadId = prepared.threadId;
+  try {
+    await appendMessage(serviceClient, threadId, {
+      role: 'user',
+      content: prepared.userMessage,
+      tool_calls: null,
+    });
+  } catch (err) {
+    console.error('[agents/chat/stream] appendMessage failed:', err);
+    return new Response(
+      JSON.stringify({
+        error: 'thread_error',
+        message: 'Could not save message. If Echo was just deployed, apply Supabase migration 20260623120000_echo_agent_type.sql.',
+      }),
+      { status: 500, headers: { 'Content-Type': 'application/json' } }
+    );
+  }
 
   const stream = new ReadableStream({
     async start(controller) {
@@ -63,6 +91,9 @@ export async function POST(req: NextRequest) {
 
       try {
         send('thread', { threadId: prepared.threadId });
+        if (prepared.kbSources?.length) {
+          send('kb_sources', { sources: prepared.kbSources });
+        }
         await runStreamingAgentTurn(
           {
             threadId: prepared.threadId,
@@ -74,6 +105,8 @@ export async function POST(req: NextRequest) {
             tools: prepared.tools,
             biographyId: prepared.biographyId,
             userId: prepared.userId,
+            echoPage: prepared.echoPage,
+            biographyMode: prepared.biographyMode,
           },
           serviceClient,
           send

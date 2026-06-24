@@ -10,12 +10,13 @@ export type AgentRole =
   | 'apertus'
   | 'embedding';
 
-export type AgentType = 'platform_guide' | 'biography_coach' | 'publication_reviewer';
+export type AgentType = 'platform_guide' | 'biography_coach' | 'publication_reviewer' | 'echo';
 
 export const AGENT_TYPE_TO_ROLE: Record<AgentType, AgentRole> = {
   platform_guide: 'onboarding',
   biography_coach: 'coach',
   publication_reviewer: 'reviewer',
+  echo: 'onboarding',
 };
 
 /** bge_multilingual_gemma2 — verified 3584 dims via POST /embeddings (product 107001, 2026-06) */

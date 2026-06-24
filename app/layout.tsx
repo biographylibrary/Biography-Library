@@ -78,7 +78,7 @@ export default function RootLayout({
                   Usa Chrome o Safari per lavorare sull&apos;app.
                 </p>
                 <a
-                  href="http://localhost:3000/biographies"
+                  href="http://localhost:3000/"
                   target="_blank"
                   rel="noopener noreferrer"
                   style={{

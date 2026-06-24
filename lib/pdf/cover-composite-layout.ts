@@ -1,5 +1,8 @@
 /** B5 composite cover layout (card titolo + foto). */
 
+import type { jsPDF } from 'jspdf';
+import { splitTextToSizeLang } from '@/lib/pdf/text-wrap';
+
 export const COVER_PAGE_W = 176;
 export const COVER_PAGE_H = 250;
 export const COVER_BORDER = 10;
@@ -101,21 +104,19 @@ export function computeCoverCompositeLayout(
   };
 }
 
-type SplitDoc = {
-  splitTextToSize: (text: string, maxWidth: number) => string | string[];
-  setFontSize: (size: number) => void;
-};
+type SplitDoc = Pick<jsPDF, 'setFontSize' | 'getTextWidth' | 'setFont'>;
 
 /** Split title/author to lines using jsPDF metrics. */
 export function splitTitleAuthorLines(
   doc: SplitDoc,
   title: string,
   authorName: string,
-  innerWidth: number
+  innerWidth: number,
+  language: string
 ): { titleLines: string[]; authorLines: string[] } {
   doc.setFontSize(COVER_PT_TITLE);
-  const titleLines = doc.splitTextToSize(title, innerWidth) as string[];
+  const titleLines = splitTextToSizeLang(doc as jsPDF, title, innerWidth, language);
   doc.setFontSize(COVER_PT_AUTHOR);
-  const authorLines = doc.splitTextToSize(authorName, innerWidth) as string[];
+  const authorLines = splitTextToSizeLang(doc as jsPDF, authorName, innerWidth, language);
   return { titleLines, authorLines };
 }

@@ -35,6 +35,7 @@ import {
   Type,
 } from 'lucide-react';
 import { EditorFontSizeControl } from './editor-font-size-control';
+import { EditorAiToolsMenu, type EditorAiToolsMenuProps } from './editor-ai-tools-menu';
 import { cn } from '@/lib/utils';
 
 interface RichTextToolbarProps {
@@ -42,6 +43,7 @@ interface RichTextToolbarProps {
   biographyId?: string;
   editorFontSize?: number;
   onEditorFontSizeChange?: (size: number) => void;
+  aiTools?: Omit<EditorAiToolsMenuProps, 'className' | 'buttonClassName'>;
 }
 
 export function RichTextToolbar({
@@ -49,6 +51,7 @@ export function RichTextToolbar({
   biographyId,
   editorFontSize = 16,
   onEditorFontSizeChange,
+  aiTools,
 }: RichTextToolbarProps) {
   const { t } = useTranslation();
 
@@ -304,6 +307,13 @@ export function RichTextToolbar({
             currentSize={editorFontSize}
             onSizeChange={onEditorFontSizeChange}
           />
+        </>
+      )}
+
+      {aiTools?.aiEnabled && (
+        <>
+          <Separator orientation="vertical" className="h-6 mx-1" />
+          <EditorAiToolsMenu {...aiTools} />
         </>
       )}
 

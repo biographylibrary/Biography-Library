@@ -2,6 +2,10 @@
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import {
+  editorSidebarDialogContentClass,
+  editorSidebarDialogContentStyle,
+} from '@/components/editor/EditorSidebarDialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -254,7 +258,10 @@ export function GlobalNotesPanel({
   return (
     <>
       <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="max-w-2xl w-[calc(100vw-2rem)] sm:w-full p-0 gap-0 flex flex-col" style={{ maxHeight: '85svh' }}>
+        <DialogContent
+          className={editorSidebarDialogContentClass}
+          style={editorSidebarDialogContentStyle}
+        >
           <DialogHeader className="px-6 pt-6 pb-4 border-b border-border/50 shrink-0">
             <DialogTitle className="flex items-center gap-2 text-lg">
               <StickyNote className="h-5 w-5 text-primary" />

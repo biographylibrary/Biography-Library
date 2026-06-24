@@ -21,7 +21,10 @@ import {
   UserX,
   LogOut,
   ChevronRight,
+  BookOpen,
 } from 'lucide-react';
+import { patchOnboarding } from '@/lib/onboarding/onboarding-client';
+import { useOnboardingGate } from '@/components/onboarding/OnboardingGateProvider';
 import { cn } from '@/lib/utils';
 
 function SectionHeading({ children }: { children: React.ReactNode }) {
@@ -70,11 +73,13 @@ function SettingsRow({
 export default function SettingsPage() {
   const { user, fontSize, setFontSize, signOut } = useAuth();
   const { language, setLanguage, t } = useTranslation();
+  const { refreshOnboarding } = useOnboardingGate();
   const { resolvedTheme, setTheme } = useTheme();
   const router = useRouter();
 
   const [mounted, setMounted] = useState(false);
   const [biographyCount, setBiographyCount] = useState(0);
+  const [latestBiographyId, setLatestBiographyId] = useState<string | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
 
   useEffect(() => {
@@ -93,6 +98,15 @@ export default function SettingsPage() {
         .select('id', { count: 'exact', head: true })
         .eq('user_id', user.id);
       setBiographyCount(count ?? 0);
+
+      const { data: latest } = await supabase
+        .from('biographies')
+        .select('id')
+        .eq('user_id', user.id)
+        .order('updated_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      setLatestBiographyId(latest?.id ?? null);
     };
 
     fetchBiographyCount();
@@ -115,7 +129,7 @@ export default function SettingsPage() {
 
   const handleSignOut = async () => {
     await signOut();
-    router.push('/biographies');
+    router.push('/');
   };
 
   const isDark = mounted && resolvedTheme === 'dark';
@@ -164,6 +178,30 @@ export default function SettingsPage() {
               onSizeChange={setFontSize}
               userId={user.id}
             />
+          </SettingsRow>
+        </section>
+
+        <section className="space-y-2">
+          <SectionHeading>{t.onboardingWizard.reviewIntro}</SectionHeading>
+          <SettingsRow
+            icon={<BookOpen className="h-4 w-4" />}
+            label={t.onboardingWizard.reviewIntro}
+            description={t.onboardingWizard.resumeIntroDescription}
+            onClick={() => {
+              void (async () => {
+                if (latestBiographyId) {
+                  await patchOnboarding({ action: 'restart_tour' });
+                  await refreshOnboarding();
+                  router.push(`/biography/${latestBiographyId}/edit?tour=1`);
+                  return;
+                }
+                await patchOnboarding({ action: 'restart_intro' });
+                await refreshOnboarding();
+                router.push('/onboarding');
+              })();
+            }}
+          >
+            <ChevronRight className="h-4 w-4 text-muted-foreground" />
           </SettingsRow>
         </section>
 

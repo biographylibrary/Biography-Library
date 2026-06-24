@@ -10,6 +10,10 @@ import {
   splitTitleAuthorLines,
 } from '@/lib/pdf/cover-composite-layout';
 import { rasterizeCoverPhotoRoundedBrowser } from '@/lib/pdf/cover-photo-raster';
+import { renderSemanticHtmlBody } from '@/lib/pdf/semantic-html-renderer';
+import { planTextBeforeBlockBreak } from '@/lib/pdf/block-pagination';
+import { addImageFitted } from '@/lib/pdf/photo-fit';
+import { splitTextToSizeLang } from '@/lib/pdf/text-wrap';
 
 type PdfSupabase = SupabaseClient<any, any, any>;
 import { BIOGRAPHY_SECTIONS } from './editor-constants';
@@ -52,8 +56,14 @@ const DRAFT_WATERMARK_LABELS: Record<number, Record<string, string>> = {
 
 function getDraftLabel(iteration: number, language: string): string {
   const labels = DRAFT_WATERMARK_LABELS[iteration];
-  if (!labels) return '';
-  return labels[language] ?? labels['en'];
+  if (labels) return labels[language] ?? labels['en'];
+  const generic: Record<string, string> = {
+    en: `DRAFT ${iteration}`,
+    it: `BOZZA ${iteration}`,
+    fr: `BROUILLON ${iteration}`,
+    de: `ENTWURF ${iteration}`,
+  };
+  return generic[language] ?? generic.en;
 }
 
 function drawDraftWatermark(doc: jsPDF, label: string): void {
@@ -146,8 +156,10 @@ const SAFE_MARGIN = 5;
 
 const MARGIN_TOP = 15;
 const MARGIN_BOTTOM = 20;
-const MARGIN_INNER = 20;
-const MARGIN_OUTER = 15;
+/** Symmetric left/right text margins (no gutter offset — equal borders for screen and print). */
+const MARGIN_SIDE = 18;
+const MARGIN_INNER = MARGIN_SIDE;
+const MARGIN_OUTER = MARGIN_SIDE;
 
 /** Extra mm from inner text top for free-flow body paragraphs (lighter layout, no running title) */
 const FREEFLOW_EXTRA_TOP_MARGIN_MM = 10;
@@ -160,7 +172,7 @@ const PDF_DRAW_SECTION_RUNNING_HEADER = false;
 
 /** Section-mode chapter title start Y (large heading); clears top margin */
 const SECTION_HEADING_TOP_MM = MARGIN_TOP + 12;
-const CHAPTER_HEADING_BODY_GAP_MM = 6;
+const CHAPTER_HEADING_BODY_GAP_MM = 2;
 
 const PT_BODY = 11;
 const PT_CHAPTER = 22;
@@ -412,6 +424,11 @@ interface PdfState {
   absolutePage: number;
   contentPageNum: number;
   watermarkLabel?: string | null;
+  language: string;
+}
+
+function splitPdfText(doc: jsPDF, text: string, maxWidth: number, language: string): string[] {
+  return splitTextToSizeLang(doc, text, maxWidth, language);
 }
 
 function addNewPage(state: PdfState, isContent: boolean): void {
@@ -482,7 +499,7 @@ function renderTextBlock(
     if (!para.trim()) continue;
 
     const tw = textAvailableWidth(state.absolutePage);
-    const lines = doc.splitTextToSize(para.trim(), tw);
+    const lines = splitPdfText(doc, para.trim(), tw, state.language);
 
     for (const line of lines) {
       if (y + lineH > textAreaBottom) {
@@ -515,7 +532,7 @@ function addDedicationPage(state: PdfState, content: string): void {
 
   const clean = stripHtml(content);
   const tw = textAvailableWidth(state.absolutePage);
-  const lines = doc.splitTextToSize(clean.trim(), tw);
+  const lines = splitPdfText(doc, clean.trim(), tw, state.language);
   const centerX = B5_W / 2;
   const startY = 70;
   const lineH = ptToMm(PT_BODY * LINE_HEIGHT_BODY);
@@ -535,7 +552,7 @@ function addEpigraphPage(state: PdfState, content: string, source: string | null
 
   const clean = stripHtml(content);
   const tw = textAvailableWidth(state.absolutePage);
-  const lines = doc.splitTextToSize(clean.trim(), tw);
+  const lines = splitPdfText(doc, clean.trim(), tw, state.language);
   const centerX = B5_W / 2;
   const startY = 70;
   const lineH = ptToMm(PT_BODY * LINE_HEIGHT_BODY);
@@ -576,7 +593,7 @@ function addSectionWithTitle(
   applyFont(doc, 'normal');
   doc.setFontSize(PT_CHAPTER);
   doc.setTextColor(0, 0, 0);
-  const headingLines = doc.splitTextToSize(sectionTitle, headingWidth) as string[];
+  const headingLines = splitPdfText(doc, sectionTitle, headingWidth, state.language);
   headingLines.forEach((line, i) => {
     doc.text(line, tx, chapterTitleStartY + i * headingLineH);
   });
@@ -821,6 +838,66 @@ async function fetchPhotoBase64(fileUrl: string): Promise<{ base64: string; form
 }
 
 const PT_CAPTION = 9;
+const PHOTO_GAP_MM = 4;
+/** Clear gap between image bottom edge and caption text (mm). */
+const IMAGE_TO_CAPTION_GAP_MM = 5;
+const CAPTION_BLOCK_END_PAD_MM = 2;
+
+function captionLineH(): number {
+  return ptToMm(PT_CAPTION * LINE_HEIGHT_BODY);
+}
+
+/** First text baseline offset below `imageBottomY` (jsPDF `text` uses baseline Y). */
+function captionFirstBaselineY(imageBottomY: number): number {
+  return imageBottomY + IMAGE_TO_CAPTION_GAP_MM + ptToMm(PT_CAPTION * 0.8);
+}
+
+function measureCaptionBlockHeight(doc: jsPDF, caption: string | null, maxW: number, language: string): number {
+  if (!caption?.trim()) return 0;
+  applyFont(doc, 'italic');
+  doc.setFontSize(PT_CAPTION);
+  const lines = splitPdfText(doc, caption.trim(), maxW, language);
+  const lineH = captionLineH();
+  const textBlockH = lines.length <= 1 ? lineH : lineH + (lines.length - 1) * lineH;
+  return IMAGE_TO_CAPTION_GAP_MM + textBlockH + CAPTION_BLOCK_END_PAD_MM;
+}
+
+function drawCaptionCentered(
+  doc: jsPDF,
+  caption: string | null,
+  boxX: number,
+  imageBottomY: number,
+  boxW: number,
+  language: string
+): number {
+  if (!caption?.trim()) return imageBottomY;
+  applyFont(doc, 'italic');
+  doc.setFontSize(PT_CAPTION);
+  doc.setTextColor(80, 80, 80);
+  const lines = splitPdfText(doc, caption.trim(), boxW, language);
+  const lineH = captionLineH();
+  const firstBaseline = captionFirstBaselineY(imageBottomY);
+  lines.forEach((line: string, i: number) => {
+    doc.text(line, boxX + boxW / 2, firstBaseline + i * lineH, { align: 'center' });
+  });
+  return imageBottomY + measureCaptionBlockHeight(doc, caption, boxW, language);
+}
+
+function placeImageWithCaption(
+  doc: jsPDF,
+  base64: string,
+  format: string,
+  boxX: number,
+  boxY: number,
+  boxW: number,
+  boxH: number,
+  caption: string | null,
+  language: string
+): number {
+  const fit = addImageFitted(doc, base64, format, boxX, boxY, boxW, boxH);
+  const imageBottom = fit.y + fit.h;
+  return drawCaptionCentered(doc, caption, boxX, imageBottom, boxW, language);
+}
 
 function renderFullPagePhoto(
   state: PdfState,
@@ -833,25 +910,14 @@ function renderFullPagePhoto(
   const { doc } = state;
   const photoX = MARGIN_INNER;
   const photoW = B5_W - MARGIN_INNER - MARGIN_OUTER;
-  const captionH = caption?.trim() ? ptToMm(PT_CAPTION * LINE_HEIGHT_BODY) + 3 : 0;
-  const photoH = B5_H - MARGIN_TOP - MARGIN_BOTTOM - captionH;
+  const capH = measureCaptionBlockHeight(doc, caption, photoW, state.language);
+  const photoH = B5_H - MARGIN_TOP - MARGIN_BOTTOM - capH;
 
-  doc.addImage(base64, format, photoX, MARGIN_TOP, photoW, photoH);
-
-  if (caption?.trim()) {
-    const captionY = MARGIN_TOP + photoH + 3;
-    applyFont(doc, 'italic');
-    doc.setFontSize(PT_CAPTION);
-    doc.setTextColor(80, 80, 80);
-    const captionLines = doc.splitTextToSize(caption.trim(), photoW) as string[];
-    const lineH = ptToMm(PT_CAPTION * LINE_HEIGHT_BODY);
-    captionLines.forEach((line: string, i: number) => {
-      doc.text(line, photoX + photoW / 2, captionY + i * lineH, { align: 'center' });
-    });
-  }
+  placeImageWithCaption(doc, base64, format, photoX, MARGIN_TOP, photoW, photoH, caption, state.language);
 }
 
-function renderTwoVerticalPhotos(
+/** Two photos stacked vertically (one above the other), each with its own caption. */
+function renderTwoStackedPhotos(
   state: PdfState,
   photoA: { base64: string; format: string; caption: string | null },
   photoB: { base64: string; format: string; caption: string | null } | null
@@ -860,81 +926,23 @@ function renderTwoVerticalPhotos(
 
   const { doc } = state;
   const totalW = B5_W - MARGIN_INNER - MARGIN_OUTER;
-  const GAP = 4;
-  const photoW = (totalW - GAP) / 2;
-  const captionH = ptToMm(PT_CAPTION * LINE_HEIGHT_BODY) + 3;
-  const photoH = B5_H - MARGIN_TOP - MARGIN_BOTTOM - captionH;
+  const pageH = B5_H - MARGIN_TOP - MARGIN_BOTTOM;
+  const capA = measureCaptionBlockHeight(doc, photoA.caption, totalW, state.language);
+  const capB = photoB ? measureCaptionBlockHeight(doc, photoB.caption, totalW, state.language) : 0;
+  const stackGap = photoB ? PHOTO_GAP_MM : 0;
+  const photoSlots = photoB ? 2 : 1;
+  const photoH = (pageH - capA - capB - stackGap) / photoSlots;
 
-  const leftX = MARGIN_INNER;
-  const rightX = MARGIN_INNER + photoW + GAP;
+  let y = MARGIN_TOP;
+  y = placeImageWithCaption(doc, photoA.base64, photoA.format, MARGIN_INNER, y, totalW, photoH, photoA.caption, state.language);
 
-  doc.addImage(photoA.base64, photoA.format, leftX, MARGIN_TOP, photoW, photoH);
   if (photoB) {
-    doc.addImage(photoB.base64, photoB.format, rightX, MARGIN_TOP, photoW, photoH);
-  }
-
-  const captionY = MARGIN_TOP + photoH + 3;
-  applyFont(doc, 'italic');
-  doc.setFontSize(PT_CAPTION);
-  doc.setTextColor(80, 80, 80);
-  const lineH = ptToMm(PT_CAPTION * LINE_HEIGHT_BODY);
-
-  if (photoA.caption?.trim()) {
-    const lines = doc.splitTextToSize(photoA.caption.trim(), photoW) as string[];
-    lines.forEach((line: string, i: number) => {
-      doc.text(line, leftX + photoW / 2, captionY + i * lineH, { align: 'center' });
-    });
-  }
-  if (photoB?.caption?.trim()) {
-    const lines = doc.splitTextToSize(photoB.caption.trim(), photoW) as string[];
-    lines.forEach((line: string, i: number) => {
-      doc.text(line, rightX + photoW / 2, captionY + i * lineH, { align: 'center' });
-    });
+    y += PHOTO_GAP_MM;
+    placeImageWithCaption(doc, photoB.base64, photoB.format, MARGIN_INNER, y, totalW, photoH, photoB.caption, state.language);
   }
 }
 
-function renderTwoHorizontalPhotos(
-  state: PdfState,
-  photoA: { base64: string; format: string; caption: string | null },
-  photoB: { base64: string; format: string; caption: string | null } | null
-): void {
-  addNewPage(state, false);
-
-  const { doc } = state;
-  const totalW = B5_W - MARGIN_INNER - MARGIN_OUTER;
-  const GAP = 4;
-  const captionH = ptToMm(PT_CAPTION * LINE_HEIGHT_BODY) + 3;
-  const photoH = (B5_H - MARGIN_TOP - MARGIN_BOTTOM - GAP - captionH * 2) / 2;
-
-  const topY = MARGIN_TOP;
-  const bottomY = MARGIN_TOP + photoH + GAP + captionH;
-
-  doc.addImage(photoA.base64, photoA.format, MARGIN_INNER, topY, totalW, photoH);
-  if (photoB) {
-    doc.addImage(photoB.base64, photoB.format, MARGIN_INNER, bottomY, totalW, photoH);
-  }
-
-  applyFont(doc, 'italic');
-  doc.setFontSize(PT_CAPTION);
-  doc.setTextColor(80, 80, 80);
-  const lineH = ptToMm(PT_CAPTION * LINE_HEIGHT_BODY);
-
-  if (photoA.caption?.trim()) {
-    const captionY = topY + photoH + 3;
-    const lines = doc.splitTextToSize(photoA.caption.trim(), totalW) as string[];
-    lines.forEach((line: string, i: number) => {
-      doc.text(line, MARGIN_INNER + totalW / 2, captionY + i * lineH, { align: 'center' });
-    });
-  }
-  if (photoB?.caption?.trim()) {
-    const captionY = bottomY + photoH + 3;
-    const lines = doc.splitTextToSize(photoB.caption.trim(), totalW) as string[];
-    lines.forEach((line: string, i: number) => {
-      doc.text(line, MARGIN_INNER + totalW / 2, captionY + i * lineH, { align: 'center' });
-    });
-  }
-}
-
+/** One wide photo on top, two portrait photos side by side below (each with caption). */
 function renderThreeMixedPhotos(
   state: PdfState,
   photoA: { base64: string; format: string; caption: string | null },
@@ -945,35 +953,44 @@ function renderThreeMixedPhotos(
 
   const { doc } = state;
   const totalW = B5_W - MARGIN_INNER - MARGIN_OUTER;
-  const GAP = 4;
-  const captionH = ptToMm(PT_CAPTION * LINE_HEIGHT_BODY) + 3;
-  const totalH = B5_H - MARGIN_TOP - MARGIN_BOTTOM - captionH;
+  const halfW = (totalW - PHOTO_GAP_MM) / 2;
+  const pageH = B5_H - MARGIN_TOP - MARGIN_BOTTOM;
 
-  const topH = totalH * 0.55;
-  const bottomH = totalH - topH - GAP;
-  const halfW = (totalW - GAP) / 2;
+  const capA = measureCaptionBlockHeight(doc, photoA.caption, totalW, state.language);
+  const capB = photoB ? measureCaptionBlockHeight(doc, photoB.caption, halfW, state.language) : 0;
+  const capC = photoC ? measureCaptionBlockHeight(doc, photoC.caption, halfW, state.language) : 0;
+  const bottomCapH = Math.max(capB, capC);
+
+  const photoAreaH = pageH - capA - bottomCapH - PHOTO_GAP_MM;
+  const topH = photoAreaH * 0.55;
+  const bottomH = photoAreaH - topH - PHOTO_GAP_MM;
 
   const topY = MARGIN_TOP;
-  const bottomY = MARGIN_TOP + topH + GAP;
+  const afterTop = placeImageWithCaption(
+    doc,
+    photoA.base64,
+    photoA.format,
+    MARGIN_INNER,
+    topY,
+    totalW,
+    topH,
+    photoA.caption,
+    state.language
+  );
+  const bottomY = afterTop + PHOTO_GAP_MM;
 
-  doc.addImage(photoA.base64, photoA.format, MARGIN_INNER, topY, totalW, topH);
   if (photoB) {
-    doc.addImage(photoB.base64, photoB.format, MARGIN_INNER, bottomY, halfW, bottomH);
-  }
-  if (photoC) {
-    doc.addImage(photoC.base64, photoC.format, MARGIN_INNER + halfW + GAP, bottomY, halfW, bottomH);
-  }
-
-  if (photoA.caption?.trim()) {
-    applyFont(doc, 'italic');
-    doc.setFontSize(PT_CAPTION);
-    doc.setTextColor(80, 80, 80);
-    const captionY = topY + topH + 1;
-    const lines = doc.splitTextToSize(photoA.caption.trim(), totalW) as string[];
-    const lineH = ptToMm(PT_CAPTION * LINE_HEIGHT_BODY);
-    lines.forEach((line: string, i: number) => {
-      doc.text(line, MARGIN_INNER + totalW / 2, captionY + i * lineH, { align: 'center' });
-    });
+    const fitB = addImageFitted(doc, photoB.base64, photoB.format, MARGIN_INNER, bottomY, halfW, bottomH);
+    drawCaptionCentered(doc, photoB.caption, MARGIN_INNER, fitB.y + fitB.h, halfW, state.language);
+    if (photoC) {
+      const rightX = MARGIN_INNER + halfW + PHOTO_GAP_MM;
+      const fitC = addImageFitted(doc, photoC.base64, photoC.format, rightX, bottomY, halfW, bottomH);
+      drawCaptionCentered(doc, photoC.caption, rightX, fitC.y + fitC.h, halfW, state.language);
+    }
+  } else if (photoC) {
+    const rightX = MARGIN_INNER + halfW + PHOTO_GAP_MM;
+    const fitC = addImageFitted(doc, photoC.base64, photoC.format, rightX, bottomY, halfW, bottomH);
+    drawCaptionCentered(doc, photoC.caption, rightX, fitC.y + fitC.h, halfW, state.language);
   }
 }
 
@@ -1000,7 +1017,7 @@ async function renderGalleryPhotosForSection(
       const resolvedB = nextPhoto ? await fetchPhotoBase64(nextPhoto.file_url) : null;
 
       if (resolvedA) {
-        renderTwoVerticalPhotos(state, { ...resolvedA, caption: photo.caption }, resolvedB ? { ...resolvedB, caption: nextPhoto!.caption } : null);
+        renderTwoStackedPhotos(state, { ...resolvedA, caption: photo.caption }, resolvedB ? { ...resolvedB, caption: nextPhoto!.caption } : null);
       }
       i += nextPhoto ? 2 : 1;
     } else if (photo.layout === 'two-horizontal') {
@@ -1012,7 +1029,7 @@ async function renderGalleryPhotosForSection(
       const resolvedB = nextPhoto ? await fetchPhotoBase64(nextPhoto.file_url) : null;
 
       if (resolvedA) {
-        renderTwoHorizontalPhotos(state, { ...resolvedA, caption: photo.caption }, resolvedB ? { ...resolvedB, caption: nextPhoto!.caption } : null);
+        renderTwoStackedPhotos(state, { ...resolvedA, caption: photo.caption }, resolvedB ? { ...resolvedB, caption: nextPhoto!.caption } : null);
       }
       i += nextPhoto ? 2 : 1;
     } else if (photo.layout === 'three-mixed') {
@@ -1098,14 +1115,15 @@ async function drawPhotoCover(
   authorName: string,
   coverBase64: string,
   coverFormat: string,
-  imgDims: { width: number; height: number }
+  imgDims: { width: number; height: number },
+  language: string
 ): Promise<void> {
   doc.setFillColor(255, 255, 255);
   doc.rect(0, 0, B5_W, B5_H, 'F');
 
   const innerWidth = COVER_PAGE_W - 2 * COVER_BORDER - 2 * COVER_INNER_PAD;
   applyFont(doc, 'normal');
-  const { titleLines, authorLines } = splitTitleAuthorLines(doc, title, authorName, innerWidth);
+  const { titleLines, authorLines } = splitTitleAuthorLines(doc, title, authorName, innerWidth, language);
   const layout = computeCoverCompositeLayout(titleLines.length, authorLines.length);
   const { titleCard, photoCard, textX, titleFirstBaselineY, cornerRadius } = layout;
 
@@ -1190,7 +1208,8 @@ async function drawBackCover(
   backCoverDescription: string,
   backCoverPropertyStatement: string,
   backCoverAiStatement: string,
-  backCoverFooter: string
+  backCoverFooter: string,
+  language: string
 ): Promise<void> {
   doc.setFillColor(255, 255, 255);
   doc.rect(0, 0, B5_W, B5_H, 'F');
@@ -1253,12 +1272,12 @@ async function drawBackCover(
       if (!p) {
         total += lineH;
       } else {
-        const lines = doc.splitTextToSize(p, cfg.maxW) as string[];
+        const lines = splitPdfText(doc, p, cfg.maxW, language);
         total += lines.length * lineH;
       }
     }
     total += FOOTER_GAP_BEFORE;
-    const footerLines = doc.splitTextToSize(backCoverFooter, cfg.maxW) as string[];
+    const footerLines = splitPdfText(doc, backCoverFooter, cfg.maxW, language);
     total += footerLines.length * lineH;
     return total;
   }
@@ -1292,7 +1311,7 @@ async function drawBackCover(
       y += lineH;
       continue;
     }
-    const lines = doc.splitTextToSize(p, TEXT_W) as string[];
+    const lines = splitPdfText(doc, p, TEXT_W, language);
     for (const line of lines) {
       doc.text(line, textCenterX, y, { align: 'center' });
       y += lineH;
@@ -1302,7 +1321,7 @@ async function drawBackCover(
   y += FOOTER_GAP_BEFORE;
   applyFont(doc, 'normal');
   doc.setFontSize(cfg.fs);
-  const footerLines = doc.splitTextToSize(backCoverFooter, TEXT_W) as string[];
+  const footerLines = splitPdfText(doc, backCoverFooter, TEXT_W, language);
   for (const line of footerLines) {
     doc.text(line, textCenterX, y, { align: 'center' });
     y += lineH;
@@ -1434,6 +1453,7 @@ export async function generateBiographyPDF(
     absolutePage: 1,
     contentPageNum: 0,
     watermarkLabel,
+    language: lang,
   };
 
   const textAreaTop = MARGIN_TOP;
@@ -1454,7 +1474,8 @@ export async function generateBiographyPDF(
       biography.author_name,
       coverComposite!.base64,
       coverComposite!.format,
-      dims
+      dims,
+      lang
     );
   }
 
@@ -1508,7 +1529,7 @@ export async function generateBiographyPDF(
   applyFont(doc, 'normal');
   doc.setFontSize(PT_TITLE_PAGE_TITLE);
   doc.setTextColor(0, 0, 0);
-  const titlePageLines = doc.splitTextToSize(biography.title, coverSafeWidth);
+  const titlePageLines = splitPdfText(doc, biography.title, coverSafeWidth, lang);
   let titlePageY = B5_H / 2 - (titlePageLines.length * ptToMm(PT_TITLE_PAGE_TITLE * LINE_HEIGHT_BODY)) / 2;
   titlePageLines.forEach((line: string) => {
     doc.text(line, centerX, titlePageY, { align: 'center' });
@@ -1560,16 +1581,15 @@ export async function generateBiographyPDF(
       biography.status === 'locked_pending_screening' ||
       biography.status === 'under_review';
     if (isFinalOrPublished && biography.final_version) {
-      const text = stripHtml(biography.final_version);
-      if (text.trim()) {
-        return [{ key: 'final_version', title: biography.title, text }];
+      const raw = biography.final_version.trim();
+      if (raw) {
+        return [{ key: 'final_version', title: biography.title, text: raw }];
       }
     }
     if (biography.biography_mode === 'freeflow') {
       const rawText = biography.content_freeflow || '';
-      const text = stripHtml(rawText);
-      if (!text.trim()) return [];
-      return [{ key: 'freeflow', title: biography.title, text }];
+      if (!stripHtml(rawText).trim()) return [];
+      return [{ key: 'freeflow', title: biography.title, text: rawText }];
     }
     const narrativeOrder = Array.isArray(biography.narrative_order) && biography.narrative_order.length > 0
       ? biography.narrative_order
@@ -1596,20 +1616,21 @@ export async function generateBiographyPDF(
   const lineH = bodyLineH();
   const isFreeflowContent = biography.biography_mode === 'freeflow';
   const continuationBodyTop = isFreeflowContent ? textAreaTop + FREEFLOW_EXTRA_TOP_MARGIN_MM : textAreaTop;
+  let lastBodyY = continuationBodyTop;
 
   for (let si = 0; si < sections.length; si++) {
     const section = sections[si];
-    const cleanSectionText = stripHtml(section.text);
+    const isCombinedFinalVersion = section.key === 'final_version';
 
     logPdfBuildStep(`main body start: section "${section.key}" (${section.title})`);
     addNewPage(state, true);
-    if (!isFreeflowContent && !isOddPage(state.absolutePage)) {
+    if (!isFreeflowContent && !isCombinedFinalVersion && !isOddPage(state.absolutePage)) {
       addNewPage(state, true);
     }
 
     let y: number;
 
-    if (!isFreeflowContent) {
+    if (!isFreeflowContent && !isCombinedFinalVersion) {
       const headingWidth = textAvailableWidth(state.absolutePage);
       const headingLineH = ptToMm(PT_CHAPTER * LINE_HEIGHT_BODY);
       const chapterTitleStartY = Math.max(textAreaTop + 10, SECTION_HEADING_TOP_MM);
@@ -1618,19 +1639,19 @@ export async function generateBiographyPDF(
       doc.setFontSize(PT_CHAPTER);
       doc.setTextColor(0, 0, 0);
 
-      let headingLines = doc.splitTextToSize(section.title, headingWidth) as string[];
+      let headingLines = splitPdfText(doc, section.title, headingWidth, lang);
 
       let headingBlockH =
         headingLines.length * headingLineH + CHAPTER_HEADING_BODY_GAP_MM;
       if (chapterTitleStartY + headingBlockH + 3 * lineH > textAreaBottom) {
         addNewPage(state, true);
-        if (!isOddPage(state.absolutePage)) {
+        if (!isFreeflowContent && !isCombinedFinalVersion && !isOddPage(state.absolutePage)) {
           addNewPage(state, true);
         }
         applyFont(doc, 'normal');
         doc.setFontSize(PT_CHAPTER);
         doc.setTextColor(0, 0, 0);
-        headingLines = doc.splitTextToSize(section.title, textAvailableWidth(state.absolutePage)) as string[];
+        headingLines = splitPdfText(doc, section.title, textAvailableWidth(state.absolutePage), lang);
         headingBlockH =
           headingLines.length * headingLineH + CHAPTER_HEADING_BODY_GAP_MM;
       }
@@ -1650,38 +1671,48 @@ export async function generateBiographyPDF(
     drawPageNumber(state);
 
     applyFont(doc, 'normal');
-    doc.setFontSize(PT_BODY);
     doc.setTextColor(0, 0, 0);
 
-    const paragraphs = cleanSectionText.split(/\n\n+/);
-
-    for (const para of paragraphs) {
-      if (!para.trim()) continue;
-
-      const tw = textAvailableWidth(state.absolutePage);
-      const lines = doc.splitTextToSize(para.trim(), tw);
-
-      for (const line of lines) {
-        if (y + lineH > textAreaBottom) {
-          addNewPage(state, true);
-          if (!isFreeflowContent && PDF_DRAW_SECTION_RUNNING_HEADER) {
-            drawRunningHeader(state, section.title);
-          }
-          drawPageNumber(state);
-          applyFont(doc, 'normal');
-          doc.setFontSize(PT_BODY);
-          doc.setTextColor(0, 0, 0);
-          y = continuationBodyTop;
+    const semanticCtx = {
+      doc,
+      y,
+      textAreaTop: continuationBodyTop,
+      textAreaBottom,
+      textStartX,
+      textAvailableWidth,
+      absolutePage: state.absolutePage,
+      applyFont,
+      addNewPage: () => {
+        addNewPage(state, true);
+        if (!isFreeflowContent && PDF_DRAW_SECTION_RUNNING_HEADER) {
+          drawRunningHeader(state, section.title);
         }
-        doc.text(line, textStartX(state.absolutePage), y);
-        y += lineH;
-      }
-      y += lineH * 0.4;
-    }
+        drawPageNumber(state);
+        semanticCtx.y = continuationBodyTop;
+        semanticCtx.absolutePage = state.absolutePage;
+      },
+      drawPageNumber: () => drawPageNumber(state),
+      drawRunningHeader: PDF_DRAW_SECTION_RUNNING_HEADER
+        ? (title: string) => drawRunningHeader(state, title)
+        : undefined,
+      sectionTitle: !isFreeflowContent ? section.title : undefined,
+      language: lang,
+    };
+
+    semanticCtx.y = renderSemanticHtmlBody(semanticCtx, section.text);
+    lastBodyY = semanticCtx.y;
 
   }
 
   if (galleryPhotos.length > 0) {
+    const galleryBlockH = B5_H - MARGIN_TOP - MARGIN_BOTTOM;
+    if (
+      lastBodyY > continuationBodyTop &&
+      planTextBeforeBlockBreak(lastBodyY, lineH, textAreaBottom, galleryBlockH) === 'pageBreak'
+    ) {
+      addNewPage(state, true);
+      drawPageNumber(state);
+    }
     logPdfBuildStep(`gallery: ${galleryPhotos.length} media row(s)`);
     await renderGalleryPhotosForSection(state, galleryPhotos);
   }
@@ -1748,7 +1779,8 @@ export async function generateBiographyPDF(
       'The text of this biography is the exclusive property of the author, who retains all rights to pursue any unauthorized use, including use for AI training purposes.',
     translations?.backCoverAiStatement ??
       "Biography Library prohibits the use of content hosted on its servers for text mining, AI training or machine learning, pursuant to the Swiss Copyright Act (CopA/LDA) and the author's exclusive right of use under Swiss law.",
-    translations?.backCoverFooter ?? 'Biography Library · biographylibrary.org'
+    translations?.backCoverFooter ?? 'Biography Library · biographylibrary.org',
+    lang
   );
 
   if (returnArrayBuffer) {

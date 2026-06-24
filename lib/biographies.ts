@@ -1,5 +1,8 @@
 import { supabase } from './supabase';
+import { ONE_BIOGRAPHY_PER_USER_ERROR, getUserBiographyCount } from './biography-limits';
 import type { BiographyPublicationStatus } from './publication-state';
+
+export { ONE_BIOGRAPHY_PER_USER_ERROR } from './biography-limits';
 
 export type { BiographyPublicationStatus } from './publication-state';
 
@@ -23,6 +26,8 @@ export interface Biography {
   frozen_reason?: string | null;
   content_language?: string;
   chapters_count?: number;
+  last_chapter_published_at?: string | null;
+  next_chapter_available_at?: string | null;
   biography_mode?: 'sections' | 'freeflow';
   biography_type: 'autobiography' | 'memorial';
   slug: string | null;
@@ -149,8 +154,15 @@ export async function createBiography(
   title: string,
   visibility: 'private' | 'link-only' | 'public',
   biographyMode: 'sections' | 'freeflow' = 'sections',
-  authorName?: string
+  authorName?: string,
+  biographyType: 'autobiography' | 'memorial' = 'autobiography',
+  contentLanguage?: string
 ) {
+  const existingCount = await getUserBiographyCount(userId);
+  if (existingCount > 0) {
+    return { data: null, error: ONE_BIOGRAPHY_PER_USER_ERROR };
+  }
+
   const resolvedAuthor = authorName?.trim() || await resolveAuthorName(userId);
 
   const { data, error } = await supabase
@@ -162,14 +174,21 @@ export async function createBiography(
       status: 'draft',
       content: {},
       biography_mode: biographyMode,
+      biography_type: biographyType,
+      content_language: contentLanguage ?? 'en',
       author_name: resolvedAuthor,
     })
     .select()
     .maybeSingle();
 
+  const message = error?.message ?? null;
+  if (message?.includes('one_biography_per_user')) {
+    return { data: null, error: ONE_BIOGRAPHY_PER_USER_ERROR };
+  }
+
   return {
     data: data as Biography | null,
-    error: error?.message ?? null,
+    error: message,
   };
 }
 

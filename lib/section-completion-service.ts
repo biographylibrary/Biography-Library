@@ -70,3 +70,13 @@ export async function areAllSectionsComplete(
   const completedSections = await getCompletedSections(biographyId);
   return totalSections.every(section => completedSections.includes(section));
 }
+
+/** Percentage of `allSectionKeys` marked complete (0–100). */
+export function computeSectionCompletionPercent(
+  completedSectionKeys: string[],
+  allSectionKeys: string[]
+): number {
+  if (allSectionKeys.length === 0) return 0;
+  const completed = completedSectionKeys.filter((key) => allSectionKeys.includes(key)).length;
+  return Math.min(100, Math.round((completed / allSectionKeys.length) * 100));
+}
