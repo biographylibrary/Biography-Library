@@ -1,10 +1,11 @@
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
+import { purgeAgentMemoryForBiography } from '@/lib/agents/purge-agent-memory';
 import { stripHtml } from '@/lib/pdf-export';
 
 const INFOMANIAK_ENDPOINT = process.env.INFOMANIAK_AI_ENDPOINT ?? '';
 const INFOMANIAK_TOKEN = process.env.INFOMANIAK_AI_TOKEN ?? '';
 const INFOMANIAK_MODEL =
-  process.env.INFOMANIAK_AI_MODEL ?? 'swiss-ai/Apertus-70B-Instruct-2509';
+  process.env.INFOMANIAK_AI_MODEL ?? 'google/gemma-4-31B-it';
 
 const MAX_CONTENT_CHARS = 6000;
 const AI_TIMEOUT_MS = 30_000;
@@ -815,6 +816,12 @@ export async function runReviewSubmitScreening(
 
     const autoMsg = AUTO_PUBLISHED_MESSAGES[contentLanguage] ?? AUTO_PUBLISHED_MESSAGES['en'];
     await serviceClient.from('user_notifications').insert({ user_id: authorId, message: autoMsg });
+
+    try {
+      await purgeAgentMemoryForBiography(serviceClient, biographyId);
+    } catch (purgeErr) {
+      console.error('[review-submit] purgeAgentMemory failed:', purgeErr);
+    }
 
     return { result: 'published', screeningStatus: 'passed', isRescreen };
   }

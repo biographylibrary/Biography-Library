@@ -12,7 +12,7 @@ import { GlobalNotesPanel } from '@/components/editor/GlobalNotesPanel';
 import { AiSuggestionsPanel } from '@/components/editor/ai-suggestions-panel';
 import { ShareLinkPanel } from '@/components/editor/share-link-panel';
 import { PhotoGalleryPanel } from '@/components/editor/PhotoGalleryPanel';
-import { ConversationMode } from '@/components/editor/conversation-mode';
+import { CoachConversationMode } from '@/components/editor/coach-conversation-mode';
 import { NextSectionPrompt } from '@/components/editor/next-section-prompt';
 import { AISectionReview } from '@/components/editor/AISectionReview';
 import { FinalReviewDialog } from '@/components/editor/FinalReviewDialog';
@@ -863,61 +863,37 @@ const [isPublishing, setIsPublishing] = useState(false);
     setAiState(INITIAL_AI_STATE);
   }, []);
 
-  const handleGenerateDraftFromConversation = useCallback(
-    async (answers: { question: string; answer: string }[]) => {
-      const draftText = answers
-        .map(({ question, answer }) => {
-          return `${answer}`;
-        })
-        .join('\n\n');
-
-      setContent((prev) => {
-        const current = getSectionData(prev, activeSection);
-        const separator = current.text && !current.text.endsWith('\n') ? '\n\n' : '';
-        return {
-          ...prev,
-          [activeSection]: {
-            ...current,
-            text: current.text + separator + draftText,
-          },
-        };
-      });
-      markDirty();
+  const handleCoachDraftApplied = useCallback(
+    async (sectionKey: string) => {
+      const { data } = await supabase.from('biographies').select('content').eq('id', id).maybeSingle();
+      if (data?.content) {
+        const nextContent = data.content as BiographyContent;
+        setContent(nextContent);
+        contentRef.current = nextContent;
+      }
+      setActiveSection(sectionKey);
       setEditorMode('editor');
+      markDirty();
 
-      const completedSections = BIOGRAPHY_SECTIONS
-        .map(s => s.key)
-        .filter(key => {
-          const sectionData = getSectionData(contentRef.current, key);
-          return sectionData.text.trim().length > 100 || key === activeSection;
-        });
+      const completedSections = BIOGRAPHY_SECTIONS.map((s) => s.key).filter((key) => {
+        const sectionData = getSectionData(contentRef.current, key);
+        return sectionData.text.trim().length > 100 || key === sectionKey;
+      });
 
-      setCompletedSectionKey(activeSection);
+      setCompletedSectionKey(sectionKey);
       setShowNextSectionPrompt(true);
       setIsLoadingRecommendation(true);
 
       try {
         if (session) {
-          const updatedContent = {
-            ...contentRef.current,
-            [activeSection]: {
-              ...getSectionData(contentRef.current, activeSection),
-              text: (getSectionData(contentRef.current, activeSection).text || '') +
-                    ((getSectionData(contentRef.current, activeSection).text && !getSectionData(contentRef.current, activeSection).text.endsWith('\n')) ? '\n\n' : '') +
-                    draftText
-            }
-          };
-
-          const sectionContent = updatedContent[activeSection]?.text || '';
-
+          const sectionContent = getSectionData(contentRef.current, sectionKey).text || '';
           const recommendation = await recommendNextSection(
-            activeSection,
+            sectionKey,
             completedSections,
             sectionContent,
-            BIOGRAPHY_SECTIONS.map(s => s.key),
+            BIOGRAPHY_SECTIONS.map((s) => s.key),
             language
           );
-
           setNextSectionRecommendation(recommendation);
         }
       } catch (error) {
@@ -926,7 +902,7 @@ const [isPublishing, setIsPublishing] = useState(false);
         setIsLoadingRecommendation(false);
       }
     },
-    [activeSection, markDirty, session, language]
+    [id, markDirty, session, language]
   );
 
 
@@ -2030,11 +2006,11 @@ const [isPublishing, setIsPublishing] = useState(false);
                   onRevertToDraft={!effectivelyLocked ? handleRevertToDraft : undefined}
                 />
               ) : editorMode === 'conversation' && !isFrozen ? (
-                <ConversationMode
+                <CoachConversationMode
+                  biographyId={id}
                   sectionKey={activeSection}
                   onBackToEditor={() => setEditorMode('editor')}
-                  onGenerateDraft={handleGenerateDraftFromConversation}
-                  currentText={activeSectionData.text}
+                  onDraftApplied={handleCoachDraftApplied}
                 />
               ) : biographyMode === 'freeflow' ? (
                 <SectionEditor

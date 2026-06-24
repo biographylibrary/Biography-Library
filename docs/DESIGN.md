@@ -241,8 +241,10 @@ Stili in `app/globals.css` (classe `.ProseMirror`):
 
 - Sfondo pagina: bianco.
 - **Card titolo:** `#ECE9E4` (`brand-beigeBg`), raggio 6 mm, bordo 10 mm, padding interno 10 mm.
-- Testo titolo/autore: `#121212`.
-- **Card foto:** sotto la card titolo, gap 8 mm, altezza foto **110 mm**, larghezza = card; immagine in **cover crop** con clip arrotondato.
+- Testo titolo/autore: `#121212`, allineato a sinistra e **in alto** nella card (come mockup `BL_Cover_demo`).
+- La card titolo occupa ~38% dell’area utile verticale (230 mm); se il testo richiede più spazio, la card cresce e la foto si riduce (minimo foto 90 mm).
+- **Card foto:** sotto la card titolo, gap 8 mm, **larghezza = card titolo** (156 mm), altezza = spazio residuo fino al margine inferiore (~62% area utile); immagine in **cover crop** con angoli arrotondati (raggio 6 mm).
+- Layout calcolato in `lib/pdf/cover-composite-layout.ts`; raster foto browser in `lib/pdf/cover-photo-raster.ts`.
 - Alternativa: immagine A5 custom (`cover_a5`) a tutta pagina.
 
 ### 7.6 Quarta di copertina

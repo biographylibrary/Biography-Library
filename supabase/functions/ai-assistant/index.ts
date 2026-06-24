@@ -17,8 +17,9 @@ const WEEKLY_LIMIT = parseInt(Deno.env.get('AI_WEEKLY_LIMIT') ?? '200');
 const HEAVY_ACTIONS = new Set(["rewrite", "analyze-themes", "propose-structures"]);
 
 const PRIMARY_MODEL =
-  Deno.env.get('INFOMANIAK_AI_MODEL_PRIMARY') ?? 'swiss-ai/Apertus-70B-Instruct-2509';
-const FALLBACK_MODEL = Deno.env.get('INFOMANIAK_AI_MODEL_FALLBACK') ?? 'mistral3';
+  Deno.env.get('INFOMANIAK_AI_MODEL_PRIMARY') ?? 'google/gemma-4-31B-it';
+const FALLBACK_MODEL =
+  Deno.env.get('INFOMANIAK_AI_MODEL_FALLBACK') ?? 'mistralai/Mistral-Small-4-119B-2603';
 
 const LANGUAGE_NAMES: Record<string, string> = {
   en: "English",
@@ -97,6 +98,29 @@ function buildPromptsPrompt(sectionKey: string, sectionTitle: string, language: 
   return {
     system: `${JSON_ONLY_PREFIX}You are a warm, empathetic biography writing coach. Generate 5 thoughtful questions in ${langName} that help someone recall memories and stories for the given biography section. Questions should be specific, personal, and spark vivid memories. All text must be in ${langName}. Return a JSON array of objects with "prompt" (the question in ${langName}) and "starter" (a 5-8 word writing starter in ${langName} based on the question).`,
     user: `Generate prompts in ${langName} for the biography section: "${sectionTitle}" (key: ${sectionKey})`,
+  };
+}
+
+function buildCoachChatPrompt(
+  sectionTitle: string,
+  sectionKey: string,
+  language: string,
+  history: { role: string; content: string }[]
+) {
+  const langName = getLangName(language);
+  let historyContext = "";
+  if (history?.length) {
+    historyContext =
+      "\n\nRecent chat:\n" +
+      history.map((m) => `${m.role}: ${m.content}`).join("\n");
+  }
+  return {
+    system:
+      `You are a warm biography writing coach for Biography Library. ` +
+      `Help the user recall memories for the section "${sectionTitle}" (key: ${sectionKey}). ` +
+      `Respond in ${langName}. Be concise; ask one thoughtful question at a time. ` +
+      `Never invent biographical facts. Plain text only, no JSON.`,
+    user: `Continue the coaching conversation.${historyContext}`,
   };
 }
 
@@ -619,7 +643,8 @@ Deno.serve(async (req: Request) => {
       sections,
       themeAnalysis,
       originalOrder,
-      chunkText
+      chunkText,
+      coachMessage,
     } = body;
 
     if (!action) {
@@ -703,6 +728,24 @@ Deno.serve(async (req: Request) => {
         systemPrompt = p.system;
         userPrompt = p.user;
         maxTokens = 512;
+        break;
+      }
+      case "coach-chat": {
+        if (!coachMessage || !sectionTitle || !sectionKey) {
+          return errorResponse(
+            "Missing coachMessage, sectionTitle, or sectionKey for coach-chat",
+            400
+          );
+        }
+        const p = buildCoachChatPrompt(
+          sectionTitle,
+          sectionKey,
+          language,
+          conversationHistory || []
+        );
+        systemPrompt = p.system;
+        userPrompt = `${p.user}\n\nUser: ${coachMessage}`;
+        maxTokens = 1024;
         break;
       }
       case "recommend-next-section": {
@@ -837,6 +880,8 @@ Deno.serve(async (req: Request) => {
       parsed = { summary: textContent };
     } else if (action === "rewrite") {
       parsed = { rewrittenText: textContent };
+    } else if (action === "coach-chat") {
+      parsed = { reply: textContent.trim() };
     } else if (action === "analyze-answer") {
       try {
         const cleaned = extractJson(textContent);

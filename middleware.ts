@@ -58,6 +58,20 @@ async function resolveStaffRole(accessToken: string): Promise<string | null> {
 export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
+  if (process.env.NODE_ENV === 'development') {
+    if (pathname === '/sw.js' || pathname.startsWith('/workbox-')) {
+      const noopSw =
+        'self.addEventListener("install",function(e){e.waitUntil(self.skipWaiting())});' +
+        'self.addEventListener("activate",function(e){e.waitUntil(self.clients.claim())});';
+      return new NextResponse(noopSw, {
+        headers: {
+          'Content-Type': 'application/javascript; charset=utf-8',
+          'Cache-Control': 'no-store',
+        },
+      });
+    }
+  }
+
   if (pathname.startsWith('/api/admin')) {
     const token = getBearerToken(req);
     if (!token) {
@@ -86,5 +100,5 @@ export async function middleware(req: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/admin/:path*', '/api/admin/:path*'],
+  matcher: ['/sw.js', '/workbox-:path*', '/admin/:path*', '/api/admin/:path*'],
 };

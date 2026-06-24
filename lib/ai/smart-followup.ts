@@ -56,12 +56,11 @@ export async function analyzeAndRespond(
 ): Promise<AnalysisResult> {
   try {
     const result = await callAI({
-      action: 'followup',
-      answer,
-      question,
+      action: 'analyze-answer',
+      userAnswer: answer,
+      originalQuestion: question,
       conversationHistory,
       language,
-      hasHadFollowUp,
     });
 
     return {
