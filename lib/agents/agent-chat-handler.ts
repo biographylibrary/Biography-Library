@@ -5,7 +5,6 @@ import type { AgentType, AgentRole } from '@/lib/agents/models';
 import {
   checkAgentRateLimit,
   getOrCreateThread,
-  loadThreadMessages,
   verifyBiographyOwnership,
 } from '@/lib/agents/thread-service';
 import type { ChatMessage, ToolDefinition } from '@/lib/agents/infomaniak-client';
@@ -21,7 +20,7 @@ import {
   ensureHelpKbIndexed,
   retrieveKbContext,
 } from '@/lib/agents/rag/kb-rag';
-import { historyToChatMessages } from '@/lib/agents/run-agent-turn';
+import { buildAgentContext } from '@/lib/agents/thread-memory';
 import { BIOGRAPHY_SECTIONS } from '@/lib/editor-constants';
 
 export type AgentChatRequest = {
@@ -176,8 +175,7 @@ export async function prepareAgentTurn(
     locale,
   });
 
-  const rows = await loadThreadMessages(serviceClient, thread.id);
-  const history = historyToChatMessages(rows);
+  const { history, memoryBlock } = await buildAgentContext(serviceClient, thread);
 
   if (agentType === 'biography_coach' && biographyId) {
     const sectionKey = activeSection ?? 'childhood';
@@ -200,6 +198,9 @@ export async function prepareAgentTurn(
 
     const title = sectionTitleFor(locale, sectionKey);
     let systemPrompt = buildCoachSystemPrompt(locale, sectionKey, title);
+    if (memoryBlock) {
+      systemPrompt += memoryBlock;
+    }
     if (ragContext) {
       systemPrompt += `\n\nRelevant excerpts from this biography (for context only):\n${ragContext}`;
     }
@@ -234,6 +235,9 @@ export async function prepareAgentTurn(
     }
 
     let systemPrompt = buildReviewerChatSystemPrompt(locale);
+    if (memoryBlock) {
+      systemPrompt += memoryBlock;
+    }
     if (ragContext) {
       systemPrompt += `\n\nRelevant excerpts from this biography:\n${ragContext}`;
     }
@@ -301,6 +305,10 @@ export async function prepareAgentTurn(
       onboardingIncomplete: payload.onboardingIncomplete,
     });
 
+    if (memoryBlock) {
+      systemPrompt += memoryBlock;
+    }
+
     if (ragContext) {
       systemPrompt += `\n\nRelevant biography excerpts:\n${ragContext}`;
     }
@@ -310,7 +318,13 @@ export async function prepareAgentTurn(
 
     if (echoPage === 'editor_sections' && biographyId && activeSection) {
       const title = sectionTitleFor(locale, activeSection);
-      systemPrompt += `\n\nActive section: ${activeSection} (${title})`;
+      systemPrompt +=
+        `\n\n=== ACTIVE SECTION (mandatory) ===\n` +
+        `The author is currently on chapter: "${title}" (sectionKey: ${activeSection}).\n` +
+        `They selected this chapter in the sidebar — do NOT ask which chapter to work on.\n` +
+        `All coaching, questions, and drafts must focus on "${title}" unless they explicitly request another section.\n` +
+        `When using propose_draft, use sectionKey: ${activeSection}.\n` +
+        `=== END ACTIVE SECTION ===`;
     }
 
     return {
@@ -354,6 +368,9 @@ export async function prepareAgentTurn(
   }
 
   let fullSystemPrompt = systemPrompt;
+  if (memoryBlock) {
+    fullSystemPrompt += memoryBlock;
+  }
   if (kbContext) {
     fullSystemPrompt += `\n\nRelevant knowledge base excerpts:\n${kbContext}`;
   }

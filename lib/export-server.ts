@@ -1,8 +1,9 @@
-interface InlineRun {
-  text: string;
-  bold: boolean;
-  italic: boolean;
-}
+import {
+  extractSemanticBlocks,
+  parseHtmlIntoRuns,
+  stripHtmlToPlain,
+  type InlineRun,
+} from '@/lib/import/html-blocks';
 
 const FONT_BODY = 'Noto Serif';
 /** docx `size` is half-points */
@@ -12,55 +13,7 @@ const SZ_H2 = 30; // 15pt
 const SZ_H3 = 26; // 13pt
 
 function stripHtmlServer(html: string): string {
-  return html
-    .replace(/<p[^>]*>/gi, '')
-    .replace(/<\/p>/gi, '\n\n')
-    .replace(/<br\s*\/?>/gi, '\n')
-    .replace(/<[^>]+>/g, '')
-    .replace(/&amp;/g, '&')
-    .replace(/&lt;/g, '<')
-    .replace(/&gt;/g, '>')
-    .replace(/&nbsp;/g, ' ')
-    .replace(/&quot;/g, '"')
-    .replace(/&#39;/g, "'")
-    .replace(/\n{3,}/g, '\n\n')
-    .trim();
-}
-
-function parseHtmlIntoRuns(html: string): InlineRun[] {
-  const runs: InlineRun[] = [];
-  let pos = 0;
-  let bold = false;
-  let italic = false;
-
-  const tagRe = /<(\/?)(\w+)[^>]*>/gi;
-  let match: RegExpExecArray | null;
-  tagRe.lastIndex = 0;
-
-  while ((match = tagRe.exec(html)) !== null) {
-    const before = html.slice(pos, match.index);
-    if (before) {
-      const text = before
-        .replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>')
-        .replace(/&nbsp;/g, ' ').replace(/&quot;/g, '"').replace(/&#39;/g, "'");
-      if (text) runs.push({ text, bold, italic });
-    }
-    pos = match.index + match[0].length;
-    const closing = match[1] === '/';
-    const tag = match[2].toLowerCase();
-    if (tag === 'strong' || tag === 'b') bold = !closing;
-    else if (tag === 'em' || tag === 'i') italic = !closing;
-  }
-
-  const remaining = html.slice(pos);
-  if (remaining) {
-    const text = remaining
-      .replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>')
-      .replace(/&nbsp;/g, ' ').replace(/&quot;/g, '"').replace(/&#39;/g, "'");
-    if (text.trim()) runs.push({ text, bold, italic });
-  }
-
-  return runs.filter((r) => r.text.trim() !== '' || r.text === ' ');
+  return stripHtmlToPlain(html);
 }
 
 function htmlToParagraphRuns(html: string): InlineRun[][] {
@@ -79,17 +32,11 @@ function htmlToParagraphRuns(html: string): InlineRun[][] {
 
 type SemanticTag = 'p' | 'h1' | 'h2' | 'h3';
 
-function extractSemanticBlocks(html: string): Array<{ tag: SemanticTag; inner: string }> {
-  const blocks: Array<{ tag: SemanticTag; inner: string }> = [];
-  const re = /<(p|h1|h2|h3)\b[^>]*>([\s\S]*?)<\/\1>/gi;
-  let m: RegExpExecArray | null;
-  while ((m = re.exec(html)) !== null) {
-    blocks.push({
-      tag: m[1].toLowerCase() as SemanticTag,
-      inner: m[2],
-    });
-  }
-  return blocks;
+function extractSemanticBlocksLocal(html: string): Array<{ tag: SemanticTag; inner: string }> {
+  return extractSemanticBlocks(html)
+    .filter((b): b is { tag: SemanticTag; inner: string } =>
+      b.tag === 'p' || b.tag === 'h1' || b.tag === 'h2' || b.tag === 'h3'
+    );
 }
 
 export function buildBiographyTxtContent(
@@ -150,7 +97,7 @@ export async function buildBiographyDocxBuffer(
   }
 
   function buildDocxParagraphsFromHtml(html: string) {
-    const blocks = extractSemanticBlocks(html);
+    const blocks = extractSemanticBlocksLocal(html);
     const result: InstanceType<typeof Paragraph>[] = [];
 
     if (blocks.length > 0) {

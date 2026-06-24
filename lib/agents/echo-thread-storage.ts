@@ -1,14 +1,16 @@
 import type { AgentType } from '@/lib/agents/models';
 
-/**
- * Persist Echo threads as platform_guide until migration
- * `20260623120000_echo_agent_type.sql` is applied on Supabase.
- * API routing still uses agentType `echo` for prompts and tools.
- */
+/** Legacy: Echo threads were stored as platform_guide before echo agent type migration. */
+export const LEGACY_ECHO_STORAGE_TYPE: AgentType = 'platform_guide';
+
 export function threadAgentTypeForStorage(agentType: AgentType): AgentType {
-  return agentType === 'echo' ? 'platform_guide' : agentType;
+  return agentType;
 }
 
 export function isEchoAgentType(agentType: AgentType): boolean {
   return agentType === 'echo';
+}
+
+export function echoStorageTypesForLookup(): AgentType[] {
+  return ['echo', LEGACY_ECHO_STORAGE_TYPE];
 }

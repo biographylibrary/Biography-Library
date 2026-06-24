@@ -5,6 +5,23 @@ import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 import { Loader as Loader2 } from 'lucide-react';
 
+async function triggerWelcomeEmail(userId: string): Promise<void> {
+  const { data: { session } } = await supabase.auth.getSession();
+  if (!session?.access_token) return;
+  try {
+    await fetch('/api/auth/welcome-email', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${session.access_token}`,
+      },
+      body: JSON.stringify({ userId }),
+    });
+  } catch {
+    /* best-effort */
+  }
+}
+
 export default function AuthCallbackPage() {
   const router = useRouter();
 
@@ -25,24 +42,30 @@ export default function AuthCallbackPage() {
       }
 
       if (code) {
-        const { error } = await supabase.auth.exchangeCodeForSession(code);
+        const { data, error } = await supabase.auth.exchangeCodeForSession(code);
         if (error) {
           router.replace(`/verify-email?error=${encodeURIComponent(error.message)}`);
         } else {
-          router.replace('/echo');
+          if (data.session?.user?.id) {
+            await triggerWelcomeEmail(data.session.user.id);
+          }
+          router.replace('/dashboard');
         }
         return;
       }
 
       if (tokenHash && (type === 'signup' || type === 'email' || type === 'recovery')) {
         const otpType = type === 'recovery' ? 'recovery' : 'signup';
-        const { error } = await supabase.auth.verifyOtp({ token_hash: tokenHash, type: otpType as 'signup' | 'recovery' });
+        const { data, error } = await supabase.auth.verifyOtp({ token_hash: tokenHash, type: otpType as 'signup' | 'recovery' });
         if (error) {
           router.replace(`/verify-email?error=${encodeURIComponent(error.message)}`);
         } else if (type === 'recovery') {
           router.replace('/reset-password');
         } else {
-          router.replace('/echo');
+          if (data.session?.user?.id) {
+            await triggerWelcomeEmail(data.session.user.id);
+          }
+          router.replace('/dashboard');
         }
         return;
       }
@@ -54,13 +77,16 @@ export default function AuthCallbackPage() {
         const hashType = params.get('type');
 
         if (accessToken && refreshToken) {
-          const { error } = await supabase.auth.setSession({ access_token: accessToken, refresh_token: refreshToken });
+          const { data, error } = await supabase.auth.setSession({ access_token: accessToken, refresh_token: refreshToken });
           if (error) {
             router.replace(`/verify-email?error=${encodeURIComponent(error.message)}`);
           } else if (hashType === 'recovery') {
             router.replace('/reset-password');
           } else {
-            router.replace('/echo');
+            if (data.session?.user?.id) {
+              await triggerWelcomeEmail(data.session.user.id);
+            }
+            router.replace('/dashboard');
           }
           return;
         }

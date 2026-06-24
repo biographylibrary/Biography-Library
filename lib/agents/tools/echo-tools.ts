@@ -75,8 +75,12 @@ export function getEchoToolsForContext(params: {
 }): ToolDefinition[] {
   const { echoPage, biographyId, onboardingIncomplete } = params;
 
-  if (onboardingIncomplete || echoPage === 'hub' || !biographyId) {
+  if (onboardingIncomplete) {
     return [...ECHO_ONBOARDING_TOOL_DEFINITIONS];
+  }
+
+  if (echoPage === 'hub' || !biographyId) {
+    return [...COACH_TOOL_DEFINITIONS];
   }
 
   if (echoPage === 'editor_freeflow') {
@@ -110,6 +114,9 @@ export type EchoToolResultEvent = {
   tool: string;
   sectionKey?: string;
   contentLength?: number;
+  draftText?: string;
+  preview?: boolean;
+  wordCount?: number;
   onboardingStep?: string;
   modeConverted?: string;
 };
@@ -167,6 +174,7 @@ export async function executeEchoTool(
       serviceClient: ctx.serviceClient,
       userId: ctx.userId,
       biographyId: ctx.biographyId,
+      deferDraftApply: true,
     });
     return { content, event };
   }

@@ -26,7 +26,9 @@ export function buildCoachSystemPrompt(
     `- read_section: read existing text and status for a section.\n` +
     `- propose_draft: append narrative text to a section (max 1500 words). ` +
     `Use ONLY when the user explicitly asks you to write or add a draft to the editor.\n` +
-    `- complete_section: mark a section complete when the user confirms they are done.\n\n` +
+    `- complete_section: mark a section complete when the user confirms they are done or asks to mark it complete.\n` +
+    `- reopen_section: reopen a completed section when the user wants to edit it again.\n` +
+    `- Use get_progress to see which sections are already complete.\n\n` +
     `Rules: never invent biographical facts; work from what the user shares. ` +
     `Ask one thoughtful question at a time. Do not call propose_draft without explicit user request.`
   );

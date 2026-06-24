@@ -21,7 +21,7 @@ export async function DELETE(
   const service = buildServiceClient();
   const { data: target, error: targetErr } = await service
     .from('profiles')
-    .select('id, email, role')
+    .select('id, email, role, language')
     .eq('id', targetId)
     .maybeSingle();
 
@@ -38,7 +38,7 @@ export async function DELETE(
 
   if (email) {
     try {
-      await sendAccountDeletedEmail(email);
+      await sendAccountDeletedEmail(email, (target as { language?: string }).language);
     } catch (e) {
       console.error('[admin/delete user] email', e);
     }

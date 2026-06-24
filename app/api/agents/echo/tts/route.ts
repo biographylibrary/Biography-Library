@@ -1,15 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { authenticateAgentRequest } from '@/lib/agents/agent-chat-handler';
-import { synthesizeKokoroSpeech } from '@/lib/echo/kokoro-tts';
+import { checkAgentRateLimit } from '@/lib/agents/thread-service';
 import { isEchoTtsConfigured } from '@/lib/echo/voice-config';
+import { synthesizeVoxtralSpeech } from '@/lib/echo/voxtral-tts';
+import { buildServiceClient } from '@/lib/server/review-submit-pipeline';
 
 export const runtime = 'nodejs';
 
 export async function GET() {
   return NextResponse.json({
     configured: isEchoTtsConfigured(),
-    provider: 'kokoro',
-    region: 'eu-self-hosted',
+    provider: 'voxtral',
+    region: 'eu-mistral',
   });
 }
 
@@ -19,11 +21,17 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: auth.error }, { status: auth.status });
   }
 
+  const serviceClient = buildServiceClient();
+  const rateLimit = await checkAgentRateLimit(serviceClient, auth.userId);
+  if (!rateLimit.allowed) {
+    return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
+  }
+
   if (!isEchoTtsConfigured()) {
     return NextResponse.json(
       {
         error: 'tts_not_configured',
-        hint: 'Set ECHO_TTS_BASE_URL to your Kokoro server (see docs/ECHO_VOICE.md). Browser TTS is used as fallback.',
+        hint: 'Set MISTRAL_API_KEY (see docs/ECHO_VOICE.md). Browser TTS is used as fallback.',
       },
       { status: 503 }
     );
@@ -44,7 +52,7 @@ export async function POST(req: NextRequest) {
   const language = body.language ?? 'en';
 
   try {
-    const audio = await synthesizeKokoroSpeech(text, language);
+    const audio = await synthesizeVoxtralSpeech(text, language);
     if (!audio) {
       return NextResponse.json({ error: 'TTS synthesis failed' }, { status: 502 });
     }

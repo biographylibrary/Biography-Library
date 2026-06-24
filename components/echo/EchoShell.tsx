@@ -1,7 +1,9 @@
 'use client';
 
+import { useEffect } from 'react';
 import { usePathname } from 'next/navigation';
-import { EchoProvider } from '@/lib/echo/echo-context';
+import { EchoProvider, useEcho } from '@/lib/echo/echo-context';
+import { EchoChatProvider } from '@/lib/echo/echo-chat-context';
 import { EchoBubble } from '@/components/echo/EchoBubble';
 
 interface EchoShellProps {
@@ -9,6 +11,21 @@ interface EchoShellProps {
   biographyId?: string;
   sectionKey?: string;
   biographyMode?: 'sections' | 'freeflow';
+  showBubble?: boolean;
+  onDraftApplied?: (sectionKey: string) => void;
+  onSectionCompletionChanged?: (sectionKey: string, completed: boolean) => void;
+}
+
+function EchoBubbleGate({ show }: { show: boolean }) {
+  const { setBubbleOpen } = useEcho();
+
+  useEffect(() => {
+    if (!show) setBubbleOpen(false);
+  }, [show, setBubbleOpen]);
+
+  if (!show) return null;
+
+  return <EchoBubble />;
 }
 
 export function EchoShell({
@@ -16,6 +33,9 @@ export function EchoShell({
   biographyId,
   sectionKey,
   biographyMode,
+  showBubble = false,
+  onDraftApplied,
+  onSectionCompletionChanged,
 }: EchoShellProps) {
   const pathname = usePathname();
   const isEchoHub = pathname === '/echo';
@@ -36,13 +56,23 @@ export function EchoShell({
       sectionKey={sectionKey}
       biographyMode={biographyMode}
     >
-      {children}
-      {!isEchoHub && (
-        <EchoBubble
+      {biographyId ? (
+        <EchoChatProvider
+          echoPage={page}
           biographyId={biographyId}
           activeSection={sectionKey}
           biographyMode={biographyMode}
-        />
+          onDraftApplied={onDraftApplied}
+          onSectionCompletionChanged={onSectionCompletionChanged}
+        >
+          {children}
+          <EchoBubbleGate show={showBubble && !isEchoHub} />
+        </EchoChatProvider>
+      ) : (
+        <>
+          {children}
+          <EchoBubbleGate show={showBubble && !isEchoHub} />
+        </>
       )}
     </EchoProvider>
   );

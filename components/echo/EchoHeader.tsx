@@ -4,7 +4,6 @@ import Link from 'next/link';
 import { BiographyPicker } from './BiographyPicker';
 import type { Biography } from '@/lib/biographies';
 import { useTranslation } from '@/lib/i18n/i18n-context';
-import { LanguageSelector } from '@/components/language-selector';
 import { useAuth } from '@/lib/auth-context';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
@@ -33,7 +32,7 @@ export function EchoHeader({
 
   const handleSignOut = async () => {
     await signOut();
-    router.push('/biographies');
+    router.push('/');
   };
 
   const displayName = user?.user_metadata?.name || user?.email || '';
@@ -58,7 +57,6 @@ export function EchoHeader({
         >
           {t.echo.myBiographies}
         </Link>
-        <LanguageSelector />
         {user && (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>

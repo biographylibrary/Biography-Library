@@ -41,7 +41,7 @@ export default function VerifyEmailPage() {
       if (currentUser?.email_confirmed_at) {
         if (pollRef.current) clearInterval(pollRef.current);
         setConfirmed(true);
-        setTimeout(() => router.push('/echo'), 2500);
+        setTimeout(() => router.push('/dashboard'), 2500);
       }
     }, 4000);
 
@@ -52,7 +52,7 @@ export default function VerifyEmailPage() {
 
   useEffect(() => {
     if (user?.email_confirmed_at && !verifyError) {
-      router.push('/echo');
+      router.push('/dashboard');
     }
   }, [user, verifyError, router]);
 
@@ -243,7 +243,7 @@ export default function VerifyEmailPage() {
 
           <p className="text-center text-sm text-muted-foreground mt-6">
             <Link
-              href="/login"
+              href="/"
               className="font-medium transition-colors hover:opacity-80"
               style={{ color: '#6D323E' }}
             >

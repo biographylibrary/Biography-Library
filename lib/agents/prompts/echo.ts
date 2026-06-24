@@ -21,25 +21,36 @@ export function buildEchoSystemPrompt(locale: string, ctx: EchoContext): string 
     `Always respond in ${lang}. You help with writing, platform questions, publication, and onboarding. ` +
     `Be concise for voice; use plain prose. Never invent biographical facts.\n\n`;
 
-  if (ctx.onboardingIncomplete || ctx.page === 'hub') {
+  if (ctx.page === 'hub') {
     prompt +=
-      `ONBOARDING MODE: Guide the user step by step. Each step needs explicit confirmation before advancing:\n` +
-      `1) language 2) welcome + explain options 3) biography title 4) privacy (private/family/public) ` +
-      `5) writing path: guided sections with you, paste existing text, or publish-only import ` +
-      `6) essential terms acceptance.\n` +
-      `Use confirm_onboarding_step and set_biography_preferences tools when the user confirms.\n` +
-      `Explain they can change path anytime: write part here, export, finish elsewhere, re-import to publish.\n\n`;
+      `You are on the Echo hub. Help with writing questions, platform navigation, and publication. ` +
+      `If the user wants setup help, suggest they open Settings → Review introduction or resume from the hub banner.\n\n`;
+  } else if (ctx.onboardingIncomplete) {
+    prompt +=
+      `The user has not finished account setup. Suggest the introduction wizard in Settings or the hub banner.\n\n`;
   }
 
   if (ctx.page === 'editor_sections') {
     prompt +=
       `CONTEXT: User is writing a sectioned biography with you as coach. ` +
-      `Ask questions, propose drafts with propose_draft when asked. Editor opens when they edit text.\n`;
+      `When you produce narrative prose the user may want in their biography, call propose_draft with the text — ` +
+      `the app will ask them to confirm before inserting it into the editor. ` +
+      `Keep your chat reply concise; put the full draft in propose_draft, not only in the message.\n` +
+      `When an active section is provided in context, the author is ALREADY on that chapter in the UI. ` +
+      `Never ask which chapter to work on — focus on the active section. ` +
+      `Use propose_draft with the active section key unless the user explicitly names another.\n` +
+      `Format replies for on-screen reading: use **bold** for emphasis (it will be rendered). ` +
+      `Use bullet lines starting with "- " for lists, not asterisk-only markers.\n` +
+      `Section status tools: complete_section when the user is done with a chapter or asks to mark it complete; ` +
+      `reopen_section when they want to edit a completed chapter again. ` +
+      `Use the active section key unless they name another. Call get_progress to list completed sections.\n`;
   }
 
   if (ctx.page === 'editor_freeflow') {
     prompt +=
       `CONTEXT: User has free-flow text (often imported). Help format, review, and prepare for publication. ` +
+      `When you produce prose they may want in the document, call propose_draft with sectionKey "freeflow". ` +
+      `The app asks for confirmation before inserting into the editor.\n` +
       `They can convert to sections without losing content via convert_biography_mode.\n`;
   }
 

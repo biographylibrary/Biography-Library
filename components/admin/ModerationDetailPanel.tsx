@@ -3,6 +3,8 @@
 import { useState, useEffect } from 'react';
 import { ModerationReport, FlaggedPassage } from '@/lib/moderation/types';
 import { takeOwnership, claimReportReview, submitDecision, saveModeratorNotes } from '@/lib/moderation/moderation-actions';
+import { sendAuthorEmailFromClient } from '@/lib/client/send-author-email';
+import type { EmailTemplateId } from '@/lib/server/email';
 import { useTranslation } from '@/lib/i18n/i18n-context';
 import { useAuth } from '@/lib/auth-context';
 import {
@@ -156,6 +158,23 @@ export function ModerationDetailPanel({ report, onClose, onRefresh }: Moderation
     }
 
     if (result.error) return;
+
+    const templateByType: Record<NonNullable<DialogType>, EmailTemplateId> = {
+      approve: 'publication_published',
+      publishWarning: 'publication_published_warning',
+      return: 'publication_returned',
+      remove: 'publication_removed',
+    };
+
+    void sendAuthorEmailFromClient({
+      userId: report.biography_author_id!,
+      templateId: templateByType[type],
+      biographyId: report.biography_id,
+      vars:
+        type === 'return' && returnMessage.trim()
+          ? { reviewerMessage: returnMessage.trim() }
+          : undefined,
+    });
 
     onRefresh();
     onClose();

@@ -13,9 +13,10 @@ import {
   fetchBiographies,
   createBiography,
   deleteBiography,
+  ONE_BIOGRAPHY_PER_USER_ERROR,
   type Biography,
 } from '@/lib/biographies';
-import { Plus, Loader as Loader2, CircleAlert as AlertCircle, Mail, CircleCheck as CheckCircle2 } from 'lucide-react';
+import { Loader as Loader2, CircleAlert as AlertCircle, Mail, CircleCheck as CheckCircle2 } from 'lucide-react';
 import { useTranslation } from '@/lib/i18n/i18n-context';
 import { toast } from 'sonner';
 
@@ -76,6 +77,9 @@ export default function DashboardPage() {
     if (!user) return;
     const biographyMode = mode === 'import' ? 'freeflow' : mode;
     const { data, error } = await createBiography(user.id, title, visibility, biographyMode, user.user_metadata?.name || user.email || '');
+    if (error === ONE_BIOGRAPHY_PER_USER_ERROR) {
+      throw new Error(t.dashboard.oneBiographyLimit);
+    }
     if (error) throw new Error(error);
     setShowCreateModal(false);
     if (data) {
@@ -105,7 +109,7 @@ export default function DashboardPage() {
 
   useEffect(() => {
     if (needsWelcome && user && mounted) {
-      router.replace('/echo');
+      router.replace('/onboarding');
     }
   }, [needsWelcome, user, mounted, router]);
 
@@ -213,45 +217,8 @@ export default function DashboardPage() {
               userName={displayName}
               userId={user.id}
               onDeleteClick={() => setDeleteTarget(biographies[0])}
-              onCreateClick={() => setShowCreateModal(true)}
+              onCreateClick={biographies.length === 0 ? () => setShowCreateModal(true) : undefined}
             />
-
-            {biographies.length > 0 && (
-              <>
-                <div className="flex flex-col items-center gap-6">
-                  {biographies.some(b => b.status === 'published' && b.created_at) && (() => {
-                const publishedBios = biographies.filter(b => b.status === 'published' && b.created_at);
-                if (publishedBios.length === 0) return null;
-
-                const oldestPublished = publishedBios.sort((a, b) =>
-                  new Date(a.created_at!).getTime() - new Date(b.created_at!).getTime()
-                )[0];
-
-                const monthsSincePublished = Math.floor(
-                  (Date.now() - new Date(oldestPublished.created_at!).getTime()) / (1000 * 60 * 60 * 24 * 30)
-                );
-
-                if (monthsSincePublished >= 12) {
-                  return (
-                    <div className="flex flex-col items-center gap-6">
-                      <p className="text-sm text-center text-muted-foreground max-w-2xl leading-relaxed">
-                        {t.dashboard.updateAvailabilityMessage}
-                      </p>
-                      <Button
-                        className="gap-2 min-h-[44px] px-6 bg-[#121212] hover:bg-[#121212]/90 text-[#FDFBF7]"
-                        onClick={() => setShowCreateModal(true)}
-                      >
-                        <Plus className="h-5 w-5" />
-                        <span>{t.dashboard.createBiography}</span>
-                      </Button>
-                    </div>
-                  );
-                }
-                return null;
-              })()}
-                </div>
-              </>
-            )}
           </div>
         )}
       </main>

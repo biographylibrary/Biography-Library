@@ -1,13 +1,10 @@
 'use client';
 
-import { Bell, LayoutDashboard, LogOut, Shield, CircleHelp, Settings } from 'lucide-react';
+import { Bell, LayoutDashboard, LogOut, Shield, Settings } from 'lucide-react';
 import { useAuth, ADMIN_ROLES } from '@/lib/auth-context';
 import { useTranslation } from '@/lib/i18n/i18n-context';
 import { useTheme } from 'next-themes';
-import { LanguageSelector } from '@/components/language-selector';
-import { FontSizeControl } from '@/components/accessibility/font-size-control';
 import { Logo } from '@/components/logo';
-import { HelpChatbot } from '@/components/help/HelpChatbot';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -21,22 +18,33 @@ import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { useRouter, usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
-import { useEffect, useState } from 'react';
-import { supabase } from '@/lib/supabase';
+import { useEffect, useState, useCallback } from 'react';
+import {
+  fetchUnreadNotificationCount,
+  NOTIFICATIONS_CHANGED_EVENT,
+} from '@/lib/notifications-service';
 
 export function Header() {
-  const { user, role, signOut, fontSize, setFontSize } = useAuth();
+  const { user, role, signOut } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
   const { t } = useTranslation();
   const { resolvedTheme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
-  const [helpOpen, setHelpOpen] = useState(false);
 
   useEffect(() => {
     setMounted(true);
   }, []);
+
+  const refreshUnreadCount = useCallback(async () => {
+    if (!user) {
+      setUnreadCount(0);
+      return;
+    }
+    const count = await fetchUnreadNotificationCount(user.id);
+    setUnreadCount(count);
+  }, [user]);
 
   useEffect(() => {
     if (!user) {
@@ -44,41 +52,44 @@ export function Header() {
       return;
     }
 
-    const fetchUnreadCount = async () => {
-      const { count } = await supabase
-        .from('user_notifications')
-        .select('id', { count: 'exact', head: true })
-        .eq('user_id', user.id)
-        .eq('is_read', false);
-      setUnreadCount(count ?? 0);
+    void refreshUnreadCount();
+
+    const onNotificationsChanged = () => {
+      void refreshUnreadCount();
+    };
+    const onVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        void refreshUnreadCount();
+      }
     };
 
-    fetchUnreadCount();
+    window.addEventListener(NOTIFICATIONS_CHANGED_EVENT, onNotificationsChanged);
+    document.addEventListener('visibilitychange', onVisibilityChange);
 
-    const channel = supabase
-      .channel(`notifications-header-${user.id}`)
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'user_notifications', filter: `user_id=eq.${user.id}` },
-        () => { fetchUnreadCount(); }
-      )
-      .subscribe();
+    return () => {
+      window.removeEventListener(NOTIFICATIONS_CHANGED_EVENT, onNotificationsChanged);
+      document.removeEventListener('visibilitychange', onVisibilityChange);
+    };
+  }, [user, refreshUnreadCount]);
 
-    return () => { supabase.removeChannel(channel); };
-  }, [user]);
+  useEffect(() => {
+    if (user) {
+      void refreshUnreadCount();
+    }
+  }, [pathname, user, refreshUnreadCount]);
 
   const handleSignOut = async () => {
     await signOut();
-    router.push('/biographies');
+    router.push('/');
   };
 
   const isEditorPage = pathname?.includes('/biography/') && pathname?.includes('/edit');
   const isDashboardPage = pathname === '/dashboard';
+  const isAuthPage = pathname === '/' || pathname === '/register';
+  const homeHref = user ? '/dashboard' : '/';
   const isDark = mounted && resolvedTheme === 'dark';
   const showAdminLink = user && role && ADMIN_ROLES.includes(role);
   const adminLinkLabel = role === 'reviewer' ? t.nav.reviewer : t.nav.admin;
-
-  const showHelpButton = true;
 
   const getInitials = (name: string) => {
     const parts = name.trim().split(/\s+/);
@@ -111,7 +122,7 @@ export function Header() {
         </div>
 
         <div className="absolute left-1/2 -translate-x-1/2 flex items-center">
-          <Link href="/biographies" className="flex items-center">
+          <Link href={homeHref} className="flex items-center">
             <Logo height={48} />
           </Link>
         </div>
@@ -132,40 +143,15 @@ export function Header() {
             </Link>
           )}
 
-          {user && (
-            <div className="hidden md:flex items-center mr-1">
-              <FontSizeControl
-                currentSize={fontSize}
-                onSizeChange={setFontSize}
-                userId={user.id}
-              />
-            </div>
-          )}
-
-          <LanguageSelector />
-
-          {!user && (
+          {!user && !isAuthPage && (
             <div className="flex items-center gap-1.5 ml-1">
               <Button variant="ghost" size="sm" asChild>
-                <Link href="/login">{t.publicBiographies.signIn}</Link>
+                <Link href="/">{t.publicBiographies.signIn}</Link>
               </Button>
               <Button size="sm" asChild className="hidden sm:inline-flex">
                 <Link href="/register">{t.publicBiographies.startBiography}</Link>
               </Button>
             </div>
-          )}
-
-          {showHelpButton && (
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-9 w-9"
-              onClick={() => setHelpOpen(prev => !prev)}
-              title={t.helpChatbot.openHelp}
-              aria-pressed={helpOpen}
-            >
-              <CircleHelp className="h-[1.2rem] w-[1.2rem]" />
-            </Button>
           )}
 
           {user && (
@@ -272,9 +258,6 @@ export function Header() {
       </div>
     </header>
 
-    {showHelpButton && (
-      <HelpChatbot isOpen={helpOpen} onClose={() => setHelpOpen(false)} />
-    )}
     </>
   );
 }

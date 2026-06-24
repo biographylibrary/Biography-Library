@@ -8,27 +8,15 @@ import { cn } from '@/lib/utils';
 import { X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
-interface EchoBubbleProps {
-  biographyId?: string;
-  activeSection?: string;
-  biographyMode?: 'sections' | 'freeflow';
-}
-
-export function EchoBubble({ biographyId, activeSection, biographyMode }: EchoBubbleProps) {
+export function EchoBubble() {
   const { bubbleOpen, setBubbleOpen, orbState } = useEcho();
   const { t } = useTranslation();
-
-  const echoPage =
-    biographyMode === 'freeflow'
-      ? 'editor_freeflow'
-      : biographyId
-        ? 'editor_sections'
-        : 'other';
 
   return (
     <>
       <button
         type="button"
+        data-tour-id="echo-bubble"
         onClick={() => setBubbleOpen(!bubbleOpen)}
         className={cn(
           'fixed bottom-6 right-6 z-50 rounded-full shadow-lg p-1 bg-background border',
@@ -63,14 +51,9 @@ export function EchoBubble({ biographyId, activeSection, biographyMode }: EchoBu
               </Button>
             </div>
             <EchoChat
-              echoPage={echoPage}
-              biographyId={biographyId}
-              activeSection={activeSection}
-              biographyMode={biographyMode}
               className="flex-1 min-h-0 p-2"
               showOrb={false}
               orbSize="sm"
-              loadHistory
             />
           </div>
         </>

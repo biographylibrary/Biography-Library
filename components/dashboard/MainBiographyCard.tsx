@@ -21,6 +21,7 @@ import { isAuthorTextEditableStatus } from '@/lib/publication-state';
 import { getSectionTitle } from '@/lib/ai/next-section-recommender';
 import type { Biography } from '@/lib/biographies';
 import { GlobalNotesPanel } from '@/components/editor/GlobalNotesPanel';
+import { ChapterCooldownBanner } from '@/components/dashboard/ChapterCooldownBanner';
 import { format, isPast, isToday } from 'date-fns';
 import { it, de, fr, enUS } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
@@ -346,6 +347,11 @@ export function MainBiographyCard({ biography, userName, userId, onDeleteClick, 
                 <p className="text-xs text-brand-wineDark/90 dark:text-brand-mustardLight/90 leading-relaxed pl-[calc(5rem+0.5rem)] sm:pl-[calc(6rem+0.5rem)]">
                   {t.dashboard.underReviewMessage}
                 </p>
+              )}
+              {biography.status === 'published' && (
+                <div className="pl-[calc(5rem+0.5rem)] sm:pl-[calc(6rem+0.5rem)]">
+                  <ChapterCooldownBanner biography={biography} />
+                </div>
               )}
             </div>
 

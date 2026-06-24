@@ -1,0 +1,127 @@
+/* Onboarding tour — aligned with Biography Library design tokens */
+.driver-popover {
+  background: var(--bg-surface, #fdfbf7) !important;
+  color: var(--text-primary, #121212) !important;
+  border: 1px solid var(--border-global, #616161) !important;
+  border-radius: var(--radius, 0.75rem) !important;
+  box-shadow: 0 12px 40px rgba(18, 18, 18, 0.12) !important;
+  max-width: min(22rem, calc(100vw - 2rem)) !important;
+  font-family: 'Noto Sans', system-ui, sans-serif !important;
+}
+
+.driver-popover-title {
+  font-family: 'Noto Serif', Georgia, serif !important;
+  font-size: 1.125rem !important;
+  font-weight: 400 !important;
+  color: var(--text-primary, #121212) !important;
+  line-height: 1.35 !important;
+}
+
+.driver-popover-description {
+  font-size: 0.875rem !important;
+  color: var(--text-secondary, #616161) !important;
+  line-height: 1.55 !important;
+}
+
+.driver-popover-progress-text {
+  font-size: 0.6875rem !important;
+  letter-spacing: 0.06em !important;
+  text-transform: uppercase !important;
+  color: var(--text-secondary, #616161) !important;
+}
+
+.driver-popover-footer {
+  gap: 0.5rem !important;
+}
+
+.driver-popover-footer button {
+  border-radius: 0.5rem !important;
+  font-size: 0.8125rem !important;
+  padding: 0.5rem 0.875rem !important;
+  text-shadow: none !important;
+  transition: background-color 0.15s ease, border-color 0.15s ease !important;
+}
+
+.driver-popover-prev-btn,
+.driver-popover-close-btn {
+  background: transparent !important;
+  color: var(--text-primary, #121212) !important;
+  border: 1px solid var(--border-global, #616161) !important;
+}
+
+.driver-popover-prev-btn:hover,
+.driver-popover-close-btn:hover {
+  background: var(--bg-main, #edebe7) !important;
+}
+
+.driver-popover-next-btn {
+  background: var(--text-primary, #121212) !important;
+  color: var(--bg-surface, #fdfbf7) !important;
+  border: 1px solid var(--text-primary, #121212) !important;
+}
+
+.driver-popover-next-btn:hover {
+  background: var(--text-secondary, #616161) !important;
+  border-color: var(--text-secondary, #616161) !important;
+}
+
+.driver-popover-skip-step-btn {
+  background: var(--status-info, #c4daeb) !important;
+  color: var(--text-primary, #121212) !important;
+  border: 1px solid var(--border-global, #616161) !important;
+  border-radius: 0.5rem !important;
+  font-size: 0.8125rem !important;
+  padding: 0.5rem 0.875rem !important;
+  margin-right: auto !important;
+  cursor: pointer !important;
+}
+
+.driver-popover-skip-step-btn:hover {
+  background: var(--btn-hover, #c8dfbe) !important;
+}
+
+.dark .driver-popover-skip-step-btn {
+  background: hsl(var(--muted)) !important;
+  color: hsl(var(--card-foreground)) !important;
+  border-color: hsl(var(--border)) !important;
+}
+
+.driver-active-element {
+  border-radius: 0.5rem !important;
+  filter: none !important;
+  -webkit-filter: none !important;
+  backdrop-filter: none !important;
+  transform: none !important;
+}
+
+.driver-active-element * {
+  filter: none !important;
+  -webkit-filter: none !important;
+}
+
+.dark .driver-popover {
+  background: hsl(var(--card)) !important;
+  color: hsl(var(--card-foreground)) !important;
+  border-color: hsl(var(--border)) !important;
+}
+
+.dark .driver-popover-title {
+  color: hsl(var(--card-foreground)) !important;
+}
+
+.dark .driver-popover-description,
+.dark .driver-popover-progress-text {
+  color: hsl(var(--muted-foreground)) !important;
+}
+
+.dark .driver-popover-prev-btn,
+.dark .driver-popover-close-btn {
+  color: hsl(var(--card-foreground)) !important;
+  border-color: hsl(var(--border)) !important;
+}
+
+.dark .driver-popover-next-btn {
+  background: hsl(var(--primary)) !important;
+  color: hsl(var(--primary-foreground)) !important;
+  border-color: hsl(var(--primary)) !important;
+}

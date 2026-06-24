@@ -1,18 +1,12 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { RichTextEditor } from './rich-text-editor';
 import { VoiceRecorder } from './voice-recorder';
-import { ImportTextDialog } from './import-text-dialog';
 import { useTranslation } from '@/lib/i18n/i18n-context';
-import { Sparkles, Flag, Mic, SpellCheck, MessageSquareText, FileText, Power, Wand as Wand2, CircleCheck as CheckCircle2, Lock, Landmark, MoreHorizontal } from 'lucide-react';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+import { Sparkles, Mic, Power, CircleCheck as CheckCircle2, Lock, RotateCcw } from 'lucide-react';
+import { EditorAiToolsMenu } from './editor-ai-tools-menu';
 import { BIOGRAPHY_SECTIONS, type SectionData } from '@/lib/editor-constants';
 import { cn } from '@/lib/utils';
 
@@ -33,17 +27,11 @@ interface SectionEditorProps {
   biographyId?: string;
   editorFontSize?: number;
   onEditorFontSizeChange?: (size: number) => void;
-  onImportMultipleSections?: (sections: Array<{ title: string; content: string }>) => void;
   onMarkComplete?: () => void;
   isCompleted?: boolean;
   onTogglePhotos?: () => void;
   onToggleNotes?: () => void;
-  openImportDialog?: boolean;
-  onImportDialogOpenChange?: (open: boolean) => void;
   isPublished?: boolean;
-  contentFreeflow?: string;
-  onImportedToSection?: (sectionKey: string, newContent: string) => void;
-  onImportedToFreeflow?: (newContent: string) => void;
   titleOverride?: string;
   biographyMode?: 'sections' | 'freeflow';
   echoToolbar?: boolean;
@@ -66,27 +54,16 @@ export function SectionEditor({
   biographyId,
   editorFontSize = 16,
   onEditorFontSizeChange,
-  onImportMultipleSections,
   onMarkComplete,
   isCompleted = false,
   onTogglePhotos,
   onToggleNotes,
-  openImportDialog,
-  onImportDialogOpenChange,
   isPublished = false,
-  contentFreeflow = '',
-  onImportedToSection,
-  onImportedToFreeflow,
   titleOverride,
   biographyMode = 'sections',
   echoToolbar = false,
 }: SectionEditorProps) {
   const [showVoice, setShowVoice] = useState(false);
-  const [showImportDialog, setShowImportDialog] = useState(false);
-
-  useEffect(() => {
-    if (openImportDialog !== undefined) setShowImportDialog(openImportDialog);
-  }, [openImportDialog]);
   const section = BIOGRAPHY_SECTIONS.find((s) => s.key === sectionKey);
   const { t } = useTranslation();
 
@@ -118,7 +95,7 @@ export function SectionEditor({
   };
 
   return (
-    <div className="flex flex-col flex-1 min-h-0 overflow-hidden">
+    <div className="flex flex-col flex-1 min-h-0 h-full overflow-hidden">
       <div className="px-3 sm:px-6 py-3 border-b border-border/50 shrink-0 space-y-2">
         <div className="flex items-start justify-between gap-2">
           <h2 className="font-serif text-lg sm:text-xl font-medium leading-tight flex-1 min-w-0 break-words">
@@ -139,52 +116,17 @@ export function SectionEditor({
         </div>
         <div className="flex items-center gap-1 flex-wrap">
           {!isPublished && !isFreeflow && aiEnabled && (
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="outline" size="sm" className="gap-1 text-xs h-7 px-2">
-                  <MoreHorizontal className="h-3.5 w-3.5" />
-                  <span>{t.echo.aiToolsMenu}</span>
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="start">
-                <DropdownMenuItem
-                  disabled={aiLoading || !data.text.trim()}
-                  onClick={onGrammarCheck}
-                >
-                  <SpellCheck className="h-3.5 w-3.5 mr-2" />
-                  {t.editor.checkGrammar}
-                </DropdownMenuItem>
-                <DropdownMenuItem disabled={aiLoading} onClick={onGuidedPrompts}>
-                  <MessageSquareText className="h-3.5 w-3.5 mr-2" />
-                  {t.editor.needHelp}
-                </DropdownMenuItem>
-                <DropdownMenuItem
-                  disabled={aiLoading || !data.text.trim()}
-                  onClick={onSummarize}
-                >
-                  <FileText className="h-3.5 w-3.5 mr-2" />
-                  {t.editor.summarize}
-                </DropdownMenuItem>
-                {onReviewWithAi && (
-                  <DropdownMenuItem
-                    disabled={aiLoading || !data.text.trim()}
-                    onClick={onReviewWithAi}
-                  >
-                    <Wand2 className="h-3.5 w-3.5 mr-2" />
-                    {t.aiReview.reviewButton}
-                  </DropdownMenuItem>
-                )}
-                {onApertusReview && (
-                  <DropdownMenuItem
-                    disabled={aiLoading || !data.text.trim()}
-                    onClick={onApertusReview}
-                  >
-                    <Landmark className="h-3.5 w-3.5 mr-2" />
-                    {t.aiReview.apertusButton}
-                  </DropdownMenuItem>
-                )}
-              </DropdownMenuContent>
-            </DropdownMenu>
+            <EditorAiToolsMenu
+              aiEnabled={aiEnabled}
+              aiLoading={aiLoading}
+              hasText={!!data.text.trim()}
+              onGrammarCheck={onGrammarCheck}
+              onGuidedPrompts={onGuidedPrompts}
+              onSummarize={onSummarize}
+              onReviewWithAi={onReviewWithAi}
+              onApertusReview={onApertusReview}
+              buttonClassName="h-7"
+            />
           )}
           {!echoToolbar && !isPublished && !isFreeflow && (
             <Button
@@ -204,22 +146,34 @@ export function SectionEditor({
           )}
           {!isPublished && onMarkComplete && !isFreeflow && (
             <Button
-              variant={isCompleted ? 'default' : 'outline'}
+              variant={isCompleted ? 'outline' : 'default'}
               size="sm"
               className={cn(
                 'gap-1 text-xs h-7 px-2 ml-auto',
-                isCompleted && 'bg-primary hover:bg-primary/90'
+                isCompleted && 'border-primary text-primary hover:bg-primary/10'
               )}
               onClick={onMarkComplete}
+              title={isCompleted ? t.status.sectionCompletedHint : t.status.markCompleteWhenFinished}
             >
-              <CheckCircle2 className="h-3.5 w-3.5" />
+              {isCompleted ? (
+                <RotateCcw className="h-3.5 w-3.5" />
+              ) : (
+                <CheckCircle2 className="h-3.5 w-3.5" />
+              )}
               <span className="hidden sm:inline">
-                {isCompleted ? 'Completed' : t.status.markComplete}
+                {isCompleted ? t.status.markIncomplete : t.status.markComplete}
               </span>
             </Button>
           )}
         </div>
       </div>
+
+      {!isPublished && isCompleted && !isFreeflow && (
+        <div className="mx-4 mt-2 flex items-start gap-2 rounded-md border border-primary/25 bg-primary/5 px-3 py-2 text-xs text-muted-foreground">
+          <CheckCircle2 className="h-3.5 w-3.5 shrink-0 mt-0.5 text-primary" />
+          <p>{t.status.sectionCompletedHint}</p>
+        </div>
+      )}
 
       {isPublished && (
         <div className="px-4 sm:px-6 py-2.5 border-b border-brand-mustardDark/40 bg-brand-mustardLight/45 dark:bg-brand-mustardDark/20 dark:border-brand-mustardDark/50 shrink-0 flex items-center gap-2">
@@ -240,36 +194,17 @@ export function SectionEditor({
         </div>
       )}
 
-      <RichTextEditor
-        content={data.text}
-        onChange={onTextChange}
-        placeholder={`${t.editor.startWritingAbout} ${sectionTitle.toLowerCase()}...`}
-        biographyId={biographyId}
-        editorFontSize={editorFontSize}
-        onEditorFontSizeChange={onEditorFontSizeChange}
-        isPublished={isPublished}
-      />
-
-      {biographyId && (
-        <ImportTextDialog
-          open={showImportDialog}
-          onOpenChange={(v) => { setShowImportDialog(v); onImportDialogOpenChange?.(v); }}
+      <div className="flex flex-1 min-h-0 flex flex-col">
+        <RichTextEditor
+          content={data.text}
+          onChange={onTextChange}
+          placeholder={`${t.editor.startWritingAbout} ${sectionTitle.toLowerCase()}...`}
           biographyId={biographyId}
-          currentSectionKey={sectionKey}
-          currentSectionContent={data.text}
-          currentFreeflowContent={contentFreeflow}
-          biographyMode={biographyMode}
-          onImportedToSection={(key, content) => {
-            if (key === sectionKey) onTextChange(content);
-            onImportedToSection?.(key, content);
-          }}
-          onImportedToFreeflow={(content) => {
-            onImportedToFreeflow?.(content);
-          }}
-          onImportMultipleSections={onImportMultipleSections}
+          editorFontSize={editorFontSize}
+          onEditorFontSizeChange={onEditorFontSizeChange}
+          isPublished={isPublished}
         />
-      )}
-
+      </div>
     </div>
   );
 }

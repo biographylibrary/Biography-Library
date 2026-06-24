@@ -7,6 +7,7 @@ import {
 } from '@/lib/agents/infomaniak-client';
 import type { AgentRole, AgentType } from '@/lib/agents/models';
 import { appendMessage } from '@/lib/agents/thread-service';
+import { maybeCompressThreadMemory } from '@/lib/agents/thread-memory';
 import { executeCoachTool } from '@/lib/agents/tools/coach-tools';
 import { executeReviewerTool } from '@/lib/agents/tools/reviewer-tools';
 import { executeEchoTool } from '@/lib/agents/tools/echo-tools';
@@ -64,6 +65,13 @@ export async function runStreamingAgentTurn(
     { role: 'user', content: prepared.userMessage },
   ];
 
+  const finishTurn = () => {
+    send('done', { threadId: prepared.threadId });
+    void maybeCompressThreadMemory(serviceClient, prepared.threadId).catch((err) => {
+      console.warn('[agents] thread memory compression failed:', err);
+    });
+  };
+
   const streamTokens = async (msgs: ChatMessage[]) => {
     let fullContent = '';
     try {
@@ -113,7 +121,7 @@ export async function runStreamingAgentTurn(
     } catch (toolErr) {
       console.warn('[agents] tool pass failed, continuing without tools:', toolErr);
       await streamTokens(messages);
-      send('done', { threadId: prepared.threadId });
+      finishTurn();
       return;
     }
 
@@ -172,7 +180,7 @@ export async function runStreamingAgentTurn(
       }
 
       await streamTokens(afterTools);
-      send('done', { threadId: prepared.threadId });
+      finishTurn();
       return;
     }
 
@@ -183,11 +191,11 @@ export async function runStreamingAgentTurn(
         content: first.content,
         tool_calls: null,
       });
-      send('done', { threadId: prepared.threadId });
+      finishTurn();
       return;
     }
   }
 
   await streamTokens(messages);
-  send('done', { threadId: prepared.threadId });
+  finishTurn();
 }

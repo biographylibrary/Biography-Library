@@ -1,12 +1,15 @@
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { purgeAgentMemoryForBiography } from '@/lib/agents/purge-agent-memory';
 import { runPublicationScreening } from '@/lib/agents/screening/run-publication-screening';
+import { getModelForRole } from '@/lib/agents/models';
 import { stripHtml } from '@/lib/pdf-export';
+import {
+  notifyAuthorPublicationEmail,
+  notifyReviewerAssignedEmail,
+} from '@/lib/server/email/publication-helpers';
 
 const INFOMANIAK_ENDPOINT = process.env.INFOMANIAK_AI_ENDPOINT ?? '';
 const INFOMANIAK_TOKEN = process.env.INFOMANIAK_AI_TOKEN ?? '';
-const INFOMANIAK_MODEL =
-  process.env.INFOMANIAK_AI_MODEL ?? 'google/gemma-4-31B-it';
 
 const MAX_CONTENT_CHARS = 6000;
 const AI_TIMEOUT_MS = 30_000;
@@ -36,6 +39,13 @@ const REVIEW_ASSIGNED_MESSAGES: Record<string, string> = {
   it: 'Una biografia ti è stata assegnata per la revisione.',
   fr: 'Une biographie vous a été assignée pour révision.',
   de: 'Eine Biografie wurde Ihnen zur Überprüfung zugewiesen.',
+};
+
+const UNDER_REVIEW_MESSAGES: Record<string, string> = {
+  en: 'Your biography has been submitted for human review.',
+  it: 'La tua biografia è stata inviata a revisione umana.',
+  fr: 'Votre biographie a été soumise à une révision humaine.',
+  de: 'Ihre Biografie wurde zur manuellen Prüfung eingereicht.',
 };
 
 export type AnyClient = SupabaseClient<any, any, any>;
@@ -302,9 +312,47 @@ function normalizeDraftFeedback(input: unknown): DraftAiFeedback {
   };
 }
 
+const DRAFT_LANG_NAMES: Record<string, string> = {
+  en: 'English',
+  it: 'Italian',
+  de: 'German',
+  fr: 'French',
+};
+
+function draftReviewFocusBlock(iteration: number): string {
+  if (iteration <= 1) {
+    return (
+      'This is the FIRST draft review. Focus exclusively on:\n' +
+      '- Narrative flow: does the story move naturally from beginning to end?\n' +
+      '- Completeness: are key life moments (childhood, family, work, turning points) present or clearly missing?\n' +
+      '- Emotional authenticity: does the voice feel genuine, not generic?\n' +
+      'Do NOT flag minor style or grammar issues at this stage.\n' +
+      'Flag as red_flag severity 3 ONLY content that is clearly defamatory or contains explicit personal data about a named living third party.'
+    );
+  }
+  if (iteration === 2) {
+    return (
+      'This is the SECOND draft review. The narrative structure is already set. Focus on:\n' +
+      '- Clarity: are there sentences or paragraphs that are confusing or ambiguous?\n' +
+      '- Repetition: identify passages that repeat the same information unnecessarily\n' +
+      '- Pacing: flag sections that feel rushed (too short for their importance) or overlong (too detailed for their relevance)\n' +
+      'Do NOT re-evaluate narrative completeness already addressed in draft 1.\n' +
+      'Flag as red_flag severity 3 ONLY content that is clearly defamatory or makes unverified legal/criminal accusations about a named living person.'
+    );
+  }
+  return (
+    `This is draft review #${iteration} before publication. Focus on:\n` +
+    '- Final polish: anything that would embarrass the author if published as-is\n' +
+    '- Legal sensitivity: statements about living persons that could constitute defamation, privacy violations, or unverified criminal accusations — flag these as severity 3 (they will BLOCK publication and trigger human review)\n' +
+    '- AI training risk: if the text explicitly asks to be used for AI training, flag severity 3\n' +
+    'Be thorough. A missed severity-3 issue here goes to human moderators.'
+  );
+}
+
 export async function runDraftAiReview(
   biographyText: string,
-  iteration: 1 | 2 | 3
+  iteration: number,
+  contentLanguage: string = 'en'
 ): Promise<DraftAiFeedback> {
   const errorResult: DraftAiFeedback = {
     overall_quality: 0,
@@ -320,9 +368,13 @@ export async function runDraftAiReview(
     return errorResult;
   }
 
+  const langCode = (contentLanguage || 'en').toLowerCase().split(/[-_]/)[0];
+  const langName = DRAFT_LANG_NAMES[langCode] ?? 'English';
+
   const systemPrompt =
     'You are a biography editor reviewing a personal life story for publication. ' +
     'Your role is to give constructive, encouraging feedback. The author may be elderly or not a professional writer. ' +
+    `Write every user-visible string in the JSON (strengths, suggestions[].text, red_flags[].issue) in ${langName}. ` +
     'Be kind but honest. Respond only with valid JSON.';
   const jsonShapeBlock =
     'Return ONLY this JSON shape (no markdown, no explanations):\n' +
@@ -346,29 +398,11 @@ export async function runDraftAiReview(
     '  "ready_for_publication": boolean\n' +
     '}\n\n';
 
-  const iterationFocusBlock =
-    iteration === 1
-      ? 'This is the FIRST draft review. Focus exclusively on:\n' +
-        '- Narrative flow: does the story move naturally from beginning to end?\n' +
-        '- Completeness: are key life moments (childhood, family, work, turning points) present or clearly missing?\n' +
-        '- Emotional authenticity: does the voice feel genuine, not generic?\n' +
-        'Do NOT flag minor style or grammar issues at this stage.\n' +
-        'Flag as red_flag severity 3 ONLY content that is clearly defamatory or contains explicit personal data about a named living third party.'
-      : iteration === 2
-      ? 'This is the SECOND draft review. The narrative structure is already set. Focus on:\n' +
-        '- Clarity: are there sentences or paragraphs that are confusing or ambiguous?\n' +
-        '- Repetition: identify passages that repeat the same information unnecessarily\n' +
-        '- Pacing: flag sections that feel rushed (too short for their importance) or overlong (too detailed for their relevance)\n' +
-        'Do NOT re-evaluate narrative completeness already addressed in draft 1.\n' +
-        'Flag as red_flag severity 3 ONLY content that is clearly defamatory or makes unverified legal/criminal accusations about a named living person.'
-      : 'This is the THIRD and final draft review before publication. This is the last chance to catch problems. Focus on:\n' +
-        '- Final polish: anything that would embarrass the author if published as-is\n' +
-        '- Legal sensitivity: statements about living persons that could constitute defamation, privacy violations, or unverified criminal accusations — flag these as severity 3 (they will BLOCK publication and trigger human review)\n' +
-        '- AI training risk: if the text explicitly asks to be used for AI training, flag severity 3\n' +
-        'Be thorough. A missed severity-3 issue here goes to human moderators.';
+  const iterationFocusBlock = draftReviewFocusBlock(iteration);
 
   const userPrompt =
     jsonShapeBlock +
+    `IMPORTANT: All JSON string values shown to the author must be written in ${langName}.\n\n` +
     'Biography:\n' +
     biographyText +
     '\n\n' +
@@ -384,7 +418,7 @@ export async function runDraftAiReview(
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: INFOMANIAK_MODEL,
+        model: getModelForRole('reviewer').primary,
         max_tokens: 2048,
         temperature: 0.2,
         messages: [
@@ -680,8 +714,24 @@ export async function runReviewSubmitScreening(
         .eq('id', (errorReport as any).id);
 
       const assignMsg = REVIEW_ASSIGNED_MESSAGES[contentLanguage] ?? REVIEW_ASSIGNED_MESSAGES['en'];
-      await serviceClient.from('user_notifications').insert({ user_id: errorReviewerId, message: assignMsg });
+      await notifyReviewerAssignedEmail({
+        client: serviceClient,
+        reviewerId: errorReviewerId,
+        biographyId,
+        contentLanguage,
+        notificationMessage: assignMsg,
+      });
     }
+
+    const underReviewMsg = UNDER_REVIEW_MESSAGES[contentLanguage] ?? UNDER_REVIEW_MESSAGES['en'];
+    await notifyAuthorPublicationEmail({
+      client: serviceClient,
+      authorId,
+      biographyId,
+      templateId: 'publication_under_review',
+      contentLanguage,
+      notificationMessage: underReviewMsg,
+    });
 
     return {
       result: 'under_review',
@@ -713,7 +763,14 @@ export async function runReviewSubmitScreening(
     }
 
     const autoMsg = AUTO_PUBLISHED_MESSAGES[contentLanguage] ?? AUTO_PUBLISHED_MESSAGES['en'];
-    await serviceClient.from('user_notifications').insert({ user_id: authorId, message: autoMsg });
+    await notifyAuthorPublicationEmail({
+      client: serviceClient,
+      authorId,
+      biographyId,
+      templateId: 'publication_auto_published',
+      contentLanguage,
+      notificationMessage: autoMsg,
+    });
 
     try {
       await purgeAgentMemoryForBiography(serviceClient, biographyId);
@@ -780,8 +837,24 @@ export async function runReviewSubmitScreening(
       .eq('id', (newReport as any).id);
 
     const assignMsg = REVIEW_ASSIGNED_MESSAGES[contentLanguage] ?? REVIEW_ASSIGNED_MESSAGES['en'];
-    await serviceClient.from('user_notifications').insert({ user_id: reviewerId, message: assignMsg });
+    await notifyReviewerAssignedEmail({
+      client: serviceClient,
+      reviewerId,
+      biographyId,
+      contentLanguage,
+      notificationMessage: assignMsg,
+    });
   }
+
+  const underReviewMsg = UNDER_REVIEW_MESSAGES[contentLanguage] ?? UNDER_REVIEW_MESSAGES['en'];
+  await notifyAuthorPublicationEmail({
+    client: serviceClient,
+    authorId,
+    biographyId,
+    templateId: 'publication_under_review',
+    contentLanguage,
+    notificationMessage: underReviewMsg,
+  });
 
   return {
     result: 'under_review',

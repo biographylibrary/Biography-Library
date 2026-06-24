@@ -3,6 +3,8 @@
 import { createContext, useContext, useEffect, useState, useCallback } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from './supabase';
+import { mapBrowserTagToAppLanguage } from '@/lib/i18n/detect-browser-language';
+import type { Language } from '@/lib/i18n/translations';
 
 type FontSize = 'small' | 'normal' | 'large' | 'extra-large';
 
@@ -18,7 +20,7 @@ interface AuthContextType {
   fontSize: FontSize;
   setFontSize: (size: FontSize) => void;
   signIn: (email: string, password: string) => Promise<{ error: string | null; emailNotConfirmed?: boolean }>;
-  signUp: (email: string, password: string, name: string) => Promise<{ error: string | null; emailConfirmRequired?: boolean }>;
+  signUp: (email: string, password: string, name: string, language?: Language) => Promise<{ error: string | null; emailConfirmRequired?: boolean }>;
   signOut: () => Promise<void>;
 }
 
@@ -147,23 +149,29 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return { error: null };
   }, []);
 
-  const signUp = useCallback(async (email: string, password: string, name: string) => {
+  const signUp = useCallback(async (email: string, password: string, name: string, language?: Language) => {
     const redirectTo = typeof window !== 'undefined'
       ? `${window.location.origin}/auth/callback`
       : '/auth/callback';
+
+    const signupLanguage =
+      language ??
+      (typeof window !== 'undefined'
+        ? mapBrowserTagToAppLanguage(window.navigator.language) ?? 'en'
+        : 'en');
 
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: {
-        data: { name },
+        data: { name, language: signupLanguage },
         emailRedirectTo: redirectTo,
       },
     });
 
     if (!error && data.user) {
       await supabase.from('profiles').upsert(
-        { id: data.user.id, email, name },
+        { id: data.user.id, email, name, language: signupLanguage },
         { onConflict: 'id' }
       );
     }

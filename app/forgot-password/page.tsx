@@ -72,7 +72,7 @@ export default function ForgotPasswordPage() {
                 </div>
               </div>
               <Link
-                href="/login"
+                href="/"
                 className="flex items-center justify-center gap-2 text-sm text-primary hover:text-primary/80 transition-colors font-medium"
               >
                 {t.auth.backToLogin}
@@ -123,7 +123,7 @@ export default function ForgotPasswordPage() {
 
               <p className="text-center text-sm text-muted-foreground mt-6">
                 <Link
-                  href="/login"
+                  href="/"
                   className="font-medium text-primary hover:text-primary/80 transition-colors"
                 >
                   {t.auth.backToLogin}

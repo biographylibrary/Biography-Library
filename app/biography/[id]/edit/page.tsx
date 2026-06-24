@@ -9,15 +9,22 @@ import { SectionSidebar } from '@/components/editor/section-sidebar';
 import { PathChangeDialog } from '@/components/echo/PathChangeDialog';
 import { GuidedSectionWorkspace } from '@/components/echo/GuidedSectionWorkspace';
 import { EchoShell } from '@/components/echo/EchoShell';
+import { OnboardingTourProvider } from '@/components/onboarding/OnboardingTourProvider';
+import { useOnboardingGate } from '@/components/onboarding/OnboardingGateProvider';
+import type { WritingPath } from '@/lib/onboarding/types';
+import { useEcho } from '@/lib/echo/echo-context';
 import { GlobalNotesPanel } from '@/components/editor/GlobalNotesPanel';
-import { AiSuggestionsPanel } from '@/components/editor/ai-suggestions-panel';
+import { BookStructureDialog } from '@/components/editor/BookStructureDialog';
+import { AiSuggestionsDialog } from '@/components/editor/ai-suggestions-panel';
 import { ShareLinkPanel } from '@/components/editor/share-link-panel';
-import { PhotoGalleryPanel } from '@/components/editor/PhotoGalleryPanel';
+import { PhotoGalleryDialog } from '@/components/editor/PhotoGalleryDialog';
+import { ImportTextDialog } from '@/components/editor/import-text-dialog';
 import { SectionEditor } from '@/components/editor/section-editor';
 import { NextSectionPrompt } from '@/components/editor/next-section-prompt';
 import { AISectionReview } from '@/components/editor/AISectionReview';
 import { ApertusReviewDialog } from '@/components/editor/ApertusReviewDialog';
 import { FinalReviewDialog } from '@/components/editor/FinalReviewDialog';
+import { ReviewPublicationDialog } from '@/components/editor/ReviewPublicationDialog';
 import { FinalVersionEditor } from '@/components/editor/FinalVersionEditor';
 import { PublishConfirmationDialog } from '@/components/editor/PublishConfirmationDialog';
 import { SubmitForReviewDialog } from '@/components/editor/SubmitForReviewDialog';
@@ -42,9 +49,9 @@ import {
   runPrePublicationCheck,
 } from '@/lib/ai-service';
 import { toast } from 'sonner';
-import { AiUsageIndicator } from '@/components/editor/ai-usage-indicator';
 import { recommendNextSection, type SectionRecommendation } from '@/lib/ai/next-section-recommender';
 import type { Biography, BiographyPublicationStatus } from '@/lib/biographies';
+import { canPublishNextChapter } from '@/lib/biography-chapter-cooldown';
 import { isBiographyPublicationStatus, isReviewOrScreeningLockStatus } from '@/lib/publication-state';
 import { generateBiographyPDF, checkBiographyPdfReadiness, checkPdfPreflight, getPdfReadinessMessage } from '@/lib/pdf-export';
 import { AdvancedExportDialog } from '@/components/export/AdvancedExportDialog';
@@ -62,13 +69,70 @@ type SaveStatus = 'saved' | 'saving' | 'unsaved' | 'error';
 
 const AI_ENABLED_KEY = 'biography-ai-enabled';
 
+function EditorOnboardingTour({
+  active,
+  writingPath,
+  biographyMode,
+  onOpenImport,
+  onOpenExport,
+  onOpenReview,
+  onTourFinished,
+}: {
+  active: boolean;
+  writingPath: WritingPath;
+  biographyMode: 'sections' | 'freeflow';
+  onOpenImport: () => void;
+  onOpenExport: () => void;
+  onOpenReview: () => void;
+  onTourFinished: () => void;
+}) {
+  const { setBubbleOpen } = useEcho();
+
+  const handleOpenEcho = useCallback(() => {
+    if (biographyMode === 'sections') {
+      const input = document.querySelector<HTMLTextAreaElement>('[data-tour-id="echo-input"]');
+      input?.focus();
+      input?.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+      return;
+    }
+    setBubbleOpen(true);
+  }, [biographyMode, setBubbleOpen]);
+
+  return (
+    <OnboardingTourProvider
+      active={active}
+      writingPath={writingPath}
+      biographyMode={biographyMode}
+      onOpenImport={onOpenImport}
+      onOpenExport={onOpenExport}
+      onOpenEcho={handleOpenEcho}
+      onOpenReview={onOpenReview}
+      onFinished={onTourFinished}
+    />
+  );
+}
+
 export default function BiographyEditorPage() {
   const { user, session, loading: authLoading } = useAuth();
   const router = useRouter();
   const params = useParams();
   const searchParams = useSearchParams();
   const { t, language } = useTranslation();
+  const { onboardingState, refreshOnboarding } = useOnboardingGate();
   const id = params.id as string;
+
+  const tourActive =
+    searchParams?.get('tour') === '1' || onboardingState?.onboarding_phase === 'tour';
+  const tourWritingPath: WritingPath =
+    (onboardingState?.onboarding_writing_path as WritingPath | null) ?? 'sections';
+
+  const handleTourFinished = useCallback(() => {
+    void refreshOnboarding();
+    const next = new URLSearchParams(searchParams?.toString() ?? '');
+    next.delete('tour');
+    const q = next.toString();
+    router.replace(q ? `/biography/${id}/edit?${q}` : `/biography/${id}/edit`);
+  }, [id, refreshOnboarding, router, searchParams]);
 
   const [biography, setBiography] = useState<Biography | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -86,7 +150,8 @@ export default function BiographyEditorPage() {
   const [showMobileSidebar, setShowMobileSidebar] = useState(false);
   const [showGlobalNotesPanel, setShowGlobalNotesPanel] = useState(false);
   const [showPhotosPanel, setShowPhotosPanel] = useState(false);
-  const [showSidebarImport, setShowSidebarImport] = useState(() => searchParams?.get('import') === '1');
+  const [showBookStructurePanel, setShowBookStructurePanel] = useState(false);
+  const [showImportDialog, setShowImportDialog] = useState(() => searchParams?.get('import') === '1');
   const [globalNotesCount, setGlobalNotesCount] = useState(0);
   const [globalTodosCount, setGlobalTodosCount] = useState(0);
   const [editorPeekOpen, setEditorPeekOpen] = useState(false);
@@ -104,6 +169,7 @@ export default function BiographyEditorPage() {
   const [showApertusDialog, setShowApertusDialog] = useState(false);
   const [completedSections, setCompletedSections] = useState<string[]>([]);
   const [showFinalReview, setShowFinalReview] = useState(false);
+  const [showReviewPublicationDialog, setShowReviewPublicationDialog] = useState(false);
   const [finalVersion, setFinalVersion] = useState<string>('');
   const [narrativeOrder, setNarrativeOrder] = useState<string[]>([]);
   const [biographyStatus, setBiographyStatus] = useState<BiographyPublicationStatus>('draft');
@@ -113,7 +179,9 @@ export default function BiographyEditorPage() {
     red_flags?: Array<{ severity?: number }>;
     aiError?: boolean;
   } | null>(null);
-  const [publicationActionLoading, setPublicationActionLoading] = useState<'start' | 'approve' | null>(null);
+  const [publicationActionLoading, setPublicationActionLoading] = useState<
+    'start' | 'approve' | 'prepare' | null
+  >(null);
   const [publicationActionError, setPublicationActionError] = useState<string | null>(null);
   const [showPublishDialog, setShowPublishDialog] = useState(false);
   const [showSubmitForReviewDialog, setShowSubmitForReviewDialog] = useState(false);
@@ -161,6 +229,7 @@ const [isPublishing, setIsPublishing] = useState(false);
   }, [user]);
 
   const dirtyRef = useRef(false);
+  const applyingEchoDraftRef = useRef(false);
   const contentRef = useRef(content);
   const titleRef = useRef(title);
   const privacyRef = useRef(privacy);
@@ -337,7 +406,7 @@ const [isPublishing, setIsPublishing] = useState(false);
   }, [user, id]);
 
   const save = useCallback(async () => {
-    if (!id || !dirtyRef.current) return;
+    if (!id || !dirtyRef.current || applyingEchoDraftRef.current) return;
     dirtyRef.current = false;
     setSaveStatus('saving');
     const { error } = await supabase
@@ -625,15 +694,86 @@ const [isPublishing, setIsPublishing] = useState(false);
     try {
       if (isCurrentlyCompleted) {
         await markSectionIncomplete(id, activeSection);
-        setCompletedSections(prev => prev.filter(key => key !== activeSection));
+        const nextCompleted = completedSections.filter((key) => key !== activeSection);
+        setCompletedSections(nextCompleted);
+        if (status === 'sections_complete' && !BIOGRAPHY_SECTIONS.every((s) => nextCompleted.includes(s.key))) {
+          const { error } = await supabase
+            .from('biographies')
+            .update({ status: 'draft', completed_at: null })
+            .eq('id', id);
+          if (!error) setStatus('draft');
+        }
       } else {
         await markSectionComplete(user.id, id, activeSection);
-        setCompletedSections(prev => [...prev, activeSection]);
+        setCompletedSections((prev) => [...prev, activeSection]);
       }
     } catch (err) {
       console.error('Error marking section complete:', err);
     }
-  }, [user, id, activeSection, completedSections]);
+  }, [user, id, activeSection, completedSections, status]);
+
+  const handleMarkSectionCompleteByKey = useCallback(
+    async (sectionKey: string) => {
+      if (!user?.id || completedSections.includes(sectionKey)) return;
+      try {
+        await markSectionComplete(user.id, id, sectionKey);
+        setCompletedSections((prev) => [...prev, sectionKey]);
+      } catch (err) {
+        console.error('Error marking section complete:', err);
+      }
+    },
+    [user, id, completedSections]
+  );
+
+  const handleMarkSectionIncomplete = useCallback(
+    async (sectionKey: string) => {
+      if (!completedSections.includes(sectionKey)) return;
+      try {
+        await markSectionIncomplete(id, sectionKey);
+        const nextCompleted = completedSections.filter((key) => key !== sectionKey);
+        setCompletedSections(nextCompleted);
+        if (status === 'sections_complete' && !BIOGRAPHY_SECTIONS.every((s) => nextCompleted.includes(s.key))) {
+          const { error } = await supabase
+            .from('biographies')
+            .update({ status: 'draft', completed_at: null })
+            .eq('id', id);
+          if (!error) setStatus('draft');
+        }
+        setActiveSection(sectionKey);
+      } catch (err) {
+        console.error('Error marking section incomplete:', err);
+      }
+    },
+    [id, completedSections, status]
+  );
+
+  const handleEchoSectionCompletion = useCallback(
+    async (sectionKey: string, completed: boolean) => {
+      if (!user?.id) return;
+      try {
+        if (completed) {
+          if (completedSections.includes(sectionKey)) return;
+          await markSectionComplete(user.id, id, sectionKey);
+          setCompletedSections((prev) => [...prev, sectionKey]);
+        } else {
+          if (!completedSections.includes(sectionKey)) return;
+          await markSectionIncomplete(id, sectionKey);
+          const nextCompleted = completedSections.filter((key) => key !== sectionKey);
+          setCompletedSections(nextCompleted);
+          if (status === 'sections_complete' && !BIOGRAPHY_SECTIONS.every((s) => nextCompleted.includes(s.key))) {
+            const { error } = await supabase
+              .from('biographies')
+              .update({ status: 'draft', completed_at: null })
+              .eq('id', id);
+            if (!error) setStatus('draft');
+          }
+        }
+      } catch (err) {
+        console.error('Error updating section completion from Echo:', err);
+      }
+    },
+    [user, id, completedSections, status]
+  );
 
   const handleApplyReviewChanges = useCallback(
     (newContent: string, changeType: 'improvements' | 'rewrite') => {
@@ -650,16 +790,19 @@ const [isPublishing, setIsPublishing] = useState(false);
   );
 
   const handleImportMultipleSections = useCallback(
-    (sections: Array<{ title: string; content: string }>) => {
+    (sections: Array<{ title: string; content: string; sectionKey?: string }>) => {
       setContent((prev) => {
         const updated = { ...prev };
         sections.forEach((section) => {
-          const matchingSection = BIOGRAPHY_SECTIONS.find(
-            (s) => s.key === section.title || s.title === section.title
-          );
+          const matchingSection = section.sectionKey
+            ? BIOGRAPHY_SECTIONS.find((s) => s.key === section.sectionKey)
+            : BIOGRAPHY_SECTIONS.find(
+                (s) => s.key === section.title || s.title === section.title
+              );
           if (matchingSection) {
             const currentData = getSectionData(prev, matchingSection.key);
-            const separator = currentData.text && !currentData.text.endsWith('</p>') ? '<p></p>' : '';
+            const separator =
+              currentData.text && !currentData.text.endsWith('</p>') ? '<p></p>' : '';
             updated[matchingSection.key] = {
               ...currentData,
               text: currentData.text + separator + section.content,
@@ -894,44 +1037,65 @@ const [isPublishing, setIsPublishing] = useState(false);
 
   const handleCoachDraftApplied = useCallback(
     async (sectionKey: string) => {
-      const { data } = await supabase.from('biographies').select('content').eq('id', id).maybeSingle();
-      if (data?.content) {
-        const nextContent = data.content as BiographyContent;
-        setContent(nextContent);
-        contentRef.current = nextContent;
-      }
-      setActiveSection(sectionKey);
-      setEditorPeekOpen(true);
-      markDirty();
-
-      const completedSections = BIOGRAPHY_SECTIONS.map((s) => s.key).filter((key) => {
-        const sectionData = getSectionData(contentRef.current, key);
-        return sectionData.text.trim().length > 100 || key === sectionKey;
-      });
-
-      setCompletedSectionKey(sectionKey);
-      setShowNextSectionPrompt(true);
-      setIsLoadingRecommendation(true);
-
+      applyingEchoDraftRef.current = true;
       try {
-        if (session) {
-          const sectionContent = getSectionData(contentRef.current, sectionKey).text || '';
-          const recommendation = await recommendNextSection(
-            sectionKey,
-            completedSections,
-            sectionContent,
-            BIOGRAPHY_SECTIONS.map((s) => s.key),
-            language
-          );
-          setNextSectionRecommendation(recommendation);
+        if (sectionKey === 'freeflow') {
+          const { data } = await supabase
+            .from('biographies')
+            .select('content_freeflow')
+            .eq('id', id)
+            .maybeSingle();
+          if (data?.content_freeflow !== undefined) {
+            setContentFreeflow(data.content_freeflow ?? '');
+            contentFreeflowRef.current = data.content_freeflow ?? '';
+          }
+          dirtyRef.current = false;
+          setSaveStatus('saved');
+          return;
         }
-      } catch (error) {
-        console.error('Failed to get section recommendation:', error);
+
+        const { data } = await supabase.from('biographies').select('content').eq('id', id).maybeSingle();
+        if (data?.content) {
+          const nextContent = data.content as BiographyContent;
+          setContent(nextContent);
+          contentRef.current = nextContent;
+        }
+        dirtyRef.current = false;
+        setSaveStatus('saved');
+        setActiveSection(sectionKey);
+        setEditorPeekOpen(true);
+
+        const completedSections = BIOGRAPHY_SECTIONS.map((s) => s.key).filter((key) => {
+          const sectionData = getSectionData(contentRef.current, key);
+          return sectionData.text.trim().length > 100 || key === sectionKey;
+        });
+
+        setCompletedSectionKey(sectionKey);
+        setShowNextSectionPrompt(true);
+        setIsLoadingRecommendation(true);
+
+        try {
+          if (session) {
+            const sectionContent = getSectionData(contentRef.current, sectionKey).text || '';
+            const recommendation = await recommendNextSection(
+              sectionKey,
+              completedSections,
+              sectionContent,
+              BIOGRAPHY_SECTIONS.map((s) => s.key),
+              language
+            );
+            setNextSectionRecommendation(recommendation);
+          }
+        } catch (error) {
+          console.error('Failed to get section recommendation:', error);
+        } finally {
+          setIsLoadingRecommendation(false);
+        }
       } finally {
-        setIsLoadingRecommendation(false);
+        applyingEchoDraftRef.current = false;
       }
     },
-    [id, markDirty, session, language]
+    [id, session, language]
   );
 
 
@@ -1070,6 +1234,12 @@ const [isPublishing, setIsPublishing] = useState(false);
   }, [id]);
 
   const handlePublish = useCallback(async () => {
+    if (!canPublishNextChapter(biography)) {
+      setShowPublishDialog(false);
+      toast.error(t.dashboard.chapterCooldownBlocked);
+      return;
+    }
+
     setIsPublishing(true);
 
     const biographyText = finalVersion ||
@@ -1137,17 +1307,21 @@ const [isPublishing, setIsPublishing] = useState(false);
         })
         .eq('id', id);
 
-      if (!error) {
-        await supabase.rpc('increment_biography_chapters', { biography_id: id });
-        setBiographyStatus('published');
-        setShowPublishDialog(false);
+      if (error) {
+        if (error.message.includes('chapter_cooldown_active')) {
+          toast.error(t.dashboard.chapterCooldownBlocked);
+        }
+        return;
       }
+
+      setBiographyStatus('published');
+      setShowPublishDialog(false);
     } catch (err) {
       console.error('Error publishing biography:', err);
     } finally {
       setIsPublishing(false);
     }
-  }, [id, finalVersion, content, t]);
+  }, [id, finalVersion, content, t, biography]);
 
   const handleSubmitForReview = useCallback(async () => {
     if (!user?.id) return;
@@ -1311,11 +1485,55 @@ const [isPublishing, setIsPublishing] = useState(false);
         return;
       }
       setSubmitReadinessError(null);
+      setShowReviewPublicationDialog(false);
       setShowSubmitForReviewDialog(true);
     } finally {
       setIsPreflightChecking(false);
     }
   }, [id, t]);
+
+  const handlePrepareFreeflowFinal = useCallback(async () => {
+    const text = contentFreeflowRef.current.trim();
+    if (!text) return;
+    setPublicationActionLoading('prepare');
+    setPublicationActionError(null);
+    setFinalVersion(text);
+    try {
+      const { error } = await supabase
+        .from('biographies')
+        .update({
+          final_version: text,
+          status: 'final_version',
+        })
+        .eq('id', id);
+
+      if (error) {
+        setPublicationActionError(t.toast.requestFailed);
+        toast.error(t.toast.requestFailed);
+        return;
+      }
+
+      setBiographyStatus('final_version');
+      setBiography((prev) =>
+        prev ? { ...prev, final_version: text, status: 'final_version' } : prev
+      );
+      toast.success(
+        language === 'it'
+          ? 'Testo finale preparato. Puoi avviare la revisione PDF.'
+          : language === 'fr'
+            ? 'Texte final préparé. Vous pouvez démarrer la révision PDF.'
+            : language === 'de'
+              ? 'Endtext vorbereitet. Sie können die PDF-Prüfung starten.'
+              : 'Final text prepared. You can start PDF review.'
+      );
+    } catch (e) {
+      console.error(e);
+      setPublicationActionError(t.toast.requestFailed);
+      toast.error(t.toast.requestFailed);
+    } finally {
+      setPublicationActionLoading(null);
+    }
+  }, [id, t.toast.requestFailed, language]);
 
   const handleStartPdfDraft = useCallback(async () => {
     if (!user) return;
@@ -1357,6 +1575,7 @@ const [isPublishing, setIsPublishing] = useState(false);
             }
           : prev
       );
+      setShowReviewPublicationDialog(false);
       setShowExportDialog(true);
       toast.success(
         language === 'it'
@@ -1379,6 +1598,7 @@ const [isPublishing, setIsPublishing] = useState(false);
   const handleApproveFinalPdf = useCallback(async () => {
     if (!user?.id) return;
     setPublicationActionLoading('approve');
+    setPublicationActionError(null);
     setSubmitReadinessError(null);
     try {
       const { data: { session } } = await supabase.auth.getSession();
@@ -1392,17 +1612,18 @@ const [isPublishing, setIsPublishing] = useState(false);
       });
       const apiResult = await res.json().catch(() => ({}));
       if (!res.ok) {
-        toast.error(
+        const msg =
           typeof apiResult?.message === 'string'
             ? apiResult.message
             : apiResult?.error === 'drafts_required'
-              ? t.editor.publicationPdfDraftHint
+              ? t.editor.reviewPublication.approveDisabledHint
               : apiResult?.error === 'missing_cover'
                 ? t.exportDialog.noCoverPhotoWarning
                 : apiResult?.error === 'final_pdf_failed'
-                  ? (typeof apiResult?.message === 'string' ? apiResult.message : 'Request failed')
-                  : 'Request failed'
-        );
+                  ? (typeof apiResult?.message === 'string' ? apiResult.message : t.toast.requestFailed)
+                  : t.toast.requestFailed;
+        setPublicationActionError(msg);
+        toast.error(msg);
         return;
       }
 
@@ -1522,10 +1743,13 @@ const [isPublishing, setIsPublishing] = useState(false);
   const aiUnavailable = draftAiFeedback?.ready_for_publication !== undefined && draftAiFeedback?.red_flags !== undefined
     ? (draftAiFeedback as { aiError?: boolean }).aiError === true
     : false;
+  const draftAiReviewPending =
+    (pdfDraftIteration ?? 0) >= 1 && draftAiFeedback == null && !aiUnavailable;
+  /** Align with server: block only on missing drafts, severity-3 flags, or AI review still loading. */
   const canApproveFinalPdfFromDraftFeedback =
     (pdfDraftIteration ?? 0) >= 1 &&
-    (aiUnavailable ||
-      (draftAiFeedback?.ready_for_publication === true && !draftHasSeverity3Flags));
+    !draftHasSeverity3Flags &&
+    (aiUnavailable || draftAiFeedback != null);
 
   const showFinalVersionEditorLayout =
     biographyStatus === 'final_version' ||
@@ -1562,8 +1786,27 @@ const [isPublishing, setIsPublishing] = useState(false);
 
   const activeSectionData = getSectionData(content, activeSection);
 
+  const echoBubbleEditorUnlocked =
+    !showFinalVersionEditorLayout &&
+    (biographyStatus as string) !== 'published' &&
+    !isFrozen &&
+    !isSectionOrFreeflowRevisionLocked &&
+    !reviewQueueLocksEditor;
+
+  const showEchoBubble =
+    echoBubbleEditorUnlocked &&
+    (biographyMode === 'freeflow' ||
+      (biographyMode === 'sections' && editorPeekOpen));
+
   return (
-    <EchoShell biographyId={id} sectionKey={activeSection} biographyMode={biographyMode}>
+    <EchoShell
+      biographyId={id}
+      sectionKey={activeSection}
+      biographyMode={biographyMode}
+      showBubble={showEchoBubble}
+      onDraftApplied={handleCoachDraftApplied}
+      onSectionCompletionChanged={handleEchoSectionCompletion}
+    >
     <div className="h-full flex flex-col bg-[#ECE9E4] dark:bg-[#1F2121] overflow-hidden">
       <EditorTopBar
         title={title}
@@ -1601,13 +1844,10 @@ const [isPublishing, setIsPublishing] = useState(false);
                 {t.editor.publicationPdfDraftHint}
               </p>
               <p className="text-xs text-brand-ink/80 dark:text-brand-beigeLight/85 mt-1">
-                {language === 'it'
-                  ? `Bozze generate: ${pdfDraftIteration ?? 0} / 3`
-                  : language === 'fr'
-                    ? `Brouillons générés : ${pdfDraftIteration ?? 0} / 3`
-                    : language === 'de'
-                      ? `Entwürfe erstellt: ${pdfDraftIteration ?? 0} / 3`
-                      : `Drafts completed: ${pdfDraftIteration ?? 0} / 3`}
+                {t.editor.reviewPublication.draftProgress.replace(
+                  '{count}',
+                  String(pdfDraftIteration ?? 0)
+                )}
               </p>
               {draftHasSeverity3Flags && (
                 <p className="text-xs text-brand-wineDark dark:text-brand-mustardLight mt-1">
@@ -1794,25 +2034,6 @@ const [isPublishing, setIsPublishing] = useState(false);
           </div>
         )}
 
-      {biographyMode === 'sections' &&
-        biographyStatus === 'draft' &&
-        !allSectionsComplete && (
-          <div className="shrink-0 bg-brand-beigeBg/80 border-b border-brand-mustardDark/25 px-4 py-2.5 dark:bg-brand-ink/5 dark:border-brand-mustardDark/30">
-            <div className="max-w-5xl mx-auto flex items-start gap-2 text-sm text-brand-ink/80 dark:text-brand-beigeLight/85">
-              <TriangleAlert className="h-4 w-4 shrink-0 mt-0.5 text-brand-mustardDark dark:text-brand-mustardLight" />
-              <p>
-                {language === 'it'
-                  ? 'Per inviare la biografia in revisione, completa tutte le sezioni e segnale come complete dalla barra laterale.'
-                  : language === 'fr'
-                    ? 'Pour soumettre, terminez toutes les sections et marquez-les comme complètes dans la barre latérale.'
-                    : language === 'de'
-                      ? 'Zum Einreichen alle Abschnitte ausfüllen und in der Seitenleiste als erledigt markieren.'
-                      : 'To submit for review, finish every section and mark each as complete in the sidebar.'}
-              </p>
-            </div>
-          </div>
-        )}
-
       {isRevisionMode && (
         <div className="shrink-0 border-b border-brand-mustardDark/40 bg-brand-mustardLight/45 px-4 py-3 dark:border-brand-mustardDark/50 dark:bg-brand-mustardDark/20">
           <div className="max-w-5xl mx-auto">
@@ -1894,6 +2115,7 @@ const [isPublishing, setIsPublishing] = useState(false);
         )}
 
         <aside
+          data-tour-id="section-list"
           className={cn(
             'w-full lg:w-72 border-r border-border/50 bg-card shrink-0 flex flex-col h-full',
             'absolute lg:relative inset-y-0 left-0 z-30 lg:top-0',
@@ -1911,15 +2133,31 @@ const [isPublishing, setIsPublishing] = useState(false);
             globalTodosCount={globalTodosCount}
             onToggleNotesPanel={() => setShowGlobalNotesPanel(!showGlobalNotesPanel)}
             onTogglePhotosPanel={() => setShowPhotosPanel(!showPhotosPanel)}
-            onToggleImportText={() => setShowSidebarImport(true)}
+            onToggleBookStructurePanel={() => setShowBookStructurePanel(!showBookStructurePanel)}
+            onToggleImportText={() => setShowImportDialog((v) => !v)}
             onToggleExportText={() => {
               if (isReviewOrScreeningLockStatus(biographyStatus)) return;
               setShowExportDialog(true);
             }}
+            onToggleReviewPublication={() => {
+              setShowReviewPublicationDialog((open) => {
+                if (!open) setSubmitPreflightError(null);
+                return !open;
+              });
+            }}
+            showReviewPublicationDialog={showReviewPublicationDialog}
             exportDisabled={isReviewOrScreeningLockStatus(biographyStatus)}
             showNotesPanel={showGlobalNotesPanel}
             showPhotosPanel={showPhotosPanel}
+            showBookStructurePanel={showBookStructurePanel}
+            showImportDialog={showImportDialog}
             completedSections={completedSections}
+            onMarkSectionComplete={
+              isFrozen || reviewQueueLocksEditor ? undefined : handleMarkSectionCompleteByKey
+            }
+            onMarkSectionIncomplete={
+              isFrozen || reviewQueueLocksEditor ? undefined : handleMarkSectionIncomplete
+            }
             biographyMode={biographyMode}
             contentFreeflow={contentFreeflow}
             onModeChange={handleModeChange}
@@ -1933,67 +2171,9 @@ const [isPublishing, setIsPublishing] = useState(false);
           />
         </aside>
 
-        <div className="flex-1 flex min-w-0">
-          <div className="flex-1 flex flex-col min-w-0">
-            {biographyStatus !== 'published' && !isFrozen && (
-              <div className="border-b border-border/50 px-4 py-2 bg-card/30 flex flex-wrap items-center gap-2 shrink-0">
-                {biographyStatus !== 'final_version' &&
-                  biographyStatus !== 'pdf_draft' &&
-                  biographyStatus !== 'locked_pending_screening' && (
-                  <>
-                    {biographyMode === 'freeflow' ? (
-                      <div className="flex flex-col gap-1">
-                        <Button
-                          size="sm"
-                          onClick={handleOpenSubmitDialog}
-                          disabled={
-                            !contentFreeflow.trim() ||
-                            isReviewOrScreeningLockStatus(biographyStatus) ||
-                            isPreflightChecking
-                          }
-                          className="h-8 text-xs text-white rounded-md disabled:opacity-50 disabled:cursor-not-allowed gap-1.5"
-                          style={{ backgroundColor: '#944454', borderColor: '#944454' }}
-                        >
-                          {isPreflightChecking ? (
-                            <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                          ) : null}
-                          {language === 'it' ? 'Invia per la Revisione' :
-                           language === 'fr' ? 'Soumettre pour Révision' :
-                           language === 'de' ? 'Zur Überprüfung Einreichen' :
-                           'Submit for Review'}
-                        </Button>
-                        {submitPreflightError && (
-                          <p className="text-xs text-destructive flex items-center gap-1">
-                            <TriangleAlert className="h-3 w-3 shrink-0" />
-                            {submitPreflightError}
-                          </p>
-                        )}
-                        {(biographyStatus === 'draft' || biographyStatus === 'sections_complete') && (
-                          <p className="text-[10px] text-muted-foreground max-w-[min(100%,20rem)] leading-snug">
-                            {t.editor.publicationLegacySubmitHint}
-                          </p>
-                        )}
-                      </div>
-                    ) : null}
-                  </>
-                )}
-                {aiEnabled && biographyMode !== 'freeflow' && (
-                  <div
-                    className={
-                      biographyStatus !== 'final_version' &&
-                      biographyStatus !== 'pdf_draft' &&
-                      biographyStatus !== 'locked_pending_screening'
-                        ? 'sm:ml-auto'
-                        : ''
-                    }
-                  >
-                    <AiUsageIndicator refreshTrigger={aiUsageRefresh} />
-                  </div>
-                )}
-              </div>
-            )}
-
-            <div ref={editorContainerRef} className="flex-1 min-h-0 flex flex-col overflow-y-auto">
+        <div className="flex-1 flex min-w-0 min-h-0">
+          <div className="flex-1 flex flex-col min-w-0 min-h-0">
+            <div ref={editorContainerRef} data-tour-id="editor-main" className="flex-1 min-h-0 flex flex-col overflow-hidden">
               {showFinalVersionEditorLayout ? (
                 <FinalVersionEditor
                   content={finalVersion}
@@ -2021,7 +2201,6 @@ const [isPublishing, setIsPublishing] = useState(false);
                   activeSection={activeSection}
                   sectionText={activeSectionData.text}
                   onSectionTextChange={(text) => handleTextChange(text)}
-                  onDraftApplied={handleCoachDraftApplied}
                   editorFontSize={editorFontSize}
                   onEditorFontSizeChange={setEditorFontSize}
                   isPublished={
@@ -2032,6 +2211,23 @@ const [isPublishing, setIsPublishing] = useState(false);
                   }
                   editorPeekOpen={editorPeekOpen}
                   onEditorPeekOpenChange={setEditorPeekOpen}
+                  aiEnabled={aiEnabled}
+                  aiUsageRefresh={aiUsageRefresh}
+                  aiLoading={aiState.loading}
+                  onGrammarCheck={handleGrammarCheck}
+                  onGuidedPrompts={handleGuidedPrompts}
+                  onSummarize={handleSummarize}
+                  onReviewWithAi={handleReviewWithAi}
+                  onApertusReview={aiEnabled ? handleApertusReview : undefined}
+                  onMarkComplete={
+                    isFrozen ||
+                    reviewQueueLocksEditor ||
+                    (biographyStatus as string) === 'published' ||
+                    isSectionOrFreeflowRevisionLocked
+                      ? undefined
+                      : handleMarkSectionComplete
+                  }
+                  isCompleted={completedSections.includes(activeSection)}
                 />
               ) : biographyMode === 'freeflow' ? (
                 <SectionEditor
@@ -2054,19 +2250,13 @@ const [isPublishing, setIsPublishing] = useState(false);
                   onEditorFontSizeChange={setEditorFontSize}
                   onTogglePhotos={() => setShowPhotosPanel((v) => !v)}
                   onToggleNotes={() => setShowGlobalNotesPanel((v) => !v)}
-                  openImportDialog={showSidebarImport}
-                  onImportDialogOpenChange={(v) => { if (!v) setShowSidebarImport(false); }}
                   isPublished={
                     (biographyStatus as string) === 'published' ||
                     isFrozen ||
                     isSectionOrFreeflowRevisionLocked ||
                     reviewQueueLocksEditor
                   }
-                  contentFreeflow={contentFreeflow}
                   biographyMode="freeflow"
-                  onImportedToFreeflow={(newContent) => {
-                    setContentFreeflow(newContent);
-                  }}
                 />
               ) : (
                 <SectionEditor
@@ -2086,31 +2276,17 @@ const [isPublishing, setIsPublishing] = useState(false);
                   biographyId={id}
                   editorFontSize={editorFontSize}
                   onEditorFontSizeChange={setEditorFontSize}
-                  onImportMultipleSections={handleImportMultipleSections}
                   onMarkComplete={handleMarkSectionComplete}
                   isCompleted={completedSections.includes(activeSection)}
                   onTogglePhotos={() => setShowPhotosPanel((v) => !v)}
                   onToggleNotes={() => setShowGlobalNotesPanel((v) => !v)}
-                  openImportDialog={showSidebarImport}
-                  onImportDialogOpenChange={(v) => { if (!v) setShowSidebarImport(false); }}
                   isPublished={
                     (biographyStatus as string) === 'published' ||
                     isFrozen ||
                     isSectionOrFreeflowRevisionLocked ||
                     reviewQueueLocksEditor
                   }
-                  contentFreeflow={contentFreeflow}
                   biographyMode="sections"
-                  onImportedToSection={(sectionKey, newContent) => {
-                    setContent((prev) => ({
-                      ...prev,
-                      [sectionKey]: { ...getSectionData(prev, sectionKey), text: newContent },
-                    }));
-                  }}
-                  onImportedToFreeflow={(newContent) => {
-                    setContentFreeflow(newContent);
-                    setBiographyMode('freeflow');
-                  }}
                 />
               )}
 
@@ -2151,10 +2327,7 @@ const [isPublishing, setIsPublishing] = useState(false);
                          '🎉 All Sections Complete!'}
                       </h3>
                       <p className="text-sm text-muted-foreground">
-                        {language === 'it' ? 'Esplora strutture narrative alternative con l\'IA per migliorare il flusso della tua storia.' :
-                         language === 'fr' ? 'Explorez des structures narratives alternatives avec l\'IA pour améliorer le flux de votre histoire.' :
-                         language === 'de' ? 'Erkunden Sie alternative Erzählstrukturen mit KI, um den Fluss Ihrer Geschichte zu verbessern.' :
-                         'Explore alternative narrative structures with AI to enhance your story\'s flow.'}
+                        {t.status.sectionCompletedHint}
                       </p>
                     </div>
                     <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
@@ -2213,37 +2386,19 @@ const [isPublishing, setIsPublishing] = useState(false);
             </div>
           </div>
 
-          {biographyMode === 'sections' && aiState.type && (
-            <AiSuggestionsPanel
-              state={aiState}
-              onClose={handleCloseAiPanel}
-              onAcceptSuggestion={handleAcceptSuggestion}
-              onRejectSuggestion={handleRejectSuggestion}
-              onInsertPrompt={handleInsertPrompt}
-            />
-          )}
-
-          {showPhotosPanel && (
-            <>
-              <div
-                className="fixed inset-0 z-40 bg-black/40 lg:hidden"
-                onClick={() => setShowPhotosPanel(false)}
-              />
-              <div className={[
-                'border-l border-border/50 bg-card flex flex-col min-h-0 overflow-hidden',
-                'fixed right-0 top-0 bottom-0 z-50 w-full sm:w-[320px] shadow-2xl',
-                'lg:relative lg:z-auto lg:shadow-none lg:shrink-0',
-              ].join(' ')}>
-                <PhotoGalleryPanel
-                  biographyId={id}
-                  userId={user.id}
-                  onClose={() => setShowPhotosPanel(false)}
-                />
-              </div>
-            </>
-          )}
         </div>
       </div>
+
+      <AiSuggestionsDialog
+        open={!!aiState.type}
+        onOpenChange={(open) => {
+          if (!open) handleCloseAiPanel();
+        }}
+        state={aiState}
+        onAcceptSuggestion={handleAcceptSuggestion}
+        onRejectSuggestion={handleRejectSuggestion}
+        onInsertPrompt={handleInsertPrompt}
+      />
 
       {biography && (
         <AdvancedExportDialog
@@ -2330,12 +2485,79 @@ const [isPublishing, setIsPublishing] = useState(false);
         }}
       />
 
+      <BookStructureDialog
+        biographyId={id}
+        userId={user.id}
+        open={showBookStructurePanel}
+        onOpenChange={setShowBookStructurePanel}
+      />
+
+      <PhotoGalleryDialog
+        biographyId={id}
+        userId={user.id}
+        open={showPhotosPanel}
+        onOpenChange={setShowPhotosPanel}
+      />
+
+      <ImportTextDialog
+        open={showImportDialog}
+        onOpenChange={setShowImportDialog}
+        biographyId={id}
+        currentSectionKey={activeSection}
+        currentSectionContent={activeSectionData.text}
+        currentFreeflowContent={contentFreeflow}
+        sectionContents={content}
+        biographyMode={biographyMode}
+        onImportedToSection={(sectionKey, newContent) => {
+          setContent((prev) => ({
+            ...prev,
+            [sectionKey]: { ...getSectionData(prev, sectionKey), text: newContent },
+          }));
+          markDirty();
+        }}
+        onImportedToFreeflow={(newContent) => {
+          setContentFreeflow(newContent);
+          setBiographyMode('freeflow');
+          markDirty();
+        }}
+        onImportMultipleSections={handleImportMultipleSections}
+      />
+
       <FinalReviewDialog
         open={showFinalReview}
         onOpenChange={setShowFinalReview}
         biographyId={id}
         sections={sectionsForReview}
         onApplyStructure={handleApplyStructure}
+      />
+
+      <ReviewPublicationDialog
+        open={showReviewPublicationDialog}
+        onOpenChange={(open) => {
+          if (!open) setSubmitPreflightError(null);
+          setShowReviewPublicationDialog(open);
+        }}
+        biographyMode={biographyMode}
+        completedSections={completedSections}
+        contentFreeflow={contentFreeflow}
+        biographyStatus={biographyStatus}
+        isPreflightChecking={isPreflightChecking}
+        publicationActionLoading={publicationActionLoading}
+        canApproveFinalPdf={canApproveFinalPdfFromDraftFeedback}
+        pdfDraftIteration={pdfDraftIteration}
+        draftHasSeverity3Flags={draftHasSeverity3Flags}
+        draftAiHasSuggestions={
+          draftAiFeedback?.ready_for_publication === false && !draftHasSeverity3Flags
+        }
+        submitPreflightError={submitPreflightError}
+        publicationActionError={publicationActionError}
+        aiScreeningResult={aiScreeningResult}
+        onOpenFinalReview={() => setShowFinalReview(true)}
+        onSubmitForReview={() => void handleOpenSubmitDialog()}
+        onPrepareFreeflowFinal={() => void handlePrepareFreeflowFinal()}
+        onStartPdfDraft={() => void handleStartPdfDraft()}
+        onOpenExport={() => setShowExportDialog(true)}
+        onApproveFinalPdf={() => void handleApproveFinalPdf()}
       />
 
       <PublishConfirmationDialog
@@ -2419,6 +2641,15 @@ const [isPublishing, setIsPublishing] = useState(false);
           onCancel={() => setPendingModeSwitch(null)}
         />
       )}
+      <EditorOnboardingTour
+        active={tourActive && !isLoading}
+        writingPath={tourWritingPath}
+        biographyMode={biographyMode}
+        onOpenImport={() => setShowImportDialog(true)}
+        onOpenExport={() => setShowExportDialog(true)}
+        onOpenReview={() => setShowReviewPublicationDialog(true)}
+        onTourFinished={handleTourFinished}
+      />
     </div>
     </EchoShell>
   );
