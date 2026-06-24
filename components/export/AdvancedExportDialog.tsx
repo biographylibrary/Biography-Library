@@ -13,22 +13,16 @@ import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import { Download, Loader as Loader2, Info, TriangleAlert as AlertTriangle, X, RefreshCw, FileWarning, Eye } from 'lucide-react';
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
 import { BIOGRAPHY_SECTIONS } from '@/lib/editor-constants';
 import { generateBiographyPDF, checkBiographyPdfReadiness, getPdfReadinessMessage, type PdfReadinessIssue } from '@/lib/pdf-export';
 import { exportAsPlainText, exportAsDOCX } from '@/lib/export-utils';
+import {
+  isPdfDraftLimitReached,
+  PDF_DRAFT_MAX_ITERATION,
+  shouldShowPdfDraftWarning,
+} from '@/lib/pdf-draft-constants';
 import { useTranslation } from '@/lib/i18n/i18n-context';
 import { supabase } from '@/lib/supabase';
 import { format as formatDate } from 'date-fns';
@@ -106,7 +100,6 @@ export function AdvancedExportDialog({
   const [exportError, setExportError] = useState<string | null>(null);
   const [draftIteration, setDraftIteration] = useState<number | null>(null);
   const [contentLanguage, setContentLanguage] = useState<string>('en');
-  const [showFinalDraftConfirm, setShowFinalDraftConfirm] = useState(false);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [isPreviewing, setIsPreviewing] = useState(false);
   const [draftFeedback, setDraftFeedback] = useState<DraftAiFeedback | null>(null);
@@ -382,46 +375,13 @@ export function AdvancedExportDialog({
 
     const nextIteration = (draftIteration ?? 0) + 1;
 
-    if (nextIteration > 3) {
+    if (nextIteration > PDF_DRAFT_MAX_ITERATION) {
       setExportError(t.exportDialog.draftLimitReached);
       return;
     }
 
-    if (nextIteration === 3 && !showFinalDraftConfirm) {
-      setShowFinalDraftConfirm(true);
-      return;
-    }
-
     await performExport(nextIteration);
 
-    if (biography.id) {
-      try {
-        const { data: { session } } = await supabase.auth.getSession();
-        const res = await fetch('/api/publication/draft-ai-review', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            ...(session?.access_token ? { Authorization: `Bearer ${session.access_token}` } : {}),
-          },
-          body: JSON.stringify({ biographyId: biography.id }),
-        });
-        const payload = await res.json().catch(() => ({}));
-        if (res.ok) {
-          setDraftIteration(typeof payload.iteration === 'number' ? payload.iteration : nextIteration);
-          setDraftFeedback((payload.feedback as DraftAiFeedback) ?? null);
-        } else if ((payload as { error?: string }).error !== 'max_drafts_reached') {
-          setExportError(t.exportDialog.draftAiFeedbackUnavailable);
-        }
-      } catch {
-        setExportError(t.exportDialog.draftAiFeedbackUnavailable);
-      }
-    }
-  };
-
-  const handleConfirmFinalDraft = async () => {
-    setShowFinalDraftConfirm(false);
-    const nextIteration = 3;
-    await performExport(nextIteration);
     if (biography.id) {
       try {
         const { data: { session } } = await supabase.auth.getSession();
@@ -517,7 +477,8 @@ export function AdvancedExportDialog({
   const reviewLocked =
     !!biographyStatus && isReviewOrScreeningLockStatus(biographyStatus as BiographyPublicationStatus);
   const pdfNotReady = isPdfFormat && readinessStatus === 'not-ready';
-  const draftLimitExceeded = !isPublished && isPdfFormat && (draftIteration ?? 0) >= 3;
+  const draftLimitExceeded = !isPublished && isPdfFormat && isPdfDraftLimitReached(draftIteration);
+  const draftWarning = !isPublished && isPdfFormat && shouldShowPdfDraftWarning(draftIteration);
   const hasSeverity3RedFlag = (draftFeedback?.red_flags ?? []).some((f) => f.severity === 3);
   const aiUnavailable = draftFeedback?.aiError === true;
   const downloadDisabled =
@@ -530,9 +491,8 @@ export function AdvancedExportDialog({
     draftLimitExceeded;
 
   return (
-    <>
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[90vh] flex flex-col">
+      <DialogContent className="max-w-2xl">
         <DialogHeader>
           <DialogTitle>{t.exportDialog.title}</DialogTitle>
           <DialogDescription>
@@ -602,8 +562,7 @@ export function AdvancedExportDialog({
           </div>
         )}
 
-        <ScrollArea className="flex-1 pr-4">
-          <div className="space-y-6 py-4">
+        <div className="space-y-6 py-4">
             {!isPublished && isPdfFormat && (
               <div className="flex items-start gap-3 rounded-lg bg-brand-mustardLight/45 border border-brand-mustardDark/40 dark:bg-brand-mustardDark/20 dark:border-brand-mustardDark/50 px-4 py-3">
                 <Info className="h-4 w-4 mt-0.5 shrink-0 text-brand-ink/85 dark:text-brand-mustardLight" />
@@ -616,13 +575,20 @@ export function AdvancedExportDialog({
                       ? t.exportDialog.draftIterationNone
                       : t.exportDialog.draftIterationCurrent
                           .replace('{n}', String(draftIteration))
-                          .replace('{next}', String((draftIteration ?? 0) + 1))
-                          .replace('{max}', '3')}
+                          .replace('{next}', String((draftIteration ?? 0) + 1))}
                   </p>
                 </div>
               </div>
             )}
-            {!isPublished && isPdfFormat && (draftIteration ?? 0) >= 3 && (
+            {draftWarning && (
+              <div className="flex items-start gap-3 rounded-lg bg-brand-mustardLight/45 border border-brand-mustardDark/40 dark:bg-brand-mustardDark/20 dark:border-brand-mustardDark/50 px-4 py-3">
+                <AlertTriangle className="h-4 w-4 mt-0.5 shrink-0 text-brand-mustardDark dark:text-brand-mustardLight" />
+                <p className="text-sm text-brand-ink dark:text-brand-beigeLight leading-relaxed">
+                  {t.exportDialog.draftIterationWarning.replace('{n}', String(draftIteration ?? 0))}
+                </p>
+              </div>
+            )}
+            {draftLimitExceeded && (
               <div className="flex items-start gap-3 rounded-lg bg-brand-wine/12 border border-brand-wine/40 px-4 py-3 dark:bg-brand-wine/20 dark:border-brand-wine/45">
                 <FileWarning className="h-4 w-4 mt-0.5 shrink-0 text-brand-wine dark:text-brand-beigeLight" />
                 <p className="text-sm text-brand-wineDark dark:text-brand-beigeLight leading-relaxed">
@@ -812,8 +778,7 @@ export function AdvancedExportDialog({
                 </Label>
               </div>
             </div>
-          </div>
-        </ScrollArea>
+        </div>
 
         {previewUrl && (
           <div className="border border-border rounded-lg overflow-hidden flex flex-col" style={{ height: '420px' }}>
@@ -854,11 +819,6 @@ export function AdvancedExportDialog({
                 : language === 'de'
                 ? 'KI-Analyse nicht verfügbar. Sie können trotzdem zur Veröffentlichung fortfahren.'
                 : 'AI review unavailable. You can still proceed to publication.'}
-            </span>
-          )}
-          {!isPublished && isPdfFormat && (
-            <span className="text-xs text-muted-foreground sm:mr-auto">
-              {(draftIteration ?? 0)} of 3 drafts used
             </span>
           )}
           <Button
@@ -909,23 +869,5 @@ export function AdvancedExportDialog({
         </DialogFooter>
       </DialogContent>
     </Dialog>
-
-    <AlertDialog open={showFinalDraftConfirm} onOpenChange={setShowFinalDraftConfirm}>
-      <AlertDialogContent>
-        <AlertDialogHeader>
-          <AlertDialogTitle>{t.exportDialog.finalDraftConfirmTitle}</AlertDialogTitle>
-          <AlertDialogDescription>
-            {t.exportDialog.finalDraftConfirmDescription}
-          </AlertDialogDescription>
-        </AlertDialogHeader>
-        <AlertDialogFooter>
-          <AlertDialogCancel>{t.exportDialog.cancel}</AlertDialogCancel>
-          <AlertDialogAction onClick={handleConfirmFinalDraft}>
-            {t.exportDialog.export}
-          </AlertDialogAction>
-        </AlertDialogFooter>
-      </AlertDialogContent>
-    </AlertDialog>
-    </>
   );
 }

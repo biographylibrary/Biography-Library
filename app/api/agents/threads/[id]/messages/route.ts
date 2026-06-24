@@ -1,7 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { authenticateAgentRequest } from '@/lib/agents/agent-chat-handler';
 import { buildServiceClient } from '@/lib/server/review-submit-pipeline';
-import { loadThreadMessages, verifyThreadOwnership } from '@/lib/agents/thread-service';
+import {
+  getAgentUiMessageLimit,
+  loadRecentThreadMessages,
+  loadThreadMessagesBefore,
+  verifyThreadOwnership,
+} from '@/lib/agents/thread-service';
 
 export const runtime = 'nodejs';
 
@@ -22,11 +27,31 @@ export async function GET(
   }
 
   const url = new URL(req.url);
-  const limit = Math.min(parseInt(url.searchParams.get('limit') ?? '50', 10), 100);
-  const messages = await loadThreadMessages(serviceClient, threadId, limit);
+  const before = url.searchParams.get('before');
+  const maxLimit = getAgentUiMessageLimit();
+  const limit = Math.min(parseInt(url.searchParams.get('limit') ?? '50', 10), maxLimit);
+
+  const messages = before
+    ? await loadThreadMessagesBefore(serviceClient, threadId, before, limit)
+    : await loadRecentThreadMessages(serviceClient, threadId, limit);
+
+  const displayMessages = messages.filter((m) => m.role === 'user' || m.role === 'assistant');
+
+  let hasMoreOlder = false;
+  if (messages.length > 0) {
+    const oldestAt = messages[0].created_at;
+    const { count } = await serviceClient
+      .from('agent_messages')
+      .select('*', { count: 'exact', head: true })
+      .eq('thread_id', threadId)
+      .lt('created_at', oldestAt);
+    hasMoreOlder = (count ?? 0) > 0;
+  }
 
   return NextResponse.json({
     thread,
-    messages,
+    messages: displayMessages,
+    hasMoreOlder,
+    oldestLoadedAt: messages[0]?.created_at ?? null,
   });
 }

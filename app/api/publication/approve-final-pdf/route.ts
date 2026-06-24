@@ -68,11 +68,11 @@ export async function POST(req: NextRequest) {
     }
 
     const iter = (bio as any).pdf_draft_iteration as number | null;
-    if (iter == null || iter < 1 || iter > 3) {
+    if (iter == null || iter < 1) {
       return NextResponse.json(
         {
           error: 'drafts_required',
-          message: 'Generate at least one watermarked draft PDF (rounds 1–3) before final approval.',
+          message: 'Generate at least one watermarked draft PDF before final approval.',
         },
         { status: 400 }
       );

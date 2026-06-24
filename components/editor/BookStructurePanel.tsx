@@ -8,7 +8,7 @@ import TextAlign from '@tiptap/extension-text-align';
 import Superscript from '@tiptap/extension-superscript';
 import Subscript from '@tiptap/extension-subscript';
 import Placeholder from '@tiptap/extension-placeholder';
-import { ChevronDown, ChevronRight } from 'lucide-react';
+import { ChevronDown, ChevronRight, Loader2 } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
@@ -152,9 +152,11 @@ function Block({ label, enabled, onToggle, children }: BlockProps) {
 interface BookStructurePanelProps {
   biographyId: string;
   userId: string;
+  /** Hide section title when rendered inside BookStructureDialog */
+  hideTitle?: boolean;
 }
 
-export function BookStructurePanel({ biographyId, userId }: BookStructurePanelProps) {
+export function BookStructurePanel({ biographyId, userId, hideTitle }: BookStructurePanelProps) {
   const { t } = useTranslation();
   const [data, setData] = useState<BookStructureData>(EMPTY_DATA);
   const [recordId, setRecordId] = useState<string | null>(null);
@@ -237,13 +239,24 @@ export function BookStructurePanel({ biographyId, userId }: BookStructurePanelPr
     });
   }, [scheduleDebounce]);
 
-  if (!isLoaded) return null;
+  if (!isLoaded) {
+    if (hideTitle) {
+      return (
+        <div className="flex justify-center py-10">
+          <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+        </div>
+      );
+    }
+    return null;
+  }
 
   return (
-    <div className="space-y-3 px-2 pb-4">
-      <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider px-1 pt-2">
-        {t.editor.bookStructureTitle}
-      </p>
+    <div className={hideTitle ? 'space-y-3' : 'space-y-3 px-2 pb-4'}>
+      {!hideTitle && (
+        <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider px-1 pt-2">
+          {t.editor.bookStructureTitle}
+        </p>
+      )}
 
       <div className="border border-border/60 rounded-lg overflow-hidden px-3 py-3">
         <div className="flex items-center justify-between gap-3">

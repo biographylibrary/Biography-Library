@@ -1,5 +1,10 @@
 import { SupabaseClient } from '@supabase/supabase-js';
 import type { AgentType } from './models';
+import { threadAgentTypeForStorage, echoStorageTypesForLookup } from './echo-thread-storage';
+import {
+  AGENT_CONTEXT_MESSAGE_LIMIT,
+  AGENT_UI_MESSAGE_LIMIT,
+} from './agent-limits';
 
 export type AgentThreadRow = {
   id: string;
@@ -80,56 +85,157 @@ export async function getOrCreateThread(
 ): Promise<AgentThreadRow> {
   const { userId, agentType, biographyId = null, locale = 'en' } = params;
 
-  let query = serviceClient
-    .from('agent_threads')
-    .select('*')
-    .eq('user_id', userId)
-    .eq('agent_type', agentType)
-    .eq('status', 'active');
+  if (agentType === 'echo') {
+    for (const storageType of echoStorageTypesForLookup()) {
+      let query = serviceClient
+        .from('agent_threads')
+        .select('*')
+        .eq('user_id', userId)
+        .eq('agent_type', storageType)
+        .eq('status', 'active');
 
-  if (biographyId) {
-    query = query.eq('biography_id', biographyId);
+      if (biographyId) {
+        query = query.eq('biography_id', biographyId);
+      } else {
+        query = query.is('biography_id', null);
+      }
+
+      const { data: existing } = await query.maybeSingle();
+      if (existing) return existing as AgentThreadRow;
+    }
   } else {
-    query = query.is('biography_id', null);
+    const storedAgentType = threadAgentTypeForStorage(agentType);
+
+    let query = serviceClient
+      .from('agent_threads')
+      .select('*')
+      .eq('user_id', userId)
+      .eq('agent_type', storedAgentType)
+      .eq('status', 'active');
+
+    if (biographyId) {
+      query = query.eq('biography_id', biographyId);
+    } else {
+      query = query.is('biography_id', null);
+    }
+
+    const { data: existing } = await query.maybeSingle();
+    if (existing) return existing as AgentThreadRow;
   }
 
-  const { data: existing } = await query.maybeSingle();
-  if (existing) return existing as AgentThreadRow;
+  const storedAgentType = threadAgentTypeForStorage(agentType);
 
   const { data: created, error } = await serviceClient
     .from('agent_threads')
     .insert({
       user_id: userId,
       biography_id: biographyId,
-      agent_type: agentType,
+      agent_type: storedAgentType,
       locale,
     })
     .select('*')
     .single();
 
   if (error) {
-    // Race: another request created the thread
-    const { data: retry } = await query.maybeSingle();
+    let retryQuery = serviceClient
+      .from('agent_threads')
+      .select('*')
+      .eq('user_id', userId)
+      .eq('agent_type', storedAgentType)
+      .eq('status', 'active');
+
+    if (biographyId) {
+      retryQuery = retryQuery.eq('biography_id', biographyId);
+    } else {
+      retryQuery = retryQuery.is('biography_id', null);
+    }
+
+    const { data: retry } = await retryQuery.maybeSingle();
     if (retry) return retry as AgentThreadRow;
     throw error;
   }
   return created as AgentThreadRow;
 }
 
-export async function loadThreadMessages(
+export async function loadRecentThreadMessages(
   serviceClient: SupabaseClient,
   threadId: string,
-  limit = 40
+  limit = AGENT_CONTEXT_MESSAGE_LIMIT
 ): Promise<AgentMessageRow[]> {
   const { data, error } = await serviceClient
     .from('agent_messages')
     .select('*')
     .eq('thread_id', threadId)
-    .order('created_at', { ascending: true })
+    .order('created_at', { ascending: false })
     .limit(limit);
 
   if (error) throw error;
-  return (data ?? []) as AgentMessageRow[];
+  return ((data ?? []) as AgentMessageRow[]).reverse();
+}
+
+/** @deprecated Use loadRecentThreadMessages — kept for callers passing explicit limits */
+export async function loadThreadMessages(
+  serviceClient: SupabaseClient,
+  threadId: string,
+  limit = AGENT_CONTEXT_MESSAGE_LIMIT
+): Promise<AgentMessageRow[]> {
+  return loadRecentThreadMessages(serviceClient, threadId, limit);
+}
+
+export async function loadThreadMessagesBefore(
+  serviceClient: SupabaseClient,
+  threadId: string,
+  before: string,
+  limit = 50
+): Promise<AgentMessageRow[]> {
+  const { data, error } = await serviceClient
+    .from('agent_messages')
+    .select('*')
+    .eq('thread_id', threadId)
+    .lt('created_at', before)
+    .order('created_at', { ascending: false })
+    .limit(limit);
+
+  if (error) throw error;
+  return ((data ?? []) as AgentMessageRow[]).reverse();
+}
+
+export async function loadAllThreadMessages(
+  serviceClient: SupabaseClient,
+  threadId: string
+): Promise<AgentMessageRow[]> {
+  const pageSize = 500;
+  const all: AgentMessageRow[] = [];
+  let before: string | undefined;
+
+  while (true) {
+    let query = serviceClient
+      .from('agent_messages')
+      .select('*')
+      .eq('thread_id', threadId)
+      .order('created_at', { ascending: false })
+      .limit(pageSize);
+
+    if (before) {
+      query = query.lt('created_at', before);
+    }
+
+    const { data, error } = await query;
+    if (error) throw error;
+
+    const batch = (data ?? []) as AgentMessageRow[];
+    if (!batch.length) break;
+
+    all.unshift(...batch.reverse());
+    if (batch.length < pageSize) break;
+    before = batch[batch.length - 1].created_at;
+  }
+
+  return all;
+}
+
+export function getAgentUiMessageLimit(): number {
+  return AGENT_UI_MESSAGE_LIMIT;
 }
 
 export async function appendMessage(
@@ -190,11 +296,34 @@ export async function getActiveThread(
 ): Promise<AgentThreadRow | null> {
   const { userId, agentType, biographyId = null } = params;
 
+  if (agentType === 'echo') {
+    for (const storageType of echoStorageTypesForLookup()) {
+      let query = serviceClient
+        .from('agent_threads')
+        .select('*')
+        .eq('user_id', userId)
+        .eq('agent_type', storageType)
+        .eq('status', 'active');
+
+      if (biographyId) {
+        query = query.eq('biography_id', biographyId);
+      } else {
+        query = query.is('biography_id', null);
+      }
+
+      const { data } = await query.maybeSingle();
+      if (data) return data as AgentThreadRow;
+    }
+    return null;
+  }
+
+  const storedAgentType = threadAgentTypeForStorage(agentType);
+
   let query = serviceClient
     .from('agent_threads')
     .select('*')
     .eq('user_id', userId)
-    .eq('agent_type', agentType)
+    .eq('agent_type', storedAgentType)
     .eq('status', 'active');
 
   if (biographyId) {

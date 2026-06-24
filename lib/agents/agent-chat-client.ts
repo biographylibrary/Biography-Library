@@ -3,7 +3,8 @@ import type { AgentType } from './models';
 export type AgentStreamEvent =
   | { event: 'thread'; data: { threadId: string } }
   | { event: 'token'; data: { content: string } }
-  | { event: 'tool_result'; data: { tool: string; sectionKey?: string; contentLength?: number } }
+  | { event: 'tool_result'; data: { tool: string; sectionKey?: string; contentLength?: number; draftText?: string; preview?: boolean; wordCount?: number } }
+  | { event: 'kb_sources'; data: { sources: string[] } }
   | { event: 'done'; data: { threadId: string } }
   | { event: 'error'; data: { message: string } };
 
@@ -15,6 +16,8 @@ export async function streamAgentChat(
     activeSection?: string;
     language: string;
     threadId?: string;
+    echoPage?: 'hub' | 'editor_sections' | 'editor_freeflow' | 'publication' | 'dashboard' | 'other';
+    onboardingIncomplete?: boolean;
     accessToken: string;
   },
   onEvent: (ev: AgentStreamEvent) => void
@@ -32,13 +35,15 @@ export async function streamAgentChat(
       activeSection: params.activeSection,
       language: params.language,
       threadId: params.threadId,
+      echoPage: params.echoPage,
+      onboardingIncomplete: params.onboardingIncomplete,
     }),
   });
 
-  if (!res.ok) {
-    const json = await res.json().catch(() => ({}));
-    throw new Error(json.message ?? json.error ?? `HTTP ${res.status}`);
-  }
+      if (!res.ok) {
+        const json = await res.json().catch(() => ({}));
+        throw new Error((json.message as string) || (json.error as string) || `HTTP ${res.status}`);
+      }
 
   if (!res.body) throw new Error('No response body');
 

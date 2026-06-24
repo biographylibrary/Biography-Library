@@ -1,9 +1,7 @@
 'use client';
 
 import { Button } from '@/components/ui/button';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import {
-  X,
   Check,
   XCircle,
   Loader2,
@@ -15,10 +13,12 @@ import {
 import type { AiPanelState, AiSuggestion, AiPrompt } from '@/lib/ai-constants';
 import { cn } from '@/lib/utils';
 import { useTranslation } from '@/lib/i18n/i18n-context';
+import { EditorSidebarDialog } from './EditorSidebarDialog';
 
-interface AiSuggestionsPanelProps {
+interface AiSuggestionsDialogProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
   state: AiPanelState;
-  onClose: () => void;
   onAcceptSuggestion: (id: string) => void;
   onRejectSuggestion: (id: string) => void;
   onInsertPrompt: (starter: string) => void;
@@ -125,13 +125,14 @@ function PromptCard({
   );
 }
 
-export function AiSuggestionsPanel({
+export function AiSuggestionsDialog({
+  open,
+  onOpenChange,
   state,
-  onClose,
   onAcceptSuggestion,
   onRejectSuggestion,
   onInsertPrompt,
-}: AiSuggestionsPanelProps) {
+}: AiSuggestionsDialogProps) {
   const { t } = useTranslation();
 
   const panelTitle =
@@ -149,118 +150,110 @@ export function AiSuggestionsPanel({
         : FileText;
 
   return (
-    <div className="w-[320px] border-l border-border/50 bg-card/50 flex flex-col shrink-0">
-      <div className="flex items-center justify-between px-4 py-3 border-b border-border/50">
-        <div className="flex items-center gap-2 min-w-0">
-          <PanelIcon className="h-4 w-4 text-primary shrink-0" />
-          <span className="text-sm font-semibold truncate">{panelTitle}</span>
-          <span className="shrink-0 inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-medium bg-primary/10 text-primary">
-            AI
+    <EditorSidebarDialog
+      open={open}
+      onOpenChange={onOpenChange}
+      title={panelTitle}
+      icon={<PanelIcon className="h-5 w-5 text-primary" />}
+      headerExtra={
+        <span className="shrink-0 inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-medium bg-primary/10 text-primary">
+          AI
+        </span>
+      }
+      bodyClassName="px-6 pb-6 pt-4 space-y-3"
+    >
+      {state.loading && (
+        <div className="flex flex-col items-center justify-center py-12 gap-3">
+          <Loader2 className="h-6 w-6 animate-spin text-primary" />
+          <span className="text-sm text-muted-foreground">
+            {t.editor.analyzingWithAi}
           </span>
         </div>
-        <Button
-          variant="ghost"
-          size="sm"
-          className="h-7 w-7 p-0 shrink-0"
-          onClick={onClose}
-        >
-          <X className="h-4 w-4" />
-        </Button>
-      </div>
+      )}
 
-      <ScrollArea className="flex-1">
-        <div className="p-4 space-y-3">
-          {state.loading && (
-            <div className="flex flex-col items-center justify-center py-12 gap-3">
-              <Loader2 className="h-6 w-6 animate-spin text-primary" />
-              <span className="text-sm text-muted-foreground">
-                {t.editor.analyzingWithAi}
-              </span>
-            </div>
-          )}
-
-          {state.error && (
-            <div className="flex flex-col gap-2 p-4 rounded-lg bg-destructive/10 text-destructive text-sm">
-              <div className="flex items-start gap-2">
-                <AlertTriangle className="h-4 w-4 shrink-0 mt-0.5" />
-                <div className="flex-1">
-                  <p className="font-medium">{state.error}</p>
-                  {state.error.includes('not configured') && (
-                    <div className="mt-2 text-xs text-destructive/80 space-y-1">
-                      <p>To enable AI features:</p>
-                      <ol className="list-decimal list-inside space-y-0.5 ml-2">
-                        <li>Get an API token from Infomaniak AI Tools</li>
-                        <li>Go to your Supabase project settings</li>
-                        <li>Navigate to Edge Functions &rarr; Secrets</li>
-                        <li>Add secret: INFOMANIAK_AI_TOKEN</li>
-                      </ol>
-                    </div>
-                  )}
+      {state.error && (
+        <div className="flex flex-col gap-2 p-4 rounded-lg bg-destructive/10 text-destructive text-sm">
+          <div className="flex items-start gap-2">
+            <AlertTriangle className="h-4 w-4 shrink-0 mt-0.5" />
+            <div className="flex-1">
+              <p className="font-medium">{state.error}</p>
+              {state.error.includes('not configured') && (
+                <div className="mt-2 text-xs text-destructive/80 space-y-1">
+                  <p>To enable AI features:</p>
+                  <ol className="list-decimal list-inside space-y-0.5 ml-2">
+                    <li>Get an API token from Infomaniak AI Tools</li>
+                    <li>Go to your Supabase project settings</li>
+                    <li>Navigate to Edge Functions &rarr; Secrets</li>
+                    <li>Add secret: INFOMANIAK_AI_TOKEN</li>
+                  </ol>
                 </div>
-              </div>
-            </div>
-          )}
-
-          {!state.loading && !state.error && state.type === 'grammar' && (
-            <>
-              {state.suggestions.length === 0 ? (
-                <div className="text-center py-8">
-                  <Check className="h-8 w-8 text-brand-greenDark dark:text-brand-greenLight mx-auto mb-2" />
-                  <p className="text-sm font-medium">{t.editor.lookingGood}</p>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    {t.editor.noGrammarIssues}
-                  </p>
-                </div>
-              ) : (
-                <>
-                  <p className="text-xs text-muted-foreground">
-                    {state.suggestions.length} {t.editor.suggestionsFound}
-                  </p>
-                  {state.suggestions.map((s) => (
-                    <SuggestionCard
-                      key={s.id}
-                      suggestion={s}
-                      onAccept={() => onAcceptSuggestion(s.id)}
-                      onReject={() => onRejectSuggestion(s.id)}
-                    />
-                  ))}
-                </>
               )}
-            </>
-          )}
+            </div>
+          </div>
+        </div>
+      )}
 
-          {!state.loading && !state.error && state.type === 'prompts' && (
+      {!state.loading && !state.error && state.type === 'grammar' && (
+        <>
+          {state.suggestions.length === 0 ? (
+            <div className="text-center py-8">
+              <Check className="h-8 w-8 text-brand-greenDark dark:text-brand-greenLight mx-auto mb-2" />
+              <p className="text-sm font-medium">{t.editor.lookingGood}</p>
+              <p className="text-xs text-muted-foreground mt-1">
+                {t.editor.noGrammarIssues}
+              </p>
+            </div>
+          ) : (
             <>
               <p className="text-xs text-muted-foreground">
-                {t.editor.clickPromptToInsert}
+                {state.suggestions.length} {t.editor.suggestionsFound}
               </p>
-              {state.prompts.map((p, i) => (
-                <PromptCard
-                  key={i}
-                  prompt={p}
-                  onInsert={() => onInsertPrompt(p.starter)}
+              {state.suggestions.map((s) => (
+                <SuggestionCard
+                  key={s.id}
+                  suggestion={s}
+                  onAccept={() => onAcceptSuggestion(s.id)}
+                  onReject={() => onRejectSuggestion(s.id)}
                 />
               ))}
             </>
           )}
+        </>
+      )}
 
-          {!state.loading && !state.error && state.type === 'summary' && (
-            <>
-              {state.summary ? (
-                <div className="rounded-lg border border-border bg-card p-4">
-                  <p className="text-sm leading-relaxed text-foreground">
-                    {state.summary}
-                  </p>
-                </div>
-              ) : (
-                <p className="text-sm text-muted-foreground text-center py-8">
-                  {t.editor.noSummary}
-                </p>
-              )}
-            </>
+      {!state.loading && !state.error && state.type === 'prompts' && (
+        <>
+          <p className="text-xs text-muted-foreground">
+            {t.editor.clickPromptToInsert}
+          </p>
+          {state.prompts.map((p, i) => (
+            <PromptCard
+              key={i}
+              prompt={p}
+              onInsert={() => onInsertPrompt(p.starter)}
+            />
+          ))}
+        </>
+      )}
+
+      {!state.loading && !state.error && state.type === 'summary' && (
+        <>
+          {state.summary ? (
+            <div className="rounded-lg border border-border bg-card p-4">
+              <p className="text-sm leading-relaxed text-foreground">
+                {state.summary}
+              </p>
+            </div>
+          ) : (
+            <p className="text-sm text-muted-foreground text-center py-8">
+              {t.editor.noSummary}
+            </p>
           )}
-        </div>
-      </ScrollArea>
-    </div>
+        </>
+      )}
+    </EditorSidebarDialog>
   );
 }
+
+/** @deprecated Use AiSuggestionsDialog */
+export const AiSuggestionsPanel = AiSuggestionsDialog;

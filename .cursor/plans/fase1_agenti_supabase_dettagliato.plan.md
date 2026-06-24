@@ -28,13 +28,13 @@ todos:
     status: completed
   - id: s7-onboarding
     content: "Step 7: onboarding Nemotron completo + kb_chunks multilingue + sostituisce HelpChatbot"
-    status: pending
+    status: completed
   - id: s8-reviewer
     content: "Step 8: reviewer Gemma + convergenza review-submit-pipeline"
-    status: pending
+    status: completed
   - id: s9-apertus
     content: "Step 9: rilettura Apertus opzionale"
-    status: pending
+    status: completed
 isProject: false
 ---
 

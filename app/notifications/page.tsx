@@ -51,7 +51,8 @@ export default function NotificationsPage() {
   }, [user, load]);
 
   const handleMarkRead = async (id: string) => {
-    await markNotificationRead(id);
+    const ok = await markNotificationRead(id);
+    if (!ok) return;
     setNotifications((prev) =>
       prev.map((n) => (n.id === id ? { ...n, is_read: true } : n))
     );
@@ -59,7 +60,8 @@ export default function NotificationsPage() {
 
   const handleMarkAllRead = async () => {
     if (!user) return;
-    await markAllNotificationsRead(user.id);
+    const ok = await markAllNotificationsRead(user.id);
+    if (!ok) return;
     setNotifications((prev) => prev.map((n) => ({ ...n, is_read: true })));
   };
 

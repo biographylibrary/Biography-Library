@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef, useCallback } from 'react';
+import { useState, useRef, useCallback, useEffect } from 'react';
 import { Upload, CircleAlert as AlertCircle, Loader as Loader2 } from 'lucide-react';
 import {
   Dialog,
@@ -9,6 +9,10 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import {
+  editorSidebarDialogContentClass,
+  editorSidebarDialogContentStyle,
+} from '@/components/editor/EditorSidebarDialog';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
@@ -21,14 +25,16 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import {
-  parseTextFile,
+  parseTextFiles,
   parsePastedText,
   TextImportError,
+  getImportErrorMessage,
   type ParsedText,
 } from '@/lib/text-import-parser';
+import { appendHtml } from '@/lib/import/html-blocks';
+import { ImportSectionMappingWizard } from '@/components/import/ImportSectionMappingWizard';
 import { useTranslation } from '@/lib/i18n/i18n-context';
-import { supabase } from '@/lib/supabase';
-import { BIOGRAPHY_SECTIONS } from '@/lib/editor-constants';
+import { BIOGRAPHY_SECTIONS, type BiographyContent, getSectionData } from '@/lib/editor-constants';
 
 interface ImportTextDialogProps {
   open: boolean;
@@ -37,8 +43,12 @@ interface ImportTextDialogProps {
   currentSectionKey: string;
   currentSectionContent: string;
   currentFreeflowContent: string;
+  sectionContents?: BiographyContent;
   onImportedToSection: (sectionKey: string, newContent: string) => void;
   onImportedToFreeflow: (newContent: string) => void;
+  onImportMultipleSections?: (
+    sections: Array<{ title: string; content: string; sectionKey?: string }>
+  ) => void;
   biographyMode?: 'sections' | 'freeflow';
 }
 
@@ -51,63 +61,85 @@ export function ImportTextDialog({
   currentSectionKey,
   currentSectionContent,
   currentFreeflowContent,
+  sectionContents,
   onImportedToSection,
   onImportedToFreeflow,
+  onImportMultipleSections,
   biographyMode = 'sections',
 }: ImportTextDialogProps) {
-  const { t } = useTranslation();
+  const { t, language } = useTranslation();
   const [dragActive, setDragActive] = useState(false);
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [pastedText, setPastedText] = useState('');
   const [parsedContent, setParsedContent] = useState<ParsedText | null>(null);
+  const [queuedFiles, setQueuedFiles] = useState<string[]>([]);
   const [destination, setDestination] = useState<string>(currentSectionKey);
   const [inputMode, setInputMode] = useState<'input' | 'preview'>('input');
-  const [freeflowImportMode, setFreeflowImportMode] = useState<ConflictAction>('replace');
+  const [importMode, setImportMode] = useState<ConflictAction>('append');
+  const [showMappingWizard, setShowMappingWizard] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const getCurrentDestinationContent = useCallback(() => {
-    if (destination === currentSectionKey) return currentSectionContent;
-    return '';
-  }, [destination, currentSectionContent, currentSectionKey]);
+  useEffect(() => {
+    if (open) setDestination(currentSectionKey);
+  }, [open, currentSectionKey]);
+
+  const getDestinationContent = useCallback(
+    (dest: string) => {
+      if (biographyMode === 'freeflow') return currentFreeflowContent;
+      if (sectionContents) return getSectionData(sectionContents, dest).text;
+      if (dest === currentSectionKey) return currentSectionContent;
+      return '';
+    },
+    [biographyMode, sectionContents, currentSectionKey, currentSectionContent, currentFreeflowContent]
+  );
 
   const destinationHasContent = useCallback(() => {
-    if (biographyMode === 'freeflow') {
-      return currentFreeflowContent && currentFreeflowContent.trim().length > 0;
-    }
-    const content = getCurrentDestinationContent();
-    return content && content.trim().length > 0;
-  }, [biographyMode, currentFreeflowContent, getCurrentDestinationContent]);
+    const content = getDestinationContent(destination);
+    return Boolean(content && content.trim().length > 0);
+  }, [destination, getDestinationContent]);
 
   const resetDialog = useCallback(() => {
     setError(null);
     setPastedText('');
     setParsedContent(null);
+    setQueuedFiles([]);
     setInputMode('input');
     setLoading(false);
     setDragActive(false);
     setSaving(false);
-    setFreeflowImportMode('replace');
+    setImportMode('append');
+    setShowMappingWizard(false);
   }, []);
 
-  const handleFileSelect = useCallback(async (file: File) => {
-    setError(null);
-    setLoading(true);
-    try {
-      const parsed = await parseTextFile(file);
-      setParsedContent(parsed);
-      setInputMode('preview');
-    } catch (err) {
-      if (err instanceof TextImportError) {
-        setError(err.message);
-      } else {
-        setError(t.importDialog.fileReadError);
+  const processFiles = useCallback(
+    async (files: FileList | File[]) => {
+      setError(null);
+      setLoading(true);
+      try {
+        const list = Array.from(files);
+        const parsed = await parseTextFiles(list, language);
+        setParsedContent(parsed);
+        setQueuedFiles(parsed.fileNames ?? list.map((f) => f.name));
+        setInputMode('preview');
+        if (!destinationHasContent() && biographyMode === 'sections') {
+          setImportMode('replace');
+        } else {
+          setImportMode('append');
+        }
+      } catch (err) {
+        if (err instanceof TextImportError) {
+          setError(getImportErrorMessage(err.message, t));
+        } else {
+          setError(t.importDialog.fileReadError);
+        }
+      } finally {
+        setLoading(false);
       }
-    } finally {
-      setLoading(false);
-    }
-  }, [t]);
+    },
+    [language, destinationHasContent, biographyMode, t]
+  );
 
   const handleDrag = useCallback((e: React.DragEvent) => {
     e.preventDefault();
@@ -124,20 +156,20 @@ export function ImportTextDialog({
       e.preventDefault();
       e.stopPropagation();
       setDragActive(false);
-      if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-        handleFileSelect(e.dataTransfer.files[0]);
+      if (e.dataTransfer.files?.length) {
+        void processFiles(e.dataTransfer.files);
       }
     },
-    [handleFileSelect]
+    [processFiles]
   );
 
   const handleFileInputChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
-      if (e.target.files && e.target.files[0]) {
-        handleFileSelect(e.target.files[0]);
+      if (e.target.files?.length) {
+        void processFiles(e.target.files);
       }
     },
-    [handleFileSelect]
+    [processFiles]
   );
 
   const handlePasteImport = useCallback(() => {
@@ -148,89 +180,117 @@ export function ImportTextDialog({
     setError(null);
     setLoading(true);
     try {
-      const parsed = parsePastedText(pastedText);
+      const parsed = parsePastedText(pastedText, language);
       setParsedContent(parsed);
+      setQueuedFiles([]);
       setInputMode('preview');
+      setImportMode(destinationHasContent() ? 'append' : 'replace');
     } catch {
       setError(t.importDialog.textAnalysisError);
     } finally {
       setLoading(false);
     }
-  }, [pastedText, t]);
+  }, [pastedText, t, language, destinationHasContent]);
 
-  const doSave = useCallback(async (action: ConflictAction) => {
-    if (!parsedContent) return;
-    setSaving(true);
-    setError(null);
-
-    try {
+  const applySingleImport = useCallback(
+    (action: ConflictAction) => {
+      if (!parsedContent) return;
       const incomingText = parsedContent.content;
 
       if (biographyMode === 'freeflow') {
-        let newValue: string;
-        if (action === 'replace') {
-          newValue = incomingText;
-        } else {
-          const sep = currentFreeflowContent && !currentFreeflowContent.endsWith('</p>') ? '<p></p>' : '';
-          newValue = currentFreeflowContent + sep + incomingText;
-        }
-        const { error: dbErr } = await supabase
-          .from('biographies')
-          .update({ content_freeflow: newValue, biography_mode: 'freeflow' })
-          .eq('id', biographyId);
-        if (dbErr) throw dbErr;
+        const newValue =
+          action === 'replace'
+            ? incomingText
+            : appendHtml(currentFreeflowContent, incomingText);
         onImportedToFreeflow(newValue);
       } else {
-        const existingContent = destination === currentSectionKey ? currentSectionContent : '';
-        let newValue: string;
-        if (action === 'replace') {
-          newValue = incomingText;
-        } else {
-          const sep = existingContent && !existingContent.endsWith('</p>') ? '<p></p>' : '';
-          newValue = existingContent + sep + incomingText;
-        }
-        const { error: dbErr } = await supabase
-          .from('biography_sections')
-          .upsert(
-            { biography_id: biographyId, section_key: destination, content: newValue },
-            { onConflict: 'biography_id,section_key' }
-          );
-        if (dbErr) throw dbErr;
+        const existing = getDestinationContent(destination);
+        const newValue =
+          action === 'replace' ? incomingText : appendHtml(existing, incomingText);
         onImportedToSection(destination, newValue);
       }
-
       resetDialog();
       onOpenChange(false);
-    } catch (err) {
-      setError(t.importDialog.fileReadError);
-    } finally {
-      setSaving(false);
-    }
-  }, [
-    parsedContent,
-    biographyMode,
-    destination,
-    biographyId,
-    currentFreeflowContent,
-    currentSectionContent,
-    currentSectionKey,
-    onImportedToFreeflow,
-    onImportedToSection,
-    resetDialog,
-    onOpenChange,
-    t,
-  ]);
+    },
+    [
+      parsedContent,
+      biographyMode,
+      currentFreeflowContent,
+      getDestinationContent,
+      destination,
+      onImportedToFreeflow,
+      onImportedToSection,
+      resetDialog,
+      onOpenChange,
+    ]
+  );
+
+  const handleMappingConfirm = useCallback(
+    (assignments: Array<{ sectionKey: string; content: string; append: boolean }>) => {
+      if (!onImportMultipleSections) return;
+      const grouped = new Map<string, string>();
+      for (const a of assignments) {
+        const prev = grouped.get(a.sectionKey) ?? getDestinationContent(a.sectionKey);
+        grouped.set(
+          a.sectionKey,
+          a.append ? appendHtml(prev, a.content) : a.content
+        );
+      }
+      const sections = Array.from(grouped.entries()).map(([sectionKey, content]) => {
+        const meta = BIOGRAPHY_SECTIONS.find((s) => s.key === sectionKey);
+        return {
+          title: sectionKey,
+          content,
+          sectionKey,
+        };
+      });
+      onImportMultipleSections(sections);
+      setShowMappingWizard(false);
+      resetDialog();
+      onOpenChange(false);
+    },
+    [onImportMultipleSections, getDestinationContent, resetDialog, onOpenChange]
+  );
 
   const handleImportConfirm = useCallback(() => {
     if (!parsedContent) return;
-    if (biographyMode === 'freeflow') {
-      doSave(freeflowImportMode);
-    } else if (destinationHasContent()) {
-      doSave('replace');
-    } else {
-      doSave('replace');
+
+    const multiBlocks =
+      parsedContent.hasSections &&
+      parsedContent.sections &&
+      parsedContent.sections.filter((s) => s.title).length > 1;
+
+    if (multiBlocks && biographyMode === 'sections' && onImportMultipleSections) {
+      setShowMappingWizard(true);
+      return;
     }
-  }, [parsedContent, biographyMode, freeflowImportMode, destinationHasContent, doSave]);
+
+    if (parsedContent.hasSections && parsedContent.sections?.length && onImportMultipleSections) {
+      onImportMultipleSections(
+        parsedContent.sections.map((s) => ({
+          title: s.title,
+          content: s.content,
+          sectionKey: s.sectionKey ?? undefined,
+        }))
+      );
+      resetDialog();
+      onOpenChange(false);
+      return;
+    }
+
+    const action =
+      importMode === 'append' || destinationHasContent() ? importMode : 'replace';
+    applySingleImport(action);
+  }, [
+    parsedContent,
+    biographyMode,
+    onImportMultipleSections,
+    importMode,
+    destinationHasContent,
+    applySingleImport,
+    resetDialog,
+    onOpenChange,
+  ]);
 
   const handleOpenChange = useCallback(
     (newOpen: boolean) => {
@@ -240,224 +300,221 @@ export function ImportTextDialog({
     [onOpenChange, resetDialog]
   );
 
-  const hasInputContent = pastedText.trim().length > 0 || parsedContent !== null;
+  const previewHtml =
+    parsedContent?.content ||
+    (parsedContent?.sections?.map((s) => `<h2>${s.title}</h2>${s.content}`).join('') ?? '');
+
+  const importModeRadios = (
+    <div className="space-y-2">
+      <Label>{t.editor.importSaveTo}</Label>
+      <div className="flex flex-col gap-2">
+        <label className="flex items-center gap-3 cursor-pointer group">
+          <input
+            type="radio"
+            name="import-mode"
+            value="replace"
+            checked={importMode === 'replace'}
+            onChange={() => setImportMode('replace')}
+            className="accent-foreground h-4 w-4 shrink-0"
+          />
+          <span className="text-sm">{t.editor.importFreeFlowReplace}</span>
+        </label>
+        <label className="flex items-center gap-3 cursor-pointer group">
+          <input
+            type="radio"
+            name="import-mode"
+            value="append"
+            checked={importMode === 'append'}
+            onChange={() => setImportMode('append')}
+            className="accent-foreground h-4 w-4 shrink-0"
+          />
+          <span className="text-sm">{t.editor.importFreeFlowAppend}</span>
+        </label>
+      </div>
+    </div>
+  );
 
   return (
-    <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[85vh] flex flex-col gap-0 p-0">
-        <DialogHeader className="px-6 pt-6 pb-4 border-b border-border/50">
-          <DialogTitle>{t.importDialog.titleFreeflow}</DialogTitle>
-        </DialogHeader>
+    <>
+      <Dialog open={open} onOpenChange={handleOpenChange}>
+        <DialogContent
+          className={editorSidebarDialogContentClass}
+          style={editorSidebarDialogContentStyle}
+        >
+          <DialogHeader className="px-6 pt-6 pb-4 border-b border-border/50 shrink-0">
+            <DialogTitle className="flex items-center gap-2 text-lg">
+              <Upload className="h-5 w-5 text-primary" />
+              {t.importDialog.titleFreeflow}
+            </DialogTitle>
+          </DialogHeader>
 
-        <div className="flex-1 overflow-y-auto px-6 py-4 space-y-5">
-          <div className="rounded-md px-4 py-3.5" style={{ backgroundColor: '#C4DAEB' }}>
-            <p className="text-sm leading-snug text-foreground">
-              {biographyMode === 'freeflow'
-                ? t.editor.importNoticeFreeflowMode
-                : t.editor.importNoticeSectionsMode}
-            </p>
-          </div>
-
-          {biographyMode === 'sections' && (
-            <div className="space-y-1.5">
-              <Label>{t.editor.importSaveTo}</Label>
-              <Select value={destination} onValueChange={setDestination}>
-                <SelectTrigger className="w-full">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {BIOGRAPHY_SECTIONS.map((s) => (
-                    <SelectItem key={s.key} value={s.key}>
-                      {t.sectionTitles[s.key as keyof typeof t.sectionTitles] || s.title}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+          <div className="flex-1 overflow-y-auto px-6 py-4 space-y-5">
+            <div className="rounded-md px-4 py-3.5" style={{ backgroundColor: '#C4DAEB' }}>
+              <p className="text-sm leading-snug text-foreground">
+                {biographyMode === 'freeflow'
+                  ? t.editor.importNoticeFreeflowMode
+                  : t.editor.importNoticeSectionsMode}
+              </p>
             </div>
-          )}
 
-          {inputMode === 'input' && (
-            <div className="space-y-4">
-              <div
-                className={`border-2 border-dashed rounded-lg p-6 text-center transition-colors cursor-pointer ${
-                  dragActive
-                    ? 'border-primary bg-primary/5'
-                    : 'border-muted-foreground/25 hover:border-muted-foreground/50'
-                }`}
-                onDragEnter={handleDrag}
-                onDragLeave={handleDrag}
-                onDragOver={handleDrag}
-                onDrop={handleDrop}
-                onClick={() => fileInputRef.current?.click()}
-              >
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  accept=".txt"
-                  onChange={handleFileInputChange}
-                  className="hidden"
-                />
-                <Upload className="mx-auto h-10 w-10 text-muted-foreground mb-3" />
-                <p className="text-sm font-medium mb-1">{t.importDialog.dragFile}</p>
-                <p className="text-xs text-muted-foreground">{t.importDialog.formats}</p>
-                {loading && (
-                  <div className="mt-3 flex items-center justify-center gap-2 text-sm text-muted-foreground">
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                    {t.importDialog.loading}
+            {biographyMode === 'sections' && (
+              <div className="space-y-1.5">
+                <Label>{t.editor.importSaveTo}</Label>
+                <Select value={destination} onValueChange={setDestination}>
+                  <SelectTrigger className="w-full">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {BIOGRAPHY_SECTIONS.map((s) => (
+                      <SelectItem key={s.key} value={s.key}>
+                        {t.sectionTitles[s.key as keyof typeof t.sectionTitles] || s.title}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
+
+            {inputMode === 'input' && (
+              <div className="space-y-4">
+                <div
+                  className={`border-2 border-dashed rounded-lg p-6 text-center transition-colors cursor-pointer ${
+                    dragActive
+                      ? 'border-primary bg-primary/5'
+                      : 'border-muted-foreground/25 hover:border-muted-foreground/50'
+                  }`}
+                  onDragEnter={handleDrag}
+                  onDragLeave={handleDrag}
+                  onDragOver={handleDrag}
+                  onDrop={handleDrop}
+                  onClick={() => fileInputRef.current?.click()}
+                >
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept=".txt,.docx,.rtf"
+                    multiple
+                    onChange={handleFileInputChange}
+                    className="hidden"
+                  />
+                  <Upload className="mx-auto h-10 w-10 text-muted-foreground mb-3" />
+                  <p className="text-sm font-medium mb-1">{t.importDialog.dragFile}</p>
+                  <p className="text-xs text-muted-foreground">{t.importDialog.formats}</p>
+                  {loading && (
+                    <div className="mt-3 flex items-center justify-center gap-2 text-sm text-muted-foreground">
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      {t.importDialog.loading}
+                    </div>
+                  )}
+                </div>
+
+                <div className="relative">
+                  <div className="absolute inset-0 flex items-center">
+                    <span className="w-full border-t" />
+                  </div>
+                  <div className="relative flex justify-center text-xs uppercase">
+                    <span className="bg-background px-2 text-muted-foreground">
+                      {t.importDialog.or}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="paste-text">{t.importDialog.pasteLabel}</Label>
+                  <Textarea
+                    id="paste-text"
+                    placeholder={t.importDialog.pastePlaceholder}
+                    value={pastedText}
+                    onChange={(e) => setPastedText(e.target.value)}
+                    className="min-h-[120px] font-mono text-sm"
+                  />
+                </div>
+
+                {(biographyMode === 'freeflow' || biographyMode === 'sections') &&
+                  (pastedText.trim() || parsedContent) &&
+                  importModeRadios}
+              </div>
+            )}
+
+            {inputMode === 'preview' && parsedContent && (
+              <div className="space-y-3">
+                {queuedFiles.length > 0 && (
+                  <div className="flex flex-wrap gap-1.5">
+                    {queuedFiles.map((name) => (
+                      <span
+                        key={name}
+                        className="inline-flex items-center gap-1 text-xs bg-muted px-2 py-1 rounded-md"
+                      >
+                        {name}
+                      </span>
+                    ))}
                   </div>
                 )}
-              </div>
-
-              <div className="relative">
-                <div className="absolute inset-0 flex items-center">
-                  <span className="w-full border-t" />
+                <div className="rounded-md border border-border/60 bg-muted/30 p-4 max-h-[240px] overflow-y-auto import-preview">
+                  <p className="text-xs text-muted-foreground mb-2 font-medium">
+                    {t.importDialog.preview}
+                  </p>
+                  <div
+                    className="prose prose-sm max-w-none text-sm [&_h1]:text-xl [&_h1]:font-serif [&_h2]:text-lg [&_h2]:font-serif [&_h3]:text-base [&_h3]:font-semibold"
+                    dangerouslySetInnerHTML={{ __html: previewHtml }}
+                  />
                 </div>
-                <div className="relative flex justify-center text-xs uppercase">
-                  <span className="bg-background px-2 text-muted-foreground">
-                    {t.importDialog.or}
-                  </span>
-                </div>
+
+                {importModeRadios}
+
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => {
+                    setParsedContent(null);
+                    setQueuedFiles([]);
+                    setInputMode('input');
+                  }}
+                >
+                  {t.importDialog.back}
+                </Button>
               </div>
+            )}
 
-              <div className="space-y-2">
-                <Label htmlFor="paste-text">{t.importDialog.pasteLabel}</Label>
-                <Textarea
-                  id="paste-text"
-                  placeholder={t.importDialog.pastePlaceholder}
-                  value={pastedText}
-                  onChange={(e) => setPastedText(e.target.value)}
-                  className="min-h-[120px] font-mono text-sm"
-                />
-              </div>
+            {error && (
+              <Alert variant="destructive">
+                <AlertCircle className="h-4 w-4" />
+                <AlertDescription>{error}</AlertDescription>
+              </Alert>
+            )}
+          </div>
 
-              {biographyMode === 'freeflow' && hasInputContent && (
-                <div className="space-y-2">
-                  <Label>{t.editor.importSaveTo}</Label>
-                  <div className="flex flex-col gap-2">
-                    <label className="flex items-center gap-3 cursor-pointer group">
-                      <input
-                        type="radio"
-                        name="freeflow-import-mode"
-                        value="replace"
-                        checked={freeflowImportMode === 'replace'}
-                        onChange={() => setFreeflowImportMode('replace')}
-                        className="accent-foreground h-4 w-4 shrink-0"
-                      />
-                      <span className="text-sm group-hover:text-foreground transition-colors">
-                        {t.editor.importFreeFlowReplace}
-                      </span>
-                    </label>
-                    <label className="flex items-center gap-3 cursor-pointer group">
-                      <input
-                        type="radio"
-                        name="freeflow-import-mode"
-                        value="append"
-                        checked={freeflowImportMode === 'append'}
-                        onChange={() => setFreeflowImportMode('append')}
-                        className="accent-foreground h-4 w-4 shrink-0"
-                      />
-                      <span className="text-sm group-hover:text-foreground transition-colors">
-                        {t.editor.importFreeFlowAppend}
-                      </span>
-                    </label>
-                  </div>
-                </div>
-              )}
-            </div>
-          )}
-
-          {inputMode === 'preview' && parsedContent && (
-            <div className="space-y-3">
-              <div className="rounded-md border border-border/60 bg-muted/30 p-4 max-h-[200px] overflow-y-auto">
-                <p className="text-xs text-muted-foreground mb-2 font-medium">{t.importDialog.preview}</p>
-                <div
-                  className="prose prose-sm max-w-none text-sm"
-                  dangerouslySetInnerHTML={{ __html: parsedContent.content }}
-                />
-              </div>
-
-              {biographyMode === 'freeflow' && (
-                <div className="space-y-2">
-                  <Label>{t.editor.importSaveTo}</Label>
-                  <div className="flex flex-col gap-2">
-                    <label className="flex items-center gap-3 cursor-pointer group">
-                      <input
-                        type="radio"
-                        name="freeflow-import-mode"
-                        value="replace"
-                        checked={freeflowImportMode === 'replace'}
-                        onChange={() => setFreeflowImportMode('replace')}
-                        className="accent-foreground h-4 w-4 shrink-0"
-                      />
-                      <span className="text-sm group-hover:text-foreground transition-colors">
-                        {t.editor.importFreeFlowReplace}
-                      </span>
-                    </label>
-                    <label className="flex items-center gap-3 cursor-pointer group">
-                      <input
-                        type="radio"
-                        name="freeflow-import-mode"
-                        value="append"
-                        checked={freeflowImportMode === 'append'}
-                        onChange={() => setFreeflowImportMode('append')}
-                        className="accent-foreground h-4 w-4 shrink-0"
-                      />
-                      <span className="text-sm group-hover:text-foreground transition-colors">
-                        {t.editor.importFreeFlowAppend}
-                      </span>
-                    </label>
-                  </div>
-                </div>
-              )}
-
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                onClick={() => {
-                  setParsedContent(null);
-                  setInputMode('input');
-                }}
-              >
-                {t.importDialog.back}
+          <DialogFooter className="px-6 py-4 border-t border-border/50">
+            <Button type="button" variant="outline" onClick={() => handleOpenChange(false)}>
+              {t.common.cancel}
+            </Button>
+            {inputMode === 'input' && pastedText.trim() && (
+              <Button type="button" onClick={handlePasteImport} disabled={loading}>
+                {loading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+                {t.importDialog.import}
               </Button>
-            </div>
-          )}
+            )}
+            {inputMode === 'preview' && (
+              <Button type="button" onClick={handleImportConfirm} disabled={!parsedContent || saving}>
+                {saving ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+                {t.importDialog.import}
+              </Button>
+            )}
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
-          {error && (
-            <Alert variant="destructive">
-              <AlertCircle className="h-4 w-4" />
-              <AlertDescription>{error}</AlertDescription>
-            </Alert>
-          )}
-        </div>
-
-        <DialogFooter className="px-6 py-4 border-t border-border/50">
-          <Button type="button" variant="outline" onClick={() => handleOpenChange(false)}>
-            {t.common.cancel}
-          </Button>
-          {inputMode === 'input' && pastedText.trim() && (
-            <Button
-              type="button"
-              onClick={handlePasteImport}
-              disabled={loading}
-            >
-              {loading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
-              {t.importDialog.import}
-            </Button>
-          )}
-          {inputMode === 'preview' && (
-            <Button
-              type="button"
-              onClick={handleImportConfirm}
-              disabled={!parsedContent || saving}
-            >
-              {saving ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
-              {t.importDialog.import}
-            </Button>
-          )}
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+      {parsedContent?.sections && (
+        <ImportSectionMappingWizard
+          open={showMappingWizard}
+          onOpenChange={setShowMappingWizard}
+          blocks={parsedContent.sections}
+          fallbackSectionKey={destination}
+          onConfirm={handleMappingConfirm}
+          onCancel={() => setShowMappingWizard(false)}
+        />
+      )}
+    </>
   );
 }

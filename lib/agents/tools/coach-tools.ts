@@ -1,8 +1,14 @@
 import { SupabaseClient } from '@supabase/supabase-js';
 import { BIOGRAPHY_SECTIONS } from '@/lib/editor-constants';
 import type { ToolDefinition } from '@/lib/agents/infomaniak-client';
+import {
+  appendDraftToBiography,
+  countDraftWords,
+  isValidDraftSectionKey,
+  MAX_DRAFT_WORDS,
+} from '@/lib/echo/apply-draft';
 
-const MAX_DRAFT_WORDS = 1500;
+export { MAX_DRAFT_WORDS };
 
 export const COACH_TOOL_DEFINITIONS: ToolDefinition[] = [
   {
@@ -35,7 +41,8 @@ export const COACH_TOOL_DEFINITIONS: ToolDefinition[] = [
     function: {
       name: 'propose_draft',
       description:
-        'Append draft narrative text to a section in the biography editor. Only when the user explicitly asked for a written draft.',
+        'Prepare narrative draft text for the user to review and optionally insert into the editor. ' +
+        'Call when you produce prose the user may want in their biography. Insertion happens only after user confirms in the UI.',
       parameters: {
         type: 'object',
         properties: {
@@ -50,11 +57,27 @@ export const COACH_TOOL_DEFINITIONS: ToolDefinition[] = [
     type: 'function',
     function: {
       name: 'complete_section',
-      description: 'Mark a section as complete after the user confirms they are finished with it.',
+      description:
+        'Mark a biography section as complete when the user says they are done, asks to mark it complete, or confirms the chapter is finished.',
       parameters: {
         type: 'object',
         properties: {
           sectionKey: { type: 'string', description: 'Section key to mark complete' },
+        },
+        required: ['sectionKey'],
+      },
+    },
+  },
+  {
+    type: 'function',
+    function: {
+      name: 'reopen_section',
+      description:
+        'Reopen a completed section for editing when the user wants to change it again or asks to mark it as draft/incomplete.',
+      parameters: {
+        type: 'object',
+        properties: {
+          sectionKey: { type: 'string', description: 'Section key to reopen' },
         },
         required: ['sectionKey'],
       },
@@ -66,12 +89,17 @@ export type CoachToolContext = {
   serviceClient: SupabaseClient;
   userId: string;
   biographyId: string;
+  /** When true, propose_draft returns preview only (Echo confirms in UI before apply). */
+  deferDraftApply?: boolean;
 };
 
 export type CoachToolResultEvent = {
   tool: string;
   sectionKey?: string;
   contentLength?: number;
+  draftText?: string;
+  preview?: boolean;
+  wordCount?: number;
 };
 
 function isValidSectionKey(key: string): boolean {
@@ -79,8 +107,7 @@ function isValidSectionKey(key: string): boolean {
 }
 
 function countWords(text: string): number {
-  const t = text.trim();
-  return t ? t.split(/\s+/).length : 0;
+  return countDraftWords(text);
 }
 
 function parseArgs(argsJson: string): Record<string, unknown> {
@@ -163,7 +190,7 @@ export async function executeCoachTool(
     case 'propose_draft': {
       const sectionKey = String(args.sectionKey ?? '');
       const draftText = String(args.draftText ?? '').trim();
-      if (!isValidSectionKey(sectionKey)) {
+      if (!isValidDraftSectionKey(sectionKey)) {
         return { content: JSON.stringify({ error: 'Invalid sectionKey' }) };
       }
       if (!draftText) {
@@ -178,46 +205,47 @@ export async function executeCoachTool(
         };
       }
 
-      const { data: bio, error: fetchErr } = await serviceClient
-        .from('biographies')
-        .select('content')
-        .eq('id', biographyId)
-        .eq('user_id', userId)
-        .maybeSingle();
-
-      if (fetchErr || !bio) {
-        return { content: JSON.stringify({ error: 'Biography not found' }) };
+      if (ctx.deferDraftApply) {
+        return {
+          content: JSON.stringify({
+            ok: true,
+            preview: true,
+            sectionKey,
+            wordCount: words,
+          }),
+          event: {
+            tool: 'propose_draft',
+            sectionKey,
+            draftText,
+            preview: true,
+            wordCount: words,
+          },
+        };
       }
 
-      const content: BiographyContent = {
-        ...((bio as { content?: BiographyContent }).content ?? {}),
-      };
-      const current = content[sectionKey]?.text ?? '';
-      const sep = current && !current.endsWith('\n') ? '\n\n' : '';
-      const newText = current + sep + draftText;
-      content[sectionKey] = {
-        ...(content[sectionKey] ?? { todo: false, audioTranscript: '' }),
-        text: newText,
-      };
-
-      const { error: updateErr } = await serviceClient
-        .from('biographies')
-        .update({ content })
-        .eq('id', biographyId)
-        .eq('user_id', userId);
-
-      if (updateErr) {
-        return { content: JSON.stringify({ error: updateErr.message }) };
+      const applied = await appendDraftToBiography(
+        serviceClient,
+        userId,
+        biographyId,
+        sectionKey,
+        draftText
+      );
+      if (!applied.ok) {
+        return { content: JSON.stringify({ error: applied.error }) };
       }
 
       return {
         content: JSON.stringify({
           ok: true,
           sectionKey,
-          appendedWords: words,
-          totalWords: countWords(newText),
+          appendedWords: applied.appendedWords,
+          totalWords: applied.totalWords,
         }),
-        event: { tool: 'propose_draft', sectionKey, contentLength: newText.length },
+        event: {
+          tool: 'propose_draft',
+          sectionKey,
+          contentLength: applied.totalWords,
+        },
       };
     }
 
@@ -244,6 +272,28 @@ export async function executeCoachTool(
       return {
         content: JSON.stringify({ ok: true, sectionKey, markedComplete: true }),
         event: { tool: 'complete_section', sectionKey },
+      };
+    }
+
+    case 'reopen_section': {
+      const sectionKey = String(args.sectionKey ?? '');
+      if (!isValidSectionKey(sectionKey)) {
+        return { content: JSON.stringify({ error: 'Invalid sectionKey' }) };
+      }
+
+      const { error } = await serviceClient
+        .from('section_completions')
+        .delete()
+        .eq('biography_id', biographyId)
+        .eq('section_key', sectionKey);
+
+      if (error) {
+        return { content: JSON.stringify({ error: error.message }) };
+      }
+
+      return {
+        content: JSON.stringify({ ok: true, sectionKey, reopened: true }),
+        event: { tool: 'reopen_section', sectionKey },
       };
     }
 

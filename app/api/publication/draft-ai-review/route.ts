@@ -6,6 +6,7 @@ import {
   fetchBiographyContent,
   runDraftAiReview,
 } from '@/lib/server/review-submit-pipeline';
+import { PDF_DRAFT_MAX_ITERATION } from '@/lib/pdf-draft-constants';
 
 type AnyClient = SupabaseClient<any, any, any>;
 
@@ -49,7 +50,7 @@ export async function POST(req: NextRequest) {
 
     const { data: bio } = await serviceClient
       .from('biographies')
-      .select('user_id, status, pdf_draft_iteration')
+      .select('user_id, status, pdf_draft_iteration, content_language')
       .eq('id', biographyId)
       .maybeSingle();
 
@@ -67,13 +68,13 @@ export async function POST(req: NextRequest) {
     }
 
     const currentIteration = (bio as { pdf_draft_iteration?: number | null }).pdf_draft_iteration ?? null;
-    if (currentIteration === 3) {
+    if ((currentIteration ?? 0) >= PDF_DRAFT_MAX_ITERATION) {
       return NextResponse.json({ error: 'max_drafts_reached' }, { status: 400 });
     }
-    const nextIteration = ((currentIteration ?? 0) + 1) as 1 | 2 | 3;
+    const nextIteration = (currentIteration ?? 0) + 1;
 
-    const { text } = await fetchBiographyContent(serviceClient, biographyId);
-    const feedback = await runDraftAiReview(text, nextIteration);
+    const { text, contentLanguage } = await fetchBiographyContent(serviceClient, biographyId);
+    const feedback = await runDraftAiReview(text, nextIteration, contentLanguage);
 
     const { error: updErr } = await serviceClient
       .from('biographies')
@@ -97,4 +98,3 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Internal error' }, { status: 500 });
   }
 }
-

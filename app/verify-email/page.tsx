@@ -243,7 +243,7 @@ export default function VerifyEmailPage() {
 
           <p className="text-center text-sm text-muted-foreground mt-6">
             <Link
-              href="/login"
+              href="/"
               className="font-medium transition-colors hover:opacity-80"
               style={{ color: '#6D323E' }}
             >

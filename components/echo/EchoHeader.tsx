@@ -1,0 +1,78 @@
+'use client';
+
+import Link from 'next/link';
+import { BiographyPicker } from './BiographyPicker';
+import type { Biography } from '@/lib/biographies';
+import { useTranslation } from '@/lib/i18n/i18n-context';
+import { useAuth } from '@/lib/auth-context';
+import { useRouter } from 'next/navigation';
+import { Button } from '@/components/ui/button';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { LogOut } from 'lucide-react';
+
+interface EchoHeaderProps {
+  biographies?: Biography[];
+  currentBiographyId?: string;
+  showPicker?: boolean;
+}
+
+export function EchoHeader({
+  biographies = [],
+  currentBiographyId,
+  showPicker = true,
+}: EchoHeaderProps) {
+  const { t } = useTranslation();
+  const { user, signOut } = useAuth();
+  const router = useRouter();
+
+  const handleSignOut = async () => {
+    await signOut();
+    router.push('/');
+  };
+
+  const displayName = user?.user_metadata?.name || user?.email || '';
+  const initials = displayName
+    ? displayName.trim().split(/\s+/).map((p: string) => p[0]).join('').slice(0, 2).toUpperCase()
+    : '?';
+
+  return (
+    <header className="flex items-center justify-between gap-4 px-4 py-3 border-b bg-background/95 backdrop-blur shrink-0">
+      <div className="flex items-center gap-3 min-w-0">
+        <Link href="/echo" className="font-serif text-lg font-semibold shrink-0">
+          Biography Library
+        </Link>
+        {showPicker && biographies.length > 0 && (
+          <BiographyPicker biographies={biographies} currentId={currentBiographyId} />
+        )}
+      </div>
+      <div className="flex items-center gap-2 shrink-0">
+        <Link
+          href="/dashboard"
+          className="text-xs text-muted-foreground hover:text-foreground hidden sm:inline"
+        >
+          {t.echo.myBiographies}
+        </Link>
+        {user && (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" size="sm" className="h-9 w-9 rounded-full p-0">
+                {initials}
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem onClick={() => void handleSignOut()}>
+                <LogOut className="h-4 w-4 mr-2" />
+                {t.nav.signOut}
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        )}
+      </div>
+    </header>
+  );
+}
