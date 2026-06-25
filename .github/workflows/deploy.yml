@@ -22,8 +22,13 @@ jobs:
           key: ${{ secrets.JELASTIC_SSH_KEY }}
           port: ${{ secrets.JELASTIC_PORT }}
           script: |
+            set -euo pipefail
             cd /opt/bl-app
-            git pull origin main
+            # git pull can fail silently when server-only untracked files block the merge
+            # (e.g. scripts/run-engagement-cron.sh). Force-sync to GitHub main instead.
+            git fetch origin main
+            git reset --hard origin/main
+            echo "Deploying commit: $(git rev-parse --short HEAD) — $(git log -1 --pretty=%s)"
             docker build -t biography-library .
             docker stop bl-app || true
             docker rm bl-app || true
