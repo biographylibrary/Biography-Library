@@ -22,11 +22,11 @@ export function EchoSpeakingBanner({ onStopSpeaking }: EchoSpeakingBannerProps) 
         type="button"
         size="sm"
         variant="outline"
-        className="h-8 shrink-0 gap-1.5 text-xs"
+        className="h-8 shrink-0 gap-1.5 text-xs max-sm:px-2"
         onClick={onStopSpeaking}
       >
         <Square className="h-3 w-3 fill-current" />
-        {t.echo.stopSpeaking}
+        <span className="max-sm:sr-only">{t.echo.stopSpeaking}</span>
       </Button>
     </div>
   );
@@ -68,9 +68,14 @@ export function EchoVoiceOutputButton({
 interface EchoStopSpeakingButtonProps {
   onStopSpeaking: () => void;
   compact?: boolean;
+  className?: string;
 }
 
-export function EchoStopSpeakingButton({ onStopSpeaking, compact = false }: EchoStopSpeakingButtonProps) {
+export function EchoStopSpeakingButton({
+  onStopSpeaking,
+  compact = false,
+  className,
+}: EchoStopSpeakingButtonProps) {
   const { t } = useTranslation();
 
   return (
@@ -78,7 +83,7 @@ export function EchoStopSpeakingButton({ onStopSpeaking, compact = false }: Echo
       type="button"
       size="icon"
       variant="outline"
-      className={compact ? 'h-11 w-11 shrink-0' : 'h-11 w-11 shrink-0'}
+      className={cn(compact ? 'h-11 w-11 shrink-0' : 'h-11 w-11 shrink-0', className)}
       onClick={onStopSpeaking}
       title={t.echo.stopSpeaking}
     >

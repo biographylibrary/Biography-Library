@@ -1,4 +1,8 @@
 import type { WritingPath } from './types';
+import {
+  isMobileEditorLayout,
+  MOBILE_SIDEBAR_TOGGLE_SELECTOR,
+} from './tour-mobile';
 
 export type TourRequiredAction =
   | 'none'
@@ -18,7 +22,27 @@ export interface TourStepDefinition {
   actionTarget?: string;
 }
 
+const MOBILE_MENU_STEP: TourStepDefinition = {
+  id: 'mobile-menu',
+  target: MOBILE_SIDEBAR_TOGGLE_SELECTOR,
+  titleKey: 'mobileMenuTitle',
+  descKey: 'mobileMenuDesc',
+  requiredAction: 'click_target',
+  actionTarget: MOBILE_SIDEBAR_TOGGLE_SELECTOR,
+};
+
 export function getTourSteps(
+  path: WritingPath,
+  mode: 'sections' | 'freeflow',
+  options?: { mobileLayout?: boolean }
+): TourStepDefinition[] {
+  const mobileLayout = options?.mobileLayout ?? isMobileEditorLayout();
+  const base = getBaseTourSteps(path, mode);
+  if (!mobileLayout) return base;
+  return [MOBILE_MENU_STEP, ...base];
+}
+
+function getBaseTourSteps(
   path: WritingPath,
   mode: 'sections' | 'freeflow'
 ): TourStepDefinition[] {

@@ -188,6 +188,13 @@ export interface Translations {
     startWritingButton: string;
     titleLabel: string;
     privacyLabel: string;
+    subjectNameLabel: string;
+    subjectNamePlaceholder: string;
+    writerNameLabel: string;
+    writerNamePlaceholder: string;
+    writtenBy: string;
+    memorialDetailsSubtitle: string;
+    addAuthorName: string;
   };
   writingModeOnboarding: {
     stepTitle: string;
@@ -540,6 +547,7 @@ export interface Translations {
     downloadTxt: string;
     downloadDocx: string;
     by: string;
+    writtenBy: string;
     preservingStories: string;
     tokenMissing: string;
     notFoundOrDenied: string;
@@ -1578,7 +1586,7 @@ export const translations: Record<Language, Translations> = {
     biography: {
       newBiography: 'New Biography',
       biographyTitle: 'Biography Title',
-      titlePlaceholder: 'e.g., My Life Story, Grandma\'s Memories',
+      titlePlaceholder: 'e.g., My story — you can change the title later',
       selectLanguage: 'Content Language',
       privacyLevel: 'Privacy Level',
       createButton: 'Create Biography',
@@ -1608,6 +1616,13 @@ export const translations: Record<Language, Translations> = {
       startWritingButton: 'Start Writing',
       titleLabel: 'Title',
       privacyLabel: 'Privacy',
+      subjectNameLabel: 'Protagonist name',
+      subjectNamePlaceholder: 'e.g., Francesco Brignole',
+      writerNameLabel: 'Writer name',
+      writerNamePlaceholder: 'Your name as the author',
+      writtenBy: 'Written by',
+      memorialDetailsSubtitle: 'Who is this biography about, and who is writing it?',
+      addAuthorName: 'Add author name…',
     },
     writingModeOnboarding: {
       stepTitle: 'How would you like to write?',
@@ -1976,6 +1991,7 @@ export const translations: Record<Language, Translations> = {
       downloadTxt: 'Download TXT',
       downloadDocx: 'Download DOCX',
       by: 'By',
+      writtenBy: 'Written by',
       preservingStories: 'Because every life deserves to be remembered',
       tokenMissing: 'Access token is missing',
       notFoundOrDenied: 'Biography not found or access denied',
@@ -3017,7 +3033,7 @@ export const translations: Record<Language, Translations> = {
     biography: {
       newBiography: 'Nuova Biografia',
       biographyTitle: 'Titolo della Biografia',
-      titlePlaceholder: 'es., La Mia Storia, I Ricordi della Nonna',
+      titlePlaceholder: 'Es. La mia storia - puoi cambiare il titolo successivamente',
       selectLanguage: 'Lingua del Contenuto',
       privacyLevel: 'Livello di Privacy',
       createButton: 'Crea Biografia',
@@ -3047,6 +3063,13 @@ export const translations: Record<Language, Translations> = {
       startWritingButton: 'Inizia a Scrivere',
       titleLabel: 'Titolo',
       privacyLabel: 'Privacy',
+      subjectNameLabel: 'Nome protagonista',
+      subjectNamePlaceholder: 'es., Francesco Brignole',
+      writerNameLabel: 'Nome autore',
+      writerNamePlaceholder: 'Il tuo nome come autore',
+      writtenBy: 'Scritto da',
+      memorialDetailsSubtitle: 'Di chi parla questa biografia e chi la sta scrivendo?',
+      addAuthorName: 'Aggiungi nome autore…',
     },
     writingModeOnboarding: {
       stepTitle: 'Come vuoi scrivere?',
@@ -3059,7 +3082,7 @@ export const translations: Record<Language, Translations> = {
       freewritingDescription: 'Scrittura libera. Nessuna struttura fissa. Scrivi o ditta nel tuo stile.',
       importTitle: 'Importa un testo esistente',
       importDescription: 'Hai già una biografia scritta o un documento. Importalo e usa Biography Library come archivio.',
-      continueButton: 'Inizia a Scrivere',
+      continueButton: 'Inizia a scrivere',
       backButton: 'Indietro',
     },
     modeSwitchWarning: {
@@ -3417,6 +3440,7 @@ export const translations: Record<Language, Translations> = {
       downloadTxt: 'Scarica TXT',
       downloadDocx: 'Scarica DOCX',
       by: 'Di',
+      writtenBy: 'Scritto da',
       preservingStories: 'Perché ogni vita merita di essere ricordata',
       tokenMissing: 'Token di accesso mancante',
       notFoundOrDenied: 'Biografia non trovata o accesso negato',
@@ -3511,12 +3535,12 @@ export const translations: Record<Language, Translations> = {
     biographyType: {
       title: 'Crea una Nuova Biografia',
       subtitle: 'Scegli che tipo di biografia vuoi creare',
-      autobiography: 'La Mia Autobiografia',
-      autobiographyDescription: 'Scrivi la tua storia di vita. Condividi i tuoi ricordi, esperienze e la tua eredità.',
+      autobiography: 'La mia autobiografia',
+      autobiographyDescription: 'Scrivi la tua storia di vita. Condividi i tuoi ricordi, esperienze e la tua eredità. Ogni anno se vuoi puoi scrivere un nuovo capitolo.',
       autobiographyButton: 'Inizia la Mia Storia',
       mostPopular: 'Più popolare',
-      deceased: 'Biografia di una Persona Deceduta',
-      deceasedDescription: 'Onora la memoria di una persona cara che è scomparsa.',
+      deceased: 'Biografia di un famigliare scomparso',
+      deceasedDescription: 'Ricorda una persona cara del tuo nucleo famigliare.',
       deceasedButton: 'Crea Memoriale',
       reviewPeriod: 'Periodo di revisione di 30 giorni',
       warningTitle: 'Importante: NON PUOI creare biografie di:',
@@ -4458,7 +4482,7 @@ export const translations: Record<Language, Translations> = {
     biography: {
       newBiography: 'Nouvelle Biographie',
       biographyTitle: 'Titre de la Biographie',
-      titlePlaceholder: 'ex., Mon Histoire, Les Souvenirs de Grand-m\u00e8re',
+      titlePlaceholder: 'ex., Mon histoire — vous pourrez modifier le titre plus tard',
       selectLanguage: 'Langue du Contenu',
       privacyLevel: 'Niveau de Confidentialit\u00e9',
       createButton: 'Cr\u00e9er la Biographie',
@@ -4488,6 +4512,13 @@ export const translations: Record<Language, Translations> = {
       startWritingButton: 'Commencer \u00e0 \u00c9crire',
       titleLabel: 'Titre',
       privacyLabel: 'Confidentialité',
+      subjectNameLabel: 'Nom du protagoniste',
+      subjectNamePlaceholder: 'ex., Francesco Brignole',
+      writerNameLabel: 'Nom de l\u2019auteur',
+      writerNamePlaceholder: 'Votre nom en tant qu\u2019auteur',
+      writtenBy: 'Écrit par',
+      memorialDetailsSubtitle: 'De qui parle cette biographie et qui l\u2019écrit ?',
+      addAuthorName: 'Ajouter le nom de l\u2019auteur…',
     },
     writingModeOnboarding: {
       stepTitle: 'Comment souhaitez-vous écrire?',
@@ -4858,6 +4889,7 @@ export const translations: Record<Language, Translations> = {
       downloadTxt: 'T\u00e9l\u00e9charger TXT',
       downloadDocx: 'T\u00e9l\u00e9charger DOCX',
       by: 'Par',
+      writtenBy: 'Écrit par',
       preservingStories: 'Parce que chaque vie mérite d\'être rappelée',
       tokenMissing: 'Jeton d\'acc\u00e8s manquant',
       notFoundOrDenied: 'Biographie introuvable ou acc\u00e8s refus\u00e9',
@@ -5899,7 +5931,7 @@ export const translations: Record<Language, Translations> = {
     biography: {
       newBiography: 'Neue Biografie',
       biographyTitle: 'Biografietitel',
-      titlePlaceholder: 'z.B., Meine Lebensgeschichte, Omas Erinnerungen',
+      titlePlaceholder: 'z.B. Meine Geschichte — den Titel können Sie später ändern',
       selectLanguage: 'Inhaltssprache',
       privacyLevel: 'Datenschutzstufe',
       createButton: 'Biografie Erstellen',
@@ -5929,6 +5961,13 @@ export const translations: Record<Language, Translations> = {
       startWritingButton: 'Mit dem Schreiben beginnen',
       titleLabel: 'Titel',
       privacyLabel: 'Datenschutz',
+      subjectNameLabel: 'Name des Protagonisten',
+      subjectNamePlaceholder: 'z.B., Francesco Brignole',
+      writerNameLabel: 'Name des Autors',
+      writerNamePlaceholder: 'Ihr Name als Autor',
+      writtenBy: 'Geschrieben von',
+      memorialDetailsSubtitle: 'Wer ist das Thema dieser Biografie und wer schreibt sie?',
+      addAuthorName: 'Autorennamen hinzufügen…',
     },
     writingModeOnboarding: {
       stepTitle: 'Wie möchten Sie schreiben?',
@@ -6299,6 +6338,7 @@ export const translations: Record<Language, Translations> = {
       downloadTxt: 'TXT herunterladen',
       downloadDocx: 'DOCX herunterladen',
       by: 'Von',
+      writtenBy: 'Geschrieben von',
       preservingStories: 'Denn jedes Leben verdient es, in Erinnerung zu bleiben',
       tokenMissing: 'Zugriffstoken fehlt',
       notFoundOrDenied: 'Biografie nicht gefunden oder Zugriff verweigert',

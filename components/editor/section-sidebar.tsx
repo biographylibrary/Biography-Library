@@ -88,11 +88,11 @@ export function SectionSidebar({
   return (
     <nav className="flex flex-col h-full overflow-hidden">
       <div className="px-3 h-12 shrink-0 flex items-center border-b border-border/50">
-        <div className="flex w-full rounded-lg overflow-hidden border border-border/60 text-xs font-medium">
+        <div className="flex w-full rounded-lg overflow-hidden border border-border/60 text-xs font-medium min-w-0">
           <button
             onClick={() => handleModeClick('sections')}
             className={cn(
-              'flex-1 py-1.5 px-2 transition-colors',
+              'flex-1 min-w-0 py-1.5 px-1.5 transition-colors truncate text-center',
               biographyMode === 'sections'
                 ? 'bg-primary text-primary-foreground'
                 : 'text-muted-foreground hover:bg-muted/50 hover:text-foreground'
@@ -103,7 +103,7 @@ export function SectionSidebar({
           <button
             onClick={() => handleModeClick('freeflow')}
             className={cn(
-              'flex-1 py-1.5 px-2 transition-colors border-l border-border/60',
+              'flex-1 min-w-0 py-1.5 px-1.5 transition-colors border-l border-border/60 truncate text-center',
               biographyMode === 'freeflow'
                 ? 'bg-primary text-primary-foreground'
                 : 'text-muted-foreground hover:bg-muted/50 hover:text-foreground'
@@ -211,7 +211,7 @@ export function SectionSidebar({
           )}
         >
           <StickyNote className="h-4 w-4 shrink-0" />
-          <span className="truncate">{t.notesAndTodos.notesAndTodosMenuItem}</span>
+          <span className="truncate min-w-0 flex-1 text-left">{t.notesAndTodos.notesAndTodosMenuItem}</span>
           {totalCount > 0 && (
             <span className="ml-auto text-xs font-medium bg-primary/20 text-foreground rounded-full px-2 py-0.5 shrink-0">
               {totalCount}
@@ -228,7 +228,7 @@ export function SectionSidebar({
           )}
         >
           <Images className="h-4 w-4 shrink-0" />
-          <span>{t.photos.panelTitle}</span>
+          <span className="truncate min-w-0 flex-1 text-left">{t.photos.panelTitle}</span>
         </button>
         {biographyId && userId && (
           <button
@@ -243,7 +243,7 @@ export function SectionSidebar({
             )}
           >
             <BookOpen className="h-4 w-4 shrink-0" />
-            <span>{t.editor.bookStructureTitle}</span>
+            <span className="truncate min-w-0 flex-1 text-left">{t.editor.bookStructureTitle}</span>
           </button>
         )}
         <button
@@ -258,7 +258,7 @@ export function SectionSidebar({
           )}
         >
           <Upload className="h-4 w-4 shrink-0" />
-          <span>{t.notesAndTodos.importText}</span>
+          <span className="truncate min-w-0 flex-1 text-left">{t.notesAndTodos.importText}</span>
         </button>
         <button
           type="button"
@@ -278,7 +278,7 @@ export function SectionSidebar({
           )}
         >
           <Download className="h-4 w-4 shrink-0" />
-          <span>{t.notesAndTodos.exportText}</span>
+          <span className="truncate min-w-0 flex-1 text-left">{t.notesAndTodos.exportText}</span>
         </button>
         <button
           type="button"
@@ -292,7 +292,7 @@ export function SectionSidebar({
           )}
         >
           <FileCheck className="h-4 w-4 shrink-0" />
-          <span>{t.editor.reviewPublication.menuItem}</span>
+          <span className="truncate min-w-0 flex-1 text-left">{t.editor.reviewPublication.menuItem}</span>
         </button>
       </div>
 

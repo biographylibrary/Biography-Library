@@ -210,11 +210,11 @@ export function EchoChat({
       {activeSectionLabel && !compact && (
         <div
           className={cn(
-            'mb-2 px-3 py-2 rounded-lg bg-muted/60 border border-border/50 text-xs text-muted-foreground shrink-0 flex items-center justify-between gap-2',
+            'mb-2 px-3 py-2 rounded-lg bg-muted/60 border border-border/50 text-xs text-muted-foreground shrink-0 flex items-center justify-between gap-2 min-w-0 overflow-hidden',
             flushChrome ? 'mx-3' : 'mx-2'
           )}
         >
-          <span>
+          <span className="min-w-0 flex-1 truncate">
             {t.echo.activeSectionContext.replace('{section}', activeSectionLabel)}
           </span>
           <button
@@ -313,7 +313,7 @@ export function EchoChat({
 
       <div
         className={cn(
-          'flex items-center gap-2 border-t border-border/50 shrink-0',
+          'flex items-center gap-2 border-t border-border/50 shrink-0 min-w-0 overflow-hidden',
           flushChrome ? 'px-3 py-3' : compact ? 'px-2 pt-2 mt-1' : 'px-2 pt-3 mt-2'
         )}
       >
@@ -342,15 +342,19 @@ export function EchoChat({
           placeholder={t.echo.inputPlaceholder}
           rows={1}
           className={cn(
-            'flex-1 resize-none rounded-md border bg-background px-3 py-2 text-sm h-11 min-h-11 max-h-11 overflow-y-auto leading-5',
+            'flex-1 min-w-0 resize-none rounded-md border bg-background px-3 py-2 text-sm h-11 min-h-11 max-h-11 overflow-y-auto leading-5',
             compact && 'text-sm'
           )}
           disabled={loading}
         />
         {voiceEnabled && (
           <>
-            {orbState === 'speaking' && (
-              <EchoStopSpeakingButton onStopSpeaking={stopSpeaking} compact={compact} />
+            {orbState === 'speaking' && !compact && (
+              <EchoStopSpeakingButton
+                onStopSpeaking={stopSpeaking}
+                compact={compact}
+                className="max-sm:hidden"
+              />
             )}
             <EchoVoiceOutputButton
               voiceOutputEnabled={voiceOutputEnabled}

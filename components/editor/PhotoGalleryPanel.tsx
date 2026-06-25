@@ -913,9 +913,9 @@ export function PhotoGalleryPanel({ biographyId, userId, onClose, embedded }: Ph
 
   return (
     <div className="flex flex-col flex-1 min-h-0 overflow-hidden">
-      <div className="px-4 py-3 border-b border-border/50 shrink-0 flex items-center justify-between">
-        <h3 className="text-sm font-semibold text-foreground">{t.photos.panelTitle}</h3>
-        <div className="flex items-center gap-2">
+      <div className="px-4 py-3 border-b border-border/50 shrink-0 flex items-center justify-between gap-2 min-w-0">
+        <h3 className="text-sm font-semibold text-foreground truncate min-w-0 flex-1 pr-2">{t.photos.panelTitle}</h3>
+        <div className="flex items-center gap-2 shrink-0">
           <span className="text-xs text-muted-foreground">{counterText}</span>
           {onClose && (
             <button

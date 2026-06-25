@@ -37,6 +37,8 @@ interface BiographyData {
   id?: string;
   title: string;
   author_name: string;
+  subject_name?: string | null;
+  biography_type?: 'autobiography' | 'memorial';
   content: Record<string, { text: string }>;
   content_freeflow?: string;
   biography_mode?: 'sections' | 'freeflow';

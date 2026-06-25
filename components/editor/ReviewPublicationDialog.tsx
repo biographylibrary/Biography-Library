@@ -100,9 +100,12 @@ export function ReviewPublicationDialog({
     !canApproveFinalPdf &&
     publicationActionLoading !== 'approve';
 
+  const actionButtonClass =
+    'gap-1.5 w-full sm:w-auto whitespace-normal h-auto min-h-9 py-2 text-left';
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-lg max-h-[min(90vh,640px)] overflow-y-auto">
+      <DialogContent className="w-[calc(100vw-2rem)] max-w-lg max-h-[min(90vh,640px)] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="font-serif text-xl">{rp.title}</DialogTitle>
           <DialogDescription>{rp.description}</DialogDescription>
@@ -173,7 +176,7 @@ export function ReviewPublicationDialog({
                     type="button"
                     variant="outline"
                     size="sm"
-                    className="gap-1.5"
+                    className={actionButtonClass}
                     onClick={() => closeAndRun(onOpenFinalReview)}
                   >
                     <Sparkles className="h-4 w-4" />
@@ -196,7 +199,7 @@ export function ReviewPublicationDialog({
                   <Button
                     type="button"
                     size="sm"
-                    className="gap-1.5"
+                    className={actionButtonClass}
                     disabled={publicationActionLoading !== null}
                     onClick={() => void onPrepareFreeflowFinal()}
                   >
@@ -232,7 +235,7 @@ export function ReviewPublicationDialog({
                     type="button"
                     size="sm"
                     variant="outline"
-                    className="gap-1.5"
+                    className={actionButtonClass}
                     disabled={isPreflightChecking}
                     onClick={() => void onSubmitForReview()}
                   >
@@ -260,7 +263,7 @@ export function ReviewPublicationDialog({
                   <Button
                     type="button"
                     size="sm"
-                    className="gap-1.5"
+                    className={actionButtonClass}
                     disabled={publicationActionLoading !== null}
                     onClick={() => void onStartPdfDraft()}
                   >
@@ -295,7 +298,7 @@ export function ReviewPublicationDialog({
                       type="button"
                       variant="outline"
                       size="sm"
-                      className="gap-1.5"
+                      className={actionButtonClass}
                       onClick={() => closeAndRun(onOpenExport)}
                     >
                       <Download className="h-4 w-4" />
@@ -329,7 +332,7 @@ export function ReviewPublicationDialog({
                     <Button
                       type="button"
                       size="sm"
-                      className="gap-1.5"
+                      className={actionButtonClass}
                       disabled={publicationActionLoading !== null || !canApproveFinalPdf}
                       onClick={() => void onApproveFinalPdf()}
                     >
@@ -357,7 +360,7 @@ export function ReviewPublicationDialog({
                     type="button"
                     variant="outline"
                     size="sm"
-                    className="gap-1.5"
+                    className={actionButtonClass}
                     onClick={() => closeAndRun(onOpenExport)}
                   >
                     <Download className="h-4 w-4" />

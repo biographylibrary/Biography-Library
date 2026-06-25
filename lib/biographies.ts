@@ -10,6 +10,8 @@ export interface Biography {
   id: string;
   user_id: string;
   title: string;
+  /** Memorial only: person the biography is about. */
+  subject_name?: string | null;
   author_name: string;
   content: Record<string, unknown>;
   visibility: 'private' | 'link-only' | 'public';
@@ -42,6 +44,7 @@ export interface Biography {
 export interface PublishedBiography {
   id: string;
   title: string;
+  subject_name?: string | null;
   author_name: string;
   content_language: string;
   biography_type: 'autobiography' | 'memorial';
@@ -56,7 +59,7 @@ export interface PublishedBiography {
 }
 
 const PUBLISHED_SELECT =
-  'id, title, author_name, content_language, biography_type, chapters_count, published_at, view_count, is_featured, featured_at, slug, listing_cover_url';
+  'id, title, subject_name, author_name, content_language, biography_type, chapters_count, published_at, view_count, is_featured, featured_at, slug, listing_cover_url';
 
 export async function fetchPublishedBiographies() {
   const { data, error } = await supabase
@@ -156,7 +159,8 @@ export async function createBiography(
   biographyMode: 'sections' | 'freeflow' = 'sections',
   authorName?: string,
   biographyType: 'autobiography' | 'memorial' = 'autobiography',
-  contentLanguage?: string
+  contentLanguage?: string,
+  subjectName?: string | null
 ) {
   const existingCount = await getUserBiographyCount(userId);
   if (existingCount > 0) {
@@ -164,12 +168,15 @@ export async function createBiography(
   }
 
   const resolvedAuthor = authorName?.trim() || await resolveAuthorName(userId);
+  const resolvedSubject =
+    biographyType === 'memorial' ? (subjectName?.trim() || title.trim()) : null;
 
   const { data, error } = await supabase
     .from('biographies')
     .insert({
       user_id: userId,
-      title,
+      title: biographyType === 'memorial' ? resolvedSubject || title : title,
+      subject_name: resolvedSubject,
       visibility,
       status: 'draft',
       content: {},

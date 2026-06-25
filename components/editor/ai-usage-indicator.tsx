@@ -57,7 +57,7 @@ export function AiUsageIndicator({ refreshTrigger }: AiUsageIndicatorProps) {
     <TooltipProvider>
     <Tooltip>
       <TooltipTrigger asChild>
-        <div className="flex items-center gap-2 px-2 py-1 rounded-md hover:bg-muted/50 transition-colors cursor-default select-none">
+        <div className="flex items-center gap-2 px-2 py-1 rounded-md hover:bg-muted/50 transition-colors cursor-default select-none shrink-0">
           <Sparkles className={cn(
             'h-3.5 w-3.5 shrink-0',
             (dailyCritical || weeklyCritical) ? 'text-destructive' :

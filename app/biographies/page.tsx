@@ -11,6 +11,7 @@ import {
   fetchDiscoverBiographies,
   type PublishedBiography,
 } from '@/lib/biographies';
+import { formatMemorialCreditLine, memorialSubjectName } from '@/lib/biography-display';
 import { supabase } from '@/lib/supabase';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -119,7 +120,23 @@ interface BiographyCardProps {
 }
 
 function BiographyCard({ bio, t, featured }: BiographyCardProps) {
+  const { language } = useTranslation();
   const isMemorial = bio.biography_type === 'memorial';
+  const subject = memorialSubjectName(bio.subject_name, bio.title);
+  const cardPrimary = isMemorial
+    ? subject || t.publicBiographies.untitled
+    : bio.author_name || t.publicBiographies.unknownAuthor;
+  const cardSecondary = isMemorial
+    ? `${t.biography.writtenBy} ${bio.author_name || t.publicBiographies.unknownAuthor}`
+    : bio.title || t.publicBiographies.untitled;
+  const graphicTitle = isMemorial
+    ? formatMemorialCreditLine(
+        subject,
+        bio.author_name || t.publicBiographies.unknownAuthor,
+        language
+      )
+    : bio.title || t.publicBiographies.untitled;
+  const graphicAuthor = isMemorial ? '' : bio.author_name || t.publicBiographies.unknownAuthor;
   const lang = bio.content_language || 'en';
   const flag = LANGUAGE_FLAGS[lang] ?? '';
   const langLabel = LANGUAGE_LABELS[lang] ?? lang.toUpperCase();
@@ -169,15 +186,12 @@ function BiographyCard({ bio, t, featured }: BiographyCardProps) {
         {!cover.loaded ? (
           <div className="w-full h-full" style={{ background: BRAND_TEAL }} />
         ) : showGraphic ? (
-          <GraphicCover
-            title={bio.title || t.publicBiographies.untitled}
-            authorName={bio.author_name || t.publicBiographies.unknownAuthor}
-          />
+          <GraphicCover title={graphicTitle} authorName={graphicAuthor} />
         ) : (
           // eslint-disable-next-line @next/next/no-img-element -- cover URLs from storage/CDN; dynamic domains
           <img
             src={cover.url!}
-            alt={bio.title || ''}
+            alt={cardPrimary}
             className="w-full h-full object-cover"
             loading="lazy"
           />
@@ -192,10 +206,10 @@ function BiographyCard({ bio, t, featured }: BiographyCardProps) {
 
       <div className="flex flex-col gap-2 p-4">
         <p className="text-sm font-semibold text-foreground truncate leading-snug group-hover:text-primary transition-colors">
-          {bio.author_name || t.publicBiographies.unknownAuthor}
+          {cardPrimary}
         </p>
         <p className="text-xs text-muted-foreground truncate">
-          {bio.title || t.publicBiographies.untitled}
+          {cardSecondary}
         </p>
         <div className="flex items-center gap-1.5 flex-wrap pt-1">
           <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-brand-blue/35 text-brand-ink dark:bg-brand-blue/20 dark:text-brand-blue">
@@ -313,8 +327,9 @@ function PublicBiographiesPage() {
     return allBios.filter((bio) => {
       if (q) {
         const inTitle = (bio.title || '').toLowerCase().includes(q);
+        const inSubject = (bio.subject_name || '').toLowerCase().includes(q);
         const inAuthor = (bio.author_name || '').toLowerCase().includes(q);
-        if (!inTitle && !inAuthor) return false;
+        if (!inTitle && !inSubject && !inAuthor) return false;
       }
       if (langFilter !== 'all' && (bio.content_language || 'en') !== langFilter) return false;
       if (typeFilter === 'autobiography' && bio.biography_type === 'memorial') return false;

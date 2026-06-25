@@ -8,6 +8,12 @@ import { useTranslation } from '@/lib/i18n/i18n-context';
 import { getTourSteps, type TourStepDefinition } from '@/lib/onboarding/tour-definitions';
 import type { WritingPath } from '@/lib/onboarding/types';
 import { patchOnboarding } from '@/lib/onboarding/onboarding-client';
+import {
+  isMobileEditorLayout,
+  isSidebarTourActionTarget,
+  isSidebarTourTarget,
+  waitForTransition,
+} from '@/lib/onboarding/tour-mobile';
 
 interface OnboardingTourProviderProps {
   active: boolean;
@@ -17,7 +23,19 @@ interface OnboardingTourProviderProps {
   onOpenExport: () => void;
   onOpenEcho: () => void;
   onOpenReview: () => void;
+  onOpenMobileSidebar?: () => void;
+  onCloseMobileSidebar?: () => void;
   onFinished: () => void;
+}
+
+function getPopoverSide(target: string): 'top' | 'bottom' | 'left' | 'right' {
+  if (!isMobileEditorLayout()) {
+    if (isSidebarTourTarget(target)) return 'right';
+    return 'bottom';
+  }
+  if (target.includes('mobile-sidebar-toggle')) return 'top';
+  if (isSidebarTourTarget(target)) return 'right';
+  return 'bottom';
 }
 
 export function OnboardingTourProvider({
@@ -28,6 +46,8 @@ export function OnboardingTourProvider({
   onOpenExport,
   onOpenEcho,
   onOpenReview,
+  onOpenMobileSidebar,
+  onCloseMobileSidebar,
   onFinished,
 }: OnboardingTourProviderProps) {
   const { t, language } = useTranslation();
@@ -40,6 +60,8 @@ export function OnboardingTourProvider({
   const onOpenExportRef = useRef(onOpenExport);
   const onOpenEchoRef = useRef(onOpenEcho);
   const onOpenReviewRef = useRef(onOpenReview);
+  const onOpenMobileSidebarRef = useRef(onOpenMobileSidebar);
+  const onCloseMobileSidebarRef = useRef(onCloseMobileSidebar);
   const onFinishedRef = useRef(onFinished);
   const tRef = useRef(t);
 
@@ -47,10 +69,13 @@ export function OnboardingTourProvider({
   onOpenExportRef.current = onOpenExport;
   onOpenEchoRef.current = onOpenEcho;
   onOpenReviewRef.current = onOpenReview;
+  onOpenMobileSidebarRef.current = onOpenMobileSidebar;
+  onCloseMobileSidebarRef.current = onCloseMobileSidebar;
   onFinishedRef.current = onFinished;
   tRef.current = t;
 
   const finishTour = useCallback(async () => {
+    onCloseMobileSidebarRef.current?.();
     driverRef.current?.destroy();
     driverRef.current = null;
     startedRef.current = false;
@@ -59,6 +84,7 @@ export function OnboardingTourProvider({
   }, []);
 
   const exitTourEarly = useCallback(async () => {
+    onCloseMobileSidebarRef.current?.();
     driverRef.current?.destroy();
     driverRef.current = null;
     startedRef.current = false;
@@ -66,16 +92,47 @@ export function OnboardingTourProvider({
     onFinishedRef.current();
   }, []);
 
-  const runOptionalAction = useCallback((step: TourStepDefinition) => {
-    if (step.requiredAction === 'open_import') onOpenImportRef.current();
-    if (step.requiredAction === 'open_export') onOpenExportRef.current();
-    if (step.requiredAction === 'open_echo') onOpenEchoRef.current();
-    if (step.requiredAction === 'open_review') onOpenReviewRef.current();
-    if (step.requiredAction === 'click_target' && step.actionTarget) {
-      const el = document.querySelector<HTMLElement>(step.actionTarget);
-      el?.click();
+  const prepareStepEnvironment = useCallback(async (step: TourStepDefinition) => {
+    if (!isMobileEditorLayout()) return;
+
+    if (step.id === 'mobile-menu') {
+      onCloseMobileSidebarRef.current?.();
+      await waitForTransition();
+      return;
     }
+
+    if (isSidebarTourTarget(step.target)) {
+      onOpenMobileSidebarRef.current?.();
+      await waitForTransition();
+      document.querySelector<HTMLElement>(step.target)?.scrollIntoView({
+        block: 'nearest',
+        behavior: 'auto',
+      });
+      return;
+    }
+
+    onCloseMobileSidebarRef.current?.();
+    await waitForTransition(200);
   }, []);
+
+  const runOptionalAction = useCallback(
+    async (step: TourStepDefinition) => {
+      if (isMobileEditorLayout() && isSidebarTourActionTarget(step.actionTarget)) {
+        onOpenMobileSidebarRef.current?.();
+        await waitForTransition();
+      }
+
+      if (step.requiredAction === 'open_import') onOpenImportRef.current();
+      if (step.requiredAction === 'open_export') onOpenExportRef.current();
+      if (step.requiredAction === 'open_echo') onOpenEchoRef.current();
+      if (step.requiredAction === 'open_review') onOpenReviewRef.current();
+      if (step.requiredAction === 'click_target' && step.actionTarget) {
+        const el = document.querySelector<HTMLElement>(step.actionTarget);
+        el?.click();
+      }
+    },
+    []
+  );
 
   const attachTryButton = useCallback(
     (step: TourStepDefinition) => {
@@ -96,7 +153,7 @@ export function OnboardingTourProvider({
         tryBtn.addEventListener('click', (e) => {
           e.preventDefault();
           e.stopPropagation();
-          runOptionalAction(step);
+          void runOptionalAction(step);
         });
         footer.prepend(tryBtn);
       };
@@ -107,15 +164,18 @@ export function OnboardingTourProvider({
   );
 
   const goToStep = useCallback(
-    (index: number, d: Driver) => {
-      stepIndexRef.current = index;
+    async (index: number, d: Driver) => {
       if (index >= stepsRef.current.length) {
         void finishTour();
         return;
       }
+
+      const step = stepsRef.current[index];
+      await prepareStepEnvironment(step);
+      stepIndexRef.current = index;
       d.moveTo(index);
     },
-    [finishTour]
+    [finishTour, prepareStepEnvironment]
   );
 
   useEffect(() => {
@@ -125,7 +185,9 @@ export function OnboardingTourProvider({
     }
     if (startedRef.current) return;
 
-    const steps = getTourSteps(writingPath, biographyMode);
+    const steps = getTourSteps(writingPath, biographyMode, {
+      mobileLayout: isMobileEditorLayout(),
+    });
     stepsRef.current = steps;
     stepIndexRef.current = 0;
     startedRef.current = true;
@@ -137,12 +199,20 @@ export function OnboardingTourProvider({
       const optional =
         step.requiredAction !== 'none' ? `\n\n${tw.tourStepOptional}` : '';
 
+      let description = `${tt[step.descKey]}${optional}`;
+      if (
+        isMobileEditorLayout() &&
+        step.target === '[data-tour-id="section-list"]'
+      ) {
+        description = `${description}\n\n${tt.mobileSidebarOverviewHint}`;
+      }
+
       return {
         element: step.target,
         popover: {
           title: tt[step.titleKey],
-          description: `${tt[step.descKey]}${optional}`,
-          side: 'bottom',
+          description,
+          side: getPopoverSide(step.target),
           align: 'start',
           showButtons: ['previous', 'next', 'close'],
           nextBtnText: tw.tourNext,
@@ -154,10 +224,10 @@ export function OnboardingTourProvider({
               void finishTour();
               return;
             }
-            goToStep(nextIdx, d);
+            void goToStep(nextIdx, d);
           },
           onPrevClick: (_el, _step, { driver: d }) => {
-            goToStep(Math.max(0, stepIndexRef.current - 1), d);
+            void goToStep(Math.max(0, stepIndexRef.current - 1), d);
           },
           onCloseClick: () => {
             void exitTourEarly();
@@ -174,22 +244,28 @@ export function OnboardingTourProvider({
       stagePadding: 8,
       stageRadius: 12,
       steps: driveSteps,
-      onHighlightStarted: (_element, _step, { driver: drv }) => {
+      onHighlightStarted: async (_element, _step, { driver: drv }) => {
         const idx = drv.getActiveIndex() ?? 0;
-        stepIndexRef.current = idx;
         const def = steps[idx];
-        if (def) attachTryButton(def);
+        if (def) {
+          await prepareStepEnvironment(def);
+          attachTryButton(def);
+        }
       },
       onDestroyed: () => {
         driverRef.current = null;
         startedRef.current = false;
+        onCloseMobileSidebarRef.current?.();
       },
     });
 
     driverRef.current = d;
 
     const timer = window.setTimeout(() => {
-      d.drive();
+      void (async () => {
+        if (steps[0]) await prepareStepEnvironment(steps[0]);
+        d.drive();
+      })();
     }, 700);
 
     return () => {
@@ -199,6 +275,7 @@ export function OnboardingTourProvider({
         driverRef.current = null;
       }
       startedRef.current = false;
+      onCloseMobileSidebarRef.current?.();
     };
   }, [
     active,
@@ -209,6 +286,7 @@ export function OnboardingTourProvider({
     finishTour,
     exitTourEarly,
     goToStep,
+    prepareStepEnvironment,
   ]);
 
   return null;

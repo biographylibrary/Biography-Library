@@ -125,3 +125,33 @@
   color: hsl(var(--primary-foreground)) !important;
   border-color: hsl(var(--primary)) !important;
 }
+
+/* Above editor mobile sidebar (z-30) and menu toggle (z-60) */
+.driver-overlay {
+  z-index: 10040 !important;
+}
+
+.driver-popover {
+  z-index: 10050 !important;
+}
+
+@media (max-width: 1023px) {
+  .driver-popover-footer {
+    flex-wrap: wrap !important;
+  }
+
+  .driver-popover-skip-step-btn {
+    flex-basis: 100%;
+    margin-right: 0 !important;
+    margin-bottom: 0.25rem !important;
+    text-align: center;
+  }
+
+  .driver-popover-footer .driver-popover-prev-btn,
+  .driver-popover-footer .driver-popover-next-btn,
+  .driver-popover-footer .driver-popover-close-btn {
+    flex: 1 1 calc(50% - 0.25rem);
+    min-width: 0;
+    justify-content: center;
+  }
+}

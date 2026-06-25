@@ -90,13 +90,19 @@ export async function PATCH(req: NextRequest) {
       break;
     }
     case 'skip': {
+      if (state.onboarding_phase === 'wizard') {
+        return NextResponse.json({ error: 'Wizard cannot be skipped' }, { status: 400 });
+      }
       updates.onboarding_phase = 'skipped';
       updates.onboarding_skipped_at = now;
       break;
     }
     case 'resume': {
-      updates.onboarding_phase = state.onboarding_wizard_step ? 'wizard' : 'tour';
+      updates.onboarding_phase = 'wizard';
       updates.onboarding_skipped_at = null;
+      if (!state.onboarding_wizard_step) {
+        updates.onboarding_wizard_step = 'biography_type';
+      }
       break;
     }
     case 'complete_wizard': {
@@ -124,7 +130,11 @@ export async function PATCH(req: NextRequest) {
       break;
     }
     default:
-      if (body.wizardStep) updates.onboarding_wizard_step = body.wizardStep;
+      if (body.wizardStep) {
+        updates.onboarding_wizard_step = body.wizardStep;
+        updates.onboarding_phase = 'wizard';
+        updates.onboarding_skipped_at = null;
+      }
       if (body.writingPath) updates.onboarding_writing_path = body.writingPath;
       if (body.biographyType) updates.legal_declaration_type = body.biographyType;
   }

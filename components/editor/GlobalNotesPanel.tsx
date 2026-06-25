@@ -271,13 +271,13 @@ export function GlobalNotesPanel({
 
           <div className="px-6 pb-6 pt-4 flex flex-col min-h-0 flex-1">
             <Tabs defaultValue="notes" className="flex flex-col min-h-0 flex-1">
-              <TabsList className="grid w-full grid-cols-2 shrink-0">
+              <TabsList className="grid w-full grid-cols-2 shrink-0 min-w-0">
                 <TabsTrigger
                   value="notes"
-                  className="gap-2 data-[state=active]:bg-[#C8DFBE] data-[state=active]:text-[#121212] data-[state=active]:shadow-none"
+                  className="gap-1.5 sm:gap-2 min-w-0 px-2 text-xs sm:text-sm data-[state=active]:bg-[#C8DFBE] data-[state=active]:text-[#121212] data-[state=active]:shadow-none"
                 >
-                  <StickyNote className="h-4 w-4" />
-                  {t.notesAndTodos.notesTab}
+                  <StickyNote className="h-4 w-4 shrink-0" />
+                  <span className="truncate">{t.notesAndTodos.notesTab}</span>
                   {notes.length > 0 && (
                     <Badge variant="secondary" className="ml-1 h-5 min-w-5 rounded-full px-1 text-xs text-white">
                       {notes.length}
@@ -286,10 +286,10 @@ export function GlobalNotesPanel({
                 </TabsTrigger>
                 <TabsTrigger
                   value="todos"
-                  className="gap-2 data-[state=active]:bg-[#C8DFBE] data-[state=active]:text-[#121212] data-[state=active]:shadow-none"
+                  className="gap-1.5 sm:gap-2 min-w-0 px-2 text-xs sm:text-sm data-[state=active]:bg-[#C8DFBE] data-[state=active]:text-[#121212] data-[state=active]:shadow-none"
                 >
-                  <CheckSquare className="h-4 w-4" />
-                  {t.notesAndTodos.todosTab}
+                  <CheckSquare className="h-4 w-4 shrink-0" />
+                  <span className="truncate">{t.notesAndTodos.todosTab}</span>
                   {pendingCount > 0 && (
                     <Badge variant="destructive" className="ml-1 h-5 min-w-5 rounded-full px-1 text-xs">
                       {pendingCount}
@@ -412,7 +412,7 @@ export function GlobalNotesPanel({
                         </Button>
                       )}
 
-                      <Button size="sm" onClick={handleAddTodo} disabled={!newTodoDescription.trim()} className="ml-auto h-9">
+                      <Button size="sm" onClick={handleAddTodo} disabled={!newTodoDescription.trim()} className="w-full sm:w-auto sm:ml-auto h-9">
                         <Plus className="h-4 w-4 mr-1" />
                         {t.notesAndTodos.addTodo}
                       </Button>
@@ -423,7 +423,7 @@ export function GlobalNotesPanel({
                 <div className="flex items-center gap-2 flex-wrap shrink-0">
                   <Filter className="h-4 w-4 text-muted-foreground shrink-0" />
                   <Select value={todoFilter} onValueChange={(v) => setTodoFilter(v as TodoFilter)}>
-                    <SelectTrigger className="w-[150px] h-8">
+                    <SelectTrigger className="w-full min-w-[8rem] max-w-[150px] sm:w-[150px] h-8">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -433,9 +433,9 @@ export function GlobalNotesPanel({
                     </SelectContent>
                   </Select>
 
-                  <ArrowUpDown className="h-4 w-4 text-muted-foreground shrink-0 ml-2" />
+                  <ArrowUpDown className="h-4 w-4 text-muted-foreground shrink-0 sm:ml-2" />
                   <Select value={todoSort} onValueChange={(v) => setTodoSort(v as TodoSort)}>
-                    <SelectTrigger className="w-[150px] h-8">
+                    <SelectTrigger className="w-full min-w-[8rem] max-w-[150px] sm:w-[150px] h-8">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>

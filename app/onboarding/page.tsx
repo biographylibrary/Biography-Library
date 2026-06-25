@@ -5,11 +5,13 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/auth-context';
 import { OnboardingWizard } from '@/components/onboarding/OnboardingWizard';
 import { useOnboardingGate } from '@/components/onboarding/OnboardingGateProvider';
+import { patchOnboarding } from '@/lib/onboarding/onboarding-client';
+import { fetchBiographies } from '@/lib/biographies';
 import { Loader as Loader2 } from 'lucide-react';
 
 export default function OnboardingPage() {
   const { user, loading: authLoading } = useAuth();
-  const { languageGateResolved, onboardingState } = useOnboardingGate();
+  const { languageGateResolved, onboardingState, refreshOnboarding } = useOnboardingGate();
   const router = useRouter();
 
   useEffect(() => {
@@ -22,14 +24,22 @@ export default function OnboardingPage() {
     if (!onboardingState) return;
     if (onboardingState.onboarding_phase === 'completed') {
       router.replace('/echo');
-    }
-    if (onboardingState.onboarding_phase === 'skipped') {
-      router.replace('/echo');
+      return;
     }
     if (onboardingState.onboarding_phase === 'tour') {
-      router.replace('/dashboard');
+      if (!user) return;
+      void fetchBiographies(user.id).then(({ data }) => {
+        const bio = data?.[0];
+        if (bio) {
+          router.replace(`/biography/${bio.id}/edit?tour=1`);
+        }
+      });
+      return;
     }
-  }, [onboardingState, router]);
+    if (onboardingState.onboarding_phase === 'skipped') {
+      void patchOnboarding({ action: 'resume' }).then(() => refreshOnboarding());
+    }
+  }, [onboardingState, router, refreshOnboarding, user]);
 
   if (authLoading || !languageGateResolved || !user) {
     return (
@@ -40,8 +50,8 @@ export default function OnboardingPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#EDEBE7] dark:bg-[#1F2121] px-4 py-10 md:py-14">
-      <div className="w-full max-w-3xl mx-auto rounded-xl border border-border/60 bg-card shadow-sm p-6 md:p-10">
+    <div className="min-h-screen bg-[#EDEBE7] dark:bg-[#1F2121] px-4 py-6 sm:py-10 md:py-14">
+      <div className="w-full max-w-3xl mx-auto rounded-xl border border-border/60 bg-card shadow-sm p-4 sm:p-6 md:p-10">
         <OnboardingWizard />
       </div>
     </div>

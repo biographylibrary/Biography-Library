@@ -20,6 +20,7 @@ interface EditorTopBarProps {
   isFrozen?: boolean;
   authorName?: string;
   onAuthorNameChange?: (name: string) => void;
+  biographyType?: 'autobiography' | 'memorial';
 }
 
 const privacyIcons: Record<Privacy, typeof Lock> = {
@@ -39,6 +40,7 @@ export function EditorTopBar({
   isFrozen = false,
   authorName = '',
   onAuthorNameChange,
+  biographyType = 'autobiography',
 }: EditorTopBarProps) {
   const router = useRouter();
   const { t } = useTranslation();
@@ -117,6 +119,8 @@ export function EditorTopBar({
     setIsEditingAuthor(false);
   };
 
+  const isMemorial = biographyType === 'memorial';
+  const titleDisplay = title || (isMemorial ? t.biography.subjectNameLabel : t.biography.untitled);
   const status = saveStatusConfig[saveStatus];
   const StatusIcon = status.icon;
   const CurrentPrivacyIcon = privacyIcons[privacy] ?? Lock;
@@ -125,7 +129,7 @@ export function EditorTopBar({
 
   return (
     <div className="border-b border-border/50 bg-background/80 backdrop-blur-md sticky top-0 z-50">
-      <div className="px-3 sm:px-4 h-14 flex items-center gap-2 sm:gap-3">
+      <div className="px-3 sm:px-4 h-14 flex items-center gap-2 sm:gap-3 min-w-0 overflow-hidden">
         <Button
           variant="ghost"
           size="sm"
@@ -139,67 +143,71 @@ export function EditorTopBar({
         <div className="h-5 w-px bg-border shrink-0 hidden sm:block" />
         <BookOpen className="h-4 w-4 text-primary shrink-0 hidden sm:block" />
 
-        {isEditingTitle ? (
-          <Input
-            ref={inputRef}
-            value={editTitle}
-            onChange={(e) => setEditTitle(e.target.value)}
-            onBlur={handleTitleSubmit}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter') handleTitleSubmit();
-              if (e.key === 'Escape') {
+        <div className="flex items-center gap-2 min-w-0 flex-1 overflow-hidden">
+          {isEditingTitle ? (
+            <Input
+              ref={inputRef}
+              value={editTitle}
+              onChange={(e) => setEditTitle(e.target.value)}
+              onBlur={handleTitleSubmit}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') handleTitleSubmit();
+                if (e.key === 'Escape') {
+                  setEditTitle(title);
+                  setIsEditingTitle(false);
+                }
+              }}
+              className="h-8 text-sm font-medium min-w-0 max-w-[42vw] sm:max-w-xs"
+            />
+          ) : (
+            <button
+              onClick={() => {
                 setEditTitle(title);
-                setIsEditingTitle(false);
-              }
-            }}
-            className="h-8 text-sm font-medium max-w-[180px] sm:max-w-xs"
-          />
-        ) : (
-          <button
-            onClick={() => {
-              setEditTitle(title);
-              setIsEditingTitle(true);
-            }}
-            className="text-sm font-medium truncate max-w-[180px] sm:max-w-xs hover:text-primary transition-colors text-left"
-          >
-            {title || t.biography.untitled}
-          </button>
-        )}
+                setIsEditingTitle(true);
+              }}
+              className="text-sm font-medium truncate min-w-0 max-w-[42vw] sm:max-w-xs hover:text-primary transition-colors text-left"
+            >
+              {titleDisplay}
+            </button>
+          )}
 
-        {onAuthorNameChange && !isFrozen && (
-          <>
-            <div className="h-4 w-px bg-border shrink-0" />
-            <User className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
-            {isEditingAuthor ? (
-              <Input
-                ref={authorInputRef}
-                value={editAuthor}
-                onChange={(e) => setEditAuthor(e.target.value)}
-                onBlur={handleAuthorSubmit}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter') handleAuthorSubmit();
-                  if (e.key === 'Escape') {
+          {onAuthorNameChange && !isFrozen && (
+            <div className="hidden sm:flex items-center gap-2 min-w-0 overflow-hidden">
+              <div className="h-4 w-px bg-border shrink-0" />
+              <User className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+              {isEditingAuthor ? (
+                <Input
+                  ref={authorInputRef}
+                  value={editAuthor}
+                  onChange={(e) => setEditAuthor(e.target.value)}
+                  onBlur={handleAuthorSubmit}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') handleAuthorSubmit();
+                    if (e.key === 'Escape') {
+                      setEditAuthor(authorName);
+                      setIsEditingAuthor(false);
+                    }
+                  }}
+                  className="h-8 text-sm min-w-0 max-w-[140px] sm:max-w-[200px]"
+                />
+              ) : (
+                <button
+                  onClick={() => {
                     setEditAuthor(authorName);
-                    setIsEditingAuthor(false);
-                  }
-                }}
-                className="h-8 text-sm max-w-[140px] sm:max-w-[200px]"
-              />
-            ) : (
-              <button
-                onClick={() => {
-                  setEditAuthor(authorName);
-                  setIsEditingAuthor(true);
-                }}
-                className="text-sm text-muted-foreground truncate max-w-[120px] sm:max-w-[200px] hover:text-foreground transition-colors text-left"
-              >
-                {authorName || 'Add author name…'}
-              </button>
-            )}
-          </>
-        )}
+                    setIsEditingAuthor(true);
+                  }}
+                  className="text-sm text-muted-foreground truncate min-w-0 max-w-[120px] sm:max-w-[200px] hover:text-foreground transition-colors text-left"
+                >
+                  {isMemorial && authorName
+                    ? `${t.biography.writtenBy} ${authorName}`
+                    : authorName || t.biography.addAuthorName}
+                </button>
+              )}
+            </div>
+          )}
+        </div>
 
-        <div className="ml-auto flex items-center gap-1">
+        <div className="ml-auto flex items-center gap-1 shrink-0">
           <div className={`hidden sm:flex items-center gap-1 text-xs mr-1 ${status.className}`}>
             <StatusIcon className={`h-3 w-3 ${saveStatus === 'saving' ? 'animate-spin' : ''}`} />
             <span>{status.text}</span>

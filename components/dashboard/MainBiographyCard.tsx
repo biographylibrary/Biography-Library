@@ -337,9 +337,9 @@ export function MainBiographyCard({ biography, userName, userId, onDeleteClick, 
 
           <div className="space-y-3 pl-4 sm:pl-7">
             <div className="space-y-1.5">
-              <div className="flex items-center gap-2">
+              <div className="flex flex-wrap items-center gap-2">
                 <span className="text-sm text-muted-foreground w-20 sm:w-24 shrink-0">{t.dashboard.status}:</span>
-                <Badge className={getStatusBadgeConfig(biography.status).className}>
+                <Badge className={cn(getStatusBadgeConfig(biography.status).className, 'max-w-[calc(100%-5.5rem)] truncate')}>
                   {getStatusBadgeConfig(biography.status).text}
                 </Badge>
               </div>
@@ -379,10 +379,10 @@ export function MainBiographyCard({ biography, userName, userId, onDeleteClick, 
                 </div>
 
                 {biography.updated_at && (
-                  <div className="flex items-center justify-between gap-2">
-                    <div className="flex items-center gap-2 text-xs text-text-secondary dark:text-dark-text-secondary">
-                      <Clock className="h-3.5 w-3.5" />
-                      <span>
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <div className="flex items-center gap-2 text-xs text-text-secondary dark:text-dark-text-secondary min-w-0">
+                      <Clock className="h-3.5 w-3.5 shrink-0" />
+                      <span className="min-w-0">
                         {t.dashboard.lastUpdated}: {format(new Date(biography.updated_at), 'd MMM yyyy, HH:mm', { locale: dateLocales[language] })}
                       </span>
                     </div>
