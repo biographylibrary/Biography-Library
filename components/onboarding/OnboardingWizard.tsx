@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { User, Flame, Loader as Loader2, PenLine, Upload, BookOpen, Lock, Users, Globe } from 'lucide-react';
+import { User, Flame, Loader as Loader2, PenLine, Upload, BookOpen, Lock, Users, Globe, Info } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -291,6 +291,12 @@ export function OnboardingWizard() {
               </CardContent>
             </Card>
           </div>
+          <Alert className="border-primary/20 bg-primary/5">
+            <Info className="h-4 w-4" />
+            <AlertDescription className="text-sm leading-relaxed">
+              {t.onboardingWizard.accountModelInfo}
+            </AlertDescription>
+          </Alert>
         </div>
       )}
 

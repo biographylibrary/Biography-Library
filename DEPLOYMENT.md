@@ -67,6 +67,8 @@ The app runs on `http://localhost:3000`. Hot reload is active. Edge Functions ru
 npm run build      # Production build (catches type errors missed by the dev server)
 npm run typecheck  # tsc --noEmit without emitting files
 npm run lint       # ESLint
+npm run kb:sync    # Regenerate EN KB from docs/PLATFORM_KB.md (Echo/Help RAG)
+npm run kb:sync:check  # Fail if generated KB files are out of date
 ```
 
 ---

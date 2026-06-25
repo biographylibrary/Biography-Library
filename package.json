@@ -11,7 +11,9 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
-    "seed:test-biography": "node scripts/seed-test-biography.mjs"
+    "seed:test-biography": "node scripts/seed-test-biography.mjs",
+    "kb:sync": "node scripts/sync-platform-kb.mjs",
+    "kb:sync:check": "node scripts/sync-platform-kb.mjs --check"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.9.0",

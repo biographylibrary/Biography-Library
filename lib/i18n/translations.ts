@@ -1321,6 +1321,7 @@ export interface Translations {
   onboardingWizard: {
     stepProgress: string;
     typeSubtitle: string;
+    accountModelInfo: string;
     legalSubtitle: string;
     pathTitle: string;
     pathSubtitle: string;
@@ -2768,6 +2769,8 @@ export const translations: Record<Language, Translations> = {
     onboardingWizard: {
       stepProgress: 'Step {current} of {total}',
       typeSubtitle: 'Tell us who this biography is for. You will confirm your legal rights on the next step.',
+      accountModelInfo:
+        'Each account manages one biography only (autobiography or memorial — choose carefully). To write another biography later (e.g. your own story and a family memorial), create a separate account with a different email. Other relatives can write their own perspective on the same person with their own accounts.',
       legalSubtitle: 'Please read and confirm each statement to continue.',
       pathTitle: 'How would you like to work?',
       pathSubtitle: 'Choose your starting path. You can change approach later.',
@@ -4217,6 +4220,8 @@ export const translations: Record<Language, Translations> = {
     onboardingWizard: {
       stepProgress: 'Passo {current} di {total}',
       typeSubtitle: 'Indica per chi è questa biografia. Al passo successivo confermerai i tuoi diritti legali.',
+      accountModelInfo:
+        'Ogni account gestisce una sola biografia (autobiografia o memorial — scegli con attenzione). Per un altro progetto in futuro (es. la tua autobiografia e un memorial di famiglia), crea un nuovo account con un\'altra email. Altri familiari possono scrivere la loro prospettiva sulla stessa persona con account separati.',
       legalSubtitle: 'Leggi e conferma ogni dichiarazione per continuare.',
       pathTitle: 'Come vuoi lavorare?',
       pathSubtitle: 'Scegli il percorso iniziale. Potrai cambiare approccio in seguito.',
@@ -5666,6 +5671,8 @@ export const translations: Record<Language, Translations> = {
     onboardingWizard: {
       stepProgress: 'Étape {current} sur {total}',
       typeSubtitle: 'Indiquez pour qui est cette biographie. Vous confirmerez vos droits légaux à l\'étape suivante.',
+      accountModelInfo:
+        'Chaque compte gère une seule biographie (autobiographie ou mémorial — choisissez avec soin). Pour un autre projet plus tard, créez un compte séparé avec une autre adresse e-mail. D\'autres proches peuvent écrire leur propre perspective sur la même personne avec leurs propres comptes.',
       legalSubtitle: 'Veuillez lire et confirmer chaque déclaration pour continuer.',
       pathTitle: 'Comment souhaitez-vous travailler ?',
       pathSubtitle: 'Choisissez votre parcours initial. Vous pourrez changer d\'approche plus tard.',
@@ -7115,6 +7122,8 @@ export const translations: Record<Language, Translations> = {
     onboardingWizard: {
       stepProgress: 'Schritt {current} von {total}',
       typeSubtitle: 'Geben Sie an, für wen diese Biografie ist. Im nächsten Schritt bestätigen Sie Ihre rechtlichen Angaben.',
+      accountModelInfo:
+        'Jedes Konto verwaltet nur eine Biografie (Autobiografie oder Gedenkbuch — wählen Sie sorgfältig). Für ein weiteres Projekt später erstellen Sie ein separates Konto mit anderer E-Mail. Andere Angehörige können ihre eigene Perspektive auf dieselbe Person mit eigenen Konten schreiben.',
       legalSubtitle: 'Bitte lesen und bestätigen Sie jede Erklärung, um fortzufahren.',
       pathTitle: 'Wie möchten Sie arbeiten?',
       pathSubtitle: 'Wählen Sie Ihren Startweg. Sie können den Ansatz später ändern.',

@@ -13,7 +13,13 @@ alwaysApply: true
 - `npm run typecheck` — controllo TypeScript
 - `npm run build` — build produzione (obbligatorio prima di PR)
 - `npm run lint` — ESLint
-- **Non esiste `npm test`** — verifica con typecheck + build + lint + smoke manuale.
+- `npm test` — test unitari (Vitest)
+- `npm run kb:sync` — rigenera KB EN da `docs/PLATFORM_KB.md` (dopo ogni modifica policy/UX piattaforma)
+- `npm run kb:sync:check` — verifica che i file generati siano allineati al `.md`
+
+## Knowledge piattaforma (Echo / Help)
+- Source of truth: `docs/PLATFORM_KB.md` → `npm run kb:sync` → RAG (`kb_chunks`) via seed admin.
+- Modello prodotto: **un account = una biografia** (autobiografia o memorial).
 
 ## Variabili d'ambiente
 Copia `.env.example` → `.env.local` (mai committare). Obbligatorie: `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `INFOMANIAK_AI_*`. Dettagli in `.env.example` e `DEPLOYMENT.md`.
