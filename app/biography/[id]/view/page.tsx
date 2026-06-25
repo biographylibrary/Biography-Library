@@ -50,6 +50,9 @@ interface SectionWithDate {
 
 type ViewError = 'not-found' | 'private' | 'invalid-token' | null;
 
+const BIOGRAPHY_VIEW_SELECT =
+  'id, title, subject_name, biography_type, author_name, content, visibility, status, share_token, created_at, published_at, is_frozen, frozen_at, export_txt_url, export_docx_url, listing_cover_url';
+
 function formatDate(dateStr: string, locale?: string): string {
   return new Date(dateStr).toLocaleDateString(locale, {
     day: 'numeric',
@@ -146,13 +149,10 @@ export default function BiographyViewPage() {
           loadError = 'invalid-token';
         }
       } else {
-        // --- No token: only show published public biographies.
-        // link-only biographies are NOT accessible without a token.
+        // --- No token: public published listings, or authenticated owner/staff via RLS.
         const publicQuery = await supabase
           .from('biographies')
-          .select(
-            'id, title, subject_name, biography_type, author_name, content, visibility, status, share_token, created_at, published_at, is_frozen, frozen_at, export_txt_url, export_docx_url, listing_cover_url'
-          )
+          .select(BIOGRAPHY_VIEW_SELECT)
           .eq('id', resolvedId)
           .eq('visibility', 'public')
           .eq('status', 'published')
@@ -162,7 +162,25 @@ export default function BiographyViewPage() {
           data = publicQuery.data as BiographyViewData;
           supabase.rpc('increment_view_count', { biography_uuid: resolvedId });
         } else {
-          loadError = 'not-found';
+          const { data: authData } = await supabase.auth.getSession();
+          if (authData.session) {
+            const privilegedQuery = await supabase
+              .from('biographies')
+              .select(BIOGRAPHY_VIEW_SELECT)
+              .eq('id', resolvedId)
+              .maybeSingle();
+
+            if (!privilegedQuery.error && privilegedQuery.data) {
+              data = privilegedQuery.data as BiographyViewData;
+              if (data.status === 'published' && data.visibility === 'public') {
+                supabase.rpc('increment_view_count', { biography_uuid: resolvedId });
+              }
+            } else {
+              loadError = 'not-found';
+            }
+          } else {
+            loadError = 'not-found';
+          }
         }
       }
 
@@ -196,6 +214,20 @@ export default function BiographyViewPage() {
       // via existing RLS; anon users get no timestamps (graceful degradation — sections
       // still display, just without date stamps).
       const sectionTimestamps: Record<string, string> = tokenSectionTimestamps ?? {};
+
+      if (!tokenSectionTimestamps && Object.keys(sectionTimestamps).length === 0) {
+        const { data: sectionRows } = await supabase
+          .from('biography_sections')
+          .select('section_key, created_at')
+          .eq('biography_id', resolvedId);
+        for (const row of sectionRows ?? []) {
+          const key = (row as { section_key?: string | null }).section_key;
+          const createdAt = (row as { created_at?: string | null }).created_at;
+          if (key && createdAt) {
+            sectionTimestamps[key] = createdAt;
+          }
+        }
+      }
 
       const content = data.content as BiographyContent;
       const sections: SectionWithDate[] = Object.entries(content)
