@@ -51,4 +51,27 @@ describe('email copy', () => {
     expect(rendered.html).not.toContain('#2d5016');
     expect(rendered.html).toContain('color:#121212');
   });
+
+  it('includes left-aligned logo in all emails', () => {
+    const rendered = renderEmailTemplate({
+      templateId: 'auth_confirm_signup',
+      locale: 'it',
+      vars: { confirmUrl: 'https://example.com/confirm' },
+    });
+    expect(rendered.html).toContain('logo-email.png');
+    expect(rendered.html).toContain('text-align:left');
+    expect(rendered.html).toContain('alt="Biography Library"');
+  });
+
+  it('welcome email links to workspace with updated Italian copy', () => {
+    const rendered = renderEmailTemplate({
+      templateId: 'welcome',
+      locale: 'it',
+      siteUrl: 'https://app.biographylibrary.org',
+    });
+    expect(rendered.html).toContain('https://app.biographylibrary.org/workspace');
+    expect(rendered.html).toContain('Vai al workspace');
+    expect(rendered.html).toContain('la tua storia o quella di un familiare');
+    expect(rendered.html).toContain('controllo con AI e umani');
+  });
 });

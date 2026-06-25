@@ -13,6 +13,18 @@ function link(href: string, label: string): string {
   return `<a href="${esc(href)}" style="color:#121212;font-weight:600;">${esc(label)}</a>`;
 }
 
+const EMAIL_LOGO_WIDTH = 47;
+const EMAIL_LOGO_HEIGHT = 56;
+
+function emailLogoHtml(siteUrl: string, siteName: string): string {
+  const logoUrl = `${siteUrl}/logo-email.png`;
+  return `<p style="margin:0 0 24px;text-align:left;">
+  <a href="${esc(siteUrl)}" style="text-decoration:none;display:inline-block;">
+    <img src="${esc(logoUrl)}" alt="${esc(siteName)}" width="${EMAIL_LOGO_WIDTH}" height="${EMAIL_LOGO_HEIGHT}" style="display:block;border:0;outline:none;text-decoration:none;height:${EMAIL_LOGO_HEIGHT}px;width:${EMAIL_LOGO_WIDTH}px;">
+  </a>
+</p>`;
+}
+
 export function wrapEmailHtml(params: {
   siteName: string;
   siteUrl: string;
@@ -34,7 +46,7 @@ export function wrapEmailHtml(params: {
     <tr><td align="center">
       <table role="presentation" width="100%" style="max-width:560px;background:#ffffff;border:1px solid #e8e0d4;border-radius:12px;padding:32px 28px;">
         <tr><td>
-          <p style="margin:0 0 24px;font-size:22px;font-weight:600;color:#121212;">${esc(siteName)}</p>
+          ${emailLogoHtml(siteUrl, siteName)}
           ${bodyHtml}
           <hr style="border:none;border-top:1px solid #e8e0d4;margin:28px 0 16px;">
           <p style="margin:0;font-size:12px;color:#666;line-height:1.5;">
@@ -67,6 +79,7 @@ function varsWithDefaults(
     siteName,
     siteUrl,
     dashboardUrl: `${siteUrl}/dashboard`,
+    workspaceUrl: `${siteUrl}/workspace`,
     echoUrl: `${siteUrl}/dashboard`,
     loginUrl: `${siteUrl}/`,
     contactsUrl: 'https://biographylibrary.org/contacts',
@@ -236,56 +249,48 @@ function getTemplateInner(
           subject: '{siteName} — Welcome! Here is how to get started',
           paragraphs: [
             'Hello,',
-            'Welcome to Biography Library — a permanent, non-profit digital archive hosted in Switzerland where you can preserve a life story.',
-            'HTML:<strong>Getting started</strong><br>1. Open your dashboard and create your biography.<br>2. Choose your content language and writing mode (sections or free text).<br>3. Write with the editor or talk to <strong>Echo</strong>, your AI guide (voice or text).',
+            'Welcome to Biography Library — a free, permanent, non-profit digital archive hosted in Switzerland where you can preserve your own story or that of a family member.',
+            'HTML:<strong>Getting started</strong><br>1. Open the dashboard and create your biography.<br>2. Choose your writing mode (sections or free text).<br>3. Write with the editor or talk to <strong>Echo</strong>, your AI guide (voice or text), who walks you through every step.',
             'HTML:<strong>Privacy</strong><br>You choose visibility: public, link-only, family, or private.',
-            'HTML:<strong>Publishing</strong><br>When your text is ready: final review → PDF draft (up to 3 rounds) → approval → automated screening → publication.',
-            'HTML:<strong>Autobiography rules</strong><br>One biography per account. After the first published chapter, the next chapter unlocks after 365 days.',
-            `LINK:${v.dashboardUrl}|Go to dashboard`,
-            `LINK:${v.echoUrl}|Meet Echo`,
-            `LINK:${v.contactsUrl}|Contact support`,
+            'HTML:<strong>Publishing</strong><br>When your text is ready, complete the final review by downloading the PDF draft → submit for approval → AI and human review → publication.',
+            'HTML:<strong>Autobiography rules</strong><br>One biography per account. After the first published chapter, the next unlocks after 365 days.',
+            `LINK:${v.workspaceUrl}|Go to workspace`,
           ],
         },
         it: {
           subject: '{siteName} — Benvenuto! Ecco come iniziare',
           paragraphs: [
             'Ciao,',
-            'Benvenuto in Biography Library — un archivio digitale permanente e non profit, ospitato in Svizzera, dove puoi preservare una storia di vita.',
-            'HTML:<strong>Primi passi</strong><br>1. Apri la dashboard e crea la tua biografia.<br>2. Scegli la lingua del contenuto e la modalità di scrittura (sezioni o testo libero).<br>3. Scrivi con l\'editor o parla con <strong>Echo</strong>, la tua guida AI (voce o testo).',
+            'Benvenuto in Biography Library — un archivio digitale gratuito permanente e non profit, ospitato in Svizzera, dove puoi preservare la tua storia o quella di un familiare.',
+            'HTML:<strong>Primi passi</strong><br>1. Apri la dashboard e crea la tua biografia.<br>2. Scegli la modalità di scrittura (sezioni o testo libero).<br>3. Scrivi con l\'editor o parla con <strong>Echo</strong>, la tua guida AI (voce o testo) che ti guida e aiuta passo passo.',
             'HTML:<strong>Privacy</strong><br>Scegli tu la visibilità: pubblica, solo link, famiglia o privata.',
-            'HTML:<strong>Pubblicazione</strong><br>Quando il testo è pronto: revisione finale → bozza PDF (fino a 3 round) → approvazione → screening → pubblicazione.',
+            'HTML:<strong>Pubblicazione</strong><br>Quando il testo è pronto fai la revisione finale scaricando la bozza in PDF → manda in approvazione → controllo con AI e umani → pubblicazione.',
             'HTML:<strong>Regole autobiografia</strong><br>Una biografia per account. Dopo il primo capitolo pubblicato, il successivo si sblocca dopo 365 giorni.',
-            `LINK:${v.dashboardUrl}|Vai alla dashboard`,
-            `LINK:${v.echoUrl}|Incontra Echo`,
-            `LINK:${v.contactsUrl}|Contatta il supporto`,
+            `LINK:${v.workspaceUrl}|Vai al workspace`,
           ],
         },
         fr: {
           subject: '{siteName} — Bienvenue ! Comment commencer',
           paragraphs: [
             'Bonjour,',
-            'Bienvenue sur Biography Library — une archive numérique permanente et à but non lucratif, hébergée en Suisse, pour préserver une histoire de vie.',
-            'HTML:<strong>Premiers pas</strong><br>1. Ouvrez votre tableau de bord et créez votre biographie.<br>2. Choisissez la langue du contenu et le mode d\'écriture (sections ou texte libre).<br>3. Écrivez avec l\'éditeur ou parlez à <strong>Echo</strong>, votre guide IA (voix ou texte).',
+            'Bienvenue sur Biography Library — une archive numérique gratuite, permanente et à but non lucratif, hébergée en Suisse, où vous pouvez préserver votre histoire ou celle d\'un proche.',
+            'HTML:<strong>Premiers pas</strong><br>1. Ouvrez le tableau de bord et créez votre biographie.<br>2. Choisissez le mode d\'écriture (sections ou texte libre).<br>3. Écrivez avec l\'éditeur ou parlez à <strong>Echo</strong>, votre guide IA (voix ou texte), qui vous accompagne pas à pas.',
             'HTML:<strong>Confidentialité</strong><br>Vous choisissez la visibilité : publique, lien uniquement, famille ou privée.',
-            'HTML:<strong>Publication</strong><br>Quand le texte est prêt : révision finale → brouillon PDF (jusqu\'à 3 tours) → approbation → contrôle → publication.',
+            'HTML:<strong>Publication</strong><br>Quand le texte est prêt, effectuez la révision finale en téléchargeant le brouillon PDF → soumettez pour approbation → contrôle IA et humain → publication.',
             'HTML:<strong>Règles autobiographie</strong><br>Une biographie par compte. Après le premier chapitre publié, le suivant se débloque après 365 jours.',
-            `LINK:${v.dashboardUrl}|Aller au tableau de bord`,
-            `LINK:${v.echoUrl}|Rencontrer Echo`,
-            `LINK:${v.contactsUrl}|Contacter le support`,
+            `LINK:${v.workspaceUrl}|Aller au workspace`,
           ],
         },
         de: {
           subject: '{siteName} — Willkommen! So starten Sie',
           paragraphs: [
             'Hallo,',
-            'Willkommen bei Biography Library — einem dauerhaften, gemeinnützigen digitalen Archiv in der Schweiz, in dem Sie eine Lebensgeschichte bewahren können.',
-            'HTML:<strong>Erste Schritte</strong><br>1. Öffnen Sie Ihr Dashboard und erstellen Sie Ihre Biografie.<br>2. Wählen Sie die Inhaltssprache und den Schreibmodus (Abschnitte oder Freitext).<br>3. Schreiben Sie im Editor oder sprechen Sie mit <strong>Echo</strong>, Ihrem KI-Guide (Sprache oder Text).',
+            'Willkommen bei Biography Library — einem kostenlosen, dauerhaften, gemeinnützigen digitalen Archiv in der Schweiz, in dem Sie Ihre Geschichte oder die eines Familienmitglieds bewahren können.',
+            'HTML:<strong>Erste Schritte</strong><br>1. Öffnen Sie das Dashboard und erstellen Sie Ihre Biografie.<br>2. Wählen Sie den Schreibmodus (Abschnitte oder Freitext).<br>3. Schreiben Sie im Editor oder sprechen Sie mit <strong>Echo</strong>, Ihrem KI-Guide (Sprache oder Text), der Sie Schritt für Schritt begleitet.',
             'HTML:<strong>Datenschutz</strong><br>Sie wählen die Sichtbarkeit: öffentlich, nur Link, Familie oder privat.',
-            'HTML:<strong>Veröffentlichung</strong><br>Wenn der Text bereit ist: Abschlussprüfung → PDF-Entwurf (bis zu 3 Runden) → Freigabe → Prüfung → Veröffentlichung.',
+            'HTML:<strong>Veröffentlichung</strong><br>Wenn der Text bereit ist: Abschlussprüfung mit PDF-Entwurf → zur Freigabe einreichen → KI- und menschliche Prüfung → Veröffentlichung.',
             'HTML:<strong>Autobiografie-Regeln</strong><br>Eine Biografie pro Konto. Nach dem ersten veröffentlichten Kapitel wird das nächste nach 365 Tagen freigeschaltet.',
-            `LINK:${v.dashboardUrl}|Zum Dashboard`,
-            `LINK:${v.echoUrl}|Echo kennenlernen`,
-            `LINK:${v.contactsUrl}|Support kontaktieren`,
+            `LINK:${v.workspaceUrl}|Zum Workspace`,
           ],
         },
       });
