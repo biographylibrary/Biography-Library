@@ -3,6 +3,7 @@
 import { Square, Volume2, VolumeX } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useTranslation } from '@/lib/i18n/i18n-context';
+import { cn } from '@/lib/utils';
 
 interface EchoSpeakingBannerProps {
   onStopSpeaking: () => void;
@@ -48,8 +49,14 @@ export function EchoVoiceOutputButton({
     <Button
       type="button"
       size="icon"
-      variant={voiceOutputEnabled ? 'outline' : 'secondary'}
-      className={compact ? 'h-11 w-11 shrink-0' : 'h-11 w-11 shrink-0'}
+      variant="outline"
+      aria-pressed={!voiceOutputEnabled}
+      className={cn(
+        'h-11 w-11 shrink-0',
+        voiceOutputEnabled
+          ? 'border-border bg-background text-foreground'
+          : 'border-brand-ink bg-muted text-brand-ink'
+      )}
       onClick={onToggleVoiceOutput}
       title={voiceOutputEnabled ? t.echo.muteVoice : t.echo.unmuteVoice}
     >

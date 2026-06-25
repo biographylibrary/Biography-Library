@@ -1365,6 +1365,17 @@ export interface Translations {
     statusListening: string;
     statusSpeaking: string;
     statusThinking: string;
+    statusFormulatingReply: string;
+    statusWelcome: string;
+    statusReady: string;
+    statusVoiceMuted: string;
+    statusPreparingReply: string;
+    statusReadingMessage: string;
+    statusWriting: string;
+    statusStillWorking: string;
+    statusSlowApology: string;
+    statusLoadingHistory: string;
+    statusLoadingOlder: string;
     errorGeneric: string;
     openEcho: string;
     closeEcho: string;
@@ -2779,9 +2790,20 @@ export const translations: Record<Language, Translations> = {
       pickBiography: 'Select biography',
       untitledBiography: 'Untitled',
       inputPlaceholder: 'Type or use the microphone…',
-      statusListening: 'Echo is listening…',
-      statusSpeaking: 'Echo is speaking…',
-      statusThinking: 'Echo is thinking…',
+      statusListening: 'Listening…',
+      statusSpeaking: 'Speaking…',
+      statusThinking: 'Thinking…',
+      statusFormulatingReply: 'Working on your reply…',
+      statusWelcome: 'Write or use the mic — I\'m here to guide you',
+      statusReady: 'Ready for your next question',
+      statusVoiceMuted: 'Text only — voice off',
+      statusPreparingReply: 'Preparing a reply…',
+      statusReadingMessage: 'Reading your message…',
+      statusWriting: 'Writing…',
+      statusStillWorking: 'This is taking a little longer than usual…',
+      statusSlowApology: 'Sorry for the wait — almost there…',
+      statusLoadingHistory: 'Loading our conversation…',
+      statusLoadingOlder: 'Loading earlier messages…',
       errorGeneric: 'Something went wrong. Please try again.',
       openEcho: 'Ask Echo',
       closeEcho: 'Close',
@@ -4194,9 +4216,20 @@ export const translations: Record<Language, Translations> = {
       pickBiography: 'Seleziona biografia',
       untitledBiography: 'Senza titolo',
       inputPlaceholder: 'Scrivi o usa il microfono…',
-      statusListening: 'Echo ti ascolta…',
-      statusSpeaking: 'Echo sta parlando…',
-      statusThinking: 'Echo sta pensando…',
+      statusListening: 'Ti ascolto…',
+      statusSpeaking: 'Sto parlando…',
+      statusThinking: 'Sto pensando…',
+      statusFormulatingReply: 'Sto elaborando la risposta',
+      statusWelcome: 'Scrivi o usa il microfono — sono qui per guidarti',
+      statusReady: 'Pronto per la prossima domanda',
+      statusVoiceMuted: 'Solo testo — voce disattivata',
+      statusPreparingReply: 'Preparo una risposta…',
+      statusReadingMessage: 'Leggo il tuo messaggio…',
+      statusWriting: 'Sto scrivendo…',
+      statusStillWorking: 'Ci sto mettendo un po\' più del solito…',
+      statusSlowApology: 'Scusa l\'attesa, quasi fatto…',
+      statusLoadingHistory: 'Recupero la conversazione…',
+      statusLoadingOlder: 'Carico messaggi precedenti…',
       errorGeneric: 'Qualcosa è andato storto. Riprova.',
       openEcho: 'Chiedi a Echo',
       closeEcho: 'Chiudi',
@@ -5609,9 +5642,20 @@ export const translations: Record<Language, Translations> = {
       pickBiography: 'Choisir une biographie',
       untitledBiography: 'Sans titre',
       inputPlaceholder: 'Écrivez ou utilisez le micro…',
-      statusListening: 'Echo vous écoute…',
-      statusSpeaking: 'Echo parle…',
-      statusThinking: 'Echo réfléchit…',
+      statusListening: 'Je vous écoute…',
+      statusSpeaking: 'Je parle…',
+      statusThinking: 'Je réfléchis…',
+      statusFormulatingReply: 'J\'élabore la réponse…',
+      statusWelcome: 'Écrivez ou utilisez le micro — je suis là pour vous guider',
+      statusReady: 'Prêt pour votre prochaine question',
+      statusVoiceMuted: 'Texte seul — voix désactivée',
+      statusPreparingReply: 'Je prépare une réponse…',
+      statusReadingMessage: 'Je lis votre message…',
+      statusWriting: 'J\'écris…',
+      statusStillWorking: 'Cela prend un peu plus de temps que d\'habitude…',
+      statusSlowApology: 'Désolé pour l\'attente — j\'y suis presque…',
+      statusLoadingHistory: 'Je charge notre conversation…',
+      statusLoadingOlder: 'Chargement des messages précédents…',
       errorGeneric: 'Une erreur s\'est produite. Réessayez.',
       openEcho: 'Demander à Echo',
       closeEcho: 'Fermer',
@@ -7024,9 +7068,20 @@ export const translations: Record<Language, Translations> = {
       pickBiography: 'Biografie wählen',
       untitledBiography: 'Ohne Titel',
       inputPlaceholder: 'Tippen oder Mikrofon nutzen…',
-      statusListening: 'Echo hört zu…',
-      statusSpeaking: 'Echo spricht…',
-      statusThinking: 'Echo denkt nach…',
+      statusListening: 'Ich höre zu…',
+      statusSpeaking: 'Ich spreche…',
+      statusThinking: 'Ich denke nach…',
+      statusFormulatingReply: 'Ich erstelle die Antwort…',
+      statusWelcome: 'Tippen oder Mikrofon — ich begleite Sie',
+      statusReady: 'Bereit für Ihre nächste Frage',
+      statusVoiceMuted: 'Nur Text — Stimme aus',
+      statusPreparingReply: 'Ich bereite eine Antwort vor…',
+      statusReadingMessage: 'Ich lese Ihre Nachricht…',
+      statusWriting: 'Ich schreibe…',
+      statusStillWorking: 'Das dauert etwas länger als sonst…',
+      statusSlowApology: 'Entschuldigen Sie die Wartezeit — gleich fertig…',
+      statusLoadingHistory: 'Gespräch wird geladen…',
+      statusLoadingOlder: 'Frühere Nachrichten werden geladen…',
       errorGeneric: 'Etwas ist schiefgelaufen. Bitte erneut versuchen.',
       openEcho: 'Echo fragen',
       closeEcho: 'Schließen',

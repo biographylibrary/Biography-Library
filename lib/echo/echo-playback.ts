@@ -1,6 +1,7 @@
 'use client';
 
 import type { EchoOrbState } from '@/components/echo/EchoOrb';
+import { getEchoVoiceOutputEnabled } from '@/lib/echo/echo-voice-prefs';
 
 export type EchoSpeechBackend = 'voxtral' | 'browser' | 'none';
 
@@ -134,6 +135,7 @@ export async function speakEchoReply(
   options?: SpeakEchoReplyOptions
 ): Promise<EchoSpeechBackend> {
   if (typeof window === 'undefined' || !text.trim()) return 'none';
+  if (!getEchoVoiceOutputEnabled()) return 'none';
 
   stopEchoSpeech();
   const generation = speechGeneration;

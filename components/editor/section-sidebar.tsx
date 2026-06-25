@@ -116,7 +116,7 @@ export function SectionSidebar({
 
       <ScrollArea className="flex-1 min-h-0">
         {!isFreeflow && (
-          <div className="py-1">
+          <div>
             {BIOGRAPHY_SECTIONS.map((section) => {
               const data = getSectionData(content, section.key);
               const isActive = activeSection === section.key;

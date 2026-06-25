@@ -133,7 +133,7 @@ export function EchoVoiceSession({
       type="button"
       variant={phase === 'recording' ? 'default' : 'outline'}
       size="icon"
-      className={cn('rounded-full h-12 w-12 shrink-0', className)}
+      className={cn('rounded-full h-11 w-11 shrink-0', className)}
       disabled={micDisabled}
       onClick={toggle}
       title={
