@@ -1,5 +1,5 @@
 /**
- * Popola una biografia di test con testi lunghi, 10 foto galleria (layout misti)
+ * Popola una biografia di test con testi lunghi, foto galleria (layout misti)
  * e copertine cover + cover_a5 su Supabase Storage.
  *
  * Uso: node scripts/seed-test-biography.mjs [biographyId]
@@ -91,7 +91,7 @@ const GALLERY_PLAN = [
   { layout: 'three-mixed', seed: 'ugo-g9', w: 900, h: 900, caption: 'Torta alla genovese' },
 ];
 
-/** Max 10 media per biography (DB trigger) — 1 cover_a5 + 9 gallery */
+/** Max 30 gallery photos per biography (DB trigger); cover / cover_a5 excluded from cap */
 const COVER_A5 = {
   layout: 'cover_a5',
   seed: 'ugo-cover-a5-genova',
@@ -192,7 +192,7 @@ async function main() {
   console.log('Uploading cover A5 (custom print, full bleed)…');
   await uploadPhoto(supabase, userId, BIOGRAPHY_ID, COVER_A5, 0);
 
-  console.log(`Uploading ${GALLERY_PLAN.length} gallery photos (max 9 with cover_a5 = 10 total)…`);
+  console.log(`Uploading ${GALLERY_PLAN.length} gallery photos…`);
   for (let i = 0; i < GALLERY_PLAN.length; i++) {
     const spec = GALLERY_PLAN[i];
     process.stdout.write(`  ${i + 1}/${GALLERY_PLAN.length} ${spec.layout}… `);

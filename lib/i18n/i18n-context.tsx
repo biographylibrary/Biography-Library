@@ -52,7 +52,7 @@ export function I18nProvider({ children }: { children: ReactNode }) {
     }
   }, [user, loadUserLanguage]);
 
-  const setLanguage = async (lang: Language) => {
+  const setLanguage = useCallback(async (lang: Language) => {
     setLanguageState(lang);
     localStorage.setItem('userLanguage', lang);
 
@@ -66,7 +66,7 @@ export function I18nProvider({ children }: { children: ReactNode }) {
         console.error('Error saving language preference:', error);
       }
     }
-  };
+  }, [user]);
 
   useEffect(() => {
     document.documentElement.lang = language;

@@ -101,11 +101,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (session?.user) {
         loadProfile(session.user.id);
       }
-      setLoading(false);
     });
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (_event, session) => {
+      (event, session) => {
         setSession(session);
         setUser(session?.user ?? null);
         if (session?.user) {
@@ -113,7 +112,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         } else {
           setRole(null);
         }
-        setLoading(false);
+        // Wait for INITIAL_SESSION so we do not flash login/register forms before
+        // persisted session is restored (getSession can briefly return null).
+        if (event === 'INITIAL_SESSION') {
+          setLoading(false);
+        }
       }
     );
 

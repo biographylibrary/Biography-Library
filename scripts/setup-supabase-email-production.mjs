@@ -161,6 +161,12 @@ await apiJson('POST', `/v1/projects/${PROJECT}/secrets`, [
 console.log('  ✓ secrets set');
 
 console.log('3/3 Enable Auth Send Email hook…');
+if (hookSecret && !hookSecret.startsWith('v1,whsec_')) {
+  throw new Error(
+    'AUTH_HOOK_SECRET must start with v1,whsec_ (standard base64 after prefix). ' +
+      'Regenerate with generateHookSecret() or Supabase Dashboard → Auth → Hooks.',
+  );
+}
 await apiJson('PATCH', `/v1/projects/${PROJECT}/config/auth`, {
   hook_send_email_enabled: true,
   hook_send_email_uri: `https://${PROJECT}.supabase.co/functions/v1/auth-send-email`,
