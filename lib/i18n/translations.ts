@@ -1208,10 +1208,12 @@ export interface Translations {
     bioSortNewest: string;
     bioSortOldest: string;
     bioSortRecentlyPublished: string;
+    bioSortMostViews: string;
     bioColTitle: string;
     bioColAuthor: string;
     bioColType: string;
     bioColStatus: string;
+    bioColViews: string;
     bioColCreated: string;
     bioColPublished: string;
     bioColActions: string;
@@ -2699,10 +2701,12 @@ export const translations: Record<Language, Translations> = {
       bioSortNewest: 'Newest first',
       bioSortOldest: 'Oldest first',
       bioSortRecentlyPublished: 'Recently published',
+      bioSortMostViews: 'Most views',
       bioColTitle: 'Title',
       bioColAuthor: 'Author',
       bioColType: 'Type',
       bioColStatus: 'Status',
+      bioColViews: 'Views',
       bioColCreated: 'Created',
       bioColPublished: 'Published',
       bioColActions: 'Actions',
@@ -4193,10 +4197,12 @@ export const translations: Record<Language, Translations> = {
       bioSortNewest: 'Più recenti',
       bioSortOldest: 'Meno recenti',
       bioSortRecentlyPublished: 'Pubblicati di recente',
+      bioSortMostViews: 'Più visualizzate',
       bioColTitle: 'Titolo',
       bioColAuthor: 'Autore',
       bioColType: 'Tipo',
       bioColStatus: 'Stato',
+      bioColViews: 'Visualizzazioni',
       bioColCreated: 'Creata',
       bioColPublished: 'Pubblicata',
       bioColActions: 'Azioni',
@@ -5687,10 +5693,12 @@ export const translations: Record<Language, Translations> = {
       bioSortNewest: 'Plus récentes',
       bioSortOldest: 'Plus anciennes',
       bioSortRecentlyPublished: 'Récemment publiées',
+      bioSortMostViews: 'Plus vues',
       bioColTitle: 'Titre',
       bioColAuthor: 'Auteur',
       bioColType: 'Type',
       bioColStatus: 'Statut',
+      bioColViews: 'Vues',
       bioColCreated: 'Créée',
       bioColPublished: 'Publiée',
       bioColActions: 'Actions',
@@ -7181,10 +7189,12 @@ export const translations: Record<Language, Translations> = {
       bioSortNewest: 'Neueste zuerst',
       bioSortOldest: 'Älteste zuerst',
       bioSortRecentlyPublished: 'Zuletzt veröffentlicht',
+      bioSortMostViews: 'Meiste Aufrufe',
       bioColTitle: 'Titel',
       bioColAuthor: 'Autor',
       bioColType: 'Typ',
       bioColStatus: 'Status',
+      bioColViews: 'Aufrufe',
       bioColCreated: 'Erstellt',
       bioColPublished: 'Veröffentlicht',
       bioColActions: 'Aktionen',

@@ -45,6 +45,7 @@ export interface AdminBiographyRow {
   published_at: string | null;
   is_frozen: boolean;
   ai_screening_status?: string | null;
+  view_count: number;
 }
 
 interface SectionPreview {
