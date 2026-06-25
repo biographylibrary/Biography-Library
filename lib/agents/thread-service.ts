@@ -1,5 +1,9 @@
 import { SupabaseClient } from '@supabase/supabase-js';
 import type { AgentType } from './models';
+import {
+  buildBiographyNarrativeContext,
+  type BiographyNarrativeContext,
+} from '@/lib/biography-narrative-context';
 import { threadAgentTypeForStorage, echoStorageTypesForLookup } from './echo-thread-storage';
 import {
   AGENT_CONTEXT_MESSAGE_LIMIT,
@@ -340,10 +344,15 @@ export async function verifyBiographyOwnership(
   serviceClient: SupabaseClient,
   biographyId: string,
   userId: string
-): Promise<{ ok: boolean; biography_mode?: string; status?: string }> {
+): Promise<{
+  ok: boolean;
+  biography_mode?: string;
+  status?: string;
+  narrative?: BiographyNarrativeContext;
+}> {
   const { data } = await serviceClient
     .from('biographies')
-    .select('user_id, biography_mode, status')
+    .select('user_id, biography_mode, status, biography_type, subject_name, title, author_name')
     .eq('id', biographyId)
     .maybeSingle();
 
@@ -353,5 +362,6 @@ export async function verifyBiographyOwnership(
     ok: true,
     biography_mode: (data as { biography_mode?: string }).biography_mode,
     status: (data as { status?: string }).status,
+    narrative: buildBiographyNarrativeContext(data as Parameters<typeof buildBiographyNarrativeContext>[0]),
   };
 }

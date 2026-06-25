@@ -22,6 +22,11 @@ import {
 } from '@/lib/agents/rag/kb-rag';
 import { buildAgentContext } from '@/lib/agents/thread-memory';
 import { BIOGRAPHY_SECTIONS } from '@/lib/editor-constants';
+import {
+  buildMemorialNarrativeBlock,
+  isMemorialNarrative,
+  type BiographyNarrativeContext,
+} from '@/lib/biography-narrative-context';
 
 export type AgentChatRequest = {
   agentType: AgentType;
@@ -125,6 +130,11 @@ function sectionTitleFor(locale: string, sectionKey: string): string {
   return titles[sectionKey] ?? BIOGRAPHY_SECTIONS.find((s) => s.key === sectionKey)?.title ?? sectionKey;
 }
 
+function appendMemorialBlock(systemPrompt: string, narrative: BiographyNarrativeContext | undefined, locale: string): string {
+  if (!narrative || !isMemorialNarrative(narrative)) return systemPrompt;
+  return systemPrompt + buildMemorialNarrativeBlock(narrative, locale);
+}
+
 export async function prepareAgentTurn(
   userId: string,
   payload: AgentChatRequest
@@ -166,61 +176,61 @@ export async function prepareAgentTurn(
         message: REVIEWER_UNAVAILABLE[locale] ?? REVIEWER_UNAVAILABLE.en,
       };
     }
-  }
 
-  const thread = await getOrCreateThread(serviceClient, {
-    userId,
-    agentType,
-    biographyId: biographyId ?? null,
-    locale,
-  });
-
-  const { history, memoryBlock } = await buildAgentContext(serviceClient, thread);
-
-  if (agentType === 'biography_coach' && biographyId) {
-    const sectionKey = activeSection ?? 'childhood';
-    if (!BIOGRAPHY_SECTIONS.some((s) => s.key === sectionKey)) {
-      return { ok: false, status: 400, error: 'Invalid activeSection' };
-    }
-
-    try {
-      await indexBiography(serviceClient, biographyId);
-    } catch (err) {
-      console.warn('[agents] indexBiography failed:', err);
-    }
-
-    let ragContext = '';
-    try {
-      ragContext = await retrieveBiographyContext(serviceClient, biographyId, message, 4);
-    } catch (err) {
-      console.warn('[agents] retrieveBiographyContext failed:', err);
-    }
-
-    const title = sectionTitleFor(locale, sectionKey);
-    let systemPrompt = buildCoachSystemPrompt(locale, sectionKey, title);
-    if (memoryBlock) {
-      systemPrompt += memoryBlock;
-    }
-    if (ragContext) {
-      systemPrompt += `\n\nRelevant excerpts from this biography (for context only):\n${ragContext}`;
-    }
-
-    return {
-      ok: true,
-      threadId: thread.id,
-      history,
-      userMessage: message,
-      locale,
-      systemPrompt,
-      role: 'coach',
-      agentType,
-      tools: COACH_TOOL_DEFINITIONS,
-      biographyId,
+    const thread = await getOrCreateThread(serviceClient, {
       userId,
-    };
-  }
+      agentType,
+      biographyId: biographyId ?? null,
+      locale,
+    });
 
-  if (agentType === 'publication_reviewer' && biographyId) {
+    const { history, memoryBlock } = await buildAgentContext(serviceClient, thread);
+
+    if (agentType === 'biography_coach') {
+      const sectionKey = activeSection ?? 'childhood';
+      if (!BIOGRAPHY_SECTIONS.some((s) => s.key === sectionKey)) {
+        return { ok: false, status: 400, error: 'Invalid activeSection' };
+      }
+
+      try {
+        await indexBiography(serviceClient, biographyId);
+      } catch (err) {
+        console.warn('[agents] indexBiography failed:', err);
+      }
+
+      let ragContext = '';
+      try {
+        ragContext = await retrieveBiographyContext(serviceClient, biographyId, message, 4);
+      } catch (err) {
+        console.warn('[agents] retrieveBiographyContext failed:', err);
+      }
+
+      const title = sectionTitleFor(locale, sectionKey);
+      let systemPrompt = buildCoachSystemPrompt(locale, sectionKey, title, ownership.narrative);
+      systemPrompt = appendMemorialBlock(systemPrompt, ownership.narrative, locale);
+      if (memoryBlock) {
+        systemPrompt += memoryBlock;
+      }
+      if (ragContext) {
+        systemPrompt += `\n\nRelevant excerpts from this biography (for context only):\n${ragContext}`;
+      }
+
+      return {
+        ok: true,
+        threadId: thread.id,
+        history,
+        userMessage: message,
+        locale,
+        systemPrompt,
+        role: 'coach',
+        agentType,
+        tools: COACH_TOOL_DEFINITIONS,
+        biographyId,
+        userId,
+      };
+    }
+
+    // publication_reviewer
     try {
       await indexBiography(serviceClient, biographyId);
     } catch (err) {
@@ -257,10 +267,20 @@ export async function prepareAgentTurn(
     };
   }
 
+  const thread = await getOrCreateThread(serviceClient, {
+    userId,
+    agentType,
+    biographyId: biographyId ?? null,
+    locale,
+  });
+
+  const { history, memoryBlock } = await buildAgentContext(serviceClient, thread);
+
   if (agentType === 'echo') {
     const echoPage = payload.echoPage ?? 'hub';
     let biographyMode: 'sections' | 'freeflow' | undefined;
     let publicationStatus: string | undefined;
+    let narrative: BiographyNarrativeContext | undefined;
 
     if (biographyId) {
       const ownership = await verifyBiographyOwnership(serviceClient, biographyId, userId);
@@ -269,6 +289,7 @@ export async function prepareAgentTurn(
       }
       biographyMode = ownership.biography_mode as 'sections' | 'freeflow' | undefined;
       publicationStatus = ownership.status;
+      narrative = ownership.narrative;
 
       try {
         await indexBiography(serviceClient, biographyId);
@@ -303,7 +324,10 @@ export async function prepareAgentTurn(
       biographyMode,
       publicationStatus,
       onboardingIncomplete: payload.onboardingIncomplete,
+      narrative,
     });
+
+    systemPrompt = appendMemorialBlock(systemPrompt, narrative, locale);
 
     if (memoryBlock) {
       systemPrompt += memoryBlock;
@@ -318,14 +342,25 @@ export async function prepareAgentTurn(
 
     if (echoPage === 'editor_sections' && biographyId && activeSection) {
       const title = sectionTitleFor(locale, activeSection);
+      const writerLabel =
+        narrative && isMemorialNarrative(narrative)
+          ? `The writer (${narrative.writerName || 'author'}) is documenting ${narrative.subjectName}`
+          : 'The author';
       systemPrompt +=
         `\n\n=== ACTIVE SECTION (mandatory) ===\n` +
-        `The author is currently on chapter: "${title}" (sectionKey: ${activeSection}).\n` +
+        `${writerLabel} is currently on chapter: "${title}" (sectionKey: ${activeSection}).\n` +
         `They selected this chapter in the sidebar — do NOT ask which chapter to work on.\n` +
         `All coaching, questions, and drafts must focus on "${title}" unless they explicitly request another section.\n` +
         `When using propose_draft, use sectionKey: ${activeSection}.\n` +
         `=== END ACTIVE SECTION ===`;
     }
+
+    const echoRole: AgentRole =
+      echoPage === 'editor_sections' ||
+      echoPage === 'editor_freeflow' ||
+      echoPage === 'publication'
+        ? 'coach'
+        : 'onboarding';
 
     return {
       ok: true,
@@ -334,7 +369,7 @@ export async function prepareAgentTurn(
       userMessage: message,
       locale,
       systemPrompt,
-      role: 'onboarding',
+      role: echoRole,
       agentType,
       tools: getEchoToolsForContext({
         echoPage,

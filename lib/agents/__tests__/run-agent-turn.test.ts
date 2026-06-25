@@ -7,6 +7,7 @@ const maybeCompressThreadMemory = vi.fn().mockResolvedValue(undefined);
 const chat = vi.fn();
 const chatStream = vi.fn();
 const executeCoachTool = vi.fn();
+const executeEchoTool = vi.fn();
 
 vi.mock('@/lib/agents/thread-service', () => ({
   appendMessage: (...args: unknown[]) => appendMessage(...args),
@@ -16,10 +17,14 @@ vi.mock('@/lib/agents/thread-memory', () => ({
   maybeCompressThreadMemory: (...args: unknown[]) => maybeCompressThreadMemory(...args),
 }));
 
-vi.mock('@/lib/agents/infomaniak-client', () => ({
-  chat: (...args: unknown[]) => chat(...args),
-  chatStream: (...args: unknown[]) => chatStream(...args),
-}));
+vi.mock('@/lib/agents/infomaniak-client', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@/lib/agents/infomaniak-client')>();
+  return {
+    ...actual,
+    chat: (...args: unknown[]) => chat(...args),
+    chatStream: (...args: unknown[]) => chatStream(...args),
+  };
+});
 
 vi.mock('@/lib/agents/tools/coach-tools', () => ({
   executeCoachTool: (...args: unknown[]) => executeCoachTool(...args),
@@ -30,7 +35,7 @@ vi.mock('@/lib/agents/tools/reviewer-tools', () => ({
 }));
 
 vi.mock('@/lib/agents/tools/echo-tools', () => ({
-  executeEchoTool: vi.fn(),
+  executeEchoTool: (...args: unknown[]) => executeEchoTool(...args),
 }));
 
 const preparedBase: PreparedAgentTurn = {
@@ -88,7 +93,7 @@ describe('runStreamingAgentTurn', () => {
           },
         ],
       })
-      .mockResolvedValueOnce({ content: 'Here is a refined draft for childhood.' });
+      .mockResolvedValueOnce({ content: '' });
 
     executeCoachTool.mockResolvedValue({
       content: '{"preview":"Once upon a time..."}',
@@ -112,5 +117,52 @@ describe('runStreamingAgentTurn', () => {
     );
     expect(events.some((e) => e.event === 'done')).toBe(true);
     expect(appendMessage).toHaveBeenCalled();
+  });
+
+  it('uses draft acknowledgment when model returns only propose_draft tool without text', async () => {
+    const echoPrepared: PreparedAgentTurn = {
+      ...preparedBase,
+      agentType: 'echo',
+      locale: 'it',
+    };
+
+    chat
+      .mockResolvedValueOnce({
+        content: '',
+        tool_calls: [
+          {
+            id: 'tc-1',
+            type: 'function',
+            function: {
+              name: 'propose_draft',
+              arguments: '{"sectionKey":"childhood","draftText":"Era una bella infanzia."}',
+            },
+          },
+        ],
+      })
+      .mockResolvedValueOnce({ content: '' })
+      .mockResolvedValueOnce({ content: '' });
+
+    executeEchoTool.mockResolvedValue({
+      content: '{"ok":true,"preview":true}',
+      event: {
+        tool: 'propose_draft',
+        sectionKey: 'childhood',
+        draftText: 'Era una bella infanzia.',
+        preview: true,
+      },
+    });
+
+    async function* emptyStream() {
+      yield { type: 'done' };
+    }
+    chatStream.mockReturnValue(emptyStream());
+
+    await runStreamingAgentTurn(echoPrepared, serviceClient, send);
+
+    expect(events.some((e) => e.event === 'token' && (e.data as { content: string }).content.includes('bozza'))).toBe(
+      true
+    );
+    expect(events.some((e) => e.event === 'done')).toBe(true);
   });
 });

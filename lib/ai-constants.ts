@@ -1,3 +1,9 @@
+import {
+  adaptMemorialPrompts,
+  isMemorialNarrative,
+  type BiographyNarrativeContext,
+} from '@/lib/biography-narrative-context';
+
 export interface AiSuggestion {
   id: string;
   original: string;
@@ -532,8 +538,18 @@ const ALL_FALLBACK_PROMPTS: Record<string, Record<string, AiPrompt[]>> = {
   de: FALLBACK_PROMPTS_DE,
 };
 
-export function getFallbackPrompts(language: string = 'en'): Record<string, AiPrompt[]> {
-  return ALL_FALLBACK_PROMPTS[language] || ALL_FALLBACK_PROMPTS['en'];
+export function getFallbackPrompts(
+  language: string = 'en',
+  narrativeCtx?: BiographyNarrativeContext
+): Record<string, AiPrompt[]> {
+  const base = ALL_FALLBACK_PROMPTS[language] || ALL_FALLBACK_PROMPTS['en'];
+  if (!narrativeCtx || !isMemorialNarrative(narrativeCtx)) return base;
+
+  const adapted: Record<string, AiPrompt[]> = {};
+  for (const [key, prompts] of Object.entries(base)) {
+    adapted[key] = adaptMemorialPrompts(prompts, narrativeCtx, language);
+  }
+  return adapted;
 }
 
 export const FALLBACK_PROMPTS = FALLBACK_PROMPTS_EN;

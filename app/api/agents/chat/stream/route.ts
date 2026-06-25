@@ -105,6 +105,7 @@ export async function POST(req: NextRequest) {
             tools: prepared.tools,
             biographyId: prepared.biographyId,
             userId: prepared.userId,
+            locale: prepared.locale,
             echoPage: prepared.echoPage,
             biographyMode: prepared.biographyMode,
           },

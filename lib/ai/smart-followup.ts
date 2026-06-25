@@ -1,4 +1,15 @@
 import { callAI } from './ai-client';
+import type { BiographyNarrativeContext } from '@/lib/biography-narrative-context';
+import { isMemorialNarrative } from '@/lib/biography-narrative-context';
+
+function memorialPayload(narrative?: BiographyNarrativeContext): Record<string, string> {
+  if (!narrative || !isMemorialNarrative(narrative)) return {};
+  return {
+    biographyType: 'memorial',
+    subjectName: narrative.subjectName,
+    writerName: narrative.writerName,
+  };
+}
 
 export interface ConversationHistory {
   question: string;
@@ -52,7 +63,8 @@ export async function analyzeAndRespond(
   question: string,
   conversationHistory: ConversationHistory[],
   language: string,
-  hasHadFollowUp: boolean
+  hasHadFollowUp: boolean,
+  narrative?: BiographyNarrativeContext
 ): Promise<AnalysisResult> {
   try {
     const result = await callAI({
@@ -61,6 +73,7 @@ export async function analyzeAndRespond(
       originalQuestion: question,
       conversationHistory,
       language,
+      ...memorialPayload(narrative),
     });
 
     return {

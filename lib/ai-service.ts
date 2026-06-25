@@ -1,6 +1,7 @@
 import type { AiSuggestion, AiPrompt } from './ai-constants';
 import { aiService, AiLimitError } from './ai/ai-provider';
 import { callAI } from './ai/ai-client';
+import type { BiographyNarrativeContext } from '@/lib/biography-narrative-context';
 
 export { AiLimitError };
 
@@ -52,9 +53,10 @@ export async function checkGrammar(
 export async function getGuidedPrompts(
   sectionKey: string,
   sectionTitle: string,
-  language: string = 'en'
+  language: string = 'en',
+  narrative?: BiographyNarrativeContext
 ): Promise<AiPrompt[]> {
-  return await aiService.getGuidedPrompts(sectionKey, sectionTitle, language);
+  return await aiService.getGuidedPrompts(sectionKey, sectionTitle, language, narrative);
 }
 
 export async function getSummary(
