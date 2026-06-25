@@ -518,7 +518,7 @@ export function EchoChatProvider({
         setLoading(false);
       }
 
-      if (streamOk && voiceOutputEnabled && fullReply) {
+      if (streamOk && fullReply && getEchoVoiceOutputEnabled()) {
         void speakEchoReply(fullReply, language, {
           accessToken: session.access_token,
           onStart: () => setOrb('speaking'),
