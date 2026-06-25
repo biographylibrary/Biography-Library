@@ -574,6 +574,21 @@ export interface Translations {
     reportTypeImpersonation: string;
     reportTypeCopyright: string;
     reportTypeOther: string;
+    writtenIn: string;
+    contentRightsNoticeAriaLabel: string;
+    contentRightsNoticeParagraph1: string;
+    contentRightsNoticeParagraph2: string;
+    pdfOriginalLanguage: string;
+    downloadsUnavailable: string;
+    languageSwitcher: string;
+    showOriginal: string;
+    readInLanguage: string;
+    translating: string;
+    translationFailed: string;
+    languageNameEn: string;
+    languageNameIt: string;
+    languageNameFr: string;
+    languageNameDe: string;
   };
   footer: {
     hostedInSwitzerland: string;
@@ -2040,6 +2055,24 @@ export const translations: Record<Language, Translations> = {
       reportTypeImpersonation: 'False identity',
       reportTypeCopyright: 'Copyright violation',
       reportTypeOther: 'Other',
+      writtenIn: 'Written in {language}',
+      contentRightsNoticeAriaLabel: 'Copyright and AI use notice',
+      contentRightsNoticeParagraph1:
+        'The text of this biography is the exclusive property of the author, who retains every right to take action against any unauthorized use, including use for training artificial intelligence systems.',
+      contentRightsNoticeParagraph2:
+        'Biography Library prohibits the use of content hosted on its servers for text mining, AI training, or machine learning, pursuant to the Swiss Copyright Act (CopA) and the author\'s exclusive right of use under Swiss law.',
+      pdfOriginalLanguage: 'PDF available only in the original language ({language})',
+      downloadsUnavailable:
+        'Word and plain-text downloads are not available for this biography. You can still use the PDF button above.',
+      languageSwitcher: 'Reading language',
+      showOriginal: 'Original',
+      readInLanguage: 'Read in {language}',
+      translating: 'Translating…',
+      translationFailed: 'Translation failed. Please try again.',
+      languageNameEn: 'English',
+      languageNameIt: 'Italian',
+      languageNameFr: 'French',
+      languageNameDe: 'German',
     },
     footer: {
       hostedInSwitzerland: 'Biography Library - Hosted in Switzerland',
@@ -3512,6 +3545,24 @@ export const translations: Record<Language, Translations> = {
       reportTypeImpersonation: 'Falsa identit\u00e0',
       reportTypeCopyright: 'Violazione del copyright',
       reportTypeOther: 'Altro',
+      writtenIn: 'Scritta in {language}',
+      contentRightsNoticeAriaLabel: 'Avviso copyright e uso IA',
+      contentRightsNoticeParagraph1:
+        'Il testo di questa biografia è proprietà esclusiva dell\'autore, che mantiene ogni diritto di agire contro qualsiasi uso non autorizzato, incluso l\'uso per addestramento di sistemi di IA.',
+      contentRightsNoticeParagraph2:
+        'Biography Library vieta l\'uso dei contenuti ospitati sui propri server per text mining, addestramento IA o machine learning, ai sensi della Legge svizzera sul diritto d\'autore (LDA) e del diritto esclusivo d\'uso dell\'autore previsto dal diritto svizzero.',
+      pdfOriginalLanguage: 'PDF disponibile solo nella lingua originale ({language})',
+      downloadsUnavailable:
+        'I download Word e testo semplice non sono disponibili per questa biografia. Puoi comunque usare il pulsante PDF sopra.',
+      languageSwitcher: 'Lingua di lettura',
+      showOriginal: 'Originale',
+      readInLanguage: 'Leggi in {language}',
+      translating: 'Traduzione in corso…',
+      translationFailed: 'Traduzione non riuscita. Riprova.',
+      languageNameEn: 'inglese',
+      languageNameIt: 'italiano',
+      languageNameFr: 'francese',
+      languageNameDe: 'tedesco',
     },
     footer: {
       hostedInSwitzerland: 'Biography Library - Ospitato in Svizzera',
@@ -4984,6 +5035,24 @@ export const translations: Record<Language, Translations> = {
       reportTypeImpersonation: 'Fausse identit\u00e9',
       reportTypeCopyright: 'Violation du droit d\'auteur',
       reportTypeOther: 'Autre',
+      writtenIn: 'Écrite en {language}',
+      contentRightsNoticeAriaLabel: 'Avis de droit d\'auteur et d\'usage IA',
+      contentRightsNoticeParagraph1:
+        'Le texte de cette biographie est la propriété exclusive de l\'auteur, qui conserve tout droit d\'agir contre toute utilisation non autorisée, y compris pour l\'entraînement de systèmes d\'intelligence artificielle.',
+      contentRightsNoticeParagraph2:
+        'Biography Library interdit l\'utilisation des contenus hébergés sur ses serveurs pour le text mining, l\'entraînement IA ou le machine learning, conformément à la loi suisse sur le droit d\'auteur (LDA) et au droit exclusif d\'usage de l\'auteur prévu par le droit suisse.',
+      pdfOriginalLanguage: 'PDF disponible uniquement dans la langue originale ({language})',
+      downloadsUnavailable:
+        'Les téléchargements Word et texte brut ne sont pas disponibles pour cette biographie. Vous pouvez toujours utiliser le bouton PDF ci-dessus.',
+      languageSwitcher: 'Langue de lecture',
+      showOriginal: 'Original',
+      readInLanguage: 'Lire en {language}',
+      translating: 'Traduction en cours…',
+      translationFailed: 'Échec de la traduction. Veuillez réessayer.',
+      languageNameEn: 'anglais',
+      languageNameIt: 'italien',
+      languageNameFr: 'français',
+      languageNameDe: 'allemand',
     },
     footer: {
       hostedInSwitzerland: 'Biography Library - H\u00e9berg\u00e9 en Suisse',
@@ -6456,6 +6525,24 @@ export const translations: Record<Language, Translations> = {
       reportTypeImpersonation: 'Falsche Identit\u00e4t',
       reportTypeCopyright: 'Urheberrechtsverletzung',
       reportTypeOther: 'Sonstiges',
+      writtenIn: 'Geschrieben in {language}',
+      contentRightsNoticeAriaLabel: 'Hinweis zu Urheberrecht und KI-Nutzung',
+      contentRightsNoticeParagraph1:
+        'Der Text dieser Biografie ist ausschliessliches Eigentum der Autorin oder des Autors, die oder der jedes Recht behält, gegen jede unbefugte Nutzung vorzugehen, einschliesslich der Nutzung zum Training von KI-Systemen.',
+      contentRightsNoticeParagraph2:
+        'Biography Library untersagt die Nutzung der auf seinen Servern gehosteten Inhalte für Text Mining, KI-Training oder Machine Learning gemäss dem schweizerischen Urheberrechtsgesetz (URG) und dem ausschliesslichen Nutzungsrecht der Autorin oder des Autors nach schweizerischem Recht.',
+      pdfOriginalLanguage: 'PDF nur in der Originalsprache verfügbar ({language})',
+      downloadsUnavailable:
+        'Word- und Text-Downloads sind für diese Biografie nicht verfügbar. Sie können weiterhin die PDF-Schaltfläche oben verwenden.',
+      languageSwitcher: 'Lesesprache',
+      showOriginal: 'Original',
+      readInLanguage: 'Auf {language} lesen',
+      translating: 'Übersetzung läuft…',
+      translationFailed: 'Übersetzung fehlgeschlagen. Bitte erneut versuchen.',
+      languageNameEn: 'Englisch',
+      languageNameIt: 'Italienisch',
+      languageNameFr: 'Französisch',
+      languageNameDe: 'Deutsch',
     },
     footer: {
       hostedInSwitzerland: 'Biography Library - Gehostet in der Schweiz',

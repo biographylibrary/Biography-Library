@@ -35,6 +35,8 @@ Sviluppato da **Biography Library Association** (Lugano, CH). Licenza **AGPL v3*
 - UI multilingue (EN, IT, FR, DE); ogni biografia nella propria lingua
 - Privacy: privato / solo link / pubblico
 - Pannello admin e PWA installabile
+- Traduzione lettore on-demand (HTML view): prima richiesta via AI, risultato persistito in DB per lettori successivi; PDF sempre nella lingua originale
+- Avviso copyright e divieto uso IA su pagine lettore pubbliche e a invito
 
 ---
 
@@ -44,7 +46,8 @@ Sviluppato da **Biography Library Association** (Lugano, CH). Licenza **AGPL v3*
 - Social network / feed / commenti pubblici
 - App mobile nativa (solo PWA)
 - Hosting self-service multi-tenant per terzi
-- Traduzione automatica dell'intera biografia tra lingue
+- Traduzione automatica al momento della pubblicazione (la traduzione avviene solo on-demand dal lettore)
+- Traduzione del PDF ufficiale in lingue diverse dall'originale
 
 ---
 
