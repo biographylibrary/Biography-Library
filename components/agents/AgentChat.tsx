@@ -23,8 +23,6 @@ export interface AgentChatProps {
   className?: string;
   emptyState?: string;
   loadHistory?: boolean;
-  /** Help chat: retry via help-assistant edge if agent stream fails */
-  fallbackToHelpEdge?: boolean;
   /** Coach chat: retry via ai-assistant edge if agent stream fails */
   fallbackToCoachEdge?: boolean;
   sectionTitle?: string;
@@ -39,7 +37,6 @@ export function AgentChat({
   className,
   emptyState,
   loadHistory = false,
-  fallbackToHelpEdge = false,
   fallbackToCoachEdge = false,
   sectionTitle,
   onDraftApplied,
@@ -114,24 +111,6 @@ export function AgentChat({
 
     const tryEdgeFallback = async (): Promise<boolean> => {
       if (!session?.access_token) return false;
-
-      if (fallbackToHelpEdge && agentType === 'platform_guide') {
-        try {
-          const { askHelpBot } = await import('@/lib/help/help-service');
-          const result = await askHelpBot(trimmed, language, session.access_token);
-          setMessages((prev) =>
-            prev.map((m) =>
-              m.id === assistantId
-                ? { ...m, content: result.answer, streaming: false }
-                : m
-            )
-          );
-          setError(null);
-          return true;
-        } catch {
-          return false;
-        }
-      }
 
       if (
         fallbackToCoachEdge &&
@@ -230,7 +209,6 @@ export function AgentChat({
     activeSection,
     language,
     threadId,
-    fallbackToHelpEdge,
     fallbackToCoachEdge,
     sectionTitle,
     onDraftApplied,

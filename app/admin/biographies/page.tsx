@@ -5,8 +5,6 @@ import { useSearchParams } from 'next/navigation';
 import { BookOpen, Search, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useTranslation } from '@/lib/i18n/i18n-context';
 import { supabase } from '@/lib/supabase';
-import { AdminGuard } from '@/components/admin/AdminGuard';
-import { AdminNav } from '@/components/admin/AdminNav';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
@@ -192,10 +190,7 @@ function AdminBiographiesContent() {
   }
 
   return (
-    <div className="min-h-full bg-background">
-      <AdminNav />
-
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+    <>
         <div className="flex items-center gap-3 mb-8">
           <div className="p-2.5 rounded-xl bg-[#C4DAEB] dark:bg-[#C4DAEB]/20 shrink-0">
             <BookOpen className="h-5 w-5 text-[#121212] dark:text-[#FDFBF7]" />
@@ -383,7 +378,6 @@ function AdminBiographiesContent() {
             </Button>
           </div>
         )}
-      </div>
 
       <BiographyDetailPanel
         biography={selectedBio}
@@ -393,14 +387,10 @@ function AdminBiographiesContent() {
           setSelectedBio(null);
         }}
       />
-    </div>
+    </>
   );
 }
 
 export default function AdminBiographiesPage() {
-  return (
-    <AdminGuard>
-      <AdminBiographiesContent />
-    </AdminGuard>
-  );
+  return <AdminBiographiesContent />;
 }

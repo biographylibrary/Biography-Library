@@ -1,12 +1,9 @@
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
-import { useRouter } from 'next/navigation';
 import { BrainCircuit, Info } from 'lucide-react';
 import { useTranslation } from '@/lib/i18n/i18n-context';
-import { useAuth } from '@/lib/auth-context';
 import { supabase } from '@/lib/supabase';
-import { AdminNav } from '@/components/admin/AdminNav';
 import {
   Select,
   SelectContent,
@@ -93,7 +90,6 @@ function SectionHeading({ children }: { children: React.ReactNode }) {
 
 function AiStatsContent() {
   const { t } = useTranslation();
-  const { role } = useAuth();
 
   const [filter, setFilter] = useState<TimeFilter>('last7');
   const [loading, setLoading] = useState(false);
@@ -224,10 +220,7 @@ function AiStatsContent() {
   const maxActionCount = actionStats[0]?.count ?? 1;
 
   return (
-    <div className="min-h-full bg-background">
-      <AdminNav />
-
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+    <div className="max-w-5xl mx-auto">
         <div className="flex items-start justify-between gap-4 mb-8 flex-wrap">
           <div className="flex items-center gap-3">
             <div className="p-2.5 rounded-xl bg-[#C4DAEB] dark:bg-[#C4DAEB]/20 shrink-0">
@@ -427,57 +420,10 @@ function AiStatsContent() {
             </div>
           </div>
         </section>
-      </div>
     </div>
   );
 }
 
-function AdminOnlyGuard({ children }: { children: React.ReactNode }) {
-  const { user, role, loading } = useAuth();
-  const router = useRouter();
-  const [countdown, setCountdown] = useState(3);
-
-  const isAllowed = !loading && user && (role === 'admin' || role === 'super_admin');
-  const isDenied = !loading && !isAllowed;
-
-  useEffect(() => {
-    if (!isDenied) return;
-    const target = !user ? '/login' : '/admin';
-    const timer = setInterval(() => {
-      setCountdown((c) => {
-        if (c <= 1) {
-          clearInterval(timer);
-          router.replace(target);
-          return 0;
-        }
-        return c - 1;
-      });
-    }, 1000);
-    return () => clearInterval(timer);
-  }, [isDenied, user, router]);
-
-  if (loading) return null;
-
-  if (isDenied) {
-    return (
-      <div className="min-h-[60vh] flex items-center justify-center px-4">
-        <div className="text-center max-w-sm">
-          <p className="text-sm text-muted-foreground">
-            Access denied. Redirecting in{' '}
-            <span className="font-semibold tabular-nums text-foreground">{countdown}</span>s…
-          </p>
-        </div>
-      </div>
-    );
-  }
-
-  return <>{children}</>;
-}
-
 export default function AdminAiStatsPage() {
-  return (
-    <AdminOnlyGuard>
-      <AiStatsContent />
-    </AdminOnlyGuard>
-  );
+  return <AiStatsContent />;
 }

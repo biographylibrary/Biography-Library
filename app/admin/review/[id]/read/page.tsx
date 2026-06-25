@@ -5,8 +5,6 @@ import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { ArrowLeft, Loader2 } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
-import { AdminGuard } from '@/components/admin/AdminGuard';
-import { AdminNav } from '@/components/admin/AdminNav';
 import { Button } from '@/components/ui/button';
 import { useTranslation } from '@/lib/i18n/i18n-context';
 import { BIOGRAPHY_SECTIONS, type BiographyContent } from '@/lib/editor-constants';
@@ -160,14 +158,5 @@ function ReviewReadContent() {
 }
 
 export default function AdminReviewReadPage() {
-  return (
-    <AdminGuard>
-      <div className="min-h-screen bg-background flex flex-col">
-        <AdminNav />
-        <div className="flex-1">
-          <ReviewReadContent />
-        </div>
-      </div>
-    </AdminGuard>
-  );
+  return <ReviewReadContent />;
 }

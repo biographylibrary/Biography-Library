@@ -67,7 +67,7 @@ function varsWithDefaults(
     siteName,
     siteUrl,
     dashboardUrl: `${siteUrl}/dashboard`,
-    echoUrl: `${siteUrl}/echo`,
+    echoUrl: `${siteUrl}/dashboard`,
     loginUrl: `${siteUrl}/`,
     contactsUrl: 'https://biographylibrary.org/contacts',
     biographyTitle: String(vars.biographyTitle ?? ''),

@@ -709,6 +709,7 @@ export async function runReviewSubmitScreening(
         .update({
           status: 'assigned',
           assigned_to: errorReviewerId,
+          assigned_moderator_id: errorReviewerId,
           assigned_at: new Date().toISOString(),
         })
         .eq('id', (errorReport as any).id);
@@ -832,6 +833,7 @@ export async function runReviewSubmitScreening(
       .update({
         status: 'assigned',
         assigned_to: reviewerId,
+        assigned_moderator_id: reviewerId,
         assigned_at: new Date().toISOString(),
       })
       .eq('id', (newReport as any).id);

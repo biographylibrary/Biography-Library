@@ -44,7 +44,7 @@ export function EchoHeader({
     <header className="flex items-center justify-between gap-2 sm:gap-4 px-4 py-3 border-b bg-background/95 backdrop-blur shrink-0 min-w-0 overflow-hidden">
       <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1 overflow-hidden">
         <Link
-          href="/echo"
+          href="/dashboard"
           className="font-serif text-base sm:text-lg font-semibold shrink-0 truncate max-w-[7.5rem] sm:max-w-none"
         >
           Biography Library

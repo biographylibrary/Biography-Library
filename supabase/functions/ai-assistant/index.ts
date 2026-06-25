@@ -675,18 +675,30 @@ Deno.serve(async (req: Request) => {
       return errorResponse("Unauthorized", 401);
     }
 
-    const windowStart = new Date(Date.now() - RATE_WINDOW_MS).toISOString();
-    const { count } = await supabase
-      .from("ai_rate_limits")
-      .select("*", { count: "exact", head: true })
-      .eq("user_id", user.id)
-      .gte("created_at", windowStart);
+    const { data: staffProfile } = await supabase
+      .from("profiles")
+      .select("role")
+      .eq("id", user.id)
+      .maybeSingle();
 
-    if (count !== null && count >= RATE_LIMIT) {
-      return errorResponse(
-        "Rate limit exceeded. Please wait a moment before trying again.",
-        429
-      );
+    const isStaff = ["reviewer", "admin", "super_admin"].includes(
+      staffProfile?.role ?? ""
+    );
+
+    if (!isStaff) {
+      const windowStart = new Date(Date.now() - RATE_WINDOW_MS).toISOString();
+      const { count } = await supabase
+        .from("ai_rate_limits")
+        .select("*", { count: "exact", head: true })
+        .eq("user_id", user.id)
+        .gte("created_at", windowStart);
+
+      if (count !== null && count >= RATE_LIMIT) {
+        return errorResponse(
+          "Rate limit exceeded. Please wait a moment before trying again.",
+          429
+        );
+      }
     }
 
     const body = await req.json();
@@ -725,20 +737,22 @@ Deno.serve(async (req: Request) => {
 
     const actionCost = HEAVY_ACTIONS.has(action) ? 2 : 1;
 
-    const usageCheck = await checkAndIncrementUsage(supabase, user.id, actionCost);
-    if (!usageCheck.allowed) {
-      return errorResponse(
-        usageCheck.limitType === "daily"
-          ? `Daily limit reached. Resets at ${usageCheck.resetAt}`
-          : `Weekly limit reached. Resets at ${usageCheck.resetAt}`,
-        429,
-        {
-          limitType: usageCheck.limitType,
-          resetAt: usageCheck.resetAt,
-          dailyLimit: DAILY_LIMIT,
-          weeklyLimit: WEEKLY_LIMIT,
-        }
-      );
+    if (!isStaff) {
+      const usageCheck = await checkAndIncrementUsage(supabase, user.id, actionCost);
+      if (!usageCheck.allowed) {
+        return errorResponse(
+          usageCheck.limitType === "daily"
+            ? `Daily limit reached. Resets at ${usageCheck.resetAt}`
+            : `Weekly limit reached. Resets at ${usageCheck.resetAt}`,
+          429,
+          {
+            limitType: usageCheck.limitType,
+            resetAt: usageCheck.resetAt,
+            dailyLimit: DAILY_LIMIT,
+            weeklyLimit: WEEKLY_LIMIT,
+          }
+        );
+      }
     }
 
     let systemPrompt: string;

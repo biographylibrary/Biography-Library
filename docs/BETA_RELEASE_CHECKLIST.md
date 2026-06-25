@@ -60,7 +60,7 @@ Controllare che sul **processo che esegue Next** siano impostate (non committate
 ## 4. Deploy applicazione
 
 - [ ] Se modificato `docs/PLATFORM_KB.md`: `npm run kb:sync` + `npm run kb:sync:check` + `POST /api/agents/admin/seed-kb` (admin) per re-indicizzare RAG Echo
-- [ ] Edge Functions deployate se ci sono modifiche in `supabase/functions/` (incluso `help-assistant` se rigenerato `help-kb.generated.ts`)
+- [ ] Edge Functions deployate se ci sono modifiche in `supabase/functions/` (incluso `ai-assistant` per limiti staff)
 - [ ] Deploy Next: push su `main` che attiva il workflow, **oppure** procedura manuale documentata (git pull, build, restart container).
 - [ ] Risposta HTTP 200 sulla homepage e su una route API leggera se disponibile.
 

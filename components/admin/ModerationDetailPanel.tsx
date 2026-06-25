@@ -71,7 +71,10 @@ export function ModerationDetailPanel({ report, onClose, onRefresh }: Moderation
     setLockWarning(null);
     setConflictError(false);
 
-    if (report.status !== 'in_review' || report.assigned_moderator_id !== user.id) return;
+    if (report.status !== 'in_review' && report.status !== 'assigned') return;
+
+    const assignedId = report.assigned_moderator_id ?? report.assigned_to;
+    if (assignedId && assignedId !== user.id) return;
 
     claimReportReview(report.id, user.id).then((result) => {
       if (!result.claimed && result.error === null) {
@@ -90,8 +93,11 @@ export function ModerationDetailPanel({ report, onClose, onRefresh }: Moderation
 
   if (!report) return null;
 
-  const isAssignedToMe = report.assigned_moderator_id === user?.id;
+  const moderatorId = report.assigned_moderator_id ?? report.assigned_to;
+  const isAssignedToMe = moderatorId === user?.id;
   const isUnassigned = report.status === 'unassigned';
+  const needsTakeOwnership =
+    isUnassigned || (report.status === 'assigned' && isAssignedToMe);
   const canAct = report.status === 'in_review' && isAssignedToMe && !lockWarning;
   const isDecided = report.status === 'decided';
 
@@ -349,7 +355,7 @@ export function ModerationDetailPanel({ report, onClose, onRefresh }: Moderation
                 </p>
               )}
 
-              {isUnassigned && (
+              {needsTakeOwnership && (
                 <Button
                   className="w-full"
                   onClick={handleTakeOwnership}
@@ -359,7 +365,9 @@ export function ModerationDetailPanel({ report, onClose, onRefresh }: Moderation
                 </Button>
               )}
 
-              {report.status === 'in_review' && !isAssignedToMe && (
+              {(report.status === 'in_review' || report.status === 'assigned') &&
+                !isAssignedToMe &&
+                moderatorId && (
                 <p className="text-xs text-muted-foreground italic">{t.admin.assignedToOther}</p>
               )}
 

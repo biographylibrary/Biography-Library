@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase';
-import { useAuth } from '@/lib/auth-context';
+import { useAuth, ADMIN_ROLES } from '@/lib/auth-context';
 import { useTranslation } from '@/lib/i18n/i18n-context';
 import { cn } from '@/lib/utils';
 import { Sparkles } from 'lucide-react';
@@ -21,12 +21,13 @@ interface AiUsageIndicatorProps {
 }
 
 export function AiUsageIndicator({ refreshTrigger }: AiUsageIndicatorProps) {
-  const { user } = useAuth();
+  const { user, role } = useAuth();
   const { t } = useTranslation();
   const [usage, setUsage] = useState<UsageData | null>(null);
+  const isStaff = role != null && ADMIN_ROLES.includes(role);
 
   useEffect(() => {
-    if (!user) return;
+    if (!user || isStaff) return;
 
     const fetchUsage = async () => {
       const { data, error } = await supabase
@@ -41,7 +42,26 @@ export function AiUsageIndicator({ refreshTrigger }: AiUsageIndicatorProps) {
     };
 
     fetchUsage();
-  }, [user, refreshTrigger]);
+  }, [user, refreshTrigger, isStaff]);
+
+  if (isStaff) {
+    return (
+      <TooltipProvider>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <div className="flex items-center gap-2 px-2 py-1 rounded-md hover:bg-muted/50 transition-colors cursor-default select-none shrink-0">
+              <Sparkles className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+              <span className="text-xs font-medium text-muted-foreground">{t.aiUsage.unlimited}</span>
+            </div>
+          </TooltipTrigger>
+          <TooltipContent side="bottom" className="max-w-[200px]">
+            <p className="font-medium text-xs">{t.aiUsage.usageIndicatorTitle}</p>
+            <p className="text-xs text-muted-foreground mt-1">{t.aiUsage.unlimited}</p>
+          </TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
+    );
+  }
 
   if (!usage) return null;
 

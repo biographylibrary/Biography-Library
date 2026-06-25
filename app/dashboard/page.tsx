@@ -32,17 +32,8 @@ export default function DashboardPage() {
   const [isDeleting, setIsDeleting] = useState(false);
   const [resendLoading, setResendLoading] = useState(false);
   const [resendSuccess, setResendSuccess] = useState(false);
-  const [mounted, setMounted] = useState(false);
-  const [needsWelcome, setNeedsWelcome] = useState(false);
   const [deleteError, setDeleteError] = useState<string | null>(null);
   const { t, language } = useTranslation();
-
-  useEffect(() => {
-    setMounted(true);
-    if (!localStorage.getItem('hasSeenWelcome')) {
-      setNeedsWelcome(true);
-    }
-  }, []);
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -107,12 +98,6 @@ export default function DashboardPage() {
   };
 
 
-  useEffect(() => {
-    if (needsWelcome && user && mounted) {
-      router.replace('/onboarding');
-    }
-  }, [needsWelcome, user, mounted, router]);
-
   const handleResendVerification = async () => {
     if (!user?.email) return;
     setResendLoading(true);
@@ -122,18 +107,10 @@ export default function DashboardPage() {
     setResendSuccess(true);
   };
 
-  if (!mounted || authLoading || !user) {
+  if (authLoading || !user) {
     return (
       <div className="h-full flex items-center justify-center bg-[#ECE9E4] dark:bg-[#1F2121]">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
-      </div>
-    );
-  }
-
-  if (needsWelcome) {
-    return (
-      <div className="h-full flex items-center justify-center">
-        <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
       </div>
     );
   }

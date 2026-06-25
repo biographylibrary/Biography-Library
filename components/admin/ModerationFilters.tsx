@@ -35,6 +35,7 @@ export function ModerationFilters({ filters, onChange }: ModerationFiltersProps)
           <SelectContent>
             <SelectItem value="all">{t.admin.filterAll}</SelectItem>
             <SelectItem value="unassigned">{t.admin.statusUnassigned}</SelectItem>
+            <SelectItem value="assigned">{t.admin.statusAssigned}</SelectItem>
             <SelectItem value="in_review">{t.admin.statusInReview}</SelectItem>
             <SelectItem value="decided">{t.admin.statusDecided}</SelectItem>
           </SelectContent>

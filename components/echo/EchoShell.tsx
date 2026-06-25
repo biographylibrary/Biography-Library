@@ -38,10 +38,8 @@ export function EchoShell({
   onSectionCompletionChanged,
 }: EchoShellProps) {
   const pathname = usePathname();
-  const isEchoHub = pathname === '/echo';
-  const page = isEchoHub
-    ? 'hub'
-    : biographyMode === 'freeflow'
+  const page =
+    biographyMode === 'freeflow'
       ? 'editor_freeflow'
       : biographyId
         ? 'editor_sections'
@@ -66,12 +64,12 @@ export function EchoShell({
           onSectionCompletionChanged={onSectionCompletionChanged}
         >
           {children}
-          <EchoBubbleGate show={showBubble && !isEchoHub} />
+          <EchoBubbleGate show={showBubble} />
         </EchoChatProvider>
       ) : (
         <>
           {children}
-          <EchoBubbleGate show={showBubble && !isEchoHub} />
+          <EchoBubbleGate show={showBubble} />
         </>
       )}
     </EchoProvider>
