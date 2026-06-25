@@ -462,3 +462,28 @@ For issues or questions:
 3. Review browser console for errors
 4. Check network requests for failed API calls
 5. Verify all environment variables are set correctly
+
+---
+
+## Demo catalogue (dev)
+
+Populate four public published biographies (IT, EN, FR, DE) for smoke-testing `/biographies` and `/biography/{slug}/view`.
+
+**Requirements:** `.env.local` with `NEXT_PUBLIC_SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` (dev project only).
+
+```bash
+node scripts/seed-demo-catalog.mjs
+```
+
+**Demo accounts** (password for all: `DemoCatalog2026!`):
+
+| Email | Slug | View URL |
+|-------|------|----------|
+| `demo-author-it@biographylibrary.test` | `demo-mia-storia-it` | `/biography/demo-mia-storia-it/view` |
+| `demo-author-en@biographylibrary.test` | `demo-my-story-en` | `/biography/demo-my-story-en/view` |
+| `demo-author-fr@biographylibrary.test` | `demo-mon-histoire-fr` | `/biography/demo-mon-histoire-fr/view` |
+| `demo-author-de@biographylibrary.test` | `demo-meine-geschichte-de` | `/biography/demo-meine-geschichte-de/view` |
+
+Catalogue: `/biographies`
+
+Do not run on production without explicit approval.

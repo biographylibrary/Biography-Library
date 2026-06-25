@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useParams, useSearchParams, useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 import { type BiographyContent } from '@/lib/editor-constants';
@@ -12,14 +12,25 @@ import {
 import { Button } from '@/components/ui/button';
 import { Logo } from '@/components/logo';
 import { ThemeToggle } from '@/components/theme-toggle';
-import { FileDown, Loader as Loader2, Lock, Info, Archive, Flag } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { FileDown, Loader as Loader2, Lock, Info, Archive, Flag, Languages } from 'lucide-react';
 import { useTranslation } from '@/lib/i18n/i18n-context';
+import { translations, type Language, type Translations } from '@/lib/i18n/translations';
 import { ReportBiographyModal } from '@/components/editor/ReportBiographyModal';
 import { useToast } from '@/hooks/use-toast';
 import { Toaster } from '@/components/ui/toaster';
 import { logger } from '@/lib/logger';
 import { memorialSubjectName } from '@/lib/biography-display';
+import { BiographySectionBody } from '@/components/biography/BiographySectionBody';
+import { BiographyContentRightsNotice } from '@/components/biography/BiographyContentRightsNotice';
+
+type ViewLanguage = 'en' | 'it' | 'fr' | 'de';
 
 interface BiographyViewData {
   id: string;
@@ -37,8 +48,9 @@ interface BiographyViewData {
   frozen_at: string | null;
   export_txt_url: string | null;
   export_docx_url: string | null;
-  /** Raster prima pagina PDF (catalogo); se assente si usa la foto copertina da biography_media */
   listing_cover_url?: string | null;
+  content_language?: string | null;
+  final_pdf_url?: string | null;
 }
 
 interface SectionWithDate {
@@ -51,7 +63,9 @@ interface SectionWithDate {
 type ViewError = 'not-found' | 'private' | 'invalid-token' | null;
 
 const BIOGRAPHY_VIEW_SELECT =
-  'id, title, subject_name, biography_type, author_name, content, visibility, status, share_token, created_at, published_at, is_frozen, frozen_at, export_txt_url, export_docx_url, listing_cover_url';
+  'id, title, subject_name, biography_type, author_name, content, visibility, status, share_token, created_at, published_at, is_frozen, frozen_at, export_txt_url, export_docx_url, listing_cover_url, content_language, final_pdf_url';
+
+const VIEW_LANGUAGES: ViewLanguage[] = ['en', 'it', 'fr', 'de'];
 
 function formatDate(dateStr: string, locale?: string): string {
   return new Date(dateStr).toLocaleDateString(locale, {
@@ -74,11 +88,32 @@ function isInReviewPeriod(biography: BiographyViewData): boolean {
   return new Date() < reviewEnd;
 }
 
+function isViewLanguage(value: string | null | undefined): value is ViewLanguage {
+  return !!value && VIEW_LANGUAGES.includes(value as ViewLanguage);
+}
+
+function languageLabel(lang: string, t: Translations): string {
+  const map: Record<string, string> = {
+    en: t.view.languageNameEn,
+    it: t.view.languageNameIt,
+    fr: t.view.languageNameFr,
+    de: t.view.languageNameDe,
+  };
+  return map[lang] ?? lang.toUpperCase();
+}
+
+function interpolate(template: string, values: Record<string, string>): string {
+  return Object.entries(values).reduce(
+    (acc, [key, value]) => acc.replace(new RegExp(`\\{${key}\\}`, 'g'), value),
+    template
+  );
+}
+
 export default function BiographyViewPage() {
   const params = useParams();
   const searchParams = useSearchParams();
   const router = useRouter();
-  const { t } = useTranslation();
+  const { t, language: uiLanguage } = useTranslation();
   const id = params.id as string;
   const token = searchParams.get('token');
 
@@ -89,10 +124,92 @@ export default function BiographyViewPage() {
   const [error, setError] = useState<ViewError>(null);
   const [reportOpen, setReportOpen] = useState(false);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+  const [loadedViaShareToken, setLoadedViaShareToken] = useState(false);
   const reportAutoOpenedRef = useRef(false);
   const [pdfLoading, setPdfLoading] = useState(false);
   const [pdfReady, setPdfReady] = useState<boolean | null>(null);
   const [coverImageUrl, setCoverImageUrl] = useState<string | null>(null);
+  const [resolvedBiographyId, setResolvedBiographyId] = useState<string | null>(null);
+  const [availableTargets, setAvailableTargets] = useState<ViewLanguage[]>([]);
+  const [readingLanguage, setReadingLanguage] = useState<'original' | ViewLanguage>('original');
+  const [translatedSections, setTranslatedSections] = useState<Record<string, Record<string, string>>>({});
+  const [translationLoading, setTranslationLoading] = useState(false);
+
+  const contentLanguage = isViewLanguage(biography?.content_language)
+    ? biography!.content_language!
+    : 'en';
+
+  const showRightsNotice =
+    !!biography &&
+    ((biography.visibility === 'public' && biography.status === 'published') || loadedViaShareToken);
+
+  const hasServerPdf =
+    biography?.status === 'published' && !!biography.final_pdf_url?.trim();
+
+  const sectionTitlePack =
+    readingLanguage === 'original'
+      ? translations[contentLanguage as Language]?.sectionTitles ?? t.sectionTitles
+      : translations[readingLanguage]?.sectionTitles ?? t.sectionTitles;
+
+  const fetchAvailableLanguages = useCallback(
+    async (bioId: string, shareToken: string | null) => {
+      const qs = shareToken ? `?shareToken=${encodeURIComponent(shareToken)}` : '';
+      try {
+        const res = await fetch(`/api/biography/${bioId}/available-languages${qs}`);
+        if (!res.ok) return;
+        const data = await res.json();
+        const targets = (data.availableTargets ?? []).filter(isViewLanguage) as ViewLanguage[];
+        setAvailableTargets(targets);
+      } catch {
+        /* optional */
+      }
+    },
+    []
+  );
+
+  const loadTranslation = useCallback(
+    async (bioId: string, targetLang: ViewLanguage, shareToken: string | null) => {
+      if (translatedSections[targetLang]) {
+        setReadingLanguage(targetLang);
+        return;
+      }
+
+      setTranslationLoading(true);
+      try {
+        const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+        const { data: sessionData } = await supabase.auth.getSession();
+        const accessToken = sessionData.session?.access_token;
+        if (accessToken) headers.Authorization = `Bearer ${accessToken}`;
+
+        const res = await fetch(`/api/biography/${bioId}/translate-view`, {
+          method: 'POST',
+          headers,
+          body: JSON.stringify({
+            targetLanguage: targetLang,
+            shareToken: shareToken ?? undefined,
+          }),
+        });
+
+        if (!res.ok) {
+          toast({ title: t.view.translationFailed, variant: 'destructive' });
+          return;
+        }
+
+        const data = await res.json();
+        const sections = data.sections as Record<string, string>;
+        setTranslatedSections((prev) => ({ ...prev, [targetLang]: sections }));
+        setAvailableTargets((prev) =>
+          prev.includes(targetLang) ? prev : [...prev, targetLang].sort()
+        );
+        setReadingLanguage(targetLang);
+      } catch {
+        toast({ title: t.view.translationFailed, variant: 'destructive' });
+      } finally {
+        setTranslationLoading(false);
+      }
+    },
+    [t.view.translationFailed, toast, translatedSections]
+  );
 
   useEffect(() => {
     const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -109,6 +226,10 @@ export default function BiographyViewPage() {
 
     const load = async () => {
       setIsLoading(true);
+      setLoadedViaShareToken(false);
+      setReadingLanguage('original');
+      setTranslatedSections({});
+      setAvailableTargets([]);
 
       const resolvedId = await resolveId();
       if (!resolvedId) {
@@ -116,40 +237,47 @@ export default function BiographyViewPage() {
         setIsLoading(false);
         return;
       }
+      setResolvedBiographyId(resolvedId);
 
       let data: BiographyViewData | null = null;
       let loadError: ViewError = null;
       let tokenSectionTimestamps: Record<string, string> | null = null;
+      let viaToken = false;
 
       if (token) {
-        // --- Token path: SECURITY DEFINER RPC enforces exact token match.
-        // Returns one row per biography_section (LEFT JOIN), so biography
-        // metadata is repeated. Section timestamps are embedded in the rows.
-        // No separate biography_sections query needed — and none is safe to do
-        // anonymously since the leaky anon policy has been removed.
         const tokenQuery = await supabase.rpc('get_biography_by_share_token', {
           p_biography_id: resolvedId,
           p_token: token,
         });
 
         if (!tokenQuery.error && tokenQuery.data && tokenQuery.data.length > 0) {
-          const rows = tokenQuery.data as Array<BiographyViewData & { section_name: string | null; section_created_at: string | null }>;
+          const rows = tokenQuery.data as Array<
+            BiographyViewData & { section_name: string | null; section_created_at: string | null }
+          >;
           data = { ...rows[0], export_txt_url: null, export_docx_url: null } as BiographyViewData;
+          viaToken = true;
           tokenSectionTimestamps = {};
           for (const row of rows) {
             if (row.section_name && row.section_created_at) {
               tokenSectionTimestamps[row.section_name] = row.section_created_at;
             }
           }
+          const { data: fullBio } = await supabase
+            .from('biographies')
+            .select('content_language, final_pdf_url')
+            .eq('id', resolvedId)
+            .maybeSingle();
+          if (fullBio && data) {
+            data.content_language = (fullBio as { content_language?: string }).content_language;
+            data.final_pdf_url = (fullBio as { final_pdf_url?: string }).final_pdf_url ?? null;
+          }
           if (data.status === 'published') {
             supabase.rpc('increment_view_count', { biography_uuid: resolvedId });
           }
         } else {
-          // Token present but no match — either wrong token, private, or not found.
           loadError = 'invalid-token';
         }
       } else {
-        // --- No token: public published listings, or authenticated owner/staff via RLS.
         const publicQuery = await supabase
           .from('biographies')
           .select(BIOGRAPHY_VIEW_SELECT)
@@ -197,22 +325,23 @@ export default function BiographyViewPage() {
       }
 
       setBiography(data);
+      setLoadedViaShareToken(viaToken);
 
-      checkBiographyPdfReadiness(resolvedId).then((result) => {
-        setPdfReady(result.ok);
-      });
+      if (!hasServerPdfFor(data)) {
+        checkBiographyPdfReadiness(resolvedId).then((result) => {
+          setPdfReady(result.ok);
+        });
+      } else {
+        setPdfReady(true);
+      }
 
-      const listing = (data as BiographyViewData).listing_cover_url?.trim();
+      const listing = data.listing_cover_url?.trim();
       if (listing) {
         setCoverImageUrl(listing);
       } else {
         getCoverPhotoDisplayUrl(resolvedId).then(setCoverImageUrl);
       }
 
-      // Section timestamps come from the RPC result for token-accessed biographies.
-      // For public (no-token) biographies, authenticated users see their own sections
-      // via existing RLS; anon users get no timestamps (graceful degradation — sections
-      // still display, just without date stamps).
       const sectionTimestamps: Record<string, string> = tokenSectionTimestamps ?? {};
 
       if (!tokenSectionTimestamps && Object.keys(sectionTimestamps).length === 0) {
@@ -249,10 +378,15 @@ export default function BiographyViewPage() {
 
       setOrderedSections(sections);
       setIsLoading(false);
+      void fetchAvailableLanguages(resolvedId, token);
     };
 
     load();
-  }, [id, token]);
+  }, [id, token, fetchAvailableLanguages]);
+
+  function hasServerPdfFor(bio: BiographyViewData): boolean {
+    return bio.status === 'published' && !!bio.final_pdf_url?.trim();
+  }
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
@@ -275,10 +409,14 @@ export default function BiographyViewPage() {
 
   const getErrorMessage = (err: ViewError) => {
     switch (err) {
-      case 'not-found': return t.view.notFoundOrDenied;
-      case 'private': return t.view.biographyPrivate;
-      case 'invalid-token': return t.view.tokenMissing;
-      default: return t.view.notAvailable;
+      case 'not-found':
+        return t.view.notFoundOrDenied;
+      case 'private':
+        return t.view.biographyPrivate;
+      case 'invalid-token':
+        return t.view.tokenMissing;
+      default:
+        return t.view.notAvailable;
     }
   };
 
@@ -293,13 +431,15 @@ export default function BiographyViewPage() {
   });
 
   const handleExportPDF = async () => {
-    if (!biography || pdfLoading) return;
+    if (!biography || pdfLoading || hasServerPdf) return;
     setPdfLoading(true);
     try {
       const readiness = await checkBiographyPdfReadiness(biography.id, true);
       if (!readiness.ok) {
         setPdfReady(false);
-        const hasCoverIssue = readiness.issues.includes('missing-cover') || readiness.issues.includes('cover-unreachable');
+        const hasCoverIssue =
+          readiness.issues.includes('missing-cover') ||
+          readiness.issues.includes('cover-unreachable');
         toast({
           title: hasCoverIssue ? t.exportDialog.noCoverPhotoWarning : t.exportDialog.exportError,
           variant: 'destructive',
@@ -308,13 +448,14 @@ export default function BiographyViewPage() {
       }
       setPdfReady(true);
       await generateBiographyPDF(getBiographyExportData());
-    } catch (err: any) {
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : '';
       const msg =
-        err?.message === 'MISSING_COVER_PHOTO' || err?.message === 'MISSING_BIOGRAPHY_ID'
+        message === 'MISSING_COVER_PHOTO' || message === 'MISSING_BIOGRAPHY_ID'
           ? t.exportDialog.noCoverPhotoWarning
-          : err?.message === 'FONT_LOAD_FAILED'
-          ? t.exportDialog.fontLoadError
-          : t.exportDialog.exportError;
+          : message === 'FONT_LOAD_FAILED'
+            ? t.exportDialog.fontLoadError
+            : t.exportDialog.exportError;
       toast({ title: msg, variant: 'destructive' });
     } finally {
       setPdfLoading(false);
@@ -341,6 +482,22 @@ export default function BiographyViewPage() {
       router.replace(newUrl);
     }
   };
+
+  const handleReadingLanguageChange = (value: string) => {
+    if (!resolvedBiographyId) return;
+    if (value === 'original') {
+      setReadingLanguage('original');
+      return;
+    }
+    if (!isViewLanguage(value)) return;
+    void loadTranslation(resolvedBiographyId, value, token);
+  };
+
+  const suggestUiTranslation =
+    isViewLanguage(uiLanguage) &&
+    uiLanguage !== contentLanguage &&
+    !availableTargets.includes(uiLanguage) &&
+    readingLanguage === 'original';
 
   if (isLoading) {
     return (
@@ -370,6 +527,9 @@ export default function BiographyViewPage() {
     ? getReviewEndDate(biography.published_at)
     : null;
 
+  const activeTranslated =
+    readingLanguage !== 'original' ? translatedSections[readingLanguage] : null;
+
   return (
     <div className="min-h-full bg-background">
       <header className="border-b border-border/50 bg-background/80 backdrop-blur-md sticky top-0 z-50">
@@ -381,7 +541,14 @@ export default function BiographyViewPage() {
             </h1>
           </div>
           <div className="flex items-center gap-2">
-            <div className="flex flex-col items-end gap-0.5">
+            {hasServerPdf ? (
+              <Button variant="outline" size="sm" asChild className="gap-2">
+                <a href={biography.final_pdf_url!} target="_blank" rel="noopener noreferrer" download>
+                  <FileDown className="h-4 w-4" />
+                  <span className="hidden sm:inline">{t.view.downloadPdf}</span>
+                </a>
+              </Button>
+            ) : (
               <Button
                 variant="outline"
                 size="sm"
@@ -389,9 +556,7 @@ export default function BiographyViewPage() {
                 disabled={pdfLoading || pdfReady === false}
                 className="gap-2"
                 title={
-                  pdfReady === false
-                    ? (t.exportDialog.noCoverPhotoWarning ?? 'Add cover photo and author name to enable PDF.')
-                    : undefined
+                  pdfReady === false ? t.exportDialog.noCoverPhotoWarning : undefined
                 }
               >
                 {pdfLoading ? (
@@ -401,19 +566,9 @@ export default function BiographyViewPage() {
                 )}
                 <span className="hidden sm:inline">{t.view.downloadPdf}</span>
               </Button>
-              {pdfReady === false && (
-                <span className="hidden sm:block text-[10px] text-muted-foreground max-w-[140px] text-right leading-tight">
-                  {t.exportDialog.noCoverPhotoWarning}
-                </span>
-              )}
-            </div>
+            )}
             {biography.export_txt_url && (
-              <Button
-                variant="outline"
-                size="sm"
-                asChild
-                className="gap-2"
-              >
+              <Button variant="outline" size="sm" asChild className="gap-2">
                 <a href={biography.export_txt_url} download>
                   <FileDown className="h-4 w-4" />
                   <span className="hidden sm:inline">{t.view.downloadTxt}</span>
@@ -421,12 +576,7 @@ export default function BiographyViewPage() {
               </Button>
             )}
             {biography.export_docx_url && (
-              <Button
-                variant="outline"
-                size="sm"
-                asChild
-                className="gap-2"
-              >
+              <Button variant="outline" size="sm" asChild className="gap-2">
                 <a href={biography.export_docx_url} download>
                   <FileDown className="h-4 w-4" />
                   <span className="hidden sm:inline">{t.view.downloadDocx}</span>
@@ -496,19 +646,83 @@ export default function BiographyViewPage() {
                 {t.view.publishedOn} {formatDate(biography.published_at)}
               </p>
             )}
+            <p className="text-sm text-muted-foreground mt-2 not-prose">
+              {interpolate(t.view.writtenIn, {
+                language: languageLabel(contentLanguage, t),
+              })}
+            </p>
+            {hasServerPdf && (
+              <p className="text-xs text-muted-foreground mt-2 not-prose">
+                {interpolate(t.view.pdfOriginalLanguage, {
+                  language: languageLabel(contentLanguage, t),
+                })}
+              </p>
+            )}
+
+            {(availableTargets.length > 0 ||
+              contentLanguage !== uiLanguage ||
+              suggestUiTranslation) && (
+              <div className="mt-4 flex flex-wrap items-center gap-3 not-prose">
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <Languages className="h-4 w-4 shrink-0" />
+                  <span>{t.view.languageSwitcher}</span>
+                </div>
+                <Select
+                  value={readingLanguage}
+                  onValueChange={handleReadingLanguageChange}
+                  disabled={translationLoading}
+                >
+                  <SelectTrigger className="w-[200px] h-9">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="original">
+                      {t.view.showOriginal} ({languageLabel(contentLanguage, t)})
+                    </SelectItem>
+                    {availableTargets.map((lang) => (
+                      <SelectItem key={lang} value={lang}>
+                        {languageLabel(lang, t)}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                {translationLoading && (
+                  <span className="text-sm text-muted-foreground flex items-center gap-1.5">
+                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                    {t.view.translating}
+                  </span>
+                )}
+                {suggestUiTranslation && !translationLoading && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() =>
+                      resolvedBiographyId &&
+                      loadTranslation(resolvedBiographyId, uiLanguage, token)
+                    }
+                  >
+                    {interpolate(t.view.readInLanguage, {
+                      language: languageLabel(uiLanguage, t),
+                    })}
+                  </Button>
+                )}
+              </div>
+            )}
+
             {biography.status === 'published' &&
               !biography.export_txt_url &&
               !biography.export_docx_url && (
                 <p className="text-sm text-muted-foreground mt-3 not-prose">
-                  Word and plain-text downloads are not available for this biography. You can still use
-                  the PDF button above if your cover and author details are complete.
+                  {t.view.downloadsUnavailable}
                 </p>
               )}
           </div>
 
           {orderedSections.map((section) => {
             const sectionTitle =
-              t.sectionTitles[section.key as keyof typeof t.sectionTitles] || section.key;
+              sectionTitlePack[section.key as keyof typeof sectionTitlePack] || section.key;
+            const sectionText =
+              activeTranslated?.[section.key] ?? section.text;
 
             return (
               <section key={section.key} className="mb-12">
@@ -522,20 +736,15 @@ export default function BiographyViewPage() {
                     </span>
                   )}
                 </div>
-                <div className="whitespace-pre-wrap leading-relaxed font-serif text-base">
-                  {section.text.split('\n\n').map((paragraph, idx) => (
-                    <p key={idx} className={cn('mb-4', !paragraph.trim() && 'hidden')}>
-                      {paragraph}
-                    </p>
-                  ))}
-                </div>
+                <BiographySectionBody text={sectionText} />
               </section>
             );
           })}
         </article>
 
         <footer className="mt-16 pt-8 border-t border-border text-center text-sm text-muted-foreground">
-          <p>{t.view.preservingStories}</p>
+          {showRightsNotice && <BiographyContentRightsNotice />}
+          <p className={showRightsNotice ? 'mt-6' : undefined}>{t.view.preservingStories}</p>
         </footer>
       </main>
 
@@ -543,9 +752,7 @@ export default function BiographyViewPage() {
         biographyId={biography.id}
         open={reportOpen}
         onOpenChange={handleReportOpenChange}
-        onSuccess={() =>
-          toast({ title: t.view.reportSuccess })
-        }
+        onSuccess={() => toast({ title: t.view.reportSuccess })}
       />
       <Toaster />
     </div>
