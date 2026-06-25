@@ -22,6 +22,7 @@ const PUBLIC_PREFIXES = [
   '/terms-of-service',
   '/privacy-policy',
   '/cookie-policy',
+  '/biographies',
   '/',
 ];
 

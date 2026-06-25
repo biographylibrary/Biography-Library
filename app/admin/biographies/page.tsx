@@ -19,11 +19,11 @@ import {
   AdminBiographyRow,
 } from '@/components/admin/BiographyDetailPanel';
 
-const PAGE_SIZE = 20;
+const PAGE_SIZE = 50;
 
 type StatusFilter = 'all' | 'draft' | 'published' | 'under_review' | 'removed' | 'parse_error';
 type TypeFilter = 'all' | 'autobiography' | 'deceased';
-type SortFilter = 'newest' | 'oldest' | 'recently_published';
+type SortFilter = 'newest' | 'oldest' | 'recently_published' | 'most_views';
 
 function StatusBadge({ status, t }: { status: string; t: any }) {
   const map: Record<string, string> = {
@@ -93,7 +93,8 @@ function AdminBiographiesContent() {
           content_language,
           is_frozen,
           ai_screening_status,
-          biography_type
+          biography_type,
+          view_count
         `)
         .order('created_at', { ascending: false });
 
@@ -128,6 +129,7 @@ function AdminBiographiesContent() {
         published_at: b.published_at ?? null,
         is_frozen: b.is_frozen ?? false,
         ai_screening_status: b.ai_screening_status ?? null,
+        view_count: typeof b.view_count === 'number' ? b.view_count : 0,
       }));
 
       setBiographies(rows);
@@ -172,6 +174,8 @@ function AdminBiographiesContent() {
         .filter((b) => b.published_at)
         .sort((a, b) => new Date(b.published_at!).getTime() - new Date(a.published_at!).getTime())
         .concat(result.filter((b) => !b.published_at));
+    } else if (sortFilter === 'most_views') {
+      result = [...result].sort((a, b) => b.view_count - a.view_count);
     }
 
     return result;
@@ -256,6 +260,7 @@ function AdminBiographiesContent() {
               <SelectItem value="newest">{t.admin.bioSortNewest}</SelectItem>
               <SelectItem value="oldest">{t.admin.bioSortOldest}</SelectItem>
               <SelectItem value="recently_published">{t.admin.bioSortRecentlyPublished}</SelectItem>
+              <SelectItem value="most_views">{t.admin.bioSortMostViews}</SelectItem>
             </SelectContent>
           </Select>
 
@@ -279,6 +284,9 @@ function AdminBiographiesContent() {
                   <th className="px-4 py-3 text-left font-medium text-muted-foreground hidden md:table-cell">{t.admin.bioColAuthor}</th>
                   <th className="px-4 py-3 text-left font-medium text-muted-foreground hidden lg:table-cell">{t.admin.bioColType}</th>
                   <th className="px-4 py-3 text-left font-medium text-muted-foreground">{t.admin.bioColStatus}</th>
+                  <th className="px-4 py-3 text-right font-medium text-muted-foreground hidden sm:table-cell">
+                    {t.admin.bioColViews}
+                  </th>
                   <th className="px-4 py-3 text-left font-medium text-muted-foreground hidden sm:table-cell">{t.admin.bioColCreated}</th>
                   <th className="px-4 py-3 text-left font-medium text-muted-foreground hidden xl:table-cell">{t.admin.bioColPublished}</th>
                   <th className="px-4 py-3 text-right font-medium text-muted-foreground">{t.admin.bioColActions}</th>
@@ -292,6 +300,7 @@ function AdminBiographiesContent() {
                       <td className="px-4 py-3 hidden md:table-cell"><div className="h-4 w-32 bg-muted rounded animate-pulse" /></td>
                       <td className="px-4 py-3 hidden lg:table-cell"><div className="h-4 w-24 bg-muted rounded animate-pulse" /></td>
                       <td className="px-4 py-3"><div className="h-5 w-20 bg-muted rounded-full animate-pulse" /></td>
+                      <td className="px-4 py-3 hidden sm:table-cell"><div className="h-4 w-12 bg-muted rounded animate-pulse ml-auto" /></td>
                       <td className="px-4 py-3 hidden sm:table-cell"><div className="h-4 w-24 bg-muted rounded animate-pulse" /></td>
                       <td className="px-4 py-3 hidden xl:table-cell"><div className="h-4 w-24 bg-muted rounded animate-pulse" /></td>
                       <td className="px-4 py-3"><div className="h-8 w-16 bg-muted rounded animate-pulse ml-auto" /></td>
@@ -299,7 +308,7 @@ function AdminBiographiesContent() {
                   ))
                 ) : pageItems.length === 0 ? (
                   <tr>
-                    <td colSpan={7} className="px-4 py-12 text-center text-muted-foreground text-sm">
+                    <td colSpan={8} className="px-4 py-12 text-center text-muted-foreground text-sm">
                       {t.admin.bioNoResults}
                     </td>
                   </tr>
@@ -326,6 +335,9 @@ function AdminBiographiesContent() {
                       </td>
                       <td className="px-4 py-3">
                         <StatusBadge status={bio.status} t={t} />
+                      </td>
+                      <td className="px-4 py-3 hidden sm:table-cell text-right tabular-nums text-sm text-foreground">
+                        {bio.view_count.toLocaleString()}
                       </td>
                       <td className="px-4 py-3 hidden sm:table-cell text-xs text-muted-foreground">
                         {fmtDate(bio.created_at)}

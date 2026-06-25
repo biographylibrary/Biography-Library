@@ -2,7 +2,6 @@
 
 import { useEffect, useState, useMemo } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import { useTranslation } from '@/lib/i18n/i18n-context';
 import {
   fetchPublishedBiographies,
@@ -12,6 +11,12 @@ import {
   type PublishedBiography,
 } from '@/lib/biographies';
 import { formatMemorialCreditLine, memorialSubjectName } from '@/lib/biography-display';
+import {
+  biographyMatchesLanguageFilter,
+  fetchPublishedTranslationLocales,
+  type CatalogLanguage,
+} from '@/lib/biography-translation-locales';
+import { BiographyLanguageBadges } from '@/components/biography/BiographyLanguageBadges';
 import { supabase } from '@/lib/supabase';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -30,20 +35,6 @@ import {
   Star,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-
-const LANGUAGE_FLAGS: Record<string, string> = {
-  en: '🇬🇧',
-  it: '🇮🇹',
-  fr: '🇫🇷',
-  de: '🇩🇪',
-};
-
-const LANGUAGE_LABELS: Record<string, string> = {
-  en: 'EN',
-  it: 'IT',
-  fr: 'FR',
-  de: 'DE',
-};
 
 const BRAND_TEAL = '#14B8A6';
 
@@ -117,9 +108,10 @@ interface BiographyCardProps {
   bio: PublishedBiography;
   t: ReturnType<typeof useTranslation>['t'];
   featured?: boolean;
+  translationLanguages?: CatalogLanguage[];
 }
 
-function BiographyCard({ bio, t, featured }: BiographyCardProps) {
+function BiographyCard({ bio, t, featured, translationLanguages = [] }: BiographyCardProps) {
   const { language } = useTranslation();
   const isMemorial = bio.biography_type === 'memorial';
   const subject = memorialSubjectName(bio.subject_name, bio.title);
@@ -137,9 +129,6 @@ function BiographyCard({ bio, t, featured }: BiographyCardProps) {
       )
     : bio.title || t.publicBiographies.untitled;
   const graphicAuthor = isMemorial ? '' : bio.author_name || t.publicBiographies.unknownAuthor;
-  const lang = bio.content_language || 'en';
-  const flag = LANGUAGE_FLAGS[lang] ?? '';
-  const langLabel = LANGUAGE_LABELS[lang] ?? lang.toUpperCase();
   const typeLabel = isMemorial
     ? t.publicBiographies.typeMemorial
     : t.publicBiographies.typeAutobiography;
@@ -212,9 +201,10 @@ function BiographyCard({ bio, t, featured }: BiographyCardProps) {
           {cardSecondary}
         </p>
         <div className="flex items-center gap-1.5 flex-wrap pt-1">
-          <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-brand-blue/35 text-brand-ink dark:bg-brand-blue/20 dark:text-brand-blue">
-            {flag} {langLabel}
-          </span>
+          <BiographyLanguageBadges
+            originalLanguage={bio.content_language || 'en'}
+            translationLanguages={translationLanguages}
+          />
           <span
             className={cn(
               'text-xs font-medium px-2 py-0.5 rounded-full',
@@ -236,9 +226,10 @@ interface SectionProps {
   bios: PublishedBiography[];
   t: ReturnType<typeof useTranslation>['t'];
   featured?: boolean;
+  translationMap: Record<string, CatalogLanguage[]>;
 }
 
-function BiographySection({ title, bios, t, featured }: SectionProps) {
+function BiographySection({ title, bios, t, featured, translationMap }: SectionProps) {
   if (bios.length === 0) return null;
   return (
     <section className="mb-14">
@@ -248,7 +239,13 @@ function BiographySection({ title, bios, t, featured }: SectionProps) {
       </h2>
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
         {bios.map((bio) => (
-          <BiographyCard key={bio.id} bio={bio} t={t} featured={featured} />
+          <BiographyCard
+            key={bio.id}
+            bio={bio}
+            t={t}
+            featured={featured}
+            translationLanguages={translationMap[bio.id] ?? []}
+          />
         ))}
       </div>
     </section>
@@ -256,11 +253,7 @@ function BiographySection({ title, bios, t, featured }: SectionProps) {
 }
 
 export default function BiographiesPage() {
-  const router = useRouter();
-  useEffect(() => {
-    router.replace('/');
-  }, [router]);
-  return null;
+  return <PublicBiographiesPage />;
 }
 
 function PublicBiographiesPage() {
@@ -274,15 +267,19 @@ function PublicBiographiesPage() {
   const [search, setSearch] = useState('');
   const [langFilter, setLangFilter] = useState<string>('all');
   const [typeFilter, setTypeFilter] = useState<string>('all');
+  const [translationMap, setTranslationMap] = useState<Record<string, CatalogLanguage[]>>({});
 
   useEffect(() => {
     const load = async () => {
       setIsLoading(true);
 
-      const [featuredRes, mostReadRes] = await Promise.all([
+      const [featuredRes, mostReadRes, locales] = await Promise.all([
         fetchFeaturedBiographies(),
         fetchMostReadBiographies(),
+        fetchPublishedTranslationLocales(),
       ]);
+
+      setTranslationMap(locales);
 
       if (featuredRes.error || mostReadRes.error) {
         setError(featuredRes.error ?? mostReadRes.error ?? t.publicBiographies.errorLoading);
@@ -331,12 +328,20 @@ function PublicBiographiesPage() {
         const inAuthor = (bio.author_name || '').toLowerCase().includes(q);
         if (!inTitle && !inSubject && !inAuthor) return false;
       }
-      if (langFilter !== 'all' && (bio.content_language || 'en') !== langFilter) return false;
+      if (langFilter !== 'all' &&
+        !biographyMatchesLanguageFilter(
+          bio.content_language,
+          translationMap[bio.id],
+          langFilter
+        )
+      ) {
+        return false;
+      }
       if (typeFilter === 'autobiography' && bio.biography_type === 'memorial') return false;
       if (typeFilter === 'memorial' && bio.biography_type !== 'memorial') return false;
       return true;
     });
-  }, [allBios, search, langFilter, typeFilter, isSearchActive]);
+  }, [allBios, search, langFilter, typeFilter, isSearchActive, translationMap]);
 
   return (
     <div className="min-h-full bg-background">
@@ -367,10 +372,10 @@ function PublicBiographiesPage() {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">{t.publicBiographies.langAll}</SelectItem>
-              <SelectItem value="en">🇬🇧 EN</SelectItem>
-              <SelectItem value="it">🇮🇹 IT</SelectItem>
-              <SelectItem value="fr">🇫🇷 FR</SelectItem>
-              <SelectItem value="de">🇩🇪 DE</SelectItem>
+              <SelectItem value="en">EN</SelectItem>
+              <SelectItem value="it">IT</SelectItem>
+              <SelectItem value="fr">FR</SelectItem>
+              <SelectItem value="de">DE</SelectItem>
             </SelectContent>
           </Select>
 
@@ -419,7 +424,12 @@ function PublicBiographiesPage() {
             ) : (
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
                 {filtered.map((bio) => (
-                  <BiographyCard key={bio.id} bio={bio} t={t} />
+                  <BiographyCard
+                    key={bio.id}
+                    bio={bio}
+                    t={t}
+                    translationLanguages={translationMap[bio.id] ?? []}
+                  />
                 ))}
               </div>
             )}
@@ -434,17 +444,20 @@ function PublicBiographiesPage() {
                 bios={featured}
                 t={t}
                 featured
+                translationMap={translationMap}
               />
             )}
             <BiographySection
               title={t.publicBiographies.mostReadTitle}
               bios={mostRead}
               t={t}
+              translationMap={translationMap}
             />
             <BiographySection
               title={t.publicBiographies.discoverTitle}
               bios={discover}
               t={t}
+              translationMap={translationMap}
             />
           </>
         )}
