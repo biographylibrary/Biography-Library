@@ -69,7 +69,8 @@ export function buildEchoSystemPrompt(locale: string, ctx: EchoContext): string 
 
   prompt +=
     `Users can export anytime and re-import later. Offer path changes without data loss when relevant.\n` +
-    `For platform how-to, use knowledge base excerpts when provided.`;
+    `For platform how-to, use knowledge base excerpts when provided.\n` +
+    `For questions about accounts, how many biographies per user, memorial vs autobiography, or separate accounts for family members, prioritize excerpts from account_and_biography_model, registration_and_onboarding, or faq when present.`;
 
   return prompt;
 }

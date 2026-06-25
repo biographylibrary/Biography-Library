@@ -15,6 +15,10 @@ Ultimo aggiornamento: giugno 2026.
 
 ## Stato attuale (rilasciato / stabile)
 
+### Account e biografie
+- **Un account = una biografia** (autobiografia o memorial, scelta in `/onboarding`).
+- Knowledge piattaforma per Echo/Help: [`docs/PLATFORM_KB.md`](docs/PLATFORM_KB.md) — aggiornare + `npm run kb:sync` + seed RAG dopo modifiche.
+
 ### Editor e contenuti
 - Biografie con sezioni di vita o flusso libero
 - Editor Tiptap con salvataggio su Supabase

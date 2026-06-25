@@ -79,6 +79,7 @@ Chiedimi quello che ti serve — quando vuoi rivedere questa guida, clicca «Com
         'Come funziona l\'app da zero?',
         'Posso importare un documento che ho già scritto?',
         'Come cambio titolo o privacy della biografia?',
+        'Quanti account mi servono per più biografie in famiglia?',
       ],
     },
     hub: {
@@ -97,6 +98,7 @@ Chiedimi quello che ti serve — quando vuoi rivedere questa guida, clicca «Com
         'Come esporto la biografia in PDF?',
         'Come funziona la revisione e la pubblicazione?',
         'Dove trovo le mie biografie in corso?',
+        'Quanti account mi servono per più biografie in famiglia?',
       ],
     },
     editorSections: {
@@ -256,6 +258,7 @@ Ask me what you need — to review this guide anytime, click «How to use this A
         'How does the app work from scratch?',
         'Can I import a document I\'ve already written?',
         'How do I change the biography title or privacy?',
+        'How many accounts do I need for multiple family biographies?',
       ],
     },
     hub: {
@@ -274,6 +277,7 @@ Ask me what you need — to review this guide anytime, click «How to use this A
         'How do I export the biography to PDF?',
         'How do review and publication work?',
         'Where do I find my biographies in progress?',
+        'How many accounts do I need for multiple family biographies?',
       ],
     },
     editorSections: {
@@ -433,6 +437,7 @@ Demandez-moi ce dont vous avez besoin — pour revoir ce guide, cliquez sur « C
         'Comment fonctionne l\'app depuis le début ?',
         'Puis-je importer un document déjà écrit ?',
         'Comment changer le titre ou la confidentialité de la biographie ?',
+        'Combien de comptes faut-il pour plusieurs biographies familiales ?',
       ],
     },
     hub: {
@@ -451,6 +456,7 @@ Demandez-moi ce dont vous avez besoin — pour revoir ce guide, cliquez sur « C
         'Comment exporter la biographie en PDF ?',
         'Comment fonctionnent la relecture et la publication ?',
         'Où trouver mes biographies en cours ?',
+        'Combien de comptes faut-il pour plusieurs biographies familiales ?',
       ],
     },
     editorSections: {
@@ -610,6 +616,7 @@ Fragen Sie mich, was Sie brauchen — um diese Anleitung erneut zu lesen, klicke
         'Wie funktioniert die App von Grund auf?',
         'Kann ich ein bereits geschriebenes Dokument importieren?',
         'Wie ändere ich Titel oder Datenschutz der Biografie?',
+        'Wie viele Konten brauche ich für mehrere Familien-Biografien?',
       ],
     },
     hub: {
@@ -628,6 +635,7 @@ Fragen Sie mich, was Sie brauchen — um diese Anleitung erneut zu lesen, klicke
         'Wie exportiere ich die Biografie als PDF?',
         'Wie funktionieren Prüfung und Veröffentlichung?',
         'Wo finde ich meine laufenden Biografien?',
+        'Wie viele Konten brauche ich für mehrere Familien-Biografien?',
       ],
     },
     editorSections: {
