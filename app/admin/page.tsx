@@ -2,11 +2,10 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { Users, BookOpen, Shield, UserPlus, Activity, CircleCheck as CheckCircle, CircleAlert as AlertCircle, Clock, Circle as XCircle, ArrowRight, LayoutDashboard, TriangleAlert } from 'lucide-react';
+import { Users, BookOpen, Shield, UserPlus, Activity, CircleCheck as CheckCircle, CircleAlert as AlertCircle, Clock, Circle as XCircle, ArrowRight, LayoutDashboard, TriangleAlert, ClipboardList } from 'lucide-react';
 import { useTranslation } from '@/lib/i18n/i18n-context';
+import { useAuth } from '@/lib/auth-context';
 import { supabase } from '@/lib/supabase';
-import { AdminGuard } from '@/components/admin/AdminGuard';
-import { AdminNav } from '@/components/admin/AdminNav';
 import { StatCard } from '@/components/admin/StatCard';
 import { Button } from '@/components/ui/button';
 
@@ -94,6 +93,8 @@ async function fetchStats(): Promise<OverviewStats> {
 
 function OverviewContent() {
   const { t } = useTranslation();
+  const { role } = useAuth();
+  const isReviewer = role === 'reviewer';
   const [stats, setStats] = useState<OverviewStats>({
     totalUsers: null,
     newUsersThisWeek: null,
@@ -113,10 +114,7 @@ function OverviewContent() {
   }, []);
 
   return (
-    <div className="min-h-full bg-background">
-      <AdminNav />
-
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+    <>
         <div className="flex items-center gap-3 mb-10">
           <div className="p-2.5 rounded-xl bg-brand-blue/25 dark:bg-brand-blue/15 shrink-0">
             <LayoutDashboard className="h-5 w-5 text-brand-ink dark:text-brand-blue" />
@@ -134,20 +132,21 @@ function OverviewContent() {
             <TriangleAlert className="h-5 w-5 text-brand-ink dark:text-brand-mustardLight shrink-0 mt-0.5" />
             <div className="flex-1 min-w-0">
               <p className="text-sm font-medium text-brand-ink dark:text-brand-beigeLight">
-                {stats.parseErrorCount} {stats.parseErrorCount === 1 ? 'biography' : 'biographies'} published in the last 7 days bypassed AI screening due to a parse error. These may require manual review.
+                {t.admin.overviewParseErrorBanner.replace('{count}', String(stats.parseErrorCount))}
               </p>
             </div>
             <Link
               href="/admin/biographies?screening=parse_error"
               className="shrink-0 inline-flex items-center gap-1 text-xs font-medium text-brand-wineDark dark:text-brand-mustardLight hover:text-brand-ink dark:hover:text-brand-beigeLight transition-colors whitespace-nowrap"
             >
-              View affected biographies
+              {t.admin.overviewViewAffected}
               <ArrowRight className="h-3.5 w-3.5" />
             </Link>
           </div>
         )}
 
         <div className="space-y-10">
+          {!isReviewer && (
           <section>
             <h2 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-4">
               {t.admin.sectionUsers}
@@ -163,18 +162,19 @@ function OverviewContent() {
                 icon={<UserPlus className="h-5 w-5" />}
                 label={t.admin.statNewThisWeek}
                 value={stats.newUsersThisWeek}
-                secondary="Last 7 days"
+                secondary={t.admin.overviewPeriodLast7Days}
                 accent="emerald"
               />
               <StatCard
                 icon={<Activity className="h-5 w-5" />}
                 label={t.admin.statActiveThisMonth}
                 value={stats.activeThisMonth}
-                secondary="Last 30 days"
+                secondary={t.admin.overviewPeriodLast30Days}
                 accent="neutral"
               />
             </div>
           </section>
+          )}
 
           <section>
             <h2 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-4">
@@ -229,7 +229,7 @@ function OverviewContent() {
                 icon={<CheckCircle className="h-5 w-5" />}
                 label={t.admin.statResolvedThisWeek}
                 value={stats.resolvedThisWeek}
-                secondary="Last 7 days"
+                secondary={t.admin.overviewPeriodLast7Days}
                 accent="emerald"
               />
             </div>
@@ -248,12 +248,26 @@ function OverviewContent() {
                 </Link>
               </Button>
               <Button asChild variant="outline" className="gap-2 h-10">
+                <Link href="/admin/review">
+                  <ClipboardList className="h-4 w-4 text-brand-ink dark:text-brand-blue" />
+                  {t.admin.quickActionReview}
+                  {(stats.underReviewBiographies ?? 0) > 0 && (
+                    <span className="inline-flex items-center justify-center min-w-[1.25rem] h-5 px-1.5 rounded-full text-xs font-semibold bg-[#DDCF88] text-[#121212] tabular-nums">
+                      {stats.underReviewBiographies}
+                    </span>
+                  )}
+                  <ArrowRight className="h-3.5 w-3.5 text-muted-foreground" />
+                </Link>
+              </Button>
+              {!isReviewer && (
+              <Button asChild variant="outline" className="gap-2 h-10">
                 <Link href="/admin/users">
                   <Users className="h-4 w-4 text-brand-ink dark:text-brand-blue" />
                   {t.admin.quickActionUsers}
                   <ArrowRight className="h-3.5 w-3.5 text-muted-foreground" />
                 </Link>
               </Button>
+              )}
               <Button asChild variant="outline" className="gap-2 h-10">
                 <Link href="/admin/biographies">
                   <BookOpen className="h-4 w-4 text-brand-ink dark:text-brand-blue" />
@@ -264,15 +278,10 @@ function OverviewContent() {
             </div>
           </section>
         </div>
-      </div>
-    </div>
+    </>
   );
 }
 
 export default function AdminPage() {
-  return (
-    <AdminGuard>
-      <OverviewContent />
-    </AdminGuard>
-  );
+  return <OverviewContent />;
 }

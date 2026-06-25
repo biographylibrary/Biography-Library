@@ -20,7 +20,11 @@ export function LoginScreen() {
   const { signIn, user, loading } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
-  const returnTo = searchParams.get('returnTo');
+  const returnToParam = searchParams.get('returnTo');
+  const returnTo =
+    returnToParam === '/echo' || returnToParam === '/echo/'
+      ? '/dashboard'
+      : returnToParam;
   const { t } = useTranslation();
 
   useEffect(() => {

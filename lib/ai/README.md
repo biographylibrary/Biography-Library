@@ -13,12 +13,8 @@ Supabase Edge Function (ai-assistant)
        ↓
 Infomaniak AI (default: google/gemma-4-31B-it)
 
-Help chatbot:
-components/help/HelpChatbot.tsx → help-assistant edge function
-       ↓
-Infomaniak AI (default: nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B-FP8)
-
-Publication screening / draft review:
+Echo / platform guide:
+/api/agents/echo/* → lib/agents/infomaniak-client.ts + kb_chunks RAG / draft review:
 Next.js API routes → lib/server/review-submit-pipeline.ts
        ↓
 Infomaniak AI (INFOMANIAK_AI_MODEL, default: google/gemma-4-31B-it)
@@ -37,8 +33,6 @@ Agent platform (beta):
 | `INFOMANIAK_AI_ENDPOINT` | all | — |
 | `INFOMANIAK_AI_MODEL_PRIMARY` | ai-assistant | `google/gemma-4-31B-it` |
 | `INFOMANIAK_AI_MODEL_FALLBACK` | ai-assistant | `mistralai/Mistral-Small-4-119B-2603` |
-| `INFOMANIAK_AI_MODEL_HELP_PRIMARY` | help-assistant | `nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B-FP8` |
-| `INFOMANIAK_AI_MODEL_HELP_FALLBACK` | help-assistant | `mistralai/Ministral-3-14B-Instruct-2512` |
 
 If secrets are unset, each function uses its code defaults. Old secrets (`Apertus`, `mistral3`) override defaults — update or remove them after deploy.
 

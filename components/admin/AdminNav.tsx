@@ -69,7 +69,7 @@ export function AdminNav() {
                 className={cn(
                   'flex items-center gap-2 px-3 py-3.5 text-sm font-medium whitespace-nowrap border-b-2 transition-colors',
                   isActive
-                    ? 'border-[#6D323E] bg-[#6D323E] text-white rounded-sm'
+                    ? 'border-black dark:border-foreground text-foreground'
                     : 'border-transparent text-muted-foreground hover:text-foreground hover:border-border'
                 )}
               >
@@ -79,7 +79,7 @@ export function AdminNav() {
                   <span className={cn(
                     'inline-flex items-center justify-center min-w-[1.25rem] h-5 px-1.5 rounded-full text-xs font-semibold tabular-nums',
                     isActive
-                      ? 'bg-white/20 text-white'
+                      ? 'bg-[#DDCF88] text-[#121212]'
                       : 'bg-[#DDCF88] text-[#121212]'
                   )}>
                     {item.badge}

@@ -911,6 +911,7 @@ export interface Translations {
     today: string;
     thisWeek: string;
     usageIndicatorTitle: string;
+    unlimited: string;
   };
   photos: {
     panelTitle: string;
@@ -948,12 +949,14 @@ export interface Translations {
     frozenBannerTitle: string;
     frozenBannerMessage: string;
     moderationTitle: string;
+    moderationSubtitle: string;
     moderationUnassignedBadge: string;
     filterStatus: string;
     filterType: string;
     filterSort: string;
     filterAll: string;
     statusUnassigned: string;
+    statusAssigned: string;
     statusInReview: string;
     statusDecided: string;
     sortNewest: string;
@@ -1151,6 +1154,24 @@ export interface Translations {
     quickActionModeration: string;
     quickActionUsers: string;
     quickActionBiographies: string;
+    quickActionReview: string;
+    guardAccessDenied: string;
+    guardAccessDeniedMessage: string;
+    guardRedirectingIn: string;
+    overviewPeriodLast7Days: string;
+    overviewPeriodLast30Days: string;
+    overviewParseErrorBanner: string;
+    overviewViewAffected: string;
+    reviewNoLanguages: string;
+    reviewConflictTitle: string;
+    reviewConflictDescription: string;
+    reviewConflictCancel: string;
+    reviewConflictProceed: string;
+    reviewInReviewLabel: string;
+    reviewUndo: string;
+    reviewPassagesRemaining: string;
+    reportLockWarning: string;
+    usersNoUsersFound: string;
     bioPageTitle: string;
     bioPageSubtitle: string;
     bioSearchPlaceholder: string;
@@ -2356,6 +2377,7 @@ export const translations: Record<Language, Translations> = {
       today: 'Today',
       thisWeek: 'This week',
       usageIndicatorTitle: 'AI usage',
+      unlimited: 'Unlimited',
     },
     photos: {
       panelTitle: 'Photos',
@@ -2394,12 +2416,14 @@ export const translations: Record<Language, Translations> = {
       frozenBannerTitle: 'This biography has been frozen',
       frozenBannerMessage: 'This biography is read-only and cannot be edited.',
       moderationTitle: 'Moderation',
+      moderationSubtitle: 'Review and resolve flagged content reports',
       moderationUnassignedBadge: 'unassigned',
       filterStatus: 'Status',
       filterType: 'Type',
       filterSort: 'Sort',
       filterAll: 'All',
       statusUnassigned: 'Unassigned',
+      statusAssigned: 'Assigned',
       statusInReview: 'In review',
       statusDecided: 'Decided',
       sortNewest: 'Newest first',
@@ -2599,6 +2623,24 @@ export const translations: Record<Language, Translations> = {
       quickActionModeration: 'Go to Moderation',
       quickActionUsers: 'Manage Users',
       quickActionBiographies: 'View Biographies',
+      quickActionReview: 'Review Queue',
+      guardAccessDenied: 'Access Denied',
+      guardAccessDeniedMessage: 'You do not have permission to access this area.',
+      guardRedirectingIn: 'Redirecting in {seconds}s…',
+      overviewPeriodLast7Days: 'Last 7 days',
+      overviewPeriodLast30Days: 'Last 30 days',
+      overviewParseErrorBanner: '{count} {count, plural, one {biography} other {biographies}} published in the last 7 days bypassed AI screening due to a parse error. These may require manual review.',
+      overviewViewAffected: 'View affected biographies',
+      reviewNoLanguages: 'No languages assigned — contact an administrator to receive review assignments.',
+      reviewConflictTitle: 'Another reviewer is working on this',
+      reviewConflictDescription: 'Another reviewer has this biography open. Proceeding will override their lock and submit your decision.',
+      reviewConflictCancel: 'Cancel',
+      reviewConflictProceed: 'Proceed anyway',
+      reviewInReviewLabel: 'In review',
+      reviewUndo: 'Undo',
+      reviewPassagesRemaining: '{count} remaining',
+      reportLockWarning: 'This report is assigned to another moderator.',
+      usersNoUsersFound: 'No users found',
       bioPageTitle: 'All Biographies',
       bioPageSubtitle: 'Browse, search, and manage all biographies in the system',
       bioSearchPlaceholder: 'Search by title or author…',
@@ -3807,6 +3849,7 @@ export const translations: Record<Language, Translations> = {
       today: 'Oggi',
       thisWeek: 'Questa settimana',
       usageIndicatorTitle: 'Utilizzo AI',
+      unlimited: 'Illimitato',
     },
     photos: {
       panelTitle: 'Foto',
@@ -3845,12 +3888,14 @@ export const translations: Record<Language, Translations> = {
       frozenBannerTitle: 'Questa biografia è stata congelata',
       frozenBannerMessage: 'Questa biografia è di sola lettura e non può essere modificata.',
       moderationTitle: 'Moderazione',
+      moderationSubtitle: 'Esamina e risolvi le segnalazioni di contenuti',
       moderationUnassignedBadge: 'non assegnate',
       filterStatus: 'Stato',
       filterType: 'Tipo',
       filterSort: 'Ordina',
       filterAll: 'Tutti',
       statusUnassigned: 'Non assegnato',
+      statusAssigned: 'Assegnato',
       statusInReview: 'In revisione',
       statusDecided: 'Deciso',
       sortNewest: 'Più recenti',
@@ -4050,6 +4095,24 @@ export const translations: Record<Language, Translations> = {
       quickActionModeration: 'Vai alla Moderazione',
       quickActionUsers: 'Gestisci Utenti',
       quickActionBiographies: 'Vedi Biografie',
+      quickActionReview: 'Coda revisione',
+      guardAccessDenied: 'Accesso negato',
+      guardAccessDeniedMessage: 'Non hai i permessi per accedere a questa area.',
+      guardRedirectingIn: 'Reindirizzamento tra {seconds}s…',
+      overviewPeriodLast7Days: 'Ultimi 7 giorni',
+      overviewPeriodLast30Days: 'Ultimi 30 giorni',
+      overviewParseErrorBanner: '{count} {count, plural, one {biografia pubblicata} other {biografie pubblicate}} negli ultimi 7 giorni hanno saltato lo screening AI per errore di parsing. Potrebbero richiedere revisione manuale.',
+      overviewViewAffected: 'Vedi biografie interessate',
+      reviewNoLanguages: 'Nessuna lingua assegnata — contatta un amministratore per ricevere assegnazioni di revisione.',
+      reviewConflictTitle: 'Un altro revisore sta lavorando su questa biografia',
+      reviewConflictDescription: 'Un altro revisore ha questa biografia aperta. Procedendo annullerai il suo blocco e invierai la tua decisione.',
+      reviewConflictCancel: 'Annulla',
+      reviewConflictProceed: 'Procedi comunque',
+      reviewInReviewLabel: 'In revisione',
+      reviewUndo: 'Annulla',
+      reviewPassagesRemaining: '{count} rimanenti',
+      reportLockWarning: 'Questa segnalazione è assegnata a un altro moderatore.',
+      usersNoUsersFound: 'Nessun utente trovato',
       bioPageTitle: 'Tutte le Biografie',
       bioPageSubtitle: 'Sfoglia, cerca e gestisci tutte le biografie nel sistema',
       bioSearchPlaceholder: 'Cerca per titolo o autore…',
@@ -5258,6 +5321,7 @@ export const translations: Record<Language, Translations> = {
       today: 'Aujourd\'hui',
       thisWeek: 'Cette semaine',
       usageIndicatorTitle: 'Utilisation IA',
+      unlimited: 'Illimité',
     },
     photos: {
       panelTitle: 'Photos',
@@ -5296,12 +5360,14 @@ export const translations: Record<Language, Translations> = {
       frozenBannerTitle: 'Cette biographie a été gelée',
       frozenBannerMessage: 'Cette biographie est en lecture seule et ne peut pas être modifiée.',
       moderationTitle: 'Modération',
+      moderationSubtitle: 'Examiner et résoudre les signalements de contenu',
       moderationUnassignedBadge: 'non assignés',
       filterStatus: 'Statut',
       filterType: 'Type',
       filterSort: 'Trier',
       filterAll: 'Tous',
       statusUnassigned: 'Non assigné',
+      statusAssigned: 'Assigné',
       statusInReview: 'En révision',
       statusDecided: 'Décidé',
       sortNewest: 'Plus récents',
@@ -5501,6 +5567,24 @@ export const translations: Record<Language, Translations> = {
       quickActionModeration: 'Aller à la Modération',
       quickActionUsers: 'Gérer les Utilisateurs',
       quickActionBiographies: 'Voir les Biographies',
+      quickActionReview: 'File de révision',
+      guardAccessDenied: 'Accès refusé',
+      guardAccessDeniedMessage: 'Vous n\'avez pas la permission d\'accéder à cette zone.',
+      guardRedirectingIn: 'Redirection dans {seconds}s…',
+      overviewPeriodLast7Days: '7 derniers jours',
+      overviewPeriodLast30Days: '30 derniers jours',
+      overviewParseErrorBanner: '{count} {count, plural, one {biographie publiée} other {biographies publiées}} au cours des 7 derniers jours ont contourné le filtrage IA en raison d\'une erreur d\'analyse. Une révision manuelle peut être nécessaire.',
+      overviewViewAffected: 'Voir les biographies concernées',
+      reviewNoLanguages: 'Aucune langue assignée — contactez un administrateur pour recevoir des attributions de révision.',
+      reviewConflictTitle: 'Un autre réviseur travaille sur cette biographie',
+      reviewConflictDescription: 'Un autre réviseur a cette biographie ouverte. En continuant, vous annulerez son verrou et soumettrez votre décision.',
+      reviewConflictCancel: 'Annuler',
+      reviewConflictProceed: 'Continuer quand même',
+      reviewInReviewLabel: 'En révision',
+      reviewUndo: 'Annuler',
+      reviewPassagesRemaining: '{count} restants',
+      reportLockWarning: 'Ce signalement est assigné à un autre modérateur.',
+      usersNoUsersFound: 'Aucun utilisateur trouvé',
       bioPageTitle: 'Toutes les Biographies',
       bioPageSubtitle: 'Parcourez, recherchez et gérez toutes les biographies du système',
       bioSearchPlaceholder: 'Rechercher par titre ou auteur…',
@@ -6709,6 +6793,7 @@ export const translations: Record<Language, Translations> = {
       today: 'Heute',
       thisWeek: 'Diese Woche',
       usageIndicatorTitle: 'KI-Nutzung',
+      unlimited: 'Unbegrenzt',
     },
     photos: {
       panelTitle: 'Fotos',
@@ -6747,12 +6832,14 @@ export const translations: Record<Language, Translations> = {
       frozenBannerTitle: 'Diese Biografie wurde eingefroren',
       frozenBannerMessage: 'Diese Biografie ist schreibgeschützt und kann nicht bearbeitet werden.',
       moderationTitle: 'Moderation',
+      moderationSubtitle: 'Gemeldete Inhalte prüfen und bearbeiten',
       moderationUnassignedBadge: 'nicht zugewiesen',
       filterStatus: 'Status',
       filterType: 'Typ',
       filterSort: 'Sortieren',
       filterAll: 'Alle',
       statusUnassigned: 'Nicht zugewiesen',
+      statusAssigned: 'Zugewiesen',
       statusInReview: 'In Prüfung',
       statusDecided: 'Entschieden',
       sortNewest: 'Neueste zuerst',
@@ -6952,6 +7039,24 @@ export const translations: Record<Language, Translations> = {
       quickActionModeration: 'Zur Moderation',
       quickActionUsers: 'Benutzer verwalten',
       quickActionBiographies: 'Biografien ansehen',
+      quickActionReview: 'Prüfwarteschlange',
+      guardAccessDenied: 'Zugriff verweigert',
+      guardAccessDeniedMessage: 'Sie haben keine Berechtigung für diesen Bereich.',
+      guardRedirectingIn: 'Weiterleitung in {seconds}s…',
+      overviewPeriodLast7Days: 'Letzte 7 Tage',
+      overviewPeriodLast30Days: 'Letzte 30 Tage',
+      overviewParseErrorBanner: '{count} {count, plural, one {Biografie} other {Biografien}} in den letzten 7 Tagen wurden wegen eines Parse-Fehlers ohne KI-Prüfung veröffentlicht. Manuelle Prüfung kann erforderlich sein.',
+      overviewViewAffected: 'Betroffene Biografien anzeigen',
+      reviewNoLanguages: 'Keine Sprachen zugewiesen — wenden Sie sich an einen Administrator für Prüfaufträge.',
+      reviewConflictTitle: 'Ein anderer Prüfer arbeitet an dieser Biografie',
+      reviewConflictDescription: 'Ein anderer Prüfer hat diese Biografie geöffnet. Wenn Sie fortfahren, wird dessen Sperre aufgehoben und Ihre Entscheidung übermittelt.',
+      reviewConflictCancel: 'Abbrechen',
+      reviewConflictProceed: 'Trotzdem fortfahren',
+      reviewInReviewLabel: 'In Prüfung',
+      reviewUndo: 'Rückgängig',
+      reviewPassagesRemaining: '{count} verbleibend',
+      reportLockWarning: 'Dieser Bericht ist einem anderen Moderator zugewiesen.',
+      usersNoUsersFound: 'Keine Benutzer gefunden',
       bioPageTitle: 'Alle Biografien',
       bioPageSubtitle: 'Alle Biografien im System durchsuchen, filtern und verwalten',
       bioSearchPlaceholder: 'Nach Titel oder Autor suchen…',

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getCallerStaffContext, isAdminOrSuperAdmin } from '@/lib/server/admin-api-auth';
 import { buildServiceClient } from '@/lib/server/review-submit-pipeline';
-import { seedHelpKb } from '@/lib/agents/rag/kb-rag';
+import { seedHelpKb, pruneStaleKbChunks } from '@/lib/agents/rag/kb-rag';
 
 export const runtime = 'nodejs';
 
@@ -14,8 +14,9 @@ export async function POST(req: NextRequest) {
 
   try {
     const serviceClient = buildServiceClient();
+    const pruned = await pruneStaleKbChunks(serviceClient);
     const result = await seedHelpKb(serviceClient);
-    return NextResponse.json({ ok: true, ...result });
+    return NextResponse.json({ ok: true, pruned, ...result });
   } catch (err) {
     const msg = err instanceof Error ? err.message : 'Seed failed';
     console.error('[agents/admin/seed-kb]', err);

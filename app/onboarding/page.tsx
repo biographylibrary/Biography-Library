@@ -23,7 +23,7 @@ export default function OnboardingPage() {
   useEffect(() => {
     if (!onboardingState) return;
     if (onboardingState.onboarding_phase === 'completed') {
-      router.replace('/echo');
+      router.replace('/dashboard');
       return;
     }
     if (onboardingState.onboarding_phase === 'tour') {
@@ -42,6 +42,17 @@ export default function OnboardingPage() {
   }, [onboardingState, router, refreshOnboarding, user]);
 
   if (authLoading || !languageGateResolved || !user) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-[#EDEBE7]">
+        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
+
+  if (
+    onboardingState?.onboarding_phase === 'completed' ||
+    onboardingState?.onboarding_phase === 'tour'
+  ) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[#EDEBE7]">
         <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />

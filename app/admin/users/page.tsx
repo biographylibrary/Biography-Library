@@ -1,13 +1,11 @@
 'use client';
 
 import { useEffect, useState, useMemo, useCallback } from 'react';
-import { useRouter } from 'next/navigation';
+import { Users, Search, ChevronLeft, ChevronRight, Ban, RotateCcw, Trash2 } from 'lucide-react';
 import { useAuth } from '@/lib/auth-context';
 import { useTranslation } from '@/lib/i18n/i18n-context';
 import { supabase } from '@/lib/supabase';
 import { useToast } from '@/hooks/use-toast';
-import { Users, ShieldOff, Search, ChevronLeft, ChevronRight, Ban, RotateCcw, Trash2 } from 'lucide-react';
-import { AdminNav } from '@/components/admin/AdminNav';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
@@ -89,10 +87,8 @@ function formatDate(iso: string) {
 export default function AdminUsersPage() {
   const { user, role, loading } = useAuth();
   const { t } = useTranslation();
-  const router = useRouter();
   const { toast } = useToast();
 
-  const [countdown, setCountdown] = useState(3);
   const [users, setUsers] = useState<UserRow[]>([]);
   const [loadingUsers, setLoadingUsers] = useState(false);
   const [loadError, setLoadError] = useState<string | null>(null);
@@ -111,7 +107,6 @@ export default function AdminUsersPage() {
 
   const isStaffAdmin = role === 'admin' || role === 'super_admin';
   const canEditRoles = role === 'super_admin';
-  const isDenied = !loading && (!user || !isStaffAdmin);
 
   function canManageTargetRow(u: UserRow): boolean {
     if (!user || u.id === user.id) return false;
@@ -119,23 +114,6 @@ export default function AdminUsersPage() {
     if (role === 'admin') return u.role === 'user' || u.role === 'reviewer';
     return false;
   }
-
-  useEffect(() => {
-    if (loading) return;
-    if (!isDenied) return;
-
-    const timer = setInterval(() => {
-      setCountdown((c) => {
-        if (c <= 1) {
-          clearInterval(timer);
-          router.replace('/admin');
-          return 0;
-        }
-        return c - 1;
-      });
-    }, 1000);
-    return () => clearInterval(timer);
-  }, [loading, isDenied, router]);
 
   const loadUsers = useCallback(async () => {
     setLoadingUsers(true);
@@ -214,10 +192,9 @@ export default function AdminUsersPage() {
   }, [t.admin.usersLoadError]);
 
   useEffect(() => {
-    if (isStaffAdmin) {
-      loadUsers();
-    }
-  }, [isStaffAdmin, loadUsers]);
+    if (loading || !isStaffAdmin) return;
+    void loadUsers();
+  }, [loading, isStaffAdmin, loadUsers]);
 
   async function toggleReviewerLanguage(userId: string, code: string, enabled: boolean) {
     if (!user || !isStaffAdmin) return;
@@ -336,19 +313,16 @@ export default function AdminUsersPage() {
     if (!confirmChange) return;
     setSaving(confirmChange.userId);
     try {
-      const { error } = await supabase
-        .from('profiles')
-        .update({ role: confirmChange.newRole })
-        .eq('id', confirmChange.userId);
-
-      if (error) throw error;
-
-      await supabase.from('role_change_log').insert({
-        changed_by: user!.id,
-        target_user: confirmChange.userId,
-        old_role: confirmChange.oldRole,
-        new_role: confirmChange.newRole,
+      const res = await fetch(`/api/admin/users/${confirmChange.userId}/role`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ role: confirmChange.newRole }),
       });
+
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}));
+        throw new Error(body.error ?? 'Failed');
+      }
 
       setUsers((prev) =>
         prev.map((u) =>
@@ -380,32 +354,9 @@ export default function AdminUsersPage() {
 
   if (loading) return null;
 
-  if (isDenied) {
-    return (
-      <div className="min-h-[60vh] flex items-center justify-center px-4">
-        <div className="text-center max-w-sm">
-          <div className="flex justify-center mb-5">
-            <div className="p-4 rounded-2xl bg-brand-wine/10 dark:bg-brand-wine/20">
-              <ShieldOff className="h-8 w-8 text-brand-wine dark:text-brand-mustardLight" />
-            </div>
-          </div>
-          <h1 className="text-xl font-semibold text-foreground mb-2">{t.admin.usersAccessDenied}</h1>
-          <p className="text-sm text-muted-foreground mb-5">{t.admin.usersPageRestrictedToAdmins}</p>
-          <p className="text-xs text-muted-foreground">
-            {t.admin.usersRedirectingIn}{' '}
-            <span className="font-semibold tabular-nums text-foreground">{countdown}</span>s…
-          </p>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <TooltipProvider>
-      <div className="min-h-full bg-background">
-        <AdminNav />
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
-
+      <>
           <div className="flex items-center gap-3 mb-2">
             <div className="p-2.5 rounded-xl bg-[#C4DAEB] dark:bg-[#C4DAEB]/20 shrink-0">
               <Users className="h-5 w-5 text-[#121212] dark:text-[#FDFBF7]" />
@@ -472,7 +423,7 @@ export default function AdminUsersPage() {
                   ) : pageUsers.length === 0 ? (
                     <tr>
                       <td colSpan={9} className="px-4 py-12 text-center text-muted-foreground text-sm">
-                        No users found.
+                        {t.admin.usersNoUsersFound}
                       </td>
                     </tr>
                   ) : (
@@ -699,8 +650,6 @@ export default function AdminUsersPage() {
               </Button>
             </div>
           )}
-        </div>
-      </div>
 
       <AlertDialog open={!!confirmChange} onOpenChange={(open) => { if (!open) setConfirmChange(null); }}>
         <AlertDialogContent>
@@ -762,6 +711,7 @@ export default function AdminUsersPage() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+      </>
     </TooltipProvider>
   );
 }

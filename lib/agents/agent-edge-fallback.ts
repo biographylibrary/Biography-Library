@@ -1,4 +1,4 @@
-import type { HelpLanguage } from '@/lib/help/help-service';
+import type { Language } from '@/lib/i18n/translations';
 
 type ChatHistoryItem = { role: string; content: string };
 
@@ -21,7 +21,7 @@ function historyToQaPairs(
 export async function askCoachViaEdge(params: {
   message: string;
   sectionTitle: string;
-  language: HelpLanguage;
+  language: Language;
   history?: ChatHistoryItem[];
 }): Promise<string> {
   const { callAI } = await import('@/lib/ai/ai-client');

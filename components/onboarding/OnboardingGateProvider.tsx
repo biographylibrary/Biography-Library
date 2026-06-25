@@ -121,6 +121,10 @@ export function OnboardingGateProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (!user || !languageGateResolved || bootstrapping) return;
     if (!onboardingState) return;
+    if (pathname.startsWith('/onboarding') && onboardingState.onboarding_phase === 'completed') {
+      router.replace('/dashboard');
+      return;
+    }
     if (needsOnboardingRedirect(pathname, onboardingState)) {
       router.replace('/onboarding');
     }

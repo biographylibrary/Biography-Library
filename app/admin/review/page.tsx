@@ -7,8 +7,6 @@ import { supabase } from '@/lib/supabase';
 import { createNotification } from '@/lib/notifications-service';
 import { useTranslation } from '@/lib/i18n/i18n-context';
 import { useAuth } from '@/lib/auth-context';
-import { AdminGuard } from '@/components/admin/AdminGuard';
-import { AdminNav } from '@/components/admin/AdminNav';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
@@ -93,10 +91,11 @@ function SeverityBadge({ severity }: { severity: number }) {
 
 function ReviewQueueContent() {
   const { t } = useTranslation();
-  const { user } = useAuth();
+  const { user, role } = useAuth();
   const [items, setItems] = useState<ReviewBiography[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
+  const [noLanguages, setNoLanguages] = useState(false);
 
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [passageDecisions, setPassageDecisions] = useState<Record<string, Record<number, PassageDecision>>>({});
@@ -114,12 +113,36 @@ function ReviewQueueContent() {
   const load = useCallback(async () => {
     setLoading(true);
     setLoadError(null);
+    setNoLanguages(false);
 
-    const { data: bios, error } = await supabase
+    let languageFilter: string[] | null = null;
+    if (role === 'reviewer' && user?.id) {
+      const { data: langRows } = await supabase
+        .from('reviewer_languages')
+        .select('language_code')
+        .eq('user_id', user.id);
+
+      const assigned = (langRows ?? []).map((row) => row.language_code as string);
+      if (assigned.length === 0) {
+        setNoLanguages(true);
+        setItems([]);
+        setLoading(false);
+        return;
+      }
+      languageFilter = assigned;
+    }
+
+    let bioQuery = supabase
       .from('biographies')
       .select('id, title, author_name, user_id, content_language, biography_type, slug, updated_at, reviewed_by')
       .eq('status', 'under_review')
       .order('updated_at', { ascending: true });
+
+    if (languageFilter) {
+      bioQuery = bioQuery.in('content_language', languageFilter);
+    }
+
+    const { data: bios, error } = await bioQuery;
 
     if (error) {
       setLoadError(t.admin.reviewLoadError);
@@ -157,7 +180,7 @@ function ReviewQueueContent() {
 
     setItems(withReports);
     setLoading(false);
-  }, [t.admin.reviewLoadError]);
+  }, [role, user?.id, t.admin.reviewLoadError]);
 
   useEffect(() => {
     load();
@@ -403,10 +426,7 @@ function ReviewQueueContent() {
   };
 
   return (
-    <div className="min-h-full bg-background">
-      <AdminNav />
-
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+    <>
         <div className="flex items-center gap-3 mb-8">
           <div className="p-2.5 rounded-xl bg-[#DDCF88]/30 dark:bg-[#DDCF88]/20 shrink-0">
             <ClipboardList className="h-5 w-5 text-[#121212] dark:text-[#FDFBF7]" />
@@ -425,7 +445,14 @@ function ReviewQueueContent() {
           </div>
         )}
 
-        {!loading && items.length === 0 && !loadError && (
+        {!loading && noLanguages && (
+          <div className="flex flex-col items-center justify-center py-24 gap-4 text-center">
+            <Inbox className="h-12 w-12 text-muted-foreground/50" />
+            <p className="text-sm text-muted-foreground max-w-md">{t.admin.reviewNoLanguages}</p>
+          </div>
+        )}
+
+        {!loading && items.length === 0 && !loadError && !noLanguages && (
           <div className="flex flex-col items-center justify-center py-24 gap-4 text-center">
             <div className="p-5 rounded-2xl bg-muted/50">
               <Inbox className="h-10 w-10 text-muted-foreground" />
@@ -509,7 +536,7 @@ function ReviewQueueContent() {
                             {takenByOther && (
                               <span className="inline-flex items-center gap-1 text-xs text-brand-wine dark:text-brand-beigeLight mt-0.5">
                                 <AlertTriangle className="h-3 w-3" />
-                                In review
+                                {t.admin.reviewInReviewLabel}
                               </span>
                             )}
                           </td>
@@ -592,7 +619,10 @@ function ReviewQueueContent() {
                                 )}
                                 {!decided && (
                                   <span className="text-xs text-muted-foreground italic">
-                                    {passages.length - Object.keys(decisions).length} remaining
+                                    {t.admin.reviewPassagesRemaining.replace(
+                                      '{count}',
+                                      String(passages.length - Object.keys(decisions).length)
+                                    )}
                                   </span>
                                 )}
                               </div>
@@ -680,7 +710,7 @@ function ReviewQueueContent() {
                                               });
                                             }}
                                           >
-                                            Undo
+                                            {t.admin.reviewUndo}
                                           </button>
                                         </div>
                                       )}
@@ -747,38 +777,33 @@ function ReviewQueueContent() {
             </div>
           </div>
         )}
-      </div>
 
       <AlertDialog open={conflictDialog.open} onOpenChange={(open) => !open && handleConflictCancel()}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle className="flex items-center gap-2">
               <AlertTriangle className="h-5 w-5 text-brand-mustardDark dark:text-brand-mustardLight" />
-              Another reviewer is working on this
+              {t.admin.reviewConflictTitle}
             </AlertDialogTitle>
             <AlertDialogDescription>
-              Another reviewer has this biography open. Proceeding will override their lock and submit your decision.
+              {t.admin.reviewConflictDescription}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel onClick={handleConflictCancel}>Cancel</AlertDialogCancel>
+            <AlertDialogCancel onClick={handleConflictCancel}>{t.admin.reviewConflictCancel}</AlertDialogCancel>
             <AlertDialogAction
               onClick={handleConflictProceed}
               className="bg-brand-wine hover:bg-brand-wineDark text-brand-paper"
             >
-              Proceed anyway
+              {t.admin.reviewConflictProceed}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </div>
+    </>
   );
 }
 
 export default function AdminReviewPage() {
-  return (
-    <AdminGuard>
-      <ReviewQueueContent />
-    </AdminGuard>
-  );
+  return <ReviewQueueContent />;
 }

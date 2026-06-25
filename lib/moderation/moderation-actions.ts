@@ -3,12 +3,14 @@ import { createNotification } from '@/lib/notifications-service';
 import { ModerationDecision, ModeratorNotes } from './types';
 
 export async function takeOwnership(reportId: string, moderatorId: string): Promise<{ error: string | null }> {
+  const now = new Date().toISOString();
   const { error } = await supabase
     .from('moderation_reports')
     .update({
       status: 'in_review',
       assigned_moderator_id: moderatorId,
-      assigned_at: new Date().toISOString(),
+      assigned_to: moderatorId,
+      assigned_at: now,
     })
     .eq('id', reportId);
 

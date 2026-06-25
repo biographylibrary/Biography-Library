@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Sync docs/PLATFORM_KB.md → generated TS for RAG (EN sections) and Help assistant.
+ * Sync docs/PLATFORM_KB.md → generated TS for RAG (EN sections) and help KB bundle.
  * Usage: node scripts/sync-platform-kb.mjs [--check]
  */
 import fs from 'node:fs';
@@ -12,7 +12,6 @@ const ROOT = path.resolve(__dirname, '..');
 const MD_PATH = path.join(ROOT, 'docs/PLATFORM_KB.md');
 const EN_SECTIONS_OUT = path.join(ROOT, 'lib/agents/kb/help-kb-sections.en.generated.ts');
 const HELP_KB_OUT = path.join(ROOT, 'lib/help/help-kb.en.generated.ts');
-const EDGE_KB_OUT = path.join(ROOT, 'supabase/functions/help-assistant/help-kb.generated.ts');
 
 const CHECK = process.argv.includes('--check');
 
@@ -80,12 +79,10 @@ function main() {
 
   const enSectionsTs = buildEnSectionsTs(sections);
   const helpKbTs = buildFullKbTs(markdown, 'HELP_KB_EN');
-  const edgeKbTs = buildFullKbTs(markdown, 'HELP_KB');
 
   const outputs = [
     [EN_SECTIONS_OUT, enSectionsTs],
     [HELP_KB_OUT, helpKbTs],
-    [EDGE_KB_OUT, edgeKbTs],
   ];
 
   if (CHECK) {

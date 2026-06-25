@@ -29,7 +29,7 @@ export default function WorkspacePage() {
       if (data?.id) {
         router.replace(`/biography/${data.id}/edit`);
       } else {
-        router.replace('/echo');
+        router.replace('/dashboard');
       }
     }
 

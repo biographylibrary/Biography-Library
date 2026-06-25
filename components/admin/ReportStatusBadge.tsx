@@ -17,7 +17,7 @@ const STATUS_STYLES: Record<ReportStatus, string> = {
 function getStatusLabel(status: ReportStatus, t: ReturnType<typeof useTranslation>['t']): string {
   switch (status) {
     case 'unassigned': return t.admin.statusUnassigned;
-    case 'assigned': return t.admin.statusUnassigned;
+    case 'assigned': return t.admin.statusAssigned;
     case 'in_review': return t.admin.statusInReview;
     case 'decided': return t.admin.statusDecided;
   }

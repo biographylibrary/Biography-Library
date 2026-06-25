@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { ShieldOff } from 'lucide-react';
 import { useAuth, ADMIN_ROLES, UserRole } from '@/lib/auth-context';
+import { useTranslation } from '@/lib/i18n/i18n-context';
 
 interface AdminGuardProps {
   children: React.ReactNode;
@@ -13,6 +14,7 @@ interface AdminGuardProps {
 
 export function AdminGuard({ children, requiredRole, redirectTo = '/dashboard' }: AdminGuardProps) {
   const { user, role, loading } = useAuth();
+  const { t } = useTranslation();
   const router = useRouter();
   const [countdown, setCountdown] = useState(3);
 
@@ -50,13 +52,12 @@ export function AdminGuard({ children, requiredRole, redirectTo = '/dashboard' }
               <ShieldOff className="h-8 w-8 text-brand-wine dark:text-brand-mustardLight" />
             </div>
           </div>
-          <h1 className="text-xl font-semibold text-foreground mb-2">Access Denied</h1>
+          <h1 className="text-xl font-semibold text-foreground mb-2">{t.admin.guardAccessDenied}</h1>
           <p className="text-sm text-muted-foreground mb-5">
-            You do not have permission to access this page.
+            {t.admin.guardAccessDeniedMessage}
           </p>
           <p className="text-xs text-muted-foreground">
-            Redirecting in{' '}
-            <span className="font-semibold tabular-nums text-foreground">{countdown}</span>s…
+            {t.admin.guardRedirectingIn.replace('{seconds}', String(countdown))}
           </p>
         </div>
       </div>

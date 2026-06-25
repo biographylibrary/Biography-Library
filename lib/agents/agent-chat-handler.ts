@@ -1,6 +1,8 @@
 import { NextRequest } from 'next/server';
 import { getBearerJwt, buildUserClient } from '@/lib/server/admin-api-auth';
 import { buildServiceClient } from '@/lib/server/review-submit-pipeline';
+import { isPlatformStaffRole } from '@/lib/server/staff-roles';
+import type { UserRole } from '@/lib/auth-context';
 import type { AgentType, AgentRole } from '@/lib/agents/models';
 import {
   checkAgentRateLimit,
@@ -143,7 +145,15 @@ export async function prepareAgentTurn(
   const locale = (payload.language ?? 'en').slice(0, 2);
   const { agentType, message, biographyId, activeSection } = payload;
 
-  const rate = await checkAgentRateLimit(serviceClient, userId);
+  const { data: staffProfile } = await serviceClient
+    .from('profiles')
+    .select('role')
+    .eq('id', userId)
+    .maybeSingle();
+
+  const skipRateLimit = isPlatformStaffRole(staffProfile?.role as UserRole | undefined);
+
+  const rate = await checkAgentRateLimit(serviceClient, userId, { skip: skipRateLimit });
   if (!rate.allowed) {
     return {
       ok: false,

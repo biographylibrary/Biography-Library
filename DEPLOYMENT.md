@@ -49,11 +49,10 @@ cp .env.example .env.local
 
 # 5. Deploy Edge Functions
 # Use the Supabase MCP deploy_edge_function tool for each function:
-#   ai-assistant, audio-transcription, help-assistant, log-error
+#   ai-assistant, audio-transcription, log-error
 # Then set Edge Function secrets in the Supabase dashboard:
 #   INFOMANIAK_AI_TOKEN, INFOMANIAK_AI_ENDPOINT,
 #   INFOMANIAK_AI_MODEL_PRIMARY, INFOMANIAK_AI_MODEL_FALLBACK (ai-assistant)
-#   INFOMANIAK_AI_MODEL_HELP_PRIMARY, INFOMANIAK_AI_MODEL_HELP_FALLBACK (help-assistant)
 
 # 6. Start the dev server
 npm run dev
@@ -88,12 +87,10 @@ See `.env.example` for the full annotated list. The short version:
 | `INFOMANIAK_AI_MODEL`                   | `.env.local` / host env        | `/api/review/submit` (default: `google/gemma-4-31B-it`)                 |
 | `INFOMANIAK_AI_BASE_URL`                | `.env.local` / host env        | `/api/agents/*` (optional; derived from endpoint if unset)              |
 | `NEXT_PUBLIC_APP_URL`                   | `.env.local` / host env        | Canonical URL in meta tags                                              |
-| `INFOMANIAK_AI_TOKEN` (secret)          | Supabase Edge Function secrets | `ai-assistant`, `audio-transcription`, `help-assistant`                   |
+| `INFOMANIAK_AI_TOKEN` (secret)          | Supabase Edge Function secrets | `ai-assistant`, `audio-transcription`                   |
 | `INFOMANIAK_AI_ENDPOINT` (secret)       | Supabase Edge Function secrets | same functions                                                          |
 | `INFOMANIAK_AI_MODEL_PRIMARY` (secret)  | Supabase Edge Function secrets | `ai-assistant` (default in code: `google/gemma-4-31B-it`)             |
 | `INFOMANIAK_AI_MODEL_FALLBACK` (secret) | Supabase Edge Function secrets | `ai-assistant` (default: `mistralai/Mistral-Small-4-119B-2603`)         |
-| `INFOMANIAK_AI_MODEL_HELP_PRIMARY`      | Supabase Edge Function secrets | `help-assistant` (default: Nemotron Nano)                                 |
-| `INFOMANIAK_AI_MODEL_HELP_FALLBACK`     | Supabase Edge Function secrets | `help-assistant` (default: `mistralai/Ministral-3-14B-Instruct-2512`)   |
 
 
 Note the split: the Next.js API route (`/api/review/submit`) reads AI credentials from host environment variables. The Supabase Edge Functions read them from Supabase secrets. Both need the same token and endpoint set in their respective locations.
@@ -184,7 +181,6 @@ Four functions are deployed:
 | --------------------- | ----------------------------------------------------------------------- |
 | `ai-assistant`        | All writing AI actions (grammar, prompts, rewrite, follow-up, analysis) |
 | `audio-transcription` | Audio blob → transcript via Infomaniak Whisper endpoint                 |
-| `help-assistant`      | In-app help chatbot; searches local KB before calling AI                |
 | `log-error`           | Receives client-side error reports and writes to `error_logs` table     |
 
 
@@ -200,7 +196,7 @@ Per una **sequenza operativa** (merge → migrazioni prod → env → deploy →
 
 - Supabase project created; URL and anon key copied to host env vars
 - All migrations applied in order
-- Edge Functions deployed (ai-assistant, audio-transcription, help-assistant, log-error)
+- Edge Functions deployed (ai-assistant, audio-transcription, log-error)
 - Edge Function secrets set: `INFOMANIAK_AI_TOKEN`, `INFOMANIAK_AI_ENDPOINT`, model secrets per `DEPLOYMENT.md` (or unset secrets to use code defaults)
 - Host environment variables set on Jelastic: `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, `INFOMANIAK_AI_ENDPOINT`, `INFOMANIAK_AI_TOKEN`, `INFOMANIAK_AI_MODEL` (`google/gemma-4-31B-it`), `NEXT_PUBLIC_APP_URL`
 - `npm run build` passes without errors on the container

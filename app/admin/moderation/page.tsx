@@ -8,8 +8,6 @@ import { useModerationReports } from '@/lib/moderation/use-moderation-reports';
 import { ModerationFilters } from '@/components/admin/ModerationFilters';
 import { ModerationTable } from '@/components/admin/ModerationTable';
 import { ModerationDetailPanel } from '@/components/admin/ModerationDetailPanel';
-import { AdminGuard } from '@/components/admin/AdminGuard';
-import { AdminNav } from '@/components/admin/AdminNav';
 
 function ModerationContent() {
   const { t } = useTranslation();
@@ -24,10 +22,7 @@ function ModerationContent() {
   const { reports, unassignedCount, loading: reportsLoading, error, refresh } = useModerationReports(filters);
 
   return (
-    <div className="min-h-full bg-background">
-      <AdminNav />
-
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+    <>
         <div className="flex items-center gap-3 mb-8">
           <div className="p-2.5 rounded-xl bg-[#C4DAEB] dark:bg-[#C4DAEB]/20 shrink-0">
             <Shield className="h-5 w-5 text-[#121212] dark:text-[#FDFBF7]" />
@@ -42,8 +37,7 @@ function ModerationContent() {
               )}
             </h1>
             <p className="text-sm text-muted-foreground mt-0.5">
-              {t.admin.loadingReports && ''}
-              Review and act on reported content
+              {t.admin.moderationSubtitle}
             </p>
           </div>
         </div>
@@ -57,7 +51,6 @@ function ModerationContent() {
             onOpen={setSelectedReport}
           />
         </div>
-      </div>
 
       <ModerationDetailPanel
         report={selectedReport}
@@ -67,14 +60,10 @@ function ModerationContent() {
           setSelectedReport(null);
         }}
       />
-    </div>
+    </>
   );
 }
 
 export default function AdminModerationPage() {
-  return (
-    <AdminGuard>
-      <ModerationContent />
-    </AdminGuard>
-  );
+  return <ModerationContent />;
 }

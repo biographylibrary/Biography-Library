@@ -40,8 +40,12 @@ const burstBuckets = new Map<string, { count: number; resetAt: number }>();
 
 export async function checkAgentRateLimit(
   serviceClient: SupabaseClient,
-  userId: string
+  userId: string,
+  options?: { skip?: boolean }
 ): Promise<{ allowed: boolean; reason?: 'daily' | 'burst' }> {
+  if (options?.skip) {
+    return { allowed: true };
+  }
   const now = Date.now();
   const burst = burstBuckets.get(userId);
   if (!burst || now >= burst.resetAt) {

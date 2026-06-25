@@ -4,6 +4,8 @@ import { checkAgentRateLimit } from '@/lib/agents/thread-service';
 import { isEchoTtsConfigured } from '@/lib/echo/voice-config';
 import { synthesizeVoxtralSpeech } from '@/lib/echo/voxtral-tts';
 import { buildServiceClient } from '@/lib/server/review-submit-pipeline';
+import { isPlatformStaffRole } from '@/lib/server/staff-roles';
+import type { UserRole } from '@/lib/auth-context';
 
 export const runtime = 'nodejs';
 
@@ -22,7 +24,16 @@ export async function POST(req: NextRequest) {
   }
 
   const serviceClient = buildServiceClient();
-  const rateLimit = await checkAgentRateLimit(serviceClient, auth.userId);
+
+  const { data: staffProfile } = await serviceClient
+    .from('profiles')
+    .select('role')
+    .eq('id', auth.userId)
+    .maybeSingle();
+
+  const rateLimit = await checkAgentRateLimit(serviceClient, auth.userId, {
+    skip: isPlatformStaffRole(staffProfile?.role as UserRole | undefined),
+  });
   if (!rateLimit.allowed) {
     return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
   }

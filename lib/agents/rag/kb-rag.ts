@@ -45,6 +45,34 @@ export type SeedHelpKbResult = {
   locales: KbLocale[];
 };
 
+const ACCOUNT_KB_SOURCE_KEYS = [
+  'account_and_biography_model',
+  'registration_and_onboarding',
+  'faq',
+] as const;
+
+const ACCOUNT_QUERY_RE =
+  /\b(account|accounts|biograph(y|ies)|memorial|autobiograph|onboarding|padre|madre|father|mother|famil(y|iar)|compte|comptes|biographie|konto|konten)\b/i;
+
+export async function pruneStaleKbChunks(serviceClient: SupabaseClient): Promise<number> {
+  const validKeys = new Set(HELP_KB_SECTIONS.map((s) => s.sourceKey));
+  const { data, error } = await serviceClient.from('kb_chunks').select('source_key');
+  if (error) throw error;
+
+  const staleKeys = Array.from(
+    new Set(
+      (data ?? [])
+        .map((r) => (r as { source_key: string }).source_key)
+        .filter((key) => !validKeys.has(key))
+    )
+  );
+  if (staleKeys.length === 0) return 0;
+
+  const { error: delError } = await serviceClient.from('kb_chunks').delete().in('source_key', staleKeys);
+  if (delError) throw delError;
+  return staleKeys.length;
+}
+
 export async function seedHelpKb(
   serviceClient: SupabaseClient,
   locales: KbLocale[] = [...KB_LOCALES]
@@ -131,6 +159,24 @@ export async function ensureHelpKbIndexed(
   }
 }
 
+async function fetchPinnedAccountChunks(
+  serviceClient: SupabaseClient,
+  locale: KbLocale
+): Promise<{ sourceKey: string; content: string }[]> {
+  const { data, error } = await serviceClient
+    .from('kb_chunks')
+    .select('source_key, content')
+    .eq('locale', locale)
+    .in('source_key', [...ACCOUNT_KB_SOURCE_KEYS])
+    .order('source_key');
+
+  if (error || !data?.length) return [];
+  return (data as { source_key: string; content: string }[]).map((row) => ({
+    sourceKey: row.source_key,
+    content: row.content,
+  }));
+}
+
 export async function retrieveKbContext(
   serviceClient: SupabaseClient,
   query: string,
@@ -143,6 +189,8 @@ export async function retrieveKbContext(
       ? ['en']
       : [loc as KbLocale, 'en']
     : ['en'];
+
+  const pinAccountChunks = ACCOUNT_QUERY_RE.test(query);
 
   let queryVec: number[];
   try {
@@ -170,13 +218,33 @@ export async function retrieveKbContext(
         };
       })
       .filter((x): x is { sourceKey: string; content: string; score: number } => x !== null)
-      .sort((a, b) => b.score - a.score)
-      .slice(0, k);
+      .sort((a, b) => b.score - a.score);
 
     if (!scored.length) continue;
 
-    const sources = Array.from(new Set(scored.map((s) => s.sourceKey)));
-    const context = scored.map((s) => `[${s.sourceKey}] ${s.content}`).join('\n---\n');
+    const picked: { sourceKey: string; content: string }[] = [];
+    const seen = new Set<string>();
+
+    if (pinAccountChunks) {
+      const pinned = await fetchPinnedAccountChunks(serviceClient, tryLocale);
+      for (const p of pinned) {
+        if (seen.has(p.sourceKey)) continue;
+        seen.add(p.sourceKey);
+        picked.push(p);
+      }
+    }
+
+    for (const row of scored) {
+      if (picked.length >= k) break;
+      if (seen.has(row.sourceKey)) continue;
+      seen.add(row.sourceKey);
+      picked.push({ sourceKey: row.sourceKey, content: row.content });
+    }
+
+    if (!picked.length) continue;
+
+    const sources = picked.map((s) => s.sourceKey);
+    const context = picked.map((s) => `[${s.sourceKey}] ${s.content}`).join('\n---\n');
     return { context, sources };
   }
 
