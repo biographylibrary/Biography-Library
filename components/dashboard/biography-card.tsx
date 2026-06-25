@@ -55,10 +55,10 @@ export function BiographyCard({ biography, onEdit, onDelete }: BiographyCardProp
         : 'border-border/50 hover:border-border'
     )}>
       <div className="p-5">
-        <div className="flex items-start justify-between mb-3">
-          <div className="flex items-center gap-2">
+        <div className="flex items-start justify-between mb-3 gap-2 min-w-0">
+          <div className="flex items-center gap-2 min-w-0 flex-1">
             <BookOpen className="h-4 w-4 text-primary shrink-0" />
-            <h3 className="font-medium text-sm truncate max-w-[180px]">
+            <h3 className="font-medium text-sm truncate min-w-0">
               {biography.title || t.biography.untitled}
             </h3>
           </div>
@@ -79,7 +79,7 @@ export function BiographyCard({ biography, onEdit, onDelete }: BiographyCardProp
           {t.biography.updated} {formattedDate}
         </p>
 
-        <div className="flex items-center gap-2 mb-4">
+        <div className="flex items-center gap-2 flex-wrap mb-4">
           <span className={cn('inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full font-medium', privacy.className)}>
             <PrivacyIcon className="h-3 w-3" />
             {privacy.label}

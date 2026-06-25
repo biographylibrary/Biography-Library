@@ -14,6 +14,8 @@ import { renderSemanticHtmlBody } from '@/lib/pdf/semantic-html-renderer';
 import { planTextBeforeBlockBreak } from '@/lib/pdf/block-pagination';
 import { addImageFitted } from '@/lib/pdf/photo-fit';
 import { splitTextToSizeLang } from '@/lib/pdf/text-wrap';
+import { resolvePdfBiographyLabels } from '@/lib/biography-display';
+import type { Language } from '@/lib/i18n/translations';
 
 type PdfSupabase = SupabaseClient<any, any, any>;
 import { BIOGRAPHY_SECTIONS } from './editor-constants';
@@ -34,6 +36,8 @@ export interface BiographyData {
   id?: string;
   title: string;
   author_name: string;
+  subject_name?: string | null;
+  biography_type?: 'autobiography' | 'memorial';
   content: Record<string, { text: string }>;
   content_freeflow?: string;
   biography_mode?: 'sections' | 'freeflow';
@@ -1350,7 +1354,7 @@ export async function checkBiographyPdfReadiness(
 
   const { data: bio } = await supabase
     .from('biographies')
-    .select('title, author_name, biography_mode, content, content_freeflow')
+    .select('title, author_name, subject_name, biography_type, biography_mode, content, content_freeflow')
     .eq('id', biographyId)
     .maybeSingle();
 
@@ -1358,7 +1362,12 @@ export async function checkBiographyPdfReadiness(
     return { ok: false, issues: ['missing-content'] };
   }
 
-  if (!bio.title?.trim()) issues.push('missing-title');
+  if (bio.biography_type === 'memorial') {
+    const subject = bio.subject_name?.trim() || bio.title?.trim();
+    if (!subject) issues.push('missing-title');
+  } else if (!bio.title?.trim()) {
+    issues.push('missing-title');
+  }
   if (!bio.author_name?.trim()) issues.push('missing-author');
   if (!bio.biography_mode) issues.push('missing-mode');
 
@@ -1438,6 +1447,10 @@ export async function generateBiographyPDF(
   const watermarkLabel =
     draftIteration != null ? getDraftLabel(draftIteration, lang) : null;
 
+  const pdfLabels = resolvePdfBiographyLabels(biography, lang as Language);
+  const pdfTitle = pdfLabels.title;
+  const pdfAuthor = pdfLabels.author_name;
+
   const centerX = B5_W / 2;
 
   const doc = new jsPDF({
@@ -1470,8 +1483,8 @@ export async function generateBiographyPDF(
     const dims = await resolveCoverImagePixelDimensions(doc, coverComposite!.base64, coverComposite!.format);
     await drawPhotoCover(
       doc,
-      biography.title,
-      biography.author_name,
+      pdfTitle,
+      pdfAuthor,
       coverComposite!.base64,
       coverComposite!.format,
       dims,
@@ -1524,12 +1537,14 @@ export async function generateBiographyPDF(
   applyFont(doc, 'normal');
   doc.setFontSize(PT_TITLE_PAGE_AUTHOR);
   doc.setTextColor(80, 80, 80);
-  doc.text(biography.author_name, centerX, 40, { align: 'center' });
+  if (pdfAuthor.trim()) {
+    doc.text(pdfAuthor, centerX, 40, { align: 'center' });
+  }
 
   applyFont(doc, 'normal');
   doc.setFontSize(PT_TITLE_PAGE_TITLE);
   doc.setTextColor(0, 0, 0);
-  const titlePageLines = splitPdfText(doc, biography.title, coverSafeWidth, lang);
+  const titlePageLines = splitPdfText(doc, pdfTitle, coverSafeWidth, lang);
   let titlePageY = B5_H / 2 - (titlePageLines.length * ptToMm(PT_TITLE_PAGE_TITLE * LINE_HEIGHT_BODY)) / 2;
   titlePageLines.forEach((line: string) => {
     doc.text(line, centerX, titlePageY, { align: 'center' });

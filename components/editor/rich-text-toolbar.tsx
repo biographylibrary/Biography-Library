@@ -317,7 +317,7 @@ export function RichTextToolbar({
         </>
       )}
 
-      <div className="ml-auto text-xs text-muted-foreground">
+      <div className="w-full sm:w-auto sm:ml-auto text-xs text-muted-foreground text-right shrink-0">
         {editor.storage.characterCount?.characters() || 0} {t.editor.chars}
       </div>
     </div>

@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { User, Flame, Loader as Loader2, PenLine, Upload, BookOpen, Lock, Users, Globe } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -34,12 +34,19 @@ import {
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 
+const WIZARD_DRAFT_KEY = 'bl_onboarding_wizard_draft';
+
 const EMPTY_AUTO: AutobiographyDeclarationValues = {
   identity: false,
   ageConfirm: false,
   termsAccept: false,
   responsibility: false,
 };
+
+const SELECTED_CHOICE_CLASS =
+  'border-foreground !bg-brand-blue shadow-md dark:border-foreground dark:!bg-brand-blue';
+const UNSELECTED_CHOICE_CLASS =
+  'border-border bg-card hover:border-foreground/30 hover:bg-brand-blue/40';
 
 const EMPTY_MEM: MemorialDeclarationValues = {
   deceased: false,
@@ -70,18 +77,57 @@ export function OnboardingWizard() {
   const [autoDecl, setAutoDecl] = useState(EMPTY_AUTO);
   const [memDecl, setMemDecl] = useState(EMPTY_MEM);
   const [title, setTitle] = useState('');
+  const [subjectName, setSubjectName] = useState('');
+  const [authorName, setAuthorName] = useState('');
   const [privacy, setPrivacy] = useState<'private' | 'link-only' | 'public'>('private');
   const [writingPath, setWritingPath] = useState<WritingPath | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
-    if (onboardingState?.onboarding_wizard_step) {
-      setStep(onboardingState.onboarding_wizard_step);
+    if (!user) return;
+    const fallback =
+      (user.user_metadata?.name as string | undefined)?.trim() ||
+      (user.email ?? '').split('@')[0].trim();
+    if (fallback) setAuthorName(fallback);
+  }, [user]);
+
+  useEffect(() => {
+    try {
+      const raw = sessionStorage.getItem(WIZARD_DRAFT_KEY);
+      if (!raw) return;
+      const draft = JSON.parse(raw) as {
+        title?: string;
+        subjectName?: string;
+        authorName?: string;
+        privacy?: 'private' | 'link-only' | 'public';
+      };
+      if (draft.title) setTitle(draft.title);
+      if (draft.subjectName) setSubjectName(draft.subjectName);
+      if (draft.authorName) setAuthorName(draft.authorName);
+      if (draft.privacy) setPrivacy(draft.privacy);
+    } catch {
+      /* ignore corrupt draft */
     }
-    if (onboardingState?.legal_declaration_type) {
+  }, []);
+
+  useEffect(() => {
+    try {
+      sessionStorage.setItem(
+        WIZARD_DRAFT_KEY,
+        JSON.stringify({ title, subjectName, authorName, privacy })
+      );
+    } catch {
+      /* storage unavailable */
+    }
+  }, [title, subjectName, authorName, privacy]);
+
+  useEffect(() => {
+    if (!onboardingState) return;
+    setStep(onboardingState.onboarding_wizard_step ?? 'biography_type');
+    if (onboardingState.legal_declaration_type) {
       setBiographyType(onboardingState.legal_declaration_type);
     }
-    if (onboardingState?.onboarding_writing_path) {
+    if (onboardingState.onboarding_writing_path) {
       setWritingPath(onboardingState.onboarding_writing_path);
     }
   }, [onboardingState]);
@@ -101,6 +147,9 @@ export function OnboardingWizard() {
           ? isAutobiographyDeclarationComplete(autoDecl)
           : isMemorialDeclarationComplete(memDecl);
       case 'details':
+        if (biographyType === 'memorial') {
+          return subjectName.trim().length > 0 && authorName.trim().length > 0;
+        }
         return title.trim().length > 0;
       case 'path':
         return writingPath !== null;
@@ -109,20 +158,32 @@ export function OnboardingWizard() {
     }
   };
 
-  const handleSkip = useCallback(async () => {
-    await patchOnboarding({ action: 'skip' });
+  const handleBack = async () => {
+    const prev = prevStep(step);
+    setStep(prev);
+    await patchOnboarding({ wizardStep: prev });
     await refreshOnboarding();
-    router.push('/echo');
-  }, [refreshOnboarding, router]);
-
-  const handleBack = () => {
-    setStep(prevStep(step));
   };
 
   const handleContinue = async () => {
     if (!canContinue()) return;
 
-    if (step === 'path' && writingPath && biographyType && user) {
+    if (step === 'path') {
+      if (!writingPath || !biographyType || !user) {
+        toast.error(t.toast.error);
+        return;
+      }
+      if (!title.trim() && biographyType !== 'memorial') {
+        toast.error(t.biography.titleLabel);
+        setStep('details');
+        return;
+      }
+      if (biographyType === 'memorial' && (!subjectName.trim() || !authorName.trim())) {
+        toast.error(t.biography.memorialDetailsSubtitle);
+        setStep('details');
+        return;
+      }
+
       setSubmitting(true);
       try {
         const { data: existing } = await fetchBiographies(user.id);
@@ -134,14 +195,16 @@ export function OnboardingWizard() {
 
         const mode =
           writingPath === 'sections' ? 'sections' : ('freeflow' as const);
+        const isMemorial = biographyType === 'memorial';
         const { data, error } = await createBiography(
           user.id,
-          title.trim(),
+          isMemorial ? subjectName.trim() : title.trim(),
           privacy,
           mode,
-          user.user_metadata?.name || user.email || '',
+          isMemorial ? authorName.trim() : user.user_metadata?.name || user.email || '',
           biographyType,
-          language
+          language,
+          isMemorial ? subjectName.trim() : undefined
         );
         if (error || !data) {
           if (error === ONE_BIOGRAPHY_PER_USER_ERROR) {
@@ -150,18 +213,27 @@ export function OnboardingWizard() {
           throw new Error(error ?? 'Failed');
         }
 
-        await patchOnboarding({
+        const { error: patchError } = await patchOnboarding({
           action: 'complete_wizard',
           writingPath,
           biographyType,
         });
-        await refreshOnboarding();
+        if (patchError) {
+          throw new Error(patchError);
+        }
+
+        try {
+          sessionStorage.removeItem(WIZARD_DRAFT_KEY);
+        } catch {
+          /* ignore */
+        }
 
         const params = new URLSearchParams({ tour: '1' });
         if (writingPath === 'freeflow_import' || writingPath === 'publish_ready') {
           params.set('import', '1');
         }
         router.push(`/biography/${data.id}/edit?${params.toString()}`);
+        void refreshOnboarding();
       } catch (e) {
         toast.error(e instanceof Error ? e.message : t.echo.errorGeneric);
       } finally {
@@ -182,20 +254,20 @@ export function OnboardingWizard() {
   };
 
   return (
-    <div className="w-full max-w-3xl mx-auto space-y-8">
+    <div className="w-full max-w-3xl mx-auto space-y-6 sm:space-y-8">
       <OnboardingProgress currentStep={step} />
 
       {step === 'biography_type' && (
         <div className="space-y-6 animate-in fade-in duration-300">
-          <div className="space-y-1 text-center">
-            <h1 className="text-3xl font-serif font-semibold">{t.biographyType.title}</h1>
+          <div className="space-y-1 text-center px-1">
+            <h1 className="text-2xl sm:text-3xl font-serif font-semibold">{t.biographyType.title}</h1>
             <p className="text-muted-foreground">{t.onboardingWizard.typeSubtitle}</p>
           </div>
           <div className="grid md:grid-cols-2 gap-4">
             <Card
               className={cn(
                 'border-2 cursor-pointer transition-all hover:shadow-md',
-                biographyType === 'autobiography' && 'border-primary shadow-md'
+                biographyType === 'autobiography' ? SELECTED_CHOICE_CLASS : UNSELECTED_CHOICE_CLASS
               )}
               onClick={() => setBiographyType('autobiography')}
             >
@@ -208,7 +280,7 @@ export function OnboardingWizard() {
             <Card
               className={cn(
                 'border-2 cursor-pointer transition-all hover:shadow-md',
-                biographyType === 'memorial' && 'border-primary shadow-md'
+                biographyType === 'memorial' ? SELECTED_CHOICE_CLASS : UNSELECTED_CHOICE_CLASS
               )}
               onClick={() => setBiographyType('memorial')}
             >
@@ -246,16 +318,41 @@ export function OnboardingWizard() {
         <div className="space-y-6 animate-in fade-in duration-300">
           <div className="space-y-1">
             <h1 className="text-2xl font-serif font-semibold">{t.biography.newBiography}</h1>
-            <p className="text-muted-foreground text-sm">{t.biography.startDescription}</p>
+            <p className="text-muted-foreground text-sm">
+              {biographyType === 'memorial'
+                ? t.biography.memorialDetailsSubtitle
+                : t.biography.startDescription}
+            </p>
           </div>
-          <div className="space-y-2">
-            <Label>{t.biography.titleLabel}</Label>
-            <Input
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              placeholder={t.biography.titlePlaceholder}
-            />
-          </div>
+          {biographyType === 'memorial' ? (
+            <>
+              <div className="space-y-2">
+                <Label>{t.biography.subjectNameLabel}</Label>
+                <Input
+                  value={subjectName}
+                  onChange={(e) => setSubjectName(e.target.value)}
+                  placeholder={t.biography.subjectNamePlaceholder}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>{t.biography.writerNameLabel}</Label>
+                <Input
+                  value={authorName}
+                  onChange={(e) => setAuthorName(e.target.value)}
+                  placeholder={t.biography.writerNamePlaceholder}
+                />
+              </div>
+            </>
+          ) : (
+            <div className="space-y-2">
+              <Label>{t.biography.titleLabel}</Label>
+              <Input
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                placeholder={t.biography.titlePlaceholder}
+              />
+            </div>
+          )}
           <div className="space-y-2">
             <Label>{t.biography.privacyLabel}</Label>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
@@ -269,10 +366,10 @@ export function OnboardingWizard() {
                     onClick={() => setPrivacy(option.value)}
                     className={cn(
                       'flex flex-col items-center gap-2 p-3 rounded-lg border-2 transition-all text-center',
-                      selected ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/30'
+                      selected ? SELECTED_CHOICE_CLASS : UNSELECTED_CHOICE_CLASS
                     )}
                   >
-                    <Icon className={cn('h-5 w-5', selected ? 'text-primary' : 'text-muted-foreground')} />
+                    <Icon className={cn('h-5 w-5', selected ? 'text-brand-ink dark:text-brand-beigeLight' : 'text-muted-foreground')} />
                     <span className="text-xs font-medium">{option.label}</span>
                     <span className="text-[10px] text-muted-foreground">{option.description}</span>
                   </button>
@@ -318,7 +415,7 @@ export function OnboardingWizard() {
                 onClick={() => setWritingPath(id)}
                 className={cn(
                   'w-full text-left flex items-start gap-4 p-4 rounded-xl border-2 transition-all',
-                  writingPath === id ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/40'
+                  writingPath === id ? SELECTED_CHOICE_CLASS : UNSELECTED_CHOICE_CLASS
                 )}
               >
                 <Icon className="h-6 w-6 text-primary shrink-0 mt-0.5" />
@@ -335,25 +432,27 @@ export function OnboardingWizard() {
         </div>
       )}
 
-      <div className="flex items-center justify-between gap-3 pt-2">
-        <Button type="button" variant="ghost" onClick={() => void handleSkip()}>
-          {t.onboardingWizard.skipForNow}
-        </Button>
-        <div className="flex gap-2">
-          {step !== 'biography_type' && (
-            <Button type="button" variant="outline" onClick={handleBack} disabled={submitting}>
-              {t.common.back}
-            </Button>
-          )}
+      <div className="flex flex-col sm:flex-row sm:justify-end gap-2 pt-2">
+        {step !== 'biography_type' && (
           <Button
             type="button"
-            onClick={() => void handleContinue()}
-            disabled={!canContinue() || submitting}
+            variant="outline"
+            className="w-full sm:w-auto"
+            onClick={() => void handleBack()}
+            disabled={submitting}
           >
-            {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
-            {step === 'path' ? t.onboardingWizard.startTour : t.writingModeOnboarding.continueButton}
+            {t.common.back}
           </Button>
-        </div>
+        )}
+        <Button
+          type="button"
+          className="w-full sm:w-auto"
+          onClick={() => void handleContinue()}
+          disabled={!canContinue() || submitting}
+        >
+          {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
+          {step === 'path' ? t.onboardingWizard.startTour : t.writingModeOnboarding.continueButton}
+        </Button>
       </div>
     </div>
   );

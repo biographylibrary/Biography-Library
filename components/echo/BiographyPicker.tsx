@@ -30,7 +30,7 @@ export function BiographyPicker({ biographies, currentId, className }: Biography
       value={value}
       onValueChange={(id) => router.push(`/biography/${id}/edit`)}
     >
-      <SelectTrigger className={className ?? 'w-[200px] h-9 text-sm'}>
+      <SelectTrigger className={className ?? 'min-w-0 flex-1 max-w-[12.5rem] h-9 text-sm'}>
         <SelectValue placeholder={t.echo.pickBiography} />
       </SelectTrigger>
       <SelectContent>

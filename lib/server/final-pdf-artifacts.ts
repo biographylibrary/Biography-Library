@@ -20,7 +20,7 @@ export async function loadBiographyDataForPdfExport(
   const { data: bio, error } = await svc
     .from('biographies')
     .select(
-      'title, author_name, biography_mode, content, content_freeflow, narrative_order, final_version, status, created_at'
+      'title, author_name, subject_name, biography_type, biography_mode, content, content_freeflow, narrative_order, final_version, status, created_at'
     )
     .eq('id', biographyId)
     .maybeSingle();
@@ -51,6 +51,8 @@ export async function loadBiographyDataForPdfExport(
     id: biographyId,
     title: bio.title ?? '',
     author_name: bio.author_name ?? '',
+    subject_name: bio.subject_name ?? null,
+    biography_type: (bio.biography_type as 'autobiography' | 'memorial') ?? 'autobiography',
     content,
     content_freeflow: bio.content_freeflow ?? '',
     biography_mode: bio.biography_mode as 'sections' | 'freeflow',

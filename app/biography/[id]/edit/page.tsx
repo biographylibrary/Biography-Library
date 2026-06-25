@@ -76,6 +76,8 @@ function EditorOnboardingTour({
   onOpenImport,
   onOpenExport,
   onOpenReview,
+  onOpenMobileSidebar,
+  onCloseMobileSidebar,
   onTourFinished,
 }: {
   active: boolean;
@@ -84,6 +86,8 @@ function EditorOnboardingTour({
   onOpenImport: () => void;
   onOpenExport: () => void;
   onOpenReview: () => void;
+  onOpenMobileSidebar: () => void;
+  onCloseMobileSidebar: () => void;
   onTourFinished: () => void;
 }) {
   const { setBubbleOpen } = useEcho();
@@ -107,6 +111,8 @@ function EditorOnboardingTour({
       onOpenExport={onOpenExport}
       onOpenEcho={handleOpenEcho}
       onOpenReview={onOpenReview}
+      onOpenMobileSidebar={onOpenMobileSidebar}
+      onCloseMobileSidebar={onCloseMobileSidebar}
       onFinished={onTourFinished}
     />
   );
@@ -237,6 +243,7 @@ const [isPublishing, setIsPublishing] = useState(false);
   const contentFreeflowRef = useRef(contentFreeflow);
   const slugRef = useRef(slug);
   const authorNameRef = useRef(authorName);
+  const biographyTypeRef = useRef(biographyType);
 
   useEffect(() => {
     contentRef.current = content;
@@ -263,6 +270,10 @@ const [isPublishing, setIsPublishing] = useState(false);
   }, [authorName]);
 
   useEffect(() => {
+    biographyTypeRef.current = biographyType;
+  }, [biographyType]);
+
+  useEffect(() => {
     if (!id || !biographyMode) return;
     try {
       localStorage.setItem(lastBiographyEditorModeStorageKey(id), biographyMode);
@@ -287,7 +298,13 @@ const [isPublishing, setIsPublishing] = useState(false);
         .maybeSingle();
       if (data) {
         setBiography(data);
-        setTitle(data.title);
+        const loadedType = (data.biography_type as 'autobiography' | 'memorial') || 'autobiography';
+        setBiographyType(loadedType);
+        setTitle(
+          loadedType === 'memorial'
+            ? (data.subject_name as string | null)?.trim() || data.title
+            : data.title
+        );
         setPrivacy((data.visibility as 'private' | 'link-only' | 'public') ?? 'private');
         setStatus(data.status || 'draft');
         setBiographyStatus(
@@ -309,7 +326,6 @@ const [isPublishing, setIsPublishing] = useState(false);
         setNarrativeOrder((data.narrative_order as string[]) || []);
         setBiographyMode((data.biography_mode as 'sections' | 'freeflow') || 'sections');
         setContentFreeflow(data.content_freeflow || '');
-        setBiographyType((data.biography_type as 'autobiography' | 'memorial') || 'autobiography');
 
         let resolvedAuthorName = data.author_name ?? '';
         if (!resolvedAuthorName.trim() && user) {
@@ -409,10 +425,12 @@ const [isPublishing, setIsPublishing] = useState(false);
     if (!id || !dirtyRef.current || applyingEchoDraftRef.current) return;
     dirtyRef.current = false;
     setSaveStatus('saving');
+    const isMemorial = biographyTypeRef.current === 'memorial';
     const { error } = await supabase
       .from('biographies')
       .update({
         title: titleRef.current,
+        ...(isMemorial ? { subject_name: titleRef.current } : {}),
         visibility: privacyRef.current,
         content: contentRef.current,
         biography_mode: biographyModeRef.current,
@@ -1817,6 +1835,7 @@ const [isPublishing, setIsPublishing] = useState(false);
         isFrozen={isFrozen}
         authorName={authorName}
         onAuthorNameChange={handleAuthorNameChange}
+        biographyType={biographyType}
       />
 
       {isFrozen && (
@@ -2093,10 +2112,11 @@ const [isPublishing, setIsPublishing] = useState(false);
       )}
 
       <div className="flex-1 flex min-h-0 relative">
-        <div className="lg:hidden fixed bottom-4 left-4 z-40">
+        <div className="lg:hidden fixed bottom-4 left-4 z-[60]">
           <Button
             size="icon"
-            className="h-12 w-12 rounded-full "
+            data-tour-id="mobile-sidebar-toggle"
+            className="h-12 w-12 rounded-full shadow-lg"
             onClick={() => setShowMobileSidebar(!showMobileSidebar)}
           >
             {showMobileSidebar ? (
@@ -2432,6 +2452,8 @@ const [isPublishing, setIsPublishing] = useState(false);
             id,
             title: titleRef.current,
             author_name: authorNameRef.current,
+            subject_name: biographyTypeRef.current === 'memorial' ? titleRef.current : null,
+            biography_type: biographyTypeRef.current,
             content: contentRef.current,
             content_freeflow: contentFreeflowRef.current,
             biography_mode: biographyModeRef.current,
@@ -2648,6 +2670,8 @@ const [isPublishing, setIsPublishing] = useState(false);
         onOpenImport={() => setShowImportDialog(true)}
         onOpenExport={() => setShowExportDialog(true)}
         onOpenReview={() => setShowReviewPublicationDialog(true)}
+        onOpenMobileSidebar={() => setShowMobileSidebar(true)}
+        onCloseMobileSidebar={() => setShowMobileSidebar(false)}
         onTourFinished={handleTourFinished}
       />
     </div>

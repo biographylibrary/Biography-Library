@@ -41,13 +41,20 @@ export function EchoHeader({
     : '?';
 
   return (
-    <header className="flex items-center justify-between gap-4 px-4 py-3 border-b bg-background/95 backdrop-blur shrink-0">
-      <div className="flex items-center gap-3 min-w-0">
-        <Link href="/echo" className="font-serif text-lg font-semibold shrink-0">
+    <header className="flex items-center justify-between gap-2 sm:gap-4 px-4 py-3 border-b bg-background/95 backdrop-blur shrink-0 min-w-0 overflow-hidden">
+      <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1 overflow-hidden">
+        <Link
+          href="/echo"
+          className="font-serif text-base sm:text-lg font-semibold shrink-0 truncate max-w-[7.5rem] sm:max-w-none"
+        >
           Biography Library
         </Link>
         {showPicker && biographies.length > 0 && (
-          <BiographyPicker biographies={biographies} currentId={currentBiographyId} />
+          <BiographyPicker
+            biographies={biographies}
+            currentId={currentBiographyId}
+            className="min-w-0 flex-1 max-w-[9rem] sm:max-w-[12.5rem] h-9 text-sm"
+          />
         )}
       </div>
       <div className="flex items-center gap-2 shrink-0">

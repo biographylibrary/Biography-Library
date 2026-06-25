@@ -52,9 +52,8 @@ function needsOnboardingRedirect(
   state: OnboardingProfileState | null
 ): boolean {
   if (!state) return false;
-  if (state.onboarding_phase === 'completed' || state.onboarding_phase === 'skipped') {
-    return false;
-  }
+  if (state.onboarding_phase === 'completed') return false;
+  if (state.onboarding_phase === 'tour') return false;
   if (pathname.startsWith('/onboarding')) return false;
   if (pathname.match(/^\/biography\/[^/]+\/edit/)) return false;
   if (ONBOARDING_EXEMPT.some((p) => pathname.startsWith(p))) return false;

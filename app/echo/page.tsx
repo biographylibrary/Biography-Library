@@ -65,15 +65,21 @@ function EchoHubContent() {
         <main className="flex-1 flex flex-col max-w-2xl w-full mx-auto px-4 py-6 min-h-0">
           {showResumeIntro && (
             <Card className="mb-4 shrink-0 border-primary/30">
-              <CardContent className="p-4 flex items-center justify-between gap-3">
+              <CardContent className="p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                 <div className="min-w-0">
                   <p className="font-medium text-sm">{t.onboardingWizard.resumeIntro}</p>
                   <p className="text-xs text-muted-foreground mt-0.5">
                     {t.onboardingWizard.resumeIntroDescription}
                   </p>
                 </div>
-                <Button size="sm" variant="outline" onClick={() => void handleResumeIntro()}>
-                  {t.onboardingWizard.resumeIntro}
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="shrink-0 self-start sm:self-center"
+                  onClick={() => void handleResumeIntro()}
+                >
+                  <span className="sm:hidden">{t.welcome.continue}</span>
+                  <span className="hidden sm:inline">{t.onboardingWizard.resumeIntro}</span>
                   <ChevronRight className="ml-1 h-4 w-4" />
                 </Button>
               </CardContent>
@@ -83,7 +89,7 @@ function EchoHubContent() {
           {latestBio && (
             <Card className="mb-4 shrink-0">
               <CardContent className="p-4 flex flex-col gap-3">
-                <div className="flex items-center justify-between gap-3">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                   <div className="min-w-0">
                     <p className="text-sm text-muted-foreground">{t.echo.resumeButton}</p>
                     <p className="font-serif font-medium truncate">
@@ -92,9 +98,11 @@ function EchoHubContent() {
                   </div>
                   <Button
                     size="sm"
+                    className="shrink-0 self-start sm:self-center"
                     onClick={() => router.push(`/biography/${latestBio.id}/edit`)}
                   >
-                    {t.echo.resumeButton}
+                    <span className="hidden sm:inline">{t.echo.resumeButton}</span>
+                    <span className="sm:hidden">{t.welcome.continue}</span>
                     <ChevronRight className="ml-1 h-4 w-4" />
                   </Button>
                 </div>

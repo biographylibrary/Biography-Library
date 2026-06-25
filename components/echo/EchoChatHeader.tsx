@@ -20,7 +20,7 @@ export function EchoChatHeader({
   return (
     <div
       className={cn(
-        'flex items-center justify-between gap-3 shrink-0 h-12 px-3',
+        'flex items-center justify-between gap-3 shrink-0 h-12 px-3 min-w-0 overflow-hidden',
         'bg-dark-bg-main border-b border-white/10',
         className
       )}
@@ -31,6 +31,7 @@ export function EchoChatHeader({
         layout="horizontal"
         bordered
         tone="onDark"
+        className="shrink-0"
       />
       <p
         className={cn(

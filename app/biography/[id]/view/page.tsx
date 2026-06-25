@@ -19,10 +19,13 @@ import { ReportBiographyModal } from '@/components/editor/ReportBiographyModal';
 import { useToast } from '@/hooks/use-toast';
 import { Toaster } from '@/components/ui/toaster';
 import { logger } from '@/lib/logger';
+import { memorialSubjectName } from '@/lib/biography-display';
 
 interface BiographyViewData {
   id: string;
   title: string;
+  subject_name?: string | null;
+  biography_type?: 'autobiography' | 'memorial' | null;
   author_name: string;
   content: BiographyContent;
   visibility: string;
@@ -148,7 +151,7 @@ export default function BiographyViewPage() {
         const publicQuery = await supabase
           .from('biographies')
           .select(
-            'id, title, author_name, content, visibility, status, share_token, created_at, published_at, is_frozen, frozen_at, export_txt_url, export_docx_url, listing_cover_url'
+            'id, title, subject_name, biography_type, author_name, content, visibility, status, share_token, created_at, published_at, is_frozen, frozen_at, export_txt_url, export_docx_url, listing_cover_url'
           )
           .eq('id', resolvedId)
           .eq('visibility', 'public')
@@ -248,8 +251,11 @@ export default function BiographyViewPage() {
   };
 
   const getBiographyExportData = () => ({
+    id: biography!.id,
     title: biography!.title,
     author_name: biography!.author_name,
+    subject_name: biography!.subject_name ?? null,
+    biography_type: biography!.biography_type ?? 'autobiography',
     content: biography!.content,
     created_at: biography!.created_at,
   });
@@ -444,10 +450,14 @@ export default function BiographyViewPage() {
         <article className="prose prose-gray dark:prose-invert max-w-none">
           <div className="mb-12 pb-8 border-b border-border">
             <h1 className="text-4xl font-serif font-bold mb-2">
-              {biography.title}
+              {biography.biography_type === 'memorial'
+                ? memorialSubjectName(biography.subject_name, biography.title)
+                : biography.title}
             </h1>
             <p className="text-xl text-muted-foreground">
-              {t.view.by} {biography.author_name}
+              {biography.biography_type === 'memorial'
+                ? `${t.view.writtenBy} ${biography.author_name}`
+                : `${t.view.by} ${biography.author_name}`}
             </p>
             {biography.published_at && (
               <p className="text-sm text-muted-foreground mt-1">
