@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button';
 import { useTranslation } from '@/lib/i18n/i18n-context';
 import { BIOGRAPHY_SECTIONS, type BiographyContent } from '@/lib/editor-constants';
 import { getCoverPhotoDisplayUrl } from '@/lib/pdf-export';
+import { BiographySectionBody } from '@/components/biography/BiographySectionBody';
 
 function ReviewReadContent() {
   const params = useParams();
@@ -127,7 +128,7 @@ function ReviewReadContent() {
 
           {mode === 'freeflow' && freeflowText?.trim() && (
             <section className="mb-10">
-              <div className="whitespace-pre-wrap leading-relaxed font-serif text-base">{freeflowText}</div>
+              <BiographySectionBody text={freeflowText} />
             </section>
           )}
 
@@ -141,13 +142,7 @@ function ReviewReadContent() {
               return (
                 <section key={def.key} className="mb-10">
                   <h2 className="text-2xl font-serif font-semibold text-primary mb-4">{sectionTitle}</h2>
-                  <div className="whitespace-pre-wrap leading-relaxed font-serif text-base">
-                    {text.split('\n\n').map((paragraph, idx) => (
-                      <p key={idx} className="mb-4">
-                        {paragraph}
-                      </p>
-                    ))}
-                  </div>
+                  <BiographySectionBody text={text} />
                 </section>
               );
             })}
