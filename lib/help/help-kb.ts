@@ -193,7 +193,7 @@ The number shown in the badge (e.g. "2") is the number of active notes.
 
 PHOTOS
 
-The "Photos" item in the bottom sidebar opens the photo gallery panel for the biography. You can upload images (JPG, PNG, WEBP) up to 5 MB each. Each photo can have a caption. Photos are displayed in the online biography reader and are included in the PDF export as a gallery section at the end of the book, after the last chapter. The maximum number of photos per biography is 10. You can reorder photos by dragging them.
+The "Photos" item in the bottom sidebar opens the photo gallery panel for the biography. You can upload images (JPG, PNG, WEBP) up to 5 MB each. Each photo can have a caption. Photos are displayed in the online biography reader and are included in the PDF export as a gallery section at the end of the book, after the last chapter. The maximum number of gallery photos per biography is 30. Cover images (title card and custom A5) are separate and do not count toward this limit. You can reorder photos by dragging them.
 
 
 IMPORTING EXISTING TEXT

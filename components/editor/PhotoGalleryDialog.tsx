@@ -26,11 +26,11 @@ export function PhotoGalleryDialog({
       onOpenChange={onOpenChange}
       title={t.photos.panelTitle}
       icon={<Images className="h-5 w-5 text-primary" />}
-      bodyClassName="px-4 py-4"
+      bodyClassName="p-0"
     >
-      {open && (
+      {open ? (
         <PhotoGalleryPanel biographyId={biographyId} userId={userId} embedded />
-      )}
+      ) : null}
     </EditorSidebarDialog>
   );
 }

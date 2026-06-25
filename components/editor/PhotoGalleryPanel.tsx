@@ -22,8 +22,9 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import { GripVertical, Trash2, Upload, ImagePlus, X } from 'lucide-react';
+import { GripVertical, Trash2, Upload, ImagePlus, X, LayoutGrid, LayoutList } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { MAX_BIOGRAPHY_GALLERY_PHOTOS } from '@/lib/biography-media-constants';
 
 interface MediaRow {
   id: string;
@@ -49,6 +50,8 @@ interface PhotoGalleryPanelProps {
 const ACCEPTED_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
 const MAX_BYTES = 5 * 1024 * 1024;
 const SIGNED_URL_EXPIRES = 3600;
+
+type GalleryViewMode = 'grid' | 'detail';
 
 function useDebounce<T>(value: T, delay: number): T {
   const [debounced, setDebounced] = useState(value);
@@ -76,6 +79,134 @@ async function getSignedUrl(storagePath: string): Promise<string> {
   return data?.signedUrl ?? '';
 }
 
+interface PhotoMetaFieldsProps {
+  item: MediaRow;
+  onCaptionChange: (id: string, caption: string) => void;
+  onLayoutChange: (id: string, layout: string) => void;
+  compact?: boolean;
+}
+
+function PhotoMetaFields({
+  item,
+  onCaptionChange,
+  onLayoutChange,
+  compact = false,
+}: PhotoMetaFieldsProps) {
+  const { t } = useTranslation();
+  const [localCaption, setLocalCaption] = useState(item.caption ?? '');
+  const debouncedCaption = useDebounce(localCaption, 600);
+
+  useEffect(() => {
+    setLocalCaption(item.caption ?? '');
+  }, [item.id, item.caption]);
+
+  useEffect(() => {
+    if (debouncedCaption !== (item.caption ?? '')) {
+      onCaptionChange(item.id, debouncedCaption);
+    }
+  }, [debouncedCaption, item.caption, item.id, onCaptionChange]);
+
+  return (
+    <div className={cn('space-y-2', compact && 'pt-1')}>
+      <Input
+        value={localCaption}
+        onChange={(e) => setLocalCaption(e.target.value)}
+        placeholder={t.photos.captionPlaceholder}
+        className="text-sm text-left not-italic"
+      />
+      <div className="flex items-center gap-2">
+        <span className="text-xs text-muted-foreground shrink-0">
+          {t.photos.layoutLabel}
+        </span>
+        <Select value={item.layout} onValueChange={(val) => onLayoutChange(item.id, val)}>
+          <SelectTrigger className="h-8 text-xs flex-1">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="full-page">{t.photos.layoutFullPage}</SelectItem>
+            <SelectItem value="two-vertical">{t.photos.layoutTwoVertical}</SelectItem>
+            <SelectItem value="two-horizontal">{t.photos.layoutTwoHorizontal}</SelectItem>
+            <SelectItem value="three-mixed">{t.photos.layoutThreeMixed}</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+    </div>
+  );
+}
+
+interface PhotoGridTileProps {
+  item: MediaRow;
+  index: number;
+  selected: boolean;
+  dragging: boolean;
+  onSelect: (id: string) => void;
+  onDelete: (item: MediaRow) => void;
+  onDragStart: (e: React.DragEvent, id: string) => void;
+  onDragOver: (e: React.DragEvent) => void;
+  onDrop: (e: React.DragEvent, id: string) => void;
+  onDragEnd: () => void;
+}
+
+function PhotoGridTile({
+  item,
+  index,
+  selected,
+  dragging,
+  onSelect,
+  onDelete,
+  onDragStart,
+  onDragOver,
+  onDrop,
+  onDragEnd,
+}: PhotoGridTileProps) {
+  const { t } = useTranslation();
+  const displayUrl = item.previewUrl || item.file_url;
+
+  return (
+    <div
+      draggable
+      onDragStart={(e) => onDragStart(e, item.id)}
+      onDragOver={onDragOver}
+      onDrop={(e) => onDrop(e, item.id)}
+      onDragEnd={onDragEnd}
+      className={cn(
+        'group relative aspect-square rounded-lg overflow-hidden border-2 bg-muted transition-all duration-150 cursor-pointer',
+        selected ? 'border-primary ring-2 ring-primary/20' : 'border-border/60 hover:border-border',
+        dragging && 'opacity-50'
+      )}
+      onClick={() => onSelect(item.id)}
+    >
+      {displayUrl ? (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img src={displayUrl} alt={item.file_name ?? ''} className="w-full h-full object-cover" />
+      ) : (
+        <div className="w-full h-full flex items-center justify-center">
+          <ImagePlus className="h-6 w-6 text-muted-foreground/40" />
+        </div>
+      )}
+      <span className="absolute top-1 left-1 min-w-[1.25rem] h-5 px-1 rounded bg-black/55 text-white text-[10px] font-semibold flex items-center justify-center">
+        {index + 1}
+      </span>
+      <div className="absolute top-1 right-1 flex gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+        <div className="cursor-grab active:cursor-grabbing p-1 rounded bg-black/45 text-white">
+          <GripVertical className="h-3.5 w-3.5" />
+        </div>
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation();
+            onDelete(item);
+          }}
+          className="p-1 rounded bg-black/45 text-white hover:bg-brand-wine/80"
+          title={t.photos.deleteButton}
+        >
+          <Trash2 className="h-3.5 w-3.5" />
+        </button>
+      </div>
+    </div>
+  );
+}
+
 interface PhotoCardProps {
   item: MediaRow;
   onCaptionChange: (id: string, caption: string) => void;
@@ -100,19 +231,6 @@ function PhotoCard({
   onDragEnd,
 }: PhotoCardProps) {
   const { t } = useTranslation();
-  const [localCaption, setLocalCaption] = useState(item.caption ?? '');
-  const debouncedCaption = useDebounce(localCaption, 600);
-
-  useEffect(() => {
-    setLocalCaption(item.caption ?? '');
-  }, [item.id, item.caption]);
-
-  useEffect(() => {
-    if (debouncedCaption !== (item.caption ?? '')) {
-      onCaptionChange(item.id, debouncedCaption);
-    }
-  }, [debouncedCaption, item.caption, item.id, onCaptionChange]);
-
   const displayUrl = item.previewUrl || item.file_url;
 
   return (
@@ -133,10 +251,10 @@ function PhotoCard({
           <img
             src={displayUrl}
             alt={item.file_name ?? ''}
-            className="w-full h-48 object-cover"
+            className="w-full h-36 object-cover"
           />
         ) : (
-          <div className="w-full h-48 flex items-center justify-center">
+          <div className="w-full h-36 flex items-center justify-center">
             <ImagePlus className="h-8 w-8 text-muted-foreground/40" />
           </div>
         )}
@@ -153,33 +271,12 @@ function PhotoCard({
         </button>
       </div>
 
-      <div className="p-3 space-y-2">
-        <Input
-          value={localCaption}
-          onChange={(e) => setLocalCaption(e.target.value)}
-          placeholder={t.photos.captionPlaceholder}
-          className="text-sm text-left not-italic"
+      <div className="p-3">
+        <PhotoMetaFields
+          item={item}
+          onCaptionChange={onCaptionChange}
+          onLayoutChange={onLayoutChange}
         />
-
-        <div className="flex items-center gap-2">
-          <span className="text-xs text-muted-foreground shrink-0">
-            {t.photos.layoutLabel}
-          </span>
-          <Select
-            value={item.layout}
-            onValueChange={(val) => onLayoutChange(item.id, val)}
-          >
-            <SelectTrigger className="h-8 text-xs flex-1">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="full-page">{t.photos.layoutFullPage}</SelectItem>
-              <SelectItem value="two-vertical">{t.photos.layoutTwoVertical}</SelectItem>
-              <SelectItem value="two-horizontal">{t.photos.layoutTwoHorizontal}</SelectItem>
-              <SelectItem value="three-mixed">{t.photos.layoutThreeMixed}</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
       </div>
     </div>
   );
@@ -193,6 +290,8 @@ export function PhotoGalleryPanel({ biographyId, userId, onClose, embedded }: Ph
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<MediaRow | null>(null);
   const [draggingId, setDraggingId] = useState<string | null>(null);
+  const [viewMode, setViewMode] = useState<GalleryViewMode>('grid');
+  const [selectedId, setSelectedId] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const coverInputRef = useRef<HTMLInputElement>(null);
   const coverA5InputRef = useRef<HTMLInputElement>(null);
@@ -203,6 +302,20 @@ export function PhotoGalleryPanel({ biographyId, userId, onClose, embedded }: Ph
   const galleryItems = items
     .filter((i) => i.layout !== 'cover' && i.layout !== 'cover_a5')
     .sort((a, b) => a.display_order - b.display_order);
+
+  const selectedItem = galleryItems.find((item) => item.id === selectedId) ?? null;
+
+  useEffect(() => {
+    if (selectedId && !galleryItems.some((item) => item.id === selectedId)) {
+      setSelectedId(null);
+    }
+  }, [galleryItems, selectedId]);
+
+  useEffect(() => {
+    if (viewMode === 'grid' && galleryItems.length > 0 && !selectedId) {
+      setSelectedId(galleryItems[0].id);
+    }
+  }, [galleryItems, selectedId, viewMode]);
 
   useEffect(() => {
     return () => {
@@ -327,8 +440,10 @@ export function PhotoGalleryPanel({ biographyId, userId, onClose, embedded }: Ph
         setErrorMsg(t.photos.fileTooLarge);
         return;
       }
-      if (galleryItems.length >= 10) {
-        setErrorMsg(t.photos.limitReached);
+      if (galleryItems.length >= MAX_BIOGRAPHY_GALLERY_PHOTOS) {
+        setErrorMsg(
+          t.photos.limitReached.replace('{max}', String(MAX_BIOGRAPHY_GALLERY_PHOTOS)),
+        );
         return;
       }
 
@@ -390,6 +505,7 @@ export function PhotoGalleryPanel({ biographyId, userId, onClose, embedded }: Ph
           ...prev,
           { ...(inserted as MediaRow), previewUrl: localPreview },
         ]);
+        setSelectedId((inserted as MediaRow).id);
       }
 
       setUploading(false);
@@ -483,179 +599,124 @@ export function PhotoGalleryPanel({ biographyId, userId, onClose, embedded }: Ph
     setDraggingId(null);
   }, []);
 
-  const counterText = t.photos.counter.replace('{count}', String(galleryItems.length));
+  const counterText = t.photos.counter
+    .replace('{count}', String(galleryItems.length))
+    .replace('{max}', String(MAX_BIOGRAPHY_GALLERY_PHOTOS));
 
-  return (
-    <div className={embedded ? 'space-y-4' : 'flex flex-col h-full overflow-hidden'}>
-      {!embedded && (
-        <div className="px-4 py-3 border-b border-border/50 shrink-0 flex items-center justify-between">
-          <h3 className="text-sm font-semibold text-foreground">{t.photos.panelTitle}</h3>
-          <div className="flex items-center gap-2">
-            <span className="text-xs text-muted-foreground">{counterText}</span>
-            {onClose && (
-              <button
-                type="button"
-                onClick={onClose}
-                className="p-1 rounded hover:bg-muted transition-colors text-muted-foreground hover:text-foreground"
-                title={t.common.close}
-              >
-                <X className="h-4 w-4" />
-              </button>
-            )}
+  const uploadFooter = (
+    <div
+      className={cn(
+        embedded ? 'pt-2' : 'shrink-0 px-4 pb-4 pt-2 border-t border-border/50 bg-background',
+      )}
+    >
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept="image/jpeg,image/png,image/webp"
+        className="hidden"
+        onChange={handleFileInput}
+      />
+      <Button
+        variant="outline"
+        className="w-full gap-2"
+        onClick={() => fileInputRef.current?.click()}
+        disabled={uploading || galleryItems.length >= MAX_BIOGRAPHY_GALLERY_PHOTOS}
+      >
+        <Upload className="h-4 w-4" />
+        {t.photos.uploadButton}
+      </Button>
+    </div>
+  );
+
+  const gallerySection = (
+    <>
+      <div className="flex items-center justify-between gap-2 pt-1">
+        <div className="min-w-0">
+          <p className="text-xs font-semibold text-foreground">{t.photos.galleryPhotosHeading}</p>
+          <p className="text-[11px] text-muted-foreground">{counterText}</p>
+        </div>
+        <div className="flex items-center gap-1 shrink-0">
+          <Button
+            type="button"
+            variant={viewMode === 'grid' ? 'secondary' : 'ghost'}
+            size="icon"
+            className="h-8 w-8"
+            onClick={() => setViewMode('grid')}
+            title={t.photos.viewGrid}
+            aria-pressed={viewMode === 'grid'}
+          >
+            <LayoutGrid className="h-4 w-4" />
+          </Button>
+          <Button
+            type="button"
+            variant={viewMode === 'detail' ? 'secondary' : 'ghost'}
+            size="icon"
+            className="h-8 w-8"
+            onClick={() => setViewMode('detail')}
+            title={t.photos.viewDetail}
+            aria-pressed={viewMode === 'detail'}
+          >
+            <LayoutList className="h-4 w-4" />
+          </Button>
+        </div>
+      </div>
+
+      {galleryItems.length === 0 && !uploading && (
+        <div className="flex flex-col items-center justify-center py-8 text-center gap-3">
+          <div className="rounded-full bg-muted p-4">
+            <ImagePlus className="h-6 w-6 text-muted-foreground" />
           </div>
+          <p className="text-sm text-muted-foreground max-w-[240px]">
+            {t.photos.uploadButton}
+          </p>
         </div>
       )}
 
-      <div className={embedded ? 'space-y-4' : 'flex-1 min-h-0 overflow-y-auto p-4 space-y-4'}>
-        {errorMsg && (
-          <div className="text-sm text-brand-wineDark dark:text-brand-beigeLight bg-brand-wine/10 dark:bg-brand-wine/20 rounded-lg px-3 py-2 border border-brand-wine/25">
-            {errorMsg}
-          </div>
-        )}
-
-        {uploading && (
-          <div className="space-y-1.5">
-            <p className="text-xs text-muted-foreground">{t.photos.uploadProgress}</p>
-            <div className="w-full h-1.5 bg-muted rounded-full overflow-hidden">
-              <div
-                className="h-full bg-primary rounded-full transition-all duration-300"
-                style={{ width: `${uploadProgress}%` }}
+      {viewMode === 'grid' && galleryItems.length > 0 && (
+        <>
+          <p className="text-[11px] text-muted-foreground">{t.photos.gridEditHint}</p>
+          <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
+            {galleryItems.map((item, index) => (
+              <PhotoGridTile
+                key={item.id}
+                item={item}
+                index={index}
+                selected={selectedId === item.id}
+                dragging={draggingId === item.id}
+                onSelect={setSelectedId}
+                onDelete={setDeleteTarget}
+                onDragStart={handleDragStart}
+                onDragOver={handleDragOver}
+                onDrop={handleDrop}
+                onDragEnd={handleDragEnd}
               />
-            </div>
+            ))}
           </div>
-        )}
-
-        <div className="space-y-3 rounded-xl border border-border/60 bg-muted/30 p-3">
-          <p className="text-xs font-semibold text-foreground">{t.photos.coverCompositeTitle}</p>
-          <input
-            ref={coverInputRef}
-            type="file"
-            accept="image/jpeg,image/png,image/webp"
-            className="hidden"
-            onChange={(e) => {
-              const file = e.target.files?.[0];
-              if (file) void uploadSpecialCover(file, 'cover');
-              e.target.value = '';
-            }}
-          />
-          {coverComposite ? (
-            <div className="flex gap-3 items-start">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={coverComposite.previewUrl || coverComposite.file_url}
-                alt=""
-                className="w-24 h-32 object-cover rounded-md border border-border/60"
-              />
-              <div className="flex flex-col gap-2">
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  className="text-xs"
-                  disabled={uploading}
-                  onClick={() => coverInputRef.current?.click()}
-                >
-                  {t.photos.uploadButton}
-                </Button>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  className="text-xs text-destructive"
-                  disabled={uploading}
-                  onClick={() => setDeleteTarget(coverComposite)}
-                >
-                  {t.common.delete}
-                </Button>
+          {selectedItem && (
+            <div className="rounded-xl border border-border/60 bg-card p-3 space-y-3">
+              <div className="flex gap-3 items-start">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={selectedItem.previewUrl || selectedItem.file_url}
+                  alt={selectedItem.file_name ?? ''}
+                  className="w-20 h-20 rounded-md object-cover border border-border/60 shrink-0"
+                />
+                <div className="flex-1 min-w-0">
+                  <PhotoMetaFields
+                    item={selectedItem}
+                    onCaptionChange={handleCaptionChange}
+                    onLayoutChange={handleLayoutChange}
+                    compact
+                  />
+                </div>
               </div>
             </div>
-          ) : (
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              className="w-full text-xs"
-              disabled={uploading}
-              onClick={() => coverInputRef.current?.click()}
-            >
-              {t.photos.uploadButton}
-            </Button>
           )}
-        </div>
+        </>
+      )}
 
-        <div className="space-y-2 rounded-xl border border-border/60 bg-muted/30 p-3">
-          <p className="text-xs font-semibold text-foreground">{t.photos.customA5CoverLabel}</p>
-          <p className="text-[11px] text-muted-foreground leading-snug">{t.photos.customA5CoverHint}</p>
-          <input
-            ref={coverA5InputRef}
-            type="file"
-            accept="image/jpeg,image/png,image/webp"
-            className="hidden"
-            onChange={(e) => {
-              const file = e.target.files?.[0];
-              if (file) void uploadSpecialCover(file, 'cover_a5');
-              e.target.value = '';
-            }}
-          />
-          {coverA5Row ? (
-            <div className="flex gap-3 items-start">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={coverA5Row.previewUrl || coverA5Row.file_url}
-                alt=""
-                className="w-24 h-36 object-cover rounded-md border border-border/60"
-              />
-              <div className="flex flex-col gap-2">
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  className="text-xs"
-                  disabled={uploading}
-                  onClick={() => coverA5InputRef.current?.click()}
-                >
-                  {t.photos.uploadButton}
-                </Button>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  className="text-xs text-destructive"
-                  disabled={uploading}
-                  onClick={() => setDeleteTarget(coverA5Row)}
-                >
-                  {t.common.delete}
-                </Button>
-              </div>
-            </div>
-          ) : (
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              className="w-full text-xs"
-              disabled={uploading}
-              onClick={() => coverA5InputRef.current?.click()}
-            >
-              {t.photos.uploadButton}
-            </Button>
-          )}
-        </div>
-
-        <p className="text-xs font-semibold text-foreground pt-1">{t.photos.galleryPhotosHeading}</p>
-
-        {galleryItems.length === 0 && !uploading && (
-          <div className="flex flex-col items-center justify-center py-8 text-center gap-3">
-            <div className="rounded-full bg-muted p-4">
-              <ImagePlus className="h-6 w-6 text-muted-foreground" />
-            </div>
-            <p className="text-sm text-muted-foreground max-w-[200px]">
-              {t.photos.uploadButton}
-            </p>
-          </div>
-        )}
-
-        {galleryItems.map((item) => (
+      {viewMode === 'detail' &&
+        galleryItems.map((item) => (
           <PhotoCard
             key={item.id}
             item={item}
@@ -669,49 +730,212 @@ export function PhotoGalleryPanel({ biographyId, userId, onClose, embedded }: Ph
             onDragEnd={handleDragEnd}
           />
         ))}
-      </div>
+    </>
+  );
 
-      <div className="shrink-0 px-4 pb-4 pt-2 border-t border-border/50">
+  const panelBody = (
+    <>
+      {errorMsg && (
+        <div className="text-sm text-brand-wineDark dark:text-brand-beigeLight bg-brand-wine/10 dark:bg-brand-wine/20 rounded-lg px-3 py-2 border border-brand-wine/25">
+          {errorMsg}
+        </div>
+      )}
+
+      {uploading && (
+        <div className="space-y-1.5">
+          <p className="text-xs text-muted-foreground">{t.photos.uploadProgress}</p>
+          <div className="w-full h-1.5 bg-muted rounded-full overflow-hidden">
+            <div
+              className="h-full bg-primary rounded-full transition-all duration-300"
+              style={{ width: `${uploadProgress}%` }}
+            />
+          </div>
+        </div>
+      )}
+
+      <div className="space-y-3 rounded-xl border border-border/60 bg-muted/30 p-3">
+        <p className="text-xs font-semibold text-foreground">{t.photos.coverCompositeTitle}</p>
         <input
-          ref={fileInputRef}
+          ref={coverInputRef}
           type="file"
           accept="image/jpeg,image/png,image/webp"
           className="hidden"
-          onChange={handleFileInput}
+          onChange={(e) => {
+            const file = e.target.files?.[0];
+            if (file) void uploadSpecialCover(file, 'cover');
+            e.target.value = '';
+          }}
         />
-        <Button
-          variant="outline"
-          className="w-full gap-2"
-          onClick={() => fileInputRef.current?.click()}
-          disabled={uploading || galleryItems.length >= 10}
-        >
-          <Upload className="h-4 w-4" />
-          {t.photos.uploadButton}
-        </Button>
+        {coverComposite ? (
+          <div className="flex gap-3 items-start">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={coverComposite.previewUrl || coverComposite.file_url}
+              alt=""
+              className="w-24 h-32 object-cover rounded-md border border-border/60"
+            />
+            <div className="flex flex-col gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="text-xs"
+                disabled={uploading}
+                onClick={() => coverInputRef.current?.click()}
+              >
+                {t.photos.uploadButton}
+              </Button>
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                className="text-xs text-destructive"
+                disabled={uploading}
+                onClick={() => setDeleteTarget(coverComposite)}
+              >
+                {t.common.delete}
+              </Button>
+            </div>
+          </div>
+        ) : (
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            className="w-full text-xs"
+            disabled={uploading}
+            onClick={() => coverInputRef.current?.click()}
+          >
+            {t.photos.uploadButton}
+          </Button>
+        )}
       </div>
 
-      <AlertDialog
-        open={!!deleteTarget}
-        onOpenChange={(open) => {
-          if (!open) setDeleteTarget(null);
-        }}
-      >
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>{t.photos.deleteConfirmTitle}</AlertDialogTitle>
-            <AlertDialogDescription>{t.photos.deleteConfirmMessage}</AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>{t.common.cancel}</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={handleDeleteConfirm}
-              className="bg-brand-wine hover:bg-brand-wineDark text-brand-paper"
+      <div className="space-y-2 rounded-xl border border-border/60 bg-muted/30 p-3">
+        <p className="text-xs font-semibold text-foreground">{t.photos.customA5CoverLabel}</p>
+        <p className="text-[11px] text-muted-foreground leading-snug">{t.photos.customA5CoverHint}</p>
+        <input
+          ref={coverA5InputRef}
+          type="file"
+          accept="image/jpeg,image/png,image/webp"
+          className="hidden"
+          onChange={(e) => {
+            const file = e.target.files?.[0];
+            if (file) void uploadSpecialCover(file, 'cover_a5');
+            e.target.value = '';
+          }}
+        />
+        {coverA5Row ? (
+          <div className="flex gap-3 items-start">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={coverA5Row.previewUrl || coverA5Row.file_url}
+              alt=""
+              className="w-24 h-36 object-cover rounded-md border border-border/60"
+            />
+            <div className="flex flex-col gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="text-xs"
+                disabled={uploading}
+                onClick={() => coverA5InputRef.current?.click()}
+              >
+                {t.photos.uploadButton}
+              </Button>
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                className="text-xs text-destructive"
+                disabled={uploading}
+                onClick={() => setDeleteTarget(coverA5Row)}
+              >
+                {t.common.delete}
+              </Button>
+            </div>
+          </div>
+        ) : (
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            className="w-full text-xs"
+            disabled={uploading}
+            onClick={() => coverA5InputRef.current?.click()}
+          >
+            {t.photos.uploadButton}
+          </Button>
+        )}
+      </div>
+
+      {gallerySection}
+    </>
+  );
+
+  const deleteDialog = (
+    <AlertDialog
+      open={!!deleteTarget}
+      onOpenChange={(open) => {
+        if (!open) setDeleteTarget(null);
+      }}
+    >
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>{t.photos.deleteConfirmTitle}</AlertDialogTitle>
+          <AlertDialogDescription>{t.photos.deleteConfirmMessage}</AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel>{t.common.cancel}</AlertDialogCancel>
+          <AlertDialogAction
+            onClick={handleDeleteConfirm}
+            className="bg-brand-wine hover:bg-brand-wineDark text-brand-paper"
+          >
+            {t.common.delete}
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+  );
+
+  if (embedded) {
+    return (
+      <>
+        <div className="px-4 py-4 space-y-4">
+          {panelBody}
+          {uploadFooter}
+        </div>
+        {deleteDialog}
+      </>
+    );
+  }
+
+  return (
+    <div className="flex flex-col flex-1 min-h-0 overflow-hidden">
+      <div className="px-4 py-3 border-b border-border/50 shrink-0 flex items-center justify-between">
+        <h3 className="text-sm font-semibold text-foreground">{t.photos.panelTitle}</h3>
+        <div className="flex items-center gap-2">
+          <span className="text-xs text-muted-foreground">{counterText}</span>
+          {onClose && (
+            <button
+              type="button"
+              onClick={onClose}
+              className="p-1 rounded hover:bg-muted transition-colors text-muted-foreground hover:text-foreground"
+              title={t.common.close}
             >
-              {t.common.delete}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+              <X className="h-4 w-4" />
+            </button>
+          )}
+        </div>
+      </div>
+
+      <div className="flex-1 basis-0 min-h-0 overflow-y-auto overscroll-contain touch-pan-y px-4 py-4 space-y-4">
+        {panelBody}
+      </div>
+
+      {uploadFooter}
+      {deleteDialog}
     </div>
   );
 }

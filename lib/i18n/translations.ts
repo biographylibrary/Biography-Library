@@ -920,6 +920,9 @@ export interface Translations {
     uploadError: string;
     limitReached: string;
     deleteError: string;
+    viewGrid: string;
+    viewDetail: string;
+    gridEditHint: string;
   };
   admin: {
     freezeBiography: string;
@@ -2307,7 +2310,7 @@ export const translations: Record<Language, Translations> = {
     },
     photos: {
       panelTitle: 'Photos',
-      counter: '{count}/10 photos',
+      counter: '{count}/{max} photos',
       uploadButton: 'Upload photo',
       captionPlaceholder: 'Add a caption...',
       layoutLabel: 'Layout',
@@ -2328,8 +2331,11 @@ export const translations: Record<Language, Translations> = {
       fileTooLarge: 'File is too large. Maximum size is 5 MB.',
       invalidFileType: 'Invalid file type. Please upload a JPG, PNG, or WEBP image.',
       uploadError: 'Failed to upload photo. Please try again.',
-      limitReached: 'You have reached the maximum of 10 photos per biography.',
+      limitReached: 'You have reached the maximum of {max} photos per biography.',
       deleteError: 'Failed to delete photo. Please try again.',
+      viewGrid: 'Thumbnail view',
+      viewDetail: 'Detailed view',
+      gridEditHint: 'Drag to reorder. Click a photo to edit caption and layout.',
     },
     admin: {
       freezeBiography: 'Freeze biography',
@@ -3719,7 +3725,7 @@ export const translations: Record<Language, Translations> = {
     },
     photos: {
       panelTitle: 'Foto',
-      counter: '{count}/10 foto',
+      counter: '{count}/{max} foto',
       uploadButton: 'Carica foto',
       captionPlaceholder: 'Aggiungi una didascalia...',
       layoutLabel: 'Layout',
@@ -3740,8 +3746,11 @@ export const translations: Record<Language, Translations> = {
       fileTooLarge: 'Il file è troppo grande. La dimensione massima è 5 MB.',
       invalidFileType: 'Tipo di file non valido. Carica un\'immagine JPG, PNG o WEBP.',
       uploadError: 'Caricamento foto fallito. Riprova.',
-      limitReached: 'Hai raggiunto il massimo di 10 foto per biografia.',
+      limitReached: 'Hai raggiunto il massimo di {max} foto per biografia.',
       deleteError: 'Eliminazione foto fallita. Riprova.',
+      viewGrid: 'Vista miniature',
+      viewDetail: 'Vista dettagliata',
+      gridEditHint: 'Trascina per riordinare. Clicca una foto per didascalia e layout.',
     },
     admin: {
       freezeBiography: 'Congela biografia',
@@ -5131,7 +5140,7 @@ export const translations: Record<Language, Translations> = {
     },
     photos: {
       panelTitle: 'Photos',
-      counter: '{count}/10 photos',
+      counter: '{count}/{max} photos',
       uploadButton: 'Télécharger une photo',
       captionPlaceholder: 'Ajouter une légende...',
       layoutLabel: 'Mise en page',
@@ -5152,8 +5161,11 @@ export const translations: Record<Language, Translations> = {
       fileTooLarge: 'Fichier trop volumineux. La taille maximale est de 5 Mo.',
       invalidFileType: 'Type de fichier invalide. Veuillez télécharger une image JPG, PNG ou WEBP.',
       uploadError: 'Échec du téléchargement. Veuillez réessayer.',
-      limitReached: 'Vous avez atteint le maximum de 10 photos par biographie.',
+      limitReached: 'Vous avez atteint le maximum de {max} photos par biographie.',
       deleteError: 'Échec de la suppression. Veuillez réessayer.',
+      viewGrid: 'Vue miniatures',
+      viewDetail: 'Vue détaillée',
+      gridEditHint: 'Glissez pour réordonner. Cliquez sur une photo pour la légende et la mise en page.',
     },
     admin: {
       freezeBiography: 'Geler la biographie',
@@ -6543,7 +6555,7 @@ export const translations: Record<Language, Translations> = {
     },
     photos: {
       panelTitle: 'Fotos',
-      counter: '{count}/10 Fotos',
+      counter: '{count}/{max} Fotos',
       uploadButton: 'Foto hochladen',
       captionPlaceholder: 'Bildunterschrift hinzufügen...',
       layoutLabel: 'Layout',
@@ -6564,8 +6576,11 @@ export const translations: Record<Language, Translations> = {
       fileTooLarge: 'Datei zu groß. Maximale Größe ist 5 MB.',
       invalidFileType: 'Ungültiger Dateityp. Bitte laden Sie ein JPG-, PNG- oder WEBP-Bild hoch.',
       uploadError: 'Foto konnte nicht hochgeladen werden. Bitte versuchen Sie es erneut.',
-      limitReached: 'Sie haben das Maximum von 10 Fotos pro Biografie erreicht.',
+      limitReached: 'Sie haben das Maximum von {max} Fotos pro Biografie erreicht.',
       deleteError: 'Foto konnte nicht gelöscht werden. Bitte versuchen Sie es erneut.',
+      viewGrid: 'Miniaturansicht',
+      viewDetail: 'Detailansicht',
+      gridEditHint: 'Ziehen zum Sortieren. Foto anklicken für Bildunterschrift und Layout.',
     },
     admin: {
       freezeBiography: 'Biografie einfrieren',
