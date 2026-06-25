@@ -58,8 +58,8 @@ async function resolveStaffRole(accessToken: string): Promise<string | null> {
 export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
-  if (process.env.NODE_ENV === 'development') {
-    if (pathname === '/sw.js' || pathname.startsWith('/workbox-')) {
+  if (pathname === '/sw.js' || pathname.startsWith('/workbox-')) {
+    if (process.env.NODE_ENV === 'development') {
       const noopSw =
         'self.addEventListener("install",function(e){e.waitUntil(self.skipWaiting())});' +
         'self.addEventListener("activate",function(e){e.waitUntil(self.clients.claim())});';
@@ -70,6 +70,9 @@ export async function middleware(req: NextRequest) {
         },
       });
     }
+    const response = NextResponse.next();
+    response.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate');
+    return response;
   }
 
   if (pathname.startsWith('/api/admin')) {
