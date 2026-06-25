@@ -65,6 +65,9 @@ export async function PATCH(req: NextRequest) {
 
   switch (body.action) {
     case 'confirm_language': {
+      if (state.language_confirmed_at) {
+        break;
+      }
       updates.language_confirmed_at = now;
       if (body.language) updates.language = body.language;
       break;

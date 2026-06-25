@@ -42,4 +42,13 @@ describe('email copy', () => {
     });
     expect(rendered.html).toContain('https://example.com/verify');
   });
+
+  it('uses black text for headings and links (no brand green)', () => {
+    const rendered = renderEmailTemplate({
+      templateId: 'welcome',
+      locale: 'en',
+    });
+    expect(rendered.html).not.toContain('#2d5016');
+    expect(rendered.html).toContain('color:#121212');
+  });
 });

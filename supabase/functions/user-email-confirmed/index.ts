@@ -1,7 +1,7 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "npm:@supabase/supabase-js@2";
 import { sendTransactionalEmail } from "../../../shared/email/send.ts";
-import { normalizeEmailLocale } from "../../../shared/email/locale.ts";
+import { resolveUserEmailLocale } from "../../../shared/email/locale.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -90,12 +90,13 @@ Deno.serve(async (req: Request) => {
     });
   }
 
-  const locale = normalizeEmailLocale(
-    profile?.language ??
-      (typeof record.raw_user_meta_data?.language === "string"
+  const locale = resolveUserEmailLocale({
+    profileLanguage: profile?.language,
+    signupLanguage:
+      typeof record.raw_user_meta_data?.language === "string"
         ? record.raw_user_meta_data.language
-        : "en"),
-  );
+        : null,
+  });
 
   try {
     await sendTransactionalEmail({

@@ -9,6 +9,14 @@ export function normalizeEmailLocale(value: string | null | undefined): EmailLoc
   return 'en';
 }
 
+/** User-facing emails: profile preference, then signup language, then English. */
+export function resolveUserEmailLocale(input: {
+  profileLanguage?: string | null;
+  signupLanguage?: string | null;
+}): EmailLocale {
+  return normalizeEmailLocale(input.profileLanguage ?? input.signupLanguage ?? 'en');
+}
+
 export function resolveSiteUrl(base?: string | null): string {
   const raw = (base ?? '').replace(/\/$/, '');
   return raw || 'https://app.biographylibrary.org';

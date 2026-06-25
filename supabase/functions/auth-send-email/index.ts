@@ -1,7 +1,7 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { Webhook } from "npm:standardwebhooks@1.0.0";
 import { sendTransactionalEmail } from "../../../shared/email/send.ts";
-import { normalizeEmailLocale } from "../../../shared/email/locale.ts";
+import { resolveUserEmailLocale } from "../../../shared/email/locale.ts";
 import type { EmailTemplateId } from "../../../shared/email/types.ts";
 
 const corsHeaders = {
@@ -105,11 +105,12 @@ Deno.serve(async (req: Request) => {
     });
   }
 
-  const locale = normalizeEmailLocale(
-    typeof payload.user.user_metadata?.language === "string"
-      ? payload.user.user_metadata.language
-      : "en",
-  );
+  const locale = resolveUserEmailLocale({
+    signupLanguage:
+      typeof payload.user.user_metadata?.language === "string"
+        ? payload.user.user_metadata.language
+        : null,
+  });
 
   const confirmUrl = buildConfirmUrl(payload);
 

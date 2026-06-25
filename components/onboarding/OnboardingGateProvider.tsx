@@ -12,13 +12,6 @@ import {
 import { usePathname, useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/auth-context';
 import { useTranslation } from '@/lib/i18n/i18n-context';
-import { LanguageGateModal } from '@/components/onboarding/LanguageGateModal';
-import {
-  getBrowserLanguageTag,
-  isBrowserEnglish,
-  mapBrowserTagToAppLanguage,
-  shouldShowLanguageGate,
-} from '@/lib/i18n/detect-browser-language';
 import { fetchOnboardingState, patchOnboarding } from '@/lib/onboarding/onboarding-client';
 import type { Language } from '@/lib/i18n/translations';
 import type { OnboardingProfileState } from '@/lib/onboarding/types';
@@ -71,15 +64,12 @@ function needsOnboardingRedirect(
 
 export function OnboardingGateProvider({ children }: { children: ReactNode }) {
   const { user, loading: authLoading } = useAuth();
-  const { setLanguage, isLoading: i18nLoading } = useTranslation();
+  const { syncLanguageFromProfile, isLoading: i18nLoading } = useTranslation();
   const pathname = usePathname();
   const router = useRouter();
 
   const [onboardingState, setOnboardingState] = useState<OnboardingProfileState | null>(null);
   const [languageGateResolved, setLanguageGateResolved] = useState(false);
-  const [showLanguageModal, setShowLanguageModal] = useState(false);
-  const [browserTag, setBrowserTag] = useState('en');
-  const [initialLang, setInitialLang] = useState<Language>('en');
   const [bootstrapping, setBootstrapping] = useState(true);
 
   const refreshOnboarding = useCallback(async () => {
@@ -90,10 +80,6 @@ export function OnboardingGateProvider({ children }: { children: ReactNode }) {
     const { data } = await fetchOnboardingState();
     if (data) setOnboardingState(data);
   }, [user]);
-
-  useEffect(() => {
-    setBrowserTag(getBrowserLanguageTag());
-  }, []);
 
   useEffect(() => {
     if (authLoading || i18nLoading) return;
@@ -109,54 +95,29 @@ export function OnboardingGateProvider({ children }: { children: ReactNode }) {
       const { data: state } = await fetchOnboardingState();
       if (cancelled) return;
 
-      if (state) setOnboardingState(state);
+      if (state) {
+        setOnboardingState(state);
 
-      const languageConfirmed = Boolean(state?.language_confirmed_at);
-      const tag = getBrowserLanguageTag();
-      const legacyWelcome = localStorage.getItem('hasSeenWelcome') === 'true';
-
-      if (languageConfirmed || legacyWelcome) {
-        if (legacyWelcome && !languageConfirmed) {
-          const lang = (state?.language as Language) || mapBrowserTagToAppLanguage(tag) || 'en';
-          await setLanguage(lang as Language);
-          await patchOnboarding({ action: 'confirm_language', language: lang });
+        if (state.language) {
+          syncLanguageFromProfile(state.language as Language);
         }
-        setLanguageGateResolved(true);
-        setBootstrapping(false);
-        return;
-      }
 
-      if (shouldShowLanguageGate(false, tag)) {
-        const mapped = mapBrowserTagToAppLanguage(tag) ?? 'en';
-        setInitialLang(mapped);
-        setShowLanguageModal(true);
-        setBootstrapping(false);
-        return;
-      }
-
-      if (isBrowserEnglish(tag)) {
-        await setLanguage('en');
-        await patchOnboarding({ action: 'confirm_language', language: 'en' });
-        localStorage.setItem('hasSeenWelcome', 'true');
-        if (!cancelled) {
-          setOnboardingState((prev) =>
-            prev
-              ? { ...prev, language_confirmed_at: new Date().toISOString(), language: 'en' }
-              : prev
-          );
+        if (!state.language_confirmed_at && state.language) {
+          await patchOnboarding({
+            action: 'confirm_language',
+            language: state.language as Language,
+          });
         }
       }
 
-      if (!cancelled) {
-        setLanguageGateResolved(true);
-        setBootstrapping(false);
-      }
+      setLanguageGateResolved(true);
+      setBootstrapping(false);
     })();
 
     return () => {
       cancelled = true;
     };
-  }, [user, authLoading, i18nLoading, setLanguage]);
+  }, [user, authLoading, i18nLoading, syncLanguageFromProfile]);
 
   useEffect(() => {
     if (!user || !languageGateResolved || bootstrapping) return;
@@ -165,18 +126,6 @@ export function OnboardingGateProvider({ children }: { children: ReactNode }) {
       router.replace('/onboarding');
     }
   }, [user, languageGateResolved, bootstrapping, onboardingState, pathname, router]);
-
-  const handleLanguageConfirm = useCallback(
-    async (lang: Language) => {
-      await setLanguage(lang);
-      await patchOnboarding({ action: 'confirm_language', language: lang });
-      localStorage.setItem('hasSeenWelcome', 'true');
-      setShowLanguageModal(false);
-      setLanguageGateResolved(true);
-      await refreshOnboarding();
-    },
-    [setLanguage, refreshOnboarding]
-  );
 
   const value = useMemo(
     () => ({
@@ -199,12 +148,6 @@ export function OnboardingGateProvider({ children }: { children: ReactNode }) {
       ) : (
         children
       )}
-      <LanguageGateModal
-        open={showLanguageModal}
-        browserTag={browserTag}
-        initialSelection={initialLang}
-        onConfirm={handleLanguageConfirm}
-      />
     </OnboardingGateContext.Provider>
   );
 }

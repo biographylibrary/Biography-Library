@@ -3,7 +3,6 @@
 import { createContext, useContext, useEffect, useState, useCallback } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from './supabase';
-import { mapBrowserTagToAppLanguage } from '@/lib/i18n/detect-browser-language';
 import type { Language } from '@/lib/i18n/translations';
 
 type FontSize = 'small' | 'normal' | 'large' | 'extra-large';
@@ -20,7 +19,7 @@ interface AuthContextType {
   fontSize: FontSize;
   setFontSize: (size: FontSize) => void;
   signIn: (email: string, password: string) => Promise<{ error: string | null; emailNotConfirmed?: boolean }>;
-  signUp: (email: string, password: string, name: string, language?: Language) => Promise<{ error: string | null; emailConfirmRequired?: boolean }>;
+  signUp: (email: string, password: string, name: string, language: Language) => Promise<{ error: string | null; emailConfirmRequired?: boolean }>;
   signOut: () => Promise<void>;
 }
 
@@ -152,29 +151,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return { error: null };
   }, []);
 
-  const signUp = useCallback(async (email: string, password: string, name: string, language?: Language) => {
+  const signUp = useCallback(async (email: string, password: string, name: string, language: Language) => {
     const redirectTo = typeof window !== 'undefined'
       ? `${window.location.origin}/auth/callback`
       : '/auth/callback';
-
-    const signupLanguage =
-      language ??
-      (typeof window !== 'undefined'
-        ? mapBrowserTagToAppLanguage(window.navigator.language) ?? 'en'
-        : 'en');
 
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: {
-        data: { name, language: signupLanguage },
+        data: { name, language },
         emailRedirectTo: redirectTo,
       },
     });
 
     if (!error && data.user) {
+      const confirmedAt = new Date().toISOString();
       await supabase.from('profiles').upsert(
-        { id: data.user.id, email, name, language: signupLanguage },
+        { id: data.user.id, email, name, language, language_confirmed_at: confirmedAt },
         { onConflict: 'id' }
       );
     }

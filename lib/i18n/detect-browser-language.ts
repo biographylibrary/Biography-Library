@@ -15,6 +15,17 @@ export function mapBrowserTagToAppLanguage(tag: string): Language | null {
   return null;
 }
 
+/** Default for registration: browser language list, then English. */
+export function getProposedRegistrationLanguage(): Language {
+  if (typeof navigator === 'undefined') return 'en';
+  const tags = navigator.languages?.length ? [...navigator.languages] : [navigator.language];
+  for (const tag of tags) {
+    const mapped = mapBrowserTagToAppLanguage(tag);
+    if (mapped) return mapped;
+  }
+  return 'en';
+}
+
 export function isBrowserEnglish(tag: string): boolean {
   return tag.toLowerCase().startsWith('en');
 }

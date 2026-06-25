@@ -2,7 +2,7 @@ import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "npm:@supabase/supabase-js@2";
 import { sendTransactionalEmail } from "../../../shared/email/send.ts";
 import { getNotificationMessage } from "../../../shared/email/render.ts";
-import { normalizeEmailLocale } from "../../../shared/email/locale.ts";
+import { resolveUserEmailLocale } from "../../../shared/email/locale.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -78,7 +78,7 @@ Deno.serve(async (req: Request) => {
     const email = profile?.email;
     if (!email) continue;
 
-    const locale = normalizeEmailLocale(profile?.language ?? row.content_language);
+    const locale = resolveUserEmailLocale({ profileLanguage: profile?.language });
     const availableDate = row.next_chapter_available_at
       ? new Date(row.next_chapter_available_at).toLocaleDateString(locale)
       : "";
@@ -137,7 +137,7 @@ Deno.serve(async (req: Request) => {
     const email = profile?.email;
     if (!email) continue;
 
-    const locale = normalizeEmailLocale(profile?.language ?? row.content_language);
+    const locale = resolveUserEmailLocale({ profileLanguage: profile?.language });
     const iteration = row.pdf_draft_iteration ?? 1;
 
     try {

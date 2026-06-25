@@ -107,6 +107,14 @@ export interface Translations {
     emailNotVerifiedDetail: string;
     mustAcceptTerms: string;
     accountSuspended: string;
+    registrationLanguage: string;
+    registrationLanguageHint: string;
+    registrationLanguageAlertTitle: string;
+    registrationLanguageAlertMessage: string;
+  };
+  accountSettings: {
+    language: string;
+    languageLockedHint: string;
   };
   dashboard: {
     title: string;
@@ -1350,6 +1358,9 @@ export interface Translations {
     publishExportTitle: string;
     publishExportDesc: string;
     sampleImportText: string;
+    mobileMenuTitle: string;
+    mobileMenuDesc: string;
+    mobileSidebarOverviewHint: string;
   };
   echo: {
     hubEmpty: string;
@@ -1514,6 +1525,16 @@ export const translations: Record<Language, Translations> = {
       mustAcceptTerms: 'Required — you must accept the terms to continue',
       accountSuspended:
         'Your account has been suspended. If you think this is a mistake, reply to the email you received.',
+      registrationLanguage: 'Your language',
+      registrationLanguageHint:
+        'Emails, onboarding, and the app interface will use this language. This choice cannot be changed later.',
+      registrationLanguageAlertTitle: 'Language cannot be changed later',
+      registrationLanguageAlertMessage:
+        'The language you select will be used for emails, onboarding, and the entire app. After registration you will not be able to change it.',
+    },
+    accountSettings: {
+      language: 'Language',
+      languageLockedHint: 'Chosen at registration and cannot be changed.',
     },
     dashboard: {
       title: 'My Biographies',
@@ -2778,6 +2799,11 @@ export const translations: Record<Language, Translations> = {
       publishExportTitle: 'PDF export & publication',
       publishExportDesc: 'Open export to check readiness and download a draft PDF.',
       sampleImportText: 'This is a sample paragraph for your biography import tour.',
+      mobileMenuTitle: 'Chapter & tools menu',
+      mobileMenuDesc:
+        'On phones and tablets, chapters and editor tools are in this side panel. Tap the menu button (bottom left) to open it — the tour will open it for you on the next steps.',
+      mobileSidebarOverviewHint:
+        'The chapter list and tools are in this panel. On small screens, open it with the menu button at the bottom left.',
     },
     echo: {
       hubEmpty: 'Hello! I\'m Echo. I\'ll guide you through writing your biography — by voice or text.',
@@ -2938,6 +2964,16 @@ export const translations: Record<Language, Translations> = {
       mustAcceptTerms: 'Obbligatorio — devi accettare i termini per continuare',
       accountSuspended:
         'Il tuo account è stato sospeso. Se pensi sia un errore, rispondi all’email che hai ricevuto.',
+      registrationLanguage: 'La tua lingua',
+      registrationLanguageHint:
+        'Email, onboarding e interfaccia useranno questa lingua. La scelta non potrà essere modificata.',
+      registrationLanguageAlertTitle: 'La lingua non potrà essere modificata',
+      registrationLanguageAlertMessage:
+        'La lingua selezionata verrà usata per email, onboarding e tutta l\'app. Dopo la registrazione non potrai più cambiarla.',
+    },
+    accountSettings: {
+      language: 'Lingua',
+      languageLockedHint: 'Scelta in registrazione e non modificabile.',
     },
     dashboard: {
       title: 'Le Mie Biografie',
@@ -4204,6 +4240,11 @@ export const translations: Record<Language, Translations> = {
       publishExportTitle: 'Export PDF e pubblicazione',
       publishExportDesc: 'Apri export per verificare la readiness e scaricare una bozza PDF.',
       sampleImportText: 'Questo è un paragrafo di esempio per il tour di importazione.',
+      mobileMenuTitle: 'Menu capitoli e strumenti',
+      mobileMenuDesc:
+        'Su telefono e tablet, capitoli e strumenti dell\'editor sono in questo pannello laterale. Tocca il pulsante menu in basso a sinistra per aprirlo — il tour lo aprirà automaticamente nei passi successivi.',
+      mobileSidebarOverviewHint:
+        'L\'elenco capitoli e gli strumenti sono in questo pannello. Su schermi piccoli, aprilo con il pulsante menu in basso a sinistra.',
     },
     echo: {
       hubEmpty: 'Ciao! Sono Echo. Ti guido nella biografia — a voce o per iscritto.',
@@ -4364,6 +4405,16 @@ export const translations: Record<Language, Translations> = {
       mustAcceptTerms: 'Obligatoire \u2014 vous devez accepter les conditions pour continuer',
       accountSuspended:
         'Votre compte a \u00e9t\u00e9 suspendu. Si vous pensez qu\u2019il s\u2019agit d\u2019une erreur, r\u00e9pondez \u00e0 l\u2019e-mail re\u00e7u.',
+      registrationLanguage: 'Votre langue',
+      registrationLanguageHint:
+        'Les e-mails, l\u2019onboarding et l\u2019interface utiliseront cette langue. Ce choix ne pourra pas \u00eatre modifi\u00e9.',
+      registrationLanguageAlertTitle: 'La langue ne pourra pas \u00eatre modifi\u00e9e',
+      registrationLanguageAlertMessage:
+        'La langue s\u00e9lectionn\u00e9e sera utilis\u00e9e pour les e-mails, l\u2019onboarding et toute l\u2019application. Apr\u00e8s l\u2019inscription, vous ne pourrez plus la modifier.',
+    },
+    accountSettings: {
+      language: 'Langue',
+      languageLockedHint: 'Choisie \u00e0 l\u2019inscription et non modifiable.',
     },
     dashboard: {
       title: 'Mes Biographies',
@@ -5630,6 +5681,11 @@ export const translations: Record<Language, Translations> = {
       publishExportTitle: 'Export PDF et publication',
       publishExportDesc: 'Ouvrez l\'export pour vérifier la préparation et télécharger un brouillon PDF.',
       sampleImportText: 'Ceci est un paragraphe d\'exemple pour le tour d\'importation.',
+      mobileMenuTitle: 'Menu chapitres et outils',
+      mobileMenuDesc:
+        'Sur téléphone et tablette, les chapitres et les outils de l\'éditeur sont dans ce panneau latéral. Touchez le bouton menu en bas à gauche pour l\'ouvrir — le tour l\'ouvrira pour vous aux étapes suivantes.',
+      mobileSidebarOverviewHint:
+        'La liste des chapitres et les outils sont dans ce panneau. Sur petit écran, ouvrez-le avec le bouton menu en bas à gauche.',
     },
     echo: {
       hubEmpty: 'Bonjour ! Je suis Echo. Je vous guide pour votre biographie — à voix ou par écrit.',
@@ -5790,6 +5846,16 @@ export const translations: Record<Language, Translations> = {
       mustAcceptTerms: 'Erforderlich \u2014 Sie m\u00fcssen die Bedingungen akzeptieren, um fortzufahren',
       accountSuspended:
         'Ihr Konto wurde gesperrt. Wenn Sie glauben, dass dies ein Fehler ist, antworten Sie auf die erhaltene E-Mail.',
+      registrationLanguage: 'Ihre Sprache',
+      registrationLanguageHint:
+        'E-Mails, Onboarding und Oberfl\u00e4che verwenden diese Sprache. Die Wahl kann sp\u00e4ter nicht ge\u00e4ndert werden.',
+      registrationLanguageAlertTitle: 'Sprache kann sp\u00e4ter nicht ge\u00e4ndert werden',
+      registrationLanguageAlertMessage:
+        'Die gew\u00e4hlte Sprache gilt f\u00fcr E-Mails, Onboarding und die gesamte App. Nach der Registrierung ist keine \u00c4nderung mehr m\u00f6glich.',
+    },
+    accountSettings: {
+      language: 'Sprache',
+      languageLockedHint: 'Bei der Registrierung gew\u00e4hlt und nicht \u00e4nderbar.',
     },
     dashboard: {
       title: 'Meine Biografien',
@@ -7056,6 +7122,11 @@ export const translations: Record<Language, Translations> = {
       publishExportTitle: 'PDF-Export & Veröffentlichung',
       publishExportDesc: 'Öffnen Sie Export, prüfen Sie die Bereitschaft und laden Sie einen PDF-Entwurf.',
       sampleImportText: 'Dies ist ein Beispielabsatz für die Import-Tour.',
+      mobileMenuTitle: 'Kapitel- und Werkzeugmenü',
+      mobileMenuDesc:
+        'Auf Smartphone und Tablet befinden sich Kapitel und Editor-Werkzeuge in diesem Seitenpanel. Tippen Sie unten links auf die Menütaste — die Tour öffnet es in den nächsten Schritten automatisch.',
+      mobileSidebarOverviewHint:
+        'Kapitelliste und Werkzeuge sind in diesem Panel. Auf kleinen Bildschirmen öffnen Sie es mit der Menütaste unten links.',
     },
     echo: {
       hubEmpty: 'Hallo! Ich bin Echo. Ich begleite Sie bei Ihrer Biografie — per Sprache oder Text.',
