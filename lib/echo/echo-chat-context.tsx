@@ -513,7 +513,15 @@ export function EchoChatProvider({
       } catch (err) {
         setOrb('idle');
         setError(err instanceof Error ? err.message : t.echo.errorGeneric);
-        setMessages((prev) => prev.filter((m) => m.id !== assistantId));
+        setMessages((prev) => {
+          const assistant = prev.find((m) => m.id === assistantId);
+          if (assistant && (assistant.content.trim() || assistant.pendingDraft)) {
+            return prev.map((m) =>
+              m.id === assistantId ? { ...m, streaming: false } : m
+            );
+          }
+          return prev.filter((m) => m.id !== assistantId);
+        });
       } finally {
         setLoading(false);
       }

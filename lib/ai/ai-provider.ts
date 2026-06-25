@@ -1,4 +1,15 @@
 import { callAI } from './ai-client';
+import type { BiographyNarrativeContext } from '@/lib/biography-narrative-context';
+import { isMemorialNarrative } from '@/lib/biography-narrative-context';
+
+function memorialPayload(narrative?: BiographyNarrativeContext): Record<string, string> {
+  if (!narrative || !isMemorialNarrative(narrative)) return {};
+  return {
+    biographyType: 'memorial',
+    subjectName: narrative.subjectName,
+    writerName: narrative.writerName,
+  };
+}
 
 export class AiLimitError extends Error {
   limitType: 'daily' | 'weekly';
@@ -92,13 +103,15 @@ export const aiService = {
   async getGuidedPrompts(
     sectionKey: string,
     sectionTitle: string,
-    language: string
+    language: string,
+    narrative?: BiographyNarrativeContext
   ): Promise<Array<{ prompt: string; starter: string }>> {
     const result = await callAI({
       action: 'prompts',
       sectionKey,
       sectionTitle,
       language,
+      ...memorialPayload(narrative),
     });
 
     const raw = Array.isArray(result.data) ? result.data : [];

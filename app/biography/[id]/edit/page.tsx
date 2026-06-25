@@ -64,6 +64,7 @@ import {
   markSectionIncomplete,
   getCompletedSections,
 } from '@/lib/section-completion-service';
+import { buildBiographyNarrativeContext } from '@/lib/biography-narrative-context';
 
 type SaveStatus = 'saved' | 'saving' | 'unsaved' | 'error';
 
@@ -890,7 +891,13 @@ const [isPublishing, setIsPublishing] = useState(false);
     const section = BIOGRAPHY_SECTIONS.find((s) => s.key === activeSection);
     if (!section) return;
 
-    const langPrompts = getFallbackPrompts(language);
+    const narrative = buildBiographyNarrativeContext({
+      biography_type: biographyType,
+      subject_name: biographyType === 'memorial' ? title : null,
+      title,
+      author_name: authorName,
+    });
+    const langPrompts = getFallbackPrompts(language, narrative);
     const fallback = langPrompts[activeSection] || [];
 
     setAiState({
@@ -915,7 +922,8 @@ const [isPublishing, setIsPublishing] = useState(false);
       const prompts = await getGuidedPrompts(
         activeSection,
         section.title,
-        language
+        language,
+        narrative
       );
       setAiUsageRefresh((n) => n + 1);
       setAiState((prev) => ({
@@ -936,7 +944,7 @@ const [isPublishing, setIsPublishing] = useState(false);
         error: null,
       }));
     }
-  }, [activeSection, session, language]);
+  }, [activeSection, session, language, biographyType, title, authorName]);
 
   const handleSummarize = useCallback(async () => {
     const sectionData = getSectionData(contentRef.current, activeSection);
@@ -1209,7 +1217,13 @@ const [isPublishing, setIsPublishing] = useState(false);
   }, [finalVersion, session, language, t]);
 
   const handleFinalVersionGuidedPrompts = useCallback(async () => {
-    const langPrompts = getFallbackPrompts(language);
+    const narrative = buildBiographyNarrativeContext({
+      biography_type: biographyType,
+      subject_name: biographyType === 'memorial' ? title : null,
+      title,
+      author_name: authorName,
+    });
+    const langPrompts = getFallbackPrompts(language, narrative);
     const fallback = langPrompts['general'] || [];
     setAiState({
       type: 'prompts',
@@ -1224,7 +1238,12 @@ const [isPublishing, setIsPublishing] = useState(false);
       return;
     }
     try {
-      const prompts = await getGuidedPrompts('final_version', language === 'it' ? 'Versione Finale' : 'Final Version', language);
+      const prompts = await getGuidedPrompts(
+        'final_version',
+        language === 'it' ? 'Versione Finale' : 'Final Version',
+        language,
+        narrative
+      );
       setAiUsageRefresh((n) => n + 1);
       setAiState((prev) => ({ ...prev, loading: false, prompts: prompts.length > 0 ? prompts : fallback }));
     } catch (err: any) {
@@ -1235,7 +1254,7 @@ const [isPublishing, setIsPublishing] = useState(false);
       }
       setAiState((prev) => ({ ...prev, loading: false, prompts: fallback, error: null }));
     }
-  }, [session, language]);
+  }, [session, language, biographyType, title, authorName]);
 
   const handleRevertToDraft = useCallback(async () => {
     try {

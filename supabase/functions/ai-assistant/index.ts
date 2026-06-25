@@ -85,6 +85,47 @@ function getLangName(lang: string): string {
   return LANGUAGE_NAMES[lang] || "English";
 }
 
+type MemorialNarrativeInput = {
+  biographyType?: string;
+  subjectName?: string;
+  writerName?: string;
+};
+
+function isMemorialInput(ctx: MemorialNarrativeInput): boolean {
+  return ctx.biographyType === "memorial" && Boolean(ctx.subjectName?.trim());
+}
+
+function buildMemorialPromptSuffix(ctx: MemorialNarrativeInput, language: string): string {
+  if (!isMemorialInput(ctx)) return "";
+  const subject = ctx.subjectName!.trim();
+  const writer = ctx.writerName?.trim() || "the writer";
+  const lang = language.slice(0, 2);
+  if (lang === "it") {
+    return (
+      `\n\nContesto memorial: ${writer} scrive su ${subject} (scomparso/a). ` +
+      `Genera domande allo scrittore su ciò che sa di ${subject}, mai in seconda persona come se fosse la sua vita. ` +
+      `Esempio: "Cosa sai dell'infanzia di ${subject}?" non "Cosa ricordi della tua infanzia?".`
+    );
+  }
+  if (lang === "fr") {
+    return (
+      `\n\nContexte mémorial : ${writer} écrit sur ${subject} (décédé/e). ` +
+      `Posez des questions à l'écrivain sur ce qu'il/elle sait de ${subject}, jamais « votre enfance ».`
+    );
+  }
+  if (lang === "de") {
+    return (
+      `\n\nMemorial-Kontext: ${writer} schreibt über ${subject} (verstorben). ` +
+      `Fragen an den Schreibenden, was er/sie über ${subject} weiß — nie « Ihre Kindheit ».`
+    );
+  }
+  return (
+    `\n\nMemorial context: ${writer} is writing about ${subject} (deceased). ` +
+    `Ask the writer what they know about ${subject}, never "your childhood" as if it were the writer's life. ` +
+    `Example: "What do you know about ${subject}'s childhood?" not "What do you remember from your childhood?".`
+  );
+}
+
 function buildGrammarPrompt(sectionTitle: string, content: string, language: string) {
   const langName = getLangName(language);
   return {
@@ -93,10 +134,19 @@ function buildGrammarPrompt(sectionTitle: string, content: string, language: str
   };
 }
 
-function buildPromptsPrompt(sectionKey: string, sectionTitle: string, language: string) {
+function buildPromptsPrompt(
+  sectionKey: string,
+  sectionTitle: string,
+  language: string,
+  memorial?: MemorialNarrativeInput
+) {
   const langName = getLangName(language);
+  const memorialSuffix = memorial ? buildMemorialPromptSuffix(memorial, language) : "";
+  const coachRole = isMemorialInput(memorial ?? {})
+    ? `help the writer recall what they know about ${memorial!.subjectName!.trim()} for this memorial biography section`
+    : `help someone recall memories and stories for the given biography section`;
   return {
-    system: `${JSON_ONLY_PREFIX}You are a warm, empathetic biography writing coach. Generate 5 thoughtful questions in ${langName} that help someone recall memories and stories for the given biography section. Questions should be specific, personal, and spark vivid memories. All text must be in ${langName}. Return a JSON array of objects with "prompt" (the question in ${langName}) and "starter" (a 5-8 word writing starter in ${langName} based on the question).`,
+    system: `${JSON_ONLY_PREFIX}You are a warm, empathetic biography writing coach. Generate 5 thoughtful questions in ${langName} that ${coachRole}. Questions should be specific, personal, and spark vivid memories. All text must be in ${langName}. Return a JSON array of objects with "prompt" (the question in ${langName}) and "starter" (a 5-8 word writing starter in ${langName} based on the question).${memorialSuffix}`,
     user: `Generate prompts in ${langName} for the biography section: "${sectionTitle}" (key: ${sectionKey})`,
   };
 }
@@ -105,7 +155,8 @@ function buildCoachChatPrompt(
   sectionTitle: string,
   sectionKey: string,
   language: string,
-  history: { role: string; content: string }[]
+  history: { role: string; content: string }[],
+  memorial?: MemorialNarrativeInput
 ) {
   const langName = getLangName(language);
   let historyContext = "";
@@ -114,12 +165,16 @@ function buildCoachChatPrompt(
       "\n\nRecent chat:\n" +
       history.map((m) => `${m.role}: ${m.content}`).join("\n");
   }
+  const memorialSuffix = memorial ? buildMemorialPromptSuffix(memorial, language) : "";
+  const coachRole = isMemorialInput(memorial ?? {})
+    ? `Help the writer recall what they know about ${memorial!.subjectName!.trim()} for the section "${sectionTitle}" (key: ${sectionKey}). Ask the writer (you), never as if they lived the protagonist's life.`
+    : `Help the user recall memories for the section "${sectionTitle}" (key: ${sectionKey}).`;
   return {
     system:
       `You are a warm biography writing coach for Biography Library. ` +
-      `Help the user recall memories for the section "${sectionTitle}" (key: ${sectionKey}). ` +
+      `${coachRole} ` +
       `Respond in ${langName}. Be concise; ask one thoughtful question at a time. ` +
-      `Never invent biographical facts. Plain text only, no JSON.`,
+      `Never invent biographical facts. Plain text only, no JSON.${memorialSuffix}`,
     user: `Continue the coaching conversation.${historyContext}`,
   };
 }
@@ -136,9 +191,12 @@ function buildAnalyzeAnswerPrompt(
   userAnswer: string,
   originalQuestion: string,
   conversationHistory: any[],
-  language: string
+  language: string,
+  memorial?: MemorialNarrativeInput
 ) {
   const langName = getLangName(language);
+  const memorialMode = isMemorialInput(memorial ?? {});
+  const subject = memorial?.subjectName?.trim() ?? "the protagonist";
 
   let historyContext = '';
   if (conversationHistory && conversationHistory.length > 0) {
@@ -146,16 +204,21 @@ function buildAnalyzeAnswerPrompt(
       conversationHistory.map((h: any) => `Q: ${h.question}\nA: ${h.answer}`).join('\n\n');
   }
 
+  const followUpExamples = memorialMode
+    ? `- If the answer is emotional or significant, ask a gentle follow-up about ${subject} or what the writer learned (e.g. "What did that reveal about ${subject}?" or "How did the family talk about that?") — never "How did that affect you?" as if the writer lived the event`
+    : `- If the answer is emotional or significant, ask a gentle follow-up like "How did that affect you?" or "What was that like for you?"`;
+
   return {
     system: `${JSON_ONLY_PREFIX}You are an empathetic biography interviewer. Analyze the user's answer to determine if it needs a follow-up question for more detail.
 
 Guidelines:
 - If the answer is very brief (< 30 words) or vague, ask ONE specific follow-up question
 - If the answer mentions names, places, or events without context, ask for clarification
-- If the answer is emotional or significant, ask a gentle follow-up like "How did that affect you?" or "What was that like for you?"
+${followUpExamples}
 - If the answer is already detailed (> 80 words) and complete, no follow-up needed
 - Follow-up questions must be warm, specific, and in ${langName}
 - NEVER ask more than ONE follow-up per original question
+${memorialMode ? buildMemorialPromptSuffix(memorial!, language) : ""}
 
 Return a JSON object with:
 {
@@ -645,7 +708,16 @@ Deno.serve(async (req: Request) => {
       originalOrder,
       chunkText,
       coachMessage,
+      biographyType,
+      subjectName,
+      writerName,
     } = body;
+
+    const memorialCtx: MemorialNarrativeInput = {
+      biographyType,
+      subjectName,
+      writerName,
+    };
 
     if (!action) {
       return errorResponse("Missing action parameter", 400);
@@ -694,7 +766,7 @@ Deno.serve(async (req: Request) => {
             400
           );
         }
-        const p = buildPromptsPrompt(sectionKey, sectionTitle, language);
+        const p = buildPromptsPrompt(sectionKey, sectionTitle, language, memorialCtx);
         systemPrompt = p.system;
         userPrompt = p.user;
         break;
@@ -723,7 +795,8 @@ Deno.serve(async (req: Request) => {
           userAnswer,
           originalQuestion,
           conversationHistory || [],
-          language
+          language,
+          memorialCtx
         );
         systemPrompt = p.system;
         userPrompt = p.user;
@@ -741,7 +814,8 @@ Deno.serve(async (req: Request) => {
           sectionTitle,
           sectionKey,
           language,
-          conversationHistory || []
+          conversationHistory || [],
+          memorialCtx
         );
         systemPrompt = p.system;
         userPrompt = `${p.user}\n\nUser: ${coachMessage}`;

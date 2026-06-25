@@ -63,6 +63,24 @@ function getToken(): string {
   return token;
 }
 
+/** Normalize OpenAI-style message content (string or multipart array). */
+export function extractTextContent(content: unknown): string {
+  if (typeof content === 'string') return content;
+  if (Array.isArray(content)) {
+    return content
+      .map((part) => {
+        if (typeof part === 'string') return part;
+        if (part && typeof part === 'object') {
+          const p = part as { text?: string; content?: string };
+          return p.text ?? p.content ?? '';
+        }
+        return '';
+      })
+      .join('');
+  }
+  return content == null ? '' : String(content);
+}
+
 function buildPayload(options: ChatOptions, model: string, stream: boolean): Record<string, unknown> {
   const role = options.role ?? 'coach';
   const params = getModelParams(role);
@@ -154,7 +172,7 @@ export async function chat(options: ChatOptions): Promise<ChatCompletionResult> 
       const choice = json?.choices?.[0];
       const message = choice?.message ?? {};
       return {
-        content: message.content ?? '',
+        content: extractTextContent(message.content),
         tool_calls: message.tool_calls,
         modelUsed: model,
         finish_reason: choice?.finish_reason,
@@ -209,8 +227,9 @@ export async function* chatStream(options: ChatOptions): AsyncGenerator<ChatStre
             const parsed = JSON.parse(data);
             const delta = parsed?.choices?.[0]?.delta;
             if (!delta) continue;
-            if (delta.content) {
-              yield { type: 'token', content: delta.content, modelUsed: model };
+            const token = extractTextContent(delta.content);
+            if (token) {
+              yield { type: 'token', content: token, modelUsed: model };
             }
             if (delta.tool_calls) {
               for (const tc of delta.tool_calls) {

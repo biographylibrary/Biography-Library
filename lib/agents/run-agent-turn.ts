@@ -2,7 +2,9 @@ import { SupabaseClient } from '@supabase/supabase-js';
 import {
   chat,
   chatStream,
+  extractTextContent,
   type ChatMessage,
+  type ToolCall,
   type ToolDefinition,
 } from '@/lib/agents/infomaniak-client';
 import type { AgentRole, AgentType } from '@/lib/agents/models';
@@ -10,7 +12,10 @@ import { appendMessage } from '@/lib/agents/thread-service';
 import { maybeCompressThreadMemory } from '@/lib/agents/thread-memory';
 import { executeCoachTool } from '@/lib/agents/tools/coach-tools';
 import { executeReviewerTool } from '@/lib/agents/tools/reviewer-tools';
-import { executeEchoTool } from '@/lib/agents/tools/echo-tools';
+import {
+  executeEchoTool,
+  type EchoToolResultEvent,
+} from '@/lib/agents/tools/echo-tools';
 
 export type PreparedAgentTurn = {
   threadId: string;
@@ -22,9 +27,24 @@ export type PreparedAgentTurn = {
   tools?: ToolDefinition[];
   biographyId?: string;
   userId: string;
+  locale?: string;
   echoPage?: string;
   biographyMode?: 'sections' | 'freeflow';
 };
+
+const MAX_TOOL_ROUNDS = 5;
+
+const DRAFT_ACK: Record<string, string> = {
+  en: "I've prepared a draft you can review and insert below.",
+  it: 'Ho preparato una bozza che puoi rivedere e inserire qui sotto.',
+  fr: 'J\'ai préparé un brouillon que vous pouvez relire et insérer ci-dessous.',
+  de: 'Ich habe einen Entwurf vorbereitet, den Sie unten prüfen und einfügen können.',
+};
+
+function draftAck(locale?: string): string {
+  const lang = (locale ?? 'en').slice(0, 2);
+  return DRAFT_ACK[lang] ?? DRAFT_ACK.en;
+}
 
 export function historyToChatMessages(
   rows: { role: string; content: string; tool_calls?: unknown }[]
@@ -54,6 +74,96 @@ export function historyToChatMessages(
     });
 }
 
+type SendFn = (event: string, data: unknown) => void;
+
+async function executeToolCall(
+  tc: ToolCall,
+  prepared: PreparedAgentTurn,
+  serviceClient: SupabaseClient
+): Promise<{ content: string; event?: EchoToolResultEvent }> {
+  if (prepared.agentType === 'echo') {
+    return executeEchoTool(tc.function.name, tc.function.arguments, {
+      serviceClient,
+      userId: prepared.userId,
+      biographyId: prepared.biographyId,
+      echoPage: prepared.echoPage,
+      biographyMode: prepared.biographyMode,
+    });
+  }
+
+  const execTool =
+    prepared.agentType === 'publication_reviewer' ? executeReviewerTool : executeCoachTool;
+  return execTool(tc.function.name, tc.function.arguments, {
+    serviceClient,
+    userId: prepared.userId,
+    biographyId: prepared.biographyId!,
+  });
+}
+
+function isDraftPreviewEvent(event?: EchoToolResultEvent): boolean {
+  return event?.tool === 'propose_draft' && Boolean(event.preview && event.draftText);
+}
+
+async function streamOrFetchText(
+  messages: ChatMessage[],
+  prepared: PreparedAgentTurn,
+  send: SendFn
+): Promise<string> {
+  let fullContent = '';
+  try {
+    for await (const chunk of chatStream({
+      role: prepared.role,
+      messages,
+      stream: true,
+    })) {
+      if (chunk.type === 'token' && chunk.content) {
+        fullContent += chunk.content;
+        send('token', { content: chunk.content });
+      }
+    }
+  } catch (streamErr) {
+    console.warn('[agents] chatStream failed, falling back to non-stream:', streamErr);
+  }
+
+  if (!fullContent.trim()) {
+    const result = await chat({
+      role: prepared.role,
+      messages,
+      stream: false,
+    });
+    fullContent = extractTextContent(result.content);
+    if (fullContent.trim()) {
+      send('token', { content: fullContent });
+    }
+  }
+
+  return fullContent.trim();
+}
+
+async function persistAssistantText(
+  serviceClient: SupabaseClient,
+  threadId: string,
+  text: string
+): Promise<void> {
+  await appendMessage(serviceClient, threadId, {
+    role: 'assistant',
+    content: text,
+    tool_calls: null,
+  });
+}
+
+async function emitAssistantText(
+  text: string,
+  prepared: PreparedAgentTurn,
+  serviceClient: SupabaseClient,
+  send: SendFn
+): Promise<void> {
+  const trimmed = text.trim();
+  if (!trimmed) return;
+  send('token', { content: trimmed });
+  await persistAssistantText(serviceClient, prepared.threadId, trimmed);
+}
+
 export async function runStreamingAgentTurn(
   prepared: PreparedAgentTurn,
   serviceClient: SupabaseClient,
@@ -72,130 +182,84 @@ export async function runStreamingAgentTurn(
     });
   };
 
-  const streamTokens = async (msgs: ChatMessage[]) => {
-    let fullContent = '';
-    try {
-      for await (const chunk of chatStream({
-        role: prepared.role,
-        messages: msgs,
-        stream: true,
-      })) {
-        if (chunk.type === 'token' && chunk.content) {
-          fullContent += chunk.content;
-          send('token', { content: chunk.content });
-        }
+  const toolsEnabled =
+    Boolean(prepared.tools?.length) &&
+    (Boolean(prepared.biographyId) || prepared.agentType === 'echo');
+
+  let hadDraftPreview = false;
+
+  if (toolsEnabled) {
+    for (let round = 0; round < MAX_TOOL_ROUNDS; round++) {
+      let result;
+      try {
+        result = await chat({
+          role: prepared.role,
+          messages,
+          tools: prepared.tools,
+          tool_choice: 'auto',
+          stream: false,
+        });
+      } catch (toolErr) {
+        console.warn('[agents] tool pass failed, continuing without tools:', toolErr);
+        break;
       }
-    } catch (streamErr) {
-      console.warn('[agents] chatStream failed, falling back to non-stream:', streamErr);
-      const result = await chat({
-        role: prepared.role,
-        messages: msgs,
-        stream: false,
-      });
-      fullContent = result.content ?? '';
-      if (fullContent) send('token', { content: fullContent });
-    }
 
-    if (!fullContent.trim()) {
-      throw new Error('AI returned an empty response');
-    }
-
-    await appendMessage(serviceClient, prepared.threadId, {
-      role: 'assistant',
-      content: fullContent,
-      tool_calls: null,
-    });
-    return fullContent;
-  };
-
-  if (prepared.tools?.length && (prepared.biographyId || prepared.agentType === 'echo')) {
-    let first;
-    try {
-      first = await chat({
-        role: prepared.role,
-        messages,
-        tools: prepared.tools,
-        tool_choice: 'auto',
-        stream: false,
-      });
-    } catch (toolErr) {
-      console.warn('[agents] tool pass failed, continuing without tools:', toolErr);
-      await streamTokens(messages);
-      finishTurn();
-      return;
-    }
-
-    if (first.tool_calls?.length) {
-      await appendMessage(serviceClient, prepared.threadId, {
-        role: 'assistant',
-        content: first.content ?? '',
-        tool_calls: first.tool_calls,
-      });
-
-      const afterTools: ChatMessage[] = [
-        ...messages,
-        {
-          role: 'assistant',
-          content: first.content ?? '',
-          tool_calls: first.tool_calls,
-        },
-      ];
-
-      for (const tc of first.tool_calls) {
-        let content: string;
-        let event: { tool: string; sectionKey?: string; contentLength?: number } | undefined;
-
-        if (prepared.agentType === 'echo') {
-          const result = await executeEchoTool(tc.function.name, tc.function.arguments, {
-            serviceClient,
-            userId: prepared.userId,
-            biographyId: prepared.biographyId,
-            echoPage: prepared.echoPage,
-            biographyMode: prepared.biographyMode,
-          });
-          content = result.content;
-          event = result.event;
-        } else {
-          const execTool =
-            prepared.agentType === 'publication_reviewer' ? executeReviewerTool : executeCoachTool;
-          const result = await execTool(tc.function.name, tc.function.arguments, {
-            serviceClient,
-            userId: prepared.userId,
-            biographyId: prepared.biographyId!,
-          });
-          content = result.content;
-          event = result.event;
-        }
-        if (event) send('tool_result', event);
+      if (result.tool_calls?.length) {
+        const assistantContent = extractTextContent(result.content);
         await appendMessage(serviceClient, prepared.threadId, {
-          role: 'tool',
-          content,
-          tool_calls: { tool_call_id: tc.id },
+          role: 'assistant',
+          content: assistantContent,
+          tool_calls: result.tool_calls,
         });
-        afterTools.push({
-          role: 'tool',
-          content,
-          tool_call_id: tc.id,
+        messages.push({
+          role: 'assistant',
+          content: assistantContent,
+          tool_calls: result.tool_calls,
         });
+
+        for (const tc of result.tool_calls) {
+          const { content, event } = await executeToolCall(tc, prepared, serviceClient);
+          if (event) {
+            send('tool_result', event);
+            if (isDraftPreviewEvent(event)) hadDraftPreview = true;
+          }
+          await appendMessage(serviceClient, prepared.threadId, {
+            role: 'tool',
+            content,
+            tool_calls: { tool_call_id: tc.id },
+          });
+          messages.push({
+            role: 'tool',
+            content,
+            tool_call_id: tc.id,
+          });
+        }
+        continue;
       }
 
-      await streamTokens(afterTools);
-      finishTurn();
-      return;
-    }
+      const directText = extractTextContent(result.content).trim();
+      if (directText) {
+        await emitAssistantText(directText, prepared, serviceClient, send);
+        finishTurn();
+        return;
+      }
 
-    if (first.content) {
-      send('token', { content: first.content });
-      await appendMessage(serviceClient, prepared.threadId, {
-        role: 'assistant',
-        content: first.content,
-        tool_calls: null,
-      });
-      finishTurn();
-      return;
+      break;
     }
   }
 
-  await streamTokens(messages);
+  let finalText = await streamOrFetchText(messages, prepared, send);
+
+  if (!finalText && hadDraftPreview) {
+    finalText = draftAck(prepared.locale);
+    send('token', { content: finalText });
+  }
+
+  if (!finalText) {
+    console.warn('[agents] empty model response after tool/stream passes');
+    throw new Error('AI returned an empty response');
+  }
+
+  await persistAssistantText(serviceClient, prepared.threadId, finalText);
   finishTurn();
 }

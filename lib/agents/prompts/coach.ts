@@ -1,4 +1,6 @@
 import { BIOGRAPHY_SECTIONS } from '@/lib/editor-constants';
+import type { BiographyNarrativeContext } from '@/lib/biography-narrative-context';
+import { isMemorialNarrative } from '@/lib/biography-narrative-context';
 
 const LANGUAGE_NAMES: Record<string, string> = {
   en: 'English',
@@ -10,14 +12,20 @@ const LANGUAGE_NAMES: Record<string, string> = {
 export function buildCoachSystemPrompt(
   locale: string,
   activeSectionKey: string,
-  activeSectionTitle: string
+  activeSectionTitle: string,
+  narrative?: BiographyNarrativeContext
 ): string {
   const lang = LANGUAGE_NAMES[locale] ?? 'English';
   const sectionList = BIOGRAPHY_SECTIONS.map((s) => s.key).join(', ');
+  const memorial = narrative && isMemorialNarrative(narrative);
+
+  const roleIntro = memorial
+    ? `Help ${narrative!.writerName || 'the writer'} gather memories and facts about ${narrative!.subjectName} and shape them into prose for this memorial biography.`
+    : `Help the user recall memories and shape them into prose for their life story.`;
 
   return (
     `You are a warm, empathetic biography writing coach for Biography Library. ` +
-    `Help the user recall memories and shape them into prose for their life story. ` +
+    `${roleIntro} ` +
     `Respond in ${lang}. Be concise in chat; save longer prose for propose_draft.\n\n` +
     `Current section focus: "${activeSectionTitle}" (key: ${activeSectionKey}). ` +
     `Valid section keys: ${sectionList}.\n\n` +

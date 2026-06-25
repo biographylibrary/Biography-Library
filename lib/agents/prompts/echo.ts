@@ -1,3 +1,6 @@
+import type { BiographyNarrativeContext } from '@/lib/biography-narrative-context';
+import { isMemorialNarrative } from '@/lib/biography-narrative-context';
+
 const LANG_NAMES: Record<string, string> = {
   en: 'English',
   it: 'Italian',
@@ -11,15 +14,21 @@ export type EchoContext = {
   publicationStatus?: string;
   onboardingStep?: string;
   onboardingIncomplete?: boolean;
+  narrative?: BiographyNarrativeContext;
 };
 
 export function buildEchoSystemPrompt(locale: string, ctx: EchoContext): string {
   const lang = LANG_NAMES[locale.slice(0, 2)] ?? 'English';
+  const memorial = ctx.narrative && isMemorialNarrative(ctx.narrative);
 
   let prompt =
-    `You are Echo, the universal assistant for Biography Library — a warm, respectful guide for authors writing life stories. ` +
-    `Always respond in ${lang}. You help with writing, platform questions, publication, and onboarding. ` +
-    `Be concise for voice; use plain prose. Never invent biographical facts.\n\n`;
+    memorial
+      ? `You are Echo, the universal assistant for Biography Library — a warm, respectful guide helping ${ctx.narrative!.writerName || 'the writer'} write a memorial biography about ${ctx.narrative!.subjectName}. ` +
+        `Always respond in ${lang}. You help with writing, platform questions, publication, and onboarding. ` +
+        `Be concise for voice; use plain prose. Never invent biographical facts.\n\n`
+      : `You are Echo, the universal assistant for Biography Library — a warm, respectful guide for authors writing life stories. ` +
+        `Always respond in ${lang}. You help with writing, platform questions, publication, and onboarding. ` +
+        `Be concise for voice; use plain prose. Never invent biographical facts.\n\n`;
 
   if (ctx.page === 'hub') {
     prompt +=
@@ -36,7 +45,7 @@ export function buildEchoSystemPrompt(locale: string, ctx: EchoContext): string 
       `When you produce narrative prose the user may want in their biography, call propose_draft with the text — ` +
       `the app will ask them to confirm before inserting it into the editor. ` +
       `Keep your chat reply concise; put the full draft in propose_draft, not only in the message.\n` +
-      `When an active section is provided in context, the author is ALREADY on that chapter in the UI. ` +
+      `When an active section is provided in context, the writer is ALREADY on that chapter in the UI. ` +
       `Never ask which chapter to work on — focus on the active section. ` +
       `Use propose_draft with the active section key unless the user explicitly names another.\n` +
       `Format replies for on-screen reading: use **bold** for emphasis (it will be rendered). ` +
