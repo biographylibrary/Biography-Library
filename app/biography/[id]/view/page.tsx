@@ -29,6 +29,7 @@ import { logger } from '@/lib/logger';
 import { memorialSubjectName } from '@/lib/biography-display';
 import { BiographySectionBody } from '@/components/biography/BiographySectionBody';
 import { BiographyContentRightsNotice } from '@/components/biography/BiographyContentRightsNotice';
+import { BiographyLanguageBadges } from '@/components/biography/BiographyLanguageBadges';
 
 type ViewLanguage = 'en' | 'it' | 'fr' | 'de';
 
@@ -599,13 +600,16 @@ export default function BiographyViewPage() {
 
       <main className="max-w-4xl mx-auto px-4 sm:px-6 py-8">
         {coverImageUrl && (
-          <div className="mb-10 flex justify-center">
-            <div className="w-full max-w-2xl rounded-lg overflow-hidden border border-border bg-muted shadow-sm">
+          <div className="mb-10">
+            <div
+              className="w-[min(240px,42vw)] overflow-hidden"
+              style={{ aspectRatio: '176 / 250' }}
+            >
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={coverImageUrl}
                 alt=""
-                className="w-full h-auto max-h-[min(360px,42vh)] object-contain object-top bg-muted/50"
+                className="w-full h-full object-cover object-top"
               />
             </div>
           </div>
@@ -646,11 +650,13 @@ export default function BiographyViewPage() {
                 {t.view.publishedOn} {formatDate(biography.published_at)}
               </p>
             )}
-            <p className="text-sm text-muted-foreground mt-2 not-prose">
-              {interpolate(t.view.writtenIn, {
-                language: languageLabel(contentLanguage, t),
-              })}
-            </p>
+            <div className="mt-3 not-prose">
+              <BiographyLanguageBadges
+                originalLanguage={contentLanguage}
+                translationLanguages={availableTargets}
+                size="md"
+              />
+            </div>
             {hasServerPdf && (
               <p className="text-xs text-muted-foreground mt-2 not-prose">
                 {interpolate(t.view.pdfOriginalLanguage, {

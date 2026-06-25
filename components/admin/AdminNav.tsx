@@ -6,7 +6,7 @@ import { usePathname } from 'next/navigation';
 import { useTranslation } from '@/lib/i18n/i18n-context';
 import { useAuth } from '@/lib/auth-context';
 import { supabase } from '@/lib/supabase';
-import { LayoutDashboard, Shield, BookOpen, Users, ChartBar as BarChart3, ClipboardList } from 'lucide-react';
+import { LayoutDashboard, Shield, BookOpen, Users, ChartBar as BarChart3, ClipboardList, Globe } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface NavItem {
@@ -16,6 +16,7 @@ interface NavItem {
   badge?: number;
   superAdminOnly?: boolean;
   adminOnly?: boolean;
+  external?: boolean;
 }
 
 export function AdminNav() {
@@ -36,6 +37,12 @@ export function AdminNav() {
     { label: t.admin.navOverview, href: '/admin', icon: <LayoutDashboard className="h-4 w-4" /> },
     { label: t.admin.navModeration, href: '/admin/moderation', icon: <Shield className="h-4 w-4" /> },
     { label: t.admin.navBiographies, href: '/admin/biographies', icon: <BookOpen className="h-4 w-4" /> },
+    {
+      label: t.admin.navPublicCatalog,
+      href: '/biographies',
+      icon: <Globe className="h-4 w-4" />,
+      external: true,
+    },
     {
       label: t.admin.navReview,
       href: '/admin/review',
@@ -66,6 +73,8 @@ export function AdminNav() {
               <Link
                 key={item.href}
                 href={item.href}
+                target={item.external ? '_blank' : undefined}
+                rel={item.external ? 'noopener noreferrer' : undefined}
                 className={cn(
                   'flex items-center gap-2 px-3 py-3.5 text-sm font-medium whitespace-nowrap border-b-2 transition-colors',
                   isActive

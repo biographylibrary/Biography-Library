@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { Users, BookOpen, Shield, UserPlus, Activity, CircleCheck as CheckCircle, CircleAlert as AlertCircle, Clock, Circle as XCircle, ArrowRight, LayoutDashboard, TriangleAlert, ClipboardList } from 'lucide-react';
+import { Users, BookOpen, Shield, UserPlus, Activity, CircleCheck as CheckCircle, CircleAlert as AlertCircle, Clock, Circle as XCircle, ArrowRight, LayoutDashboard, TriangleAlert, ClipboardList, Globe } from 'lucide-react';
 import { useTranslation } from '@/lib/i18n/i18n-context';
 import { useAuth } from '@/lib/auth-context';
 import { supabase } from '@/lib/supabase';
@@ -272,6 +272,13 @@ function OverviewContent() {
                 <Link href="/admin/biographies">
                   <BookOpen className="h-4 w-4 text-brand-ink dark:text-brand-blue" />
                   {t.admin.quickActionBiographies}
+                  <ArrowRight className="h-3.5 w-3.5 text-muted-foreground" />
+                </Link>
+              </Button>
+              <Button asChild variant="outline" className="gap-2 h-10">
+                <Link href="/biographies" target="_blank" rel="noopener noreferrer">
+                  <Globe className="h-4 w-4 text-brand-ink dark:text-brand-blue" />
+                  {t.admin.quickActionPublicCatalog}
                   <ArrowRight className="h-3.5 w-3.5 text-muted-foreground" />
                 </Link>
               </Button>

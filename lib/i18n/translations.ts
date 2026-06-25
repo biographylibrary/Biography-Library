@@ -1096,6 +1096,7 @@ export interface Translations {
     navOverview: string;
     navModeration: string;
     navBiographies: string;
+    navPublicCatalog: string;
     navReview: string;
     navUsers: string;
     navAiStats: string;
@@ -1169,6 +1170,7 @@ export interface Translations {
     quickActionModeration: string;
     quickActionUsers: string;
     quickActionBiographies: string;
+    quickActionPublicCatalog: string;
     quickActionReview: string;
     guardAccessDenied: string;
     guardAccessDeniedMessage: string;
@@ -1291,6 +1293,8 @@ export interface Translations {
     signIn: string;
     startBiography: string;
     viewsCount: string;
+    langOriginal: string;
+    langTranslation: string;
   };
   pwa: {
     installBannerText: string;
@@ -2583,6 +2587,7 @@ export const translations: Record<Language, Translations> = {
       navOverview: 'Overview',
       navModeration: 'Moderation',
       navBiographies: 'Biographies',
+      navPublicCatalog: 'Public catalogue',
       navReview: 'Review Queue',
       navUsers: 'Users',
       navAiStats: 'AI Stats',
@@ -2656,6 +2661,7 @@ export const translations: Record<Language, Translations> = {
       quickActionModeration: 'Go to Moderation',
       quickActionUsers: 'Manage Users',
       quickActionBiographies: 'View Biographies',
+      quickActionPublicCatalog: 'Open public catalogue',
       quickActionReview: 'Review Queue',
       guardAccessDenied: 'Access Denied',
       guardAccessDeniedMessage: 'You do not have permission to access this area.',
@@ -2778,6 +2784,8 @@ export const translations: Record<Language, Translations> = {
       signIn: 'Sign in',
       startBiography: 'Start your biography',
       viewsCount: 'views',
+      langOriginal: 'Original language',
+      langTranslation: 'Available translation',
     },
     pwa: {
       installBannerText: 'Add Biography Library to your home screen',
@@ -4073,6 +4081,7 @@ export const translations: Record<Language, Translations> = {
       navOverview: 'Panoramica',
       navModeration: 'Moderazione',
       navBiographies: 'Biografie',
+      navPublicCatalog: 'Catalogo pubblico',
       navReview: 'Coda Revisione',
       navUsers: 'Utenti',
       navAiStats: 'Stat AI',
@@ -4146,6 +4155,7 @@ export const translations: Record<Language, Translations> = {
       quickActionModeration: 'Vai alla Moderazione',
       quickActionUsers: 'Gestisci Utenti',
       quickActionBiographies: 'Vedi Biografie',
+      quickActionPublicCatalog: 'Apri catalogo pubblico',
       quickActionReview: 'Coda revisione',
       guardAccessDenied: 'Accesso negato',
       guardAccessDeniedMessage: 'Non hai i permessi per accedere a questa area.',
@@ -4268,6 +4278,8 @@ export const translations: Record<Language, Translations> = {
       signIn: 'Accedi',
       startBiography: 'Inizia la tua biografia',
       viewsCount: 'visualizzazioni',
+      langOriginal: 'Lingua originale',
+      langTranslation: 'Traduzione disponibile',
     },
     pwa: {
       installBannerText: 'Aggiungi Biography Library alla schermata principale',
@@ -5563,6 +5575,7 @@ export const translations: Record<Language, Translations> = {
       navOverview: 'Vue d\'ensemble',
       navModeration: 'Modération',
       navBiographies: 'Biographies',
+      navPublicCatalog: 'Catalogue public',
       navReview: 'File de révision',
       navUsers: 'Utilisateurs',
       navAiStats: 'Stats IA',
@@ -5636,6 +5649,7 @@ export const translations: Record<Language, Translations> = {
       quickActionModeration: 'Aller à la Modération',
       quickActionUsers: 'Gérer les Utilisateurs',
       quickActionBiographies: 'Voir les Biographies',
+      quickActionPublicCatalog: 'Ouvrir le catalogue public',
       quickActionReview: 'File de révision',
       guardAccessDenied: 'Accès refusé',
       guardAccessDeniedMessage: 'Vous n\'avez pas la permission d\'accéder à cette zone.',
@@ -5758,6 +5772,8 @@ export const translations: Record<Language, Translations> = {
       signIn: 'Se connecter',
       startBiography: 'Commencer votre biographie',
       viewsCount: 'vues',
+      langOriginal: 'Langue originale',
+      langTranslation: 'Traduction disponible',
     },
     pwa: {
       installBannerText: 'Ajouter Biography Library à votre écran d\'accueil',
@@ -7053,6 +7069,7 @@ export const translations: Record<Language, Translations> = {
       navOverview: 'Übersicht',
       navModeration: 'Moderation',
       navBiographies: 'Biografien',
+      navPublicCatalog: 'Öffentlicher Katalog',
       navReview: 'Überprüfungswarteschlange',
       navUsers: 'Benutzer',
       navAiStats: 'KI-Statistiken',
@@ -7126,6 +7143,7 @@ export const translations: Record<Language, Translations> = {
       quickActionModeration: 'Zur Moderation',
       quickActionUsers: 'Benutzer verwalten',
       quickActionBiographies: 'Biografien ansehen',
+      quickActionPublicCatalog: 'Öffentlichen Katalog öffnen',
       quickActionReview: 'Prüfwarteschlange',
       guardAccessDenied: 'Zugriff verweigert',
       guardAccessDeniedMessage: 'Sie haben keine Berechtigung für diesen Bereich.',
@@ -7248,6 +7266,8 @@ export const translations: Record<Language, Translations> = {
       signIn: 'Anmelden',
       startBiography: 'Biografie starten',
       viewsCount: 'Aufrufe',
+      langOriginal: 'Originalsprache',
+      langTranslation: 'Verfügbare Übersetzung',
     },
     pwa: {
       installBannerText: 'Biography Library zum Startbildschirm hinzufügen',
