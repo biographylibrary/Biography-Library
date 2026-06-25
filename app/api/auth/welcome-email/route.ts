@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { buildServiceClient } from '@/lib/server/review-submit-pipeline';
 import { sendWelcomeEmail } from '@/lib/server/email';
+import { resolveUserEmailLocale } from '@shared/email/locale';
 
 export async function POST(req: NextRequest) {
   let body: { userId?: string } = {};
@@ -57,9 +58,15 @@ export async function POST(req: NextRequest) {
   }
 
   const language = (profile as { language?: string | null }).language;
+  const { data: authUser } = await service.auth.admin.getUserById(userId);
+  const signupLanguage =
+    typeof authUser.user?.user_metadata?.language === 'string'
+      ? authUser.user.user_metadata.language
+      : null;
+  const locale = resolveUserEmailLocale({ profileLanguage: language, signupLanguage });
 
   try {
-    await sendWelcomeEmail(email, language, userId);
+    await sendWelcomeEmail(email, locale, userId);
     await service
       .from('profiles')
       .update({ welcome_email_sent_at: new Date().toISOString() })

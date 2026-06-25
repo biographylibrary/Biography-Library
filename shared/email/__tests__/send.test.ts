@@ -1,5 +1,19 @@
 import { describe, expect, it, vi, afterEach } from 'vitest';
-import { sendTransactionalEmail } from '@shared/email/send';
+import { normalizeFromEmail, sendTransactionalEmail } from '@shared/email/send';
+
+describe('normalizeFromEmail', () => {
+  it('strips surrounding double quotes', () => {
+    expect(normalizeFromEmail('"Biography Library <noreply@biographylibrary.org>"')).toBe(
+      'Biography Library <noreply@biographylibrary.org>',
+    );
+  });
+
+  it('leaves valid values unchanged', () => {
+    expect(normalizeFromEmail('Biography Library <noreply@biographylibrary.org>')).toBe(
+      'Biography Library <noreply@biographylibrary.org>',
+    );
+  });
+});
 
 describe('sendTransactionalEmail', () => {
   afterEach(() => {
@@ -17,13 +31,11 @@ describe('sendTransactionalEmail', () => {
   });
 
   it('sends when Resend returns success', async () => {
-    vi.stubGlobal(
-      'fetch',
-      vi.fn().mockResolvedValue({
-        ok: true,
-        json: async () => ({ id: 'email_123' }),
-      }),
-    );
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({ id: 'email_123' }),
+    });
+    vi.stubGlobal('fetch', fetchMock);
 
     const result = await sendTransactionalEmail({
       to: 'user@example.com',
@@ -31,11 +43,13 @@ describe('sendTransactionalEmail', () => {
       locale: 'it',
       env: {
         apiKey: 're_test',
-        from: 'Biography Library <noreply@biographylibrary.org>',
+        from: '"Biography Library <noreply@biographylibrary.org>"',
       },
     });
 
     expect(result.sent).toBe(true);
-    expect(fetch).toHaveBeenCalledOnce();
+    expect(fetchMock).toHaveBeenCalledOnce();
+    const body = JSON.parse(String(fetchMock.mock.calls[0][1].body));
+    expect(body.from).toBe('Biography Library <noreply@biographylibrary.org>');
   });
 });

@@ -5,6 +5,9 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/lib/auth-context';
 import { useTranslation } from '@/lib/i18n/i18n-context';
+import { getProposedRegistrationLanguage } from '@/lib/i18n/detect-browser-language';
+import type { Language } from '@/lib/i18n/translations';
+import { RegistrationLanguagePicker } from '@/components/auth/RegistrationLanguagePicker';
 import { supabase } from '@/lib/supabase';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -25,7 +28,19 @@ export default function RegisterPage() {
   const [showVerification, setShowVerification] = useState(false);
   const { signUp, signOut, user, loading } = useAuth();
   const router = useRouter();
-  const { t } = useTranslation();
+  const { t, setLanguage } = useTranslation();
+  const [registrationLanguage, setRegistrationLanguage] = useState<Language>('en');
+
+  useEffect(() => {
+    const initial = getProposedRegistrationLanguage();
+    setRegistrationLanguage(initial);
+    void setLanguage(initial);
+  }, [setLanguage]);
+
+  const handleRegistrationLanguageChange = (lang: Language) => {
+    setRegistrationLanguage(lang);
+    void setLanguage(lang);
+  };
 
   useEffect(() => {
     if (!loading && user?.email_confirmed_at) {
@@ -49,7 +64,7 @@ export default function RegisterPage() {
 
     setIsLoading(true);
 
-    const { error, emailConfirmRequired } = await signUp(email, password, name);
+    const { error, emailConfirmRequired } = await signUp(email, password, name, registrationLanguage);
     if (error) {
       setError(error);
       setIsLoading(false);
@@ -225,6 +240,12 @@ export default function RegisterPage() {
                 <span>{error}</span>
               </div>
             )}
+
+            <RegistrationLanguagePicker
+              value={registrationLanguage}
+              onChange={handleRegistrationLanguageChange}
+              label={t.auth.registrationLanguage}
+            />
 
             <div className="space-y-2">
               <Label htmlFor="name">{t.auth.fullName}</Label>

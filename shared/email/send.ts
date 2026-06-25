@@ -22,6 +22,13 @@ export type SendEmailResult =
   | { sent: false; skipped: true }
   | { sent: false; error: string };
 
+/** Strip accidental surrounding quotes from env vars (common in deployment UIs). */
+export function normalizeFromEmail(value: string | null | undefined): string | undefined {
+  const trimmed = value?.trim();
+  if (!trimmed) return undefined;
+  return trimmed.replace(/^["']|["']$/g, '');
+}
+
 function resolveEnv(override?: ResendEnv): ResendEnv {
   if (override) return override;
   return {
@@ -35,7 +42,7 @@ function resolveEnv(override?: ResendEnv): ResendEnv {
 export async function sendTransactionalEmail(params: SendEmailParams): Promise<SendEmailResult> {
   const env = resolveEnv(params.env);
   const apiKey = env.apiKey?.trim();
-  const from = env.from?.trim();
+  const from = normalizeFromEmail(env.from);
 
   if (!apiKey || !from) {
     console.warn('[email] skip: RESEND_API_KEY or RESEND_FROM_EMAIL missing', {

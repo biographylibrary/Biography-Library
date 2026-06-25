@@ -2,9 +2,9 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 import {
   notifyUserEmailAndInApp,
   sendTemplateEmail,
-  normalizeEmailLocale,
   type EmailTemplateId,
 } from '@/lib/server/email';
+import { resolveUserEmailLocale } from '@shared/email/locale';
 
 type AnyClient = SupabaseClient<any, any, any>;
 
@@ -49,7 +49,7 @@ export async function notifyAuthorPublicationEmail(params: {
 }): Promise<void> {
   const author = await fetchProfileEmailContext(params.client, params.authorId);
   const title = await fetchBiographyTitle(params.client, params.biographyId);
-  const locale = normalizeEmailLocale(author.locale ?? params.contentLanguage);
+  const locale = resolveUserEmailLocale({ profileLanguage: author.locale });
 
   await notifyUserEmailAndInApp({
     supabase: params.client,
@@ -76,7 +76,7 @@ export async function notifyReviewerAssignedEmail(params: {
 }): Promise<void> {
   const reviewer = await fetchProfileEmailContext(params.client, params.reviewerId);
   const title = await fetchBiographyTitle(params.client, params.biographyId);
-  const locale = normalizeEmailLocale(reviewer.locale ?? params.contentLanguage);
+  const locale = resolveUserEmailLocale({ profileLanguage: reviewer.locale });
 
   await params.client.from('user_notifications').insert({
     user_id: params.reviewerId,

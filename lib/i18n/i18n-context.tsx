@@ -8,7 +8,10 @@ import { supabase } from '@/lib/supabase';
 interface I18nContextType {
   language: Language;
   t: Translations;
+  /** Guest UI only (e.g. register page preview). Ignored when logged in. */
   setLanguage: (lang: Language) => Promise<void>;
+  /** Apply profile language after login — does not persist changes. */
+  syncLanguageFromProfile: (lang: Language) => void;
   isLoading: boolean;
 }
 
@@ -18,6 +21,11 @@ export function I18nProvider({ children }: { children: ReactNode }) {
   const [language, setLanguageState] = useState<Language>('en');
   const [isLoading, setIsLoading] = useState(true);
   const { user } = useAuth();
+
+  const syncLanguageFromProfile = useCallback((lang: Language) => {
+    setLanguageState(lang);
+    localStorage.setItem('userLanguage', lang);
+  }, []);
 
   const loadUserLanguage = useCallback(async () => {
     try {
@@ -30,15 +38,14 @@ export function I18nProvider({ children }: { children: ReactNode }) {
         .maybeSingle();
 
       if (!error && data?.language) {
-        setLanguageState(data.language as Language);
-        localStorage.setItem('userLanguage', data.language);
+        syncLanguageFromProfile(data.language as Language);
       }
     } catch (error) {
       console.error('Error loading user language:', error);
     } finally {
       setIsLoading(false);
     }
-  }, [user]);
+  }, [user, syncLanguageFromProfile]);
 
   useEffect(() => {
     if (user) {
@@ -53,20 +60,9 @@ export function I18nProvider({ children }: { children: ReactNode }) {
   }, [user, loadUserLanguage]);
 
   const setLanguage = useCallback(async (lang: Language) => {
-    setLanguageState(lang);
-    localStorage.setItem('userLanguage', lang);
-
-    if (user) {
-      try {
-        await supabase
-          .from('profiles')
-          .update({ language: lang })
-          .eq('id', user.id);
-      } catch (error) {
-        console.error('Error saving language preference:', error);
-      }
-    }
-  }, [user]);
+    if (user) return;
+    syncLanguageFromProfile(lang);
+  }, [user, syncLanguageFromProfile]);
 
   useEffect(() => {
     document.documentElement.lang = language;
@@ -76,6 +72,7 @@ export function I18nProvider({ children }: { children: ReactNode }) {
     language,
     t: translations[language],
     setLanguage,
+    syncLanguageFromProfile,
     isLoading,
   };
 

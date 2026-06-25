@@ -10,7 +10,7 @@ function esc(value: string): string {
 }
 
 function link(href: string, label: string): string {
-  return `<a href="${esc(href)}" style="color:#2d5016;font-weight:600;">${esc(label)}</a>`;
+  return `<a href="${esc(href)}" style="color:#121212;font-weight:600;">${esc(label)}</a>`;
 }
 
 export function wrapEmailHtml(params: {
@@ -34,7 +34,7 @@ export function wrapEmailHtml(params: {
     <tr><td align="center">
       <table role="presentation" width="100%" style="max-width:560px;background:#ffffff;border:1px solid #e8e0d4;border-radius:12px;padding:32px 28px;">
         <tr><td>
-          <p style="margin:0 0 24px;font-size:22px;font-weight:600;color:#2d5016;">${esc(siteName)}</p>
+          <p style="margin:0 0 24px;font-size:22px;font-weight:600;color:#121212;">${esc(siteName)}</p>
           ${bodyHtml}
           <hr style="border:none;border-top:1px solid #e8e0d4;margin:28px 0 16px;">
           <p style="margin:0;font-size:12px;color:#666;line-height:1.5;">

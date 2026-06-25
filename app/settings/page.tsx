@@ -72,7 +72,7 @@ function SettingsRow({
 
 export default function SettingsPage() {
   const { user, fontSize, setFontSize, signOut } = useAuth();
-  const { language, setLanguage, t } = useTranslation();
+  const { language, t } = useTranslation();
   const { refreshOnboarding } = useOnboardingGate();
   const { resolvedTheme, setTheme } = useTheme();
   const router = useRouter();
@@ -206,30 +206,15 @@ export default function SettingsPage() {
         </section>
 
         <section className="space-y-2">
-          <SectionHeading>Language</SectionHeading>
+          <SectionHeading>{t.accountSettings.language}</SectionHeading>
 
-          <div className="rounded-xl border border-border/60 overflow-hidden divide-y divide-border/60">
-            {(['en', 'de', 'fr', 'it'] as Language[]).map((lang) => (
-              <button
-                key={lang}
-                onClick={() => setLanguage(lang)}
-                className={cn(
-                  'w-full flex items-center justify-between px-4 py-3 text-sm transition-colors bg-card hover:bg-muted/40',
-                  language === lang && 'bg-muted/60'
-                )}
-              >
-                <div className="flex items-center gap-2.5">
-                  <Languages className="h-4 w-4 text-muted-foreground" />
-                  <span className="mr-1">{languageFlags[lang]}</span>
-                  <span className={cn('font-medium', language === lang ? 'text-foreground' : 'text-muted-foreground')}>
-                    {languageNames[lang]}
-                  </span>
-                </div>
-                {language === lang && (
-                  <span className="h-2 w-2 rounded-full bg-foreground" />
-                )}
-              </button>
-            ))}
+          <div className="rounded-xl border border-border/60 bg-card px-4 py-3.5">
+            <div className="flex items-center gap-2.5">
+              <Languages className="h-4 w-4 text-muted-foreground" />
+              <span className="mr-1">{languageFlags[language]}</span>
+              <span className="text-sm font-medium text-foreground">{languageNames[language]}</span>
+            </div>
+            <p className="text-xs text-muted-foreground mt-2">{t.accountSettings.languageLockedHint}</p>
           </div>
         </section>
 
