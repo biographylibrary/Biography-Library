@@ -23,15 +23,13 @@ export default function RegisterPage() {
   const [resendLoading, setResendLoading] = useState(false);
   const [resendSuccess, setResendSuccess] = useState(false);
   const [showVerification, setShowVerification] = useState(false);
-  const { signUp, user, loading } = useAuth();
+  const { signUp, signOut, user, loading } = useAuth();
   const router = useRouter();
   const { t } = useTranslation();
 
   useEffect(() => {
-    if (!loading && user) {
-      if (user.email_confirmed_at) {
-        router.push('/create-biography');
-      }
+    if (!loading && user?.email_confirmed_at) {
+      router.replace('/dashboard');
     }
   }, [user, loading, router]);
 
@@ -74,10 +72,64 @@ export default function RegisterPage() {
     setResendSuccess(true);
   };
 
-  if (loading || (user && user.email_confirmed_at)) {
+  if (loading) {
     return (
       <div className="h-full flex items-center justify-center bg-background">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  if (user?.email_confirmed_at) {
+    return (
+      <div className="h-full flex items-center justify-center bg-background">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  if (user && !user.email_confirmed_at) {
+    const pendingEmail = user.email ?? email;
+    return (
+      <div className="h-full flex flex-col bg-background">
+        <div className="absolute top-4 right-4 z-10">
+          <ThemeToggle />
+        </div>
+        <div className="flex-1 flex items-center justify-center px-4 py-12">
+          <div className="w-full max-w-[400px] animate-in fade-in slide-in-from-bottom-4 duration-500">
+            <div className="flex items-center justify-center mb-8">
+              <Logo height={64} />
+            </div>
+            <div className="flex flex-col items-center gap-4 p-6 rounded-xl bg-brand-blue/25 dark:bg-brand-blue/15 border border-brand-blue/50 dark:border-brand-blue/35 text-center">
+              <div className="w-14 h-14 rounded-full bg-brand-blue/40 dark:bg-brand-blue/20 flex items-center justify-center">
+                <Mail className="h-7 w-7 text-brand-ink dark:text-brand-blue" />
+              </div>
+              <div className="space-y-2">
+                <h2 className="text-xl font-serif font-semibold text-brand-ink dark:text-brand-beigeLight">
+                  {t.auth.verifyEmailTitle}
+                </h2>
+                <p className="text-sm text-brand-ink/90 dark:text-brand-beigeLight/90">
+                  {t.auth.verifySentTo}{' '}
+                  <span className="font-semibold break-all">{pendingEmail}</span>.
+                  <br />
+                  {t.auth.verifyEmailLinkSent}
+                </p>
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => void signOut()}
+              >
+                {t.auth.useAnotherEmail}
+              </Button>
+            </div>
+            <p className="text-center text-sm text-muted-foreground mt-6">
+              <Link href="/" className="font-medium text-primary hover:text-primary/80 transition-colors">
+                {t.auth.backToLogin}
+              </Link>
+            </p>
+          </div>
+        </div>
       </div>
     );
   }

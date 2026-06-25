@@ -100,6 +100,7 @@ export interface Translations {
     resendVerification: string;
     resendVerificationSending: string;
     resendVerificationSuccess: string;
+    useAnotherEmail: string;
     resendCooldown: string;
     resendNewConfirmEmail: string;
     emailNotVerified: string;
@@ -1491,6 +1492,7 @@ export const translations: Record<Language, Translations> = {
       resendVerification: 'Resend verification email',
       resendVerificationSending: 'Sending...',
       resendVerificationSuccess: 'Verification email sent',
+      useAnotherEmail: 'Use another email address',
       resendCooldown: 'Resend in {seconds}s',
       resendNewConfirmEmail: 'Send new confirmation email',
       emailNotVerified: 'Email not verified',
@@ -2900,6 +2902,7 @@ export const translations: Record<Language, Translations> = {
       resendVerification: 'Reinvia email di verifica',
       resendVerificationSending: 'Invio in corso...',
       resendVerificationSuccess: 'Email di verifica inviata',
+      useAnotherEmail: 'Usa un altro indirizzo email',
       resendCooldown: 'Reinvia tra {seconds}s',
       resendNewConfirmEmail: 'Invia nuova email di conferma',
       emailNotVerified: 'Email non verificata',
@@ -4311,6 +4314,7 @@ export const translations: Record<Language, Translations> = {
       resendVerification: 'Renvoyer l\'email de v\u00e9rification',
       resendVerificationSending: 'Envoi en cours...',
       resendVerificationSuccess: 'Email de v\u00e9rification envoy\u00e9',
+      useAnotherEmail: 'Utiliser une autre adresse email',
       resendCooldown: 'Renvoyer dans {seconds}s',
       resendNewConfirmEmail: 'Envoyer un nouvel email de confirmation',
       emailNotVerified: 'Email non v\u00e9rifi\u00e9',
@@ -5722,6 +5726,7 @@ export const translations: Record<Language, Translations> = {
       resendVerification: 'Best\u00e4tigungs-E-Mail erneut senden',
       resendVerificationSending: 'Wird gesendet...',
       resendVerificationSuccess: 'Best\u00e4tigungs-E-Mail gesendet',
+      useAnotherEmail: 'Andere E-Mail-Adresse verwenden',
       resendCooldown: 'Erneut senden in {seconds}s',
       resendNewConfirmEmail: 'Neue Best\u00e4tigungs-E-Mail senden',
       emailNotVerified: 'E-Mail nicht best\u00e4tigt',

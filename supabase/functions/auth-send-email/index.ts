@@ -26,10 +26,17 @@ type AuthEmailPayload = {
 };
 
 function buildConfirmUrl(payload: AuthEmailPayload): string {
-  const site = payload.email_data.site_url.replace(/\/$/, "");
-  const redirect = encodeURIComponent(payload.email_data.redirect_to || `${site}/auth/callback`);
+  const supabaseUrl = (
+    Deno.env.get("SUPABASE_URL") ?? payload.email_data.site_url
+  ).replace(/\/$/, "");
+  const appUrl = (
+    Deno.env.get("SITE_URL") ?? "https://app.biographylibrary.org"
+  ).replace(/\/$/, "");
+  const redirect = encodeURIComponent(
+    payload.email_data.redirect_to || `${appUrl}/auth/callback`,
+  );
   const type = payload.email_data.email_action_type;
-  return `${site}/auth/v1/verify?token=${payload.email_data.token_hash}&type=${type}&redirect_to=${redirect}`;
+  return `${supabaseUrl}/auth/v1/verify?token=${payload.email_data.token_hash}&type=${type}&redirect_to=${redirect}`;
 }
 
 function templateForAction(action: string): EmailTemplateId | null {
