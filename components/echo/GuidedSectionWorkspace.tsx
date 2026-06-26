@@ -79,11 +79,15 @@ export function GuidedSectionWorkspace({
             {!isPublished && onMarkComplete && (
               <Button
                 type="button"
-                variant={isCompleted ? 'outline' : 'default'}
+                variant="ghost"
                 size="sm"
                 className={cn(
-                  'h-8 gap-1 shrink-0 text-xs px-2.5',
-                  isCompleted && 'border-primary text-primary hover:bg-primary/10'
+                  'h-8 gap-1 shrink-0 text-xs px-2.5 border bg-transparent',
+                  'text-brand-ink border-brand-ink',
+                  'active:bg-brand-blue active:border-brand-blue/60 active:text-brand-ink',
+                  'dark:text-brand-beigeLight dark:border-brand-beigeLight/30',
+                  'dark:active:bg-brand-blue/30 dark:active:border-brand-blue/45',
+                  isCompleted && 'border-primary/60 text-primary'
                 )}
                 onClick={onMarkComplete}
                 title={isCompleted ? t.status.sectionCompletedHint : t.status.markCompleteWhenFinished}
@@ -98,12 +102,24 @@ export function GuidedSectionWorkspace({
                 </span>
               </Button>
             )}
-            {aiEnabled && <AiUsageIndicator refreshTrigger={aiUsageRefresh} />}
+            {aiEnabled && (
+              <div data-tour-id="ai-credits" className="shrink-0">
+                <AiUsageIndicator refreshTrigger={aiUsageRefresh} />
+              </div>
+            )}
             <Button
               type="button"
-              variant="outline"
+              variant="ghost"
               size="sm"
-              className="h-8 gap-1 shrink-0 text-xs px-2.5"
+              data-tour-id="edit-section-btn"
+              className={cn(
+                'h-8 gap-1 shrink-0 text-xs px-2.5 border',
+                'bg-brand-greenLight text-brand-ink border-brand-ink',
+                'hover:bg-brand-blue hover:text-brand-ink hover:border-brand-ink',
+                'active:bg-brand-blue active:text-brand-ink active:border-brand-ink',
+                'dark:bg-brand-greenLight/20 dark:text-brand-beigeLight dark:border-brand-beigeLight/30',
+                'dark:hover:bg-brand-blue/30 dark:active:bg-brand-blue/30 dark:hover:border-brand-beigeLight/30 dark:active:border-brand-beigeLight/30'
+              )}
               onClick={() => onEditorPeekOpenChange(true)}
             >
               <Pencil className="h-3.5 w-3.5" />

@@ -10,7 +10,6 @@ import type { WritingPath } from '@/lib/onboarding/types';
 import { patchOnboarding } from '@/lib/onboarding/onboarding-client';
 import {
   isMobileEditorLayout,
-  isSidebarTourActionTarget,
   isSidebarTourTarget,
   waitForTransition,
 } from '@/lib/onboarding/tour-mobile';
@@ -19,10 +18,6 @@ interface OnboardingTourProviderProps {
   active: boolean;
   writingPath: WritingPath;
   biographyMode: 'sections' | 'freeflow';
-  onOpenImport: () => void;
-  onOpenExport: () => void;
-  onOpenEcho: () => void;
-  onOpenReview: () => void;
   onOpenMobileSidebar?: () => void;
   onCloseMobileSidebar?: () => void;
   onFinished: () => void;
@@ -31,10 +26,12 @@ interface OnboardingTourProviderProps {
 function getPopoverSide(target: string): 'top' | 'bottom' | 'left' | 'right' {
   if (!isMobileEditorLayout()) {
     if (isSidebarTourTarget(target)) return 'right';
+    if (target.includes('book-title') || target.includes('privacy-btn')) return 'bottom';
     return 'bottom';
   }
   if (target.includes('mobile-sidebar-toggle')) return 'top';
   if (isSidebarTourTarget(target)) return 'right';
+  if (target.includes('book-title') || target.includes('privacy-btn')) return 'bottom';
   return 'bottom';
 }
 
@@ -42,10 +39,6 @@ export function OnboardingTourProvider({
   active,
   writingPath,
   biographyMode,
-  onOpenImport,
-  onOpenExport,
-  onOpenEcho,
-  onOpenReview,
   onOpenMobileSidebar,
   onCloseMobileSidebar,
   onFinished,
@@ -56,19 +49,11 @@ export function OnboardingTourProvider({
   const stepsRef = useRef<TourStepDefinition[]>([]);
   const startedRef = useRef(false);
 
-  const onOpenImportRef = useRef(onOpenImport);
-  const onOpenExportRef = useRef(onOpenExport);
-  const onOpenEchoRef = useRef(onOpenEcho);
-  const onOpenReviewRef = useRef(onOpenReview);
   const onOpenMobileSidebarRef = useRef(onOpenMobileSidebar);
   const onCloseMobileSidebarRef = useRef(onCloseMobileSidebar);
   const onFinishedRef = useRef(onFinished);
   const tRef = useRef(t);
 
-  onOpenImportRef.current = onOpenImport;
-  onOpenExportRef.current = onOpenExport;
-  onOpenEchoRef.current = onOpenEcho;
-  onOpenReviewRef.current = onOpenReview;
   onOpenMobileSidebarRef.current = onOpenMobileSidebar;
   onCloseMobileSidebarRef.current = onCloseMobileSidebar;
   onFinishedRef.current = onFinished;
@@ -115,54 +100,6 @@ export function OnboardingTourProvider({
     await waitForTransition(200);
   }, []);
 
-  const runOptionalAction = useCallback(
-    async (step: TourStepDefinition) => {
-      if (isMobileEditorLayout() && isSidebarTourActionTarget(step.actionTarget)) {
-        onOpenMobileSidebarRef.current?.();
-        await waitForTransition();
-      }
-
-      if (step.requiredAction === 'open_import') onOpenImportRef.current();
-      if (step.requiredAction === 'open_export') onOpenExportRef.current();
-      if (step.requiredAction === 'open_echo') onOpenEchoRef.current();
-      if (step.requiredAction === 'open_review') onOpenReviewRef.current();
-      if (step.requiredAction === 'click_target' && step.actionTarget) {
-        const el = document.querySelector<HTMLElement>(step.actionTarget);
-        el?.click();
-      }
-    },
-    []
-  );
-
-  const attachTryButton = useCallback(
-    (step: TourStepDefinition) => {
-      if (step.requiredAction === 'none') return;
-
-      const inject = () => {
-        const popover = document.querySelector('.driver-popover');
-        if (!popover) return;
-
-        const footer = popover.querySelector('.driver-popover-footer');
-        if (!footer || footer.querySelector('[data-onboarding-try]')) return;
-
-        const tryBtn = document.createElement('button');
-        tryBtn.type = 'button';
-        tryBtn.dataset.onboardingTry = 'true';
-        tryBtn.className = 'driver-popover-skip-step-btn';
-        tryBtn.textContent = tRef.current.onboardingWizard.tourTryStep;
-        tryBtn.addEventListener('click', (e) => {
-          e.preventDefault();
-          e.stopPropagation();
-          void runOptionalAction(step);
-        });
-        footer.prepend(tryBtn);
-      };
-
-      requestAnimationFrame(() => requestAnimationFrame(inject));
-    },
-    [runOptionalAction]
-  );
-
   const goToStep = useCallback(
     async (index: number, d: Driver) => {
       if (index >= stepsRef.current.length) {
@@ -175,7 +112,7 @@ export function OnboardingTourProvider({
       stepIndexRef.current = index;
       d.moveTo(index);
     },
-    [finishTour, prepareStepEnvironment]
+    [finishTour, prepareStepEnvironment],
   );
 
   useEffect(() => {
@@ -196,10 +133,7 @@ export function OnboardingTourProvider({
     const tt = tRef.current.onboardingTour;
 
     const driveSteps: DriveStep[] = steps.map((step) => {
-      const optional =
-        step.requiredAction !== 'none' ? `\n\n${tw.tourStepOptional}` : '';
-
-      let description = `${tt[step.descKey]}${optional}`;
+      let description = tt[step.descKey];
       if (
         isMobileEditorLayout() &&
         step.target === '[data-tour-id="section-list"]'
@@ -249,7 +183,6 @@ export function OnboardingTourProvider({
         const def = steps[idx];
         if (def) {
           await prepareStepEnvironment(def);
-          attachTryButton(def);
         }
       },
       onDestroyed: () => {
@@ -279,7 +212,6 @@ export function OnboardingTourProvider({
     };
   }, [
     active,
-    attachTryButton,
     biographyMode,
     writingPath,
     language,

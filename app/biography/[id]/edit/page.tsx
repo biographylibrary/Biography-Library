@@ -12,7 +12,6 @@ import { EchoShell } from '@/components/echo/EchoShell';
 import { OnboardingTourProvider } from '@/components/onboarding/OnboardingTourProvider';
 import { useOnboardingGate } from '@/components/onboarding/OnboardingGateProvider';
 import type { WritingPath } from '@/lib/onboarding/types';
-import { useEcho } from '@/lib/echo/echo-context';
 import { GlobalNotesPanel } from '@/components/editor/GlobalNotesPanel';
 import { BookStructureDialog } from '@/components/editor/BookStructureDialog';
 import { AiSuggestionsDialog } from '@/components/editor/ai-suggestions-panel';
@@ -74,9 +73,6 @@ function EditorOnboardingTour({
   active,
   writingPath,
   biographyMode,
-  onOpenImport,
-  onOpenExport,
-  onOpenReview,
   onOpenMobileSidebar,
   onCloseMobileSidebar,
   onTourFinished,
@@ -84,34 +80,15 @@ function EditorOnboardingTour({
   active: boolean;
   writingPath: WritingPath;
   biographyMode: 'sections' | 'freeflow';
-  onOpenImport: () => void;
-  onOpenExport: () => void;
-  onOpenReview: () => void;
   onOpenMobileSidebar: () => void;
   onCloseMobileSidebar: () => void;
   onTourFinished: () => void;
 }) {
-  const { setBubbleOpen } = useEcho();
-
-  const handleOpenEcho = useCallback(() => {
-    if (biographyMode === 'sections') {
-      const input = document.querySelector<HTMLTextAreaElement>('[data-tour-id="echo-input"]');
-      input?.focus();
-      input?.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
-      return;
-    }
-    setBubbleOpen(true);
-  }, [biographyMode, setBubbleOpen]);
-
   return (
     <OnboardingTourProvider
       active={active}
       writingPath={writingPath}
       biographyMode={biographyMode}
-      onOpenImport={onOpenImport}
-      onOpenExport={onOpenExport}
-      onOpenEcho={handleOpenEcho}
-      onOpenReview={onOpenReview}
       onOpenMobileSidebar={onOpenMobileSidebar}
       onCloseMobileSidebar={onCloseMobileSidebar}
       onFinished={onTourFinished}
@@ -2686,9 +2663,6 @@ const [isPublishing, setIsPublishing] = useState(false);
         active={tourActive && !isLoading}
         writingPath={tourWritingPath}
         biographyMode={biographyMode}
-        onOpenImport={() => setShowImportDialog(true)}
-        onOpenExport={() => setShowExportDialog(true)}
-        onOpenReview={() => setShowReviewPublicationDialog(true)}
         onOpenMobileSidebar={() => setShowMobileSidebar(true)}
         onCloseMobileSidebar={() => setShowMobileSidebar(false)}
         onTourFinished={handleTourFinished}

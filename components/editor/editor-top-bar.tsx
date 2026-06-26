@@ -161,6 +161,8 @@ export function EditorTopBar({
             />
           ) : (
             <button
+              type="button"
+              data-tour-id="book-title-btn"
               onClick={() => {
                 setEditTitle(title);
                 setIsEditingTitle(true);
@@ -218,8 +220,10 @@ export function EditorTopBar({
               <Tooltip>
                 <TooltipTrigger asChild>
                   <Button
+                    type="button"
                     variant="ghost"
                     size="sm"
+                    data-tour-id="privacy-btn"
                     className="gap-1.5 text-xs h-8"
                     onClick={() => onPrivacyChange(nextPrivacy)}
                   >

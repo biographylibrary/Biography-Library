@@ -202,6 +202,8 @@ export function SectionSidebar({
 
       <div className="border-t border-border/50 p-1.5 space-y-0.5 shrink-0">
         <button
+          type="button"
+          data-tour-id="notes-btn"
           onClick={onToggleNotesPanel}
           className={cn(
             'w-full flex items-center gap-2 px-3 py-1 lg:py-2 rounded-lg text-sm transition-colors',
@@ -219,6 +221,8 @@ export function SectionSidebar({
           )}
         </button>
         <button
+          type="button"
+          data-tour-id="photos-btn"
           onClick={onTogglePhotosPanel}
           className={cn(
             'w-full flex items-center gap-2 px-3 py-1 lg:py-2 rounded-lg text-sm transition-colors',

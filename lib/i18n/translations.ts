@@ -1404,29 +1404,42 @@ export interface Translations {
   onboardingTour: {
     sectionsOverviewTitle: string;
     sectionsOverviewDesc: string;
-    sectionsEditorTitle: string;
-    sectionsEditorDesc: string;
+    bookTitleTitle: string;
+    bookTitleDesc: string;
+    privacyTitle: string;
+    privacyDesc: string;
     echoPanelTitle: string;
     echoPanelDesc: string;
-    echoTryTitle: string;
-    echoTryDesc: string;
+    editSectionTitle: string;
+    editSectionDesc: string;
+    aiCreditsTitle: string;
+    aiCreditsDesc: string;
+    echoVoiceTitle: string;
+    echoVoiceDesc: string;
+    echoVoiceFreeflowTitle: string;
+    echoVoiceFreeflowDesc: string;
+    notesTitle: string;
+    notesDesc: string;
+    photosTitle: string;
+    photosDesc: string;
+    importTextTitle: string;
+    importTextDesc: string;
+    exportTextTitle: string;
+    exportTextDesc: string;
     bookStructureTitle: string;
     bookStructureDesc: string;
-    exportPdfTitle: string;
-    exportPdfDesc: string;
     reviewPublicationTitle: string;
     reviewPublicationDesc: string;
-    importOverviewTitle: string;
-    importOverviewDesc: string;
-    importTryTitle: string;
-    importTryDesc: string;
+    freeflowEditorTitle: string;
+    freeflowEditorDesc: string;
+    echoBubbleTitle: string;
+    echoBubbleDesc: string;
     publishImportTitle: string;
     publishImportDesc: string;
     publishFinalTitle: string;
     publishFinalDesc: string;
     publishExportTitle: string;
     publishExportDesc: string;
-    sampleImportText: string;
     mobileMenuTitle: string;
     mobileMenuDesc: string;
     mobileSidebarOverviewHint: string;
@@ -2916,36 +2929,57 @@ export const translations: Record<Language, Translations> = {
       tryActionHint: 'Try the highlighted action to continue.',
     },
     onboardingTour: {
-      sectionsOverviewTitle: 'Your biography workspace',
-      sectionsOverviewDesc: 'Chapters appear on the left. Echo assists you on the right.',
-      sectionsEditorTitle: 'Write in a chapter',
-      sectionsEditorDesc: 'Click a chapter and type a sentence — try it now.',
+      sectionsOverviewTitle: 'Chapters',
+      sectionsOverviewDesc:
+        'Your biography is organised into chapters. Select one from the list to work on it with Echo.',
+      bookTitleTitle: 'Book title',
+      bookTitleDesc: 'Click the title at the top to rename your biography at any time.',
+      privacyTitle: 'Visibility',
+      privacyDesc:
+        'This button shows who can see your biography. Tap it to cycle between Private, Family link, and Public.',
       echoPanelTitle: 'Write with Echo',
       echoPanelDesc:
-        'Echo is right here in your workspace. Type a question below — for example “How should I start this chapter?” — or use the microphone. Press “Try it” to focus the chat field.',
-      echoTryTitle: 'Meet Echo (optional)',
-      echoTryDesc: 'Open Echo from the button at the bottom right. You can chat when you are ready — no message is required to continue the tour.',
-      bookStructureTitle: 'Book structure & photos',
-      bookStructureDesc: 'Set cover, credits, and photo gallery before exporting PDF.',
-      exportPdfTitle: 'Export PDF draft',
-      exportPdfDesc: 'Open the export dialog to preview how your book will look.',
+        'Chat with Echo here to draft your chapter by text or voice. Ask questions, get suggestions, or request a draft.',
+      editSectionTitle: 'Edit',
+      editSectionDesc:
+        'Use Edit to open the text editor for this chapter. Refine Echo’s draft, paste your own text, or write directly — Echo stays available as your assistant.',
+      aiCreditsTitle: 'AI credits',
+      aiCreditsDesc:
+        'This counter shows how many AI-assisted actions you have left today and this week. Standard accounts have daily and weekly limits.',
+      echoVoiceTitle: 'Echo voice replies',
+      echoVoiceDesc:
+        'Use the speaker icon to turn Echo’s spoken replies on or off. When muted, Echo answers in text only.',
+      echoVoiceFreeflowTitle: 'Echo voice replies',
+      echoVoiceFreeflowDesc:
+        'Open Echo from the floating button, then use the speaker icon inside the chat to mute or unmute spoken replies.',
+      notesTitle: 'Notes & reminders',
+      notesDesc: 'Keep research notes and to-do reminders here — separate from the published text.',
+      photosTitle: 'Photos',
+      photosDesc: 'Add images to your biography gallery and attach them to chapters where needed.',
+      importTextTitle: 'Import text',
+      importTextDesc: 'Paste or upload existing text from Word, PDF, or plain files.',
+      exportTextTitle: 'Export text',
+      exportTextDesc: 'Download your biography as TXT or DOCX, or start a PDF draft for review.',
+      bookStructureTitle: 'Book structure',
+      bookStructureDesc: 'Set the cover, credits page, and layout options before exporting your book.',
       reviewPublicationTitle: 'Review & publication',
       reviewPublicationDesc:
-        'Open this panel to submit your biography for review, verify PDF drafts, and export the final book.',
-      importOverviewTitle: 'Free writing mode',
-      importOverviewDesc: 'Ideal for pasting or importing existing text.',
-      importTryTitle: 'Import sample text',
-      importTryDesc: 'Open Import and paste the sample text provided.',
-      publishImportTitle: 'Import your finished text',
-      publishImportDesc: 'Start by bringing your biography into the platform.',
-      publishFinalTitle: 'Final version & review',
-      publishFinalDesc: 'Polish the text, then move to PDF draft rounds.',
-      publishExportTitle: 'PDF export & publication',
-      publishExportDesc: 'Open export to check readiness and download a draft PDF.',
-      sampleImportText: 'This is a sample paragraph for your biography import tour.',
+        'Submit your biography for review, check PDF drafts, and publish when ready.',
+      freeflowEditorTitle: 'Writing area',
+      freeflowEditorDesc:
+        'This is your main writing space. Type freely or paste imported text, then use the tools in the side panel.',
+      echoBubbleTitle: 'Echo assistant',
+      echoBubbleDesc:
+        'Tap the Echo button at the bottom right to open the AI assistant while you write.',
+      publishImportTitle: 'Import your text',
+      publishImportDesc: 'Bring your finished biography onto the platform using Import.',
+      publishFinalTitle: 'Final version',
+      publishFinalDesc: 'Polish your text here before moving to PDF drafts and publication.',
+      publishExportTitle: 'Export',
+      publishExportDesc: 'Export a draft PDF or text copy to check how your book will look.',
       mobileMenuTitle: 'Chapter & tools menu',
       mobileMenuDesc:
-        'On phones and tablets, chapters and editor tools are in this side panel. Tap the menu button (bottom left) to open it — the tour will open it for you on the next steps.',
+        'On phones and tablets, chapters and tools are in this side panel. The tour opens it automatically on the next steps.',
       mobileSidebarOverviewHint:
         'The chapter list and tools are in this panel. On small screens, open it with the menu button at the bottom left.',
     },
@@ -4432,36 +4466,57 @@ export const translations: Record<Language, Translations> = {
       tryActionHint: 'Prova l\'azione evidenziata per continuare.',
     },
     onboardingTour: {
-      sectionsOverviewTitle: 'Il tuo spazio di lavoro',
-      sectionsOverviewDesc: 'I capitoli sono a sinistra. Echo ti assiste a destra.',
-      sectionsEditorTitle: 'Scrivi in un capitolo',
-      sectionsEditorDesc: 'Clicca un capitolo e scrivi una frase — provalo ora.',
+      sectionsOverviewTitle: 'Capitoli',
+      sectionsOverviewDesc:
+        'La biografia è organizzata in capitoli. Selezionane uno dall\'elenco per lavorarci con Echo.',
+      bookTitleTitle: 'Titolo del libro',
+      bookTitleDesc: 'Clicca il titolo in alto per rinominare la biografia in qualsiasi momento.',
+      privacyTitle: 'Visibilità',
+      privacyDesc:
+        'Questo pulsante indica chi può vedere la biografia. Toccalo per passare tra Privata, Link famiglia e Pubblica.',
       echoPanelTitle: 'Scrivi con Echo',
       echoPanelDesc:
-        'Echo è qui nel tuo spazio di lavoro. Scrivi una domanda nel campo sotto — ad esempio «Come inizio questo capitolo?» — oppure usa il microfono. Premi «Provalo» per mettere il focus sulla chat.',
-      echoTryTitle: 'Conosci Echo (facoltativo)',
-      echoTryDesc: 'Apri Echo dal pulsante in basso a destra. Puoi chattare quando vuoi — non serve inviare un messaggio per continuare il tour.',
-      bookStructureTitle: 'Struttura libro e foto',
-      bookStructureDesc: 'Imposta copertina, crediti e galleria prima dell\'export PDF.',
-      exportPdfTitle: 'Export bozza PDF',
-      exportPdfDesc: 'Apri la finestra di export per vedere l\'anteprima del libro.',
+        'Chatta con Echo qui per abbozzare il capitolo a testo o voce. Fai domande, chiedi suggerimenti o una bozza.',
+      editSectionTitle: 'Modifica',
+      editSectionDesc:
+        'Usa Modifica per aprire l\'editor del capitolo. Correggi la bozza di Echo, incolla il tuo testo o scrivi direttamente — Echo resta il tuo assistente.',
+      aiCreditsTitle: 'Crediti AI',
+      aiCreditsDesc:
+        'Questo contatore mostra quante azioni assistite da AI ti restano oggi e questa settimana. Gli account standard hanno limiti giornalieri e settimanali.',
+      echoVoiceTitle: 'Voce di Echo',
+      echoVoiceDesc:
+        'Usa l\'icona dell\'altoparlante per attivare o disattivare le risposte vocali di Echo. Se muto, Echo risponde solo in testo.',
+      echoVoiceFreeflowTitle: 'Voce di Echo',
+      echoVoiceFreeflowDesc:
+        'Apri Echo dal pulsante flottante, poi usa l\'icona dell\'altoparlante nella chat per mutare o riattivare la voce.',
+      notesTitle: 'Note e promemoria',
+      notesDesc: 'Tieni qui appunti di ricerca e promemoria — separati dal testo pubblicato.',
+      photosTitle: 'Foto',
+      photosDesc: 'Aggiungi immagini alla galleria e collegale ai capitoli dove serve.',
+      importTextTitle: 'Importa testo',
+      importTextDesc: 'Incolla o carica testo esistente da Word, PDF o file di testo.',
+      exportTextTitle: 'Esporta testo',
+      exportTextDesc: 'Scarica la biografia in TXT o DOCX, oppure avvia una bozza PDF per la revisione.',
+      bookStructureTitle: 'Struttura libro',
+      bookStructureDesc: 'Imposta copertina, pagina dei crediti e opzioni di impaginazione prima dell\'export.',
       reviewPublicationTitle: 'Revisione e pubblicazione',
       reviewPublicationDesc:
-        'Apri questo pannello per inviare la biografia in revisione, verificare le bozze PDF ed esportare il libro finale.',
-      importOverviewTitle: 'Modalità scrittura libera',
-      importOverviewDesc: 'Ideale per incollare o importare testo esistente.',
-      importTryTitle: 'Importa testo di esempio',
-      importTryDesc: 'Apri Importa e incolla il testo di esempio fornito.',
-      publishImportTitle: 'Importa il testo finito',
-      publishImportDesc: 'Inizia portando la biografia sulla piattaforma.',
-      publishFinalTitle: 'Versione finale e revisione',
-      publishFinalDesc: 'Rifinisci il testo, poi passa ai round di bozza PDF.',
-      publishExportTitle: 'Export PDF e pubblicazione',
-      publishExportDesc: 'Apri export per verificare la readiness e scaricare una bozza PDF.',
-      sampleImportText: 'Questo è un paragrafo di esempio per il tour di importazione.',
+        'Invia la biografia in revisione, controlla le bozze PDF e pubblica quando sei pronto.',
+      freeflowEditorTitle: 'Area di scrittura',
+      freeflowEditorDesc:
+        'Questo è lo spazio principale per scrivere. Digita liberamente o incolla testo importato, poi usa gli strumenti nel pannello laterale.',
+      echoBubbleTitle: 'Assistente Echo',
+      echoBubbleDesc:
+        'Tocca il pulsante Echo in basso a destra per aprire l\'assistente AI mentre scrivi.',
+      publishImportTitle: 'Importa il testo',
+      publishImportDesc: 'Porta sulla piattaforma la biografia già scritta tramite Importa.',
+      publishFinalTitle: 'Versione finale',
+      publishFinalDesc: 'Rifinisci il testo qui prima di passare alle bozze PDF e alla pubblicazione.',
+      publishExportTitle: 'Esporta',
+      publishExportDesc: 'Esporta una bozza PDF o una copia testo per vedere come apparirà il libro.',
       mobileMenuTitle: 'Menu capitoli e strumenti',
       mobileMenuDesc:
-        'Su telefono e tablet, capitoli e strumenti dell\'editor sono in questo pannello laterale. Tocca il pulsante menu in basso a sinistra per aprirlo — il tour lo aprirà automaticamente nei passi successivi.',
+        'Su telefono e tablet, capitoli e strumenti sono in questo pannello. Il tour lo aprirà automaticamente nei passi successivi.',
       mobileSidebarOverviewHint:
         'L\'elenco capitoli e gli strumenti sono in questo pannello. Su schermi piccoli, aprilo con il pulsante menu in basso a sinistra.',
     },
@@ -5948,36 +6003,57 @@ export const translations: Record<Language, Translations> = {
       tryActionHint: 'Essayez l\'action mise en évidence pour continuer.',
     },
     onboardingTour: {
-      sectionsOverviewTitle: 'Votre espace de travail',
-      sectionsOverviewDesc: 'Les chapitres sont à gauche. Echo vous assiste à droite.',
-      sectionsEditorTitle: 'Écrire dans un chapitre',
-      sectionsEditorDesc: 'Cliquez sur un chapitre et tapez une phrase — essayez maintenant.',
+      sectionsOverviewTitle: 'Chapitres',
+      sectionsOverviewDesc:
+        'Votre biographie est organisée en chapitres. Sélectionnez-en un dans la liste pour y travailler avec Echo.',
+      bookTitleTitle: 'Titre du livre',
+      bookTitleDesc: 'Cliquez sur le titre en haut pour renommer votre biographie à tout moment.',
+      privacyTitle: 'Visibilité',
+      privacyDesc:
+        'Ce bouton indique qui peut voir votre biographie. Touchez-le pour passer entre Privé, Lien famille et Public.',
       echoPanelTitle: 'Écrire avec Echo',
       echoPanelDesc:
-        'Echo est ici dans votre espace de travail. Tapez une question ci-dessous — par exemple « Comment commencer ce chapitre ? » — ou utilisez le micro. Appuyez sur « Essayer » pour activer le champ de chat.',
-      echoTryTitle: 'Découvrir Echo (facultatif)',
-      echoTryDesc: 'Ouvrez Echo via le bouton en bas à droite. Vous pourrez discuter quand vous voulez — aucun message n\'est requis pour continuer.',
-      bookStructureTitle: 'Structure du livre et photos',
-      bookStructureDesc: 'Définissez couverture, crédits et galerie avant l\'export PDF.',
-      exportPdfTitle: 'Export brouillon PDF',
-      exportPdfDesc: 'Ouvrez la fenêtre d\'export pour prévisualiser le livre.',
+        'Discutez avec Echo ici pour rédiger votre chapitre par texte ou voix. Posez des questions, demandez des suggestions ou un brouillon.',
+      editSectionTitle: 'Modifier',
+      editSectionDesc:
+        'Utilisez Modifier pour ouvrir l\'éditeur de texte du chapitre. Affinez le brouillon d\'Echo, collez votre texte ou écrivez directement — Echo reste votre assistant.',
+      aiCreditsTitle: 'Crédits IA',
+      aiCreditsDesc:
+        'Ce compteur indique combien d\'actions assistées par IA il vous reste aujourd\'hui et cette semaine. Les comptes standard ont des limites quotidiennes et hebdomadaires.',
+      echoVoiceTitle: 'Voix d\'Echo',
+      echoVoiceDesc:
+        'Utilisez l\'icône haut-parleur pour activer ou désactiver les réponses vocales d\'Echo. En mode muet, Echo répond uniquement par texte.',
+      echoVoiceFreeflowTitle: 'Voix d\'Echo',
+      echoVoiceFreeflowDesc:
+        'Ouvrez Echo via le bouton flottant, puis utilisez l\'icône haut-parleur dans le chat pour couper ou réactiver la voix.',
+      notesTitle: 'Notes et rappels',
+      notesDesc: 'Conservez ici vos notes de recherche et rappels — séparés du texte publié.',
+      photosTitle: 'Photos',
+      photosDesc: 'Ajoutez des images à la galerie et associez-les aux chapitres si besoin.',
+      importTextTitle: 'Importer du texte',
+      importTextDesc: 'Collez ou téléversez du texte existant depuis Word, PDF ou fichiers texte.',
+      exportTextTitle: 'Exporter le texte',
+      exportTextDesc: 'Téléchargez votre biographie en TXT ou DOCX, ou lancez un brouillon PDF pour la révision.',
+      bookStructureTitle: 'Structure du livre',
+      bookStructureDesc: 'Définissez la couverture, la page de crédits et les options de mise en page avant l\'export.',
       reviewPublicationTitle: 'Révision et publication',
       reviewPublicationDesc:
-        'Ouvrez ce panneau pour soumettre votre biographie à la révision, vérifier les brouillons PDF et exporter le livre final.',
-      importOverviewTitle: 'Mode écriture libre',
-      importOverviewDesc: 'Idéal pour coller ou importer un texte existant.',
-      importTryTitle: 'Importer un texte d\'exemple',
-      importTryDesc: 'Ouvrez Importer et collez le texte d\'exemple fourni.',
-      publishImportTitle: 'Importer votre texte terminé',
-      publishImportDesc: 'Commencez par amener la biographie sur la plateforme.',
-      publishFinalTitle: 'Version finale et révision',
-      publishFinalDesc: 'Peaufinez le texte, puis passez aux tours de brouillon PDF.',
-      publishExportTitle: 'Export PDF et publication',
-      publishExportDesc: 'Ouvrez l\'export pour vérifier la préparation et télécharger un brouillon PDF.',
-      sampleImportText: 'Ceci est un paragraphe d\'exemple pour le tour d\'importation.',
+        'Soumettez votre biographie à la révision, vérifiez les brouillons PDF et publiez quand vous êtes prêt.',
+      freeflowEditorTitle: 'Zone d\'écriture',
+      freeflowEditorDesc:
+        'C\'est votre espace principal d\'écriture. Tapez librement ou collez du texte importé, puis utilisez les outils du panneau latéral.',
+      echoBubbleTitle: 'Assistant Echo',
+      echoBubbleDesc:
+        'Touchez le bouton Echo en bas à droite pour ouvrir l\'assistant IA pendant que vous écrivez.',
+      publishImportTitle: 'Importer votre texte',
+      publishImportDesc: 'Amenez votre biographie terminée sur la plateforme via Importer.',
+      publishFinalTitle: 'Version finale',
+      publishFinalDesc: 'Peaufinez votre texte ici avant de passer aux brouillons PDF et à la publication.',
+      publishExportTitle: 'Exporter',
+      publishExportDesc: 'Exportez un brouillon PDF ou une copie texte pour voir à quoi ressemblera le livre.',
       mobileMenuTitle: 'Menu chapitres et outils',
       mobileMenuDesc:
-        'Sur téléphone et tablette, les chapitres et les outils de l\'éditeur sont dans ce panneau latéral. Touchez le bouton menu en bas à gauche pour l\'ouvrir — le tour l\'ouvrira pour vous aux étapes suivantes.',
+        'Sur téléphone et tablette, chapitres et outils sont dans ce panneau. Le tour l\'ouvrira automatiquement aux étapes suivantes.',
       mobileSidebarOverviewHint:
         'La liste des chapitres et les outils sont dans ce panneau. Sur petit écran, ouvrez-le avec le bouton menu en bas à gauche.',
     },
@@ -7464,36 +7540,57 @@ export const translations: Record<Language, Translations> = {
       tryActionHint: 'Probieren Sie die hervorgehobene Aktion aus, um fortzufahren.',
     },
     onboardingTour: {
-      sectionsOverviewTitle: 'Ihr Biografie-Arbeitsbereich',
-      sectionsOverviewDesc: 'Kapitel links. Echo unterstützt Sie rechts.',
-      sectionsEditorTitle: 'In einem Kapitel schreiben',
-      sectionsEditorDesc: 'Klicken Sie ein Kapitel an und tippen Sie einen Satz — probieren Sie es jetzt.',
+      sectionsOverviewTitle: 'Kapitel',
+      sectionsOverviewDesc:
+        'Ihre Biografie ist in Kapitel gegliedert. Wählen Sie eines aus der Liste, um mit Echo daran zu arbeiten.',
+      bookTitleTitle: 'Buchtitel',
+      bookTitleDesc: 'Klicken Sie oben auf den Titel, um Ihre Biografie jederzeit umzubenennen.',
+      privacyTitle: 'Sichtbarkeit',
+      privacyDesc:
+        'Diese Schaltfläche zeigt, wer Ihre Biografie sehen kann. Tippen Sie, um zwischen Privat, Familienlink und Öffentlich zu wechseln.',
       echoPanelTitle: 'Mit Echo schreiben',
       echoPanelDesc:
-        'Echo ist hier in Ihrem Arbeitsbereich. Tippen Sie unten eine Frage — z. B. „Wie beginne ich dieses Kapitel?“ — oder nutzen Sie das Mikrofon. Drücken Sie „Ausprobieren“, um das Chatfeld zu fokussieren.',
-      echoTryTitle: 'Echo kennenlernen (optional)',
-      echoTryDesc: 'Öffnen Sie Echo über die Schaltfläche unten rechts. Sie können chatten, wann Sie möchten — zum Fortfahren ist keine Nachricht nötig.',
-      bookStructureTitle: 'Buchstruktur & Fotos',
-      bookStructureDesc: 'Legen Sie Cover, Credits und Galerie vor dem PDF-Export fest.',
-      exportPdfTitle: 'PDF-Entwurf exportieren',
-      exportPdfDesc: 'Öffnen Sie den Export-Dialog für eine Vorschau des Buches.',
+        'Chatten Sie hier mit Echo, um Ihr Kapitel per Text oder Sprache zu entwerfen. Stellen Sie Fragen, holen Sie sich Vorschläge oder einen Entwurf.',
+      editSectionTitle: 'Bearbeiten',
+      editSectionDesc:
+        'Nutzen Sie Bearbeiten, um den Texteditor für dieses Kapitel zu öffnen. Überarbeiten Sie Echos Entwurf, fügen Sie eigenen Text ein oder schreiben Sie direkt — Echo bleibt Ihr Assistent.',
+      aiCreditsTitle: 'KI-Guthaben',
+      aiCreditsDesc:
+        'Dieser Zähler zeigt, wie viele KI-gestützte Aktionen Ihnen heute und diese Woche noch bleiben. Standardkonten haben tägliche und wöchentliche Limits.',
+      echoVoiceTitle: 'Echo-Stimme',
+      echoVoiceDesc:
+        'Nutzen Sie das Lautsprechersymbol, um gesprochene Antworten von Echo ein- oder auszuschalten. Stummgeschaltet antwortet Echo nur per Text.',
+      echoVoiceFreeflowTitle: 'Echo-Stimme',
+      echoVoiceFreeflowDesc:
+        'Öffnen Sie Echo über die schwebende Schaltfläche und nutzen Sie dann das Lautsprechersymbol im Chat zum Stummschalten.',
+      notesTitle: 'Notizen & Erinnerungen',
+      notesDesc: 'Bewahren Sie hier Recherchenotizen und To-dos auf — getrennt vom veröffentlichten Text.',
+      photosTitle: 'Fotos',
+      photosDesc: 'Fügen Sie Bilder zur Galerie hinzu und verknüpfen Sie sie bei Bedarf mit Kapiteln.',
+      importTextTitle: 'Text importieren',
+      importTextDesc: 'Fügen Sie vorhandenen Text aus Word, PDF oder Textdateien ein oder laden Sie ihn hoch.',
+      exportTextTitle: 'Text exportieren',
+      exportTextDesc: 'Laden Sie Ihre Biografie als TXT oder DOCX herunter oder starten Sie einen PDF-Entwurf zur Überprüfung.',
+      bookStructureTitle: 'Buchstruktur',
+      bookStructureDesc: 'Legen Sie Cover, Impressum und Layout-Optionen vor dem Export fest.',
       reviewPublicationTitle: 'Überprüfung & Veröffentlichung',
       reviewPublicationDesc:
-        'Öffnen Sie dieses Panel, um Ihre Biografie zur Überprüfung einzureichen, PDF-Entwürfe zu prüfen und das finale Buch zu exportieren.',
-      importOverviewTitle: 'Freier Schreibmodus',
-      importOverviewDesc: 'Ideal zum Einfügen oder Importieren bestehenden Texts.',
-      importTryTitle: 'Beispieltext importieren',
-      importTryDesc: 'Öffnen Sie Import und fügen Sie den bereitgestellten Beispieltext ein.',
-      publishImportTitle: 'Fertigen Text importieren',
-      publishImportDesc: 'Bringen Sie die Biografie zuerst auf die Plattform.',
-      publishFinalTitle: 'Endversion & Review',
-      publishFinalDesc: 'Feilen Sie am Text, dann PDF-Entwurfsrunden.',
-      publishExportTitle: 'PDF-Export & Veröffentlichung',
-      publishExportDesc: 'Öffnen Sie Export, prüfen Sie die Bereitschaft und laden Sie einen PDF-Entwurf.',
-      sampleImportText: 'Dies ist ein Beispielabsatz für die Import-Tour.',
+        'Reichen Sie Ihre Biografie zur Überprüfung ein, prüfen Sie PDF-Entwürfe und veröffentlichen Sie, wenn Sie bereit sind.',
+      freeflowEditorTitle: 'Schreibbereich',
+      freeflowEditorDesc:
+        'Dies ist Ihr Haupt-Schreibbereich. Tippen Sie frei oder fügen Sie importierten Text ein, dann nutzen Sie die Werkzeuge im Seitenpanel.',
+      echoBubbleTitle: 'Echo-Assistent',
+      echoBubbleDesc:
+        'Tippen Sie unten rechts auf Echo, um den KI-Assistenten beim Schreiben zu öffnen.',
+      publishImportTitle: 'Text importieren',
+      publishImportDesc: 'Bringen Sie Ihre fertige Biografie über Import auf die Plattform.',
+      publishFinalTitle: 'Endversion',
+      publishFinalDesc: 'Feilen Sie hier am Text, bevor Sie zu PDF-Entwürfen und Veröffentlichung übergehen.',
+      publishExportTitle: 'Export',
+      publishExportDesc: 'Exportieren Sie einen PDF-Entwurf oder eine Textkopie, um das Buch zu prüfen.',
       mobileMenuTitle: 'Kapitel- und Werkzeugmenü',
       mobileMenuDesc:
-        'Auf Smartphone und Tablet befinden sich Kapitel und Editor-Werkzeuge in diesem Seitenpanel. Tippen Sie unten links auf die Menütaste — die Tour öffnet es in den nächsten Schritten automatisch.',
+        'Auf Smartphone und Tablet befinden sich Kapitel und Werkzeuge in diesem Panel. Die Tour öffnet es in den nächsten Schritten automatisch.',
       mobileSidebarOverviewHint:
         'Kapitelliste und Werkzeuge sind in diesem Panel. Auf kleinen Bildschirmen öffnen Sie es mit der Menütaste unten links.',
     },

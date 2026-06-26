@@ -104,11 +104,15 @@ export function EditorPeek({
           {!isPublished && onMarkComplete && (
             <Button
               type="button"
-              variant={isCompleted ? 'outline' : 'default'}
+              variant="ghost"
               size="sm"
               className={cn(
-                'gap-1 text-xs h-8 px-2 shrink-0',
-                isCompleted && 'border-primary text-primary hover:bg-primary/10'
+                'gap-1 text-xs h-8 px-2 shrink-0 border bg-transparent',
+                'text-brand-ink border-brand-ink',
+                'active:bg-brand-blue active:border-brand-blue/60 active:text-brand-ink',
+                'dark:text-brand-beigeLight dark:border-brand-beigeLight/30',
+                'dark:active:bg-brand-blue/30 dark:active:border-brand-blue/45',
+                isCompleted && 'border-primary/60 text-primary'
               )}
               onClick={onMarkComplete}
               title={isCompleted ? t.status.sectionCompletedHint : t.status.markCompleteWhenFinished}
@@ -128,7 +132,7 @@ export function EditorPeek({
             type="button"
             variant="ghost"
             size="icon"
-            className="shrink-0"
+            className="shrink-0 bg-brand-wine text-brand-paper hover:bg-brand-wineDark hover:text-brand-paper"
             title={t.common.close}
             onClick={() => onOpenChange(false)}
           >
