@@ -2,6 +2,14 @@ import { supabase } from '@/lib/supabase';
 import { createNotification } from '@/lib/notifications-service';
 import { ModerationDecision, ModeratorNotes } from './types';
 
+export type BiographyDecisionPatch = {
+  status?: 'published' | 'draft' | 'removed';
+  published_at?: string;
+  is_frozen?: boolean;
+  frozen_at?: string | null;
+  frozen_reason?: string | null;
+};
+
 export async function takeOwnership(reportId: string, moderatorId: string): Promise<{ error: string | null }> {
   const now = new Date().toISOString();
   const { error } = await supabase
@@ -56,12 +64,29 @@ export async function claimReportReview(reportId: string, userId: string): Promi
   return { claimed: false, claimedByName, error: null };
 }
 
+export async function freezeBiography(
+  biographyId: string,
+  reason = 'moderation_report',
+): Promise<{ error: string | null }> {
+  const now = new Date().toISOString();
+  const { error } = await supabase
+    .from('biographies')
+    .update({
+      is_frozen: true,
+      frozen_at: now,
+      frozen_reason: reason,
+    })
+    .eq('id', biographyId);
+
+  return { error: error?.message ?? null };
+}
+
 export async function submitDecision(
   reportId: string,
   biographyId: string,
   authorId: string,
   decision: ModerationDecision,
-  biographyStatus: 'published' | 'draft' | 'removed',
+  bioPatch: BiographyDecisionPatch | null,
   notificationMessage: string,
   moderatorId: string,
 ): Promise<{ error: string | null; conflict: boolean }> {
@@ -90,14 +115,18 @@ export async function submitDecision(
   if (reportError) return { error: reportError.message, conflict: false };
   if (!updated) return { error: null, conflict: true };
 
-  const { error: bioError } = await supabase
-    .from('biographies')
-    .update({ status: biographyStatus })
-    .eq('id', biographyId);
+  if (bioPatch && Object.keys(bioPatch).length > 0) {
+    const { error: bioError } = await supabase
+      .from('biographies')
+      .update(bioPatch)
+      .eq('id', biographyId);
 
-  if (bioError) return { error: bioError.message, conflict: false };
+    if (bioError) return { error: bioError.message, conflict: false };
+  }
 
-  await createNotification(authorId, notificationMessage);
+  if (notificationMessage.trim()) {
+    await createNotification(authorId, notificationMessage);
+  }
 
   return { error: null, conflict: false };
 }

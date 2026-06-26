@@ -2,11 +2,14 @@
 
 import { useState, useEffect } from 'react';
 import { ModerationReport, FlaggedPassage } from '@/lib/moderation/types';
-import { takeOwnership, claimReportReview, submitDecision, saveModeratorNotes } from '@/lib/moderation/moderation-actions';
+import { createNotification } from '@/lib/notifications-service';
+import { takeOwnership, claimReportReview, submitDecision, saveModeratorNotes, freezeBiography } from '@/lib/moderation/moderation-actions';
+import type { BiographyDecisionPatch } from '@/lib/moderation/moderation-actions';
 import { sendAuthorEmailFromClient } from '@/lib/client/send-author-email';
 import type { EmailTemplateId } from '@/lib/server/email';
 import { useTranslation } from '@/lib/i18n/i18n-context';
 import { useAuth } from '@/lib/auth-context';
+import { useToast } from '@/hooks/use-toast';
 import {
   Sheet,
   SheetContent,
@@ -27,7 +30,7 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { ReportTypeBadge } from './ReportTypeBadge';
 import { ReportStatusBadge } from './ReportStatusBadge';
-import { ExternalLink, TriangleAlert as AlertTriangle, FileText, MessageSquare, BookOpen, CircleAlert as AlertCircle } from 'lucide-react';
+import { ExternalLink, TriangleAlert as AlertTriangle, FileText, MessageSquare, BookOpen, CircleAlert as AlertCircle, Snowflake } from 'lucide-react';
 
 interface ModerationDetailPanelProps {
   report: ModerationReport | null;
@@ -35,7 +38,7 @@ interface ModerationDetailPanelProps {
   onRefresh: () => void;
 }
 
-type DialogType = 'approve' | 'publishWarning' | 'return' | 'remove' | null;
+type DialogType = 'approve' | 'publishWarning' | 'return' | 'remove' | 'freeze' | null;
 
 const BIOGRAPHY_STATUS_LABELS: Record<string, string> = {
   draft: 'Draft',
@@ -51,6 +54,7 @@ const BIOGRAPHY_STATUS_LABELS: Record<string, string> = {
 export function ModerationDetailPanel({ report, onClose, onRefresh }: ModerationDetailPanelProps) {
   const { t } = useTranslation();
   const { user } = useAuth();
+  const { toast } = useToast();
 
   const [submitting, setSubmitting] = useState(false);
   const [dialog, setDialog] = useState<DialogType>(null);
@@ -106,6 +110,9 @@ export function ModerationDetailPanel({ report, onClose, onRefresh }: Moderation
     : [];
   const hasUserReportContent =
     report.reporter_id != null || Boolean(report.description?.trim());
+  const isReaderReport = report.reporter_id != null;
+  const wasPublished = report.biography_status === 'published';
+  const readerReportOnPublished = isReaderReport && wasPublished;
 
   function formatReportDate(iso: string) {
     return new Date(iso).toLocaleString(undefined, {
@@ -125,45 +132,91 @@ export function ModerationDetailPanel({ report, onClose, onRefresh }: Moderation
     onRefresh();
   }
 
+  async function handleFreeze() {
+    if (!user || !report) return;
+    setSubmitting(true);
+    const result = await freezeBiography(report.biography_id);
+    setSubmitting(false);
+    setDialog(null);
+
+    if (result.error) {
+      toast({ title: t.admin.moderationActionError, description: result.error, variant: 'destructive' });
+      return;
+    }
+
+    await createNotification(report.biography_author_id!, t.admin.bioNotifyFrozen);
+    void sendAuthorEmailFromClient({
+      userId: report.biography_author_id!,
+      templateId: 'admin_bio_frozen',
+      biographyId: report.biography_id,
+    });
+
+    toast({ title: t.admin.bioActionSuccess });
+    onRefresh();
+  }
+
   async function handleDecision(type: DialogType) {
     if (!type || !user || !report) return;
     setSubmitting(true);
     setConflictError(false);
 
     let decision: 'publish' | 'publish_warning' | 'returned' | 'removed';
-    let biographyStatus: 'published' | 'draft' | 'removed';
+    let bioPatch: BiographyDecisionPatch | null = null;
     let notificationMessage: string;
+    const now = new Date().toISOString();
 
     switch (type) {
       case 'approve':
         decision = 'publish';
-        biographyStatus = 'published';
-        notificationMessage = t.admin.notifyPublished;
+        if (readerReportOnPublished) {
+          bioPatch = null;
+          notificationMessage = '';
+        } else {
+          bioPatch = { status: 'published', published_at: now };
+          notificationMessage = t.admin.notifyPublished;
+        }
         break;
       case 'publishWarning':
         decision = 'publish_warning';
-        biographyStatus = 'published';
+        if (readerReportOnPublished) {
+          bioPatch = null;
+        } else {
+          bioPatch = { status: 'published', published_at: now };
+        }
         notificationMessage = t.admin.notifyPublishedWarning;
         break;
       case 'return':
         decision = 'returned';
-        biographyStatus = 'draft';
-        notificationMessage = returnMessage.trim() || t.admin.notifyReturned;
+        if (readerReportOnPublished) {
+          bioPatch = {
+            status: 'published',
+            is_frozen: true,
+            frozen_at: now,
+            frozen_reason: 'moderation_report',
+          };
+          notificationMessage = returnMessage.trim() || t.admin.notifyFrozenFromReport;
+        } else {
+          bioPatch = { status: 'draft' };
+          notificationMessage = returnMessage.trim() || t.admin.notifyReturned;
+        }
         break;
       case 'remove':
         decision = 'removed';
-        biographyStatus = 'removed';
+        bioPatch = { status: 'removed' };
         notificationMessage = t.admin.notifyRemoved;
         break;
+      default:
+        setSubmitting(false);
+        return;
     }
 
     const result = await submitDecision(
       report.id,
       report.biography_id,
       report.biography_author_id!,
-      decision!,
-      biographyStatus!,
-      notificationMessage!,
+      decision,
+      bioPatch,
+      notificationMessage,
       user.id,
     );
 
@@ -175,24 +228,30 @@ export function ModerationDetailPanel({ report, onClose, onRefresh }: Moderation
       return;
     }
 
-    if (result.error) return;
+    if (result.error) {
+      toast({ title: t.admin.moderationActionError, description: result.error, variant: 'destructive' });
+      return;
+    }
 
-    const templateByType: Record<NonNullable<DialogType>, EmailTemplateId> = {
-      approve: 'publication_published',
+    const templateByType: Partial<Record<NonNullable<DialogType>, EmailTemplateId>> = {
+      approve: readerReportOnPublished ? undefined : 'publication_published',
       publishWarning: 'publication_published_warning',
-      return: 'publication_returned',
+      return: readerReportOnPublished ? 'admin_bio_frozen' : 'publication_returned',
       remove: 'publication_removed',
     };
 
-    void sendAuthorEmailFromClient({
-      userId: report.biography_author_id!,
-      templateId: templateByType[type],
-      biographyId: report.biography_id,
-      vars:
-        type === 'return' && returnMessage.trim()
-          ? { reviewerMessage: returnMessage.trim() }
-          : undefined,
-    });
+    const templateId = templateByType[type];
+    if (templateId) {
+      void sendAuthorEmailFromClient({
+        userId: report.biography_author_id!,
+        templateId,
+        biographyId: report.biography_id,
+        vars:
+          type === 'return' && returnMessage.trim()
+            ? { reviewerMessage: returnMessage.trim() }
+            : undefined,
+      });
+    }
 
     onRefresh();
     onClose();
@@ -389,12 +448,18 @@ export function ModerationDetailPanel({ report, onClose, onRefresh }: Moderation
 
               {canAct && (
                 <div className="space-y-2">
+                  {readerReportOnPublished && (
+                    <p className="text-xs text-muted-foreground leading-relaxed rounded-lg bg-muted/40 px-3 py-2">
+                      {t.admin.moderationReaderReportHint}
+                    </p>
+                  )}
+
                   <Button
                     className="w-full bg-brand-greenDark hover:bg-brand-ink text-brand-paper"
                     onClick={() => setDialog('approve')}
                     disabled={submitting}
                   >
-                    {t.admin.approveAndPublish}
+                    {readerReportOnPublished ? t.admin.dismissReportKeepPublished : t.admin.approveAndPublish}
                   </Button>
 
                   <Button
@@ -404,6 +469,18 @@ export function ModerationDetailPanel({ report, onClose, onRefresh }: Moderation
                   >
                     {t.admin.publishWithWarning}
                   </Button>
+
+                  {readerReportOnPublished && (
+                    <Button
+                      variant="outline"
+                      className="w-full justify-start gap-2 border-brand-blue/60 text-brand-ink hover:bg-brand-blue/25 dark:border-brand-blue/45 dark:text-brand-beigeLight dark:hover:bg-brand-blue/15"
+                      onClick={() => setDialog('freeze')}
+                      disabled={submitting}
+                    >
+                      <Snowflake className="h-4 w-4" />
+                      {t.admin.bioActionFreeze}
+                    </Button>
+                  )}
 
                   <div className="space-y-2">
                     <Textarea
@@ -421,7 +498,7 @@ export function ModerationDetailPanel({ report, onClose, onRefresh }: Moderation
                       }}
                       disabled={submitting || !returnMessage.trim()}
                     >
-                      {t.admin.returnToAuthor}
+                      {readerReportOnPublished ? t.admin.freezeAndNotifyAuthor : t.admin.returnToAuthor}
                     </Button>
                   </div>
 
@@ -470,8 +547,12 @@ export function ModerationDetailPanel({ report, onClose, onRefresh }: Moderation
       <AlertDialog open={dialog === 'approve'} onOpenChange={(o) => { if (!o) setDialog(null); }}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>{t.admin.confirmApprove}</AlertDialogTitle>
-            <AlertDialogDescription>{t.admin.confirmApproveDetail}</AlertDialogDescription>
+            <AlertDialogTitle>
+              {readerReportOnPublished ? t.admin.confirmDismissReport : t.admin.confirmApprove}
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              {readerReportOnPublished ? t.admin.confirmDismissReportDetail : t.admin.confirmApproveDetail}
+            </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel onClick={() => setDialog(null)}>{t.admin.cancelAction}</AlertDialogCancel>
@@ -508,8 +589,12 @@ export function ModerationDetailPanel({ report, onClose, onRefresh }: Moderation
       <AlertDialog open={dialog === 'return'} onOpenChange={(o) => { if (!o) setDialog(null); }}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>{t.admin.confirmReturn}</AlertDialogTitle>
-            <AlertDialogDescription>{t.admin.confirmReturnDetail}</AlertDialogDescription>
+            <AlertDialogTitle>
+              {readerReportOnPublished ? t.admin.confirmFreezeAndNotify : t.admin.confirmReturn}
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              {readerReportOnPublished ? t.admin.confirmFreezeAndNotifyDetail : t.admin.confirmReturnDetail}
+            </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel onClick={() => setDialog(null)}>{t.admin.cancelAction}</AlertDialogCancel>
@@ -535,6 +620,24 @@ export function ModerationDetailPanel({ report, onClose, onRefresh }: Moderation
             <AlertDialogAction
               className="bg-brand-wineDark hover:bg-brand-wine text-brand-paper"
               onClick={() => handleDecision('remove')}
+            >
+              {t.admin.confirmAction}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <AlertDialog open={dialog === 'freeze'} onOpenChange={(o) => { if (!o) setDialog(null); }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t.admin.bioActionFreezeConfirm}</AlertDialogTitle>
+            <AlertDialogDescription>{t.admin.moderationFreezeWhileReviewingDetail}</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setDialog(null)}>{t.admin.cancelAction}</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-brand-blue text-brand-paper hover:bg-brand-blue/90"
+              onClick={() => handleFreeze()}
             >
               {t.admin.confirmAction}
             </AlertDialogAction>
