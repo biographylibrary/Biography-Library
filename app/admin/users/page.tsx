@@ -231,12 +231,20 @@ export default function AdminUsersPage() {
     }
   }
 
-  async function callAdminUserApi(path: string, method: 'POST' | 'DELETE') {
+  async function callAdminUserApi(
+    path: string,
+    method: 'POST' | 'DELETE' | 'PATCH',
+    jsonBody?: unknown
+  ) {
     const { data: { session } } = await supabase.auth.getSession();
     if (!session?.access_token) throw new Error('no_session');
     const res = await fetch(path, {
       method,
-      headers: { Authorization: `Bearer ${session.access_token}` },
+      headers: {
+        Authorization: `Bearer ${session.access_token}`,
+        ...(jsonBody !== undefined ? { 'Content-Type': 'application/json' } : {}),
+      },
+      ...(jsonBody !== undefined ? { body: JSON.stringify(jsonBody) } : {}),
     });
     const body = await res.json().catch(() => ({}));
     if (!res.ok) throw new Error((body as { error?: string }).error ?? 'request_failed');
@@ -313,16 +321,11 @@ export default function AdminUsersPage() {
     if (!confirmChange) return;
     setSaving(confirmChange.userId);
     try {
-      const res = await fetch(`/api/admin/users/${confirmChange.userId}/role`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ role: confirmChange.newRole }),
-      });
-
-      if (!res.ok) {
-        const body = await res.json().catch(() => ({}));
-        throw new Error(body.error ?? 'Failed');
-      }
+      await callAdminUserApi(
+        `/api/admin/users/${confirmChange.userId}/role`,
+        'PATCH',
+        { role: confirmChange.newRole }
+      );
 
       setUsers((prev) =>
         prev.map((u) =>
@@ -336,7 +339,7 @@ export default function AdminUsersPage() {
       });
       toast({ title: t.admin.usersRoleUpdated });
     } catch {
-      toast({ title: t.admin.usersLoadError, variant: 'destructive' });
+      toast({ title: t.admin.usersActionFailed, variant: 'destructive' });
     } finally {
       setSaving(null);
       setConfirmChange(null);
