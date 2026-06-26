@@ -314,7 +314,13 @@ export function EchoChatProvider({
     fetch(`/api/agents/threads/active?${params}`, {
       headers: { Authorization: `Bearer ${session.access_token}` },
     })
-      .then((res) => (res.ok ? res.json() : null))
+      .then(async (res) => {
+        if (!res.ok) {
+          const body = await res.json().catch(() => ({}));
+          throw new Error((body as { error?: string }).error ?? `HTTP ${res.status}`);
+        }
+        return res.json();
+      })
       .then((json) => {
         if (cancelled) return;
         if (json?.thread?.id) setThreadId(json.thread.id);
@@ -330,7 +336,11 @@ export function EchoChatProvider({
           setMessages([]);
         }
       })
-      .catch(() => {})
+      .catch((err: unknown) => {
+        if (!cancelled) {
+          setError(err instanceof Error ? err.message : 'Failed to load Echo history');
+        }
+      })
       .finally(() => {
         if (!cancelled) {
           setHistoryLoading(false);
