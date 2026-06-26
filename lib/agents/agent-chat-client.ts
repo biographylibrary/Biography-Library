@@ -1,4 +1,5 @@
 import type { AgentType } from './models';
+import { fetchWithAgentAuth } from '@/lib/auth-token';
 
 export type AgentStreamEvent =
   | { event: 'thread'; data: { threadId: string } }
@@ -18,15 +19,14 @@ export async function streamAgentChat(
     threadId?: string;
     echoPage?: 'hub' | 'editor_sections' | 'editor_freeflow' | 'publication' | 'dashboard' | 'other';
     onboardingIncomplete?: boolean;
-    accessToken: string;
+    accessToken?: string;
   },
   onEvent: (ev: AgentStreamEvent) => void
 ): Promise<void> {
-  const res = await fetch('/api/agents/chat/stream', {
+  const res = await fetchWithAgentAuth('/api/agents/chat/stream', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      Authorization: `Bearer ${params.accessToken}`,
     },
     body: JSON.stringify({
       agentType: params.agentType,

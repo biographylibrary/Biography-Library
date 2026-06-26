@@ -3,6 +3,7 @@
 import { createContext, useContext, useEffect, useState, useCallback } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from './supabase';
+import { clearSupabaseAuthStorage, redirectAfterSignOut } from './auth-storage';
 import type { Language } from '@/lib/i18n/translations';
 
 type FontSize = 'small' | 'normal' | 'large' | 'extra-large';
@@ -20,7 +21,7 @@ interface AuthContextType {
   setFontSize: (size: FontSize) => void;
   signIn: (email: string, password: string) => Promise<{ error: string | null; emailNotConfirmed?: boolean }>;
   signUp: (email: string, password: string, name: string, language: Language) => Promise<{ error: string | null; emailConfirmRequired?: boolean }>;
-  signOut: () => Promise<void>;
+  signOut: (options?: { redirectToLogin?: boolean }) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -177,8 +178,29 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return { error: error?.message ?? null, emailConfirmRequired: emailConfirmRequired ?? false };
   }, []);
 
-  const signOut = useCallback(async () => {
-    await supabase.auth.signOut();
+  const signOut = useCallback(async (options?: { redirectToLogin?: boolean }) => {
+    setUser(null);
+    setSession(null);
+    setRole(null);
+
+    try {
+      const { error } = await supabase.auth.signOut({ scope: 'global' });
+      if (error) {
+        await supabase.auth.signOut({ scope: 'local' });
+      }
+    } catch {
+      try {
+        await supabase.auth.signOut({ scope: 'local' });
+      } catch {
+        /* fall through to manual clear */
+      }
+    }
+
+    clearSupabaseAuthStorage();
+
+    if (options?.redirectToLogin) {
+      redirectAfterSignOut();
+    }
   }, []);
 
   return (

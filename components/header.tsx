@@ -79,8 +79,7 @@ export function Header() {
   }, [pathname, user, refreshUnreadCount]);
 
   const handleSignOut = async () => {
-    await signOut();
-    router.push('/');
+    await signOut({ redirectToLogin: true });
   };
 
   const isEditorPage = pathname?.includes('/biography/') && pathname?.includes('/edit');
@@ -252,7 +251,9 @@ export function Header() {
                 <DropdownMenuSeparator />
 
                 <DropdownMenuItem
-                  onClick={handleSignOut}
+                  onClick={() => {
+                    void handleSignOut();
+                  }}
                   className="text-[#121212] dark:text-[#FDFBF7] focus:text-[#121212] dark:focus:text-[#FDFBF7] focus:bg-destructive/10 cursor-pointer"
                 >
                   <LogOut className="h-4 w-4 mr-2" />
