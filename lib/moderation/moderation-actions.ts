@@ -11,6 +11,8 @@ export async function takeOwnership(reportId: string, moderatorId: string): Prom
       assigned_moderator_id: moderatorId,
       assigned_to: moderatorId,
       assigned_at: now,
+      reviewed_by: moderatorId,
+      reviewed_at: now,
     })
     .eq('id', reportId);
 
@@ -63,12 +65,11 @@ export async function submitDecision(
   notificationMessage: string,
   moderatorId: string,
 ): Promise<{ error: string | null; conflict: boolean }> {
-  const { error: bioError } = await supabase
-    .from('biographies')
-    .update({ status: biographyStatus })
-    .eq('id', biographyId);
-
-  if (bioError) return { error: bioError.message, conflict: false };
+  const claim = await claimReportReview(reportId, moderatorId);
+  if (!claim.claimed && claim.error === null) {
+    return { error: null, conflict: true };
+  }
+  if (claim.error) return { error: claim.error, conflict: false };
 
   const { data: updated, error: reportError } = await supabase
     .from('moderation_reports')
@@ -81,12 +82,20 @@ export async function submitDecision(
       reviewed_at: null,
     })
     .eq('id', reportId)
-    .eq('reviewed_by', moderatorId)
+    .eq('assigned_moderator_id', moderatorId)
+    .in('status', ['in_review', 'assigned'])
     .select('id')
     .maybeSingle();
 
   if (reportError) return { error: reportError.message, conflict: false };
   if (!updated) return { error: null, conflict: true };
+
+  const { error: bioError } = await supabase
+    .from('biographies')
+    .update({ status: biographyStatus })
+    .eq('id', biographyId);
+
+  if (bioError) return { error: bioError.message, conflict: false };
 
   await createNotification(authorId, notificationMessage);
 
