@@ -187,7 +187,7 @@ function buildFinalVersion(demo) {
 }
 
 async function uploadCover(supabase, userId, biographyId, seed) {
-  const url = picsum(seed, 880, 1250);
+  const url = picsum(seed, 900, 1200);
   const { buf, contentType } = await downloadImage(url);
   const ext = contentType.includes('png') ? 'png' : 'jpg';
   const fileName = `demo-cover-${seed}.${ext}`;
@@ -202,14 +202,14 @@ async function uploadCover(supabase, userId, biographyId, seed) {
   const { data: urlData } = supabase.storage.from('biography-photos').getPublicUrl(storagePath);
   const fileUrl = urlData.publicUrl;
 
-  await supabase.from('biography_media').delete().eq('biography_id', biographyId).eq('layout', 'cover_a5');
+  await supabase.from('biography_media').delete().eq('biography_id', biographyId).in('layout', ['cover', 'cover_a5']);
   await supabase.from('biography_media').insert({
     biography_id: biographyId,
     user_id: userId,
     file_url: fileUrl,
     file_name: fileName,
     caption: 'Demo cover',
-    layout: 'cover_a5',
+    layout: 'cover',
     display_order: 0,
   });
 

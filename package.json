@@ -12,6 +12,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "seed:test-biography": "node scripts/seed-test-biography.mjs",
+    "demo:enrich": "npx tsx --tsconfig tsconfig.json scripts/enrich-demo-catalog.ts",
     "kb:sync": "node scripts/sync-platform-kb.mjs",
     "kb:sync:check": "node scripts/sync-platform-kb.mjs --check",
     "kb:seed": "tsx --tsconfig tsconfig.json scripts/seed-kb.ts"
