@@ -30,6 +30,7 @@ import { memorialSubjectName } from '@/lib/biography-display';
 import { BiographySectionBody } from '@/components/biography/BiographySectionBody';
 import { BiographyContentRightsNotice } from '@/components/biography/BiographyContentRightsNotice';
 import { BiographyLanguageBadges } from '@/components/biography/BiographyLanguageBadges';
+import { BiographyViewGallery } from '@/components/biography/BiographyViewGallery';
 
 type ViewLanguage = 'en' | 'it' | 'fr' | 'de';
 
@@ -684,6 +685,13 @@ export default function BiographyViewPage() {
                   </Button>
                 )}
               </div>
+            )}
+
+            {resolvedBiographyId && (
+              <BiographyViewGallery
+                biographyId={resolvedBiographyId}
+                shareToken={loadedViaShareToken ? token : null}
+              />
             )}
 
             {biography.status === 'published' &&

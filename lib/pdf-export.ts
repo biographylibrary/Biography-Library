@@ -379,6 +379,15 @@ async function drawBiographyLibraryLogoMark(
     `<path fill="${fillHex}" d="${LOGO_SVG_PATH}"/>`,
     `</svg>`,
   ].join('');
+  if (logoMarkRasterizer) {
+    try {
+      const raster = await logoMarkRasterizer();
+      doc.addImage(raster.dataUrl, raster.format, x, y, logoWmm, logoHmm);
+      return;
+    } catch {
+      /* fall through */
+    }
+  }
   try {
     const anyDoc = doc as any;
     if (typeof anyDoc.addSvgAsImage === 'function') {
@@ -391,10 +400,10 @@ async function drawBiographyLibraryLogoMark(
   drawLogoFallback(doc, centerX, centerY);
 }
 
-/** Raster/text fallback when SVG import is unavailable (common in some jsPDF runtimes). */
+/** Text fallback when logo raster/SVG is unavailable. */
 function drawLogoFallback(doc: jsPDF, centerX: number, centerY: number): void {
-  applyFont(doc, 'bold');
-  doc.setFontSize(11);
+  applyFont(doc, 'normal');
+  doc.setFontSize(9);
   doc.setTextColor(0x12, 0x12, 0x12);
   doc.text('Biography Library', centerX, centerY, { align: 'center' });
 }
@@ -693,6 +702,15 @@ let coverPhotoRasterizer: CoverPhotoRasterizer | null = null;
 
 export function setCoverPhotoRasterizer(fn: CoverPhotoRasterizer | null): void {
   coverPhotoRasterizer = fn;
+}
+
+/** Optional server hook — registered from `lib/server/register-pdf-cover-rasterizer.ts` only. */
+export type LogoMarkRasterizer = () => Promise<{ dataUrl: string; format: string }>;
+
+let logoMarkRasterizer: LogoMarkRasterizer | null = null;
+
+export function setLogoMarkRasterizer(fn: LogoMarkRasterizer | null): void {
+  logoMarkRasterizer = fn;
 }
 
 /** Ordered PDF assembly trace (debug blank-page issues). */
@@ -1241,7 +1259,6 @@ async function drawBackCover(
 
   const year = new Date().getFullYear();
   const rightsLine = `© ${year} ${authorName} — All rights reserved.`;
-  /** Legal body only; footer line drawn last */
   const legalSegments = [
     rightsLine,
     '',
@@ -1265,7 +1282,6 @@ async function drawBackCover(
   ];
 
   const usableHeight = CARD_H - CARD_INNER_PADDING_TOP - CARD_INNER_PADDING_BOTTOM;
-  const maxBlockHeight = usableHeight;
 
   function measureBlockHeight(cfg: FitCfg): number {
     applyFont(doc, 'normal');
@@ -1288,7 +1304,7 @@ async function drawBackCover(
 
   let chosen: FitCfg | null = null;
   for (const cfg of tryConfigs) {
-    if (measureBlockHeight(cfg) <= maxBlockHeight) {
+    if (measureBlockHeight(cfg) <= usableHeight) {
       chosen = cfg;
       break;
     }
@@ -1579,7 +1595,7 @@ export async function generateBiographyPDF(
         bs.preface_content!,
         PT_BODY,
         LINE_HEIGHT_BODY,
-        true
+        false
       );
     }
   }
@@ -1748,7 +1764,7 @@ export async function generateBiographyPDF(
         bs.epilogue_content!,
         PT_BODY,
         LINE_HEIGHT_BODY,
-        true
+        false
       );
     }
 
@@ -1761,7 +1777,7 @@ export async function generateBiographyPDF(
         bs.acknowledgements_content!,
         PT_BODY,
         LINE_HEIGHT_BODY,
-        true
+        false
       );
     }
 
