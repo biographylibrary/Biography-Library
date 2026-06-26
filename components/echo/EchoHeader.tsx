@@ -5,7 +5,6 @@ import { BiographyPicker } from './BiographyPicker';
 import type { Biography } from '@/lib/biographies';
 import { useTranslation } from '@/lib/i18n/i18n-context';
 import { useAuth } from '@/lib/auth-context';
-import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -28,11 +27,9 @@ export function EchoHeader({
 }: EchoHeaderProps) {
   const { t } = useTranslation();
   const { user, signOut } = useAuth();
-  const router = useRouter();
 
   const handleSignOut = async () => {
-    await signOut();
-    router.push('/');
+    await signOut({ redirectToLogin: true });
   };
 
   const displayName = user?.user_metadata?.name || user?.email || '';
@@ -72,7 +69,11 @@ export function EchoHeader({
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuItem onClick={() => void handleSignOut()}>
+              <DropdownMenuItem
+                onClick={() => {
+                  void handleSignOut();
+                }}
+              >
                 <LogOut className="h-4 w-4 mr-2" />
                 {t.nav.signOut}
               </DropdownMenuItem>

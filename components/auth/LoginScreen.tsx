@@ -25,13 +25,15 @@ export function LoginScreen() {
     returnToParam === '/echo' || returnToParam === '/echo/'
       ? '/dashboard'
       : returnToParam;
+  const signedOut = searchParams.get('signedOut') === '1';
+  const sessionExpired = searchParams.get('session_expired') === '1';
   const { t } = useTranslation();
 
   useEffect(() => {
-    if (!loading && user) {
+    if (!loading && user && !signedOut && !sessionExpired) {
       router.push(returnTo || '/dashboard');
     }
-  }, [user, loading, router, returnTo]);
+  }, [user, loading, router, returnTo, signedOut, sessionExpired]);
 
   useEffect(() => {
     try {
@@ -63,7 +65,7 @@ export function LoginScreen() {
     }
   };
 
-  if (loading || user) {
+  if (loading || (user && !signedOut && !sessionExpired)) {
     return (
       <div className="h-full flex items-center justify-center bg-background">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />

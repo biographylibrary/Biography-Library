@@ -118,8 +118,7 @@ export default function SettingsPage() {
     try {
       const { error } = await supabase.rpc('delete_user');
       if (error) throw error;
-      await signOut();
-      router.push('/');
+      await signOut({ redirectToLogin: true });
     } catch {
       toast.error(t.toast.error);
     } finally {
@@ -128,8 +127,7 @@ export default function SettingsPage() {
   };
 
   const handleSignOut = async () => {
-    await signOut();
-    router.push('/');
+    await signOut({ redirectToLogin: true });
   };
 
   const isDark = mounted && resolvedTheme === 'dark';

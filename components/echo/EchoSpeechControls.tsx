@@ -50,6 +50,7 @@ export function EchoVoiceOutputButton({
       type="button"
       size="icon"
       variant="outline"
+      data-tour-id="echo-voice-output"
       aria-pressed={!voiceOutputEnabled}
       className={cn(
         'h-11 w-11 shrink-0',

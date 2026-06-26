@@ -11,6 +11,7 @@ import {
   type ReactNode,
 } from 'react';
 import { useAuth } from '@/lib/auth-context';
+import { getValidAccessToken, fetchWithAgentAuth } from '@/lib/auth-token';
 import { useTranslation } from '@/lib/i18n/i18n-context';
 import { streamAgentChat } from '@/lib/agents/agent-chat-client';
 import type { EchoPageContext } from '@/lib/echo/echo-context';
@@ -111,7 +112,7 @@ export function EchoChatProvider({
   onSectionCompletionChanged,
   onOnboardingEvent,
 }: EchoChatProviderProps) {
-  const { session } = useAuth();
+  const { user } = useAuth();
   const { language, t } = useTranslation();
   const { setOrbState: setContextOrbState, bubbleOpen } = useEcho();
 
@@ -264,7 +265,7 @@ export function EchoChatProvider({
   );
 
   const loadOlderMessages = useCallback(async () => {
-    if (!session?.access_token || !threadId || !hasMoreOlder || loadingOlder) return;
+    if (!user || !threadId || !hasMoreOlder || loadingOlder) return;
 
     const before = oldestLoadedAtRef.current;
     if (!before) return;
@@ -275,9 +276,7 @@ export function EchoChatProvider({
         before,
         limit: '50',
       });
-      const res = await fetch(`/api/agents/threads/${threadId}/messages?${params}`, {
-        headers: { Authorization: `Bearer ${session.access_token}` },
-      });
+      const res = await fetchWithAgentAuth(`/api/agents/threads/${threadId}/messages?${params}`);
       if (!res.ok) return;
 
       const json = await res.json();
@@ -300,10 +299,10 @@ export function EchoChatProvider({
     } finally {
       setLoadingOlder(false);
     }
-  }, [session?.access_token, threadId, hasMoreOlder, loadingOlder]);
+  }, [user, threadId, hasMoreOlder, loadingOlder]);
 
   useEffect(() => {
-    if (!session?.access_token) return;
+    if (!user) return;
 
     const params = new URLSearchParams({ agentType: 'echo', locale: language });
     if (biographyId) params.set('biographyId', biographyId);
@@ -311,17 +310,14 @@ export function EchoChatProvider({
     let cancelled = false;
     setHistoryLoading(true);
 
-    fetch(`/api/agents/threads/active?${params}`, {
-      headers: { Authorization: `Bearer ${session.access_token}` },
-    })
-      .then(async (res) => {
+    void (async () => {
+      try {
+        const res = await fetchWithAgentAuth(`/api/agents/threads/active?${params}`);
         if (!res.ok) {
           const body = await res.json().catch(() => ({}));
           throw new Error((body as { error?: string }).error ?? `HTTP ${res.status}`);
         }
-        return res.json();
-      })
-      .then((json) => {
+        const json = await res.json();
         if (cancelled) return;
         if (json?.thread?.id) setThreadId(json.thread.id);
         setHasMoreOlder(json?.hasMoreOlder === true);
@@ -335,22 +331,21 @@ export function EchoChatProvider({
         } else {
           setMessages([]);
         }
-      })
-      .catch((err: unknown) => {
+      } catch (err: unknown) {
         if (!cancelled) {
           setError(err instanceof Error ? err.message : 'Failed to load Echo history');
         }
-      })
-      .finally(() => {
+      } finally {
         if (!cancelled) {
           setHistoryLoading(false);
         }
-      });
+      }
+    })();
 
     return () => {
       cancelled = true;
     };
-  }, [session?.access_token, biographyId, language]);
+  }, [user, biographyId, language]);
 
   useEffect(() => {
     if (historyLoading) return;
@@ -395,7 +390,7 @@ export function EchoChatProvider({
   const sendMessage = useCallback(
     async (text: string) => {
       const trimmed = text.trim();
-      if (!trimmed || !session?.access_token || loading) return;
+      if (!trimmed || !user || loading) return;
 
       setError(null);
       setLoading(true);
@@ -447,7 +442,6 @@ export function EchoChatProvider({
             threadId,
             echoPage,
             onboardingIncomplete,
-            accessToken: session.access_token,
           },
           (ev) => {
             if (ev.event === 'thread' && ev.data.threadId) {
@@ -537,8 +531,9 @@ export function EchoChatProvider({
       }
 
       if (streamOk && fullReply && getEchoVoiceOutputEnabled()) {
+        const accessToken = await getValidAccessToken();
         void speakEchoReply(fullReply, language, {
-          accessToken: session.access_token,
+          accessToken: accessToken ?? undefined,
           onStart: () => setOrb('speaking'),
           onEnd: () => setOrb('idle'),
         }).then((backend) => {
@@ -549,7 +544,7 @@ export function EchoChatProvider({
       }
     },
     [
-      session,
+      user,
       loading,
       biographyId,
       activeSection,
@@ -585,7 +580,7 @@ export function EchoChatProvider({
 
   const confirmInsertDraft = useCallback(
     async (messageId: string) => {
-      if (!session?.access_token || !biographyId) return;
+      if (!user || !biographyId) return;
       const target = messages.find((m) => m.id === messageId);
       if (!target?.pendingDraft) return;
 
@@ -596,10 +591,9 @@ export function EchoChatProvider({
       );
 
       try {
-        const res = await fetch('/api/agents/echo/apply-draft', {
+        const res = await fetchWithAgentAuth('/api/agents/echo/apply-draft', {
           method: 'POST',
           headers: {
-            Authorization: `Bearer ${session.access_token}`,
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
@@ -630,7 +624,7 @@ export function EchoChatProvider({
         setError(err instanceof Error ? err.message : t.echo.errorGeneric);
       }
     },
-    [session, biographyId, messages, onDraftApplied, t.echo.errorGeneric]
+    [user, biographyId, messages, onDraftApplied, t.echo.errorGeneric]
   );
 
   const value = useMemo(

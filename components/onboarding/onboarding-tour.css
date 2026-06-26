@@ -18,6 +18,7 @@
 }
 
 .driver-popover-description {
+  font-family: 'Noto Sans', system-ui, sans-serif !important;
   font-size: 0.875rem !important;
   color: var(--text-secondary, #616161) !important;
   line-height: 1.55 !important;
@@ -63,27 +64,6 @@
 .driver-popover-next-btn:hover {
   background: var(--text-secondary, #616161) !important;
   border-color: var(--text-secondary, #616161) !important;
-}
-
-.driver-popover-skip-step-btn {
-  background: var(--status-info, #c4daeb) !important;
-  color: var(--text-primary, #121212) !important;
-  border: 1px solid var(--border-global, #616161) !important;
-  border-radius: 0.5rem !important;
-  font-size: 0.8125rem !important;
-  padding: 0.5rem 0.875rem !important;
-  margin-right: auto !important;
-  cursor: pointer !important;
-}
-
-.driver-popover-skip-step-btn:hover {
-  background: var(--btn-hover, #c8dfbe) !important;
-}
-
-.dark .driver-popover-skip-step-btn {
-  background: hsl(var(--muted)) !important;
-  color: hsl(var(--card-foreground)) !important;
-  border-color: hsl(var(--border)) !important;
 }
 
 .driver-active-element {
@@ -138,13 +118,6 @@
 @media (max-width: 1023px) {
   .driver-popover-footer {
     flex-wrap: wrap !important;
-  }
-
-  .driver-popover-skip-step-btn {
-    flex-basis: 100%;
-    margin-right: 0 !important;
-    margin-bottom: 0.25rem !important;
-    text-align: center;
   }
 
   .driver-popover-footer .driver-popover-prev-btn,
