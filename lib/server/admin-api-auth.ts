@@ -48,6 +48,11 @@ export function isAdminOrSuperAdmin(role: StaffRole): boolean {
   return role === 'admin' || role === 'super_admin';
 }
 
+/** Reviewer, admin, or super_admin — moderation panel access. */
+export function isStaffModerator(role: StaffRole): boolean {
+  return role === 'reviewer' || role === 'admin' || role === 'super_admin';
+}
+
 /**
  * Admins may only act on `user` and `reviewer`. Super admins may act on any account except their own.
  */

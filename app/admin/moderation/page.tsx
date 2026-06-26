@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Shield } from 'lucide-react';
 import { useTranslation } from '@/lib/i18n/i18n-context';
 import { ModerationFilters as FiltersType, ModerationReport } from '@/lib/moderation/types';
@@ -20,6 +20,14 @@ function ModerationContent() {
   });
 
   const { reports, unassignedCount, loading: reportsLoading, error, refresh } = useModerationReports(filters);
+
+  useEffect(() => {
+    if (!selectedReport) return;
+    const fresh = reports.find((r) => r.id === selectedReport.id);
+    if (fresh && fresh.updated_at !== selectedReport.updated_at) {
+      setSelectedReport(fresh);
+    }
+  }, [reports, selectedReport]);
 
   return (
     <>
@@ -57,7 +65,6 @@ function ModerationContent() {
         onClose={() => setSelectedReport(null)}
         onRefresh={() => {
           refresh();
-          setSelectedReport(null);
         }}
       />
     </>
