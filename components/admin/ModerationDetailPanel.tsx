@@ -78,8 +78,8 @@ export function ModerationDetailPanel({ report, onClose, onRefresh }: Moderation
 
     claimReportReview(report.id, user.id).then((result) => {
       if (!result.claimed && result.error === null) {
-        const name = result.claimedByName ?? 'another reviewer';
-        setLockWarning(`This report is being reviewed by ${name}.`);
+        const name = result.claimedByName ?? t.admin.reportLockedByOtherFallback;
+        setLockWarning(t.admin.reportLockedByOther.replace('{name}', name));
       }
     });
     if (report) {
@@ -104,7 +104,8 @@ export function ModerationDetailPanel({ report, onClose, onRefresh }: Moderation
   const flaggedPassages: FlaggedPassage[] = Array.isArray(report.ai_analysis?.flagged_passages)
     ? report.ai_analysis.flagged_passages
     : [];
-  const isUserSubmittedReport = report.reporter_id != null;
+  const hasUserReportContent =
+    report.reporter_id != null || Boolean(report.description?.trim());
 
   function formatReportDate(iso: string) {
     return new Date(iso).toLocaleString(undefined, {
@@ -237,7 +238,7 @@ export function ModerationDetailPanel({ report, onClose, onRefresh }: Moderation
                   <div className="flex items-start gap-3 rounded-lg border border-brand-wine/40 bg-brand-wine/10 dark:bg-brand-wine/20 dark:border-brand-wine/45 px-4 py-3">
                     <AlertCircle className="h-4 w-4 text-brand-wine dark:text-brand-beigeLight mt-0.5 shrink-0" />
                     <p className="text-sm text-brand-wineDark dark:text-brand-beigeLight">
-                      Another reviewer submitted a decision while you were reviewing. Please reload.
+                      {t.admin.moderationConflictError}
                     </p>
                   </div>
                 )}
@@ -296,6 +297,28 @@ export function ModerationDetailPanel({ report, onClose, onRefresh }: Moderation
                 )}
               </div>
 
+              {hasUserReportContent && (
+                <div className="space-y-2 rounded-lg border border-brand-mustardDark/45 bg-brand-mustardLight/40 dark:bg-brand-mustardDark/20 dark:border-brand-mustardDark/50 p-4">
+                  <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                    {t.admin.userReportDetails}
+                  </p>
+                  {report.reporter_email && (
+                    <p className="text-xs">
+                      <span className="font-medium text-muted-foreground">{t.admin.reporterEmail}:</span>{' '}
+                      <span className="text-foreground">{report.reporter_email}</span>
+                    </p>
+                  )}
+                  <p className="text-xs text-muted-foreground">
+                    <span className="font-medium">{t.admin.reportedAt}:</span>{' '}
+                    <span className="text-foreground">{formatReportDate(report.created_at)}</span>
+                  </p>
+                  <p className="text-xs font-medium text-muted-foreground">{t.admin.reporterDetails}:</p>
+                  <p className="text-sm text-foreground leading-relaxed whitespace-pre-wrap">
+                    {report.description?.trim() ? report.description : t.admin.noReportDescription}
+                  </p>
+                </div>
+              )}
+
               {report.ai_analysis?.summary && (
                 <div className="space-y-1.5">
                   <p className="text-xs font-medium text-muted-foreground">{t.admin.aiSummaryFull}</p>
@@ -333,27 +356,6 @@ export function ModerationDetailPanel({ report, onClose, onRefresh }: Moderation
               </div>
               )}
 
-              {isUserSubmittedReport && (
-                <div className="space-y-2 rounded-lg bg-muted/40 p-3">
-                  <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                    {t.admin.userReportDetails}
-                  </p>
-                  {report.reporter_email && (
-                    <p className="text-xs">
-                      <span className="font-medium text-muted-foreground">{t.admin.reporterEmail}:</span>{' '}
-                      <span className="text-foreground">{report.reporter_email}</span>
-                    </p>
-                  )}
-                  <p className="text-xs text-muted-foreground">
-                    <span className="font-medium">{t.admin.reportedAt}:</span>{' '}
-                    <span className="text-foreground">{formatReportDate(report.created_at)}</span>
-                  </p>
-                  <p className="text-xs font-medium text-muted-foreground">{t.admin.reporterDetails}:</p>
-                  <p className="text-xs text-foreground leading-relaxed">
-                    {report.description?.trim() ? report.description : t.admin.noReportDescription}
-                  </p>
-                </div>
-              )}
             </section>
 
             {/* SECTION 3 – Moderator Actions */}
