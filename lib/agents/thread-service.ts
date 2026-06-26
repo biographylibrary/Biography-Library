@@ -4,7 +4,8 @@ import {
   buildBiographyNarrativeContext,
   type BiographyNarrativeContext,
 } from '@/lib/biography-narrative-context';
-import { threadAgentTypeForStorage, echoStorageTypesForLookup } from './echo-thread-storage';
+import { threadAgentTypeForStorage } from './echo-thread-storage';
+import { resolveEchoActiveThread } from './echo-thread-resolve';
 import {
   AGENT_CONTEXT_MESSAGE_LIMIT,
   AGENT_UI_MESSAGE_LIMIT,
@@ -94,23 +95,8 @@ export async function getOrCreateThread(
   const { userId, agentType, biographyId = null, locale = 'en' } = params;
 
   if (agentType === 'echo') {
-    for (const storageType of echoStorageTypesForLookup()) {
-      let query = serviceClient
-        .from('agent_threads')
-        .select('*')
-        .eq('user_id', userId)
-        .eq('agent_type', storageType)
-        .eq('status', 'active');
-
-      if (biographyId) {
-        query = query.eq('biography_id', biographyId);
-      } else {
-        query = query.is('biography_id', null);
-      }
-
-      const { data: existing } = await query.maybeSingle();
-      if (existing) return existing as AgentThreadRow;
-    }
+    const resolved = await resolveEchoActiveThread(serviceClient, { userId, biographyId });
+    if (resolved) return resolved;
   } else {
     const storedAgentType = threadAgentTypeForStorage(agentType);
 
@@ -145,6 +131,11 @@ export async function getOrCreateThread(
     .single();
 
   if (error) {
+    if (agentType === 'echo') {
+      const resolved = await resolveEchoActiveThread(serviceClient, { userId, biographyId });
+      if (resolved) return resolved;
+    }
+
     let retryQuery = serviceClient
       .from('agent_threads')
       .select('*')
@@ -305,24 +296,7 @@ export async function getActiveThread(
   const { userId, agentType, biographyId = null } = params;
 
   if (agentType === 'echo') {
-    for (const storageType of echoStorageTypesForLookup()) {
-      let query = serviceClient
-        .from('agent_threads')
-        .select('*')
-        .eq('user_id', userId)
-        .eq('agent_type', storageType)
-        .eq('status', 'active');
-
-      if (biographyId) {
-        query = query.eq('biography_id', biographyId);
-      } else {
-        query = query.is('biography_id', null);
-      }
-
-      const { data } = await query.maybeSingle();
-      if (data) return data as AgentThreadRow;
-    }
-    return null;
+    return resolveEchoActiveThread(serviceClient, { userId, biographyId });
   }
 
   const storedAgentType = threadAgentTypeForStorage(agentType);
