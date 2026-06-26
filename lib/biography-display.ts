@@ -14,7 +14,7 @@ export function memorialSubjectName(
   return subjectName?.trim() || title?.trim() || '';
 }
 
-/** Single-line credit for memorial covers and PDF title card. */
+/** Single-line credit (legacy / compact contexts). */
 export function formatMemorialCreditLine(
   subjectName: string,
   authorName: string,
@@ -26,6 +26,17 @@ export function formatMemorialCreditLine(
   if (!author) return subject;
   const connector = WRITTEN_BY[lang] ?? WRITTEN_BY.en;
   return `${subject} - ${connector} ${author}`;
+}
+
+/** Memorial cover / title card: author line below subject name. */
+export function formatMemorialAuthorAttribution(
+  authorName: string,
+  lang: Language = 'en'
+): string {
+  const author = authorName.trim();
+  if (!author) return '';
+  const connector = WRITTEN_BY[lang] ?? WRITTEN_BY.en;
+  return `${connector} ${author}`;
 }
 
 export function isMemorialBiography(
@@ -48,8 +59,8 @@ export function resolvePdfBiographyLabels(
     const subject = memorialSubjectName(bio.subject_name, bio.title);
     if (subject) {
       return {
-        title: formatMemorialCreditLine(subject, bio.author_name ?? '', lang),
-        author_name: '',
+        title: subject,
+        author_name: formatMemorialAuthorAttribution(bio.author_name ?? '', lang),
       };
     }
   }

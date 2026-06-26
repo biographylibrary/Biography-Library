@@ -1,6 +1,6 @@
 'use client';
 
-import { Bell, LayoutDashboard, LogOut, Shield, Settings } from 'lucide-react';
+import { Bell, BookOpen, LayoutDashboard, LogOut, Shield, Settings } from 'lucide-react';
 import { useAuth, ADMIN_ROLES } from '@/lib/auth-context';
 import { useTranslation } from '@/lib/i18n/i18n-context';
 import { useTheme } from 'next-themes';
@@ -198,6 +198,13 @@ export function Header() {
                 </div>
 
                 <DropdownMenuSeparator />
+
+                <DropdownMenuItem asChild>
+                  <Link href="/biographies" className="flex items-center gap-2 cursor-pointer">
+                    <BookOpen className="h-4 w-4" />
+                    <span>{t.nav.demoBiographies}</span>
+                  </Link>
+                </DropdownMenuItem>
 
                 <DropdownMenuItem onClick={() => router.push('/workspace')} className="flex items-center gap-2 cursor-pointer">
                   <LayoutDashboard className="h-4 w-4" />

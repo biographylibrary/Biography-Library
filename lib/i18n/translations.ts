@@ -22,6 +22,7 @@ export interface Translations {
     signOut: string;
   };
   nav: {
+    demoBiographies: string;
     workspace: string;
     dashboard: string;
     biography: string;
@@ -587,6 +588,12 @@ export interface Translations {
     languageNameIt: string;
     languageNameFr: string;
     languageNameDe: string;
+    galleryPhotos: string;
+    galleryLightboxTitle: string;
+    galleryLightboxPrevious: string;
+    galleryLightboxNext: string;
+    galleryPhotoCounter: string;
+    galleryOpenPhoto: string;
   };
   footer: {
     hostedInSwitzerland: string;
@@ -1489,6 +1496,7 @@ export const translations: Record<Language, Translations> = {
       signOut: 'Sign out',
     },
     nav: {
+      demoBiographies: 'Demo biographies',
       workspace: 'Workspace',
       dashboard: 'Dashboard',
       biography: 'Biography',
@@ -2064,7 +2072,7 @@ export const translations: Record<Language, Translations> = {
         'The text of this biography is the exclusive property of the author, who retains every right to take action against any unauthorized use, including use for training artificial intelligence systems.',
       contentRightsNoticeParagraph2:
         'Biography Library prohibits the use of content hosted on its servers for text mining, AI training, or machine learning, pursuant to the Swiss Copyright Act (CopA) and the author\'s exclusive right of use under Swiss law.',
-      pdfOriginalLanguage: 'PDF available only in the original language ({language})',
+      pdfOriginalLanguage: 'PDF, TXT and DOCX available only in the original language ({language})',
       downloadsUnavailable:
         'Word and plain-text downloads are not available for this biography. You can still use the PDF button above.',
       languageSwitcher: 'Reading language',
@@ -2076,6 +2084,12 @@ export const translations: Record<Language, Translations> = {
       languageNameIt: 'Italian',
       languageNameFr: 'French',
       languageNameDe: 'German',
+      galleryPhotos: 'Photos',
+      galleryLightboxTitle: 'Photo gallery',
+      galleryLightboxPrevious: 'Previous photo',
+      galleryLightboxNext: 'Next photo',
+      galleryPhotoCounter: 'Photo {current} of {total}',
+      galleryOpenPhoto: 'View photo: {caption}',
     },
     footer: {
       hostedInSwitzerland: 'Biography Library - Hosted in Switzerland',
@@ -2984,6 +2998,7 @@ export const translations: Record<Language, Translations> = {
       signOut: 'Esci',
     },
     nav: {
+      demoBiographies: 'Biografie demo',
       workspace: 'Workspace',
       dashboard: 'Dashboard',
       biography: 'Biografia',
@@ -3561,7 +3576,7 @@ export const translations: Record<Language, Translations> = {
         'Il testo di questa biografia è proprietà esclusiva dell\'autore, che mantiene ogni diritto di agire contro qualsiasi uso non autorizzato, incluso l\'uso per addestramento di sistemi di IA.',
       contentRightsNoticeParagraph2:
         'Biography Library vieta l\'uso dei contenuti ospitati sui propri server per text mining, addestramento IA o machine learning, ai sensi della Legge svizzera sul diritto d\'autore (LDA) e del diritto esclusivo d\'uso dell\'autore previsto dal diritto svizzero.',
-      pdfOriginalLanguage: 'PDF disponibile solo nella lingua originale ({language})',
+      pdfOriginalLanguage: 'PDF, TXT e DOCX disponibili solo nella lingua originale ({language})',
       downloadsUnavailable:
         'I download Word e testo semplice non sono disponibili per questa biografia. Puoi comunque usare il pulsante PDF sopra.',
       languageSwitcher: 'Lingua di lettura',
@@ -3573,6 +3588,12 @@ export const translations: Record<Language, Translations> = {
       languageNameIt: 'italiano',
       languageNameFr: 'francese',
       languageNameDe: 'tedesco',
+      galleryPhotos: 'Foto',
+      galleryLightboxTitle: 'Galleria foto',
+      galleryLightboxPrevious: 'Foto precedente',
+      galleryLightboxNext: 'Foto successiva',
+      galleryPhotoCounter: 'Foto {current} di {total}',
+      galleryOpenPhoto: 'Apri foto: {caption}',
     },
     footer: {
       hostedInSwitzerland: 'Biography Library - Ospitato in Svizzera',
@@ -4481,6 +4502,7 @@ export const translations: Record<Language, Translations> = {
       signOut: 'Se d\u00e9connecter',
     },
     nav: {
+      demoBiographies: 'Biographies démo',
       workspace: 'Workspace',
       dashboard: 'Tableau de bord',
       biography: 'Biographie',
@@ -5058,7 +5080,7 @@ export const translations: Record<Language, Translations> = {
         'Le texte de cette biographie est la propriété exclusive de l\'auteur, qui conserve tout droit d\'agir contre toute utilisation non autorisée, y compris pour l\'entraînement de systèmes d\'intelligence artificielle.',
       contentRightsNoticeParagraph2:
         'Biography Library interdit l\'utilisation des contenus hébergés sur ses serveurs pour le text mining, l\'entraînement IA ou le machine learning, conformément à la loi suisse sur le droit d\'auteur (LDA) et au droit exclusif d\'usage de l\'auteur prévu par le droit suisse.',
-      pdfOriginalLanguage: 'PDF disponible uniquement dans la langue originale ({language})',
+      pdfOriginalLanguage: 'PDF, TXT et DOCX disponibles uniquement dans la langue originale ({language})',
       downloadsUnavailable:
         'Les téléchargements Word et texte brut ne sont pas disponibles pour cette biographie. Vous pouvez toujours utiliser le bouton PDF ci-dessus.',
       languageSwitcher: 'Langue de lecture',
@@ -5070,6 +5092,12 @@ export const translations: Record<Language, Translations> = {
       languageNameIt: 'italien',
       languageNameFr: 'français',
       languageNameDe: 'allemand',
+      galleryPhotos: 'Photos',
+      galleryLightboxTitle: 'Galerie photos',
+      galleryLightboxPrevious: 'Photo précédente',
+      galleryLightboxNext: 'Photo suivante',
+      galleryPhotoCounter: 'Photo {current} sur {total}',
+      galleryOpenPhoto: 'Voir la photo : {caption}',
     },
     footer: {
       hostedInSwitzerland: 'Biography Library - H\u00e9berg\u00e9 en Suisse',
@@ -5978,6 +6006,7 @@ export const translations: Record<Language, Translations> = {
       signOut: 'Abmelden',
     },
     nav: {
+      demoBiographies: 'Demo-Biografien',
       workspace: 'Workspace',
       dashboard: 'Dashboard',
       biography: 'Biografie',
@@ -6555,7 +6584,7 @@ export const translations: Record<Language, Translations> = {
         'Der Text dieser Biografie ist ausschliessliches Eigentum der Autorin oder des Autors, die oder der jedes Recht behält, gegen jede unbefugte Nutzung vorzugehen, einschliesslich der Nutzung zum Training von KI-Systemen.',
       contentRightsNoticeParagraph2:
         'Biography Library untersagt die Nutzung der auf seinen Servern gehosteten Inhalte für Text Mining, KI-Training oder Machine Learning gemäss dem schweizerischen Urheberrechtsgesetz (URG) und dem ausschliesslichen Nutzungsrecht der Autorin oder des Autors nach schweizerischem Recht.',
-      pdfOriginalLanguage: 'PDF nur in der Originalsprache verfügbar ({language})',
+      pdfOriginalLanguage: 'PDF, TXT und DOCX nur in der Originalsprache verfügbar ({language})',
       downloadsUnavailable:
         'Word- und Text-Downloads sind für diese Biografie nicht verfügbar. Sie können weiterhin die PDF-Schaltfläche oben verwenden.',
       languageSwitcher: 'Lesesprache',
@@ -6567,6 +6596,12 @@ export const translations: Record<Language, Translations> = {
       languageNameIt: 'Italienisch',
       languageNameFr: 'Französisch',
       languageNameDe: 'Deutsch',
+      galleryPhotos: 'Fotos',
+      galleryLightboxTitle: 'Fotogalerie',
+      galleryLightboxPrevious: 'Vorheriges Foto',
+      galleryLightboxNext: 'Nächstes Foto',
+      galleryPhotoCounter: 'Foto {current} von {total}',
+      galleryOpenPhoto: 'Foto anzeigen: {caption}',
     },
     footer: {
       hostedInSwitzerland: 'Biography Library - Gehostet in der Schweiz',

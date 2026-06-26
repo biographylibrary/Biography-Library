@@ -10,7 +10,7 @@ import {
   fetchDiscoverBiographies,
   type PublishedBiography,
 } from '@/lib/biographies';
-import { formatMemorialCreditLine, memorialSubjectName } from '@/lib/biography-display';
+import { formatMemorialAuthorAttribution, memorialSubjectName } from '@/lib/biography-display';
 import {
   biographyMatchesLanguageFilter,
   fetchPublishedTranslationLocales,
@@ -115,20 +115,21 @@ function BiographyCard({ bio, t, featured, translationLanguages = [] }: Biograph
   const { language } = useTranslation();
   const isMemorial = bio.biography_type === 'memorial';
   const subject = memorialSubjectName(bio.subject_name, bio.title);
-  const cardPrimary = isMemorial
+  const cardTitle = isMemorial
     ? subject || t.publicBiographies.untitled
-    : bio.author_name || t.publicBiographies.unknownAuthor;
-  const cardSecondary = isMemorial
-    ? `${t.biography.writtenBy} ${bio.author_name || t.publicBiographies.unknownAuthor}`
     : bio.title || t.publicBiographies.untitled;
+  const cardSubtitle = isMemorial
+    ? `${t.biography.writtenBy} ${bio.author_name || t.publicBiographies.unknownAuthor}`
+    : bio.author_name || t.publicBiographies.unknownAuthor;
   const graphicTitle = isMemorial
-    ? formatMemorialCreditLine(
-        subject,
+    ? subject || t.publicBiographies.untitled
+    : bio.title || t.publicBiographies.untitled;
+  const graphicAuthor = isMemorial
+    ? formatMemorialAuthorAttribution(
         bio.author_name || t.publicBiographies.unknownAuthor,
         language
       )
-    : bio.title || t.publicBiographies.untitled;
-  const graphicAuthor = isMemorial ? '' : bio.author_name || t.publicBiographies.unknownAuthor;
+    : bio.author_name || t.publicBiographies.unknownAuthor;
   const typeLabel = isMemorial
     ? t.publicBiographies.typeMemorial
     : t.publicBiographies.typeAutobiography;
@@ -180,7 +181,7 @@ function BiographyCard({ bio, t, featured, translationLanguages = [] }: Biograph
           // eslint-disable-next-line @next/next/no-img-element -- cover URLs from storage/CDN; dynamic domains
           <img
             src={cover.url!}
-            alt={cardPrimary}
+            alt={cardTitle}
             className="w-full h-full object-cover"
             loading="lazy"
           />
@@ -194,25 +195,18 @@ function BiographyCard({ bio, t, featured, translationLanguages = [] }: Biograph
       </div>
 
       <div className="flex flex-col gap-2 p-4">
-        <p className="text-sm font-semibold text-foreground truncate leading-snug group-hover:text-primary transition-colors">
-          {cardPrimary}
+        <p className="font-serif text-[1.05rem] font-normal text-foreground truncate leading-snug group-hover:text-primary transition-colors">
+          {cardTitle}
         </p>
         <p className="text-xs text-muted-foreground truncate">
-          {cardSecondary}
+          {cardSubtitle}
         </p>
         <div className="flex items-center gap-1.5 flex-wrap pt-1">
           <BiographyLanguageBadges
             originalLanguage={bio.content_language || 'en'}
             translationLanguages={translationLanguages}
           />
-          <span
-            className={cn(
-              'text-xs font-medium px-2 py-0.5 rounded-full',
-              isMemorial
-                ? 'bg-[#DDCF88]/60 text-[#6B5B1E] dark:bg-[#DDCF88]/20 dark:text-[#DDCF88]'
-                : 'bg-brand-greenLight/45 text-brand-greenDark dark:bg-brand-greenLight/15 dark:text-brand-greenLight'
-            )}
-          >
+          <span className="text-xs font-medium text-muted-foreground">
             {typeLabel}
           </span>
         </div>
@@ -237,7 +231,7 @@ function BiographySection({ title, bios, t, featured, translationMap }: SectionP
         {title}
         <span className="h-px flex-1 bg-border/60" />
       </h2>
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
         {bios.map((bio) => (
           <BiographyCard
             key={bio.id}
@@ -422,7 +416,7 @@ function PublicBiographiesPage() {
                 </Button>
               </div>
             ) : (
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                 {filtered.map((bio) => (
                   <BiographyCard
                     key={bio.id}

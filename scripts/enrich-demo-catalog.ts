@@ -28,12 +28,21 @@ for (const [key, value] of Object.entries(env)) {
   if (process.env[key] === undefined) process.env[key] = value;
 }
 
-const DEMO_SLUGS = [
+const AUTOBIO_DEMO_SLUGS = [
   'demo-mia-storia-it',
   'demo-my-story-en',
   'demo-mon-histoire-fr',
   'demo-meine-geschichte-de',
 ] as const;
+
+const MEMORIAL_DEMO_SLUGS = [
+  'demo-memoria-giovanni-it',
+  'demo-memorial-robert-en',
+  'demo-memorial-henri-fr',
+  'demo-memorial-helmut-de',
+] as const;
+
+const DEMO_SLUGS = [...AUTOBIO_DEMO_SLUGS, ...MEMORIAL_DEMO_SLUGS] as const;
 
 type DemoSlug = (typeof DEMO_SLUGS)[number];
 
@@ -100,6 +109,171 @@ const BOOK_STRUCTURE_BY_SLUG: Record<DemoSlug, BookStructureSeed> = {
     specific_credits_content:
       'Fotos: privates Müller-Archiv.\nUmschlag: Biography Library Komposit-Layout (Titelfoto).',
   },
+  'demo-memoria-giovanni-it': {
+    dedication_content: 'A mio padre Giovanni, che mi ha insegnato la pazienza e il valore delle piccole cose fatte bene.',
+    epigraph_content: 'Gli alberi forti crescono lentamente.',
+    epigraph_source: 'Proverbio ticinese',
+    preface_content:
+      '<p>Ho raccolto queste pagine per raccontare la vita di mio padre Giovanni Bianchi: falegname, padre attento e uomo di poche parole ma di gesti generosi.</p><p>Biography Library mi ha aiutato a ordinare ricordi di famiglia, fotografie e testimonianze in un libro che possiamo condividere con i nipoti.</p>',
+    epilogue_content:
+      '<p>Chiudendo questo memorial, sento di aver onorato la sua memoria. Il resto vivrà nelle nostre conversazioni e nelle mani che continuano a lavorare il legno come faceva lui.</p>',
+    acknowledgements_content:
+      '<p>Ringrazio mio fratello Luca, la zia Teresa e i vicini del laboratorio che hanno contribuito con aneddoti e fotografie d\'archivio.</p>',
+    specific_credits_content:
+      'Fotografie di famiglia: archivio Bianchi.\nCopertina: foto di copertina con modello grafico Biography Library.',
+  },
+  'demo-memorial-robert-en': {
+    dedication_content: 'For Dad — your steady hands still guide us.',
+    epigraph_content: 'A life is measured by the hearts it steadies.',
+    epigraph_source: 'Anonymous',
+    preface_content:
+      '<p>This memorial gathers the story of Robert Harper, marine engineer and devoted father, written by his daughter Sarah from family letters, photographs, and shared memories.</p><p>Biography Library gave us a respectful structure to preserve his voice for grandchildren who never met him at the harbour.</p>',
+    epilogue_content:
+      '<p>We close this book knowing Robert would have smiled at the fuss — and been quietly proud that his family chose to remember him with care.</p>',
+    acknowledgements_content:
+      '<p>Thanks to Robert\'s colleagues at the shipyard, to cousin Ellen for scanning albums, and to my brother Mark for proofreading every chapter.</p>',
+    specific_credits_content:
+      'Family photographs: Harper private archive.\nCover: Biography Library composite cover layout.',
+  },
+  'demo-memorial-henri-fr': {
+    dedication_content: 'À mon père Henri, professeur de cœur autant que de chiffres.',
+    epigraph_content: 'On n\'efface pas ceux qui nous ont appris à compter et à rêver.',
+    epigraph_source: 'Claire Lambert',
+    preface_content:
+      '<p>Ces pages racontent la vie d\'Henri Lambert, instituteur aimé de ses élèves et père attentif, rédigées par sa fille Claire à partir des souvenirs familiaux.</p><p>Biography Library nous a aidés à transformer des notes éparses en un livre mémoriel que nous pouvons transmettre.</p>',
+    epilogue_content:
+      '<p>Une biographie mémorielle n\'efface pas la peine de l\'absence : elle offre un lieu où la présence continue de se lire.</p>',
+    acknowledgements_content:
+      '<p>Merci aux anciens élèves d\'Henri, à mon frère Antoine et à ma cousine Sophie pour leurs témoignages et leurs relectures.</p>',
+    specific_credits_content:
+      'Photographies : archives familiales Lambert.\nCouverture : mise en page Biography Library (photo de couverture).',
+  },
+  'demo-memorial-helmut-de': {
+    dedication_content: 'Für meinen Vater Helmut — deine Zuverlässigkeit begleitet uns noch jeden Tag.',
+    epigraph_content: 'Wer Briefe trägt, trägt auch Geschichten von Tür zu Tür.',
+    epigraph_source: 'Thomas Schneider',
+    preface_content:
+      '<p>Diese Gedenkbiografie erzählt das Leben von Helmut Schneider, Postbote und Familienvater, zusammengetragen von seinem Sohn Thomas aus Erinnerungen, Fotos und Gesprächen mit Verwandten.</p><p>Biography Library half uns, aus vielen Einzelstücken ein lesbares Buch der Erinnerung zu formen.</p>',
+    epilogue_content:
+      '<p>Helmut wäre bescheiden über dieses Buch gewesen — und doch hätte er sich gefreut, dass seine Enkel wissen, wer er war.</p>',
+    acknowledgements_content:
+      '<p>Danke an die ehemaligen Kollegen der Post, an meine Schwester Anna und an Nachbarin Greta für ihre Erzählungen und Fotos.</p>',
+    specific_credits_content:
+      'Fotos: privates Schneider-Archiv.\nUmschlag: Biography Library Komposit-Layout (Titelfoto).',
+  },
+};
+
+const GALLERY_LAYOUTS = ['full-page', 'two-vertical', 'two-horizontal', 'three-mixed'] as const;
+
+type GallerySpec = {
+  layout: (typeof GALLERY_LAYOUTS)[number];
+  seed: string;
+  w: number;
+  h: number;
+  caption: string;
+};
+
+const GALLERY_LAYOUT_CYCLE: (typeof GALLERY_LAYOUTS)[number][] = [
+  'full-page',
+  'full-page',
+  'two-vertical',
+  'two-vertical',
+  'two-horizontal',
+  'two-horizontal',
+  'three-mixed',
+  'three-mixed',
+  'three-mixed',
+  'full-page',
+];
+
+const GALLERY_SIZE: Record<(typeof GALLERY_LAYOUTS)[number], { w: number; h: number }> = {
+  'full-page': { w: 1200, h: 900 },
+  'two-vertical': { w: 800, h: 1200 },
+  'two-horizontal': { w: 1200, h: 800 },
+  'three-mixed': { w: 900, h: 900 },
+};
+
+function buildGalleryPlan(prefix: string, captions: string[]): GallerySpec[] {
+  return captions.map((caption, i) => {
+    const layout = GALLERY_LAYOUT_CYCLE[i % GALLERY_LAYOUT_CYCLE.length];
+    const { w, h } = GALLERY_SIZE[layout];
+    return { layout, seed: `${prefix}-g${i + 1}`, w, h, caption };
+  });
+}
+
+const GALLERY_BY_SLUG: Record<DemoSlug, GallerySpec[]> = {
+  'demo-mia-storia-it': [
+    { layout: 'full-page', seed: 'demo-it-g1', w: 1200, h: 900, caption: 'Il lago di Lugano in primavera' },
+    { layout: 'full-page', seed: 'demo-it-g2', w: 1200, h: 800, caption: 'La famiglia riunita in giardino' },
+    { layout: 'two-vertical', seed: 'demo-it-g3', w: 800, h: 1200, caption: 'Lucia al mercato' },
+    { layout: 'two-horizontal', seed: 'demo-it-g4', w: 1200, h: 800, caption: 'Scuola elementare, anni Sessanta' },
+  ],
+  'demo-my-story-en': [
+    { layout: 'full-page', seed: 'demo-en-g1', w: 1200, h: 900, caption: 'St. Anne\'s Hospital courtyard' },
+    { layout: 'full-page', seed: 'demo-en-g2', w: 1200, h: 800, caption: 'Family picnic by the river' },
+    { layout: 'two-vertical', seed: 'demo-en-g3', w: 800, h: 1200, caption: 'Daniel scanning old albums' },
+    { layout: 'three-mixed', seed: 'demo-en-g4', w: 900, h: 900, caption: 'Sunday kitchen table' },
+  ],
+  'demo-mon-histoire-fr': [
+    { layout: 'full-page', seed: 'demo-fr-g1', w: 1200, h: 900, caption: 'Les quais de Lyon au crépuscule' },
+    { layout: 'full-page', seed: 'demo-fr-g2', w: 1200, h: 800, caption: 'Marché coloré en automne' },
+    { layout: 'two-vertical', seed: 'demo-fr-g3', w: 800, h: 1200, caption: 'Antoine et Sophie, enfants' },
+    { layout: 'two-horizontal', seed: 'demo-fr-g4', w: 1200, h: 800, caption: 'Bibliothèque municipale' },
+  ],
+  'demo-meine-geschichte-de': [
+    { layout: 'full-page', seed: 'demo-de-g1', w: 1200, h: 900, caption: 'Das Dorf im Frühling' },
+    { layout: 'full-page', seed: 'demo-de-g2', w: 1200, h: 800, caption: 'Werkstatt mit meinem Vater' },
+    { layout: 'two-vertical', seed: 'demo-de-g3', w: 800, h: 1200, caption: 'Anna beim Digitalisieren der Fotos' },
+    { layout: 'three-mixed', seed: 'demo-de-g4', w: 900, h: 900, caption: 'Familienfest im Garten' },
+  ],
+  'demo-memoria-giovanni-it': buildGalleryPlan('demo-mem-it', [
+    'Giovanni da giovane in bottega',
+    'Il laboratorio di legno a Lugano',
+    'Maria bambina con il padre',
+    'Giovanni al lago di Lugano',
+    'Gli attrezzi del falegname',
+    'Festa di paese in estate',
+    'Giovanni e Lucia al matrimonio',
+    'La panchina restaurata per il comune',
+    'Ultima foto in giardino',
+    'Le mani che lavorano il legno',
+  ]),
+  'demo-memorial-robert-en': buildGalleryPlan('demo-mem-en', [
+    'Robert at the shipyard, early career',
+    'Harbour at dawn',
+    'Sarah as a child with her father',
+    'Robert repairing an engine',
+    'Family picnic by the sea',
+    'Robert and Margaret on their wedding day',
+    'Tools in the garage',
+    'Christmas at the Harper home',
+    'Robert with his grandchildren',
+    'Sea glass collected on the shore',
+  ]),
+  'demo-memorial-henri-fr': buildGalleryPlan('demo-mem-fr', [
+    'Henri enfant devant la boulangerie',
+    'Salle de classe à Lyon',
+    'Claire petite avec son père',
+    'Henri corrigeant des copies',
+    'Promenade sur les quais',
+    'Henri et Marie le jour du mariage',
+    'Bibliothèque municipale',
+    'Repas de famille à Noël',
+    'Henri au jardin',
+    'Carnets de cours annotés',
+  ]),
+  'demo-memorial-helmut-de': buildGalleryPlan('demo-mem-de', [
+    'Helmut als Junge im Dorf',
+    'Postauto auf der Route',
+    'Thomas klein mit seinem Vater',
+    'Helmut im Winterdienst',
+    'Familienfest im Garten',
+    'Helmut und Elisabeth bei der Hochzeit',
+    'Briefkasten an der Haustür',
+    'Weihnachten mit den Enkeln',
+    'Helmut auf der Dorfstraße',
+    'Sammlung von Steinen und Federn',
+  ]),
 };
 
 function picsum(seed: string, w: number, h: number) {
@@ -153,6 +327,50 @@ async function switchToCompositeCover(
   if (insErr) throw new Error(`Cover media insert: ${insErr.message}`);
 }
 
+async function seedGalleryPhotos(
+  supabase: SupabaseClient,
+  userId: string,
+  biographyId: string,
+  slug: DemoSlug,
+) {
+  await supabase
+    .from('biography_media')
+    .delete()
+    .eq('biography_id', biographyId)
+    .in('layout', [...GALLERY_LAYOUTS]);
+
+  const plan = GALLERY_BY_SLUG[slug];
+  let displayOrder = 1;
+  for (const spec of plan) {
+    const url = picsum(spec.seed, spec.w, spec.h);
+    const { buf, contentType } = await downloadImage(url);
+    const ext = contentType.includes('png') ? 'png' : 'jpg';
+    const fileName = `demo-gallery-${spec.seed}.${ext}`;
+    const storagePath = `${userId}/${biographyId}/${fileName}`;
+
+    const { error: upErr } = await supabase.storage.from('biography-photos').upload(storagePath, buf, {
+      contentType,
+      cacheControl: '3600',
+      upsert: true,
+    });
+    if (upErr) throw new Error(`Gallery upload ${spec.seed}: ${upErr.message}`);
+
+    const { data: urlData } = supabase.storage.from('biography-photos').getPublicUrl(storagePath);
+
+    const { error: insErr } = await supabase.from('biography_media').insert({
+      biography_id: biographyId,
+      user_id: userId,
+      file_url: urlData.publicUrl,
+      file_name: fileName,
+      caption: spec.caption,
+      layout: spec.layout,
+      display_order: displayOrder,
+    });
+    if (insErr) throw new Error(`Gallery media insert ${spec.seed}: ${insErr.message}`);
+    displayOrder += 1;
+  }
+}
+
 async function upsertBookStructure(
   supabase: SupabaseClient,
   biographyId: string,
@@ -201,7 +419,7 @@ async function main() {
   }
 
   const supabase = createClient(url, key, { auth: { persistSession: false } });
-  console.log('Enriching demo catalogue (cover + book structure + PDF)…\n');
+  console.log('Enriching demo catalogue (8 biographies: cover, gallery, exports)…\n');
 
   for (const slug of DEMO_SLUGS) {
     process.stdout.write(`${slug}… `);
@@ -220,6 +438,7 @@ async function main() {
 
     const coverSeed = slug.replace('demo-', '').replace(/-/g, '_');
     await switchToCompositeCover(supabase, bio.user_id, bio.id, coverSeed);
+    await seedGalleryPhotos(supabase, bio.user_id, bio.id, slug);
     await upsertBookStructure(supabase, bio.id, bio.user_id, BOOK_STRUCTURE_BY_SLUG[slug]);
 
     const lang = (bio.content_language as string) || 'en';
@@ -246,7 +465,7 @@ async function main() {
     console.log(`ok\n  PDF: ${finalPdfUrl}`);
   }
 
-  console.log('\nDone. Demo biographies now have BL composite covers, book structure, and downloadable PDFs.');
+  console.log('\nDone. Demo catalogue: 4 autobiographies + 4 memorials with covers, 10 photos (memorial), exports.');
 }
 
 main().catch((e) => {
