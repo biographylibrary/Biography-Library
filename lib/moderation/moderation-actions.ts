@@ -1,5 +1,4 @@
 import { supabase } from '@/lib/supabase';
-import { createNotification } from '@/lib/notifications-service';
 import { ModerationDecision, ModeratorNotes } from './types';
 
 export type BiographyDecisionPatch = {
@@ -10,21 +9,42 @@ export type BiographyDecisionPatch = {
   frozen_reason?: string | null;
 };
 
-export async function takeOwnership(reportId: string, moderatorId: string): Promise<{ error: string | null }> {
-  const now = new Date().toISOString();
-  const { error } = await supabase
-    .from('moderation_reports')
-    .update({
-      status: 'in_review',
-      assigned_moderator_id: moderatorId,
-      assigned_to: moderatorId,
-      assigned_at: now,
-      reviewed_by: moderatorId,
-      reviewed_at: now,
-    })
-    .eq('id', reportId);
+type ModerationApiPayload = {
+  error?: string | null;
+  conflict?: boolean;
+  claimed?: boolean;
+  claimedByName?: string | null;
+};
 
-  return { error: error?.message ?? null };
+async function moderationApiPost(body: Record<string, unknown>): Promise<{
+  ok: boolean;
+  payload: ModerationApiPayload;
+}> {
+  const { data: { session } } = await supabase.auth.getSession();
+  const token = session?.access_token;
+  if (!token) {
+    return { ok: false, payload: { error: 'Not authenticated' } };
+  }
+
+  const res = await fetch('/api/admin/moderation/action', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify(body),
+  });
+
+  const payload = (await res.json().catch(() => ({}))) as ModerationApiPayload;
+  if (!res.ok && !payload.error) {
+    payload.error = res.status === 403 ? 'Forbidden' : 'Request failed';
+  }
+  return { ok: res.ok, payload };
+}
+
+export async function takeOwnership(reportId: string, _moderatorId: string): Promise<{ error: string | null }> {
+  const { payload } = await moderationApiPost({ action: 'take_ownership', reportId });
+  return { error: payload.error ?? null };
 }
 
 export type ClaimResult =
@@ -33,57 +53,19 @@ export type ClaimResult =
   | { claimed: false; claimedByName: null; error: string };
 
 export async function claimReportReview(reportId: string, userId: string): Promise<ClaimResult> {
-  const { data, error } = await supabase
-    .from('moderation_reports')
-    .update({ reviewed_by: userId, reviewed_at: new Date().toISOString() })
-    .eq('id', reportId)
-    .or(`reviewed_by.is.null,reviewed_by.eq.${userId}`)
-    .select('id')
-    .maybeSingle();
-
-  if (error) return { claimed: false, claimedByName: null, error: error.message };
-  if (data) return { claimed: true, error: null };
-
-  const { data: existing } = await supabase
-    .from('moderation_reports')
-    .select('reviewed_by')
-    .eq('id', reportId)
-    .maybeSingle();
-
-  const reviewerId = existing?.reviewed_by ?? null;
-  let claimedByName: string | null = null;
-  if (reviewerId) {
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('name')
-      .eq('id', reviewerId)
-      .maybeSingle();
-    claimedByName = profile?.name ?? null;
-  }
-
-  return { claimed: false, claimedByName, error: null };
+  const { ok, payload } = await moderationApiPost({ action: 'claim_review', reportId });
+  if (payload.error) return { claimed: false, claimedByName: null, error: payload.error };
+  if (!ok) return { claimed: false, claimedByName: null, error: 'Request failed' };
+  if (payload.claimed) return { claimed: true, error: null };
+  return { claimed: false, claimedByName: payload.claimedByName ?? null, error: null };
 }
 
 export async function freezeBiography(
   biographyId: string,
   reason = 'moderation_report',
 ): Promise<{ error: string | null }> {
-  const now = new Date().toISOString();
-  const { error } = await supabase
-    .from('biographies')
-    .update({
-      is_frozen: true,
-      frozen_at: now,
-      frozen_reason: reason,
-    })
-    .eq('id', biographyId);
-
-  return { error: error?.message ?? null };
-}
-
-/** Match reports assigned via assigned_moderator_id or legacy assigned_to only. */
-function reportAssignedToModeratorFilter(moderatorId: string) {
-  return `assigned_moderator_id.eq.${moderatorId},and(assigned_moderator_id.is.null,assigned_to.eq.${moderatorId})`;
+  const { payload } = await moderationApiPost({ action: 'freeze', biographyId, reason });
+  return { error: payload.error ?? null };
 }
 
 export async function submitDecision(
@@ -93,55 +75,22 @@ export async function submitDecision(
   decision: ModerationDecision,
   bioPatch: BiographyDecisionPatch | null,
   notificationMessage: string,
-  moderatorId: string,
+  _moderatorId: string,
 ): Promise<{ error: string | null; conflict: boolean }> {
-  const claim = await claimReportReview(reportId, moderatorId);
-  if (!claim.claimed && claim.error === null) {
-    return { error: null, conflict: true };
-  }
-  if (claim.error) return { error: claim.error, conflict: false };
+  const { payload } = await moderationApiPost({
+    action: 'decide',
+    reportId,
+    biographyId,
+    authorId,
+    decision,
+    bioPatch,
+    notificationMessage,
+  });
 
-  // Backfill assigned_moderator_id when only assigned_to was set (legacy rows).
-  await supabase
-    .from('moderation_reports')
-    .update({ assigned_moderator_id: moderatorId })
-    .eq('id', reportId)
-    .is('assigned_moderator_id', null)
-    .eq('assigned_to', moderatorId);
-
-  const { data: updated, error: reportError } = await supabase
-    .from('moderation_reports')
-    .update({
-      status: 'decided',
-      decision,
-      decided_by: moderatorId,
-      decided_at: new Date().toISOString(),
-      reviewed_by: null,
-      reviewed_at: null,
-    })
-    .eq('id', reportId)
-    .or(reportAssignedToModeratorFilter(moderatorId))
-    .in('status', ['in_review', 'assigned'])
-    .select('id')
-    .maybeSingle();
-
-  if (reportError) return { error: reportError.message, conflict: false };
-  if (!updated) return { error: null, conflict: true };
-
-  if (bioPatch && Object.keys(bioPatch).length > 0) {
-    const { error: bioError } = await supabase
-      .from('biographies')
-      .update(bioPatch)
-      .eq('id', biographyId);
-
-    if (bioError) return { error: bioError.message, conflict: false };
-  }
-
-  if (notificationMessage.trim()) {
-    await createNotification(authorId, notificationMessage);
-  }
-
-  return { error: null, conflict: false };
+  return {
+    error: payload.error ?? null,
+    conflict: payload.conflict === true,
+  };
 }
 
 export async function saveModeratorNotes(reportId: string, notes: string): Promise<{ error: string | null }> {

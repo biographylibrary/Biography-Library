@@ -100,10 +100,14 @@ export function ModerationDetailPanel({ report, onClose, onRefresh }: Moderation
   const moderatorId = report.assigned_moderator_id ?? report.assigned_to;
   const isAssignedToMe = moderatorId === user?.id;
   const isUnassigned = report.status === 'unassigned';
+  const isDecided = report.status === 'decided';
   const needsTakeOwnership =
     isUnassigned || (report.status === 'assigned' && isAssignedToMe);
-  const canAct = report.status === 'in_review' && isAssignedToMe && !lockWarning;
-  const isDecided = report.status === 'decided';
+  const canAct =
+    !isDecided &&
+    !lockWarning &&
+    (isUnassigned ||
+      (isAssignedToMe && (report.status === 'in_review' || report.status === 'assigned')));
 
   const flaggedPassages: FlaggedPassage[] = Array.isArray(report.ai_analysis?.flagged_passages)
     ? report.ai_analysis.flagged_passages
