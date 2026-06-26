@@ -81,6 +81,11 @@ export async function freezeBiography(
   return { error: error?.message ?? null };
 }
 
+/** Match reports assigned via assigned_moderator_id or legacy assigned_to only. */
+function reportAssignedToModeratorFilter(moderatorId: string) {
+  return `assigned_moderator_id.eq.${moderatorId},and(assigned_moderator_id.is.null,assigned_to.eq.${moderatorId})`;
+}
+
 export async function submitDecision(
   reportId: string,
   biographyId: string,
@@ -96,6 +101,14 @@ export async function submitDecision(
   }
   if (claim.error) return { error: claim.error, conflict: false };
 
+  // Backfill assigned_moderator_id when only assigned_to was set (legacy rows).
+  await supabase
+    .from('moderation_reports')
+    .update({ assigned_moderator_id: moderatorId })
+    .eq('id', reportId)
+    .is('assigned_moderator_id', null)
+    .eq('assigned_to', moderatorId);
+
   const { data: updated, error: reportError } = await supabase
     .from('moderation_reports')
     .update({
@@ -107,7 +120,7 @@ export async function submitDecision(
       reviewed_at: null,
     })
     .eq('id', reportId)
-    .eq('assigned_moderator_id', moderatorId)
+    .or(reportAssignedToModeratorFilter(moderatorId))
     .in('status', ['in_review', 'assigned'])
     .select('id')
     .maybeSingle();
