@@ -1012,6 +1012,17 @@ export interface Translations {
     reportLockedByOther: string;
     reportLockedByOtherFallback: string;
     moderationConflictError: string;
+    moderationActionError: string;
+    moderationReaderReportHint: string;
+    dismissReportKeepPublished: string;
+    confirmDismissReport: string;
+    confirmDismissReportDetail: string;
+    notifyReportDismissed: string;
+    freezeAndNotifyAuthor: string;
+    confirmFreezeAndNotify: string;
+    confirmFreezeAndNotifyDetail: string;
+    notifyFrozenFromReport: string;
+    moderationFreezeWhileReviewingDetail: string;
     takeOwnership: string;
     takingOwnership: string;
     approveAndPublish: string;
@@ -1259,6 +1270,7 @@ export interface Translations {
     bioNotifyRestored: string;
     bioActionSuccess: string;
     bioActionError: string;
+    bioActionChapterCooldownError: string;
     bioActionFreeze: string;
     bioActionUnfreeze: string;
     bioActionFreezeConfirm: string;
@@ -2503,6 +2515,17 @@ export const translations: Record<Language, Translations> = {
       reportLockedByOther: 'This report is being reviewed by {name}.',
       reportLockedByOtherFallback: 'another reviewer',
       moderationConflictError: 'Another reviewer submitted a decision while you were reviewing. Please reload.',
+      moderationActionError: 'Could not complete moderation action.',
+      moderationReaderReportHint: 'Reader reports do not unpublish the biography. It stays visible until you freeze it or remove it.',
+      dismissReportKeepPublished: 'Dismiss report (keep published)',
+      confirmDismissReport: 'Dismiss this report?',
+      confirmDismissReportDetail: 'The biography stays published. The author will not be notified.',
+      notifyReportDismissed: 'A reader report on your biography was reviewed and dismissed.',
+      freezeAndNotifyAuthor: 'Freeze and notify author',
+      confirmFreezeAndNotify: 'Freeze and notify the author?',
+      confirmFreezeAndNotifyDetail: 'The biography stays published but becomes read-only for the author. Your message will be sent.',
+      notifyFrozenFromReport: 'Your biography was frozen following a reader report. Please check your notifications.',
+      moderationFreezeWhileReviewingDetail: 'The biography becomes read-only for the author while you continue reviewing the report.',
       takeOwnership: 'Take ownership',
       takingOwnership: 'Taking ownership…',
       approveAndPublish: 'Approve & publish',
@@ -2753,6 +2776,7 @@ export const translations: Record<Language, Translations> = {
       bioNotifyRestored: 'Your biography has been restored. You can review and republish it.',
       bioActionSuccess: 'Action completed successfully.',
       bioActionError: 'Failed to complete action.',
+      bioActionChapterCooldownError: 'Cannot publish yet: the yearly chapter cooldown between publications is still active.',
       bioActionFreeze: 'Freeze biography',
       bioActionUnfreeze: 'Unfreeze biography',
       bioActionFreezeConfirm: 'Freeze this biography?',
@@ -4000,6 +4024,17 @@ export const translations: Record<Language, Translations> = {
       reportLockedByOther: 'Questa segnalazione è in revisione da {name}.',
       reportLockedByOtherFallback: 'un altro revisore',
       moderationConflictError: 'Un altro revisore ha inviato una decisione mentre eri in revisione. Ricarica la pagina.',
+      moderationActionError: 'Impossibile completare l\'azione di moderazione.',
+      moderationReaderReportHint: 'Le segnalazioni dei lettori non ritirano la biografia dalla pubblicazione. Resta visibile finché non la congeli o la rimuovi.',
+      dismissReportKeepPublished: 'Archivia segnalazione (resta pubblicata)',
+      confirmDismissReport: 'Archiviare questa segnalazione?',
+      confirmDismissReportDetail: 'La biografia resta pubblicata. L\'autore non riceverà notifiche.',
+      notifyReportDismissed: 'Una segnalazione sulla tua biografia è stata esaminata e archiviata.',
+      freezeAndNotifyAuthor: 'Congela e notifica autore',
+      confirmFreezeAndNotify: 'Congelare e notificare l\'autore?',
+      confirmFreezeAndNotifyDetail: 'La biografia resta pubblicata ma diventa di sola lettura per l\'autore. Verrà inviato il tuo messaggio.',
+      notifyFrozenFromReport: 'La tua biografia è stata congelata in seguito a una segnalazione. Controlla le notifiche.',
+      moderationFreezeWhileReviewingDetail: 'La biografia diventa di sola lettura per l\'autore mentre continui a esaminare la segnalazione.',
       takeOwnership: 'Prendi in carico',
       takingOwnership: 'Prendendo in carico…',
       approveAndPublish: 'Approva e pubblica',
@@ -4250,6 +4285,7 @@ export const translations: Record<Language, Translations> = {
       bioNotifyRestored: 'La tua biografia è stata ripristinata. Puoi rivederla e ripubblicarla.',
       bioActionSuccess: 'Azione completata con successo.',
       bioActionError: 'Impossibile completare l\'azione.',
+      bioActionChapterCooldownError: 'Impossibile pubblicare: è ancora attivo il periodo di attesa annuale tra capitoli.',
       bioActionFreeze: 'Congela biografia',
       bioActionUnfreeze: 'Scongela biografia',
       bioActionFreezeConfirm: 'Congelare questa biografia?',
@@ -5497,6 +5533,17 @@ export const translations: Record<Language, Translations> = {
       reportLockedByOther: 'Ce signalement est en cours de révision par {name}.',
       reportLockedByOtherFallback: 'un autre modérateur',
       moderationConflictError: 'Un autre modérateur a soumis une décision pendant votre révision. Veuillez recharger.',
+      moderationActionError: 'Impossible de terminer l\'action de modération.',
+      moderationReaderReportHint: 'Les signalements lecteurs ne dépublient pas la biographie. Elle reste visible jusqu\'à ce que vous la geliez ou la supprimiez.',
+      dismissReportKeepPublished: 'Classer le signalement (rester publiée)',
+      confirmDismissReport: 'Classer ce signalement ?',
+      confirmDismissReportDetail: 'La biographie reste publiée. L\'auteur ne sera pas notifié.',
+      notifyReportDismissed: 'Un signalement sur votre biographie a été examiné et classé.',
+      freezeAndNotifyAuthor: 'Geler et notifier l\'auteur',
+      confirmFreezeAndNotify: 'Geler et notifier l\'auteur ?',
+      confirmFreezeAndNotifyDetail: 'La biographie reste publiée mais devient en lecture seule pour l\'auteur. Votre message sera envoyé.',
+      notifyFrozenFromReport: 'Votre biographie a été gelée suite à un signalement. Consultez vos notifications.',
+      moderationFreezeWhileReviewingDetail: 'La biographie devient en lecture seule pour l\'auteur pendant que vous examinez le signalement.',
       takeOwnership: 'Prendre en charge',
       takingOwnership: 'Prise en charge…',
       approveAndPublish: 'Approuver et publier',
@@ -5747,6 +5794,7 @@ export const translations: Record<Language, Translations> = {
       bioNotifyRestored: 'Votre biographie a été restaurée. Vous pouvez la réviser et la republier.',
       bioActionSuccess: 'Action effectuée avec succès.',
       bioActionError: 'Impossible d\'effectuer l\'action.',
+      bioActionChapterCooldownError: 'Publication impossible : le délai annuel entre chapitres est encore actif.',
       bioActionFreeze: 'Geler la biographie',
       bioActionUnfreeze: 'Dégeler la biographie',
       bioActionFreezeConfirm: 'Geler cette biographie ?',
@@ -6994,6 +7042,17 @@ export const translations: Record<Language, Translations> = {
       reportLockedByOther: 'Diese Meldung wird von {name} bearbeitet.',
       reportLockedByOtherFallback: 'einem anderen Moderator',
       moderationConflictError: 'Ein anderer Moderator hat während Ihrer Prüfung eine Entscheidung abgegeben. Bitte laden Sie die Seite neu.',
+      moderationActionError: 'Moderationsaktion konnte nicht abgeschlossen werden.',
+      moderationReaderReportHint: 'Lesermeldungen depublizieren die Biografie nicht. Sie bleibt sichtbar, bis Sie sie einfrieren oder entfernen.',
+      dismissReportKeepPublished: 'Meldung abweisen (veröffentlicht lassen)',
+      confirmDismissReport: 'Diese Meldung abweisen?',
+      confirmDismissReportDetail: 'Die Biografie bleibt veröffentlicht. Der Autor wird nicht benachrichtigt.',
+      notifyReportDismissed: 'Eine Lesermeldung zu Ihrer Biografie wurde geprüft und abgewiesen.',
+      freezeAndNotifyAuthor: 'Einfrieren und Autor benachrichtigen',
+      confirmFreezeAndNotify: 'Einfrieren und Autor benachrichtigen?',
+      confirmFreezeAndNotifyDetail: 'Die Biografie bleibt veröffentlicht, wird für den Autor aber schreibgeschützt. Ihre Nachricht wird gesendet.',
+      notifyFrozenFromReport: 'Ihre Biografie wurde nach einer Lesermeldung eingefroren. Bitte prüfen Sie Ihre Benachrichtigungen.',
+      moderationFreezeWhileReviewingDetail: 'Die Biografie wird für den Autor schreibgeschützt, während Sie die Meldung weiter prüfen.',
       takeOwnership: 'Übernehmen',
       takingOwnership: 'Wird übernommen…',
       approveAndPublish: 'Genehmigen und veröffentlichen',
@@ -7244,6 +7303,7 @@ export const translations: Record<Language, Translations> = {
       bioNotifyRestored: 'Ihre Biografie wurde wiederhergestellt. Sie können sie überprüfen und erneut veröffentlichen.',
       bioActionSuccess: 'Aktion erfolgreich abgeschlossen.',
       bioActionError: 'Aktion konnte nicht abgeschlossen werden.',
+      bioActionChapterCooldownError: 'Veröffentlichung nicht möglich: Die jährliche Kapitel-Wartezeit ist noch aktiv.',
       bioActionFreeze: 'Biografie einfrieren',
       bioActionUnfreeze: 'Biografie auftauen',
       bioActionFreezeConfirm: 'Diese Biografie einfrieren?',

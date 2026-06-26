@@ -242,8 +242,15 @@ export function BiographyDetailPanel({ biography, onClose, onRefresh }: Biograph
 
       toast({ title: t.admin.bioActionSuccess });
       onRefresh();
-    } catch {
-      toast({ title: t.admin.bioActionError, variant: 'destructive' });
+    } catch (err: unknown) {
+      const msg =
+        err && typeof err === 'object' && 'message' in err
+          ? String((err as { message: string }).message)
+          : '';
+      const title = msg.includes('chapter_cooldown_active')
+        ? t.admin.bioActionChapterCooldownError
+        : t.admin.bioActionError;
+      toast({ title, description: msg || undefined, variant: 'destructive' });
     } finally {
       setSaving(false);
       setConfirmAction(null);
