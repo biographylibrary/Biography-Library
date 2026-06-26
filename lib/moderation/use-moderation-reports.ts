@@ -77,25 +77,30 @@ export function useModerationReports(filters: ModerationFilters): UseModerationR
         }
 
         const authorIds = Array.from(new Set((data ?? []).map((r: any) => r.biographies?.user_id).filter(Boolean)));
+        const reporterIds = Array.from(new Set((data ?? []).map((r: any) => r.reporter_id).filter(Boolean)));
         const reviewerIds = Array.from(new Set((data ?? []).map((r: any) => r.reviewed_by).filter(Boolean)));
-        const profileIds = Array.from(new Set([...authorIds, ...reviewerIds]));
-        let profileMap: Record<string, string> = {};
+        const profileIds = Array.from(new Set([...authorIds, ...reviewerIds, ...reporterIds]));
+        let profileMap: Record<string, { name: string | null; email: string | null }> = {};
         if (profileIds.length > 0) {
           const { data: profiles } = await supabase
             .from('profiles')
-            .select('id, name')
+            .select('id, name, email')
             .in('id', profileIds);
           for (const p of profiles ?? []) {
-            profileMap[p.id] = p.name;
+            profileMap[p.id] = { name: p.name ?? null, email: p.email ?? null };
           }
         }
-        const authorMap = profileMap;
+        const authorMap = Object.fromEntries(
+          Object.entries(profileMap).map(([id, p]) => [id, p.name ?? ''])
+        );
 
         const mapped: ModerationReport[] = (data ?? []).map((row: any) => ({
           id: row.id,
           biography_id: row.biography_id,
           reporter_id: row.reporter_id,
-          reporter_email: null,
+          reporter_email: row.reporter_id
+            ? (profileMap[row.reporter_id]?.email ?? profileMap[row.reporter_id]?.name ?? null)
+            : null,
           report_type: row.report_type,
           description: row.description,
           status: row.status,
@@ -111,7 +116,7 @@ export function useModerationReports(filters: ModerationFilters): UseModerationR
           decided_at: row.decided_at,
           reviewed_by: row.reviewed_by ?? null,
           reviewed_at: row.reviewed_at ?? null,
-          reviewed_by_name: row.reviewed_by ? (profileMap[row.reviewed_by] ?? null) : null,
+          reviewed_by_name: row.reviewed_by ? (authorMap[row.reviewed_by] ?? null) : null,
           created_at: row.created_at,
           updated_at: row.updated_at,
           biography_title: row.biographies?.title ?? null,

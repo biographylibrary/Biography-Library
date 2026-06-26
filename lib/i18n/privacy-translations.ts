@@ -277,8 +277,8 @@ export const privacyTranslations: Record<Language, PrivacyTranslations> = {
     section4Deceased: '4.2 Biographies of Deceased Persons',
     section4DeceasedList: [
       'Person already deceased',
-      'Mandatory review period: 30 days (biography visible only to you)',
-      'After 30 days becomes public (unless reported)'
+      'Published according to your chosen visibility (private, link-only, or public)',
+      'Anyone may report concerns; our moderation team reviews reports'
     ],
     section4Prohibited: 'WHAT YOU CANNOT DO:',
     section4ProhibitedList: [
@@ -385,9 +385,9 @@ export const privacyTranslations: Record<Language, PrivacyTranslations> = {
       ['Privacy Level', 'Who Can Access'],
       ['Private', 'Only you'],
       ['Family', 'You + family members you invite'],
-      ['Public', 'Everyone (after 30-day review period for deceased)']
+      ['Public', 'Everyone (when visibility is set to public)']
     ],
-    section9Note: 'Note: Biographies of deceased become public after 30 days, unless reported.',
+    section9Note: 'Note: Memorial biographies follow the same visibility rules as autobiographies. Reports are reviewed by our moderation team.',
 
     section10Title: '10. Your Rights',
     section10Access: '10.1 Right of Access',
@@ -397,7 +397,7 @@ export const privacyTranslations: Record<Language, PrivacyTranslations> = {
     section10Deletion: '10.3 Right to Deletion',
     section10DeletionAutobiography: 'For autobiographies: You can completely delete your biography at any time',
     section10DeletionDeceased: [
-      'You can delete if not yet public (within 30 days)',
+      'You can delete your memorial biography while it is not publicly visible',
       'If already public, we will evaluate historical interest',
       'Retention for legal obligations if necessary'
     ],
@@ -682,8 +682,8 @@ export const privacyTranslations: Record<Language, PrivacyTranslations> = {
     section4Deceased: '4.2 Biografie di Persone Defunte',
     section4DeceasedList: [
       'Persona già deceduta',
-      'Periodo di revisione obbligatorio: 30 giorni (biografia visibile solo a te)',
-      'Dopo 30 giorni diventa pubblica (salvo segnalazioni)'
+      'Pubblicata secondo la visibilità scelta (privata, solo link o pubblica)',
+      'Chiunque può segnalare problemi; il team di moderazione esamina le segnalazioni'
     ],
     section4Prohibited: 'COSA NON PUOI FARE:',
     section4ProhibitedList: [
@@ -790,9 +790,9 @@ export const privacyTranslations: Record<Language, PrivacyTranslations> = {
       ['Livello di Privacy', 'Chi Può Accedere'],
       ['Privato', 'Solo tu'],
       ['Famiglia', 'Tu + membri della famiglia che inviti'],
-      ['Pubblico', 'Tutti (dopo periodo di revisione di 30 giorni per defunti)']
+      ['Pubblico', 'Tutti (quando la visibilità è impostata su pubblico)']
     ],
-    section9Note: 'Nota: Le biografie di defunti diventano pubbliche dopo 30 giorni, salvo segnalazioni.',
+    section9Note: 'Nota: Le biografie memorial seguono le stesse regole di visibilità delle autobiografie. Le segnalazioni sono esaminate dal team di moderazione.',
 
     section10Title: '10. I Tuoi Diritti',
     section10Access: '10.1 Diritto di Accesso',
@@ -802,7 +802,7 @@ export const privacyTranslations: Record<Language, PrivacyTranslations> = {
     section10Deletion: '10.3 Diritto di Cancellazione',
     section10DeletionAutobiography: 'Per autobiografie: Puoi cancellare completamente la tua biografia in qualsiasi momento',
     section10DeletionDeceased: [
-      'Puoi cancellare se non ancora pubblica (entro 30 giorni)',
+      'Puoi eliminare la biografia memorial finché non è pubblicamente visibile',
       'Se già pubblica, valuteremo l\'interesse storico',
       'Conservazione per obblighi legali se necessario'
     ],
@@ -1087,8 +1087,8 @@ export const privacyTranslations: Record<Language, PrivacyTranslations> = {
     section4Deceased: '4.2 Biographies de Personnes Décédées',
     section4DeceasedList: [
       'Personne déjà décédée',
-      'Période de révision obligatoire : 30 jours (biographie visible uniquement par vous)',
-      'Après 30 jours devient publique (sauf signalements)'
+      'Publiée selon la visibilité choisie (privée, lien uniquement ou publique)',
+      'Toute personne peut signaler un problème ; notre équipe de modération examine les signalements'
     ],
     section4Prohibited: 'CE QUE VOUS NE POUVEZ PAS FAIRE :',
     section4ProhibitedList: [
@@ -1195,9 +1195,9 @@ export const privacyTranslations: Record<Language, PrivacyTranslations> = {
       ['Niveau de Confidentialité', 'Qui Peut Accéder'],
       ['Privé', 'Seulement vous'],
       ['Famille', 'Vous + les membres de la famille que vous invitez'],
-      ['Public', 'Tout le monde (après période de révision de 30 jours pour les défunts)']
+      ['Public', 'Tout le monde (lorsque la visibilité est publique)']
     ],
-    section9Note: 'Note : Les biographies de défunts deviennent publiques après 30 jours, sauf signalements.',
+    section9Note: 'Note : Les biographies commémoratives suivent les mêmes règles de visibilité que les autobiographies. Les signalements sont examinés par notre équipe de modération.',
 
     section10Title: '10. Vos Droits',
     section10Access: '10.1 Droit d\'Accès',
@@ -1207,7 +1207,7 @@ export const privacyTranslations: Record<Language, PrivacyTranslations> = {
     section10Deletion: '10.3 Droit à l\'Effacement',
     section10DeletionAutobiography: 'Pour les autobiographies : Vous pouvez supprimer complètement votre biographie à tout moment',
     section10DeletionDeceased: [
-      'Vous pouvez supprimer si pas encore publique (dans les 30 jours)',
+      'Vous pouvez supprimer la biographie commémorative tant qu\'elle n\'est pas publiquement visible',
       'Si déjà publique, nous évaluerons l\'intérêt historique',
       'Conservation pour obligations légales si nécessaire'
     ],
@@ -1492,8 +1492,8 @@ export const privacyTranslations: Record<Language, PrivacyTranslations> = {
     section4Deceased: '4.2 Biografien Verstorbener Personen',
     section4DeceasedList: [
       'Person bereits verstorben',
-      'Obligatorische Überprüfungsfrist: 30 Tage (Biografie nur für Sie sichtbar)',
-      'Nach 30 Tagen wird sie öffentlich (sofern nicht gemeldet)'
+      'Veröffentlicht gemäß gewählter Sichtbarkeit (privat, nur Link oder öffentlich)',
+      'Jede Person kann Bedenken melden; unser Moderationsteam prüft Meldungen'
     ],
     section4Prohibited: 'WAS SIE NICHT TUN KÖNNEN:',
     section4ProhibitedList: [
@@ -1600,9 +1600,9 @@ export const privacyTranslations: Record<Language, PrivacyTranslations> = {
       ['Datenschutzstufe', 'Wer Kann Zugreifen'],
       ['Privat', 'Nur Sie'],
       ['Familie', 'Sie + eingeladene Familienmitglieder'],
-      ['Öffentlich', 'Alle (nach 30-tägiger Überprüfungsfrist für Verstorbene)']
+      ['Öffentlich', 'Alle (wenn Sichtbarkeit auf öffentlich gesetzt ist)']
     ],
-    section9Note: 'Hinweis: Biografien Verstorbener werden nach 30 Tagen öffentlich, sofern nicht gemeldet.',
+    section9Note: 'Hinweis: Gedenkbiografien folgen denselben Sichtbarkeitsregeln wie Autobiografien. Meldungen werden von unserem Moderationsteam geprüft.',
 
     section10Title: '10. Ihre Rechte',
     section10Access: '10.1 Auskunftsrecht',
@@ -1612,7 +1612,7 @@ export const privacyTranslations: Record<Language, PrivacyTranslations> = {
     section10Deletion: '10.3 Recht auf Löschung',
     section10DeletionAutobiography: 'Für Autobiografien: Sie können Ihre Biografie jederzeit vollständig löschen',
     section10DeletionDeceased: [
-      'Sie können löschen, wenn noch nicht öffentlich (innerhalb von 30 Tagen)',
+      'Sie können die Gedenkbiografie löschen, solange sie nicht öffentlich sichtbar ist',
       'Wenn bereits öffentlich, werden wir das historische Interesse bewerten',
       'Aufbewahrung bei rechtlichen Verpflichtungen falls erforderlich'
     ],

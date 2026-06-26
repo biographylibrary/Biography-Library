@@ -104,6 +104,17 @@ export function ModerationDetailPanel({ report, onClose, onRefresh }: Moderation
   const flaggedPassages: FlaggedPassage[] = Array.isArray(report.ai_analysis?.flagged_passages)
     ? report.ai_analysis.flagged_passages
     : [];
+  const isUserSubmittedReport = report.reporter_id != null;
+
+  function formatReportDate(iso: string) {
+    return new Date(iso).toLocaleString(undefined, {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+  }
 
   async function handleTakeOwnership() {
     if (!user) return;
@@ -294,12 +305,10 @@ export function ModerationDetailPanel({ report, onClose, onRefresh }: Moderation
                 </div>
               )}
 
+              {flaggedPassages.length > 0 && (
               <div className="space-y-2">
                 <p className="text-xs font-medium text-muted-foreground">{t.admin.flaggedPassages}</p>
-                {flaggedPassages.length === 0 ? (
-                  <p className="text-xs text-muted-foreground italic">{t.admin.noFlaggedPassages}</p>
-                ) : (
-                  <div className="space-y-2">
+                <div className="space-y-2">
                     {flaggedPassages.map((fp, i) => (
                       <div
                         key={i}
@@ -320,24 +329,29 @@ export function ModerationDetailPanel({ report, onClose, onRefresh }: Moderation
                         )}
                       </div>
                     ))}
-                  </div>
-                )}
+                </div>
               </div>
+              )}
 
-              {report.report_type === 'user_report' && (
+              {isUserSubmittedReport && (
                 <div className="space-y-2 rounded-lg bg-muted/40 p-3">
+                  <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                    {t.admin.userReportDetails}
+                  </p>
                   {report.reporter_email && (
                     <p className="text-xs">
                       <span className="font-medium text-muted-foreground">{t.admin.reporterEmail}:</span>{' '}
                       <span className="text-foreground">{report.reporter_email}</span>
                     </p>
                   )}
-                  {report.description && (
-                    <>
-                      <p className="text-xs font-medium text-muted-foreground">{t.admin.reporterDetails}:</p>
-                      <p className="text-xs text-foreground leading-relaxed">{report.description}</p>
-                    </>
-                  )}
+                  <p className="text-xs text-muted-foreground">
+                    <span className="font-medium">{t.admin.reportedAt}:</span>{' '}
+                    <span className="text-foreground">{formatReportDate(report.created_at)}</span>
+                  </p>
+                  <p className="text-xs font-medium text-muted-foreground">{t.admin.reporterDetails}:</p>
+                  <p className="text-xs text-foreground leading-relaxed">
+                    {report.description?.trim() ? report.description : t.admin.noReportDescription}
+                  </p>
                 </div>
               )}
             </section>

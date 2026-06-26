@@ -50,6 +50,7 @@ interface ReviewBiography {
   slug: string | null;
   updated_at: string;
   reviewed_by: string | null;
+  ai_screening_status: string | null;
   report: ModerationReport | null;
 }
 
@@ -134,7 +135,7 @@ function ReviewQueueContent() {
 
     let bioQuery = supabase
       .from('biographies')
-      .select('id, title, author_name, user_id, content_language, biography_type, slug, updated_at, reviewed_by')
+      .select('id, title, author_name, user_id, content_language, biography_type, slug, updated_at, reviewed_by, ai_screening_status')
       .eq('status', 'under_review')
       .order('updated_at', { ascending: true });
 
@@ -160,6 +161,7 @@ function ReviewQueueContent() {
       slug: b.slug ?? null,
       updated_at: b.updated_at,
       reviewed_by: b.reviewed_by ?? null,
+      ai_screening_status: b.ai_screening_status ?? null,
       report: null as ModerationReport | null,
     }));
 
@@ -169,6 +171,7 @@ function ReviewQueueContent() {
           .from('moderation_reports')
           .select('id, ai_analysis, ai_violation_level, status')
           .eq('biography_id', bio.id)
+          .is('reporter_id', null)
           .in('status', ['unassigned', 'assigned', 'in_review'])
           .order('created_at', { ascending: false })
           .limit(1)
@@ -178,7 +181,12 @@ function ReviewQueueContent() {
       })
     );
 
-    setItems(withReports);
+    setItems(
+      withReports.filter((bio) => {
+        const passages = bio.report?.ai_analysis?.flagged_passages ?? [];
+        return passages.length > 0 || bio.ai_screening_status === 'flagged';
+      })
+    );
     setLoading(false);
   }, [role, user?.id, t.admin.reviewLoadError]);
 
