@@ -1009,6 +1009,9 @@ export interface Translations {
     noReportDescription: string;
     reportedAt: string;
     noFlaggedPassages: string;
+    reportLockedByOther: string;
+    reportLockedByOtherFallback: string;
+    moderationConflictError: string;
     takeOwnership: string;
     takingOwnership: string;
     approveAndPublish: string;
@@ -2497,6 +2500,9 @@ export const translations: Record<Language, Translations> = {
       noReportDescription: 'No additional details provided.',
       reportedAt: 'Reported on',
       noFlaggedPassages: 'No flagged passages.',
+      reportLockedByOther: 'This report is being reviewed by {name}.',
+      reportLockedByOtherFallback: 'another reviewer',
+      moderationConflictError: 'Another reviewer submitted a decision while you were reviewing. Please reload.',
       takeOwnership: 'Take ownership',
       takingOwnership: 'Taking ownership…',
       approveAndPublish: 'Approve & publish',
@@ -3991,6 +3997,9 @@ export const translations: Record<Language, Translations> = {
       noReportDescription: 'Nessun dettaglio aggiuntivo.',
       reportedAt: 'Segnalata il',
       noFlaggedPassages: 'Nessun passaggio segnalato.',
+      reportLockedByOther: 'Questa segnalazione è in revisione da {name}.',
+      reportLockedByOtherFallback: 'un altro revisore',
+      moderationConflictError: 'Un altro revisore ha inviato una decisione mentre eri in revisione. Ricarica la pagina.',
       takeOwnership: 'Prendi in carico',
       takingOwnership: 'Prendendo in carico…',
       approveAndPublish: 'Approva e pubblica',
@@ -5485,6 +5494,9 @@ export const translations: Record<Language, Translations> = {
       noReportDescription: 'Aucun détail supplémentaire.',
       reportedAt: 'Signalé le',
       noFlaggedPassages: 'Aucun passage signalé.',
+      reportLockedByOther: 'Ce signalement est en cours de révision par {name}.',
+      reportLockedByOtherFallback: 'un autre modérateur',
+      moderationConflictError: 'Un autre modérateur a soumis une décision pendant votre révision. Veuillez recharger.',
       takeOwnership: 'Prendre en charge',
       takingOwnership: 'Prise en charge…',
       approveAndPublish: 'Approuver et publier',
@@ -6979,6 +6991,9 @@ export const translations: Record<Language, Translations> = {
       noReportDescription: 'Keine weiteren Angaben.',
       reportedAt: 'Gemeldet am',
       noFlaggedPassages: 'Keine markierten Passagen.',
+      reportLockedByOther: 'Diese Meldung wird von {name} bearbeitet.',
+      reportLockedByOtherFallback: 'einem anderen Moderator',
+      moderationConflictError: 'Ein anderer Moderator hat während Ihrer Prüfung eine Entscheidung abgegeben. Bitte laden Sie die Seite neu.',
       takeOwnership: 'Übernehmen',
       takingOwnership: 'Wird übernommen…',
       approveAndPublish: 'Genehmigen und veröffentlichen',
