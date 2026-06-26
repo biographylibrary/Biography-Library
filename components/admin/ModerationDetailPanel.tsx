@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { ModerationReport, FlaggedPassage } from '@/lib/moderation/types';
+import { ModerationReport, FlaggedPassage, ModerationDecision } from '@/lib/moderation/types';
 import { createNotification } from '@/lib/notifications-service';
 import { takeOwnership, claimReportReview, submitDecision, saveModeratorNotes, freezeBiography } from '@/lib/moderation/moderation-actions';
 import type { BiographyDecisionPatch } from '@/lib/moderation/moderation-actions';
@@ -127,20 +127,48 @@ export function ModerationDetailPanel({ report, onClose, onRefresh }: Moderation
   async function handleTakeOwnership() {
     if (!user) return;
     setSubmitting(true);
-    await takeOwnership(report!.id, user.id);
+    const { error } = await takeOwnership(report!.id, user.id);
     setSubmitting(false);
+    if (error) {
+      toast({ title: t.admin.moderationActionError, description: error, variant: 'destructive' });
+      return;
+    }
     onRefresh();
   }
 
   async function handleFreeze() {
     if (!user || !report) return;
     setSubmitting(true);
-    const result = await freezeBiography(report.biography_id);
+    setConflictError(false);
+
+    const freezeResult = await freezeBiography(report.biography_id);
+    if (freezeResult.error) {
+      setSubmitting(false);
+      toast({ title: t.admin.moderationActionError, description: freezeResult.error, variant: 'destructive' });
+      return;
+    }
+
+    const closeResult = await submitDecision(
+      report.id,
+      report.biography_id,
+      report.biography_author_id!,
+      'no_action',
+      null,
+      '',
+      user.id,
+    );
+
     setSubmitting(false);
     setDialog(null);
 
-    if (result.error) {
-      toast({ title: t.admin.moderationActionError, description: result.error, variant: 'destructive' });
+    if (closeResult.conflict) {
+      setConflictError(true);
+      toast({ title: t.admin.moderationConflictError, variant: 'destructive' });
+      return;
+    }
+
+    if (closeResult.error) {
+      toast({ title: t.admin.moderationActionError, description: closeResult.error, variant: 'destructive' });
       return;
     }
 
@@ -153,6 +181,7 @@ export function ModerationDetailPanel({ report, onClose, onRefresh }: Moderation
 
     toast({ title: t.admin.bioActionSuccess });
     onRefresh();
+    onClose();
   }
 
   async function handleDecision(type: DialogType) {
@@ -160,18 +189,19 @@ export function ModerationDetailPanel({ report, onClose, onRefresh }: Moderation
     setSubmitting(true);
     setConflictError(false);
 
-    let decision: 'publish' | 'publish_warning' | 'returned' | 'removed';
+    let decision: ModerationDecision;
     let bioPatch: BiographyDecisionPatch | null = null;
     let notificationMessage: string;
     const now = new Date().toISOString();
 
     switch (type) {
       case 'approve':
-        decision = 'publish';
         if (readerReportOnPublished) {
+          decision = 'no_action';
           bioPatch = null;
           notificationMessage = '';
         } else {
+          decision = 'publish';
           bioPatch = { status: 'published', published_at: now };
           notificationMessage = t.admin.notifyPublished;
         }
@@ -221,10 +251,10 @@ export function ModerationDetailPanel({ report, onClose, onRefresh }: Moderation
     );
 
     setSubmitting(false);
-    setDialog(null);
 
     if (result.conflict) {
       setConflictError(true);
+      toast({ title: t.admin.moderationConflictError, variant: 'destructive' });
       return;
     }
 
@@ -232,6 +262,8 @@ export function ModerationDetailPanel({ report, onClose, onRefresh }: Moderation
       toast({ title: t.admin.moderationActionError, description: result.error, variant: 'destructive' });
       return;
     }
+
+    setDialog(null);
 
     const templateByType: Partial<Record<NonNullable<DialogType>, EmailTemplateId>> = {
       approve: readerReportOnPublished ? undefined : 'publication_published',
