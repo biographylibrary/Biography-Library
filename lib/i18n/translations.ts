@@ -552,8 +552,6 @@ export interface Translations {
     tokenMissing: string;
     notFoundOrDenied: string;
     biographyPrivate: string;
-    reviewBannerPrefix: string;
-    reviewBannerSuffix: string;
     archivedBanner: string;
     publishedOn: string;
     reportButton: string;
@@ -664,7 +662,6 @@ export interface Translations {
     deceased: string;
     deceasedDescription: string;
     deceasedButton: string;
-    reviewPeriod: string;
     warningTitle: string;
     warningLine1: string;
     warningLine2: string;
@@ -701,10 +698,6 @@ export interface Translations {
     subtitle: string;
     reviewPeriodTitle: string;
     reviewPeriodText: string;
-    reviewPeriodBullet1: string;
-    reviewPeriodBullet2: string;
-    reviewPeriodBullet3: string;
-    reviewPeriodBullet4: string;
     checkbox1: string;
     checkbox1Helper: string;
     checkbox2: string;
@@ -1012,6 +1005,9 @@ export interface Translations {
     reporterEmail: string;
     reporterReason: string;
     reporterDetails: string;
+    userReportDetails: string;
+    noReportDescription: string;
+    reportedAt: string;
     noFlaggedPassages: string;
     takeOwnership: string;
     takingOwnership: string;
@@ -2039,8 +2035,6 @@ export const translations: Record<Language, Translations> = {
       tokenMissing: 'Access token is missing',
       notFoundOrDenied: 'Biography not found or access denied',
       biographyPrivate: 'This biography is private',
-      reviewBannerPrefix: 'This biography is in review period until',
-      reviewBannerSuffix: '.',
       archivedBanner: 'This biography has been archived.',
       publishedOn: 'Published',
       reportButton: 'Report',
@@ -2052,7 +2046,7 @@ export const translations: Record<Language, Translations> = {
       reportDescriptionPlaceholder: 'Provide any additional context...',
       reportSubmit: 'Submit report',
       reportSubmitting: 'Submitting...',
-      reportSuccess: 'Report submitted. Thank you.',
+      reportSuccess: 'Report received. Our team will review it.',
       reportError: 'Something went wrong. Please try again.',
       reportTypeLevel1: 'Harmful or illegal content',
       reportTypeLevel2: 'Hate speech or harassment',
@@ -2154,7 +2148,6 @@ export const translations: Record<Language, Translations> = {
       deceased: 'Biography of a Deceased Person',
       deceasedDescription: 'Honor the memory of a loved one who has passed away.',
       deceasedButton: 'Create Memorial',
-      reviewPeriod: '30-day review period',
       warningTitle: 'Important: You CANNOT create biographies of:',
       warningLine1: 'Living persons (other than yourself)',
       warningLine2: 'Minors (under 18 years old)',
@@ -2189,12 +2182,9 @@ export const translations: Record<Language, Translations> = {
       stepIndicator: 'Step 1 of 3: Declaration and Consent',
       title: 'Create a Biography of a Deceased Person',
       subtitle: 'Before you begin, please confirm the following:',
-      reviewPeriodTitle: '30-Day Review Period',
-      reviewPeriodText: 'Biographies of deceased persons will be publicly visible after 30 days. During this time:',
-      reviewPeriodBullet1: 'The biography is visible only to you',
-      reviewPeriodBullet2: 'You can modify it freely',
-      reviewPeriodBullet3: 'Other users can report issues if they are mentioned',
-      reviewPeriodBullet4: 'We will review for compliance with Terms of Service',
+      reviewPeriodTitle: 'Publication and reporting',
+      reviewPeriodText:
+        'Once published, your memorial biography is visible according to the visibility you choose (private, link-only, or public). Anyone who reads it may file a report; our moderation team reviews reports and may take action if needed.',
       checkbox1: 'I declare under my civil and criminal responsibility that the person I am writing about is deceased.',
       checkbox1Helper: 'False declarations can be prosecuted under Swiss Criminal Code Art. 179decies (identity fraud).',
       checkbox2: 'I confirm that the information I will publish is truthful or clearly indicated as my personal interpretation.',
@@ -2455,7 +2445,7 @@ export const translations: Record<Language, Translations> = {
       frozenBannerTitle: 'This biography has been frozen',
       frozenBannerMessage: 'This biography is read-only and cannot be edited.',
       moderationTitle: 'Moderation',
-      moderationSubtitle: 'Review and resolve flagged content reports',
+      moderationSubtitle: 'User reports and flagged content — for AI author review use Review',
       moderationUnassignedBadge: 'unassigned',
       filterStatus: 'Status',
       filterType: 'Type',
@@ -2503,6 +2493,9 @@ export const translations: Record<Language, Translations> = {
       reporterEmail: 'Reported by',
       reporterReason: 'Reason category',
       reporterDetails: 'Details',
+      userReportDetails: 'Report details',
+      noReportDescription: 'No additional details provided.',
+      reportedAt: 'Reported on',
       noFlaggedPassages: 'No flagged passages.',
       takeOwnership: 'Take ownership',
       takingOwnership: 'Taking ownership…',
@@ -2594,7 +2587,8 @@ export const translations: Record<Language, Translations> = {
       navUsers: 'Users',
       navAiStats: 'AI Stats',
       reviewPageTitle: 'Biography Review Queue',
-      reviewPageSubtitle: 'Approve or reject biographies submitted for publication.',
+      reviewPageSubtitle:
+        'Author revision queue after AI screening — does not include reader reports (see Moderation).',
       reviewColSubject: 'Subject',
       reviewColTitle: 'Title',
       reviewColAuthor: 'Author',
@@ -3535,8 +3529,6 @@ export const translations: Record<Language, Translations> = {
       tokenMissing: 'Token di accesso mancante',
       notFoundOrDenied: 'Biografia non trovata o accesso negato',
       biographyPrivate: 'Questa biografia \u00e8 privata',
-      reviewBannerPrefix: 'Questa biografia \u00e8 in periodo di revisione fino al',
-      reviewBannerSuffix: '.',
       archivedBanner: 'Questa biografia \u00e8 stata archiviata.',
       publishedOn: 'Pubblicato',
       reportButton: 'Segnala',
@@ -3548,7 +3540,7 @@ export const translations: Record<Language, Translations> = {
       reportDescriptionPlaceholder: 'Fornisci ulteriori informazioni...',
       reportSubmit: 'Invia segnalazione',
       reportSubmitting: 'Invio in corso...',
-      reportSuccess: 'Segnalazione inviata. Grazie.',
+      reportSuccess: 'Segnalazione ricevuta. Il nostro team la esaminer\u00e0.',
       reportError: 'Si \u00e8 verificato un errore. Riprova.',
       reportTypeLevel1: 'Contenuto dannoso o illegale',
       reportTypeLevel2: 'Incitamento all\u2019odio o molestie',
@@ -3650,7 +3642,6 @@ export const translations: Record<Language, Translations> = {
       deceased: 'Biografia di un famigliare scomparso',
       deceasedDescription: 'Ricorda una persona cara del tuo nucleo famigliare.',
       deceasedButton: 'Crea Memoriale',
-      reviewPeriod: 'Periodo di revisione di 30 giorni',
       warningTitle: 'Importante: NON PUOI creare biografie di:',
       warningLine1: 'Persone viventi (tranne te stesso)',
       warningLine2: 'Minori (sotto i 18 anni)',
@@ -3685,12 +3676,9 @@ export const translations: Record<Language, Translations> = {
       stepIndicator: 'Passo 1 di 3: Dichiarazione e Consenso',
       title: 'Crea una Biografia di una Persona Deceduta',
       subtitle: 'Prima di iniziare, conferma quanto segue:',
-      reviewPeriodTitle: 'Periodo di Revisione di 30 Giorni',
-      reviewPeriodText: 'Le biografie di persone decedute saranno pubblicamente visibili dopo 30 giorni. Durante questo periodo:',
-      reviewPeriodBullet1: 'La biografia è visibile solo a te',
-      reviewPeriodBullet2: 'Puoi modificarla liberamente',
-      reviewPeriodBullet3: 'Altri utenti possono segnalare problemi se sono menzionati',
-      reviewPeriodBullet4: 'Esamineremo la conformità ai Termini di Servizio',
+      reviewPeriodTitle: 'Pubblicazione e segnalazioni',
+      reviewPeriodText:
+        'Una volta pubblicata, la biografia memorial \u00e8 visibile secondo la visibilit\u00e0 che scegli (privata, solo link o pubblica). Chi la legge pu\u00f2 inviare una segnalazione; il team di moderazione la esamina e pu\u00f2 intervenire se necessario.',
       checkbox1: 'Dichiaro sotto la mia responsabilità civile e penale che la persona di cui sto scrivendo è deceduta.',
       checkbox1Helper: 'Le false dichiarazioni possono essere perseguite ai sensi del Codice Penale Svizzero Art. 179decies (frode d\'identità).',
       checkbox2: 'Confermo che le informazioni che pubblicherò sono veritiere o chiaramente indicate come mia interpretazione personale.',
@@ -3951,7 +3939,7 @@ export const translations: Record<Language, Translations> = {
       frozenBannerTitle: 'Questa biografia è stata congelata',
       frozenBannerMessage: 'Questa biografia è di sola lettura e non può essere modificata.',
       moderationTitle: 'Moderazione',
-      moderationSubtitle: 'Esamina e risolvi le segnalazioni di contenuti',
+      moderationSubtitle: 'Segnalazioni utenti e contenuti segnalati — per la revisione AI dell\u2019autore usa Revisione',
       moderationUnassignedBadge: 'non assegnate',
       filterStatus: 'Stato',
       filterType: 'Tipo',
@@ -3999,6 +3987,9 @@ export const translations: Record<Language, Translations> = {
       reporterEmail: 'Segnalato da',
       reporterReason: 'Categoria motivo',
       reporterDetails: 'Dettagli',
+      userReportDetails: 'Dettaglio segnalazione',
+      noReportDescription: 'Nessun dettaglio aggiuntivo.',
+      reportedAt: 'Segnalata il',
       noFlaggedPassages: 'Nessun passaggio segnalato.',
       takeOwnership: 'Prendi in carico',
       takingOwnership: 'Prendendo in carico…',
@@ -4090,7 +4081,8 @@ export const translations: Record<Language, Translations> = {
       navUsers: 'Utenti',
       navAiStats: 'Stat AI',
       reviewPageTitle: 'Coda Revisione Biografie',
-      reviewPageSubtitle: 'Approva o rifiuta le biografie inviate per la pubblicazione.',
+      reviewPageSubtitle:
+        'Coda revisione autore dopo screening AI — non include segnalazioni dei lettori (vedi Moderazione).',
       reviewColSubject: 'Soggetto',
       reviewColTitle: 'Titolo',
       reviewColAuthor: 'Autore',
@@ -5031,8 +5023,6 @@ export const translations: Record<Language, Translations> = {
       tokenMissing: 'Jeton d\'acc\u00e8s manquant',
       notFoundOrDenied: 'Biographie introuvable ou acc\u00e8s refus\u00e9',
       biographyPrivate: 'Cette biographie est priv\u00e9e',
-      reviewBannerPrefix: 'Cette biographie est en p\u00e9riode de r\u00e9vision jusqu\'au',
-      reviewBannerSuffix: '.',
       archivedBanner: 'Cette biographie a \u00e9t\u00e9 archiv\u00e9e.',
       publishedOn: 'Publi\u00e9',
       reportButton: 'Signaler',
@@ -5044,7 +5034,7 @@ export const translations: Record<Language, Translations> = {
       reportDescriptionPlaceholder: 'Fournissez tout contexte suppl\u00e9mentaire...',
       reportSubmit: 'Envoyer le signalement',
       reportSubmitting: 'Envoi en cours...',
-      reportSuccess: 'Signalement envoy\u00e9. Merci.',
+      reportSuccess: 'Signalement re\u00e7u. Notre \u00e9quipe l\u2019examinera.',
       reportError: 'Une erreur s\'est produite. Veuillez r\u00e9essayer.',
       reportTypeLevel1: 'Contenu nuisible ou ill\u00e9gal',
       reportTypeLevel2: 'Discours haineux ou harc\u00e8lement',
@@ -5146,7 +5136,6 @@ export const translations: Record<Language, Translations> = {
       deceased: 'Biographie d\'une Personne Décédée',
       deceasedDescription: 'Honorez la mémoire d\'un être cher qui est décédé.',
       deceasedButton: 'Créer un Mémorial',
-      reviewPeriod: 'Période de révision de 30 jours',
       warningTitle: 'Important: Vous NE POUVEZ PAS créer de biographies de:',
       warningLine1: 'Personnes vivantes (autres que vous-même)',
       warningLine2: 'Mineurs (moins de 18 ans)',
@@ -5181,12 +5170,9 @@ export const translations: Record<Language, Translations> = {
       stepIndicator: 'Étape 1 sur 3 : Déclaration et Consentement',
       title: 'Créer une Biographie d\'une Personne Décédée',
       subtitle: 'Avant de commencer, veuillez confirmer ce qui suit :',
-      reviewPeriodTitle: 'Période de Révision de 30 Jours',
-      reviewPeriodText: 'Les biographies de personnes décédées seront publiquement visibles après 30 jours. Pendant cette période :',
-      reviewPeriodBullet1: 'La biographie n\'est visible que pour vous',
-      reviewPeriodBullet2: 'Vous pouvez la modifier librement',
-      reviewPeriodBullet3: 'D\'autres utilisateurs peuvent signaler des problèmes s\'ils sont mentionnés',
-      reviewPeriodBullet4: 'Nous examinerons la conformité avec les Conditions d\'Utilisation',
+      reviewPeriodTitle: 'Publication et signalements',
+      reviewPeriodText:
+        'Une fois publi\u00e9e, la biographie comm\u00e9morative est visible selon la visibilit\u00e9 choisie (priv\u00e9e, lien uniquement ou publique). Tout lecteur peut signaler un probl\u00e8me ; notre \u00e9quipe de mod\u00e9ration examine les signalements et peut intervenir si n\u00e9cessaire.',
       checkbox1: 'Je déclare sous ma responsabilité civile et pénale que la personne dont j\'écris la biographie est décédée.',
       checkbox1Helper: 'Les fausses déclarations peuvent être poursuivies en vertu du Code pénal suisse Art. 179decies (fraude à l\'identité).',
       checkbox2: 'Je confirme que les informations que je publierai sont véridiques ou clairement indiquées comme mon interprétation personnelle.',
@@ -5447,7 +5433,7 @@ export const translations: Record<Language, Translations> = {
       frozenBannerTitle: 'Cette biographie a été gelée',
       frozenBannerMessage: 'Cette biographie est en lecture seule et ne peut pas être modifiée.',
       moderationTitle: 'Modération',
-      moderationSubtitle: 'Examiner et résoudre les signalements de contenu',
+      moderationSubtitle: 'Signalements utilisateurs et contenus signal\u00e9s — pour la r\u00e9vision IA de l\u2019auteur, voir R\u00e9vision',
       moderationUnassignedBadge: 'non assignés',
       filterStatus: 'Statut',
       filterType: 'Type',
@@ -5495,6 +5481,9 @@ export const translations: Record<Language, Translations> = {
       reporterEmail: 'Signalé par',
       reporterReason: 'Catégorie de raison',
       reporterDetails: 'Détails',
+      userReportDetails: 'Détail du signalement',
+      noReportDescription: 'Aucun détail supplémentaire.',
+      reportedAt: 'Signalé le',
       noFlaggedPassages: 'Aucun passage signalé.',
       takeOwnership: 'Prendre en charge',
       takingOwnership: 'Prise en charge…',
@@ -5586,7 +5575,8 @@ export const translations: Record<Language, Translations> = {
       navUsers: 'Utilisateurs',
       navAiStats: 'Stats IA',
       reviewPageTitle: 'File de révision des biographies',
-      reviewPageSubtitle: 'Approuvez ou refusez les biographies soumises pour publication.',
+      reviewPageSubtitle:
+        'File d\u2019attente de r\u00e9vision auteur apr\u00e8s screening IA — n\u2019inclut pas les signalements des lecteurs (voir Mod\u00e9ration).',
       reviewColSubject: 'Sujet',
       reviewColTitle: 'Titre',
       reviewColAuthor: 'Auteur',
@@ -6527,8 +6517,6 @@ export const translations: Record<Language, Translations> = {
       tokenMissing: 'Zugriffstoken fehlt',
       notFoundOrDenied: 'Biografie nicht gefunden oder Zugriff verweigert',
       biographyPrivate: 'Diese Biografie ist privat',
-      reviewBannerPrefix: 'Diese Biografie befindet sich bis zum',
-      reviewBannerSuffix: ' im Pr\u00fcfzeitraum.',
       archivedBanner: 'Diese Biografie wurde archiviert.',
       publishedOn: 'Ver\u00f6ffentlicht',
       reportButton: 'Melden',
@@ -6540,7 +6528,7 @@ export const translations: Record<Language, Translations> = {
       reportDescriptionPlaceholder: 'Weiteren Kontext angeben...',
       reportSubmit: 'Meldung absenden',
       reportSubmitting: 'Wird gesendet...',
-      reportSuccess: 'Meldung eingereicht. Vielen Dank.',
+      reportSuccess: 'Meldung erhalten. Unser Team wird sie pr\u00fcfen.',
       reportError: 'Ein Fehler ist aufgetreten. Bitte erneut versuchen.',
       reportTypeLevel1: 'Sch\u00e4dlicher oder illegaler Inhalt',
       reportTypeLevel2: 'Hassrede oder Bel\u00e4stigung',
@@ -6642,7 +6630,6 @@ export const translations: Record<Language, Translations> = {
       deceased: 'Biografie einer Verstorbenen Person',
       deceasedDescription: 'Ehren Sie das Andenken einer geliebten Person, die verstorben ist.',
       deceasedButton: 'Gedenkstätte Erstellen',
-      reviewPeriod: '30-tägige Prüfungsfrist',
       warningTitle: 'Wichtig: Sie KÖNNEN KEINE Biografien erstellen von:',
       warningLine1: 'Lebenden Personen (außer sich selbst)',
       warningLine2: 'Minderjährigen (unter 18 Jahren)',
@@ -6677,12 +6664,9 @@ export const translations: Record<Language, Translations> = {
       stepIndicator: 'Schritt 1 von 3: Erklärung und Einwilligung',
       title: 'Biografie einer Verstorbenen Person Erstellen',
       subtitle: 'Bevor Sie beginnen, bestätigen Sie bitte Folgendes:',
-      reviewPeriodTitle: '30-Tägige Prüfungsfrist',
-      reviewPeriodText: 'Biografien verstorbener Personen werden nach 30 Tagen öffentlich sichtbar. Während dieser Zeit:',
-      reviewPeriodBullet1: 'Die Biografie ist nur für Sie sichtbar',
-      reviewPeriodBullet2: 'Sie können sie frei ändern',
-      reviewPeriodBullet3: 'Andere Benutzer können Probleme melden, wenn sie erwähnt werden',
-      reviewPeriodBullet4: 'Wir prüfen die Einhaltung der Nutzungsbedingungen',
+      reviewPeriodTitle: 'Ver\u00f6ffentlichung und Meldungen',
+      reviewPeriodText:
+        'Nach der Ver\u00f6ffentlichung ist die Gedenkbiografie je nach gew\u00e4hlter Sichtbarkeit sichtbar (privat, nur Link oder \u00f6ffentlich). Jede Leserin und jeder Leser kann eine Meldung einreichen; unser Moderationsteam pr\u00fcft Meldungen und kann bei Bedarf eingreifen.',
       checkbox1: 'Ich erkläre unter meiner zivil- und strafrechtlichen Verantwortung, dass die Person, über die ich schreibe, verstorben ist.',
       checkbox1Helper: 'Falsche Erklärungen können nach Schweizer Strafgesetzbuch Art. 179decies (Identitätsbetrug) strafrechtlich verfolgt werden.',
       checkbox2: 'Ich bestätige, dass die Informationen, die ich veröffentlichen werde, wahrheitsgemäß sind oder eindeutig als meine persönliche Interpretation gekennzeichnet sind.',
@@ -6943,7 +6927,7 @@ export const translations: Record<Language, Translations> = {
       frozenBannerTitle: 'Diese Biografie wurde eingefroren',
       frozenBannerMessage: 'Diese Biografie ist schreibgeschützt und kann nicht bearbeitet werden.',
       moderationTitle: 'Moderation',
-      moderationSubtitle: 'Gemeldete Inhalte prüfen und bearbeiten',
+      moderationSubtitle: 'Nutzer-Meldungen und gemeldete Inhalte — f\u00fcr KI-Autorenpr\u00fcfung siehe Pr\u00fcfung',
       moderationUnassignedBadge: 'nicht zugewiesen',
       filterStatus: 'Status',
       filterType: 'Typ',
@@ -6991,6 +6975,9 @@ export const translations: Record<Language, Translations> = {
       reporterEmail: 'Gemeldet von',
       reporterReason: 'Grundkategorie',
       reporterDetails: 'Details',
+      userReportDetails: 'Meldungsdetails',
+      noReportDescription: 'Keine weiteren Angaben.',
+      reportedAt: 'Gemeldet am',
       noFlaggedPassages: 'Keine markierten Passagen.',
       takeOwnership: 'Übernehmen',
       takingOwnership: 'Wird übernommen…',
@@ -7082,7 +7069,8 @@ export const translations: Record<Language, Translations> = {
       navUsers: 'Benutzer',
       navAiStats: 'KI-Statistiken',
       reviewPageTitle: 'Biografien-Überprüfungswarteschlange',
-      reviewPageSubtitle: 'Genehmigen oder ablehnen Sie zur Veröffentlichung eingereichte Biografien.',
+      reviewPageSubtitle:
+        'Warteschlange Autorenrevision nach KI-Screening — ohne Leser-Meldungen (siehe Moderation).',
       reviewColSubject: 'Person',
       reviewColTitle: 'Titel',
       reviewColAuthor: 'Autor',

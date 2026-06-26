@@ -131,8 +131,8 @@ export const termsTranslations: Record<Language, TermsTranslations> = {
     section4Title: '4. BIOGRAPHIES OF DECEASED PERSONS - SPECIAL RULES',
     section4Content: [
       'You declare under your legal responsibility that the person is deceased',
-      'The biography enters a 30-day review period before becoming public',
-      'During this period, only you can see and edit it',
+      'Once published, visibility follows your settings (private, link-only, or public)',
+      'Anyone may report concerns; our moderation team reviews reports',
       'We may request proof of death if the biography is reported',
       'False declarations can be prosecuted under Swiss Criminal Code Art. 179decies (identity fraud)',
       'Even though the deceased has no data protection rights, you must not make false or defamatory statements that could harm their family\'s honor',
@@ -339,8 +339,8 @@ export const termsTranslations: Record<Language, TermsTranslations> = {
     section4Title: '4. BIOGRAFIE DI PERSONE DECEDUTE - REGOLE SPECIALI',
     section4Content: [
       'Dichiari sotto la tua responsabilità legale che la persona è deceduta',
-      'La biografia entra in un periodo di revisione di 30 giorni prima di diventare pubblica',
-      'Durante questo periodo, solo tu puoi vederla e modificarla',
+      'Una volta pubblicata, la visibilità segue le impostazioni scelte (privata, solo link o pubblica)',
+      'Chiunque può segnalare problemi; il team di moderazione esamina le segnalazioni',
       'Potremmo richiedere la prova del decesso se la biografia viene segnalata',
       'Le false dichiarazioni possono essere perseguite ai sensi del Codice Penale Svizzero Art. 179decies (frode d\'identità)',
       'Anche se il defunto non ha diritti di protezione dei dati, non devi fare dichiarazioni false o diffamatorie che potrebbero danneggiare l\'onore della famiglia',
@@ -547,8 +547,8 @@ export const termsTranslations: Record<Language, TermsTranslations> = {
     section4Title: '4. BIOGRAPHIES DE PERSONNES DÉCÉDÉES - RÈGLES SPÉCIALES',
     section4Content: [
       'Vous déclarez sous votre responsabilité légale que la personne est décédée',
-      'La biographie entre dans une période de révision de 30 jours avant de devenir publique',
-      'Pendant cette période, vous seul pouvez la voir et la modifier',
+      'Une fois publiée, la visibilité suit vos paramètres (privée, lien uniquement ou publique)',
+      'Toute personne peut signaler un problème ; notre équipe de modération examine les signalements',
       'Nous pouvons demander une preuve de décès si la biographie est signalée',
       'Les fausses déclarations peuvent être poursuivies en vertu du Code pénal suisse Art. 179decies (fraude à l\'identité)',
       'Même si le défunt n\'a pas de droits à la protection des données, vous ne devez pas faire de déclarations fausses ou diffamatoires qui pourraient nuire à l\'honneur de la famille',
@@ -755,8 +755,8 @@ export const termsTranslations: Record<Language, TermsTranslations> = {
     section4Title: '4. BIOGRAFIEN VERSTORBENER PERSONEN - BESONDERE REGELN',
     section4Content: [
       'Sie erklären unter Ihrer rechtlichen Verantwortung, dass die Person verstorben ist',
-      'Die Biografie tritt in eine 30-tägige Prüfungsfrist ein, bevor sie öffentlich wird',
-      'Während dieser Zeit können nur Sie sie sehen und bearbeiten',
+      'Nach der Veröffentlichung folgt die Sichtbarkeit Ihren Einstellungen (privat, nur Link oder öffentlich)',
+      'Jede Person kann Bedenken melden; unser Moderationsteam prüft Meldungen',
       'Wir können einen Todesnachweis anfordern, wenn die Biografie gemeldet wird',
       'Falsche Erklärungen können nach Schweizer Strafgesetzbuch Art. 179decies (Identitätsbetrug) strafrechtlich verfolgt werden',
       'Auch wenn der Verstorbene keine Datenschutzrechte hat, dürfen Sie keine falschen oder diffamierenden Aussagen machen, die die Ehre der Familie verletzen könnten',

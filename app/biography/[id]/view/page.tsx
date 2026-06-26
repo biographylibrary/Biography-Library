@@ -19,7 +19,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { FileDown, Loader as Loader2, Lock, Info, Archive, Flag, Languages } from 'lucide-react';
+import { FileDown, Loader as Loader2, Lock, Archive, Flag, Languages } from 'lucide-react';
 import { useTranslation } from '@/lib/i18n/i18n-context';
 import { translations, type Language, type Translations } from '@/lib/i18n/translations';
 import { ReportBiographyModal } from '@/components/editor/ReportBiographyModal';
@@ -74,19 +74,6 @@ function formatDate(dateStr: string, locale?: string): string {
     month: 'long',
     year: 'numeric',
   });
-}
-
-function getReviewEndDate(publishedAt: string): Date {
-  const d = new Date(publishedAt);
-  d.setDate(d.getDate() + 30);
-  return d;
-}
-
-function isInReviewPeriod(biography: BiographyViewData): boolean {
-  if (biography.status === 'under_review' || biography.status === 'locked_pending_screening') return true;
-  if (!biography.published_at) return false;
-  const reviewEnd = getReviewEndDate(biography.published_at);
-  return new Date() < reviewEnd;
 }
 
 function isViewLanguage(value: string | null | undefined): value is ViewLanguage {
@@ -523,11 +510,6 @@ export default function BiographyViewPage() {
     );
   }
 
-  const inReview = isInReviewPeriod(biography);
-  const reviewEndDate = biography.published_at
-    ? getReviewEndDate(biography.published_at)
-    : null;
-
   const activeTranslated =
     readingLanguage !== 'original' ? translatedSections[readingLanguage] : null;
 
@@ -619,17 +601,6 @@ export default function BiographyViewPage() {
           <div className="mb-4 flex items-center gap-2 text-sm text-muted-foreground bg-muted/40 border border-border/50 rounded-lg px-4 py-2.5">
             <Archive className="h-4 w-4 shrink-0" />
             <span>{t.view.archivedBanner}</span>
-          </div>
-        )}
-
-        {inReview && reviewEndDate && (
-          <div className="mb-6 flex items-start gap-2.5 text-sm bg-brand-mustardLight/45 border border-brand-mustardDark/40 text-brand-ink dark:bg-brand-mustardDark/20 dark:border-brand-mustardDark/50 dark:text-brand-beigeLight rounded-lg px-4 py-3">
-            <Info className="h-4 w-4 shrink-0 mt-0.5" />
-            <span>
-              {t.view.reviewBannerPrefix}{' '}
-              <strong>{formatDate(reviewEndDate.toISOString())}</strong>
-              {t.view.reviewBannerSuffix}
-            </span>
           </div>
         )}
 

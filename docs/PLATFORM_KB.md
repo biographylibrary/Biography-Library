@@ -52,7 +52,7 @@ Import text (sidebar): paste or upload into current chapter (Sections) or at cur
 
 ## rights_chapters
 
-Author keeps full copyright; platform is custodian only. No commercial AI training on private/semi-private/family biographies. Autobiography chapters: after first publish, new chapter allowed after minimum 365 days; published chapters are immutable. After author's death, autobiography frozen; family may write separate linked biographies using their own accounts. Deceased-person biographies: only direct family; 30-day temporary review period after publish for reports from mentioned persons.
+Author keeps full copyright; platform is custodian only. No commercial AI training on private/semi-private/family biographies. Autobiography chapters: after first publish, new chapter allowed after minimum 365 days; published chapters are immutable. After author's death, autobiography frozen; family may write separate linked biographies using their own accounts. Deceased-person biographies: only direct family; published like autobiographies with reader reports reviewed by moderation.
 
 ## faq
 

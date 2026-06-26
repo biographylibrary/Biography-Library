@@ -72,25 +72,30 @@ export function ReportBiographyModal({ biographyId, open, onOpenChange, onSucces
     setInlineError('');
 
     const { data: sessionData } = await supabase.auth.getSession();
-    const userId = sessionData?.session?.user?.id;
+    const accessToken = sessionData?.session?.access_token;
 
-    if (!userId) {
+    if (!accessToken) {
       setInlineError(t.view.reportError);
       setSubmitting(false);
       return;
     }
 
-    const { error } = await supabase.from('moderation_reports').insert({
-      biography_id: biographyId,
-      report_type: reportType,
-      description: description.trim() || null,
-      reporter_id: userId,
-      status: 'unassigned',
+    const res = await fetch('/api/moderation/report', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${accessToken}`,
+      },
+      body: JSON.stringify({
+        biographyId,
+        reportType,
+        description: description.trim() || undefined,
+      }),
     });
 
     setSubmitting(false);
 
-    if (error) {
+    if (!res.ok) {
       setInlineError(t.view.reportError);
       return;
     }
