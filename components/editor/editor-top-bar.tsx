@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { useTranslation } from '@/lib/i18n/i18n-context';
 import { ArrowLeft, Check, CloudOff, Loader as Loader2, Lock, Users, Globe, BookOpen, Snowflake, User, Menu, X } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 type SaveStatus = 'saved' | 'saving' | 'unsaved' | 'error';
 type Privacy = 'private' | 'link-only' | 'public';
@@ -214,20 +215,6 @@ export function EditorTopBar({
         </div>
 
         <div className="ml-auto flex items-center gap-1 shrink-0">
-          {onMobileMenuToggle && (
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon"
-              data-tour-id="mobile-sidebar-toggle"
-              className="h-9 w-9 lg:hidden shrink-0"
-              onClick={onMobileMenuToggle}
-              aria-label={mobileMenuOpen ? t.common.close : t.onboardingTour.mobileMenuTitle}
-            >
-              {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-            </Button>
-          )}
-
           <div className={`hidden sm:flex items-center gap-1 text-xs mr-1 ${status.className}`}>
             <StatusIcon className={`h-3 w-3 ${saveStatus === 'saving' ? 'animate-spin' : ''}`} />
             <span>{status.text}</span>
@@ -242,7 +229,7 @@ export function EditorTopBar({
                     variant="ghost"
                     size="sm"
                     data-tour-id="privacy-btn"
-                    className="gap-1.5 text-xs h-8"
+                    className="gap-1.5 text-xs h-8 shrink-0"
                     onClick={() => onPrivacyChange(nextPrivacy)}
                   >
                     <CurrentPrivacyIcon className="h-3.5 w-3.5" />
@@ -261,6 +248,22 @@ export function EditorTopBar({
               <Snowflake className="h-3.5 w-3.5" />
               <span className="hidden sm:inline">{t.admin.frozenBannerTitle}</span>
             </div>
+          )}
+
+          {onMobileMenuToggle && (
+            <Button
+              type="button"
+              size="icon"
+              data-tour-id="mobile-sidebar-toggle"
+              className={cn(
+                'h-9 w-9 lg:hidden shrink-0 rounded-lg bg-black text-white',
+                'hover:bg-neutral-900 hover:text-white',
+              )}
+              onClick={onMobileMenuToggle}
+              aria-label={mobileMenuOpen ? t.common.close : t.onboardingTour.mobileMenuTitle}
+            >
+              {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+            </Button>
           )}
         </div>
       </div>
