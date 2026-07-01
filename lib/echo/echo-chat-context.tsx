@@ -31,6 +31,7 @@ import {
 import { parseEchoMessageContent } from '@/lib/echo/echo-usage-guide';
 import { isAffirmativeDraftReply, isDismissiveDraftReply } from '@/lib/echo/draft-affirmative';
 import { getAppliedDraftMessageIds, markDraftApplied } from '@/lib/echo/draft-applied-storage';
+import { retainOnlyLatestPendingDraft } from '@/lib/echo/echo-thread-pending-drafts';
 
 export interface EchoChatMessage {
   id: string;
@@ -44,6 +45,33 @@ export interface EchoChatMessage {
   applyingDraft?: boolean;
   draftInsertError?: string;
   insertedSectionKey?: string;
+}
+
+function mapStoredMessages(
+  raw: Array<{
+    id: string;
+    role: string;
+    content: string;
+    pendingDraft?: { sectionKey: string; draftText: string };
+  }>,
+  appliedMessageIds: Set<string>
+): EchoChatMessage[] {
+  return retainOnlyLatestPendingDraft(
+    raw
+      .filter((m) => m.role === 'user' || m.role === 'assistant')
+      .map((m) => mapStoredMessage(m, appliedMessageIds))
+  );
+}
+
+function countActionablePendingDrafts(messages: EchoChatMessage[]): number {
+  return messages.filter(
+    (m) =>
+      m.role === 'assistant' &&
+      m.pendingDraft &&
+      !m.draftInserted &&
+      !m.streaming &&
+      !m.draftDeferred
+  ).length;
 }
 
 function mapStoredMessage(
@@ -356,18 +384,14 @@ export function EchoChatProvider({
 
       const json = await res.json();
       const appliedIds = getAppliedDraftMessageIds(threadId);
-      const older = (json.messages ?? [])
-        .filter((m: { role: string }) => m.role === 'user' || m.role === 'assistant')
-        .map((m: { id: string; role: string; content: string; pendingDraft?: { sectionKey: string; draftText: string } }) =>
-          mapStoredMessage(m, appliedIds)
-        );
+      const older = mapStoredMessages(json.messages ?? [], appliedIds);
 
       if (!older.length) {
         setHasMoreOlder(false);
         return;
       }
 
-      setMessages((prev) => [...older, ...prev]);
+      setMessages((prev) => retainOnlyLatestPendingDraft([...older, ...prev]));
       setHasMoreOlder(json.hasMoreOlder === true);
       if (json.oldestLoadedAt) {
         oldestLoadedAtRef.current = json.oldestLoadedAt;
@@ -403,18 +427,7 @@ export function EchoChatProvider({
         oldestLoadedAtRef.current = json?.oldestLoadedAt ?? null;
         const appliedIds = getAppliedDraftMessageIds(loadedThreadId);
         if (json?.messages?.length) {
-          setMessages(
-            json.messages
-              .filter((m: { role: string }) => m.role === 'user' || m.role === 'assistant')
-              .map(
-                (m: {
-                  id: string;
-                  role: string;
-                  content: string;
-                  pendingDraft?: { sectionKey: string; draftText: string };
-                }) => mapStoredMessage(m, appliedIds)
-              )
-          );
+          setMessages(mapStoredMessages(json.messages, appliedIds));
         } else {
           setMessages([]);
         }
@@ -535,6 +548,7 @@ export function EchoChatProvider({
           shownInsertDialogRef.current.add(messageId);
           setInsertDialog({ messageId, sectionKey });
         }
+        onDraftApplyFinished?.();
       } catch (err) {
         const message = err instanceof Error ? err.message : t.echo.errorGeneric;
         setMessages((prev) =>
@@ -650,11 +664,13 @@ export function EchoChatProvider({
                 ev.data.draftText &&
                 ev.data.sectionKey
               ) {
+                const serverMessageId = ev.data.assistantMessageId;
                 setMessages((prev) =>
                   prev.map((m) =>
                     m.id === assistantId
                       ? {
                           ...m,
+                          ...(serverMessageId ? { id: serverMessageId } : {}),
                           pendingDraft: {
                             sectionKey: ev.data.sectionKey!,
                             draftText: ev.data.draftText!,
@@ -664,7 +680,7 @@ export function EchoChatProvider({
                       : m
                   )
                 );
-                setScrollToMessageId(assistantId);
+                setScrollToMessageId(serverMessageId ?? assistantId);
               }
               if (ev.data.tool === 'complete_section' && ev.data.sectionKey) {
                 onSectionCompletionChanged?.(ev.data.sectionKey, true);
@@ -756,8 +772,7 @@ export function EchoChatProvider({
   );
 
   const pendingDraftCount = useMemo(
-    () =>
-      messages.filter((m) => m.pendingDraft && !m.draftInserted && !m.streaming).length,
+    () => countActionablePendingDrafts(messages),
     [messages]
   );
 

@@ -48,6 +48,9 @@
     --status-info: #C4DAEB;
     --status-warning: #EDE4B9;
     --status-success: #C8DFBE;
+
+    /* FAB offset above site footer (mobile); desktop uses md breakpoint override */
+    --floating-action-bottom: calc(4.75rem + env(safe-area-inset-bottom, 0px));
   }
 
   .dark {
@@ -87,6 +90,18 @@
     --status-info: #C4DAEB;
     --status-warning: #EDE4B9;
     --status-success: #C8DFBE;
+  }
+}
+
+@layer utilities {
+  .floating-action-bottom {
+    bottom: var(--floating-action-bottom);
+  }
+
+  @media (min-width: 1024px) {
+    .floating-action-bottom {
+      bottom: 1.5rem;
+    }
   }
 }
 

@@ -29,7 +29,8 @@ export interface EchoDraftInsertPromptProps {
   onOpenEditor?: () => void;
 }
 
-const PREVIEW_COLLAPSED_LINES = 3;
+const PREVIEW_COLLAPSED_MAX_H = 'max-h-52';
+const PREVIEW_EXPANDED_MAX_H = 'max-h-[min(28rem,55vh)]';
 
 export function EchoDraftInsertPrompt({
   sectionTitle,
@@ -107,12 +108,8 @@ export function EchoDraftInsertPrompt({
     );
   }
 
-  const previewLines = preview.split('\n');
-  const needsTruncate = previewLines.length > PREVIEW_COLLAPSED_LINES || preview.length > 280;
-  const displayPreview =
-    previewExpanded || !needsTruncate
-      ? preview
-      : previewLines.slice(0, PREVIEW_COLLAPSED_LINES).join('\n') + (previewLines.length > PREVIEW_COLLAPSED_LINES ? '…' : '');
+  const needsExpandToggle =
+    preview.length > 320 || preview.split('\n').length > 8;
 
   return (
     <div
@@ -135,11 +132,16 @@ export function EchoDraftInsertPrompt({
         </div>
       )}
 
-      <div className={cn('text-xs text-foreground/80 whitespace-pre-wrap rounded bg-background/60 px-2 py-1.5 border border-border/40', !previewExpanded && needsTruncate && 'line-clamp-4')}>
-        {displayPreview}
+      <div
+        className={cn(
+          'text-sm text-foreground/80 whitespace-pre-wrap rounded bg-background/60 px-2.5 py-2 border border-border/40 overflow-y-auto overscroll-contain',
+          previewExpanded ? PREVIEW_EXPANDED_MAX_H : PREVIEW_COLLAPSED_MAX_H
+        )}
+      >
+        {preview}
       </div>
 
-      {needsTruncate && (
+      {needsExpandToggle && (
         <button
           type="button"
           className="text-xs text-muted-foreground hover:text-foreground underline-offset-2 hover:underline"

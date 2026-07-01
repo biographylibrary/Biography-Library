@@ -22,8 +22,6 @@ interface EditorPeekProps {
   aiUsageRefresh?: number;
   aiLoading?: boolean;
   onGrammarCheck?: () => void;
-  onGuidedPrompts?: () => void;
-  onSummarize?: () => void;
   onReviewWithAi?: () => void;
   onApertusReview?: () => void;
   onMarkComplete?: () => void;
@@ -49,8 +47,6 @@ export function EditorPeek({
   aiUsageRefresh,
   aiLoading,
   onGrammarCheck,
-  onGuidedPrompts,
-  onSummarize,
   onReviewWithAi,
   onApertusReview,
   onMarkComplete,
@@ -68,8 +64,6 @@ export function EditorPeek({
           aiLoading,
           hasText: hasTextContent(text),
           onGrammarCheck,
-          onGuidedPrompts,
-          onSummarize,
           onReviewWithAi,
           onApertusReview,
         }

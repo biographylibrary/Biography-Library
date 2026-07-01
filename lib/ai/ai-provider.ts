@@ -56,6 +56,29 @@ function determinePriority(explanation: string): Improvement['priority'] {
   return 'medium';
 }
 
+function normalizeGrammarText(text: string): string {
+  return text.trim().replace(/\s+/g, ' ');
+}
+
+function isValidGrammarSuggestion(original: string, suggestion: string): boolean {
+  const o = normalizeGrammarText(original);
+  const s = normalizeGrammarText(suggestion);
+  return Boolean(o && s && o !== s);
+}
+
+function mapGrammarSuggestions(
+  raw: unknown[]
+): Array<{ id: string; original: string; suggestion: string; explanation: string }> {
+  return raw
+    .map((item: any, index: number) => ({
+      id: item.id || `suggestion-${Date.now()}-${index}`,
+      original: item.original || '',
+      suggestion: item.suggestion || '',
+      explanation: item.explanation || '',
+    }))
+    .filter((item) => isValidGrammarSuggestion(item.original, item.suggestion));
+}
+
 export const aiService = {
   async suggestImprovements(
     text: string,
@@ -70,11 +93,11 @@ export const aiService = {
     });
 
     const raw = Array.isArray(result.data) ? result.data : [];
-    return raw.map((item: any) => ({
+    return mapGrammarSuggestions(raw).map((item) => ({
       type: determineImprovementType(item.explanation),
-      original: item.original || '',
-      suggestion: item.suggestion || '',
-      reason: item.explanation || '',
+      original: item.original,
+      suggestion: item.suggestion,
+      reason: item.explanation,
       priority: determinePriority(item.explanation),
     }));
   },
@@ -92,12 +115,7 @@ export const aiService = {
     });
 
     const raw = Array.isArray(result.data) ? result.data : [];
-    return raw.map((item: any, index: number) => ({
-      id: item.id || `suggestion-${Date.now()}-${index}`,
-      original: item.original || '',
-      suggestion: item.suggestion || '',
-      explanation: item.explanation || '',
-    }));
+    return mapGrammarSuggestions(raw);
   },
 
   async getGuidedPrompts(
@@ -139,14 +157,12 @@ export const aiService = {
   async rewriteSection(
     sectionTitle: string,
     content: string,
-    tone: string,
     language: string
   ): Promise<string> {
     const result = await callAI({
       action: 'rewrite',
       sectionTitle,
       content,
-      tone,
       language,
     });
 

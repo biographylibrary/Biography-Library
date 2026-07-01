@@ -1,5 +1,7 @@
 'use client';
 
+import { useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { EchoChat } from './EchoChat';
 import { EchoOrb } from './EchoOrb';
 import { useEcho } from '@/lib/echo/echo-context';
@@ -13,25 +15,32 @@ export function EchoBubble() {
   const { bubbleOpen, setBubbleOpen, orbState } = useEcho();
   const { t } = useTranslation();
   const { pendingDraftCount } = useEchoChat();
+  const [mounted, setMounted] = useState(false);
 
-  return (
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  const content = (
     <>
       <button
         type="button"
         data-tour-id="echo-bubble"
         onClick={() => setBubbleOpen(!bubbleOpen)}
         className={cn(
-          'fixed bottom-6 right-6 z-50 rounded-full shadow-lg p-1 bg-background border',
-          'hover:scale-105 transition-transform relative'
+          'fixed right-4 md:right-6 floating-action-bottom z-50 rounded-full shadow-lg p-1 bg-background border',
+          'hover:scale-105 transition-transform'
         )}
         aria-label={t.echo.openEcho}
       >
-        <EchoOrb state={orbState} size="sm" />
-        {pendingDraftCount > 0 && (
-          <span className="absolute -top-1 -right-1 min-w-[1.125rem] h-[1.125rem] px-1 rounded-full bg-primary text-primary-foreground text-[10px] font-semibold flex items-center justify-center">
-            {pendingDraftCount}
-          </span>
-        )}
+        <span className="relative inline-flex">
+          <EchoOrb state={orbState} size="sm" />
+          {pendingDraftCount > 0 && (
+            <span className="absolute -top-1 -right-1 min-w-[1.125rem] h-[1.125rem] px-1 rounded-full bg-primary text-primary-foreground text-[10px] font-semibold flex items-center justify-center">
+              {pendingDraftCount}
+            </span>
+          )}
+        </span>
       </button>
 
       {bubbleOpen && (
@@ -67,4 +76,8 @@ export function EchoBubble() {
       )}
     </>
   );
+
+  if (!mounted) return null;
+
+  return createPortal(content, document.body);
 }
