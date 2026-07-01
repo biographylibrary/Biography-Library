@@ -106,7 +106,7 @@
   border-color: hsl(var(--primary)) !important;
 }
 
-/* Above editor mobile sidebar (z-30) and menu toggle (z-60) */
+/* Above editor mobile sidebar (z-30) and top bar controls */
 .driver-overlay {
   z-index: 10040 !important;
 }
