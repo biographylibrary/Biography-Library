@@ -2997,9 +2997,9 @@ export const translations: Record<Language, Translations> = {
       publishExportDesc: 'Export a draft PDF or text copy to check how your book will look.',
       mobileMenuTitle: 'Chapter & tools menu',
       mobileMenuDesc:
-        'On phones and tablets, chapters and tools are in this side panel. The tour opens it automatically on the next steps.',
+        'On phones and tablets, tap the menu icon at the top right of the editor bar to open chapters and tools. The tour opens this panel automatically in the next steps.',
       mobileSidebarOverviewHint:
-        'The chapter list and tools are in this panel. On small screens, open it with the menu button at the bottom left.',
+        'The chapter list and tools live in this panel. On phones and tablets, open it with the menu button at the top right of the editor bar.',
     },
     echo: {
       hubEmpty: 'Hello! I\'m Echo. I\'ll guide you through writing your biography — by voice or text.',
@@ -4550,9 +4550,9 @@ export const translations: Record<Language, Translations> = {
       publishExportDesc: 'Esporta una bozza PDF o una copia testo per vedere come apparirà il libro.',
       mobileMenuTitle: 'Menu capitoli e strumenti',
       mobileMenuDesc:
-        'Su telefono e tablet, capitoli e strumenti sono in questo pannello. Il tour lo aprirà automaticamente nei passi successivi.',
+        'Su telefono e tablet, tocca l\'icona menu in alto a destra nella barra dell\'editor per aprire capitoli e strumenti. Il tour aprirà questo pannello automaticamente nei passi successivi.',
       mobileSidebarOverviewHint:
-        'L\'elenco capitoli e gli strumenti sono in questo pannello. Su schermi piccoli, aprilo con il pulsante menu in basso a sinistra.',
+        'L\'elenco capitoli e gli strumenti sono in questo pannello. Su telefono e tablet, aprilo con il pulsante menu in alto a destra nella barra dell\'editor.',
     },
     echo: {
       hubEmpty: 'Ciao! Sono Echo. Ti guido nella biografia — a voce o per iscritto.',
@@ -6103,9 +6103,9 @@ export const translations: Record<Language, Translations> = {
       publishExportDesc: 'Exportez un brouillon PDF ou une copie texte pour voir à quoi ressemblera le livre.',
       mobileMenuTitle: 'Menu chapitres et outils',
       mobileMenuDesc:
-        'Sur téléphone et tablette, chapitres et outils sont dans ce panneau. Le tour l\'ouvrira automatiquement aux étapes suivantes.',
+        'Sur téléphone et tablette, touchez l\'icône menu en haut à droite de la barre d\'édition pour ouvrir chapitres et outils. Le tour ouvrira ce panneau automatiquement aux étapes suivantes.',
       mobileSidebarOverviewHint:
-        'La liste des chapitres et les outils sont dans ce panneau. Sur petit écran, ouvrez-le avec le bouton menu en bas à gauche.',
+        'La liste des chapitres et les outils sont dans ce panneau. Sur téléphone et tablette, ouvrez-le avec le bouton menu en haut à droite de la barre d\'édition.',
     },
     echo: {
       hubEmpty: 'Bonjour ! Je suis Echo. Je vous guide pour votre biographie — à voix ou par écrit.',
@@ -7656,9 +7656,9 @@ export const translations: Record<Language, Translations> = {
       publishExportDesc: 'Exportieren Sie einen PDF-Entwurf oder eine Textkopie, um das Buch zu prüfen.',
       mobileMenuTitle: 'Kapitel- und Werkzeugmenü',
       mobileMenuDesc:
-        'Auf Smartphone und Tablet befinden sich Kapitel und Werkzeuge in diesem Panel. Die Tour öffnet es in den nächsten Schritten automatisch.',
+        'Auf Smartphone und Tablet tippen Sie auf das Menüsymbol oben rechts in der Editor-Leiste, um Kapitel und Werkzeuge zu öffnen. Die Tour öffnet dieses Panel in den nächsten Schritten automatisch.',
       mobileSidebarOverviewHint:
-        'Kapitelliste und Werkzeuge sind in diesem Panel. Auf kleinen Bildschirmen öffnen Sie es mit der Menütaste unten links.',
+        'Kapitelliste und Werkzeuge befinden sich in diesem Panel. Auf Smartphone und Tablet öffnen Sie es mit der Menütaste oben rechts in der Editor-Leiste.',
     },
     echo: {
       hubEmpty: 'Hallo! Ich bin Echo. Ich begleite Sie bei Ihrer Biografie — per Sprache oder Text.',

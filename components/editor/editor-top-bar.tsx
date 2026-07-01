@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { useTranslation } from '@/lib/i18n/i18n-context';
-import { ArrowLeft, Check, CloudOff, Loader as Loader2, Lock, Users, Globe, BookOpen, Snowflake, User } from 'lucide-react';
+import { ArrowLeft, Check, CloudOff, Loader as Loader2, Lock, Users, Globe, BookOpen, Snowflake, User, Menu, X } from 'lucide-react';
 
 type SaveStatus = 'saved' | 'saving' | 'unsaved' | 'error';
 type Privacy = 'private' | 'link-only' | 'public';
@@ -21,6 +21,8 @@ interface EditorTopBarProps {
   authorName?: string;
   onAuthorNameChange?: (name: string) => void;
   biographyType?: 'autobiography' | 'memorial';
+  mobileMenuOpen?: boolean;
+  onMobileMenuToggle?: () => void;
 }
 
 const privacyIcons: Record<Privacy, typeof Lock> = {
@@ -41,6 +43,8 @@ export function EditorTopBar({
   authorName = '',
   onAuthorNameChange,
   biographyType = 'autobiography',
+  mobileMenuOpen = false,
+  onMobileMenuToggle,
 }: EditorTopBarProps) {
   const router = useRouter();
   const { t } = useTranslation();
@@ -210,6 +214,20 @@ export function EditorTopBar({
         </div>
 
         <div className="ml-auto flex items-center gap-1 shrink-0">
+          {onMobileMenuToggle && (
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              data-tour-id="mobile-sidebar-toggle"
+              className="h-9 w-9 lg:hidden shrink-0"
+              onClick={onMobileMenuToggle}
+              aria-label={mobileMenuOpen ? t.common.close : t.onboardingTour.mobileMenuTitle}
+            >
+              {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+            </Button>
+          )}
+
           <div className={`hidden sm:flex items-center gap-1 text-xs mr-1 ${status.className}`}>
             <StatusIcon className={`h-3 w-3 ${saveStatus === 'saving' ? 'animate-spin' : ''}`} />
             <span>{status.text}</span>

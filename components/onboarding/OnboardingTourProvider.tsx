@@ -29,10 +29,17 @@ function getPopoverSide(target: string): 'top' | 'bottom' | 'left' | 'right' {
     if (target.includes('book-title') || target.includes('privacy-btn')) return 'bottom';
     return 'bottom';
   }
-  if (target.includes('mobile-sidebar-toggle')) return 'top';
+  if (target.includes('mobile-sidebar-toggle')) return 'bottom';
   if (isSidebarTourTarget(target)) return 'right';
   if (target.includes('book-title') || target.includes('privacy-btn')) return 'bottom';
   return 'bottom';
+}
+
+function getPopoverAlign(target: string): 'start' | 'center' | 'end' {
+  if (isMobileEditorLayout() && target.includes('mobile-sidebar-toggle')) {
+    return 'end';
+  }
+  return 'start';
 }
 
 export function OnboardingTourProvider({
@@ -147,7 +154,7 @@ export function OnboardingTourProvider({
           title: tt[step.titleKey],
           description,
           side: getPopoverSide(step.target),
-          align: 'start',
+          align: getPopoverAlign(step.target),
           showButtons: ['previous', 'next', 'close'],
           nextBtnText: tw.tourNext,
           prevBtnText: tw.tourBack,

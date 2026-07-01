@@ -55,7 +55,7 @@ import { isBiographyPublicationStatus, isReviewOrScreeningLockStatus } from '@/l
 import { generateBiographyPDF, checkBiographyPdfReadiness, checkPdfPreflight, getPdfReadinessMessage } from '@/lib/pdf-export';
 import { AdvancedExportDialog } from '@/components/export/AdvancedExportDialog';
 import { useTranslation } from '@/lib/i18n/i18n-context';
-import { Loader as Loader2, Menu, X, Sparkles, Snowflake as SnowflakeIcon, Send as SendIcon, TriangleAlert, Lock } from 'lucide-react';
+import { Loader as Loader2, Sparkles, Snowflake as SnowflakeIcon, Send as SendIcon, TriangleAlert, Lock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import {
@@ -1880,6 +1880,8 @@ const [isPublishing, setIsPublishing] = useState(false);
         authorName={authorName}
         onAuthorNameChange={handleAuthorNameChange}
         biographyType={biographyType}
+        mobileMenuOpen={showMobileSidebar}
+        onMobileMenuToggle={() => setShowMobileSidebar((open) => !open)}
       />
 
       {isFrozen && (
@@ -2156,21 +2158,6 @@ const [isPublishing, setIsPublishing] = useState(false);
       )}
 
       <div className="flex-1 flex min-h-0 relative">
-        <div className="lg:hidden fixed left-4 floating-action-bottom z-[60]">
-          <Button
-            size="icon"
-            data-tour-id="mobile-sidebar-toggle"
-            className="h-12 w-12 rounded-full shadow-lg"
-            onClick={() => setShowMobileSidebar(!showMobileSidebar)}
-          >
-            {showMobileSidebar ? (
-              <X className="h-5 w-5" />
-            ) : (
-              <Menu className="h-5 w-5" />
-            )}
-          </Button>
-        </div>
-
         {showMobileSidebar && (
           <div
             className="lg:hidden absolute inset-0 bg-black/50 z-30"
