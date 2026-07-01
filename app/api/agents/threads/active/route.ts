@@ -13,6 +13,7 @@ import type { AgentType } from '@/lib/agents/models';
 import { getEchoUsageGuideForLocale } from '@/lib/i18n/echo-guide-content';
 import type { Language } from '@/lib/i18n/translations';
 import { wrapUsageGuideContent, isUsageGuideContent } from '@/lib/echo/echo-usage-guide';
+import { enrichMessagesWithPendingDrafts } from '@/lib/echo/echo-thread-pending-drafts';
 
 export const runtime = 'nodejs';
 
@@ -78,7 +79,10 @@ export async function GET(req: NextRequest) {
 
   const uiLimit = getAgentUiMessageLimit();
   let messages = await loadRecentThreadMessages(serviceClient, thread.id, uiLimit);
-  let displayMessages = messages.filter((m) => m.role === 'user' || m.role === 'assistant');
+  let displayMessages =
+    agentType === 'echo'
+      ? enrichMessagesWithPendingDrafts(messages)
+      : messages.filter((m) => m.role === 'user' || m.role === 'assistant');
 
   const { count: totalMessageCount } = await serviceClient
     .from('agent_messages')

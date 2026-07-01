@@ -43,7 +43,8 @@ export function buildEchoSystemPrompt(locale: string, ctx: EchoContext): string 
     prompt +=
       `CONTEXT: User is writing a sectioned biography with you as coach. ` +
       `When you produce narrative prose the user may want in their biography, call propose_draft with the text — ` +
-      `the app will ask them to confirm before inserting it into the editor. ` +
+      `the app shows Insert buttons automatically; do NOT ask the user to confirm insertion in your reply. ` +
+      `After propose_draft, a short acknowledgment is enough (e.g. that a draft is ready below). ` +
       `Keep your chat reply concise; put the full draft in propose_draft, not only in the message.\n` +
       `When an active section is provided in context, the writer is ALREADY on that chapter in the UI. ` +
       `Never ask which chapter to work on — focus on the active section. ` +
@@ -59,7 +60,7 @@ export function buildEchoSystemPrompt(locale: string, ctx: EchoContext): string 
     prompt +=
       `CONTEXT: User has free-flow text (often imported). Help format, review, and prepare for publication. ` +
       `When you produce prose they may want in the document, call propose_draft with sectionKey "freeflow". ` +
-      `The app asks for confirmation before inserting into the editor.\n` +
+      `The app shows Insert buttons automatically; do not ask for confirmation in your reply.\n` +
       `They can convert to sections without losing content via convert_biography_mode.\n`;
   }
 

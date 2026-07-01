@@ -3,6 +3,7 @@
 import { EchoChat } from './EchoChat';
 import { EchoOrb } from './EchoOrb';
 import { useEcho } from '@/lib/echo/echo-context';
+import { useEchoChat } from '@/lib/echo/echo-chat-context';
 import { useTranslation } from '@/lib/i18n/i18n-context';
 import { cn } from '@/lib/utils';
 import { X } from 'lucide-react';
@@ -11,6 +12,7 @@ import { Button } from '@/components/ui/button';
 export function EchoBubble() {
   const { bubbleOpen, setBubbleOpen, orbState } = useEcho();
   const { t } = useTranslation();
+  const { pendingDraftCount } = useEchoChat();
 
   return (
     <>
@@ -20,11 +22,16 @@ export function EchoBubble() {
         onClick={() => setBubbleOpen(!bubbleOpen)}
         className={cn(
           'fixed bottom-6 right-6 z-50 rounded-full shadow-lg p-1 bg-background border',
-          'hover:scale-105 transition-transform'
+          'hover:scale-105 transition-transform relative'
         )}
         aria-label={t.echo.openEcho}
       >
         <EchoOrb state={orbState} size="sm" />
+        {pendingDraftCount > 0 && (
+          <span className="absolute -top-1 -right-1 min-w-[1.125rem] h-[1.125rem] px-1 rounded-full bg-primary text-primary-foreground text-[10px] font-semibold flex items-center justify-center">
+            {pendingDraftCount}
+          </span>
+        )}
       </button>
 
       {bubbleOpen && (

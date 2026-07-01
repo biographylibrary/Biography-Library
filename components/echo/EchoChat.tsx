@@ -18,7 +18,9 @@ import {
 } from './EchoSpeechControls';
 import { EchoIcebreakers } from './EchoIcebreakers';
 import { EchoDraftInsertPrompt } from './EchoDraftInsertPrompt';
+import { EchoDraftInsertedDialog } from './EchoDraftInsertedDialog';
 import { useEchoActivityStatus } from '@/lib/echo/use-echo-activity-status';
+import { BIOGRAPHY_SECTIONS } from '@/lib/editor-constants';
 
 export type { EchoChatMessage } from '@/lib/echo/echo-chat-context';
 
@@ -69,14 +71,37 @@ export function EchoChat({
     loadOlderMessages,
     recallUsageGuide,
     canInsertInEditor,
+    pendingDraftCount,
     confirmInsertDraft,
-    dismissInsertDraft,
+    deferInsertDraft,
+    expandInsertDraft,
+    insertDialog,
+    dismissInsertDialog,
+    openEditorForDraft,
+    activeSection,
   } = useEchoChat();
 
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const suppressAutoScrollUntilRef = useRef(0);
   const [highlightMessageId, setHighlightMessageId] = useState<string | null>(null);
+
+  const sectionTitleFor = useCallback(
+    (sectionKey?: string) => {
+      if (!sectionKey) return '';
+      if (sectionKey === 'freeflow') return t.onboardingTour.freeflowEditorTitle;
+      return (
+        t.sectionTitles[sectionKey as keyof typeof t.sectionTitles] ||
+        BIOGRAPHY_SECTIONS.find((s) => s.key === sectionKey)?.title ||
+        sectionKey
+      );
+    },
+    [t.sectionTitles, t.onboardingTour.freeflowEditorTitle]
+  );
+
+  const insertDialogSectionTitle = insertDialog
+    ? sectionTitleFor(insertDialog.sectionKey)
+    : '';
 
   const scrollToBottom = useCallback(() => {
     const el = scrollContainerRef.current;
@@ -204,6 +229,22 @@ export function EchoChat({
           {orbStatusText && (
             <span className="text-xs text-muted-foreground truncate">{orbStatusText}</span>
           )}
+          {pendingDraftCount > 0 && (
+            <span className="ml-auto text-[10px] font-medium uppercase tracking-wide text-primary bg-primary/10 px-1.5 py-0.5 rounded shrink-0">
+              {t.echo.insertDraftPendingBadge.replace('{count}', String(pendingDraftCount))}
+            </span>
+          )}
+        </div>
+      )}
+
+      {!compact && pendingDraftCount > 0 && (
+        <div
+          className={cn(
+            'mb-2 px-3 py-1.5 rounded-lg bg-primary/10 border border-primary/25 text-xs text-primary shrink-0',
+            flushChrome ? 'mx-3' : 'mx-2'
+          )}
+        >
+          {t.echo.insertDraftPendingBadge.replace('{count}', String(pendingDraftCount))}
         </div>
       )}
 
@@ -281,15 +322,40 @@ export function EchoChat({
                 <EchoMessageContent content={m.content} />
                 {canInsertInEditor && m.pendingDraft && !m.streaming && (
                   <EchoDraftInsertPrompt
-                    prompt={t.echo.insertDraftPrompt}
-                    preview={m.pendingDraft.draftText}
+                    sectionTitle={sectionTitleFor(m.pendingDraft.sectionKey)}
+                    cardTitle={t.echo.insertDraftCardTitle}
+                    cardSubtitle={t.echo.insertDraftCardSubtitle}
                     confirmLabel={t.echo.insertDraftConfirm}
-                    dismissLabel={t.echo.insertDraftDismiss}
-                    insertedLabel={t.echo.insertDraftDone}
+                    laterLabel={t.echo.insertDraftLater}
+                    showPreviewLabel={t.echo.insertDraftShowPreview}
+                    hidePreviewLabel={t.echo.insertDraftHidePreview}
+                    readyLabel={t.echo.insertDraftReady}
+                    sectionMismatchWarning={
+                      activeSection &&
+                      m.pendingDraft.sectionKey !== 'freeflow' &&
+                      m.pendingDraft.sectionKey !== activeSection
+                        ? t.echo.insertDraftSectionMismatch.replace(
+                            '{section}',
+                            sectionTitleFor(m.pendingDraft.sectionKey)
+                          )
+                        : undefined
+                    }
+                    successTitle={t.echo.insertDraftSuccessTitle}
+                    successBody={t.echo.insertDraftSuccessBody}
+                    openEditorLabel={t.echo.insertDraftOpenEditor}
+                    preview={m.pendingDraft.draftText}
+                    deferred={m.draftDeferred}
                     applying={m.applyingDraft}
                     inserted={m.draftInserted}
+                    insertError={m.draftInsertError}
                     onConfirm={() => void confirmInsertDraft(m.id)}
-                    onDismiss={() => dismissInsertDraft(m.id)}
+                    onDefer={() => deferInsertDraft(m.id)}
+                    onExpand={() => expandInsertDraft(m.id)}
+                    onOpenEditor={
+                      m.insertedSectionKey
+                        ? () => openEditorForDraft(m.insertedSectionKey!)
+                        : undefined
+                    }
                   />
                 )}
               </>
@@ -386,6 +452,22 @@ export function EchoChat({
           )}
         </Button>
       </div>
+
+      <EchoDraftInsertedDialog
+        open={insertDialog !== null}
+        title={t.echo.insertDraftDialogTitle}
+        description={t.echo.insertDraftDialogDescription}
+        openEditorLabel={t.echo.insertDraftOpenEditor}
+        continueLabel={t.echo.insertDraftContinueChat}
+        sectionTitle={insertDialogSectionTitle}
+        onOpenEditor={() => {
+          if (insertDialog) {
+            openEditorForDraft(insertDialog.sectionKey);
+          }
+          dismissInsertDialog();
+        }}
+        onContinue={dismissInsertDialog}
+      />
     </div>
   );
 }

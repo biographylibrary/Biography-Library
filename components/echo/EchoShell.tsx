@@ -13,6 +13,10 @@ interface EchoShellProps {
   biographyMode?: 'sections' | 'freeflow';
   showBubble?: boolean;
   onDraftApplied?: (sectionKey: string) => void;
+  onDraftApplying?: () => void;
+  onDraftApplyFinished?: () => void;
+  onFlushEditorSave?: () => Promise<void>;
+  onOpenEditor?: (sectionKey: string) => void;
   onSectionCompletionChanged?: (sectionKey: string, completed: boolean) => void;
 }
 
@@ -35,6 +39,10 @@ export function EchoShell({
   biographyMode,
   showBubble = false,
   onDraftApplied,
+  onDraftApplying,
+  onDraftApplyFinished,
+  onFlushEditorSave,
+  onOpenEditor,
   onSectionCompletionChanged,
 }: EchoShellProps) {
   const pathname = usePathname();
@@ -61,6 +69,10 @@ export function EchoShell({
           activeSection={sectionKey}
           biographyMode={biographyMode}
           onDraftApplied={onDraftApplied}
+          onDraftApplying={onDraftApplying}
+          onDraftApplyFinished={onDraftApplyFinished}
+          onFlushEditorSave={onFlushEditorSave}
+          onOpenEditor={onOpenEditor}
           onSectionCompletionChanged={onSectionCompletionChanged}
         >
           {children}

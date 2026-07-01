@@ -1498,6 +1498,20 @@ export interface Translations {
     insertDraftConfirm: string;
     insertDraftDismiss: string;
     insertDraftDone: string;
+    insertDraftCardTitle: string;
+    insertDraftCardSubtitle: string;
+    insertDraftLater: string;
+    insertDraftShowPreview: string;
+    insertDraftHidePreview: string;
+    insertDraftReady: string;
+    insertDraftSectionMismatch: string;
+    insertDraftSuccessTitle: string;
+    insertDraftSuccessBody: string;
+    insertDraftOpenEditor: string;
+    insertDraftDialogTitle: string;
+    insertDraftDialogDescription: string;
+    insertDraftContinueChat: string;
+    insertDraftPendingBadge: string;
     loadOlderMessages: string;
     loadingOlderMessages: string;
     icebreakerPools: EchoIcebreakerPoolsByContext;
@@ -3032,8 +3046,22 @@ export const translations: Record<Language, Translations> = {
       icebreakerDefaultSection: 'this chapter',
       insertDraftPrompt: 'Insert this text into the editor?',
       insertDraftConfirm: 'Insert in editor',
-      insertDraftDismiss: 'Not now',
+      insertDraftDismiss: 'Later',
       insertDraftDone: 'Text inserted in the editor.',
+      insertDraftCardTitle: 'Draft for {section}',
+      insertDraftCardSubtitle: 'Review the text below, then insert it into your biography.',
+      insertDraftLater: 'Later',
+      insertDraftShowPreview: 'Show full preview',
+      insertDraftHidePreview: 'Collapse preview',
+      insertDraftReady: 'Draft ready',
+      insertDraftSectionMismatch: 'Will be inserted in: {section} (not the chapter you are viewing now).',
+      insertDraftSuccessTitle: 'Text inserted',
+      insertDraftSuccessBody: 'The draft was added to your editor. You can review and edit it anytime.',
+      insertDraftOpenEditor: 'Open editor',
+      insertDraftDialogTitle: 'Draft inserted',
+      insertDraftDialogDescription: 'Your text was added to {section}. Open the editor to review it now.',
+      insertDraftContinueChat: 'Continue in chat',
+      insertDraftPendingBadge: '{count} draft to insert',
       loadOlderMessages: 'Load older messages',
       loadingOlderMessages: 'Loading…',
       ...getEchoGuideCopy('en'),
@@ -4569,8 +4597,22 @@ export const translations: Record<Language, Translations> = {
       icebreakerDefaultSection: 'questo capitolo',
       insertDraftPrompt: 'Inserire questo testo nell\'editor?',
       insertDraftConfirm: 'Inserisci nell\'editor',
-      insertDraftDismiss: 'Non ora',
+      insertDraftDismiss: 'Più tardi',
       insertDraftDone: 'Testo inserito nell\'editor.',
+      insertDraftCardTitle: 'Bozza per {section}',
+      insertDraftCardSubtitle: 'Rileggi il testo qui sotto, poi inseriscilo nella biografia.',
+      insertDraftLater: 'Più tardi',
+      insertDraftShowPreview: 'Mostra anteprima completa',
+      insertDraftHidePreview: 'Comprimi anteprima',
+      insertDraftReady: 'Bozza pronta',
+      insertDraftSectionMismatch: 'Verrà inserita in: {section} (non nel capitolo che stai visualizzando).',
+      insertDraftSuccessTitle: 'Testo inserito',
+      insertDraftSuccessBody: 'La bozza è stata aggiunta all\'editor. Puoi rivederla e modificarla quando vuoi.',
+      insertDraftOpenEditor: 'Apri editor',
+      insertDraftDialogTitle: 'Bozza inserita',
+      insertDraftDialogDescription: 'Il testo è stato aggiunto a {section}. Apri l\'editor per verificarlo subito.',
+      insertDraftContinueChat: 'Continua in chat',
+      insertDraftPendingBadge: '{count} bozza da inserire',
       loadOlderMessages: 'Carica messaggi precedenti',
       loadingOlderMessages: 'Caricamento…',
       ...getEchoGuideCopy('it'),
@@ -6106,8 +6148,22 @@ export const translations: Record<Language, Translations> = {
       icebreakerDefaultSection: 'ce chapitre',
       insertDraftPrompt: 'Insérer ce texte dans l\'éditeur ?',
       insertDraftConfirm: 'Insérer dans l\'éditeur',
-      insertDraftDismiss: 'Pas maintenant',
+      insertDraftDismiss: 'Plus tard',
       insertDraftDone: 'Texte inséré dans l\'éditeur.',
+      insertDraftCardTitle: 'Brouillon pour {section}',
+      insertDraftCardSubtitle: 'Relisez le texte ci-dessous, puis insérez-le dans la biographie.',
+      insertDraftLater: 'Plus tard',
+      insertDraftShowPreview: 'Afficher l\'aperçu complet',
+      insertDraftHidePreview: 'Réduire l\'aperçu',
+      insertDraftReady: 'Brouillon prêt',
+      insertDraftSectionMismatch: 'Sera inséré dans : {section} (pas le chapitre affiché actuellement).',
+      insertDraftSuccessTitle: 'Texte inséré',
+      insertDraftSuccessBody: 'Le brouillon a été ajouté à l\'éditeur. Vous pouvez le relire et le modifier à tout moment.',
+      insertDraftOpenEditor: 'Ouvrir l\'éditeur',
+      insertDraftDialogTitle: 'Brouillon inséré',
+      insertDraftDialogDescription: 'Le texte a été ajouté à {section}. Ouvrez l\'éditeur pour le vérifier.',
+      insertDraftContinueChat: 'Continuer dans le chat',
+      insertDraftPendingBadge: '{count} brouillon à insérer',
       loadOlderMessages: 'Charger les messages précédents',
       loadingOlderMessages: 'Chargement…',
       ...getEchoGuideCopy('fr'),
@@ -7643,8 +7699,22 @@ export const translations: Record<Language, Translations> = {
       icebreakerDefaultSection: 'dieses Kapitel',
       insertDraftPrompt: 'Diesen Text in den Editor einfügen?',
       insertDraftConfirm: 'In den Editor einfügen',
-      insertDraftDismiss: 'Nicht jetzt',
+      insertDraftDismiss: 'Später',
       insertDraftDone: 'Text im Editor eingefügt.',
+      insertDraftCardTitle: 'Entwurf für {section}',
+      insertDraftCardSubtitle: 'Lesen Sie den Text unten, dann fügen Sie ihn in die Biografie ein.',
+      insertDraftLater: 'Später',
+      insertDraftShowPreview: 'Vollständige Vorschau anzeigen',
+      insertDraftHidePreview: 'Vorschau einklappen',
+      insertDraftReady: 'Entwurf bereit',
+      insertDraftSectionMismatch: 'Wird eingefügt in: {section} (nicht das aktuell angezeigte Kapitel).',
+      insertDraftSuccessTitle: 'Text eingefügt',
+      insertDraftSuccessBody: 'Der Entwurf wurde dem Editor hinzugefügt. Sie können ihn jederzeit überarbeiten.',
+      insertDraftOpenEditor: 'Editor öffnen',
+      insertDraftDialogTitle: 'Entwurf eingefügt',
+      insertDraftDialogDescription: 'Der Text wurde zu {section} hinzugefügt. Öffnen Sie den Editor zur Kontrolle.',
+      insertDraftContinueChat: 'Im Chat fortfahren',
+      insertDraftPendingBadge: '{count} Entwurf einzufügen',
       loadOlderMessages: 'Ältere Nachrichten laden',
       loadingOlderMessages: 'Laden…',
       ...getEchoGuideCopy('de'),
