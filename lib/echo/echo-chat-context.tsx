@@ -623,6 +623,7 @@ export function EchoChatProvider({
         content: trimmed,
       };
       const assistantId = `a-${Date.now()}`;
+      let activeAssistantId = assistantId;
       setMessages((prev) => [
         ...prev,
         userMsg,
@@ -653,7 +654,7 @@ export function EchoChatProvider({
               fullReply += ev.data.content;
               setMessages((prev) =>
                 prev.map((m) =>
-                  m.id === assistantId ? { ...m, content: fullReply, streaming: true } : m
+                  m.id === activeAssistantId ? { ...m, content: fullReply, streaming: true } : m
                 )
               );
             }
@@ -665,9 +666,11 @@ export function EchoChatProvider({
                 ev.data.sectionKey
               ) {
                 const serverMessageId = ev.data.assistantMessageId;
+                const matchId = activeAssistantId;
+                if (serverMessageId) activeAssistantId = serverMessageId;
                 setMessages((prev) =>
                   prev.map((m) =>
-                    m.id === assistantId
+                    m.id === matchId
                       ? {
                           ...m,
                           ...(serverMessageId ? { id: serverMessageId } : {}),
@@ -680,7 +683,7 @@ export function EchoChatProvider({
                       : m
                   )
                 );
-                setScrollToMessageId(serverMessageId ?? assistantId);
+                setScrollToMessageId(activeAssistantId);
               }
               if (ev.data.tool === 'complete_section' && ev.data.sectionKey) {
                 onSectionCompletionChanged?.(ev.data.sectionKey, true);
@@ -700,14 +703,19 @@ export function EchoChatProvider({
 
         setMessages((prev) =>
           prev.map((m) =>
-            m.id === assistantId ? { ...m, content: fullReply, streaming: false } : m
+            m.id === activeAssistantId ? { ...m, content: fullReply, streaming: false } : m
           )
         );
 
         const nextMessages = [
           ...messagesRef.current,
           userMsg,
-          { id: assistantId, role: 'assistant' as const, content: fullReply, streaming: false },
+          {
+            id: activeAssistantId,
+            role: 'assistant' as const,
+            content: fullReply,
+            streaming: false,
+          },
         ];
         const users = userMessageCount(nextMessages);
         if (users - lastIcebreakerUserCountRef.current >= 3) {
@@ -718,13 +726,13 @@ export function EchoChatProvider({
         setOrb('idle');
         setError(err instanceof Error ? err.message : t.echo.errorGeneric);
         setMessages((prev) => {
-          const assistant = prev.find((m) => m.id === assistantId);
+          const assistant = prev.find((m) => m.id === activeAssistantId);
           if (assistant && (assistant.content.trim() || assistant.pendingDraft)) {
             return prev.map((m) =>
-              m.id === assistantId ? { ...m, streaming: false } : m
+              m.id === activeAssistantId ? { ...m, streaming: false } : m
             );
           }
-          return prev.filter((m) => m.id !== assistantId);
+          return prev.filter((m) => m.id !== activeAssistantId);
         });
       } finally {
         setLoading(false);

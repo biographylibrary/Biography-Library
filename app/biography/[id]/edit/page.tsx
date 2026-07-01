@@ -19,7 +19,6 @@ import { ShareLinkPanel } from '@/components/editor/share-link-panel';
 import { PhotoGalleryDialog } from '@/components/editor/PhotoGalleryDialog';
 import { ImportTextDialog } from '@/components/editor/import-text-dialog';
 import { SectionEditor } from '@/components/editor/section-editor';
-import { NextSectionPrompt } from '@/components/editor/next-section-prompt';
 import { AISectionReview } from '@/components/editor/AISectionReview';
 import { ApertusReviewDialog } from '@/components/editor/ApertusReviewDialog';
 import { FinalReviewDialog } from '@/components/editor/FinalReviewDialog';
@@ -48,7 +47,6 @@ import {
   runPrePublicationCheck,
 } from '@/lib/ai-service';
 import { toast } from 'sonner';
-import { recommendNextSection, type SectionRecommendation } from '@/lib/ai/next-section-recommender';
 import type { Biography, BiographyPublicationStatus } from '@/lib/biographies';
 import { canPublishNextChapter } from '@/lib/biography-chapter-cooldown';
 import { isBiographyPublicationStatus, isReviewOrScreeningLockStatus } from '@/lib/publication-state';
@@ -144,10 +142,6 @@ export default function BiographyEditorPage() {
   const [aiEnabled, setAiEnabled] = useState(false);
   const [aiState, setAiState] = useState<AiPanelState>(INITIAL_AI_STATE);
 
-  const [showNextSectionPrompt, setShowNextSectionPrompt] = useState(false);
-  const [nextSectionRecommendation, setNextSectionRecommendation] = useState<SectionRecommendation | null>(null);
-  const [isLoadingRecommendation, setIsLoadingRecommendation] = useState(false);
-  const [completedSectionKey, setCompletedSectionKey] = useState<string | null>(null);
   const [showExportDialog, setShowExportDialog] = useState(false);
   const [showReviewDialog, setShowReviewDialog] = useState(false);
   const [showApertusDialog, setShowApertusDialog] = useState(false);
@@ -1094,38 +1088,11 @@ const [isPublishing, setIsPublishing] = useState(false);
         setSaveStatus('saved');
         setActiveSection(sectionKey);
         setEditorPeekOpen(true);
-
-        const completedSections = BIOGRAPHY_SECTIONS.map((s) => s.key).filter((key) => {
-          const sectionData = getSectionData(contentRef.current, key);
-          return sectionData.text.trim().length > 100 || key === sectionKey;
-        });
-
-        setCompletedSectionKey(sectionKey);
-        setShowNextSectionPrompt(true);
-        setIsLoadingRecommendation(true);
-
-        try {
-          if (session) {
-            const sectionContent = getSectionData(contentRef.current, sectionKey).text || '';
-            const recommendation = await recommendNextSection(
-              sectionKey,
-              completedSections,
-              sectionContent,
-              BIOGRAPHY_SECTIONS.map((s) => s.key),
-              language
-            );
-            setNextSectionRecommendation(recommendation);
-          }
-        } catch (error) {
-          console.error('Failed to get section recommendation:', error);
-        } finally {
-          setIsLoadingRecommendation(false);
-        }
       } finally {
         applyingEchoDraftRef.current = false;
       }
     },
-    [id, session, language]
+    [id]
   );
 
   const handleDraftApplying = useCallback(() => {
@@ -2335,30 +2302,6 @@ const [isPublishing, setIsPublishing] = useState(false);
                   }
                   biographyMode="sections"
                 />
-              )}
-
-              {biographyMode === 'sections' && showNextSectionPrompt && completedSectionKey && (
-                <div className="p-4 border-b border-border/50 shrink-0">
-                  <NextSectionPrompt
-                    completedSectionKey={completedSectionKey}
-                    recommendedSection={nextSectionRecommendation?.recommendedSection}
-                    recommendationReason={nextSectionRecommendation?.reason}
-                    confidence={nextSectionRecommendation?.confidence}
-                    onStartSection={(sectionKey) => {
-                      setActiveSection(sectionKey);
-                      setShowNextSectionPrompt(false);
-                      setNextSectionRecommendation(null);
-                      setCompletedSectionKey(null);
-                    }}
-                    completedSections={BIOGRAPHY_SECTIONS
-                      .map(s => s.key)
-                      .filter(key => {
-                        const sectionData = getSectionData(content, key);
-                        return sectionData.text.trim().length > 100;
-                      })}
-                    isLoading={isLoadingRecommendation}
-                  />
-                </div>
               )}
 
               {biographyMode === 'sections' &&
