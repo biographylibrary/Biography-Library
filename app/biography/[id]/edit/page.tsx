@@ -881,10 +881,12 @@ const [isPublishing, setIsPublishing] = useState(false);
         setAiLimitError(err);
         return;
       }
+      const message =
+        err?.message === 'AI_TIMEOUT' ? t.biography.aiTimeout : err.message || t.editor.failedGrammar;
       setAiState((prev) => ({
         ...prev,
         loading: false,
-        error: err.message || t.editor.failedGrammar,
+        error: message,
       }));
     }
   }, [activeSection, session, language, t]);
@@ -2154,7 +2156,7 @@ const [isPublishing, setIsPublishing] = useState(false);
       )}
 
       <div className="flex-1 flex min-h-0 relative">
-        <div className="lg:hidden fixed bottom-4 left-4 z-[60]">
+        <div className="lg:hidden fixed left-4 floating-action-bottom z-[60]">
           <Button
             size="icon"
             data-tour-id="mobile-sidebar-toggle"
@@ -2277,8 +2279,6 @@ const [isPublishing, setIsPublishing] = useState(false);
                   aiUsageRefresh={aiUsageRefresh}
                   aiLoading={aiState.loading}
                   onGrammarCheck={handleGrammarCheck}
-                  onGuidedPrompts={handleGuidedPrompts}
-                  onSummarize={handleSummarize}
                   onReviewWithAi={handleReviewWithAi}
                   onApertusReview={aiEnabled ? handleApertusReview : undefined}
                   onMarkComplete={
@@ -2303,8 +2303,6 @@ const [isPublishing, setIsPublishing] = useState(false);
                   aiEnabled={aiEnabled}
                   onToggleAi={handleToggleAi}
                   onGrammarCheck={handleGrammarCheck}
-                  onGuidedPrompts={handleGuidedPrompts}
-                  onSummarize={handleSummarize}
                   onReviewWithAi={handleReviewWithAi}
                   onApertusReview={aiEnabled ? handleApertusReview : undefined}
                   aiLoading={aiState.loading}
@@ -2332,8 +2330,6 @@ const [isPublishing, setIsPublishing] = useState(false);
                   aiEnabled={aiEnabled}
                   onToggleAi={handleToggleAi}
                   onGrammarCheck={handleGrammarCheck}
-                  onGuidedPrompts={handleGuidedPrompts}
-                  onSummarize={handleSummarize}
                   onReviewWithAi={handleReviewWithAi}
                   onApertusReview={aiEnabled ? handleApertusReview : undefined}
                   aiLoading={aiState.loading}

@@ -37,6 +37,24 @@ function truncateToTokenBudget(text: string, maxChars = 14000): string {
   return text.slice(0, maxChars) + '\n[Content truncated for analysis]';
 }
 
+function stripHtmlToPlain(html: string): string {
+  return html
+    .replace(/<br\s*\/?>/gi, '\n')
+    .replace(/<\/p>/gi, '\n\n')
+    .replace(/<[^>]+>/g, '')
+    .replace(/&nbsp;/g, ' ')
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/\n{3,}/g, '\n\n')
+    .trim();
+}
+
+const ACTION_TIMEOUT_MS: Record<string, number> = {
+  grammar: 45_000,
+  rewrite: 75_000,
+};
+
 function errorResponse(message: string, status: number, extra?: Record<string, unknown>) {
   return new Response(JSON.stringify({ error: message, ...extra }), {
     status,
@@ -129,9 +147,36 @@ function buildMemorialPromptSuffix(ctx: MemorialNarrativeInput, language: string
 function buildGrammarPrompt(sectionTitle: string, content: string, language: string) {
   const langName = getLangName(language);
   return {
-    system: `${JSON_ONLY_PREFIX}You are a skilled editor helping with a biography written in ${langName}. Review text for grammar, spelling, clarity, and style in ${langName}. Preserve the author's voice and tone. Respond in ${langName}. Return a JSON array of suggestions. Each suggestion must have: "id" (unique string), "original" (the problematic text), "suggestion" (the corrected text), "explanation" (brief reason in ${langName}). If the text is already good, return an empty array.`,
+    system: `${JSON_ONLY_PREFIX}You are a skilled editor helping with a biography written in ${langName}. Review text for grammar, spelling, clarity, and style in ${langName}. Preserve the author's voice and tone. Respond in ${langName}. Return a JSON array of suggestions.
+
+Each suggestion must have:
+- "id": unique string
+- "original": exact substring copied verbatim from the user text (enough context for a unique find-and-replace)
+- "suggestion": the full replacement for that same span — MUST differ from "original"
+- "explanation": brief reason in ${langName}
+
+Rules:
+- Include an entry ONLY when you recommend a concrete wording change.
+- If a phrase is already correct, omit it — never return identical "original" and "suggestion".
+- Put the preferred replacement in "suggestion", not only in "explanation" (e.g. if you mention an alternative phrase in the explanation, that phrase must appear in "suggestion").
+- If no changes are needed, return an empty array [].`,
     user: `Section: "${sectionTitle}"\n\nText to review:\n${content}`,
   };
+}
+
+function normalizeGrammarText(text: string): string {
+  return text.trim().replace(/\s+/g, " ");
+}
+
+function sanitizeGrammarSuggestions(
+  items: { id?: string; original?: string; suggestion?: string; explanation?: string }[]
+): typeof items {
+  return items.filter((item) => {
+    const original = String(item.original ?? "").trim();
+    const suggestion = String(item.suggestion ?? "").trim();
+    if (!original || !suggestion) return false;
+    return normalizeGrammarText(original) !== normalizeGrammarText(suggestion);
+  });
 }
 
 function buildPromptsPrompt(
@@ -291,36 +336,24 @@ What section should they work on next?`,
 function buildRewritePrompt(
   sectionTitle: string,
   content: string,
-  tone: string,
   language: string
 ) {
   const langName = getLangName(language);
 
-  const toneInstructions: Record<string, string> = {
-    narrative: `Write in a flowing, storytelling style. Use vivid descriptions, sensory details, and narrative techniques. Make it engaging and immersive, as if telling a story to a friend.`,
-    formal: `Write in a formal, polished style. Use proper grammar, sophisticated vocabulary, and clear structure. Suitable for official documents or professional publications.`,
-    intimate: `Write in a warm, personal, conversational style. Use first-person perspective, emotional honesty, and direct address. Make it feel like a heartfelt letter to loved ones.`,
-  };
-
-  const instruction = toneInstructions[tone] || toneInstructions['narrative'];
-
   return {
-    system: `You are a skilled biography editor. Rewrite the following biography section in ${langName} with a ${tone} tone.
+    system: `You are a skilled biography editor. Revise the following section in ${langName} to improve flow and coherence between passages.
 
-${instruction}
-
-Important:
-- Preserve all factual information and key details
-- Maintain the original meaning and events
-- Keep the same chronological order
+Guidelines:
+- Smooth abrupt transitions; add brief linking phrases only where the text feels choppy or disjointed
+- Preserve every fact, name, date, place, and event — do not invent or remove biographical details
+- Keep the author's voice, tone, and chronological order
 - Write entirely in ${langName}
-- Return ONLY the rewritten text, no additional commentary or markdown formatting`,
+- Return ONLY the revised text — no commentary, labels, or markdown`,
     user: `Section: "${sectionTitle}"
 
-Original text:
-${content}
+Text to revise:
 
-Rewrite this in a ${tone} tone while preserving all facts and details.`,
+${content}`,
   };
 }
 
@@ -487,7 +520,8 @@ async function callWithRetry(
 async function callAIWithFallback(
   payload: object,
   endpoint: string,
-  token: string
+  token: string,
+  timeoutMs = 28_000
 ): Promise<{ data: unknown; modelUsed: string }> {
   const models = [PRIMARY_MODEL, FALLBACK_MODEL];
 
@@ -502,7 +536,7 @@ async function callAIWithFallback(
             "Content-Type": "application/json",
           },
           body: JSON.stringify({ ...payload, model }),
-          signal: AbortSignal.timeout(28000),
+          signal: AbortSignal.timeout(timeoutMs),
         })
       );
 
@@ -758,6 +792,7 @@ Deno.serve(async (req: Request) => {
     let systemPrompt: string;
     let userPrompt: string;
     let maxTokens = 1024;
+    let aiTimeoutMs = ACTION_TIMEOUT_MS[action] ?? 28_000;
 
     switch (action) {
       case "grammar": {
@@ -767,7 +802,12 @@ Deno.serve(async (req: Request) => {
             400
           );
         }
-        const p = buildGrammarPrompt(sectionTitle, content, language);
+        const plainContent = stripHtmlToPlain(content);
+        const p = buildGrammarPrompt(
+          sectionTitle,
+          truncateToTokenBudget(plainContent, 10_000),
+          language
+        );
         systemPrompt = p.system;
         userPrompt = p.user;
         maxTokens = 2048;
@@ -862,8 +902,12 @@ Deno.serve(async (req: Request) => {
             400
           );
         }
-        const tone = body.tone || 'narrative';
-        const p = buildRewritePrompt(sectionTitle, truncateToTokenBudget(content), tone, language);
+        const plainContent = stripHtmlToPlain(content);
+        const p = buildRewritePrompt(
+          sectionTitle,
+          truncateToTokenBudget(plainContent),
+          language
+        );
         systemPrompt = p.system;
         userPrompt = p.user;
         maxTokens = 4096;
@@ -950,7 +994,8 @@ Deno.serve(async (req: Request) => {
       const { data: aiResult, modelUsed: usedModel } = await callAIWithFallback(
         aiPayload,
         infomaniakEndpoint,
-        infomaniakToken
+        infomaniakToken,
+        aiTimeoutMs
       );
       modelUsed = usedModel;
       const result = aiResult as any;
@@ -1059,7 +1104,12 @@ Deno.serve(async (req: Request) => {
     } else {
       try {
         const cleaned = extractJson(textContent);
-        parsed = { data: JSON.parse(cleaned) };
+        const data = JSON.parse(cleaned);
+        if (action === "grammar" && Array.isArray(data)) {
+          parsed = { data: sanitizeGrammarSuggestions(data) };
+        } else {
+          parsed = { data };
+        }
       } catch {
         return errorResponse(
           "AI returned an invalid response. Please try again.",

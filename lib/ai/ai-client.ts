@@ -104,7 +104,10 @@ export async function callAI(body: Record<string, unknown>): Promise<any> {
 
 function doFetch(token: string, body: Record<string, unknown>): Promise<Response> {
   const controller = new AbortController();
-  const clientTimeout = setTimeout(() => controller.abort(), 35000);
+  const action = typeof body.action === 'string' ? body.action : '';
+  const timeoutMs =
+    action === 'rewrite' ? 90_000 : action === 'grammar' ? 55_000 : 35_000;
+  const clientTimeout = setTimeout(() => controller.abort(), timeoutMs);
 
   return fetch(AI_FUNCTION_URL, {
     method: 'POST',

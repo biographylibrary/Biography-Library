@@ -19,8 +19,6 @@ interface SectionEditorProps {
   aiEnabled: boolean;
   onToggleAi: () => void;
   onGrammarCheck: () => void;
-  onGuidedPrompts: () => void;
-  onSummarize: () => void;
   onReviewWithAi?: () => void;
   onApertusReview?: () => void;
   aiLoading: boolean;
@@ -46,8 +44,6 @@ export function SectionEditor({
   aiEnabled,
   onToggleAi,
   onGrammarCheck,
-  onGuidedPrompts,
-  onSummarize,
   onReviewWithAi,
   onApertusReview,
   aiLoading,
@@ -121,8 +117,6 @@ export function SectionEditor({
               aiLoading={aiLoading}
               hasText={!!data.text.trim()}
               onGrammarCheck={onGrammarCheck}
-              onGuidedPrompts={onGuidedPrompts}
-              onSummarize={onSummarize}
               onReviewWithAi={onReviewWithAi}
               onApertusReview={onApertusReview}
               buttonClassName="h-7"

@@ -9,9 +9,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { useTranslation } from '@/lib/i18n/i18n-context';
 import {
-  FileText,
   Landmark,
-  MessageSquareText,
   MoreHorizontal,
   SpellCheck,
   Wand2,
@@ -23,8 +21,6 @@ export interface EditorAiToolsMenuProps {
   aiLoading?: boolean;
   hasText?: boolean;
   onGrammarCheck?: () => void;
-  onGuidedPrompts?: () => void;
-  onSummarize?: () => void;
   onReviewWithAi?: () => void;
   onApertusReview?: () => void;
   className?: string;
@@ -36,8 +32,6 @@ export function EditorAiToolsMenu({
   aiLoading = false,
   hasText = false,
   onGrammarCheck,
-  onGuidedPrompts,
-  onSummarize,
   onReviewWithAi,
   onApertusReview,
   className,
@@ -68,21 +62,6 @@ export function EditorAiToolsMenu({
           >
             <SpellCheck className="h-3.5 w-3.5 mr-2" />
             {t.editor.checkGrammar}
-          </DropdownMenuItem>
-        )}
-        {onGuidedPrompts && (
-          <DropdownMenuItem disabled={aiLoading} onClick={onGuidedPrompts}>
-            <MessageSquareText className="h-3.5 w-3.5 mr-2" />
-            {t.editor.needHelp}
-          </DropdownMenuItem>
-        )}
-        {onSummarize && (
-          <DropdownMenuItem
-            disabled={aiLoading || !hasText}
-            onClick={onSummarize}
-          >
-            <FileText className="h-3.5 w-3.5 mr-2" />
-            {t.editor.summarize}
           </DropdownMenuItem>
         )}
         {onReviewWithAi && (

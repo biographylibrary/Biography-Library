@@ -23,8 +23,6 @@ interface GuidedSectionWorkspaceProps {
   aiUsageRefresh?: number;
   aiLoading?: boolean;
   onGrammarCheck?: () => void;
-  onGuidedPrompts?: () => void;
-  onSummarize?: () => void;
   onReviewWithAi?: () => void;
   onApertusReview?: () => void;
   onMarkComplete?: () => void;
@@ -45,8 +43,6 @@ export function GuidedSectionWorkspace({
   aiUsageRefresh,
   aiLoading,
   onGrammarCheck,
-  onGuidedPrompts,
-  onSummarize,
   onReviewWithAi,
   onApertusReview,
   onMarkComplete,
@@ -150,8 +146,6 @@ export function GuidedSectionWorkspace({
           aiUsageRefresh={aiUsageRefresh}
           aiLoading={aiLoading}
           onGrammarCheck={onGrammarCheck}
-          onGuidedPrompts={onGuidedPrompts}
-          onSummarize={onSummarize}
           onReviewWithAi={onReviewWithAi}
           onApertusReview={onApertusReview}
           onMarkComplete={onMarkComplete}

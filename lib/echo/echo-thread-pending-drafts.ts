@@ -69,3 +69,20 @@ export function enrichMessagesWithPendingDrafts(
       };
     });
 }
+
+/** Only the most recent assistant draft should surface as actionable in the UI. */
+export function retainOnlyLatestPendingDraft<T extends MessageWithPendingDraft>(
+  messages: T[]
+): T[] {
+  let latestIndex = -1;
+  for (let i = messages.length - 1; i >= 0; i--) {
+    if (messages[i].role === 'assistant' && messages[i].pendingDraft) {
+      latestIndex = i;
+      break;
+    }
+  }
+  if (latestIndex < 0) return messages;
+  return messages.map((m, i) =>
+    i !== latestIndex && m.pendingDraft ? { ...m, pendingDraft: undefined } : m
+  );
+}

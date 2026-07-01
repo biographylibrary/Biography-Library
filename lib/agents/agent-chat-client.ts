@@ -4,7 +4,7 @@ import { fetchWithAgentAuth } from '@/lib/auth-token';
 export type AgentStreamEvent =
   | { event: 'thread'; data: { threadId: string } }
   | { event: 'token'; data: { content: string } }
-  | { event: 'tool_result'; data: { tool: string; sectionKey?: string; contentLength?: number; draftText?: string; preview?: boolean; wordCount?: number } }
+  | { event: 'tool_result'; data: { tool: string; sectionKey?: string; contentLength?: number; draftText?: string; preview?: boolean; wordCount?: number; assistantMessageId?: string } }
   | { event: 'kb_sources'; data: { sources: string[] } }
   | { event: 'done'; data: { threadId: string } }
   | { event: 'error'; data: { message: string } };

@@ -206,7 +206,7 @@ export async function runStreamingAgentTurn(
 
       if (result.tool_calls?.length) {
         const assistantContent = extractTextContent(result.content);
-        await appendMessage(serviceClient, prepared.threadId, {
+        const assistantRow = await appendMessage(serviceClient, prepared.threadId, {
           role: 'assistant',
           content: assistantContent,
           tool_calls: result.tool_calls,
@@ -220,7 +220,7 @@ export async function runStreamingAgentTurn(
         for (const tc of result.tool_calls) {
           const { content, event } = await executeToolCall(tc, prepared, serviceClient);
           if (event) {
-            send('tool_result', event);
+            send('tool_result', { ...event, assistantMessageId: assistantRow.id });
             if (isDraftPreviewEvent(event)) hadDraftPreview = true;
           }
           await appendMessage(serviceClient, prepared.threadId, {

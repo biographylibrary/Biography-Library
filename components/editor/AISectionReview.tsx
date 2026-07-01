@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useMemo, useCallback } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Loader as Loader2, CircleCheck as CheckCircle2, Circle as XCircle, BookOpen, Wand as Wand2, ChartBar as BarChart3 } from 'lucide-react';
+import { Loader as Loader2, CircleCheck as CheckCircle2, Circle as XCircle, Wand as Wand2, ChartBar as BarChart3, RefreshCw } from 'lucide-react';
 import { aiService, AiLimitError, type Improvement } from '@/lib/ai/ai-provider';
 import { useAuth } from '@/lib/auth-context';
 import { addRevisionToHistory } from '@/lib/revision-history-service';
@@ -27,12 +27,11 @@ interface AISectionReviewProps {
   onApplyChanges: (newContent: string, changeType: 'improvements' | 'rewrite') => void;
 }
 
-interface RewriteVersion {
-  tone: 'narrative' | 'formal' | 'intimate';
-  label: string;
-  description: string;
+interface RewriteVersionEntry {
+  id: string;
   content: string;
   loading: boolean;
+  createdAt: number;
 }
 
 interface Statistics {
@@ -70,22 +69,8 @@ export function AISectionReview({
   const [selectedImprovements, setSelectedImprovements] = useState<Set<string>>(new Set());
   const [statistics, setStatistics] = useState<Statistics | null>(null);
   const [applying, setApplying] = useState(false);
-
-  const initialRewriteVersions = useMemo(() => [
-    { tone: 'narrative' as const, label: t.aiReview.narrativeLabel, description: t.aiReview.narrativeDesc, content: '', loading: false },
-    { tone: 'formal' as const, label: t.aiReview.formalLabel, description: t.aiReview.formalDesc, content: '', loading: false },
-    { tone: 'intimate' as const, label: t.aiReview.intimateLabel, description: t.aiReview.intimateDesc, content: '', loading: false },
-  ], [t]);
-
-  const [rewriteVersions, setRewriteVersions] = useState<RewriteVersion[]>(initialRewriteVersions);
-
-  useEffect(() => {
-    setRewriteVersions(prev => prev.map((v, i) => ({
-      ...v,
-      label: initialRewriteVersions[i].label,
-      description: initialRewriteVersions[i].description,
-    })));
-  }, [initialRewriteVersions]);
+  const [rewriteVersions, setRewriteVersions] = useState<RewriteVersionEntry[]>([]);
+  const [rewriteGenerating, setRewriteGenerating] = useState(false);
 
   const calculateStatistics = useCallback(() => {
     const text = content.trim();
@@ -171,26 +156,26 @@ export function AISectionReview({
     if (open) {
       loadSuggestions();
       calculateStatistics();
+      setRewriteVersions([]);
     }
   }, [open, content, loadSuggestions, calculateStatistics]);
 
-  const loadRewrite = async (tone: 'narrative' | 'formal' | 'intimate') => {
-    if (!session) return;
+  const generateRewrite = async () => {
+    if (!session || rewriteGenerating) return;
 
-    setRewriteVersions(prev =>
-      prev.map(v => v.tone === tone ? { ...v, loading: true } : v)
-    );
+    const versionId = `rw-${Date.now()}`;
+    setRewriteGenerating(true);
+    setRewriteVersions((prev) => [
+      ...prev,
+      { id: versionId, content: '', loading: true, createdAt: Date.now() },
+    ]);
 
     try {
-      const rewritten = await aiService.rewriteSection(
-        sectionTitle,
-        content,
-        tone,
-        language
-      );
-
-      setRewriteVersions(prev =>
-        prev.map(v => v.tone === tone ? { ...v, content: rewritten, loading: false } : v)
+      const rewritten = await aiService.rewriteSection(sectionTitle, content, language);
+      setRewriteVersions((prev) =>
+        prev.map((v) =>
+          v.id === versionId ? { ...v, content: rewritten, loading: false } : v
+        )
       );
     } catch (error) {
       if (error instanceof AiLimitError) {
@@ -198,28 +183,13 @@ export function AISectionReview({
         toast.error(msg, { description: error.limitType === 'daily' ? t.aiUsage.dailyLimitDetail : t.aiUsage.weeklyLimitDetail });
       } else if (error instanceof Error && error.message === 'AI_TIMEOUT') {
         toast.error(t.biography.aiTimeout);
-      } else if (error instanceof Error && (error.message === 'SESSION_EXPIRED' || error.message === 'TOKEN_EXPIRED')) {
-        const { error: refreshError } = await supabase.auth.refreshSession();
-        if (!refreshError) {
-          try {
-            const rewritten = await aiService.rewriteSection(sectionTitle, content, tone, language);
-            setRewriteVersions(prev =>
-              prev.map(v => v.tone === tone ? { ...v, content: rewritten, loading: false } : v)
-            );
-            return;
-          } catch {
-            toast.error(`${t.aiReview.failedToGenerate} ${tone}`);
-          }
-        } else {
-          toast.error('Session expired. Please sign in again.');
-        }
       } else {
         console.error('Error rewriting section:', error);
-        toast.error(`${t.aiReview.failedToGenerate} ${tone}`);
+        toast.error(t.aiReview.failedToGenerate);
       }
-      setRewriteVersions(prev =>
-        prev.map(v => v.tone === tone ? { ...v, loading: false } : v)
-      );
+      setRewriteVersions((prev) => prev.filter((v) => v.id !== versionId));
+    } finally {
+      setRewriteGenerating(false);
     }
   };
 
@@ -281,7 +251,7 @@ export function AISectionReview({
     }
   };
 
-  const applyRewrite = async (tone: string, rewrittenContent: string) => {
+  const applyRewrite = async (versionIndex: number, rewrittenContent: string) => {
     setApplying(true);
     try {
       await addRevisionToHistory(
@@ -289,11 +259,11 @@ export function AISectionReview({
         sectionKey,
         rewrittenContent,
         'ai_rewrite',
-        `Rewritten in ${tone} tone`
+        `Flow revision (version ${versionIndex + 1})`
       );
 
       onApplyChanges(rewrittenContent, 'rewrite');
-      toast.success(t.aiReview.appliedRewrite.replace('{tone}', tone));
+      toast.success(t.aiReview.appliedRewrite);
       onOpenChange(false);
     } catch (error) {
       console.error('Error applying rewrite:', error);
@@ -347,7 +317,7 @@ export function AISectionReview({
               {t.aiReview.suggestionsTab}
             </TabsTrigger>
             <TabsTrigger value="rewrite">
-              <BookOpen className="h-4 w-4 mr-2" />
+              <RefreshCw className="h-4 w-4 mr-2" />
               {t.aiReview.rewriteTab}
             </TabsTrigger>
             <TabsTrigger value="statistics">
@@ -434,36 +404,48 @@ export function AISectionReview({
           <TabsContent value="rewrite" className="flex-1 min-h-0 mt-4">
             <ScrollArea className="h-[500px] pr-4">
               <div className="space-y-4">
-                {rewriteVersions.map((version) => (
-                  <Card key={version.tone}>
-                    <CardHeader>
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <CardTitle>{version.label}</CardTitle>
-                          <CardDescription>{version.description}</CardDescription>
-                        </div>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => loadRewrite(version.tone)}
-                          disabled={version.loading || !session}
-                        >
-                          {version.loading ? (
-                            <>
-                              <Loader2 className="h-3 w-3 mr-1 animate-spin" />
-                              {t.aiReview.generating}
-                            </>
-                          ) : version.content ? (
-                            t.aiReview.regenerate
-                          ) : (
-                            t.aiReview.generate
-                          )}
-                        </Button>
-                      </div>
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-base">{t.aiReview.rewriteTab}</CardTitle>
+                    <CardDescription>{t.aiReview.rewriteDesc}</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <Button
+                      onClick={() => void generateRewrite()}
+                      disabled={rewriteGenerating || !session}
+                    >
+                      {rewriteGenerating ? (
+                        <>
+                          <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                          {t.aiReview.generating}
+                        </>
+                      ) : rewriteVersions.length > 0 ? (
+                        <>
+                          <RefreshCw className="h-4 w-4 mr-2" />
+                          {t.aiReview.regenerate}
+                        </>
+                      ) : (
+                        t.aiReview.generate
+                      )}
+                    </Button>
+                  </CardContent>
+                </Card>
+
+                {rewriteVersions.map((version, index) => (
+                  <Card key={version.id}>
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-sm font-medium">
+                        {t.aiReview.rewriteVersionLabel.replace('{n}', String(index + 1))}
+                      </CardTitle>
                     </CardHeader>
-                    {version.content && (
+                    {version.loading ? (
+                      <CardContent className="flex items-center gap-2 py-6 text-muted-foreground">
+                        <Loader2 className="h-5 w-5 animate-spin" />
+                        <span>{t.aiReview.generating}</span>
+                      </CardContent>
+                    ) : (
                       <CardContent className="space-y-4">
-                        <div className="grid grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                           <div>
                             <p className="text-sm font-medium mb-2">{t.aiReview.originalVersion}</p>
                             <ScrollArea className="h-48 border rounded p-3 bg-muted/30">
@@ -477,9 +459,9 @@ export function AISectionReview({
                             </ScrollArea>
                           </div>
                         </div>
-                        <div className="flex gap-2">
+                        <div className="flex flex-wrap gap-2">
                           <Button
-                            onClick={() => applyRewrite(version.tone, version.content)}
+                            onClick={() => void applyRewrite(index, version.content)}
                             disabled={applying}
                           >
                             {applying ? (
