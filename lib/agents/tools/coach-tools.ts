@@ -211,6 +211,7 @@ export async function executeCoachTool(
             ok: true,
             preview: true,
             sectionKey,
+            draftText,
             wordCount: words,
           }),
           event: {

@@ -7,6 +7,7 @@ import {
   loadThreadMessagesBefore,
   verifyThreadOwnership,
 } from '@/lib/agents/thread-service';
+import { enrichMessagesWithPendingDrafts } from '@/lib/echo/echo-thread-pending-drafts';
 
 export const runtime = 'nodejs';
 
@@ -35,7 +36,10 @@ export async function GET(
     ? await loadThreadMessagesBefore(serviceClient, threadId, before, limit)
     : await loadRecentThreadMessages(serviceClient, threadId, limit);
 
-  const displayMessages = messages.filter((m) => m.role === 'user' || m.role === 'assistant');
+  const displayMessages =
+    thread.agent_type === 'echo'
+      ? enrichMessagesWithPendingDrafts(messages)
+      : messages.filter((m) => m.role === 'user' || m.role === 'assistant');
 
   let hasMoreOlder = false;
   if (messages.length > 0) {

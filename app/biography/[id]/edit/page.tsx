@@ -424,6 +424,31 @@ const [isPublishing, setIsPublishing] = useState(false);
     }
   }, [id]);
 
+  const flushEditorSave = useCallback(async () => {
+    if (!id || !dirtyRef.current) return;
+    dirtyRef.current = false;
+    setSaveStatus('saving');
+    const isMemorial = biographyTypeRef.current === 'memorial';
+    const { error } = await supabase
+      .from('biographies')
+      .update({
+        title: titleRef.current,
+        ...(isMemorial ? { subject_name: titleRef.current } : {}),
+        visibility: privacyRef.current,
+        content: contentRef.current,
+        biography_mode: biographyModeRef.current,
+        content_freeflow: contentFreeflowRef.current,
+        author_name: authorNameRef.current,
+      })
+      .eq('id', id);
+    if (error) {
+      setSaveStatus('error');
+      dirtyRef.current = true;
+      throw new Error(error.message);
+    }
+    setSaveStatus('saved');
+  }, [id]);
+
   useEffect(() => {
     const interval = setInterval(() => {
       if (dirtyRef.current) {
@@ -1100,6 +1125,23 @@ const [isPublishing, setIsPublishing] = useState(false);
     },
     [id, session, language]
   );
+
+  const handleDraftApplying = useCallback(() => {
+    applyingEchoDraftRef.current = true;
+  }, []);
+
+  const handleDraftApplyFinished = useCallback(() => {
+    applyingEchoDraftRef.current = false;
+  }, []);
+
+  const handleOpenEditorForDraft = useCallback((sectionKey: string) => {
+    if (sectionKey === 'freeflow') {
+      document.getElementById('echo-freeflow-editor')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      return;
+    }
+    setActiveSection(sectionKey);
+    setEditorPeekOpen(true);
+  }, []);
 
 
   const allSectionsKeys = BIOGRAPHY_SECTIONS.map(s => s.key);
@@ -1819,6 +1861,10 @@ const [isPublishing, setIsPublishing] = useState(false);
       biographyMode={biographyMode}
       showBubble={showEchoBubble}
       onDraftApplied={handleCoachDraftApplied}
+      onDraftApplying={handleDraftApplying}
+      onDraftApplyFinished={handleDraftApplyFinished}
+      onFlushEditorSave={flushEditorSave}
+      onOpenEditor={handleOpenEditorForDraft}
       onSectionCompletionChanged={handleEchoSectionCompletion}
     >
     <div className="h-full flex flex-col bg-[#ECE9E4] dark:bg-[#1F2121] overflow-hidden">
@@ -2246,6 +2292,7 @@ const [isPublishing, setIsPublishing] = useState(false);
                   isCompleted={completedSections.includes(activeSection)}
                 />
               ) : biographyMode === 'freeflow' ? (
+                <div id="echo-freeflow-editor">
                 <SectionEditor
                   sectionKey="freeflow"
                   titleOverride={t.editor.freeFlowTab}
@@ -2274,6 +2321,7 @@ const [isPublishing, setIsPublishing] = useState(false);
                   }
                   biographyMode="freeflow"
                 />
+                </div>
               ) : (
                 <SectionEditor
                   sectionKey={activeSection}

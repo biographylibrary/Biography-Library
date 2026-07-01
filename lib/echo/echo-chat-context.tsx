@@ -29,6 +29,8 @@ import {
   type EchoIcebreakerTrigger,
 } from '@/lib/echo/echo-icebreakers';
 import { parseEchoMessageContent } from '@/lib/echo/echo-usage-guide';
+import { isAffirmativeDraftReply, isDismissiveDraftReply } from '@/lib/echo/draft-affirmative';
+import { getAppliedDraftMessageIds, markDraftApplied } from '@/lib/echo/draft-applied-storage';
 
 export interface EchoChatMessage {
   id: string;
@@ -37,19 +39,43 @@ export interface EchoChatMessage {
   streaming?: boolean;
   isUsageGuide?: boolean;
   pendingDraft?: { sectionKey: string; draftText: string };
+  draftDeferred?: boolean;
   draftInserted?: boolean;
   applyingDraft?: boolean;
+  draftInsertError?: string;
+  insertedSectionKey?: string;
 }
 
-function mapStoredMessage(m: { id: string; role: string; content: string }): EchoChatMessage {
+function mapStoredMessage(
+  m: {
+    id: string;
+    role: string;
+    content: string;
+    pendingDraft?: { sectionKey: string; draftText: string };
+  },
+  appliedMessageIds: Set<string>
+): EchoChatMessage {
   const parsed = parseEchoMessageContent(m.content);
-  return {
+  const base: EchoChatMessage = {
     id: m.id,
     role: m.role as 'user' | 'assistant',
     content: parsed.body,
     isUsageGuide: parsed.isUsageGuide,
   };
+  if (m.role !== 'assistant' || !m.pendingDraft || appliedMessageIds.has(m.id)) {
+    return base;
+  }
+  return {
+    ...base,
+    pendingDraft: m.pendingDraft,
+    draftDeferred: true,
+  };
 }
+
+export type EchoInsertDialogState = {
+  messageId: string;
+  sectionKey: string;
+} | null;
 
 interface EchoChatContextValue {
   messages: EchoChatMessage[];
@@ -75,8 +101,14 @@ interface EchoChatContextValue {
   loadOlderMessages: () => Promise<void>;
   recallUsageGuide: () => void;
   canInsertInEditor: boolean;
+  pendingDraftCount: number;
   confirmInsertDraft: (messageId: string) => Promise<void>;
-  dismissInsertDraft: (messageId: string) => void;
+  deferInsertDraft: (messageId: string) => void;
+  expandInsertDraft: (messageId: string) => void;
+  insertDialog: EchoInsertDialogState;
+  dismissInsertDialog: () => void;
+  openEditorForDraft: (sectionKey: string) => void;
+  activeSection?: string;
 }
 
 const EchoChatContext = createContext<EchoChatContextValue | null>(null);
@@ -97,6 +129,10 @@ interface EchoChatProviderProps {
   biographyMode?: 'sections' | 'freeflow';
   onboardingIncomplete?: boolean;
   onDraftApplied?: (sectionKey: string) => void;
+  onDraftApplying?: () => void;
+  onDraftApplyFinished?: () => void;
+  onFlushEditorSave?: () => Promise<void>;
+  onOpenEditor?: (sectionKey: string) => void;
   onSectionCompletionChanged?: (sectionKey: string, completed: boolean) => void;
   onOnboardingEvent?: (event: { tool: string; data?: unknown }) => void;
 }
@@ -109,12 +145,16 @@ export function EchoChatProvider({
   biographyMode,
   onboardingIncomplete = false,
   onDraftApplied,
+  onDraftApplying,
+  onDraftApplyFinished,
+  onFlushEditorSave,
+  onOpenEditor,
   onSectionCompletionChanged,
   onOnboardingEvent,
 }: EchoChatProviderProps) {
   const { user } = useAuth();
   const { language, t } = useTranslation();
-  const { setOrbState: setContextOrbState, bubbleOpen } = useEcho();
+  const { setOrbState: setContextOrbState, bubbleOpen, setBubbleOpen } = useEcho();
 
   const [messages, setMessages] = useState<EchoChatMessage[]>([]);
   const [input, setInput] = useState('');
@@ -130,6 +170,7 @@ export function EchoChatProvider({
   const [scrollToMessageId, setScrollToMessageId] = useState<string | null>(null);
   const [hasMoreOlder, setHasMoreOlder] = useState(false);
   const [loadingOlder, setLoadingOlder] = useState(false);
+  const [insertDialog, setInsertDialog] = useState<EchoInsertDialogState>(null);
 
   const prevSectionRef = useRef(activeSection);
   const lastSentSectionRef = useRef(activeSection);
@@ -137,6 +178,17 @@ export function EchoChatProvider({
   const prevBubbleOpenRef = useRef(false);
   const lastIcebreakerLinesRef = useRef<string[]>([]);
   const oldestLoadedAtRef = useRef<string | null>(null);
+  const messagesRef = useRef(messages);
+  const threadIdRef = useRef(threadId);
+  const shownInsertDialogRef = useRef<Set<string>>(new Set());
+
+  useEffect(() => {
+    messagesRef.current = messages;
+  }, [messages]);
+
+  useEffect(() => {
+    threadIdRef.current = threadId;
+  }, [threadId]);
 
   const hasUserMessages = useCallback(
     (list: EchoChatMessage[]) => list.some((m) => m.role === 'user'),
@@ -195,14 +247,25 @@ export function EchoChatProvider({
   const sectionTitleFor = useCallback(
     (sectionKey?: string) => {
       if (!sectionKey) return '';
+      if (sectionKey === 'freeflow') return t.onboardingTour.freeflowEditorTitle;
       return (
         t.sectionTitles[sectionKey as keyof typeof t.sectionTitles] ||
         BIOGRAPHY_SECTIONS.find((s) => s.key === sectionKey)?.title ||
         sectionKey
       );
     },
-    [t.sectionTitles]
+    [t.sectionTitles, t.onboardingTour.freeflowEditorTitle]
   );
+
+  const findLatestPendingDraftMessage = useCallback((list: EchoChatMessage[]) => {
+    for (let i = list.length - 1; i >= 0; i--) {
+      const m = list[i];
+      if (m.role === 'assistant' && m.pendingDraft && !m.draftInserted) {
+        return m;
+      }
+    }
+    return undefined;
+  }, []);
 
   const showIcebreakers = useCallback(
     (trigger: EchoIcebreakerTrigger) => {
@@ -264,6 +327,18 @@ export function EchoChatProvider({
     []
   );
 
+  const openEditorForDraft = useCallback(
+    (sectionKey: string) => {
+      setBubbleOpen(false);
+      onOpenEditor?.(sectionKey);
+    },
+    [onOpenEditor, setBubbleOpen]
+  );
+
+  const dismissInsertDialog = useCallback(() => {
+    setInsertDialog(null);
+  }, []);
+
   const loadOlderMessages = useCallback(async () => {
     if (!user || !threadId || !hasMoreOlder || loadingOlder) return;
 
@@ -280,9 +355,12 @@ export function EchoChatProvider({
       if (!res.ok) return;
 
       const json = await res.json();
+      const appliedIds = getAppliedDraftMessageIds(threadId);
       const older = (json.messages ?? [])
         .filter((m: { role: string }) => m.role === 'user' || m.role === 'assistant')
-        .map((m: { id: string; role: string; content: string }) => mapStoredMessage(m));
+        .map((m: { id: string; role: string; content: string; pendingDraft?: { sectionKey: string; draftText: string } }) =>
+          mapStoredMessage(m, appliedIds)
+        );
 
       if (!older.length) {
         setHasMoreOlder(false);
@@ -319,14 +397,23 @@ export function EchoChatProvider({
         }
         const json = await res.json();
         if (cancelled) return;
-        if (json?.thread?.id) setThreadId(json.thread.id);
+        const loadedThreadId = json?.thread?.id as string | undefined;
+        if (loadedThreadId) setThreadId(loadedThreadId);
         setHasMoreOlder(json?.hasMoreOlder === true);
         oldestLoadedAtRef.current = json?.oldestLoadedAt ?? null;
+        const appliedIds = getAppliedDraftMessageIds(loadedThreadId);
         if (json?.messages?.length) {
           setMessages(
             json.messages
               .filter((m: { role: string }) => m.role === 'user' || m.role === 'assistant')
-              .map((m: { id: string; role: string; content: string }) => mapStoredMessage(m))
+              .map(
+                (m: {
+                  id: string;
+                  role: string;
+                  content: string;
+                  pendingDraft?: { sectionKey: string; draftText: string };
+                }) => mapStoredMessage(m, appliedIds)
+              )
           );
         } else {
           setMessages([]);
@@ -387,10 +474,111 @@ export function EchoChatProvider({
     }
   }, [bubbleOpen, loading, messages, showIcebreakers, userMessageCount]);
 
+  const confirmInsertDraft = useCallback(
+    async (messageId: string) => {
+      if (!user || !biographyId) return;
+      const target = messagesRef.current.find((m) => m.id === messageId);
+      if (!target?.pendingDraft) return;
+
+      setError(null);
+      onDraftApplying?.();
+
+      setMessages((prev) =>
+        prev.map((m) =>
+          m.id === messageId ? { ...m, applyingDraft: true, draftInsertError: undefined } : m
+        )
+      );
+
+      try {
+        if (onFlushEditorSave) {
+          await onFlushEditorSave();
+        }
+
+        const res = await fetchWithAgentAuth('/api/agents/echo/apply-draft', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            biographyId,
+            sectionKey: target.pendingDraft.sectionKey,
+            draftText: target.pendingDraft.draftText,
+          }),
+        });
+
+        if (!res.ok) {
+          const json = await res.json().catch(() => ({}));
+          throw new Error((json.error as string) || 'Failed to insert draft');
+        }
+
+        const sectionKey = target.pendingDraft.sectionKey;
+        markDraftApplied(threadIdRef.current, messageId);
+
+        setMessages((prev) =>
+          prev.map((m) =>
+            m.id === messageId
+              ? {
+                  ...m,
+                  pendingDraft: undefined,
+                  draftInserted: true,
+                  applyingDraft: false,
+                  draftDeferred: false,
+                  insertedSectionKey: sectionKey,
+                }
+              : m
+          )
+        );
+
+        onDraftApplied?.(sectionKey);
+
+        if (!shownInsertDialogRef.current.has(messageId)) {
+          shownInsertDialogRef.current.add(messageId);
+          setInsertDialog({ messageId, sectionKey });
+        }
+      } catch (err) {
+        const message = err instanceof Error ? err.message : t.echo.errorGeneric;
+        setMessages((prev) =>
+          prev.map((m) =>
+            m.id === messageId ? { ...m, applyingDraft: false, draftInsertError: message } : m
+          )
+        );
+        onDraftApplyFinished?.();
+      }
+    },
+    [user, biographyId, onDraftApplied, onDraftApplying, onDraftApplyFinished, onFlushEditorSave, t.echo.errorGeneric]
+  );
+
+  const deferInsertDraft = useCallback((messageId: string) => {
+    setMessages((prev) =>
+      prev.map((m) => (m.id === messageId ? { ...m, draftDeferred: true } : m))
+    );
+  }, []);
+
+  const expandInsertDraft = useCallback((messageId: string) => {
+    setMessages((prev) =>
+      prev.map((m) => (m.id === messageId ? { ...m, draftDeferred: false } : m))
+    );
+    setScrollToMessageId(messageId);
+  }, []);
+
   const sendMessage = useCallback(
     async (text: string) => {
       const trimmed = text.trim();
       if (!trimmed || !user || loading) return;
+
+      const pendingDraftMessage = findLatestPendingDraftMessage(messagesRef.current);
+      if (pendingDraftMessage?.pendingDraft) {
+        if (isAffirmativeDraftReply(trimmed)) {
+          setInput('');
+          await confirmInsertDraft(pendingDraftMessage.id);
+          return;
+        }
+        if (isDismissiveDraftReply(trimmed)) {
+          setInput('');
+          deferInsertDraft(pendingDraftMessage.id);
+          return;
+        }
+      }
 
       setError(null);
       setLoading(true);
@@ -405,8 +593,8 @@ export function EchoChatProvider({
         echoPage === 'editor_sections' &&
         activeSection &&
         sectionTitle &&
-        messages.length > 0 &&
-        hasUserMessages(messages) &&
+        messagesRef.current.length > 0 &&
+        hasUserMessages(messagesRef.current) &&
         lastSentSectionRef.current !== activeSection
       ) {
         apiMessage = `${t.echo.sectionSwitchPrefix.replace('{section}', sectionTitle)}\n\n${trimmed}`;
@@ -439,7 +627,7 @@ export function EchoChatProvider({
             biographyId,
             activeSection,
             language,
-            threadId,
+            threadId: threadIdRef.current,
             echoPage,
             onboardingIncomplete,
           },
@@ -471,21 +659,17 @@ export function EchoChatProvider({
                             sectionKey: ev.data.sectionKey!,
                             draftText: ev.data.draftText!,
                           },
+                          draftDeferred: false,
                         }
                       : m
                   )
                 );
+                setScrollToMessageId(assistantId);
               }
-              if (
-                ev.data.tool === 'complete_section' &&
-                ev.data.sectionKey
-              ) {
+              if (ev.data.tool === 'complete_section' && ev.data.sectionKey) {
                 onSectionCompletionChanged?.(ev.data.sectionKey, true);
               }
-              if (
-                ev.data.tool === 'reopen_section' &&
-                ev.data.sectionKey
-              ) {
+              if (ev.data.tool === 'reopen_section' && ev.data.sectionKey) {
                 onSectionCompletionChanged?.(ev.data.sectionKey, false);
               }
               onOnboardingEvent?.({ tool: ev.data.tool, data: ev.data });
@@ -505,7 +689,7 @@ export function EchoChatProvider({
         );
 
         const nextMessages = [
-          ...messages,
+          ...messagesRef.current,
           userMsg,
           { id: assistantId, role: 'assistant' as const, content: fullReply, streaming: false },
         ];
@@ -549,11 +733,8 @@ export function EchoChatProvider({
       biographyId,
       activeSection,
       language,
-      threadId,
       echoPage,
       onboardingIncomplete,
-      voiceOutputEnabled,
-      onDraftApplied,
       onSectionCompletionChanged,
       onOnboardingEvent,
       t.echo.errorGeneric,
@@ -564,7 +745,9 @@ export function EchoChatProvider({
       showIcebreakers,
       userMessageCount,
       hasUserMessages,
-      messages,
+      confirmInsertDraft,
+      deferInsertDraft,
+      findLatestPendingDraftMessage,
     ]
   );
 
@@ -572,59 +755,10 @@ export function EchoChatProvider({
     biographyId && (echoPage === 'editor_sections' || echoPage === 'editor_freeflow')
   );
 
-  const dismissInsertDraft = useCallback((messageId: string) => {
-    setMessages((prev) =>
-      prev.map((m) => (m.id === messageId ? { ...m, pendingDraft: undefined } : m))
-    );
-  }, []);
-
-  const confirmInsertDraft = useCallback(
-    async (messageId: string) => {
-      if (!user || !biographyId) return;
-      const target = messages.find((m) => m.id === messageId);
-      if (!target?.pendingDraft) return;
-
-      setMessages((prev) =>
-        prev.map((m) =>
-          m.id === messageId ? { ...m, applyingDraft: true } : m
-        )
-      );
-
-      try {
-        const res = await fetchWithAgentAuth('/api/agents/echo/apply-draft', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            biographyId,
-            sectionKey: target.pendingDraft.sectionKey,
-            draftText: target.pendingDraft.draftText,
-          }),
-        });
-
-        if (!res.ok) {
-          const json = await res.json().catch(() => ({}));
-          throw new Error((json.error as string) || 'Failed to insert draft');
-        }
-
-        const sectionKey = target.pendingDraft.sectionKey;
-        setMessages((prev) =>
-          prev.map((m) =>
-            m.id === messageId
-              ? { ...m, pendingDraft: undefined, draftInserted: true, applyingDraft: false }
-              : m
-          )
-        );
-        onDraftApplied?.(sectionKey);
-      } catch (err) {
-        setMessages((prev) =>
-          prev.map((m) => (m.id === messageId ? { ...m, applyingDraft: false } : m))
-        );
-        setError(err instanceof Error ? err.message : t.echo.errorGeneric);
-      }
-    },
-    [user, biographyId, messages, onDraftApplied, t.echo.errorGeneric]
+  const pendingDraftCount = useMemo(
+    () =>
+      messages.filter((m) => m.pendingDraft && !m.draftInserted && !m.streaming).length,
+    [messages]
   );
 
   const value = useMemo(
@@ -652,8 +786,14 @@ export function EchoChatProvider({
       loadOlderMessages,
       recallUsageGuide,
       canInsertInEditor,
+      pendingDraftCount,
       confirmInsertDraft,
-      dismissInsertDraft,
+      deferInsertDraft,
+      expandInsertDraft,
+      insertDialog,
+      dismissInsertDialog,
+      openEditorForDraft,
+      activeSection,
     }),
     [
       messages,
@@ -678,8 +818,14 @@ export function EchoChatProvider({
       loadOlderMessages,
       recallUsageGuide,
       canInsertInEditor,
+      pendingDraftCount,
       confirmInsertDraft,
-      dismissInsertDraft,
+      deferInsertDraft,
+      expandInsertDraft,
+      insertDialog,
+      dismissInsertDialog,
+      openEditorForDraft,
+      activeSection,
     ]
   );
 

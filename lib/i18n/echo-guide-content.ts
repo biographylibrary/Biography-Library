@@ -34,7 +34,7 @@ const it: EchoGuideCopy & { pools: EchoIcebreakerPoolsByContext } = {
 
 **Come usarci al meglio**
 - Sei già sul capitolo selezionato a sinistra — non serve dirmi quale, a meno che tu non voglia un altro
-- Chiedi una cosa alla volta; per i testi lunghi chiedi una **bozza** e conferma prima di inserirla
+- Chiedi una cosa alla volta; per i testi lunghi chiedi una **bozza** — poi usa il pulsante **Inserisci nell'editor** sotto il messaggio (o rispondi «sì») quando sei pronto
 - Puoi usare il **microfono** o la tastiera
 - I suggerimenti sotto la chat sono esempi cliccabili — provaci
 
@@ -213,7 +213,7 @@ const en: EchoGuideCopy & { pools: EchoIcebreakerPoolsByContext } = {
 
 **How to get the most from me**
 - You're already on the chapter selected on the left — no need to tell me which, unless you want another
-- Ask one thing at a time; for long text ask for a **draft** and confirm before inserting
+- Ask one thing at a time; for long text ask for a **draft** — then use the **Insert in editor** button below the message (or reply "yes") when you are ready
 - You can use the **microphone** or the keyboard
 - The suggestions below the chat are clickable examples — try them
 
@@ -392,7 +392,7 @@ const fr: EchoGuideCopy & { pools: EchoIcebreakerPoolsByContext } = {
 
 **Comment bien m'utiliser**
 - Vous êtes déjà sur le chapitre sélectionné à gauche — inutile de me le dire, sauf si vous voulez un autre
-- Une question à la fois ; pour un long texte demandez un **brouillon** et confirmez avant insertion
+- Une question à la fois ; pour un long texte demandez un **brouillon** — puis utilisez le bouton **Insérer dans l'éditeur** sous le message (ou répondez « oui ») quand vous êtes prêt
 - Vous pouvez utiliser le **microphone** ou le clavier
 - Les suggestions sous le chat sont des exemples cliquables — essayez-les
 
@@ -571,7 +571,7 @@ const de: EchoGuideCopy & { pools: EchoIcebreakerPoolsByContext } = {
 
 **So nutzen Sie mich am besten**
 - Sie sind bereits beim links gewählten Kapitel — Sie müssen es nicht nennen, außer Sie möchten ein anderes
-- Eine Frage nach der anderen; bei langem Text einen **Entwurf** anfordern und vor dem Einfügen bestätigen
+- Eine Frage nach der anderen; bei langem Text einen **Entwurf** anfordern — dann den Button **In den Editor einfügen** unter der Nachricht nutzen (oder «ja» antworten), wenn Sie bereit sind
 - Sie können **Mikrofon** oder Tastatur verwenden
 - Die Vorschläge unter dem Chat sind klickbare Beispiele — probieren Sie sie
 
