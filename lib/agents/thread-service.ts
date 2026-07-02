@@ -271,6 +271,23 @@ export async function appendMessage(
   return data as AgentMessageRow;
 }
 
+export async function updateAssistantMessageContent(
+  serviceClient: SupabaseClient,
+  messageId: string,
+  content: string
+): Promise<AgentMessageRow> {
+  const { data, error } = await serviceClient
+    .from('agent_messages')
+    .update({ content })
+    .eq('id', messageId)
+    .eq('role', 'assistant')
+    .select('*')
+    .single();
+
+  if (error) throw error;
+  return data as AgentMessageRow;
+}
+
 export async function verifyThreadOwnership(
   serviceClient: SupabaseClient,
   threadId: string,
