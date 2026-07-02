@@ -69,7 +69,6 @@ function countActionablePendingDrafts(messages: EchoChatMessage[]): number {
       m.role === 'assistant' &&
       m.pendingDraft &&
       !m.draftInserted &&
-      !m.streaming &&
       !m.draftDeferred
   ).length;
 }
@@ -624,6 +623,7 @@ export function EchoChatProvider({
       };
       const assistantId = `a-${Date.now()}`;
       let activeAssistantId = assistantId;
+      let turnPendingDraft: { sectionKey: string; draftText: string } | null = null;
       setMessages((prev) => [
         ...prev,
         userMsg,
@@ -668,16 +668,17 @@ export function EchoChatProvider({
                 const serverMessageId = ev.data.assistantMessageId;
                 const matchId = activeAssistantId;
                 if (serverMessageId) activeAssistantId = serverMessageId;
+                turnPendingDraft = {
+                  sectionKey: ev.data.sectionKey!,
+                  draftText: ev.data.draftText!,
+                };
                 setMessages((prev) =>
                   prev.map((m) =>
                     m.id === matchId
                       ? {
                           ...m,
                           ...(serverMessageId ? { id: serverMessageId } : {}),
-                          pendingDraft: {
-                            sectionKey: ev.data.sectionKey!,
-                            draftText: ev.data.draftText!,
-                          },
+                          pendingDraft: turnPendingDraft!,
                           draftDeferred: false,
                         }
                       : m
@@ -703,9 +704,18 @@ export function EchoChatProvider({
 
         setMessages((prev) =>
           prev.map((m) =>
-            m.id === activeAssistantId ? { ...m, content: fullReply, streaming: false } : m
+            m.id === activeAssistantId
+              ? {
+                  ...m,
+                  content: fullReply,
+                  streaming: false,
+                  pendingDraft: m.pendingDraft ?? turnPendingDraft ?? undefined,
+                  draftDeferred: false,
+                }
+              : m
           )
         );
+        turnPendingDraft = null;
 
         const nextMessages = [
           ...messagesRef.current,

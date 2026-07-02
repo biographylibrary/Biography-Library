@@ -57,7 +57,7 @@ export function enrichMessagesWithPendingDrafts(
     }
   }
 
-  return allRows
+  const display = allRows
     .filter((m) => m.role === 'user' || m.role === 'assistant')
     .map((m) => {
       const pending = m.role === 'assistant' ? draftByAssistantId.get(m.id) : undefined;
@@ -68,6 +68,48 @@ export function enrichMessagesWithPendingDrafts(
         ...(pending ? { pendingDraft: pending } : {}),
       };
     });
+
+  return mergeOrphanedDraftMessages(display);
+}
+
+/** Legacy threads stored draft tool rows separately from the visible acknowledgment text. */
+export function mergeOrphanedDraftMessages<T extends MessageWithPendingDraft>(
+  messages: T[]
+): T[] {
+  const result: T[] = [];
+
+  for (let i = 0; i < messages.length; i++) {
+    const current = messages[i];
+    const next = messages[i + 1];
+
+    if (
+      current.role === 'assistant' &&
+      current.pendingDraft &&
+      current.content.trim().length < 40 &&
+      next?.role === 'assistant' &&
+      !next.pendingDraft &&
+      next.content.trim().length > 0
+    ) {
+      result.push({
+        ...next,
+        pendingDraft: current.pendingDraft,
+      });
+      i += 1;
+      continue;
+    }
+
+    if (
+      current.role === 'assistant' &&
+      current.pendingDraft &&
+      !current.content.trim()
+    ) {
+      continue;
+    }
+
+    result.push(current);
+  }
+
+  return result;
 }
 
 /** Only the most recent assistant draft should surface as actionable in the UI. */

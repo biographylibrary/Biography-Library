@@ -8,7 +8,7 @@ import {
   type ToolDefinition,
 } from '@/lib/agents/infomaniak-client';
 import type { AgentRole, AgentType } from '@/lib/agents/models';
-import { appendMessage } from '@/lib/agents/thread-service';
+import { appendMessage, updateAssistantMessageContent } from '@/lib/agents/thread-service';
 import { maybeCompressThreadMemory } from '@/lib/agents/thread-memory';
 import { executeCoachTool } from '@/lib/agents/tools/coach-tools';
 import { executeReviewerTool } from '@/lib/agents/tools/reviewer-tools';
@@ -187,6 +187,8 @@ export async function runStreamingAgentTurn(
     (Boolean(prepared.biographyId) || prepared.agentType === 'echo');
 
   let hadDraftPreview = false;
+  let draftAssistantMessageId: string | null = null;
+  let draftDisplayPrefix = '';
 
   if (toolsEnabled) {
     for (let round = 0; round < MAX_TOOL_ROUNDS; round++) {
@@ -205,7 +207,7 @@ export async function runStreamingAgentTurn(
       }
 
       if (result.tool_calls?.length) {
-        const assistantContent = extractTextContent(result.content);
+        const assistantContent = extractTextContent(result.content).trim();
         const assistantRow = await appendMessage(serviceClient, prepared.threadId, {
           role: 'assistant',
           content: assistantContent,
@@ -217,11 +219,21 @@ export async function runStreamingAgentTurn(
           tool_calls: result.tool_calls,
         });
 
+        if (assistantContent) {
+          draftDisplayPrefix = draftDisplayPrefix
+            ? `${draftDisplayPrefix}\n\n${assistantContent}`
+            : assistantContent;
+          send('token', { content: assistantContent });
+        }
+
         for (const tc of result.tool_calls) {
           const { content, event } = await executeToolCall(tc, prepared, serviceClient);
           if (event) {
             send('tool_result', { ...event, assistantMessageId: assistantRow.id });
-            if (isDraftPreviewEvent(event)) hadDraftPreview = true;
+            if (isDraftPreviewEvent(event)) {
+              hadDraftPreview = true;
+              draftAssistantMessageId = assistantRow.id;
+            }
           }
           await appendMessage(serviceClient, prepared.threadId, {
             role: 'tool',
@@ -255,11 +267,21 @@ export async function runStreamingAgentTurn(
     send('token', { content: finalText });
   }
 
-  if (!finalText) {
+  if (!finalText && !draftDisplayPrefix) {
     console.warn('[agents] empty model response after tool/stream passes');
     throw new Error('AI returned an empty response');
   }
 
-  await persistAssistantText(serviceClient, prepared.threadId, finalText);
+  const displayText =
+    draftDisplayPrefix && finalText
+      ? `${draftDisplayPrefix}\n\n${finalText}`
+      : draftDisplayPrefix || finalText;
+
+  if (draftAssistantMessageId) {
+    await updateAssistantMessageContent(serviceClient, draftAssistantMessageId, displayText);
+  } else if (displayText) {
+    await persistAssistantText(serviceClient, prepared.threadId, displayText);
+  }
+
   finishTurn();
 }

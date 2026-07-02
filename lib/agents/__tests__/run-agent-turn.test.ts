@@ -3,6 +3,7 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 import { historyToChatMessages, runStreamingAgentTurn, type PreparedAgentTurn } from '@/lib/agents/run-agent-turn';
 
 const appendMessage = vi.fn().mockResolvedValue({ id: 'msg-1' });
+const updateAssistantMessageContent = vi.fn().mockResolvedValue({ id: 'msg-1', content: 'ack' });
 const maybeCompressThreadMemory = vi.fn().mockResolvedValue(undefined);
 const chat = vi.fn();
 const chatStream = vi.fn();
@@ -11,6 +12,7 @@ const executeEchoTool = vi.fn();
 
 vi.mock('@/lib/agents/thread-service', () => ({
   appendMessage: (...args: unknown[]) => appendMessage(...args),
+  updateAssistantMessageContent: (...args: unknown[]) => updateAssistantMessageContent(...args),
 }));
 
 vi.mock('@/lib/agents/thread-memory', () => ({
@@ -164,5 +166,11 @@ describe('runStreamingAgentTurn', () => {
       true
     );
     expect(events.some((e) => e.event === 'done')).toBe(true);
+    expect(updateAssistantMessageContent).toHaveBeenCalledWith(
+      serviceClient,
+      'msg-1',
+      expect.stringContaining('bozza')
+    );
+    expect(appendMessage).toHaveBeenCalled();
   });
 });
