@@ -58,6 +58,15 @@ async function resolveStaffRole(accessToken: string): Promise<string | null> {
 export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
+  // UM identifier at site root → /id/... (any host: app. or id.)
+  const umRoot = pathname.match(/^\/(UM|um|Um|uM)([-\s]?[\dA-Za-z][\dA-Za-z\s-]*)$/);
+  if (umRoot) {
+    const raw = `${umRoot[1]}${umRoot[2]}`.replace(/\s+/g, '');
+    const url = req.nextUrl.clone();
+    url.pathname = `/id/${raw}`;
+    return NextResponse.rewrite(url);
+  }
+
   if (pathname === '/sw.js' || pathname.startsWith('/workbox-')) {
     if (process.env.NODE_ENV === 'development') {
       const noopSw =
@@ -103,5 +112,14 @@ export async function middleware(req: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/sw.js', '/workbox-:path*', '/admin/:path*', '/api/admin/:path*'],
+  matcher: [
+    '/sw.js',
+    '/workbox-:path*',
+    '/admin/:path*',
+    '/api/admin/:path*',
+    '/UM:path*',
+    '/um:path*',
+    '/Um:path*',
+    '/uM:path*',
+  ],
 };

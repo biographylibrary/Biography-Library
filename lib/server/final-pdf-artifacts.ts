@@ -1,5 +1,6 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 import {
+  checkBiographyPdfReadiness,
   generateBiographyPDF,
   setPdfExportSupabaseClient,
   type BiographyData,
@@ -158,6 +159,11 @@ export async function generateUploadFinalPdf(
 ): Promise<FinalPdfArtifacts> {
   setPdfExportSupabaseClient(svc);
   try {
+    const readiness = await checkBiographyPdfReadiness(biographyId, false);
+    if (readiness.issues.includes('unsupported-script')) {
+      throw new Error('unsupported_script');
+    }
+
     const bioData = await loadBiographyDataForPdfExport(svc, biographyId);
     const labels = DEFAULT_PDF_LABELS[contentLanguage || 'en'] ?? DEFAULT_PDF_LABELS.en;
     const buf = await generateBiographyPDF(

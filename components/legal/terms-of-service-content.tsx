@@ -132,6 +132,7 @@ export function TermsOfServiceContent() {
             <li key={idx}>{item}</li>
           ))}
         </ul>
+        <p className="mt-3">{t.section6MetadataCc0}</p>
 
         <p className="mt-3">{t.section6Ownership}</p>
         <p className="mt-2">{t.section6Deletion}</p>

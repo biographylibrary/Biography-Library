@@ -20,11 +20,13 @@ import {
   isMemorialDeclarationComplete,
   type MemorialDeclarationValues,
 } from '@/components/onboarding/forms/MemorialDeclarationForm';
+import { LicenseChoiceDialog } from '@/components/editor/LicenseChoiceDialog';
 import { useTranslation } from '@/lib/i18n/i18n-context';
 import { useAuth } from '@/lib/auth-context';
 import { useOnboardingGate } from '@/components/onboarding/OnboardingGateProvider';
 import { patchOnboarding } from '@/lib/onboarding/onboarding-client';
 import { createBiography, fetchBiographies, ONE_BIOGRAPHY_PER_USER_ERROR } from '@/lib/biographies';
+import type { ContentLicenseUri } from '@/lib/rights';
 import {
   WIZARD_STEP_ORDER,
   type BiographyTypeChoice,
@@ -82,6 +84,7 @@ export function OnboardingWizard() {
   const [privacy, setPrivacy] = useState<'private' | 'link-only' | 'public'>('private');
   const [writingPath, setWritingPath] = useState<WritingPath | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [licenseDialogOpen, setLicenseDialogOpen] = useState(false);
 
   useEffect(() => {
     if (!user) return;
@@ -158,6 +161,80 @@ export function OnboardingWizard() {
     }
   };
 
+  const finishCreate = async (rightsStatementUri?: ContentLicenseUri | null) => {
+    if (!writingPath || !biographyType || !user) {
+      toast.error(t.toast.error);
+      return;
+    }
+    if (!title.trim() && biographyType !== 'memorial') {
+      toast.error(t.biography.titleLabel);
+      setStep('details');
+      return;
+    }
+    if (biographyType === 'memorial' && (!subjectName.trim() || !authorName.trim())) {
+      toast.error(t.biography.memorialDetailsSubtitle);
+      setStep('details');
+      return;
+    }
+
+    setSubmitting(true);
+    try {
+      const { data: existing } = await fetchBiographies(user.id);
+      if ((existing?.length ?? 0) > 0) {
+        toast.error(t.dashboard.oneBiographyLimit);
+        router.push('/dashboard');
+        return;
+      }
+
+      const mode = writingPath === 'sections' ? 'sections' : ('freeflow' as const);
+      const isMemorial = biographyType === 'memorial';
+      const { data, error } = await createBiography(
+        user.id,
+        isMemorial ? subjectName.trim() : title.trim(),
+        privacy,
+        mode,
+        isMemorial ? authorName.trim() : user.user_metadata?.name || user.email || '',
+        biographyType,
+        language,
+        isMemorial ? subjectName.trim() : undefined,
+        rightsStatementUri ?? null
+      );
+      if (error || !data) {
+        if (error === ONE_BIOGRAPHY_PER_USER_ERROR) {
+          throw new Error(t.dashboard.oneBiographyLimit);
+        }
+        throw new Error(error ?? 'Failed');
+      }
+
+      const { error: patchError } = await patchOnboarding({
+        action: 'complete_wizard',
+        writingPath,
+        biographyType,
+      });
+      if (patchError) {
+        throw new Error(patchError);
+      }
+
+      try {
+        sessionStorage.removeItem(WIZARD_DRAFT_KEY);
+      } catch {
+        /* ignore */
+      }
+
+      const params = new URLSearchParams({ tour: '1' });
+      if (writingPath === 'freeflow_import' || writingPath === 'publish_ready') {
+        params.set('import', '1');
+      }
+      setLicenseDialogOpen(false);
+      router.push(`/biography/${data.id}/edit?${params.toString()}`);
+      void refreshOnboarding();
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : t.echo.errorGeneric);
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
   const handleBack = async () => {
     const prev = prevStep(step);
     setStep(prev);
@@ -169,76 +246,11 @@ export function OnboardingWizard() {
     if (!canContinue()) return;
 
     if (step === 'path') {
-      if (!writingPath || !biographyType || !user) {
-        toast.error(t.toast.error);
+      if (privacy === 'public') {
+        setLicenseDialogOpen(true);
         return;
       }
-      if (!title.trim() && biographyType !== 'memorial') {
-        toast.error(t.biography.titleLabel);
-        setStep('details');
-        return;
-      }
-      if (biographyType === 'memorial' && (!subjectName.trim() || !authorName.trim())) {
-        toast.error(t.biography.memorialDetailsSubtitle);
-        setStep('details');
-        return;
-      }
-
-      setSubmitting(true);
-      try {
-        const { data: existing } = await fetchBiographies(user.id);
-        if ((existing?.length ?? 0) > 0) {
-          toast.error(t.dashboard.oneBiographyLimit);
-          router.push('/dashboard');
-          return;
-        }
-
-        const mode =
-          writingPath === 'sections' ? 'sections' : ('freeflow' as const);
-        const isMemorial = biographyType === 'memorial';
-        const { data, error } = await createBiography(
-          user.id,
-          isMemorial ? subjectName.trim() : title.trim(),
-          privacy,
-          mode,
-          isMemorial ? authorName.trim() : user.user_metadata?.name || user.email || '',
-          biographyType,
-          language,
-          isMemorial ? subjectName.trim() : undefined
-        );
-        if (error || !data) {
-          if (error === ONE_BIOGRAPHY_PER_USER_ERROR) {
-            throw new Error(t.dashboard.oneBiographyLimit);
-          }
-          throw new Error(error ?? 'Failed');
-        }
-
-        const { error: patchError } = await patchOnboarding({
-          action: 'complete_wizard',
-          writingPath,
-          biographyType,
-        });
-        if (patchError) {
-          throw new Error(patchError);
-        }
-
-        try {
-          sessionStorage.removeItem(WIZARD_DRAFT_KEY);
-        } catch {
-          /* ignore */
-        }
-
-        const params = new URLSearchParams({ tour: '1' });
-        if (writingPath === 'freeflow_import' || writingPath === 'publish_ready') {
-          params.set('import', '1');
-        }
-        router.push(`/biography/${data.id}/edit?${params.toString()}`);
-        void refreshOnboarding();
-      } catch (e) {
-        toast.error(e instanceof Error ? e.message : t.echo.errorGeneric);
-      } finally {
-        setSubmitting(false);
-      }
+      await finishCreate(null);
       return;
     }
 
@@ -256,6 +268,13 @@ export function OnboardingWizard() {
   return (
     <div className="w-full max-w-3xl mx-auto space-y-6 sm:space-y-8">
       <OnboardingProgress currentStep={step} />
+
+      <LicenseChoiceDialog
+        open={licenseDialogOpen}
+        onOpenChange={setLicenseDialogOpen}
+        onConfirm={(uri) => void finishCreate(uri)}
+        busy={submitting}
+      />
 
       {step === 'biography_type' && (
         <div className="space-y-6 animate-in fade-in duration-300">

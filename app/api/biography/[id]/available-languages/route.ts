@@ -5,6 +5,7 @@ import {
   verifyBiographyViewAccess,
 } from '@/lib/server/biography-view-access';
 import { buildServiceClient } from '@/lib/server/review-submit-pipeline';
+import { resolveRecordLanguageTag } from '@/lib/record-language';
 
 function buildAnonAuthClient(jwt: string) {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL!;
@@ -47,7 +48,7 @@ export async function GET(
       return NextResponse.json({ error: 'Access denied' }, { status: access.status });
     }
 
-    const sourceLanguage = access.biography.content_language ?? 'en';
+    const sourceLanguage = resolveRecordLanguageTag(access.biography);
     const service = buildServiceClient();
     const { data: rows } = await service
       .from('biography_view_translations')

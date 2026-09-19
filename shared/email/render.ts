@@ -1,5 +1,6 @@
 import { resolveSiteName, resolveSiteUrl } from './locale';
 import type { EmailLocale, EmailTemplateId, EmailTemplateVars, RenderedEmail } from './types';
+import { formatUmYear, umYearFromDate } from '@/lib/um';
 
 function esc(value: string): string {
   return value
@@ -32,11 +33,18 @@ export function wrapEmailHtml(params: {
   bodyHtml: string;
 }): string {
   const { siteName, siteUrl, locale, bodyHtml } = params;
+  const umShort = formatUmYear(umYearFromDate(new Date()), 'short');
+  const yearWord: Record<EmailLocale, string> = {
+    en: 'Year',
+    it: 'Anno',
+    fr: 'An',
+    de: 'Jahr',
+  };
   const footerByLocale: Record<EmailLocale, string> = {
-    en: 'Hosted in Switzerland',
-    it: 'Ospitato in Svizzera',
-    fr: 'Hébergé en Suisse',
-    de: 'Gehostet in der Schweiz',
+    en: `Hosted in Switzerland · ${yearWord.en} ${umShort}`,
+    it: `Ospitato in Svizzera · ${yearWord.it} ${umShort}`,
+    fr: `Hébergé en Suisse · ${yearWord.fr} ${umShort}`,
+    de: `Gehostet in der Schweiz · ${yearWord.de} ${umShort}`,
   };
   return `<!DOCTYPE html>
 <html lang="${locale}">

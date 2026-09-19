@@ -31,6 +31,9 @@ import { BiographySectionBody } from '@/components/biography/BiographySectionBod
 import { BiographyContentRightsNotice } from '@/components/biography/BiographyContentRightsNotice';
 import { BiographyLanguageBadges } from '@/components/biography/BiographyLanguageBadges';
 import { BiographyViewGallery } from '@/components/biography/BiographyViewGallery';
+import { toCanonical } from '@/lib/um-id';
+import { formatDateWithUmYear } from '@/lib/um';
+import { resolveRecordLanguageTag } from '@/lib/record-language';
 
 type ViewLanguage = 'en' | 'it' | 'fr' | 'de';
 
@@ -40,6 +43,7 @@ interface BiographyViewData {
   subject_name?: string | null;
   biography_type?: 'autobiography' | 'memorial' | null;
   author_name: string;
+  um_id?: string | null;
   content: BiographyContent;
   visibility: string;
   status: string;
@@ -52,6 +56,7 @@ interface BiographyViewData {
   export_docx_url: string | null;
   listing_cover_url?: string | null;
   content_language?: string | null;
+  record_language_tag?: string | null;
   final_pdf_url?: string | null;
 }
 
@@ -65,7 +70,7 @@ interface SectionWithDate {
 type ViewError = 'not-found' | 'private' | 'invalid-token' | null;
 
 const BIOGRAPHY_VIEW_SELECT =
-  'id, title, subject_name, biography_type, author_name, content, visibility, status, share_token, created_at, published_at, is_frozen, frozen_at, export_txt_url, export_docx_url, listing_cover_url, content_language, final_pdf_url';
+  'id, title, subject_name, biography_type, author_name, um_id, content, visibility, status, share_token, created_at, published_at, is_frozen, frozen_at, export_txt_url, export_docx_url, listing_cover_url, content_language, record_language_tag, final_pdf_url';
 
 const VIEW_LANGUAGES: ViewLanguage[] = ['en', 'it', 'fr', 'de'];
 
@@ -124,8 +129,9 @@ export default function BiographyViewPage() {
   const [translatedSections, setTranslatedSections] = useState<Record<string, Record<string, string>>>({});
   const [translationLoading, setTranslationLoading] = useState(false);
 
-  const contentLanguage = isViewLanguage(biography?.content_language)
-    ? biography!.content_language!
+  const resolvedContentLang = resolveRecordLanguageTag(biography);
+  const contentLanguage = isViewLanguage(resolvedContentLang)
+    ? resolvedContentLang
     : 'en';
 
   const showRightsNotice =
@@ -253,11 +259,16 @@ export default function BiographyViewPage() {
           }
           const { data: fullBio } = await supabase
             .from('biographies')
-            .select('content_language, final_pdf_url')
+            .select('content_language, record_language_tag, final_pdf_url')
             .eq('id', resolvedId)
             .maybeSingle();
           if (fullBio && data) {
-            data.content_language = (fullBio as { content_language?: string }).content_language;
+            data.content_language = resolveRecordLanguageTag(
+              fullBio as { content_language?: string; record_language_tag?: string }
+            );
+            data.record_language_tag = (
+              fullBio as { record_language_tag?: string | null }
+            ).record_language_tag;
             data.final_pdf_url = (fullBio as { final_pdf_url?: string }).final_pdf_url ?? null;
           }
           if (data.status === 'published') {
@@ -619,7 +630,26 @@ export default function BiographyViewPage() {
             </p>
             {biography.published_at && (
               <p className="text-sm text-muted-foreground mt-1">
-                {t.view.publishedOn} {formatDate(biography.published_at)}
+                {t.view.publishedOn}{' '}
+                {(() => {
+                  try {
+                    const iso = new Date(biography.published_at).toISOString().slice(0, 10);
+                    return formatDateWithUmYear(iso, uiLanguage, 'day', t.umId.yearWord);
+                  } catch {
+                    return formatDate(biography.published_at, uiLanguage);
+                  }
+                })()}
+              </p>
+            )}
+            {biography.um_id && (
+              <p className="text-xs text-muted-foreground mt-2 not-prose">
+                <span className="mr-1.5">{t.umId.label}:</span>
+                <span
+                  className="font-mono tracking-wide select-text"
+                  style={{ userSelect: 'text' }}
+                >
+                  {toCanonical(biography.um_id)}
+                </span>
               </p>
             )}
             <div className="mt-3 not-prose">

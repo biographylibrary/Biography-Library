@@ -13,6 +13,8 @@ export interface Biography {
   /** Memorial only: person the biography is about. */
   subject_name?: string | null;
   author_name: string;
+  /** Identificativo UM normalizzato (minuscolo, senza trattini). */
+  um_id?: string | null;
   content: Record<string, unknown>;
   visibility: 'private' | 'link-only' | 'public';
   status: BiographyPublicationStatus;
@@ -160,42 +162,58 @@ export async function createBiography(
   authorName?: string,
   biographyType: 'autobiography' | 'memorial' = 'autobiography',
   contentLanguage?: string,
-  subjectName?: string | null
+  subjectName?: string | null,
+  rightsStatementUri?: string | null
 ) {
   const existingCount = await getUserBiographyCount(userId);
   if (existingCount > 0) {
     return { data: null, error: ONE_BIOGRAPHY_PER_USER_ERROR };
   }
 
-  const resolvedAuthor = authorName?.trim() || await resolveAuthorName(userId);
+  const resolvedAuthor = authorName?.trim() || (await resolveAuthorName(userId));
   const resolvedSubject =
-    biographyType === 'memorial' ? (subjectName?.trim() || title.trim()) : null;
+    biographyType === 'memorial' ? subjectName?.trim() || title.trim() : null;
 
-  const { data, error } = await supabase
-    .from('biographies')
-    .insert({
-      user_id: userId,
+  const { getValidAccessToken } = await import('@/lib/auth-token');
+  const token = await getValidAccessToken();
+  if (!token) {
+    return { data: null, error: 'Authentication required' };
+  }
+
+  const res = await fetch('/api/biography/create', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify({
       title: biographyType === 'memorial' ? resolvedSubject || title : title,
-      subject_name: resolvedSubject,
       visibility,
-      status: 'draft',
-      content: {},
-      biography_mode: biographyMode,
-      biography_type: biographyType,
-      content_language: contentLanguage ?? 'en',
-      author_name: resolvedAuthor,
-    })
-    .select()
-    .maybeSingle();
+      biographyMode,
+      authorName: resolvedAuthor,
+      biographyType,
+      contentLanguage: contentLanguage ?? 'en',
+      subjectName: resolvedSubject,
+      rightsStatementUri: rightsStatementUri ?? null,
+    }),
+  });
 
-  const message = error?.message ?? null;
-  if (message?.includes('one_biography_per_user')) {
-    return { data: null, error: ONE_BIOGRAPHY_PER_USER_ERROR };
+  const payload = (await res.json().catch(() => ({}))) as {
+    data?: Biography | null;
+    error?: string;
+  };
+
+  if (!res.ok) {
+    const message = payload.error ?? `Create failed (${res.status})`;
+    if (message.includes('one_biography_per_user') || message === ONE_BIOGRAPHY_PER_USER_ERROR) {
+      return { data: null, error: ONE_BIOGRAPHY_PER_USER_ERROR };
+    }
+    return { data: null, error: message };
   }
 
   return {
-    data: data as Biography | null,
-    error: message,
+    data: (payload.data as Biography | null) ?? null,
+    error: payload.error ?? null,
   };
 }
 
