@@ -16,10 +16,24 @@ import { addImageFitted } from '@/lib/pdf/photo-fit';
 import { splitTextToSizeLang } from '@/lib/pdf/text-wrap';
 import { resolvePdfBiographyLabels } from '@/lib/biography-display';
 import type { Language } from '@/lib/i18n/translations';
+import {
+  buildColophonLines,
+  buildPermanenceHeaderLines,
+  type PermanenceExportBiography,
+  type PermanenceExportEvent,
+  type PermanenceExportRelation,
+} from '@/lib/permanence-text-export';
 
 type PdfSupabase = SupabaseClient<any, any, any>;
 import { BIOGRAPHY_SECTIONS } from './editor-constants';
 import { supabase } from './supabase';
+
+const UM_YEAR_WORD: Record<string, string> = {
+  en: 'Year',
+  it: 'Anno',
+  fr: 'An',
+  de: 'Jahr',
+};
 
 /** Server-side PDF generation can inject the service-role client (cover/media/storage). */
 let pdfSupabaseOverride: PdfSupabase | null = null;
@@ -119,7 +133,8 @@ export type PdfReadinessIssue =
   | 'missing-title'
   | 'missing-author'
   | 'missing-content'
-  | 'missing-mode';
+  | 'missing-mode'
+  | 'unsupported-script';
 
 export function getPdfReadinessMessage(issue: PdfReadinessIssue, noCoverPhotoWarning?: string): string {
   switch (issue) {
@@ -129,6 +144,8 @@ export function getPdfReadinessMessage(issue: PdfReadinessIssue, noCoverPhotoWar
     case 'missing-author': return 'An author name is required.';
     case 'missing-content': return 'At least one section must have content.';
     case 'missing-mode': return 'Biography mode is not set.';
+    case 'unsupported-script':
+      return 'PDF export is not available for this writing system yet. Use the plain-text export instead.';
     default: return issue;
   }
 }
@@ -454,6 +471,78 @@ function addNewPage(state: PdfState, isContent: boolean): void {
   if (state.watermarkLabel) {
     drawDraftWatermark(doc, state.watermarkLabel);
   }
+}
+
+/** Draw permanence header/colophon lines; continues onto new pages if needed. */
+function drawPermanenceTextPage(
+  state: PdfState,
+  lines: string[],
+  opts?: { title?: string }
+): void {
+  const { doc, language } = state;
+  const maxW = B5_W - MARGIN_INNER - MARGIN_OUTER;
+  const lineH = ptToMm(PT_CREDITS * 1.45);
+  let y = MARGIN_TOP + 4;
+
+  if (opts?.title) {
+    applyFont(doc, 'normal');
+    doc.setFontSize(PT_BODY);
+    doc.setTextColor(0, 0, 0);
+    doc.text(opts.title, MARGIN_INNER, y);
+    y += lineH * 1.6;
+  }
+
+  applyFont(doc, 'normal');
+  doc.setFontSize(PT_CREDITS);
+  doc.setTextColor(40, 40, 40);
+
+  for (const raw of lines) {
+    if (!raw.trim()) {
+      y += lineH * 0.5;
+      continue;
+    }
+    const wrapped = splitPdfText(doc, raw, maxW, language);
+    for (const wline of wrapped) {
+      if (y > B5_H - MARGIN_BOTTOM) {
+        addNewPage(state, false);
+        y = MARGIN_TOP;
+        applyFont(doc, 'normal');
+        doc.setFontSize(PT_CREDITS);
+        doc.setTextColor(40, 40, 40);
+      }
+      doc.text(wline, MARGIN_INNER, y);
+      y += lineH;
+    }
+  }
+}
+
+async function fetchPermanencePdfData(biographyId: string): Promise<{
+  bio: PermanenceExportBiography | null;
+  events: PermanenceExportEvent[];
+  relations: PermanenceExportRelation[];
+}> {
+  const client = getPdfSupabase();
+  const [{ data: row }, { data: events }, { data: relations }] = await Promise.all([
+    client
+      .from('biographies')
+      .select(
+        'um_id, schema_version, record_language_tag, record_script, record_direction, record_language_endonym, name_as_written, name_romanized, title, author_name, subject_name, biography_type, published_at_iso, published_um_year, rights_statement_uri'
+      )
+      .eq('id', biographyId)
+      .maybeSingle(),
+    client.from('person_events').select('*').eq('biography_id', biographyId),
+    client.from('person_relations').select('*').eq('biography_id', biographyId),
+  ]);
+
+  if (!row) {
+    return { bio: null, events: [], relations: [] };
+  }
+
+  return {
+    bio: row as PermanenceExportBiography,
+    events: (events as PermanenceExportEvent[]) ?? [],
+    relations: (relations as PermanenceExportRelation[]) ?? [],
+  };
 }
 
 function drawRunningHeader(state: PdfState, title: string): void {
@@ -1419,6 +1508,28 @@ export async function checkBiographyPdfReadiness(
     }
   }
 
+  // Fail-open script check: separate query so a missing column never breaks PDF.
+  // Covered by bundled Noto Serif: Latn, Cyrl, Grek. Emit only on positive unsupported read.
+  const PDF_COVERED_SCRIPTS = new Set(['Latn', 'Cyrl', 'Grek']);
+  try {
+    const { data: scriptRow, error: scriptError } = await supabase
+      .from('biographies')
+      .select('record_script')
+      .eq('id', biographyId)
+      .maybeSingle();
+    if (
+      !scriptError &&
+      scriptRow?.record_script &&
+      typeof scriptRow.record_script === 'string' &&
+      scriptRow.record_script.trim() !== '' &&
+      !PDF_COVERED_SCRIPTS.has(scriptRow.record_script)
+    ) {
+      issues.push('unsupported-script');
+    }
+  } catch {
+    // ignore — behave as before
+  }
+
   return { ok: issues.length === 0, issues };
 }
 
@@ -1447,13 +1558,15 @@ export async function generateBiographyPDF(
     throw new Error('MISSING_BIOGRAPHY_ID');
   }
 
-  const [, bookStructure, coverComposite, coverA5, galleryPhotos] = await Promise.all([
-    loadNotoSerifFonts(),
-    biography.id ? fetchBookStructure(biography.id) : Promise.resolve(null),
-    fetchCoverCompositeOptional(biography.id),
-    fetchCoverA5Optional(biography.id),
-    fetchGalleryPhotos(biography.id),
-  ]);
+  const [, bookStructure, coverComposite, coverA5, galleryPhotos, permanenceData] =
+    await Promise.all([
+      loadNotoSerifFonts(),
+      biography.id ? fetchBookStructure(biography.id) : Promise.resolve(null),
+      fetchCoverCompositeOptional(biography.id),
+      fetchCoverA5Optional(biography.id),
+      fetchGalleryPhotos(biography.id),
+      fetchPermanencePdfData(biography.id),
+    ]);
 
   if (!coverA5 && !coverComposite) {
     throw new Error('MISSING_COVER_PHOTO');
@@ -1510,6 +1623,24 @@ export async function generateBiographyPDF(
 
   if (watermarkLabel) {
     drawDraftWatermark(doc, watermarkLabel);
+  }
+
+  // ────────────────────────────────────────
+  // Permanence invariant header (after cover)
+  // ────────────────────────────────────────
+  if (permanenceData.bio) {
+    logPdfBuildStep('permanence: invariant header page');
+    addNewPage(state, false);
+    const headerLines = buildPermanenceHeaderLines(
+      {
+        ...permanenceData.bio,
+        title: permanenceData.bio.title || pdfTitle,
+        author_name: permanenceData.bio.author_name || pdfAuthor,
+      },
+      permanenceData.events,
+      permanenceData.relations
+    );
+    drawPermanenceTextPage(state, headerLines);
   }
 
   // ────────────────────────────────────────
@@ -1793,6 +1924,17 @@ export async function generateBiographyPDF(
         false
       );
     }
+  }
+
+  // ────────────────────────────────────────
+  // Colophon — dual date notation + UM id (before back cover)
+  // ────────────────────────────────────────
+  if (permanenceData.bio) {
+    logPdfBuildStep('permanence: colophon');
+    addNewPage(state, false);
+    const yearWord = UM_YEAR_WORD[lang] ?? UM_YEAR_WORD.en;
+    const colophonLines = buildColophonLines(permanenceData.bio, yearWord, lang);
+    drawPermanenceTextPage(state, colophonLines);
   }
 
   // ────────────────────────────────────────

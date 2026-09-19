@@ -18,6 +18,9 @@ import { Download, Loader as Loader2, Info, TriangleAlert as AlertTriangle, X, R
 import { BIOGRAPHY_SECTIONS } from '@/lib/editor-constants';
 import { generateBiographyPDF, checkBiographyPdfReadiness, getPdfReadinessMessage, type PdfReadinessIssue } from '@/lib/pdf-export';
 import { exportAsPlainText, exportAsDOCX } from '@/lib/export-utils';
+import { downloadPermanencePlainText } from '@/lib/permanence-text-export';
+import type { PermanenceExportBiography } from '@/lib/permanence-text-export';
+import { resolveRecordLanguageTag } from '@/lib/record-language';
 import {
   isPdfDraftLimitReached,
   PDF_DRAFT_MAX_ITERATION,
@@ -118,21 +121,14 @@ export function AdvancedExportDialog({
 
   const fetchDraftState = useCallback(async () => {
     if (!biography.id) return;
-    if (biography.content_language) {
-      setContentLanguage(biography.content_language);
-    }
     const { data } = await supabase
       .from('biographies')
-      .select('pdf_draft_iteration, content_language, draft_ai_feedback')
+      .select('pdf_draft_iteration, content_language, record_language_tag, draft_ai_feedback')
       .eq('id', biography.id)
       .maybeSingle();
     setDraftIteration(data?.pdf_draft_iteration ?? null);
     setDraftFeedback((data?.draft_ai_feedback as DraftAiFeedback | null) ?? null);
-    if (data?.content_language) {
-      setContentLanguage(data.content_language);
-    } else if (!biography.content_language) {
-      setContentLanguage('en');
-    }
+    setContentLanguage(resolveRecordLanguageTag(data ?? biography));
   }, [biography.id, biography.content_language]);
 
   useEffect(() => {
@@ -218,6 +214,57 @@ export function AdvancedExportDialog({
     return formatted;
   };
 
+  const exportPermanenceTxt = async (
+    bioLike: BiographyData & { content_freeflow?: string },
+    sectionBodies?: string[]
+  ) => {
+    if (!biography.id) {
+      await exportAsPlainText(bioLike, [], false);
+      return;
+    }
+
+    const [{ data: row }, { data: events }, { data: relations }] = await Promise.all([
+      supabase
+        .from('biographies')
+        .select(
+          'um_id, schema_version, record_language_tag, record_script, record_direction, record_language_endonym, name_as_written, name_romanized, title, author_name, subject_name, biography_type, published_at_iso, published_um_year, rights_statement_uri, content_freeflow, final_version, biography_mode, content'
+        )
+        .eq('id', biography.id)
+        .maybeSingle(),
+      supabase.from('person_events').select('*').eq('biography_id', biography.id),
+      supabase.from('person_relations').select('*').eq('biography_id', biography.id),
+    ]);
+
+    const merged: PermanenceExportBiography = {
+      um_id: row?.um_id ?? null,
+      schema_version: row?.schema_version ?? 2,
+      record_language_tag: row?.record_language_tag ?? contentLanguage ?? null,
+      record_script: row?.record_script ?? 'Latn',
+      record_direction: row?.record_direction ?? 'ltr',
+      record_language_endonym: row?.record_language_endonym ?? null,
+      name_as_written: row?.name_as_written ?? bioLike.title,
+      name_romanized: row?.name_romanized ?? null,
+      title: row?.title ?? bioLike.title,
+      author_name: row?.author_name ?? bioLike.author_name,
+      subject_name: row?.subject_name ?? bioLike.subject_name ?? null,
+      biography_type: row?.biography_type ?? bioLike.biography_type ?? null,
+      published_at_iso: row?.published_at_iso ?? null,
+      published_um_year: row?.published_um_year ?? null,
+      rights_statement_uri: row?.rights_statement_uri ?? null,
+      content_freeflow: bioLike.content_freeflow ?? row?.content_freeflow ?? null,
+      final_version: bioLike.final_version ?? row?.final_version ?? null,
+      biography_mode: bioLike.biography_mode ?? row?.biography_mode ?? null,
+      content: bioLike.content ?? (row?.content as Record<string, { text: string }> | undefined),
+    };
+
+    await downloadPermanencePlainText(
+      merged,
+      (events as any[]) ?? [],
+      (relations as any[]) ?? [],
+      sectionBodies
+    );
+  };
+
   const performExport = async (iterationToUse: number | null) => {
     setIsExporting(true);
     setExportError(null);
@@ -253,7 +300,7 @@ export function AdvancedExportDialog({
             contentLanguage
           );
         } else if (format === 'txt') {
-          await exportAsPlainText(finalBio, [], false);
+          await exportPermanenceTxt(finalBio);
         } else if (format === 'docx') {
           await exportAsDOCX(finalBio, [], false);
         }
@@ -282,7 +329,7 @@ export function AdvancedExportDialog({
             contentLanguage
           );
         } else if (format === 'txt') {
-          await exportAsPlainText(biography, [], false);
+          await exportPermanenceTxt(biography);
         } else if (format === 'docx') {
           await exportAsDOCX(biography, [], false);
         }
@@ -343,7 +390,10 @@ export function AdvancedExportDialog({
           contentLanguage
         );
       } else if (format === 'txt') {
-        await exportAsPlainText(biography, sections, separateFiles);
+        await exportPermanenceTxt(
+          biography,
+          sections.map((s) => `=== ${s.title} ===\n\n${s.content}`)
+        );
       } else if (format === 'docx') {
         await exportAsDOCX(biography, sections, separateFiles);
       }
@@ -535,7 +585,9 @@ export function AdvancedExportDialog({
             <div className="flex-1 space-y-1">
               {readinessIssues.map((issue) => (
                 <p key={issue} className="text-sm text-brand-ink dark:text-brand-beigeLight leading-relaxed">
-                  {getPdfReadinessMessage(issue, t.exportDialog.noCoverPhotoWarning)}
+                  {issue === 'unsupported-script'
+                    ? t.umId.unsupportedScript
+                    : getPdfReadinessMessage(issue, t.exportDialog.noCoverPhotoWarning)}
                 </p>
               ))}
             </div>

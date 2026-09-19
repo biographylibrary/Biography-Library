@@ -7,6 +7,7 @@ import {
   runReviewSubmitScreening,
 } from '@/lib/server/review-submit-pipeline';
 import { generateUploadFinalPdf } from '@/lib/server/final-pdf-artifacts';
+import { resolveRecordLanguageTag } from '@/lib/record-language';
 
 type AnyClient = SupabaseClient<any, any, any>;
 
@@ -50,7 +51,7 @@ export async function POST(req: NextRequest) {
 
     const { data: bio } = await serviceClient
       .from('biographies')
-      .select('user_id, status, pdf_draft_iteration, final_version, content_language, draft_ai_feedback')
+      .select('user_id, status, pdf_draft_iteration, final_version, content_language, record_language_tag, draft_ai_feedback')
       .eq('id', biographyId)
       .maybeSingle();
 
@@ -101,7 +102,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const contentLanguage: string = (bio as any).content_language ?? 'en';
+    const contentLanguage: string = resolveRecordLanguageTag(bio as any);
     const draftFeedback = (bio as any).draft_ai_feedback as
       | {
           red_flags?: Array<{ section_key?: string | null; issue?: string; severity?: number }>;

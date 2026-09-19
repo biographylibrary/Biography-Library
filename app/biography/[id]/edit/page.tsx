@@ -52,7 +52,12 @@ import { canPublishNextChapter } from '@/lib/biography-chapter-cooldown';
 import { isBiographyPublicationStatus, isReviewOrScreeningLockStatus } from '@/lib/publication-state';
 import { generateBiographyPDF, checkBiographyPdfReadiness, checkPdfPreflight, getPdfReadinessMessage } from '@/lib/pdf-export';
 import { AdvancedExportDialog } from '@/components/export/AdvancedExportDialog';
+import { LicenseChoiceDialog } from '@/components/editor/LicenseChoiceDialog';
+import { AuthorLicensePanel } from '@/components/editor/AuthorLicensePanel';
+import { PermanencePanel } from '@/components/editor/permanence/PermanencePanel';
 import { useTranslation } from '@/lib/i18n/i18n-context';
+import { LICENSE_BY_NC_SA_4, type ContentLicenseUri } from '@/lib/rights';
+import { nfcBiographyWriteFields } from '@/lib/nfc-biography';
 import { Loader as Loader2, Sparkles, Snowflake as SnowflakeIcon, Send as SendIcon, TriangleAlert, Lock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -122,6 +127,12 @@ export default function BiographyEditorPage() {
   const [privacy, setPrivacy] = useState<'private' | 'link-only' | 'public'>(
     'private'
   );
+  const [rightsStatementUri, setRightsStatementUri] = useState<string | null>(null);
+  const [recordLanguageTag, setRecordLanguageTag] = useState<string | null>(null);
+  const [recordScript, setRecordScript] = useState<string | null>('Latn');
+  const [licenseDialogOpen, setLicenseDialogOpen] = useState(false);
+  const [licenseDialogMode, setLicenseDialogMode] = useState<'initial' | 'upgrade'>('initial');
+  const [licenseBusy, setLicenseBusy] = useState(false);
   const [status, setStatus] = useState<'draft' | 'sections_complete'>('draft');
   const [shareToken, setShareToken] = useState<string | null>(null);
   const [content, setContent] = useState<BiographyContent>(getEmptyContent());
@@ -278,6 +289,19 @@ const [isPublishing, setIsPublishing] = useState(false);
             : data.title
         );
         setPrivacy((data.visibility as 'private' | 'link-only' | 'public') ?? 'private');
+        setRightsStatementUri(
+          typeof data.rights_statement_uri === 'string' ? data.rights_statement_uri : null
+        );
+        setRecordLanguageTag(
+          typeof data.record_language_tag === 'string'
+            ? data.record_language_tag
+            : typeof data.content_language === 'string'
+              ? data.content_language
+              : null
+        );
+        setRecordScript(
+          typeof data.record_script === 'string' ? data.record_script : 'Latn'
+        );
         setStatus(data.status || 'draft');
         setBiographyStatus(
           isBiographyPublicationStatus(data.status) ? data.status : 'draft'
@@ -398,16 +422,21 @@ const [isPublishing, setIsPublishing] = useState(false);
     dirtyRef.current = false;
     setSaveStatus('saving');
     const isMemorial = biographyTypeRef.current === 'memorial';
+    const nfcFields = nfcBiographyWriteFields({
+      title: titleRef.current,
+      subject_name: isMemorial ? titleRef.current : undefined,
+      author_name: authorNameRef.current,
+      content: contentRef.current,
+      content_freeflow: contentFreeflowRef.current,
+      name_as_written: titleRef.current,
+    });
     const { error } = await supabase
       .from('biographies')
       .update({
-        title: titleRef.current,
-        ...(isMemorial ? { subject_name: titleRef.current } : {}),
+        ...nfcFields,
+        ...(isMemorial ? {} : { subject_name: null }),
         visibility: privacyRef.current,
-        content: contentRef.current,
         biography_mode: biographyModeRef.current,
-        content_freeflow: contentFreeflowRef.current,
-        author_name: authorNameRef.current,
       })
       .eq('id', id);
     if (error) {
@@ -423,16 +452,21 @@ const [isPublishing, setIsPublishing] = useState(false);
     dirtyRef.current = false;
     setSaveStatus('saving');
     const isMemorial = biographyTypeRef.current === 'memorial';
+    const nfcFields = nfcBiographyWriteFields({
+      title: titleRef.current,
+      subject_name: isMemorial ? titleRef.current : undefined,
+      author_name: authorNameRef.current,
+      content: contentRef.current,
+      content_freeflow: contentFreeflowRef.current,
+      name_as_written: titleRef.current,
+    });
     const { error } = await supabase
       .from('biographies')
       .update({
-        title: titleRef.current,
-        ...(isMemorial ? { subject_name: titleRef.current } : {}),
+        ...nfcFields,
+        ...(isMemorial ? {} : { subject_name: null }),
         visibility: privacyRef.current,
-        content: contentRef.current,
         biography_mode: biographyModeRef.current,
-        content_freeflow: contentFreeflowRef.current,
-        author_name: authorNameRef.current,
       })
       .eq('id', id);
     if (error) {
@@ -513,6 +547,11 @@ const [isPublishing, setIsPublishing] = useState(false);
 
   const handlePrivacyChange = useCallback(
     (newPrivacy: 'private' | 'link-only' | 'public') => {
+      if (newPrivacy === 'public' && !rightsStatementUri?.trim()) {
+        setLicenseDialogMode('initial');
+        setLicenseDialogOpen(true);
+        return;
+      }
       setPrivacy(newPrivacy);
       markDirty();
       const privacyLabels: Record<'private' | 'link-only' | 'public', string> = {
@@ -522,7 +561,56 @@ const [isPublishing, setIsPublishing] = useState(false);
       };
       toast.success(`${t.biography.privacyLabel}: ${privacyLabels[newPrivacy]}`);
     },
-    [markDirty, t]
+    [markDirty, rightsStatementUri, t]
+  );
+
+  const handleLicenseConfirm = useCallback(
+    async (licenseUri: ContentLicenseUri) => {
+      if (!id) return;
+      setLicenseBusy(true);
+      try {
+        const now = new Date().toISOString();
+        const isUpgrade = licenseDialogMode === 'upgrade';
+        // One-way only: never write BY-NC-SA over an existing BY-SA
+        if (
+          isUpgrade &&
+          rightsStatementUri &&
+          rightsStatementUri !== LICENSE_BY_NC_SA_4
+        ) {
+          setLicenseDialogOpen(false);
+          return;
+        }
+
+        const update: Record<string, unknown> = {
+          rights_statement_uri: licenseUri,
+          rights_chosen_at: now,
+          rights_holder: authorNameRef.current?.trim() || null,
+        };
+        if (!isUpgrade) {
+          update.visibility = 'public';
+        }
+
+        const { error } = await supabase
+          .from('biographies')
+          .update(update)
+          .eq('id', id);
+        if (error) {
+          toast.error(error.message || t.toast.error);
+          return;
+        }
+        setRightsStatementUri(licenseUri);
+        if (!isUpgrade) {
+          setPrivacy('public');
+          toast.success(`${t.biography.privacyLabel}: ${t.dashboard.public}`);
+        } else {
+          toast.success(t.rightsChoice.optionBySaTitle);
+        }
+        setLicenseDialogOpen(false);
+      } finally {
+        setLicenseBusy(false);
+      }
+    },
+    [id, licenseDialogMode, rightsStatementUri, t]
   );
 
   const handleModeChange = useCallback(
@@ -1356,7 +1444,9 @@ const [isPublishing, setIsPublishing] = useState(false);
       const readiness = await checkBiographyPdfReadiness(id, true);
       if (!readiness.ok) {
         const issueMessages = readiness.issues.map((issue) =>
-          getPdfReadinessMessage(issue, t.exportDialog.noCoverPhotoWarning)
+          issue === 'unsupported-script'
+            ? t.umId.unsupportedScript
+            : getPdfReadinessMessage(issue, t.exportDialog.noCoverPhotoWarning)
         );
         setSubmitReadinessError(issueMessages.join(' '));
         return;
@@ -1849,6 +1939,14 @@ const [isPublishing, setIsPublishing] = useState(false);
         biographyType={biographyType}
         mobileMenuOpen={showMobileSidebar}
         onMobileMenuToggle={() => setShowMobileSidebar((open) => !open)}
+      />
+
+      <LicenseChoiceDialog
+        open={licenseDialogOpen}
+        onOpenChange={setLicenseDialogOpen}
+        onConfirm={handleLicenseConfirm}
+        mode={licenseDialogMode}
+        busy={licenseBusy}
       />
 
       {isFrozen && (
@@ -2370,6 +2468,34 @@ const [isPublishing, setIsPublishing] = useState(false);
                     visibility={privacy}
                     currentShareToken={shareToken}
                     onTokenGenerated={setShareToken}
+                  />
+                </div>
+              )}
+              {!isFrozen && id && (
+                <div className="shrink-0">
+                  <PermanencePanel
+                    biographyId={id}
+                    nameAsWritten={title}
+                    recordLanguageTag={recordLanguageTag}
+                    recordScript={recordScript}
+                    disabled={isFrozen}
+                    onNameSaved={(name) => {
+                      setTitle(name);
+                      markDirty();
+                    }}
+                  />
+                </div>
+              )}
+              {!isFrozen && (
+                <div className="shrink-0">
+                  <AuthorLicensePanel
+                    visibility={privacy}
+                    rightsStatementUri={rightsStatementUri}
+                    onRequestUpgrade={() => {
+                      setLicenseDialogMode('upgrade');
+                      setLicenseDialogOpen(true);
+                    }}
+                    disabled={licenseBusy}
                   />
                 </div>
               )}

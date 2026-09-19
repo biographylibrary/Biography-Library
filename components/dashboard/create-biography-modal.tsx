@@ -15,13 +15,20 @@ import { Label } from '@/components/ui/label';
 import { useTranslation } from '@/lib/i18n/i18n-context';
 import { Lock, Users, Globe, Loader as Loader2, PenLine, Columns2 as Columns, AlignLeft, Upload, ChevronRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { LicenseChoiceDialog } from '@/components/editor/LicenseChoiceDialog';
+import type { ContentLicenseUri } from '@/lib/rights';
 
 export type WritingModeChoice = 'sections' | 'freeflow' | 'import';
 
 interface CreateBiographyModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onSubmit: (title: string, visibility: 'private' | 'link-only' | 'public', mode: WritingModeChoice) => Promise<void>;
+  onSubmit: (
+    title: string,
+    visibility: 'private' | 'link-only' | 'public',
+    mode: WritingModeChoice,
+    rightsStatementUri?: ContentLicenseUri | null
+  ) => Promise<void>;
   existingBiographiesCount?: number;
 }
 
@@ -40,6 +47,8 @@ export function CreateBiographyModal({
   const [writeHereSubMode, setWriteHereSubMode] = useState<WriteHereSubMode>(null);
   const [isCreating, setIsCreating] = useState(false);
   const [error, setError] = useState('');
+  const [pendingMode, setPendingMode] = useState<WritingModeChoice | null>(null);
+  const [licenseDialogOpen, setLicenseDialogOpen] = useState(false);
   const { t } = useTranslation();
 
   const privacyOptions = [
@@ -76,17 +85,31 @@ export function CreateBiographyModal({
     setStep('mode');
   };
 
-  const handleSubmit = async (mode: WritingModeChoice) => {
+  const runSubmit = async (
+    mode: WritingModeChoice,
+    rightsStatementUri?: ContentLicenseUri | null
+  ) => {
     setIsCreating(true);
     setError('');
     try {
-      await onSubmit(title.trim(), privacy, mode);
+      await onSubmit(title.trim(), privacy, mode, rightsStatementUri ?? null);
+      setLicenseDialogOpen(false);
       resetState();
     } catch (err: any) {
       setError(err.message || t.biography.failedToCreate);
     } finally {
       setIsCreating(false);
+      setPendingMode(null);
     }
+  };
+
+  const handleSubmit = async (mode: WritingModeChoice) => {
+    if (privacy === 'public') {
+      setPendingMode(mode);
+      setLicenseDialogOpen(true);
+      return;
+    }
+    await runSubmit(mode, null);
   };
 
   const resetState = () => {
@@ -95,14 +118,16 @@ export function CreateBiographyModal({
     setPrivacy('private');
     setWriteHereSubMode(null);
     setError('');
+    setPendingMode(null);
   };
 
-  const handleClose = (open: boolean) => {
-    if (!open) resetState();
-    onOpenChange(open);
+  const handleClose = (nextOpen: boolean) => {
+    if (!nextOpen) resetState();
+    onOpenChange(nextOpen);
   };
 
   return (
+    <>
     <Dialog open={open} onOpenChange={handleClose}>
       <DialogContent className="sm:max-w-[520px]">
         {step === 'details' && (
@@ -292,5 +317,18 @@ export function CreateBiographyModal({
         )}
       </DialogContent>
     </Dialog>
+    <LicenseChoiceDialog
+      open={licenseDialogOpen}
+      onOpenChange={(next) => {
+        setLicenseDialogOpen(next);
+        if (!next) setPendingMode(null);
+      }}
+      onConfirm={async (uri) => {
+        if (!pendingMode) return;
+        await runSubmit(pendingMode, uri);
+      }}
+      busy={isCreating}
+    />
+    </>
   );
 }

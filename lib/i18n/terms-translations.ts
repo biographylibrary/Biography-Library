@@ -36,6 +36,7 @@ export interface TermsTranslations {
   section6Change: string;
   section6License: string;
   section6LicenseList: string[];
+  section6MetadataCc0: string;
   section6Ownership: string;
   section6Deletion: string;
   section7Title: string;
@@ -172,12 +173,15 @@ export const termsTranslations: Record<Language, TermsTranslations> = {
       'Private: visible only to you'
     ],
     section6Change: 'You can change these settings at any time.',
-    section6License: 'Public biographies are licensed under Creative Commons BY-NC-SA 4.0:',
+    section6License:
+      'When a biography is public, the author chooses its content license. The default is Creative Commons BY-NC-SA 4.0; the author may instead choose Creative Commons BY-SA 4.0 (one-way change only). In both cases:',
     section6LicenseList: [
-      'BY: Attribution required',
-      'NC: Non-commercial use',
-      'SA: Share-alike'
+      'BY: Attribution required — the author\'s name stays on the story',
+      'SA: Share-alike — reused works must stay under a compatible open license',
+      'NC (default choice only): Non-commercial use — nobody may use the story to make money'
     ],
+    section6MetadataCc0:
+      'Factual metadata (name, dates, places, coordinates, identifiers, and the structure of the record) are dedicated to the public domain under CC0, regardless of the author\'s content license choice. This is required for cultural aggregators and because facts are not copyrightable works.',
     section6Ownership: 'You retain full ownership of your content. Biography Library only has a license to host and display it according to your privacy settings.',
     section6Deletion: 'You can delete your biographies at any time. Deletion is permanent and takes effect within 90 days.',
 
@@ -380,12 +384,15 @@ export const termsTranslations: Record<Language, TermsTranslations> = {
       'Privata: visibile solo a te'
     ],
     section6Change: 'Puoi modificare queste impostazioni in qualsiasi momento.',
-    section6License: 'Le biografie pubbliche sono concesse in licenza sotto Creative Commons BY-NC-SA 4.0:',
+    section6License:
+      'Quando una biografia è pubblica, l\'autore sceglie la licenza del contenuto. La scelta predefinita è Creative Commons BY-NC-SA 4.0; in alternativa può scegliere Creative Commons BY-SA 4.0 (solo in un senso). In entrambi i casi:',
     section6LicenseList: [
-      'BY: Attribuzione richiesta',
-      'NC: Uso non commerciale',
-      'SA: Condividi allo stesso modo'
+      'BY: Attribuzione richiesta — il nome dell\'autore resta sulla storia',
+      'SA: Condividi allo stesso modo — le opere riusate restano sotto licenza aperta compatibile',
+      'NC (solo nella scelta predefinita): Uso non commerciale — nessuno può usare la storia per fare soldi'
     ],
+    section6MetadataCc0:
+      'I metadati fattuali (nome, date, luoghi, coordinate, identificativi e la struttura della scheda) sono dedicati al pubblico dominio sotto CC0, indipendentemente dalla scelta di licenza sul contenuto. È quanto richiedono gli aggregatori culturali, e perché i fatti non sono opere tutelate dal diritto d\'autore.',
     section6Ownership: 'Mantieni la piena proprietà dei tuoi contenuti. Biography Library ha solo una licenza per ospitarli e mostrarli secondo le tue impostazioni di privacy.',
     section6Deletion: 'Puoi eliminare le tue biografie in qualsiasi momento. L\'eliminazione è permanente e ha effetto entro 90 giorni.',
 
@@ -588,12 +595,15 @@ export const termsTranslations: Record<Language, TermsTranslations> = {
       'Privée: visible uniquement par vous'
     ],
     section6Change: 'Vous pouvez modifier ces paramètres à tout moment.',
-    section6License: 'Les biographies publiques sont sous licence Creative Commons BY-NC-SA 4.0:',
+    section6License:
+      'Lorsqu\'une biographie est publique, l\'auteur choisit la licence du contenu. Le choix par défaut est Creative Commons BY-NC-SA 4.0 ; il peut aussi choisir Creative Commons BY-SA 4.0 (dans un seul sens). Dans les deux cas :',
     section6LicenseList: [
-      'BY: Attribution requise',
-      'NC: Usage non commercial',
-      'SA: Partage dans les mêmes conditions'
+      'BY : Attribution obligatoire — le nom de l\'auteur reste sur l\'histoire',
+      'SA : Partage à l\'identique — les réutilisations restent sous une licence ouverte compatible',
+      'NC (choix par défaut seulement) : Usage non commercial — personne ne peut utiliser l\'histoire pour gagner de l\'argent'
     ],
+    section6MetadataCc0:
+      'Les métadonnées factuelles (nom, dates, lieux, coordonnées, identifiants et la structure de la fiche) sont dédiées au domaine public sous CC0, quelle que soit la licence choisie pour le contenu. C\'est ce qu\'exigent les agrégateurs culturels, et parce que les faits ne sont pas des œuvres protégées.',
     section6Ownership: 'Vous conservez la pleine propriété de votre contenu. Biography Library n\'a qu\'une licence pour l\'héberger et l\'afficher selon vos paramètres de confidentialité.',
     section6Deletion: 'Vous pouvez supprimer vos biographies à tout moment. La suppression est permanente et prend effet dans les 90 jours.',
 
@@ -796,12 +806,15 @@ export const termsTranslations: Record<Language, TermsTranslations> = {
       'Privat: nur für Sie sichtbar'
     ],
     section6Change: 'Sie können diese Einstellungen jederzeit ändern.',
-    section6License: 'Öffentliche Biografien sind unter Creative Commons BY-NC-SA 4.0 lizenziert:',
+    section6License:
+      'Wenn eine Biografie öffentlich ist, wählt der Autor die Lizenz für den Inhalt. Standard ist Creative Commons BY-NC-SA 4.0; alternativ Creative Commons BY-SA 4.0 (nur in eine Richtung). In beiden Fällen:',
     section6LicenseList: [
-      'BY: Namensnennung erforderlich',
-      'NC: Nicht-kommerzielle Nutzung',
-      'SA: Weitergabe unter gleichen Bedingungen'
+      'BY: Namensnennung erforderlich — der Name des Autors bleibt auf der Geschichte',
+      'SA: Weitergabe unter gleichen Bedingungen — Wiederverwendungen bleiben unter kompatibler offener Lizenz',
+      'NC (nur bei der Standardwahl): Nicht kommerziell — niemand darf mit der Geschichte Geld verdienen'
     ],
+    section6MetadataCc0:
+      'Faktische Metadaten (Name, Daten, Orte, Koordinaten, Kennungen und die Struktur des Datensatzes) werden unabhängig von der Inhaltslizenz unter CC0 der Allgemeinheit gewidmet. Das verlangen kulturelle Aggregatoren, und Fakten sind keine urheberrechtlich geschützten Werke.',
     section6Ownership: 'Sie behalten das volle Eigentum an Ihren Inhalten. Biography Library hat nur eine Lizenz zum Hosten und Anzeigen gemäß Ihren Datenschutzeinstellungen.',
     section6Deletion: 'Sie können Ihre Biografien jederzeit löschen. Die Löschung ist dauerhaft und wird innerhalb von 90 Tagen wirksam.',
 

@@ -1,6 +1,8 @@
 'use client';
 
+import Link from 'next/link';
 import { useTranslation } from '@/lib/i18n/i18n-context';
+import { formatUmYear, umYearFromDate } from '@/lib/um';
 
 const PRIVACY_LINKS: Record<string, string> = {
   en: 'https://biographylibrary.org/privacy-policy/',
@@ -29,6 +31,7 @@ export function Footer() {
   const privacyHref = PRIVACY_LINKS[language] ?? PRIVACY_LINKS.en;
   const termsHref = TERMS_LINKS[language] ?? TERMS_LINKS.en;
   const cookieHref = COOKIE_LINKS[language] ?? COOKIE_LINKS.en;
+  const umLabel = `${t.umId.yearWord} ${formatUmYear(umYearFromDate(new Date()), 'short')}`;
 
   return (
     <footer className="border-t border-border/50 bg-[#ECE9E4] dark:bg-[#1F2121] mt-auto py-2 flex items-center">
@@ -49,6 +52,7 @@ export function Footer() {
               <rect x="13" y="6" width="6" height="20" fill="white"/>
               <rect x="6" y="13" width="20" height="6" fill="white"/>
             </svg>
+            <span className="text-xs text-muted-foreground">· {umLabel}</span>
           </div>
           <div className="flex items-center gap-3 text-xs text-muted-foreground">
             <a
@@ -77,6 +81,10 @@ export function Footer() {
             >
               {t.footer.cookiePolicy}
             </a>
+            <span>•</span>
+            <Link href="/credits" className="hover:text-foreground transition-colors">
+              {t.footer.credits}
+            </Link>
           </div>
         </div>
       </div>

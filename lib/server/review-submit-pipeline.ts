@@ -7,6 +7,7 @@ import {
   notifyAuthorPublicationEmail,
   notifyReviewerAssignedEmail,
 } from '@/lib/server/email/publication-helpers';
+import { resolveRecordLanguageTag } from '@/lib/record-language';
 
 const INFOMANIAK_ENDPOINT = process.env.INFOMANIAK_AI_ENDPOINT ?? '';
 const INFOMANIAK_TOKEN = process.env.INFOMANIAK_AI_TOKEN ?? '';
@@ -160,12 +161,12 @@ export async function fetchBiographyContent(
 ): Promise<{ text: string; authorId: string; contentLanguage: string }> {
   const { data: bio } = await supabase
     .from('biographies')
-    .select('user_id, content_freeflow, content_language, final_version')
+    .select('user_id, content_freeflow, content_language, record_language_tag, final_version')
     .eq('id', biographyId)
     .maybeSingle();
 
   const authorId: string = (bio as any)?.user_id ?? '';
-  const contentLanguage: string = (bio as any)?.content_language ?? 'en';
+  const contentLanguage: string = resolveRecordLanguageTag(bio as any);
 
   const hasTargetKeys = targetSectionKeys && targetSectionKeys.length > 0;
   const finalRaw = (bio as any)?.final_version?.trim();
@@ -743,6 +744,9 @@ export async function runReviewSubmitScreening(
   }
 
   if (screening.passages.length === 0) {
+    const { ensureUmIdFor } = await import('@/lib/server/um-id-registry');
+    await ensureUmIdFor(serviceClient, biographyId);
+
     await serviceClient
       .from('biographies')
       .update({

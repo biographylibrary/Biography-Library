@@ -600,6 +600,99 @@ export interface Translations {
     termsOfService: string;
     privacyPolicy: string;
     cookiePolicy: string;
+    credits: string;
+  };
+  umId: {
+    label: string;
+    yearWord: string;
+    exists: string;
+    issuedOn: string;
+    contentUnavailable: string;
+    notFound: string;
+    invalid: string;
+    unsupportedScript: string;
+    creditsTitle: string;
+    creditsLead: string;
+    creditsBody: string;
+    metadataCc0: string;
+  };
+  permanence: {
+    title: string;
+    why: string;
+    nameAsWritten: string;
+    nameHint: string;
+    nameRequired: string;
+    romanized: string;
+    romanizationSystem: string;
+    romanizationSystemHint: string;
+    birth: string;
+    death: string;
+    datePrecision: string;
+    dateUnknown: string;
+    dateExactDay: string;
+    dateMonthYear: string;
+    dateYearOnly: string;
+    dateApprox: string;
+    dateDecade: string;
+    year: string;
+    month: string;
+    day: string;
+    dateAsGiven: string;
+    dateAsGivenHint: string;
+    place: string;
+    placePlaceholder: string;
+    placeHint: string;
+    clear: string;
+    howDoYouKnow: string;
+    assertedSelf: string;
+    assertedFamily: string;
+    assertedDocument: string;
+    assertedInstitution: string;
+    assertedUnknown: string;
+    sourceNote: string;
+    sourceNoteHint: string;
+    confidence: string;
+    confidenceCertain: string;
+    confidenceProbable: string;
+    confidenceUncertain: string;
+    confidenceUnknown: string;
+    save: string;
+    saved: string;
+    loading: string;
+    relationsTitle: string;
+    relationsHint: string;
+    addRelation: string;
+    removeRelation: string;
+    relationKind: string;
+    relationLabel: string;
+    relationLabelHint: string;
+    relatedName: string;
+    relatedUmId: string;
+    relationParent: string;
+    relationChild: string;
+    relationSibling: string;
+    relationSpouse: string;
+    relationOther: string;
+  };
+  rightsChoice: {
+    title: string;
+    intro: string;
+    scopeNote: string;
+    optionByNcSaTitle: string;
+    optionByNcSaBody: string;
+    optionBySaTitle: string;
+    optionBySaBody: string;
+    ifUnsure: string;
+    changeMind: string;
+    nameStays: string;
+    legalDetails: string;
+    confirm: string;
+    cancel: string;
+    currentLicense: string;
+    upgradeButton: string;
+    upgradeTitle: string;
+    upgradeBody: string;
+    upgradeConfirm: string;
   };
   welcome: {
     title: string;
@@ -2137,6 +2230,109 @@ export const translations: Record<Language, Translations> = {
       termsOfService: 'T&C',
       privacyPolicy: 'Privacy',
       cookiePolicy: 'Cookies',
+      credits: 'Credits',
+    },
+    umId: {
+      label: 'Permanent identifier',
+      yearWord: 'Year',
+      exists: 'This identifier exists.',
+      issuedOn: 'Issued on {date}.',
+      contentUnavailable: 'The content is not available.',
+      notFound: 'This identifier has never been issued.',
+      invalid: 'This string is not a valid UM identifier.',
+      unsupportedScript:
+        'PDF export is not available for this writing system yet. Use the plain-text export instead.',
+      creditsTitle: 'Universal Memory year',
+      creditsLead:
+        'Biography Library counts archive years from 2026 as Year 0 of Universal Memory (UM).',
+      creditsBody:
+        'The UM year appears on publication dates, credits, the PDF colophon, and the site footer. It is never used for dates of a person’s life.',
+      metadataCc0:
+        'Factual metadata of every record (name, dates, places, coordinates, identifiers, and the structure of the form) are dedicated to the public domain under CC0, regardless of the content license the author chose.',
+    },
+    permanence: {
+      title: 'Who this person was',
+      why: 'These details are not bureaucracy. They are what will let someone a thousand years from now understand who this person was.',
+      nameAsWritten: 'Name as written',
+      nameHint: 'Write the name the way the person wrote it or was known. Do not reorder it.',
+      nameRequired: 'A name is required.',
+      romanized: 'Romanized name (optional)',
+      romanizationSystem: 'Romanization system',
+      romanizationSystemHint: 'e.g. Pinyin, Hepburn',
+      birth: 'Birth',
+      death: 'Death',
+      datePrecision: 'How precise is the date?',
+      dateUnknown: 'I do not know',
+      dateExactDay: 'Exact day',
+      dateMonthYear: 'Month and year (day unknown)',
+      dateYearOnly: 'Year only',
+      dateApprox: 'Around that year',
+      dateDecade: 'That decade',
+      year: 'Year',
+      month: 'Month',
+      day: 'Day',
+      dateAsGiven: 'As you know it (optional)',
+      dateAsGivenHint: 'e.g. spring 1948, circa 1893',
+      place: 'Place',
+      placePlaceholder: 'Start typing a place name',
+      placeHint: 'Pick a locality from the list. We never ask for an address or coordinates.',
+      clear: 'Clear',
+      howDoYouKnow: 'How do you know?',
+      assertedSelf: 'The person themselves',
+      assertedFamily: 'A family member',
+      assertedDocument: 'A document',
+      assertedInstitution: 'An institution',
+      assertedUnknown: 'I am not sure',
+      sourceNote: 'A short note (optional)',
+      sourceNoteHint: 'e.g. birth certificate kept by the family',
+      confidence: 'How sure are you?',
+      confidenceCertain: 'Certain',
+      confidenceProbable: 'Probable',
+      confidenceUncertain: 'Uncertain',
+      confidenceUnknown: 'Unknown',
+      save: 'Save these details',
+      saved: 'Details saved',
+      loading: 'Loading…',
+      relationsTitle: 'People connected to this life',
+      relationsHint:
+        'Write the relationship in your own words. The short type is only a hint for the archive.',
+      addRelation: 'Add a person',
+      removeRelation: 'Remove',
+      relationKind: 'Type (hint)',
+      relationLabel: 'How you call this relationship',
+      relationLabelHint: 'e.g. maternal uncle, eldest sister',
+      relatedName: 'Their name as written',
+      relatedUmId: 'Their UM identifier (optional)',
+      relationParent: 'Parent',
+      relationChild: 'Child',
+      relationSibling: 'Sibling',
+      relationSpouse: 'Spouse',
+      relationOther: 'Other',
+    },
+    rightsChoice: {
+      title: 'Who can use your story',
+      intro: 'Your story stays yours. Always. Here you choose one thing only: what other people can do with it.',
+      scopeNote:
+        'This matters only if your story is public. If you kept it private, or only for your family, nobody else sees it.',
+      optionByNcSaTitle: 'Choice 1. Nobody makes money (recommended)',
+      optionByNcSaBody:
+        'Other people can read it. They can copy it and let others read it. They must always say it is yours. Nobody can use it to make money.',
+      optionBySaTitle: 'Choice 2. Open to everyone',
+      optionBySaBody:
+        'Other people can read it. They can copy it and let others read it. They must always say it is yours. People who make money can use it too. A newspaper, or a book. This way your story can also reach Wikipedia and the great libraries.',
+      ifUnsure: 'If you do not know what to choose, choose the first one. It protects you more.',
+      changeMind:
+        'Can you change your mind? Yes, but in one direction only. You can move from the first to the second whenever you want. You cannot go back from the second, because anyone who already copied it can keep it.',
+      nameStays: 'Either way, your name stays on your story. Always.',
+      legalDetails: 'Want the legal details?',
+      confirm: 'Confirm and make public',
+      cancel: 'Cancel',
+      currentLicense: 'License for this public story',
+      upgradeButton: 'Open to everyone instead',
+      upgradeTitle: 'Open your story to everyone?',
+      upgradeBody:
+        'You can move from the first to the second whenever you want. You cannot go back from the second, because anyone who already copied it can keep it.',
+      upgradeConfirm: 'Yes, open to everyone',
     },
     welcome: {
       title: 'Welcome to Biography Library',
@@ -3690,6 +3886,109 @@ export const translations: Record<Language, Translations> = {
       termsOfService: 'T&C',
       privacyPolicy: 'Privacy',
       cookiePolicy: 'Cookie',
+      credits: 'Crediti',
+    },
+    umId: {
+      label: 'Identificativo permanente',
+      yearWord: 'Anno',
+      exists: 'Questo identificativo esiste.',
+      issuedOn: 'Emesso il {date}.',
+      contentUnavailable: 'Il contenuto non è disponibile.',
+      notFound: 'Questo identificativo non è mai stato emesso.',
+      invalid: 'Questa stringa non è un identificativo UM valido.',
+      unsupportedScript:
+        'L\'export PDF non è ancora disponibile per questa scrittura. Usa l\'export di testo.',
+      creditsTitle: 'Anno della Memoria Universale',
+      creditsLead:
+        'Biography Library conta gli anni dell\'archivio dal 2026 come Anno 0 della Memoria Universale (UM).',
+      creditsBody:
+        'L\'anno UM compare nelle date di pubblicazione, nei crediti, nel colophon PDF e nel piè di pagina del sito. Non si usa mai per le date di vita delle persone.',
+      metadataCc0:
+        'I metadati fattuali di ogni scheda (nome, date, luoghi, coordinate, identificativi e la struttura del modulo) sono dedicati al pubblico dominio sotto CC0, indipendentemente dalla licenza di contenuto scelta dall\'autore.',
+    },
+    permanence: {
+      title: 'Chi era questa persona',
+      why: 'Questi dati non sono burocrazia. Sono ciò che permetterà a qualcuno fra mille anni di capire chi era questa persona.',
+      nameAsWritten: 'Nome come scritto',
+      nameHint: 'Scrivi il nome come la persona lo scriveva o era conosciuta. Non riordinarlo.',
+      nameRequired: 'Il nome è obbligatorio.',
+      romanized: 'Nome romanizzato (facoltativo)',
+      romanizationSystem: 'Sistema di romanizzazione',
+      romanizationSystemHint: 'es. Pinyin, Hepburn',
+      birth: 'Nascita',
+      death: 'Morte',
+      datePrecision: 'Quanto è precisa la data?',
+      dateUnknown: 'Non lo so',
+      dateExactDay: 'Giorno esatto',
+      dateMonthYear: 'Mese e anno (giorno sconosciuto)',
+      dateYearOnly: 'Solo l\'anno',
+      dateApprox: 'Intorno a quell\'anno',
+      dateDecade: 'Quel decennio',
+      year: 'Anno',
+      month: 'Mese',
+      day: 'Giorno',
+      dateAsGiven: 'Come la conosci (facoltativo)',
+      dateAsGivenHint: 'es. primavera 1948, circa 1893',
+      place: 'Luogo',
+      placePlaceholder: 'Inizia a digitare un luogo',
+      placeHint: 'Scegli una località dall\'elenco. Non chiediamo mai un indirizzo né le coordinate.',
+      clear: 'Cancella',
+      howDoYouKnow: 'Come lo sai?',
+      assertedSelf: 'La persona stessa',
+      assertedFamily: 'Un familiare',
+      assertedDocument: 'Un documento',
+      assertedInstitution: 'Un\'istituzione',
+      assertedUnknown: 'Non sono sicuro',
+      sourceNote: 'Una nota breve (facoltativo)',
+      sourceNoteHint: 'es. certificato di nascita in possesso della famiglia',
+      confidence: 'Quanto sei sicuro?',
+      confidenceCertain: 'Certo',
+      confidenceProbable: 'Probabile',
+      confidenceUncertain: 'Incerto',
+      confidenceUnknown: 'Sconosciuto',
+      save: 'Salva questi dati',
+      saved: 'Dati salvati',
+      loading: 'Caricamento…',
+      relationsTitle: 'Persone legate a questa vita',
+      relationsHint:
+        'Scrivi la relazione con le tue parole. Il tipo breve è solo un indizio per l\'archivio.',
+      addRelation: 'Aggiungi una persona',
+      removeRelation: 'Rimuovi',
+      relationKind: 'Tipo (indicativo)',
+      relationLabel: 'Come chiami questa relazione',
+      relationLabelHint: 'es. zio materno, sorella maggiore',
+      relatedName: 'Il loro nome come scritto',
+      relatedUmId: 'Il loro identificativo UM (facoltativo)',
+      relationParent: 'Genitore',
+      relationChild: 'Figlio/a',
+      relationSibling: 'Fratello/sorella',
+      relationSpouse: 'Coniuge',
+      relationOther: 'Altro',
+    },
+    rightsChoice: {
+      title: 'Chi può usare la tua storia',
+      intro: 'La tua storia resta tua. Sempre. Qui scegli solo una cosa: che cosa possono farne gli altri.',
+      scopeNote:
+        'Questo vale solo se la tua storia è pubblica. Se l\'hai tenuta privata, o solo per la famiglia, nessun altro la vede.',
+      optionByNcSaTitle: 'Scelta 1. Nessuno ci guadagna (consigliata)',
+      optionByNcSaBody:
+        'Gli altri possono leggerla. Possono copiarla e farla leggere ad altri. Devono sempre dire che è tua. Nessuno può usarla per fare soldi.',
+      optionBySaTitle: 'Scelta 2. Aperta a tutti',
+      optionBySaBody:
+        'Gli altri possono leggerla. Possono copiarla e farla leggere ad altri. Devono sempre dire che è tua. Può usarla anche chi ci guadagna. Per esempio un giornale o un libro. Così la tua storia può arrivare anche su Wikipedia e nelle grandi biblioteche.',
+      ifUnsure: 'Se non sai cosa scegliere, scegli la prima. È quella che protegge di più.',
+      changeMind:
+        'Puoi cambiare idea? Sì, ma in un senso solo. Dalla prima puoi passare alla seconda quando vuoi. Dalla seconda non si torna indietro, perché chi l\'ha già copiata può tenerla.',
+      nameStays: 'In ogni caso, il tuo nome resta sulla tua storia. Sempre.',
+      legalDetails: 'Vuoi i dettagli legali?',
+      confirm: 'Conferma e rendi pubblica',
+      cancel: 'Annulla',
+      currentLicense: 'Licenza di questa storia pubblica',
+      upgradeButton: 'Aprila a tutti',
+      upgradeTitle: 'Aprire la storia a tutti?',
+      upgradeBody:
+        'Dalla prima puoi passare alla seconda quando vuoi. Dalla seconda non si torna indietro, perché chi l\'ha già copiata può tenerla.',
+      upgradeConfirm: 'Sì, aprila a tutti',
     },
     welcome: {
       title: 'Benvenuto in Biography Library',
@@ -5243,6 +5542,109 @@ export const translations: Record<Language, Translations> = {
       termsOfService: 'T&C',
       privacyPolicy: 'Confidentialit\u00e9',
       cookiePolicy: 'Cookies',
+      credits: 'Crédits',
+    },
+    umId: {
+      label: 'Identifiant permanent',
+      yearWord: 'An',
+      exists: 'Cet identifiant existe.',
+      issuedOn: '\u00c9mis le {date}.',
+      contentUnavailable: 'Le contenu n\u2019est pas disponible.',
+      notFound: 'Cet identifiant n\u2019a jamais \u00e9t\u00e9 \u00e9mis.',
+      invalid: 'Cette cha\u00eene n\u2019est pas un identifiant UM valide.',
+      unsupportedScript:
+        'L\u2019export PDF n\u2019est pas encore disponible pour cette \u00e9criture. Utilisez l\u2019export texte.',
+      creditsTitle: 'Année de la Mémoire Universelle',
+      creditsLead:
+        'Biography Library compte les années de l\'archive à partir de 2026 comme An 0 de la Mémoire Universelle (UM).',
+      creditsBody:
+        'L\'année UM apparaît sur les dates de publication, les crédits, le colophon PDF et le pied de page du site. Elle n\'est jamais utilisée pour les dates de vie des personnes.',
+      metadataCc0:
+        'Les métadonnées factuelles de chaque fiche (nom, dates, lieux, coordonnées, identifiants et la structure du formulaire) sont dédiées au domaine public sous CC0, quelle que soit la licence de contenu choisie par l\'auteur.',
+    },
+    permanence: {
+      title: 'Qui était cette personne',
+      why: 'Ces détails ne sont pas de la paperasse. C\'est ce qui permettra à quelqu\'un dans mille ans de comprendre qui était cette personne.',
+      nameAsWritten: 'Nom tel qu\'écrit',
+      nameHint: 'Écris le nom comme la personne l\'écrivait ou était connue. Ne le réordonne pas.',
+      nameRequired: 'Un nom est obligatoire.',
+      romanized: 'Nom romanisé (facultatif)',
+      romanizationSystem: 'Système de romanisation',
+      romanizationSystemHint: 'ex. Pinyin, Hepburn',
+      birth: 'Naissance',
+      death: 'Décès',
+      datePrecision: 'Quelle est la précision de la date?',
+      dateUnknown: 'Je ne sais pas',
+      dateExactDay: 'Jour exact',
+      dateMonthYear: 'Mois et année (jour inconnu)',
+      dateYearOnly: 'Année seulement',
+      dateApprox: 'Vers cette année',
+      dateDecade: 'Cette décennie',
+      year: 'Année',
+      month: 'Mois',
+      day: 'Jour',
+      dateAsGiven: 'Comme tu la connais (facultatif)',
+      dateAsGivenHint: 'ex. printemps 1948, vers 1893',
+      place: 'Lieu',
+      placePlaceholder: 'Commence à taper un lieu',
+      placeHint: 'Choisis une localité dans la liste. Nous ne demandons jamais une adresse ni des coordonnées.',
+      clear: 'Effacer',
+      howDoYouKnow: 'Comment le sais-tu?',
+      assertedSelf: 'La personne elle-même',
+      assertedFamily: 'Un proche',
+      assertedDocument: 'Un document',
+      assertedInstitution: 'Une institution',
+      assertedUnknown: 'Je ne suis pas sûr',
+      sourceNote: 'Une courte note (facultatif)',
+      sourceNoteHint: 'ex. acte de naissance conservé par la famille',
+      confidence: 'À quel point es-tu sûr?',
+      confidenceCertain: 'Certain',
+      confidenceProbable: 'Probable',
+      confidenceUncertain: 'Incertain',
+      confidenceUnknown: 'Inconnu',
+      save: 'Enregistrer ces détails',
+      saved: 'Détails enregistrés',
+      loading: 'Chargement…',
+      relationsTitle: 'Personnes liées à cette vie',
+      relationsHint:
+        'Écris la relation avec tes mots. Le type court n\'est qu\'un indice pour l\'archive.',
+      addRelation: 'Ajouter une personne',
+      removeRelation: 'Retirer',
+      relationKind: 'Type (indicatif)',
+      relationLabel: 'Comment tu nommes cette relation',
+      relationLabelHint: 'ex. oncle maternel, sœur aînée',
+      relatedName: 'Leur nom tel qu\'écrit',
+      relatedUmId: 'Leur identifiant UM (facultatif)',
+      relationParent: 'Parent',
+      relationChild: 'Enfant',
+      relationSibling: 'Frère/sœur',
+      relationSpouse: 'Conjoint',
+      relationOther: 'Autre',
+    },
+    rightsChoice: {
+      title: 'Qui peut utiliser ton histoire',
+      intro: 'Ton histoire reste la tienne. Toujours. Ici tu choisis une seule chose: ce que les autres peuvent en faire.',
+      scopeNote:
+        'Cela compte seulement si ton histoire est publique. Si tu l\'as gardée privée, ou seulement pour ta famille, personne d\'autre ne la voit.',
+      optionByNcSaTitle: 'Choix 1. Personne ne gagne d\'argent (recommandé)',
+      optionByNcSaBody:
+        'Les autres peuvent la lire. Ils peuvent la copier et la faire lire à d\'autres. Ils doivent toujours dire qu\'elle est à toi. Personne ne peut l\'utiliser pour gagner de l\'argent.',
+      optionBySaTitle: 'Choix 2. Ouverte à tous',
+      optionBySaBody:
+        'Les autres peuvent la lire. Ils peuvent la copier et la faire lire à d\'autres. Ils doivent toujours dire qu\'elle est à toi. Ceux qui gagnent de l\'argent peuvent l\'utiliser aussi. Un journal, ou un livre. Ainsi ton histoire peut arriver sur Wikipédia et dans les grandes bibliothèques.',
+      ifUnsure: 'Si tu ne sais pas quoi choisir, choisis le premier. C\'est celui qui protège le plus.',
+      changeMind:
+        'Peux-tu changer d\'avis? Oui, mais dans un seul sens. Du premier tu peux passer au deuxième quand tu veux. Du deuxième on ne revient pas en arrière, parce que celui qui l\'a déjà copiée peut la garder.',
+      nameStays: 'Dans tous les cas, ton nom reste sur ton histoire. Toujours.',
+      legalDetails: 'Tu veux les détails juridiques?',
+      confirm: 'Confirmer et rendre public',
+      cancel: 'Annuler',
+      currentLicense: 'Licence de cette histoire publique',
+      upgradeButton: 'L\'ouvrir à tous',
+      upgradeTitle: 'Ouvrir ton histoire à tous?',
+      upgradeBody:
+        'Du premier tu peux passer au deuxième quand tu veux. Du deuxième on ne revient pas en arrière, parce que celui qui l\'a déjà copiée peut la garder.',
+      upgradeConfirm: 'Oui, l\'ouvrir à tous',
     },
     welcome: {
       title: 'Bienvenue dans Biography Library',
@@ -6796,6 +7198,109 @@ export const translations: Record<Language, Translations> = {
       termsOfService: 'AGB',
       privacyPolicy: 'Datenschutz',
       cookiePolicy: 'Cookies',
+      credits: 'Impressum',
+    },
+    umId: {
+      label: 'Dauerhafte Kennung',
+      yearWord: 'Jahr',
+      exists: 'Diese Kennung existiert.',
+      issuedOn: 'Ausgestellt am {date}.',
+      contentUnavailable: 'Der Inhalt ist nicht verf\u00fcgbar.',
+      notFound: 'Diese Kennung wurde nie ausgestellt.',
+      invalid: 'Diese Zeichenkette ist keine g\u00fcltige UM-Kennung.',
+      unsupportedScript:
+        'Der PDF-Export ist f\u00fcr dieses Schriftsystem noch nicht verf\u00fcgbar. Bitte den Text-Export verwenden.',
+      creditsTitle: 'Jahr der Universellen Erinnerung',
+      creditsLead:
+        'Biography Library zählt Archivjahre ab 2026 als Jahr 0 der Universellen Erinnerung (UM).',
+      creditsBody:
+        'Das UM-Jahr erscheint bei Veröffentlichungsdaten, im Impressum, im PDF-Kolophon und in der Fußzeile. Es wird nie für Lebensdaten von Personen verwendet.',
+      metadataCc0:
+        'Faktische Metadaten jedes Datensatzes (Name, Daten, Orte, Koordinaten, Kennungen und die Struktur des Formulars) werden unabhängig von der vom Autor gewählten Inhaltslizenz unter CC0 der Allgemeinheit gewidmet.',
+    },
+    permanence: {
+      title: 'Wer diese Person war',
+      why: 'Diese Angaben sind keine Bürokratie. Sie ermöglichen jemandem in tausend Jahren zu verstehen, wer diese Person war.',
+      nameAsWritten: 'Name wie geschrieben',
+      nameHint: 'Schreibe den Namen so, wie die Person ihn schrieb oder bekannt war. Ordne ihn nicht um.',
+      nameRequired: 'Ein Name ist erforderlich.',
+      romanized: 'Romanisierter Name (optional)',
+      romanizationSystem: 'Romanisierungssystem',
+      romanizationSystemHint: 'z. B. Pinyin, Hepburn',
+      birth: 'Geburt',
+      death: 'Tod',
+      datePrecision: 'Wie genau ist das Datum?',
+      dateUnknown: 'Ich weiss es nicht',
+      dateExactDay: 'Genauer Tag',
+      dateMonthYear: 'Monat und Jahr (Tag unbekannt)',
+      dateYearOnly: 'Nur das Jahr',
+      dateApprox: 'Ungefähr in dem Jahr',
+      dateDecade: 'In diesem Jahrzehnt',
+      year: 'Jahr',
+      month: 'Monat',
+      day: 'Tag',
+      dateAsGiven: 'Wie du es kennst (optional)',
+      dateAsGivenHint: 'z. B. Frühling 1948, etwa 1893',
+      place: 'Ort',
+      placePlaceholder: 'Ort tippen',
+      placeHint: 'Wähle einen Ort aus der Liste. Wir fragen nie nach Adresse oder Koordinaten.',
+      clear: 'Löschen',
+      howDoYouKnow: 'Woher weisst du das?',
+      assertedSelf: 'Die Person selbst',
+      assertedFamily: 'Ein Angehöriger',
+      assertedDocument: 'Ein Dokument',
+      assertedInstitution: 'Eine Institution',
+      assertedUnknown: 'Ich bin unsicher',
+      sourceNote: 'Kurze Notiz (optional)',
+      sourceNoteHint: 'z. B. Geburtsurkunde im Besitz der Familie',
+      confidence: 'Wie sicher bist du?',
+      confidenceCertain: 'Sicher',
+      confidenceProbable: 'Wahrscheinlich',
+      confidenceUncertain: 'Unsicher',
+      confidenceUnknown: 'Unbekannt',
+      save: 'Diese Angaben speichern',
+      saved: 'Angaben gespeichert',
+      loading: 'Laden…',
+      relationsTitle: 'Menschen in diesem Leben',
+      relationsHint:
+        'Beschreibe die Beziehung mit deinen Worten. Der kurze Typ ist nur ein Hinweis für das Archiv.',
+      addRelation: 'Person hinzufügen',
+      removeRelation: 'Entfernen',
+      relationKind: 'Typ (Hinweis)',
+      relationLabel: 'Wie du diese Beziehung nennst',
+      relationLabelHint: 'z. B. Onkel mütterlicherseits, ältere Schwester',
+      relatedName: 'Ihr Name wie geschrieben',
+      relatedUmId: 'Ihre UM-Kennung (optional)',
+      relationParent: 'Elternteil',
+      relationChild: 'Kind',
+      relationSibling: 'Geschwister',
+      relationSpouse: 'Ehepartner',
+      relationOther: 'Andere',
+    },
+    rightsChoice: {
+      title: 'Wer deine Geschichte verwenden darf',
+      intro: 'Deine Geschichte bleibt deine. Immer. Hier wählst du nur eines: was andere damit machen dürfen.',
+      scopeNote:
+        'Das gilt nur, wenn deine Geschichte öffentlich ist. Wenn du sie privat gehalten hast, oder nur für die Familie, sieht sie sonst niemand.',
+      optionByNcSaTitle: 'Wahl 1. Niemand verdient daran (empfohlen)',
+      optionByNcSaBody:
+        'Andere dürfen sie lesen. Sie dürfen sie kopieren und andere lesen lassen. Sie müssen immer sagen, dass sie deine ist. Niemand darf mit ihr Geld verdienen.',
+      optionBySaTitle: 'Wahl 2. Offen für alle',
+      optionBySaBody:
+        'Andere dürfen sie lesen. Sie dürfen sie kopieren und andere lesen lassen. Sie müssen immer sagen, dass sie deine ist. Auch wer Geld verdient, darf sie verwenden. Zum Beispiel eine Zeitung oder ein Buch. So kann deine Geschichte auch zu Wikipedia und in die grossen Bibliotheken gelangen.',
+      ifUnsure: 'Wenn du nicht weisst, was du wählen sollst, wähle die erste. Sie schützt dich mehr.',
+      changeMind:
+        'Kannst du es dir anders überlegen? Ja, aber nur in eine Richtung. Von der ersten kannst du jederzeit zur zweiten wechseln. Von der zweiten gibt es keinen Weg zurück, denn wer sie schon kopiert hat, darf sie behalten.',
+      nameStays: 'In jedem Fall bleibt dein Name auf deiner Geschichte. Immer.',
+      legalDetails: 'Möchtest du die rechtlichen Details?',
+      confirm: 'Bestätigen und öffentlich machen',
+      cancel: 'Abbrechen',
+      currentLicense: 'Lizenz dieser öffentlichen Geschichte',
+      upgradeButton: 'Für alle öffnen',
+      upgradeTitle: 'Geschichte für alle öffnen?',
+      upgradeBody:
+        'Von der ersten kannst du jederzeit zur zweiten wechseln. Von der zweiten gibt es keinen Weg zurück, denn wer sie schon kopiert hat, darf sie behalten.',
+      upgradeConfirm: 'Ja, für alle öffnen',
     },
     welcome: {
       title: 'Willkommen bei Biography Library',

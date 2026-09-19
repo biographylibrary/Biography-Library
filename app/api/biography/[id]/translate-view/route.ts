@@ -12,6 +12,7 @@ import {
   verifyBiographyViewAccess,
 } from '@/lib/server/biography-view-access';
 import { buildServiceClient } from '@/lib/server/review-submit-pipeline';
+import { resolveRecordLanguageTag } from '@/lib/record-language';
 
 function buildAnonAuthClient(jwt: string) {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL!;
@@ -63,7 +64,7 @@ export async function POST(
     }
 
     const bio = access.biography;
-    const sourceLanguage = (bio.content_language ?? 'en') as ViewLanguage;
+    const sourceLanguage = resolveRecordLanguageTag(bio) as ViewLanguage;
     if (!isViewLanguage(sourceLanguage)) {
       return NextResponse.json({ error: 'Unsupported source language' }, { status: 400 });
     }

@@ -365,6 +365,10 @@ async function ensureBiography(supabase, userId, demo) {
     listing_cover_url: listingCover,
     chapters_count: demo.sections.length,
     ai_screening_status: 'passed',
+    // Required by trg_biographies_require_rights_for_public when visibility=public
+    rights_statement_uri: 'https://creativecommons.org/licenses/by-nc-sa/4.0/',
+    rights_chosen_at: now,
+    rights_holder: demo.author_name,
   };
 
   if (existing?.id) {

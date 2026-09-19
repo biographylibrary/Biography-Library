@@ -13,6 +13,7 @@ export interface BiographyViewRow {
   content: Record<string, { text?: string }>;
   content_freeflow?: string | null;
   content_language: string;
+  record_language_tag?: string | null;
   biography_mode?: string | null;
   visibility: string;
   status: string;
@@ -25,7 +26,7 @@ export type BiographyViewAccessResult =
   | { ok: false; status: 403 | 404 };
 
 const BIO_ACCESS_SELECT =
-  'id, user_id, title, author_name, subject_name, biography_type, content, content_freeflow, content_language, biography_mode, visibility, status, share_token, final_pdf_url';
+  'id, user_id, title, author_name, subject_name, biography_type, content, content_freeflow, content_language, record_language_tag, biography_mode, visibility, status, share_token, final_pdf_url';
 
 async function isStaffUser(
   serviceClient: AnyClient,

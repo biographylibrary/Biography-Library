@@ -63,11 +63,22 @@ export default function DashboardPage() {
   const handleCreate = async (
     title: string,
     visibility: 'private' | 'link-only' | 'public',
-    mode: 'sections' | 'freeflow' | 'import'
+    mode: 'sections' | 'freeflow' | 'import',
+    rightsStatementUri?: string | null
   ) => {
     if (!user) return;
     const biographyMode = mode === 'import' ? 'freeflow' : mode;
-    const { data, error } = await createBiography(user.id, title, visibility, biographyMode, user.user_metadata?.name || user.email || '');
+    const { data, error } = await createBiography(
+      user.id,
+      title,
+      visibility,
+      biographyMode,
+      user.user_metadata?.name || user.email || '',
+      'autobiography',
+      undefined,
+      undefined,
+      rightsStatementUri ?? null
+    );
     if (error === ONE_BIOGRAPHY_PER_USER_ERROR) {
       throw new Error(t.dashboard.oneBiographyLimit);
     }
