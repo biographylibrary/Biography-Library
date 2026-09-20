@@ -49,6 +49,26 @@ const LABELS = {
   relation: { en: 'RELATION', it: 'RELAZIONE', fr: 'RELATION', de: 'BEZIEHUNG' },
   published: { en: 'PUBLISHED', it: 'PUBBLICATO', fr: 'PUBLIÉ', de: 'VERÖFFENTLICHT' },
   rights: { en: 'RIGHTS', it: 'DIRITTI', fr: 'DROITS', de: 'RECHTE' },
+  resolver: {
+    en: 'RESOLUTION ADDRESS AT PUBLICATION',
+    it: 'INDIRIZZO DI RISOLUZIONE ALLA PUBBLICAZIONE',
+    fr: 'ADRESSE DE RÉSOLUTION À LA PUBLICATION',
+    de: 'AUFLÖSUNGSADRESSE BEI VERÖFFENTLICHUNG',
+  },
+  note: { en: 'NOTE', it: 'NOTA', fr: 'NOTE', de: 'HINWEIS' },
+} as const;
+
+/**
+ * Nota che accompagna l'indirizzo di risoluzione. Specifica §9: la stringa è
+ * l'identificativo, il dominio è soltanto lo strumento con cui oggi la si
+ * consulta. Chi legge fra cent'anni e trova l'indirizzo morto deve capire che a
+ * mancare è il servizio, non l'identità.
+ */
+const RESOLVER_NOTE = {
+  en: 'The address above is not part of the identifier and may change; the identifier never does. The full specification is deposited alongside this document.',
+  it: "L'indirizzo qui sopra non fa parte dell'identificativo e può cambiare; l'identificativo non cambia mai. La specifica completa è depositata insieme a questo documento.",
+  fr: "L'adresse ci-dessus ne fait pas partie de l'identifiant et peut changer ; l'identifiant, lui, ne change jamais. La spécification complète est déposée avec ce document.",
+  de: 'Die Adresse oben ist nicht Teil der Kennung und kann sich ändern; die Kennung ändert sich nie. Die vollständige Spezifikation ist zusammen mit diesem Dokument hinterlegt.',
 } as const;
 
 export type PermanenceExportEvent = {
@@ -117,6 +137,42 @@ function writeValue(direction: string | null | undefined, label: string, value: 
   return `${nfc(label)}: ${v}`;
 }
 
+/**
+ * Righe dell'indirizzo di risoluzione: l'indirizzo datato, e la nota che lo
+ * distingue dall'identità (specifica §9).
+ *
+ * Senza data di pubblicazione non si emette nulla. Un indirizzo scritto al
+ * presente e non datato comunica l'opposto di quel che serve, cioè che sia
+ * permanente quanto l'identificativo; chi lo trova morto fra cent'anni deve
+ * poter capire che a mancare è il servizio, non l'identità.
+ */
+/** Forma canonica dell'identificativo, o null se assente o malformato. */
+function canonicalUmId(umId: string | null | undefined): string | null {
+  if (!umId?.trim()) return null;
+  try {
+    return toCanonical(umId);
+  } catch {
+    return null;
+  }
+}
+
+function resolverLines(
+  lang: UiLang,
+  direction: string | null | undefined,
+  umIdBaseUrl: string | null | undefined,
+  canonicalUmId: string | null,
+  publishedLabel: string | null
+): string[] {
+  if (!umIdBaseUrl?.trim() || !canonicalUmId || !publishedLabel?.trim()) return [];
+  const url = `${umIdBaseUrl.trim().replace(/\/+$/, '')}/${canonicalUmId}`;
+  const out = [
+    writeValue(direction, bil(lang, 'resolver'), `${url} (${publishedLabel})`),
+    writeValue(direction, bil(lang, 'note'), RESOLVER_NOTE[lang]),
+  ];
+  if (lang !== 'en') out.push(`  ${nfc(RESOLVER_NOTE.en)}`);
+  return out;
+}
+
 function fmtCoord(n: number | string | null | undefined): string | null {
   if (n === null || n === undefined || n === '') return null;
   const num = typeof n === 'number' ? n : Number(n);
@@ -163,7 +219,8 @@ function buildBodyText(bio: PermanenceExportBiography, sectionBodies?: string[])
 export function buildPermanenceHeaderLines(
   bio: PermanenceExportBiography,
   events: PermanenceExportEvent[],
-  relations: PermanenceExportRelation[] = []
+  relations: PermanenceExportRelation[] = [],
+  umIdBaseUrl?: string | null
 ): string[] {
   const lang = uiLangFromTag(bio.record_language_tag);
   const dir = bio.record_direction ?? 'ltr';
@@ -181,6 +238,15 @@ export function buildPermanenceHeaderLines(
     }
   }
   lines.push(writeValue(dir, bil(lang, 'identifier'), umDisplay));
+
+  // Forma neutra rispetto alla lingua: ISO piu' anno UM, come il resto dell'intestazione.
+  const publishedForResolver =
+    bio.published_at_iso?.trim() && bio.published_um_year != null
+      ? `${bio.published_at_iso.trim()} · ${formatUmYear(bio.published_um_year, 'padded')}`
+      : null;
+  lines.push(
+    ...resolverLines(lang, dir, umIdBaseUrl, canonicalUmId(bio.um_id), publishedForResolver)
+  );
 
   lines.push(
     writeValue(dir, bil(lang, 'schemaVersion'), String(bio.schema_version ?? 2))
@@ -296,7 +362,8 @@ export function buildPermanenceHeaderLines(
 export function buildColophonLines(
   bio: PermanenceExportBiography,
   yearWord: string,
-  locale = 'en'
+  locale = 'en',
+  umIdBaseUrl?: string | null
 ): string[] {
   const lang = uiLangFromTag(bio.record_language_tag);
   const unk = unknownWord(lang);
@@ -327,6 +394,15 @@ export function buildColophonLines(
     }
   }
   lines.push(writeValue('ltr', bil(lang, 'identifier'), umDisplay));
+  lines.push(
+    ...resolverLines(
+      lang,
+      'ltr',
+      umIdBaseUrl,
+      canonicalUmId(bio.um_id),
+      published === unk ? null : published
+    )
+  );
 
   if (bio.rights_statement_uri?.trim()) {
     lines.push(writeValue('ltr', bil(lang, 'rights'), bio.rights_statement_uri.trim()));
@@ -342,9 +418,10 @@ export function buildPermanencePlainText(
   bio: PermanenceExportBiography,
   events: PermanenceExportEvent[],
   relations: PermanenceExportRelation[] = [],
-  sectionBodies?: string[]
+  sectionBodies?: string[],
+  umIdBaseUrl?: string | null
 ): string {
-  const lines = buildPermanenceHeaderLines(bio, events, relations);
+  const lines = buildPermanenceHeaderLines(bio, events, relations, umIdBaseUrl);
   lines.push('---');
   const body = nfc(buildBodyText(bio, sectionBodies).trim());
   if (body) lines.push(body);
@@ -355,9 +432,10 @@ export async function downloadPermanencePlainText(
   bio: PermanenceExportBiography,
   events: PermanenceExportEvent[],
   relations: PermanenceExportRelation[] = [],
-  sectionBodies?: string[]
+  sectionBodies?: string[],
+  umIdBaseUrl?: string | null
 ): Promise<void> {
-  const text = buildPermanencePlainText(bio, events, relations, sectionBodies);
+  const text = buildPermanencePlainText(bio, events, relations, sectionBodies, umIdBaseUrl);
   const date = new Date().toISOString().split('T')[0];
   const base = (bio.name_as_written || bio.title || 'biography')
     .replace(/[^a-z0-9]+/gi, '-')

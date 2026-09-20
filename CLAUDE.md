@@ -22,6 +22,12 @@ Non scrivere mai valori reali in `.env.example`: solo segnaposto. Non leggere n�
 
 Se una chiave è letta in modo indiretto, cioè il suo nome è una stringa in una mappa risolta a runtime come in `lib/agents/models.ts`, aggiungi quel file a `DYNAMIC_LOOKUP_FILES` in `scripts/check-env.mjs`, altrimenti il controllo la segnalerà come documentata ma non usata.
 
+## Codice morto
+
+`npm run check:dead` (knip) segnala i file che nessuno importa, ed è uno step della CI. Serve a intercettare una classe precisa di errore: un modulo scritto, documentato e mai collegato, che sembra vivo a ogni controllo tranne questo. È così che `lib/um-id-url.ts` è rimasto orfano per settimane mentre la sua variabile d'ambiente risultava regolarmente usata.
+
+L'elenco `ignore` in `knip.jsonc` contiene un arretrato di file già orfani al 20 settembre 2026, congelato perché il controllo funzioni da subito sui file nuovi. Non è un'assoluzione: quando sistemi uno di quei file, togli la sua riga. Non aggiungere righe nuove a quell'elenco per far passare la CI, perché è esattamente il comportamento che il controllo esiste per impedire.
+
 ## Specifica dell'identificativo UM
 
 `docs/UM-IDENTIFIER-SPEC.md` è una specifica pubblica e depositata, non documentazione interna. I vettori di prova della sezione 7 sono vincolanti: se un test fallisce, l'errore è nel codice e va corretto lì, mai adattando il vettore atteso. Il formato, l'alfabeto e l'algoritmo di controllo non si modificano, e gli identificativi già emessi non si rigenerano.

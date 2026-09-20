@@ -19,6 +19,7 @@ import { BIOGRAPHY_SECTIONS } from '@/lib/editor-constants';
 import { generateBiographyPDF, checkBiographyPdfReadiness, getPdfReadinessMessage, type PdfReadinessIssue } from '@/lib/pdf-export';
 import { exportAsPlainText, exportAsDOCX } from '@/lib/export-utils';
 import { downloadPermanencePlainText } from '@/lib/permanence-text-export';
+import { fetchUmIdBaseUrl } from '@/lib/um-id-url-client';
 import type { PermanenceExportBiography } from '@/lib/permanence-text-export';
 import { resolveRecordLanguageTag } from '@/lib/record-language';
 import {
@@ -257,11 +258,15 @@ export function AdvancedExportDialog({
       content: bioLike.content ?? (row?.content as Record<string, { text: string }> | undefined),
     };
 
+    // Indirizzo di risoluzione a runtime: UM_ID_BASE_URL non sta nel pacchetto.
+    const umIdBaseUrl = await fetchUmIdBaseUrl();
+
     await downloadPermanencePlainText(
       merged,
       (events as any[]) ?? [],
       (relations as any[]) ?? [],
-      sectionBodies
+      sectionBodies,
+      umIdBaseUrl
     );
   };
 

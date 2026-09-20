@@ -27,6 +27,9 @@ jobs:
       - name: Check env vars are documented
         run: npm run check:env
 
+      - name: Check for unreferenced files
+        run: npm run check:dead
+
       - name: Typecheck
         run: npm run typecheck
 

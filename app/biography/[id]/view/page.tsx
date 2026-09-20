@@ -31,7 +31,7 @@ import { BiographySectionBody } from '@/components/biography/BiographySectionBod
 import { BiographyContentRightsNotice } from '@/components/biography/BiographyContentRightsNotice';
 import { BiographyLanguageBadges } from '@/components/biography/BiographyLanguageBadges';
 import { BiographyViewGallery } from '@/components/biography/BiographyViewGallery';
-import { toCanonical } from '@/lib/um-id';
+import { PermanentIdentifier } from '@/components/biography/PermanentIdentifier';
 import { formatDateWithUmYear } from '@/lib/um';
 import { resolveRecordLanguageTag } from '@/lib/record-language';
 
@@ -642,15 +642,12 @@ export default function BiographyViewPage() {
               </p>
             )}
             {biography.um_id && (
-              <p className="text-xs text-muted-foreground mt-2 not-prose">
-                <span className="mr-1.5">{t.umId.label}:</span>
-                <span
-                  className="font-mono tracking-wide select-text"
-                  style={{ userSelect: 'text' }}
-                >
-                  {toCanonical(biography.um_id)}
-                </span>
-              </p>
+              <PermanentIdentifier
+                umId={biography.um_id}
+                label={t.umId.label}
+                copyLabel={t.share.copy}
+                copiedLabel={t.share.copied}
+              />
             )}
             <div className="mt-3 not-prose">
               <BiographyLanguageBadges
