@@ -5,7 +5,22 @@ const authenticateAgentRequest = vi.fn();
 const checkAgentRateLimit = vi.fn();
 const isEchoTtsConfigured = vi.fn();
 const synthesizeVoxtralSpeech = vi.fn();
-const buildServiceClient = vi.fn(() => ({}));
+/**
+ * Finto client di servizio. La rotta legge `profiles.role` per decidere se
+ * saltare il limite di frequenza allo staff: senza `.from` il mock esplode
+ * prima di arrivare al caso sotto test.
+ */
+const serviceClientStub = () => ({
+  from: () => ({
+    select: () => ({
+      eq: () => ({
+        maybeSingle: async () => ({ data: null, error: null }),
+      }),
+    }),
+  }),
+});
+
+const buildServiceClient = vi.fn(() => serviceClientStub());
 
 vi.mock('@/lib/agents/agent-chat-handler', () => ({
   authenticateAgentRequest: (req: unknown) => authenticateAgentRequest(req),

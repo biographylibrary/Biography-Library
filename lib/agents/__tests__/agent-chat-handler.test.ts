@@ -9,8 +9,23 @@ const retrieveBiographyContext = vi.fn();
 const ensureHelpKbIndexed = vi.fn();
 const retrieveKbContext = vi.fn();
 
+/**
+ * Finto client di servizio. La rotta legge `profiles.role` per decidere se
+ * saltare il limite di frequenza allo staff: senza `.from` il mock esplode
+ * prima di arrivare al caso sotto test.
+ */
+const serviceClientStub = () => ({
+  from: () => ({
+    select: () => ({
+      eq: () => ({
+        maybeSingle: async () => ({ data: null, error: null }),
+      }),
+    }),
+  }),
+});
+
 vi.mock('@/lib/server/review-submit-pipeline', () => ({
-  buildServiceClient: () => ({}),
+  buildServiceClient: () => serviceClientStub(),
 }));
 
 vi.mock('@/lib/agents/thread-service', () => ({
