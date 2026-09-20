@@ -139,14 +139,37 @@ The Next.js application is hosted on an **Infomaniak Jelastic** Node.js containe
 
 To deploy a new version:
 
-1. Pull the latest code from GitHub onto the Jelastic container (SSH or Jelastic Git deployment panel).
-2. Run `npm install` and `npm run build` on the container.
-3. Restart the Node process (PM2 or the Jelastic process manager).
-4. Verify environment variables are set in the Jelastic environment configuration panel — not in any committed file.
+1. Merge to `main` — GitHub Actions SSH deploy runs automatically (see `.github/workflows/deploy.yml`).
+2. Or manually on the node: `cd /opt/bl-app`, `git pull`, `docker build` + `docker run` as in the workflow.
+3. Verify env vars in `/opt/bl-app/.env` (also passed as `--env-file` to the container).
+4. After deploy, check disk: `docker system df` (see Docker disk maintenance below).
 
 The `next.config.js` has `images: { unoptimized: true }` because the Jelastic container does not run the Next.js image optimization server. All biography photos are served directly from Supabase Storage URLs.
 
 The `netlify.toml` file is present from an earlier hosting experiment and is not used in the current Jelastic setup. It can be ignored.
+
+#### Docker disk maintenance
+
+Every merge to `main` triggers `docker build` on the Jelastic node via [`.github/workflows/deploy.yml`](.github/workflows/deploy.yml). Without periodic cleanup, **BuildKit cache** can grow to tens of GB (roughly 1 GB of layers per deploy).
+
+**Automatic (after each deploy):** the workflow runs `docker builder prune` and `docker image prune` to cap cache growth.
+
+**Manual check (SSH on the node):**
+
+```bash
+docker system df
+```
+
+**If Build Cache exceeds ~10 GB or Jelastic reports disk usage above 80%:**
+
+```bash
+docker builder prune -af
+docker system df
+```
+
+This is safe while `bl-app` is running — it does not remove the active container or its current image.
+
+**Typical footprint after cleanup:** one production image (~500 MB with standalone `Dockerfile`, or ~3 GB with a full `node_modules` image) and Build Cache near 0–2 GB.
 
 ---
 

@@ -29,7 +29,17 @@ jobs:
             git fetch origin main
             git reset --hard origin/main
             echo "Deploying commit: $(git rev-parse --short HEAD) — $(git log -1 --pretty=%s)"
-            docker build -t biography-library .
+            set -a
+            # shellcheck source=/dev/null
+            . ./.env
+            set +a
+            docker build -t biography-library \
+              --build-arg NEXT_PUBLIC_SUPABASE_URL="${NEXT_PUBLIC_SUPABASE_URL}" \
+              --build-arg NEXT_PUBLIC_SUPABASE_ANON_KEY="${NEXT_PUBLIC_SUPABASE_ANON_KEY}" \
+              --build-arg NEXT_PUBLIC_APP_URL="${NEXT_PUBLIC_APP_URL}" \
+              --build-arg NEXT_PUBLIC_APP_ENV="${NEXT_PUBLIC_APP_ENV:-production}" \
+              --build-arg NEXT_PUBLIC_SITE_NAME="${NEXT_PUBLIC_SITE_NAME:-Biography Library}" \
+              .
             docker stop bl-app || true
             docker rm bl-app || true
             docker run -d \
@@ -38,5 +48,7 @@ jobs:
               -p 80:80 \
               --env-file .env \
               biography-library
-            docker image prune -f
+            docker image prune -af --filter "until=24h"
+            docker builder prune -af --filter "until=24h"
             echo "Deploy completato: $(date)"
+            docker system df
