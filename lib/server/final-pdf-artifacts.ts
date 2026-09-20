@@ -5,6 +5,7 @@ import {
   setPdfExportSupabaseClient,
   type BiographyData,
 } from '@/lib/pdf-export';
+import { umIdBaseUrl } from '@/lib/um-id-url';
 import { renderPdfFirstPageToJpegBuffer } from '@/lib/server/render-pdf-first-page-jpeg';
 import '@/lib/server/register-pdf-cover-rasterizer';
 
@@ -173,7 +174,11 @@ export async function generateUploadFinalPdf(
       null,
       contentLanguage || 'en',
       false,
-      true
+      true,
+      // Deposito permanente: l'indirizzo di risoluzione entra nel documento.
+      // umIdBaseUrl() fallisce se la variabile manca, ed è voluto: meglio non
+      // produrre il PDF finale che depositarne uno con l'indirizzo errato.
+      umIdBaseUrl()
     );
 
     if (!(buf instanceof ArrayBuffer)) {

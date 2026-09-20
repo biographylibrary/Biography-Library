@@ -74,24 +74,19 @@ npm run kb:sync:check  # Fail if generated KB files are out of date
 
 ## Environment variables
 
-See `.env.example` for the full annotated list. The short version:
+`.env.example` is the single documented list of every variable the project reads. It is not a summary: `npm run check:env` compares it against the code and CI fails if the two diverge, so nothing is listed twice and nothing drifts.
 
+**When you add, rename or remove a key, write it in all the places that need it:**
 
-| Variable                                | Where it lives                 | Used by                                                 |
-| --------------------------------------- | ------------------------------ | ------------------------------------------------------- |
-| `NEXT_PUBLIC_SUPABASE_URL`              | `.env.local` / host env        | Next.js (client + server)                               |
-| `NEXT_PUBLIC_SUPABASE_ANON_KEY`         | `.env.local` / host env        | Next.js (client + server)                               |
-| `SUPABASE_SERVICE_ROLE_KEY`             | `.env.local` / host env        | Server API routes (`/api/review/submit`, `/api/agents/*`, publication) |
-| `INFOMANIAK_AI_ENDPOINT`                | `.env.local` / host env        | `/api/review/submit`, `/api/agents/*`                                   |
-| `INFOMANIAK_AI_TOKEN`                   | `.env.local` / host env        | `/api/review/submit`, `/api/agents/*`                                   |
-| `INFOMANIAK_AI_MODEL`                   | `.env.local` / host env        | `/api/review/submit` (default: `google/gemma-4-31B-it`)                 |
-| `INFOMANIAK_AI_BASE_URL`                | `.env.local` / host env        | `/api/agents/*` (optional; derived from endpoint if unset)              |
-| `NEXT_PUBLIC_APP_URL`                   | `.env.local` / host env        | Canonical URL in meta tags                                              |
-| `INFOMANIAK_AI_TOKEN` (secret)          | Supabase Edge Function secrets | `ai-assistant`, `audio-transcription`                   |
-| `INFOMANIAK_AI_ENDPOINT` (secret)       | Supabase Edge Function secrets | same functions                                                          |
-| `INFOMANIAK_AI_MODEL_PRIMARY` (secret)  | Supabase Edge Function secrets | `ai-assistant` (default in code: `google/gemma-4-31B-it`)             |
-| `INFOMANIAK_AI_MODEL_FALLBACK` (secret) | Supabase Edge Function secrets | `ai-assistant` (default: `mistralai/Mistral-Small-4-119B-2603`)         |
+| # | Where | What it is |
+| - | ----- | ---------- |
+| 1 | `.env.local` | Your machine. Never committed. |
+| 2 | `.env.example` | The documented list. Comment the key out if it is optional; a commented key still counts as documented. |
+| 3 | `/opt/bl-app/.env` on Jelastic | Production. Set over SSH by hand, then redeploy. A `NEXT_PUBLIC_*` key needs a rebuild, not just a restart: Next.js inlines it at `next build` time, so `docker run --env-file` is too late for it. |
+| 4 | Supabase Edge Function secrets | Only for keys read by `supabase/functions/*` (Project Settings → Edge Functions → Secrets). |
+| 5 | `.github/workflows/ci.yml` | Only `NEXT_PUBLIC_*` keys the build needs, with placeholder values. |
 
+Steps 1, 2 and 5 are checked automatically. Steps 3 and 4 are manual and silent when forgotten: a missing key there does not crash the app, it disables a feature. Run `npm run check:env` after any change to see the current list.
 
 Note the split: the Next.js API route (`/api/review/submit`) reads AI credentials from host environment variables. The Supabase Edge Functions read them from Supabase secrets. Both need the same token and endpoint set in their respective locations.
 
@@ -105,7 +100,7 @@ Active development happens in **Bolt** (bolt.new), a browser-based IDE that runs
 
 ### 2. GitHub repository
 
-The repository is the single source of truth. There is no CI/CD pipeline configured — deployments are triggered manually. Branches: `main` is production.
+The repository is the single source of truth. Branches: `main` is production. Two workflows run from it: `.github/workflows/ci.yml` on every pull request (env check, typecheck, lint, build) and `.github/workflows/deploy.yml` on every push to `main`, which deploys to Jelastic over SSH.
 
 ### 3. Supabase (database, auth, Edge Functions)
 

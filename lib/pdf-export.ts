@@ -1533,6 +1533,21 @@ export async function checkBiographyPdfReadiness(
   return { ok: issues.length === 0, issues };
 }
 
+/**
+ * Base dell'indirizzo di risoluzione UM.
+ *
+ * Lato server la passa il chiamante, che legge `UM_ID_BASE_URL` a runtime.
+ * Lato browser la variabile non esiste nel pacchetto, quindi si chiede alla
+ * rotta. Un errore qui non viene assorbito: fermare l'export è preferibile a
+ * produrre un documento con l'indirizzo sbagliato, che non si corregge più.
+ */
+async function resolveUmIdBaseUrl(explicit?: string | null): Promise<string | null> {
+  if (explicit?.trim()) return explicit.trim();
+  if (typeof window === 'undefined') return null;
+  const { fetchUmIdBaseUrl } = await import('@/lib/um-id-url-client');
+  return fetchUmIdBaseUrl();
+}
+
 export async function generateBiographyPDF(
   biography: BiographyData,
   _variant?: string,
@@ -1552,7 +1567,14 @@ export async function generateBiographyPDF(
   contentLanguage?: string,
   previewOnly?: boolean,
   /** Server: return PDF bytes instead of triggering a browser download. */
-  returnArrayBuffer?: boolean
+  returnArrayBuffer?: boolean,
+  /**
+   * Base dell'indirizzo di risoluzione UM (specifica §9), es.
+   * `https://id.biographylibrary.org`. Lato server viene da `umIdBaseUrl()`;
+   * lato browser da `fetchUmIdBaseUrl()`, perché `UM_ID_BASE_URL` non è nel
+   * pacchetto. Assente, le pagine di permanenza portano il solo identificativo.
+   */
+  umIdBaseUrl?: string | null
 ): Promise<void | string | ArrayBuffer> {
   if (!biography.id) {
     throw new Error('MISSING_BIOGRAPHY_ID');
@@ -1571,6 +1593,8 @@ export async function generateBiographyPDF(
   if (!coverA5 && !coverComposite) {
     throw new Error('MISSING_COVER_PHOTO');
   }
+
+  const resolvedUmIdBaseUrl = await resolveUmIdBaseUrl(umIdBaseUrl);
 
   const lang = contentLanguage ?? 'en';
   const watermarkLabel =
@@ -1638,7 +1662,8 @@ export async function generateBiographyPDF(
         author_name: permanenceData.bio.author_name || pdfAuthor,
       },
       permanenceData.events,
-      permanenceData.relations
+      permanenceData.relations,
+      resolvedUmIdBaseUrl
     );
     drawPermanenceTextPage(state, headerLines);
   }
@@ -1933,7 +1958,12 @@ export async function generateBiographyPDF(
     logPdfBuildStep('permanence: colophon');
     addNewPage(state, false);
     const yearWord = UM_YEAR_WORD[lang] ?? UM_YEAR_WORD.en;
-    const colophonLines = buildColophonLines(permanenceData.bio, yearWord, lang);
+    const colophonLines = buildColophonLines(
+      permanenceData.bio,
+      yearWord,
+      lang,
+      resolvedUmIdBaseUrl
+    );
     drawPermanenceTextPage(state, colophonLines);
   }
 

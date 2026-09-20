@@ -11,6 +11,8 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
+    "check:env": "node scripts/check-env.mjs",
+    "check:dead": "knip --include files",
     "seed:test-biography": "node scripts/seed-test-biography.mjs",
     "demo:enrich": "npx tsx --tsconfig tsconfig.json scripts/enrich-demo-catalog.ts",
     "kb:sync": "node scripts/sync-platform-kb.mjs",
@@ -108,6 +110,7 @@
     "zod": "^3.23.8"
   },
   "devDependencies": {
+    "knip": "^6.37.0",
     "vite-tsconfig-paths": "^6.1.1",
     "vitest": "^4.1.9"
   }

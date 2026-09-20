@@ -1,0 +1,50 @@
+{
+  "$schema": "https://unpkg.com/knip@5/schema.json",
+
+  // Punti d'ingresso che Next.js non conosce: le Edge Function girano su Deno,
+  // gli script si lanciano a mano.
+  "entry": ["supabase/functions/*/index.ts", "scripts/*.mjs", "scripts/*.ts"],
+
+  "ignore": [
+    "components/ui/**", // libreria shadcn: presente per intero, usata in parte
+    "public/**",
+    "lib/help/*.generated.ts", // generato da npm run kb:sync
+
+    // ─────────────────────────────────────────────────────────────────────
+    // Arretrato al 20 settembre 2026: file scritti e mai collegati, trovati
+    // quando `lib/um-id-url.ts` si è rivelato orfano. Sono congelati qui perché
+    // il controllo serva da subito sui file nuovi, non per assolverli: vanno
+    // verificati e rimossi o collegati, uno alla volta. Togliere una riga da
+    // questo elenco quando il file è stato sistemato.
+    // ─────────────────────────────────────────────────────────────────────
+    "components/agents/AgentChat.tsx",
+    "components/dashboard/ai-coach-card.tsx",
+    "components/dashboard/biography-card.tsx",
+    "components/dashboard/pending-todos-card.tsx",
+    "components/dashboard/published-biographies-card.tsx",
+    "components/dashboard/stats-cards.tsx",
+    "components/echo/BiographyPicker.tsx",
+    "components/echo/EchoHeader.tsx",
+    "components/editor/coach-conversation-mode.tsx",
+    "components/editor/conversation-mode.tsx",
+    "components/editor/ModeSwitchWarningDialog.tsx",
+    "components/editor/SectionNotes.tsx",
+    "components/import/SectionAssignmentWizard.tsx",
+    "components/language-selector.tsx",
+    "components/legal/terms-of-service-modal.tsx",
+    "components/onboarding/LanguageGateModal.tsx",
+    "components/publication/PublicationReviewerChat.tsx",
+    "components/welcome-language-modal.tsx",
+    "hooks/use-require-auth.ts",
+    "lib/agents/agent-edge-fallback.ts",
+    "lib/ai/smart-followup.ts",
+    "lib/checkpoint-service.ts",
+    "lib/echo/onboarding.ts",
+    "lib/help/help-kb.ts",
+    "lib/section-status-service.ts",
+    "lib/ui-palette.ts"
+  ],
+
+  "ignoreDependencies": ["knip"],
+  "includeEntryExports": false
+}
