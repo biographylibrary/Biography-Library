@@ -320,7 +320,7 @@ export function EchoChat({
             {m.role === 'assistant' ? (
               <>
                 <EchoMessageContent content={m.content} />
-                {canInsertInEditor && m.pendingDraft && !m.streaming && (
+                {canInsertInEditor && m.pendingDraft && (
                   <EchoDraftInsertPrompt
                     sectionTitle={sectionTitleFor(m.pendingDraft.sectionKey)}
                     cardTitle={t.echo.insertDraftCardTitle}
