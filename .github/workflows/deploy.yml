@@ -29,16 +29,18 @@ jobs:
             git fetch origin main
             git reset --hard origin/main
             echo "Deploying commit: $(git rev-parse --short HEAD) — $(git log -1 --pretty=%s)"
-            set -a
-            # shellcheck source=/dev/null
-            . ./.env
-            set +a
+            # Legge una variabile dal .env senza interpretarne il valore.
+            # `. ./.env` non va usato: fallisce con errore di sintassi su ogni
+            # valore che contenga spazi o metacaratteri di shell, e RESEND_FROM_EMAIL
+            # ne contiene ("Biography Library <noreply@...>"). Con set -e il deploy
+            # muore prima ancora di costruire l'immagine.
+            env_value() { sed -n "s/^$1=//p" .env | head -1; }
             docker build -t biography-library \
-              --build-arg NEXT_PUBLIC_SUPABASE_URL="${NEXT_PUBLIC_SUPABASE_URL}" \
-              --build-arg NEXT_PUBLIC_SUPABASE_ANON_KEY="${NEXT_PUBLIC_SUPABASE_ANON_KEY}" \
-              --build-arg NEXT_PUBLIC_APP_URL="${NEXT_PUBLIC_APP_URL}" \
-              --build-arg NEXT_PUBLIC_APP_ENV="${NEXT_PUBLIC_APP_ENV:-production}" \
-              --build-arg NEXT_PUBLIC_SITE_NAME="${NEXT_PUBLIC_SITE_NAME:-Biography Library}" \
+              --build-arg NEXT_PUBLIC_SUPABASE_URL="$(env_value NEXT_PUBLIC_SUPABASE_URL)" \
+              --build-arg NEXT_PUBLIC_SUPABASE_ANON_KEY="$(env_value NEXT_PUBLIC_SUPABASE_ANON_KEY)" \
+              --build-arg NEXT_PUBLIC_APP_URL="$(env_value NEXT_PUBLIC_APP_URL)" \
+              --build-arg NEXT_PUBLIC_SITE_NAME="$(env_value NEXT_PUBLIC_SITE_NAME)" \
+              --build-arg NEXT_PUBLIC_SITE_URL="$(env_value NEXT_PUBLIC_SITE_URL)" \
               .
             docker stop bl-app || true
             docker rm bl-app || true
