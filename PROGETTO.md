@@ -37,7 +37,7 @@ Fondatore unico, non sviluppatore: costruisce con Claude Code e Cursor. Non ci s
 
 **Permanenza e identificativo UM** (piano chiuso, 4 settembre 2026)
 - Ogni scheda riceve alla creazione un **identificativo UM** immutabile (`lib/um-id.ts`, registro `um_identifiers`, mint server-side)
-- Risolutore stabile `/id/[umId]` (anche forme senza trattini / miste); rewrite `/UM…`; base URL `NEXT_PUBLIC_UM_ID_BASE_URL`
+- Risolutore stabile `/id/[umId]` (anche forme senza trattini / miste); rewrite `/UM…`; base URL `UM_ID_BASE_URL` (server-only, letta a runtime)
 - Specifica pubblica depositata: `docs/UM-IDENTIFIER-SPEC.md` (v1.0, cambio anno in UTC)
 - Notazione **Anno UM** (epoca 2026) solo per eventi di archivio: footer, `/credits`, data pubblicazione, colophon PDF, admin, email — mai sulle date di vita
 - Schema a eventi: `person_events` (nascita/morte con EDTF, luogo, provenienza) e `person_relations` (etichetta autorevole)
@@ -201,7 +201,7 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=...
 SUPABASE_SERVICE_ROLE_KEY=...
 
 # Permanenza / UM
-NEXT_PUBLIC_UM_ID_BASE_URL=https://id.biographylibrary.org
+UM_ID_BASE_URL=https://id.biographylibrary.org
 # GEONAMES_USERNAME=...         # opzionale; altrimenti Nominatim per i luoghi
 
 # Email

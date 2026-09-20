@@ -87,6 +87,25 @@ npm run kb:sync:check  # Fail if generated KB files are out of date
 | 5 | `.github/workflows/ci.yml` | Only `NEXT_PUBLIC_*` keys the build needs, with placeholder values. |
 | 6 | `Dockerfile` and `deploy.yml` | **`NEXT_PUBLIC_*` only**, as `ARG` plus `ENV` in the Dockerfile and as `--build-arg` in the deploy. `.dockerignore` keeps `.env` out of the build context, so a public key that does not pass through here ends up empty in the bundle, silently. `npm run check:env` checks this too. |
 
+### If the app ever moves off Jelastic
+
+Every runtime variable lives in one file on the host — today
+`/opt/bl-app/.env` — and nothing in the app reads a value that is not listed in
+`.env.example`. That is the point of the check: `.env.example` is a complete,
+CI-enforced inventory, so it doubles as the moving list. Take it, fill in the
+real values on the new host, and nothing is left behind.
+
+What is tied to Jelastic by name, and would need updating, is the *path and the
+transport*, not the list: the `deploy.yml` workflow (SSH, `/opt/bl-app`,
+`docker run --env-file`), step 3 of the table above, and the prose in this file.
+`grep -rl Jelastic` finds them.
+
+Two values are worth calling out because they are not obvious from a file
+listing: `UM_ID_BASE_URL` must keep resolving to the same public address, since
+identifiers already printed inside deposited documents point at it, and
+`CRON_SECRET` must match the value set as a Supabase Edge Function secret, or
+the webhooks start rejecting each other.
+
 Steps 1, 2 and 5 are checked automatically. Steps 3 and 4 are manual and silent when forgotten: a missing key there does not crash the app, it disables a feature. Run `npm run check:env` after any change to see the current list.
 
 Note the split: the Next.js API route (`/api/review/submit`) reads AI credentials from host environment variables. The Supabase Edge Functions read them from Supabase secrets. Both need the same token and endpoint set in their respective locations.
