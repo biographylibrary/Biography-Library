@@ -43,6 +43,27 @@ const PROVIDED_BY_RUNTIME = new Set(['NODE_ENV', 'HOME', 'PATH', 'CI', 'npm_pack
  */
 const DYNAMIC_LOOKUP_FILES = ['lib/agents/models.ts'];
 
+/**
+ * Variabili `NEXT_PUBLIC_*` che servono solo in sviluppo e non devono comparire
+ * fra gli ARG del Dockerfile.
+ */
+const DEV_ONLY_PUBLIC = new Set(['NEXT_PUBLIC_ENABLE_PWA_DEV']);
+
+/**
+ * Ogni `NEXT_PUBLIC_*` letta dal codice deve essere dichiarata come ARG nel
+ * Dockerfile. Next.js le incorpora durante `next build`, e il .dockerignore
+ * tiene il .env fuori dal contesto di build: una chiave che non arriva come
+ * build-arg finisce vuota nel pacchetto, senza errori e senza avvisi.
+ */
+function collectDockerArgs() {
+  try {
+    const text = readFileSync(join(ROOT, 'Dockerfile'), 'utf8');
+    return new Set([...text.matchAll(/^ARG\s+(NEXT_PUBLIC_[A-Z0-9_]+)/gm)].map((m) => m[1]));
+  } catch {
+    return null;
+  }
+}
+
 function walk(dir, out = []) {
   let entries;
   try {
@@ -109,9 +130,46 @@ const documented = collectDocumented();
 const undocumented = [...used.keys()].filter((k) => !documented.has(k)).sort();
 const unused = [...documented].filter((k) => !used.has(k)).sort();
 
-if (undocumented.length === 0 && unused.length === 0) {
-  console.log(`check:env — ${used.size} variabili, tutte documentate in .env.example.`);
+const dockerArgs = collectDockerArgs();
+const missingArgs =
+  dockerArgs === null
+    ? []
+    : [...used.keys()]
+        .filter((k) => k.startsWith('NEXT_PUBLIC_'))
+        .filter((k) => !DEV_ONLY_PUBLIC.has(k) && !dockerArgs.has(k))
+        .sort();
+const staleArgs =
+  dockerArgs === null ? [] : [...dockerArgs].filter((k) => !used.has(k)).sort();
+
+if (
+  undocumented.length === 0 &&
+  unused.length === 0 &&
+  missingArgs.length === 0 &&
+  staleArgs.length === 0
+) {
+  console.log(
+    `check:env — ${used.size} variabili documentate, ` +
+      `${dockerArgs === null ? 'nessun Dockerfile' : `${dockerArgs.size} build-arg allineati`}.`
+  );
   process.exit(0);
+}
+
+if (missingArgs.length > 0) {
+  console.error('\nNEXT_PUBLIC_* lette dal codice ma non dichiarate come ARG nel Dockerfile:\n');
+  for (const key of missingArgs) {
+    console.error(`  ${key}\n      letta in: ${[...used.get(key)].slice(0, 3).join(', ')}`);
+  }
+  console.error(
+    '\n  Senza ARG finiscono vuote nel pacchetto: il .dockerignore tiene il .env\n' +
+      '  fuori dal contesto di build, e Next.js le incorpora durante `next build`.\n' +
+      '  Aggiungile al Dockerfile (ARG + ENV) e a --build-arg in deploy.yml.\n'
+  );
+}
+
+if (staleArgs.length > 0) {
+  console.error('\nARG nel Dockerfile per variabili che nessun codice legge:\n');
+  for (const key of staleArgs) console.error(`  ${key}`);
+  console.error('\n  Toglile dal Dockerfile e da deploy.yml.\n');
 }
 
 if (undocumented.length > 0) {

@@ -85,6 +85,7 @@ npm run kb:sync:check  # Fail if generated KB files are out of date
 | 3 | `/opt/bl-app/.env` on Jelastic | Production. Set over SSH by hand, then redeploy. A `NEXT_PUBLIC_*` key needs a rebuild, not just a restart: Next.js inlines it at `next build` time, so `docker run --env-file` is too late for it. |
 | 4 | Supabase Edge Function secrets | Only for keys read by `supabase/functions/*` (Project Settings → Edge Functions → Secrets). |
 | 5 | `.github/workflows/ci.yml` | Only `NEXT_PUBLIC_*` keys the build needs, with placeholder values. |
+| 6 | `Dockerfile` and `deploy.yml` | **`NEXT_PUBLIC_*` only**, as `ARG` plus `ENV` in the Dockerfile and as `--build-arg` in the deploy. `.dockerignore` keeps `.env` out of the build context, so a public key that does not pass through here ends up empty in the bundle, silently. `npm run check:env` checks this too. |
 
 Steps 1, 2 and 5 are checked automatically. Steps 3 and 4 are manual and silent when forgotten: a missing key there does not crash the app, it disables a feature. Run `npm run check:env` after any change to see the current list.
 
