@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/button';
 import { Logo } from '@/components/logo';
 import { Loader as Loader2, Mail, CircleCheck as CheckCircle2, CircleAlert as AlertCircle, RefreshCw } from 'lucide-react';
 import { ThemeToggle } from '@/components/theme-toggle';
+import { postLoginPath } from '@/lib/waitlist';
 
 export default function VerifyEmailPage() {
   const [resendLoading, setResendLoading] = useState(false);
@@ -21,7 +22,7 @@ export default function VerifyEmailPage() {
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const cooldownRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  const { user } = useAuth();
+  const { user, accountStatus, role, profileReady } = useAuth();
   const { t } = useTranslation();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -41,7 +42,7 @@ export default function VerifyEmailPage() {
       if (currentUser?.email_confirmed_at) {
         if (pollRef.current) clearInterval(pollRef.current);
         setConfirmed(true);
-        setTimeout(() => router.push('/dashboard'), 2500);
+        setTimeout(() => router.push(postLoginPath({ accountStatus, role })), 2500);
       }
     }, 4000);
 
@@ -51,10 +52,10 @@ export default function VerifyEmailPage() {
   }, [router, searchParams]);
 
   useEffect(() => {
-    if (user?.email_confirmed_at && !verifyError) {
-      router.push('/dashboard');
+    if (user?.email_confirmed_at && !verifyError && profileReady) {
+      router.push(postLoginPath({ accountStatus, role }));
     }
-  }, [user, verifyError, router]);
+  }, [user, verifyError, router, profileReady, accountStatus, role]);
 
   useEffect(() => {
     return () => {
@@ -243,7 +244,7 @@ export default function VerifyEmailPage() {
 
           <p className="text-center text-sm text-muted-foreground mt-6">
             <Link
-              href="/"
+              href="/login"
               className="font-medium transition-colors hover:opacity-80"
               style={{ color: '#6D323E' }}
             >

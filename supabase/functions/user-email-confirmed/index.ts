@@ -79,7 +79,7 @@ Deno.serve(async (req: Request) => {
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("welcome_email_sent_at, language")
+    .select("welcome_email_sent_at, language, account_status")
     .eq("id", record.id)
     .maybeSingle();
 
@@ -98,12 +98,17 @@ Deno.serve(async (req: Request) => {
         : null,
   });
 
+  const templateId =
+    (profile as { account_status?: string } | null)?.account_status === "waitlist"
+      ? "welcome_waitlist"
+      : "welcome";
+
   try {
     await sendTransactionalEmail({
       to: record.email,
-      templateId: "welcome",
+      templateId,
       locale,
-      idempotencyKey: `welcome/${record.id}`,
+      idempotencyKey: `${templateId}/${record.id}`,
       env: {
         apiKey: Deno.env.get("RESEND_API_KEY"),
         from: Deno.env.get("RESEND_FROM_EMAIL"),

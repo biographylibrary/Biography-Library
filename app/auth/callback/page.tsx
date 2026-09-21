@@ -4,6 +4,19 @@ import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 import { Loader as Loader2 } from 'lucide-react';
+import { postLoginPath } from '@/lib/waitlist';
+
+async function destinationForUser(userId: string): Promise<string> {
+  const { data } = await supabase
+    .from('profiles')
+    .select('account_status, role')
+    .eq('id', userId)
+    .maybeSingle();
+  return postLoginPath({
+    accountStatus: (data as { account_status?: string } | null)?.account_status,
+    role: (data as { role?: string } | null)?.role,
+  });
+}
 
 async function triggerWelcomeEmail(userId: string): Promise<void> {
   const { data: { session } } = await supabase.auth.getSession();
@@ -48,8 +61,10 @@ export default function AuthCallbackPage() {
         } else {
           if (data.session?.user?.id) {
             await triggerWelcomeEmail(data.session.user.id);
+            router.replace(await destinationForUser(data.session.user.id));
+          } else {
+            router.replace('/login');
           }
-          router.replace('/dashboard');
         }
         return;
       }
@@ -64,8 +79,10 @@ export default function AuthCallbackPage() {
         } else {
           if (data.session?.user?.id) {
             await triggerWelcomeEmail(data.session.user.id);
+            router.replace(await destinationForUser(data.session.user.id));
+          } else {
+            router.replace('/login');
           }
-          router.replace('/dashboard');
         }
         return;
       }
@@ -85,8 +102,10 @@ export default function AuthCallbackPage() {
           } else {
             if (data.session?.user?.id) {
               await triggerWelcomeEmail(data.session.user.id);
+              router.replace(await destinationForUser(data.session.user.id));
+            } else {
+              router.replace('/login');
             }
-            router.replace('/dashboard');
           }
           return;
         }

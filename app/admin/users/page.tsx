@@ -32,10 +32,11 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip';
 import { Badge } from '@/components/ui/badge';
+import { GRANT_ACCESS_BATCH_SIZE, chunkIds } from '@/lib/waitlist';
 
 type UserRole = 'user' | 'reviewer' | 'admin' | 'super_admin';
 
-type AccountStatus = 'active' | 'suspended';
+type AccountStatus = 'active' | 'suspended' | 'waitlist';
 
 interface UserRow {
   id: string;
@@ -93,6 +94,11 @@ export default function AdminUsersPage() {
   const [loadingUsers, setLoadingUsers] = useState(false);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [search, setSearch] = useState('');
+  const [statusFilter, setStatusFilter] = useState<'all' | AccountStatus>('all');
+  const [selectedIds, setSelectedIds] = useState<Record<string, boolean>>({});
+  const [oldestCount, setOldestCount] = useState('100');
+  const [grantConfirm, setGrantConfirm] = useState(false);
+  const [granting, setGranting] = useState(false);
   const [page, setPage] = useState(1);
   const [pendingChanges, setPendingChanges] = useState<Record<string, UserRole>>({});
   const [confirmChange, setConfirmChange] = useState<PendingChange | null>(null);
@@ -282,13 +288,24 @@ export default function AdminUsersPage() {
 
   const filtered = useMemo(() => {
     const q = search.toLowerCase().trim();
-    if (!q) return users;
-    return users.filter(
-      (u) =>
-        (u.full_name ?? '').toLowerCase().includes(q) ||
-        (u.email ?? '').toLowerCase().includes(q)
-    );
-  }, [users, search]);
+    let list = users;
+    if (statusFilter !== 'all') {
+      list = list.filter((u) => u.account_status === statusFilter);
+    }
+    if (q) {
+      list = list.filter(
+        (u) =>
+          (u.full_name ?? '').toLowerCase().includes(q) ||
+          (u.email ?? '').toLowerCase().includes(q)
+      );
+    }
+    if (statusFilter === 'waitlist') {
+      return [...list].sort(
+        (a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+      );
+    }
+    return list;
+  }, [users, search, statusFilter]);
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
   const pageUsers = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
@@ -296,6 +313,83 @@ export default function AdminUsersPage() {
   function handleSearch(v: string) {
     setSearch(v);
     setPage(1);
+  }
+
+  const selectedWaitlistIds = useMemo(
+    () =>
+      Object.entries(selectedIds)
+        .filter(([, on]) => on)
+        .map(([id]) => id)
+        .filter((id) => users.find((u) => u.id === id)?.account_status === 'waitlist'),
+    [selectedIds, users]
+  );
+
+  function selectVisibleWaitlist() {
+    const next = { ...selectedIds };
+    for (const u of pageUsers) {
+      if (u.account_status === 'waitlist') next[u.id] = true;
+    }
+    setSelectedIds(next);
+  }
+
+  function selectOldestWaitlist() {
+    const n = Math.max(1, Math.min(1000, Number(oldestCount) || 100));
+    const oldest = users
+      .filter((u) => u.account_status === 'waitlist')
+      .sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime())
+      .slice(0, n);
+    const next: Record<string, boolean> = {};
+    for (const u of oldest) next[u.id] = true;
+    setSelectedIds(next);
+  }
+
+  async function handleGrantAccess() {
+    if (selectedWaitlistIds.length === 0) {
+      toast({ title: t.admin.usersGrantNoneSelected, variant: 'destructive' });
+      return;
+    }
+    setGranting(true);
+    try {
+      let granted = 0;
+      let skippedActive = 0;
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.access_token) throw new Error('no_session');
+      for (const chunk of chunkIds(selectedWaitlistIds, GRANT_ACCESS_BATCH_SIZE)) {
+        const res = await fetch('/api/admin/users/grant-access', {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${session.access_token}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ userIds: chunk }),
+        });
+        const body = (await res.json().catch(() => ({}))) as {
+          granted?: string[];
+          skippedActive?: string[];
+          error?: string;
+        };
+        if (!res.ok) throw new Error(body.error ?? 'request_failed');
+        granted += body.granted?.length ?? 0;
+        skippedActive += body.skippedActive?.length ?? 0;
+        const grantedSet = new Set(body.granted ?? []);
+        setUsers((prev) =>
+          prev.map((u) =>
+            grantedSet.has(u.id) ? { ...u, account_status: 'active' as AccountStatus } : u
+          )
+        );
+      }
+      setSelectedIds({});
+      toast({
+        title: t.admin.usersToastGranted
+          .replace('{granted}', String(granted))
+          .replace('{skippedActive}', String(skippedActive)),
+      });
+    } catch {
+      toast({ title: t.admin.usersActionFailed, variant: 'destructive' });
+    } finally {
+      setGranting(false);
+      setGrantConfirm(false);
+    }
   }
 
   function handleRoleChange(userId: string, newRole: UserRole) {
@@ -372,7 +466,7 @@ export default function AdminUsersPage() {
             </div>
           </div>
 
-          <div className="mt-8 mb-5 flex items-center gap-3">
+          <div className="mt-8 mb-5 flex flex-col gap-3 sm:flex-row sm:items-center">
             <div className="relative flex-1 max-w-sm">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
               <Input
@@ -382,10 +476,56 @@ export default function AdminUsersPage() {
                 onChange={(e) => handleSearch(e.target.value)}
               />
             </div>
-            <span className="text-sm text-muted-foreground ml-auto tabular-nums">
+            <Select
+              value={statusFilter}
+              onValueChange={(v) => {
+                setStatusFilter(v as 'all' | AccountStatus);
+                setPage(1);
+              }}
+            >
+              <SelectTrigger className="w-[180px] h-10">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">{t.admin.usersFilterAll}</SelectItem>
+                <SelectItem value="waitlist">{t.admin.usersStatusWaitlist}</SelectItem>
+                <SelectItem value="active">{t.admin.usersStatusActive}</SelectItem>
+                <SelectItem value="suspended">{t.admin.usersStatusSuspended}</SelectItem>
+              </SelectContent>
+            </Select>
+            <span className="text-sm text-muted-foreground sm:ml-auto tabular-nums">
               {filtered.length} user{filtered.length !== 1 ? 's' : ''}
             </span>
           </div>
+
+          {statusFilter === 'waitlist' && (
+            <div className="mb-4 flex flex-wrap items-center gap-2">
+              <Button type="button" variant="outline" size="sm" onClick={selectVisibleWaitlist}>
+                {t.admin.usersSelectVisible}
+              </Button>
+              <div className="flex items-center gap-2">
+                <Input
+                  className="w-20 h-8"
+                  inputMode="numeric"
+                  value={oldestCount}
+                  onChange={(e) => setOldestCount(e.target.value)}
+                  aria-label={t.admin.usersOldestCount}
+                />
+                <Button type="button" variant="outline" size="sm" onClick={selectOldestWaitlist}>
+                  {t.admin.usersSelectOldest}
+                </Button>
+              </div>
+              <Button
+                type="button"
+                size="sm"
+                disabled={selectedWaitlistIds.length === 0 || granting}
+                onClick={() => setGrantConfirm(true)}
+              >
+                {t.admin.usersGrantAccess}
+                {selectedWaitlistIds.length > 0 ? ` (${selectedWaitlistIds.length})` : ''}
+              </Button>
+            </div>
+          )}
 
           {loadError && (
             <div className="mb-4 p-4 rounded-xl bg-brand-wine/10 dark:bg-brand-wine/15 text-sm text-brand-wineDark dark:text-brand-mustardLight">
@@ -398,7 +538,11 @@ export default function AdminUsersPage() {
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-border bg-muted/40">
-                    <th className="px-4 py-3 text-left font-medium text-muted-foreground w-10"></th>
+                    <th className="px-4 py-3 text-left font-medium text-muted-foreground w-10">
+                      {statusFilter === 'waitlist' ? (
+                        <span className="sr-only">{t.admin.usersGrantAccess}</span>
+                      ) : null}
+                    </th>
                     <th className="px-4 py-3 text-left font-medium text-muted-foreground">{t.admin.usersColName}</th>
                     <th className="px-4 py-3 text-left font-medium text-muted-foreground hidden md:table-cell">{t.admin.usersColEmail}</th>
                     <th className="px-4 py-3 text-left font-medium text-muted-foreground">{t.admin.usersColRole}</th>
@@ -444,8 +588,21 @@ export default function AdminUsersPage() {
                       return (
                         <tr key={u.id} className="hover:bg-muted/30 transition-colors">
                           <td className="px-4 py-3">
-                            <div className={`h-8 w-8 rounded-full flex items-center justify-center text-white dark:text-[#121212] text-xs font-bold shrink-0 ${getAvatarColor(displayName)}`}>
-                              {initial}
+                            <div className="flex items-center gap-2">
+                              {u.account_status === 'waitlist' && (
+                                <input
+                                  type="checkbox"
+                                  className="h-4 w-4"
+                                  checked={!!selectedIds[u.id]}
+                                  onChange={(e) =>
+                                    setSelectedIds((prev) => ({ ...prev, [u.id]: e.target.checked }))
+                                  }
+                                  aria-label={t.admin.usersGrantAccess}
+                                />
+                              )}
+                              <div className={`h-8 w-8 rounded-full flex items-center justify-center text-white dark:text-[#121212] text-xs font-bold shrink-0 ${getAvatarColor(displayName)}`}>
+                                {initial}
+                              </div>
                             </div>
                           </td>
                           <td className="px-4 py-3">
@@ -539,10 +696,16 @@ export default function AdminUsersPage() {
                               className={
                                 u.account_status === 'suspended'
                                   ? 'text-brand-wineDark border-brand-wine/40 bg-brand-wine/8'
-                                  : 'border-border'
+                                  : u.account_status === 'waitlist'
+                                    ? 'text-brand-ink border-brand-mustardDark/50 bg-[#DDCF88]/35 dark:text-brand-beigeLight'
+                                    : 'border-border'
                               }
                             >
-                              {u.account_status === 'suspended' ? t.admin.usersStatusSuspended : t.admin.usersStatusActive}
+                              {u.account_status === 'suspended'
+                                ? t.admin.usersStatusSuspended
+                                : u.account_status === 'waitlist'
+                                  ? t.admin.usersStatusWaitlist
+                                  : t.admin.usersStatusActive}
                             </Badge>
                           </td>
                           <td className="px-4 py-3 text-muted-foreground hidden lg:table-cell text-xs">
@@ -580,7 +743,7 @@ export default function AdminUsersPage() {
                                       </TooltipTrigger>
                                       <TooltipContent>{t.admin.usersSuspend}</TooltipContent>
                                     </Tooltip>
-                                  ) : (
+                                  ) : u.account_status === 'suspended' ? (
                                     <Tooltip>
                                       <TooltipTrigger asChild>
                                         <button
@@ -595,7 +758,7 @@ export default function AdminUsersPage() {
                                       </TooltipTrigger>
                                       <TooltipContent>{t.admin.usersReinstate}</TooltipContent>
                                     </Tooltip>
-                                  )}
+                                  ) : null}
                                   <Tooltip>
                                     <TooltipTrigger asChild>
                                       <button
@@ -653,6 +816,29 @@ export default function AdminUsersPage() {
               </Button>
             </div>
           )}
+
+      <AlertDialog open={grantConfirm} onOpenChange={(open) => { if (!open && !granting) setGrantConfirm(false); }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t.admin.usersGrantConfirmTitle}</AlertDialogTitle>
+            <AlertDialogDescription>
+              {t.admin.usersGrantConfirmDetail.replace('{count}', String(selectedWaitlistIds.length))}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={granting}>{t.common.cancel}</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={(e) => {
+                e.preventDefault();
+                void handleGrantAccess();
+              }}
+              disabled={granting}
+            >
+              {granting ? '…' : t.admin.usersGrantAccess}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       <AlertDialog open={!!confirmChange} onOpenChange={(open) => { if (!open) setConfirmChange(null); }}>
         <AlertDialogContent>

@@ -11,13 +11,14 @@ import { Label } from '@/components/ui/label';
 import { Logo } from '@/components/logo';
 import { Loader as Loader2, CircleAlert as AlertCircle } from 'lucide-react';
 import { ThemeToggle } from '@/components/theme-toggle';
+import { postLoginPath } from '@/lib/waitlist';
 
 export function LoginScreen() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const { signIn, user, loading } = useAuth();
+  const { signIn, user, loading, profileReady, accountStatus, role } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
   const returnToParam = searchParams.get('returnTo');
@@ -30,10 +31,12 @@ export function LoginScreen() {
   const { t } = useTranslation();
 
   useEffect(() => {
-    if (!loading && user && !signedOut && !sessionExpired) {
-      router.push(returnTo || '/dashboard');
+    if (!loading && profileReady && user && !signedOut && !sessionExpired) {
+      router.push(returnTo && returnTo.startsWith('/') && accountStatus !== 'waitlist'
+        ? returnTo
+        : postLoginPath({ accountStatus, role }));
     }
-  }, [user, loading, router, returnTo, signedOut, sessionExpired]);
+  }, [user, loading, profileReady, router, returnTo, signedOut, sessionExpired, accountStatus, role]);
 
   useEffect(() => {
     try {
@@ -60,12 +63,10 @@ export function LoginScreen() {
     if (error) {
       setError(error === 'ACCOUNT_SUSPENDED' ? t.auth.accountSuspended : error);
       setIsLoading(false);
-    } else {
-      router.push(returnTo || '/dashboard');
     }
   };
 
-  if (loading || (user && !signedOut && !sessionExpired)) {
+  if (loading || !profileReady || (user && !signedOut && !sessionExpired)) {
     return (
       <div className="h-full flex items-center justify-center bg-background">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -147,7 +148,7 @@ export function LoginScreen() {
           <p className="text-center text-sm text-muted-foreground mt-6">
             {t.auth.dontHaveAccount}{' '}
             <Link
-              href="/register"
+              href="/"
               className="font-medium text-primary hover:text-primary/80 transition-colors"
             >
               {t.auth.createOne}

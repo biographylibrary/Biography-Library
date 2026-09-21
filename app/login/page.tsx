@@ -1,8 +1,10 @@
+'use client';
+
 import { Suspense } from 'react';
 import { Loader as Loader2 } from 'lucide-react';
-import LoginRedirectInner from './LoginRedirectInner';
+import { LoginScreen } from '@/components/auth/LoginScreen';
 
-function LoginRedirectFallback() {
+function LoginFallback() {
   return (
     <div className="h-full flex items-center justify-center bg-background">
       <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -10,10 +12,10 @@ function LoginRedirectFallback() {
   );
 }
 
-export default function LoginRedirectPage() {
+export default function LoginPage() {
   return (
-    <Suspense fallback={<LoginRedirectFallback />}>
-      <LoginRedirectInner />
+    <Suspense fallback={<LoginFallback />}>
+      <LoginScreen />
     </Suspense>
   );
 }

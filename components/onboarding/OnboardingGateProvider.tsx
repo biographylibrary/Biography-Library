@@ -11,6 +11,7 @@ import {
 } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/auth-context';
+import { isStaffRole } from '@/lib/waitlist';
 import { useTranslation } from '@/lib/i18n/i18n-context';
 import { fetchOnboardingState, patchOnboarding } from '@/lib/onboarding/onboarding-client';
 import type { Language } from '@/lib/i18n/translations';
@@ -19,6 +20,7 @@ import type { OnboardingProfileState } from '@/lib/onboarding/types';
 const PUBLIC_PREFIXES = [
   '/login',
   '/register',
+  '/waitlist',
   '/terms-of-service',
   '/privacy-policy',
   '/cookie-policy',
@@ -63,7 +65,7 @@ function needsOnboardingRedirect(
 }
 
 export function OnboardingGateProvider({ children }: { children: ReactNode }) {
-  const { user, loading: authLoading } = useAuth();
+  const { user, loading: authLoading, accountStatus, role } = useAuth();
   const { syncLanguageFromProfile, isLoading: i18nLoading } = useTranslation();
   const pathname = usePathname();
   const router = useRouter();
@@ -120,6 +122,7 @@ export function OnboardingGateProvider({ children }: { children: ReactNode }) {
   }, [user, authLoading, i18nLoading, syncLanguageFromProfile]);
 
   useEffect(() => {
+    if (accountStatus === 'waitlist' && !isStaffRole(role)) return;
     if (!user || !languageGateResolved || bootstrapping) return;
     if (!onboardingState) return;
     if (pathname.startsWith('/onboarding') && onboardingState.onboarding_phase === 'completed') {
@@ -129,7 +132,7 @@ export function OnboardingGateProvider({ children }: { children: ReactNode }) {
     if (needsOnboardingRedirect(pathname, onboardingState)) {
       router.replace('/onboarding');
     }
-  }, [user, languageGateResolved, bootstrapping, onboardingState, pathname, router]);
+  }, [user, languageGateResolved, bootstrapping, onboardingState, pathname, router, accountStatus, role]);
 
   const value = useMemo(
     () => ({

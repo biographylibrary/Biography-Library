@@ -34,5 +34,5 @@ export function clearSupabaseAuthStorage(): void {
 
 export function redirectAfterSignOut(): void {
   if (typeof window === 'undefined') return;
-  window.location.assign('/?signedOut=1');
+  window.location.assign('/login?signedOut=1');
 }

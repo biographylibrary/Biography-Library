@@ -142,7 +142,7 @@ export default function ResetPasswordPage() {
                 </div>
               </div>
               <Link
-                href="/"
+                href="/login"
                 className="flex items-center justify-center gap-2 text-sm text-primary hover:text-primary/80 transition-colors font-medium"
               >
                 {t.auth.backToLogin}

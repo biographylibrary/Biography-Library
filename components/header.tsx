@@ -2,6 +2,7 @@
 
 import { Bell, BookOpen, LayoutDashboard, LogOut, Shield, Settings } from 'lucide-react';
 import { useAuth, ADMIN_ROLES } from '@/lib/auth-context';
+import { isStaffRole } from '@/lib/waitlist';
 import { useTranslation } from '@/lib/i18n/i18n-context';
 import { useTheme } from 'next-themes';
 import { Logo } from '@/components/logo';
@@ -25,7 +26,7 @@ import {
 } from '@/lib/notifications-service';
 
 export function Header() {
-  const { user, role, signOut } = useAuth();
+  const { user, role, accountStatus, signOut } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
   const { t } = useTranslation();
@@ -84,8 +85,13 @@ export function Header() {
 
   const isEditorPage = pathname?.includes('/biography/') && pathname?.includes('/edit');
   const isDashboardPage = pathname === '/dashboard';
-  const isAuthPage = pathname === '/' || pathname === '/register';
-  const homeHref = user ? '/dashboard' : '/';
+  const isAuthPage =
+    pathname === '/' ||
+    pathname === '/register' ||
+    pathname === '/login' ||
+    pathname === '/waitlist';
+  const onWaitlist = accountStatus === 'waitlist' && !isStaffRole(role);
+  const homeHref = onWaitlist ? '/waitlist' : user ? '/dashboard' : '/';
   const isDark = mounted && resolvedTheme === 'dark';
   const showAdminLink = user && role && ADMIN_ROLES.includes(role);
   const adminLinkLabel = role === 'reviewer' ? t.nav.reviewer : t.nav.admin;
@@ -145,15 +151,21 @@ export function Header() {
           {!user && !isAuthPage && (
             <div className="flex items-center gap-1.5 ml-1">
               <Button variant="ghost" size="sm" asChild>
-                <Link href="/">{t.publicBiographies.signIn}</Link>
+                <Link href="/login">{t.publicBiographies.signIn}</Link>
               </Button>
               <Button size="sm" asChild className="hidden sm:inline-flex">
-                <Link href="/register">{t.publicBiographies.startBiography}</Link>
+                <Link href="/">{t.publicBiographies.startBiography}</Link>
               </Button>
             </div>
           )}
 
-          {user && (
+          {user && onWaitlist && (
+            <Button variant="ghost" size="sm" onClick={() => void handleSignOut()}>
+              {t.common.signOut}
+            </Button>
+          )}
+
+          {user && !onWaitlist && (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button

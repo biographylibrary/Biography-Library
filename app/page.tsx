@@ -2,9 +2,9 @@
 
 import { Suspense } from 'react';
 import { Loader as Loader2 } from 'lucide-react';
-import { LoginScreen } from '@/components/auth/LoginScreen';
+import { WaitlistLanding } from '@/components/waitlist/WaitlistLanding';
 
-function LoginFallback() {
+function LandingFallback() {
   return (
     <div className="h-full flex items-center justify-center bg-background">
       <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -14,8 +14,8 @@ function LoginFallback() {
 
 export default function Home() {
   return (
-    <Suspense fallback={<LoginFallback />}>
-      <LoginScreen />
+    <Suspense fallback={<LandingFallback />}>
+      <WaitlistLanding />
     </Suspense>
   );
 }
