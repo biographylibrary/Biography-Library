@@ -6,6 +6,8 @@ const CORE_TEMPLATES: EmailTemplateId[] = [
   'auth_confirm_signup',
   'auth_reset_password',
   'welcome',
+  'welcome_waitlist',
+  'waitlist_access_granted',
   'account_suspended',
   'publication_auto_published',
   'publication_under_review',
@@ -73,5 +75,26 @@ describe('email copy', () => {
     expect(rendered.html).toContain('Vai al workspace');
     expect(rendered.html).toContain('la tua storia o quella di un familiare');
     expect(rendered.html).toContain('controllo con AI e umani');
+  });
+
+  it('waitlist welcome does not send people to write yet', () => {
+    const rendered = renderEmailTemplate({
+      templateId: 'welcome_waitlist',
+      locale: 'it',
+    });
+    expect(rendered.html).toContain('lista d’attesa');
+    expect(rendered.html).not.toContain('Vai al workspace');
+    expect(rendered.html).not.toContain('/workspace');
+  });
+
+  it('grant email tells people to export UTF-8 text and PDF', () => {
+    const rendered = renderEmailTemplate({
+      templateId: 'waitlist_access_granted',
+      locale: 'en',
+      siteUrl: 'https://app.biographylibrary.org',
+    });
+    expect(rendered.html).toContain('UTF-8');
+    expect(rendered.html).toContain('https://app.biographylibrary.org/login');
+    expect(rendered.html).toContain('beta');
   });
 });

@@ -5,6 +5,7 @@ import { AuthProvider } from '@/lib/auth-context';
 import { I18nProvider } from '@/lib/i18n/i18n-context';
 import { MetaTags } from '@/components/meta-tags';
 import { OnboardingGateProvider } from '@/components/onboarding/OnboardingGateProvider';
+import { WaitlistGate } from '@/components/waitlist/WaitlistGate';
 
 export function Providers({ children }: { children: React.ReactNode }) {
   return (
@@ -12,8 +13,10 @@ export function Providers({ children }: { children: React.ReactNode }) {
       <AuthProvider>
         <I18nProvider>
           <OnboardingGateProvider>
-            <MetaTags />
-            {children}
+            <WaitlistGate>
+              <MetaTags />
+              {children}
+            </WaitlistGate>
           </OnboardingGateProvider>
         </I18nProvider>
       </AuthProvider>

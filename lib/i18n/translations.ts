@@ -113,6 +113,19 @@ export interface Translations {
     registrationLanguageAlertTitle: string;
     registrationLanguageAlertMessage: string;
   };
+  waitlist: {
+    landingTitle: string;
+    landingLead: string;
+    landingBeta: string;
+    alreadyHaveAccess: string;
+    holdingTitle: string;
+    holdingLead: string;
+    registeredOn: string;
+    holdingBeta: string;
+    betaBanner: string;
+    localSaveBanner: string;
+    exportHint: string;
+  };
   accountSettings: {
     language: string;
     languageLockedHint: string;
@@ -1187,6 +1200,16 @@ export interface Translations {
     usersColStatus: string;
     usersStatusActive: string;
     usersStatusSuspended: string;
+    usersStatusWaitlist: string;
+    usersFilterAll: string;
+    usersGrantAccess: string;
+    usersSelectVisible: string;
+    usersSelectOldest: string;
+    usersOldestCount: string;
+    usersGrantConfirmTitle: string;
+    usersGrantConfirmDetail: string;
+    usersToastGranted: string;
+    usersGrantNoneSelected: string;
     usersSuspend: string;
     usersReinstate: string;
     usersDeleteUser: string;
@@ -1723,6 +1746,21 @@ export const translations: Record<Language, Translations> = {
       registrationLanguageAlertTitle: 'Language cannot be changed later',
       registrationLanguageAlertMessage:
         'The language you select will be used for emails, onboarding, and the entire app. After registration you will not be able to change it.',
+    },
+    waitlist: {
+      landingTitle: 'Join the waitlist',
+      landingLead:
+        'Register and join our waitlist. We will open the platform gradually based on registration date: if you want to be among the pioneers of Biography Library, sign up now.',
+      landingBeta: 'The platform is in beta: some parts may not work correctly.',
+      alreadyHaveAccess: 'Already have access? Sign in',
+      holdingTitle: 'You are on the waitlist',
+      holdingLead:
+        'We will open access gradually, starting with the earliest registrations. You will receive an email when it is your turn. You will not need to register again.',
+      registeredOn: 'You registered on {date}.',
+      holdingBeta: 'The platform is in beta: some parts may not work correctly.',
+      betaBanner: 'Biography Library is in beta. Some parts may not work correctly.',
+      localSaveBanner: 'After every writing session, save a copy on your computer.',
+      exportHint: 'In the editor, open Export and download a UTF-8 text file and a PDF.',
     },
     accountSettings: {
       language: 'Language',
@@ -2829,6 +2867,17 @@ export const translations: Record<Language, Translations> = {
       usersColStatus: 'Account',
       usersStatusActive: 'Active',
       usersStatusSuspended: 'Suspended',
+      usersStatusWaitlist: 'Waitlist',
+      usersFilterAll: 'All accounts',
+      usersGrantAccess: 'Grant access',
+      usersSelectVisible: 'Select visible',
+      usersSelectOldest: 'Select oldest',
+      usersOldestCount: 'How many of the earliest registrations?',
+      usersGrantConfirmTitle: 'Grant access to these accounts?',
+      usersGrantConfirmDetail:
+        '{count} people will be able to sign in and write. Each will receive an email. Already-active accounts are skipped.',
+      usersToastGranted: 'Access granted: {granted}. Skipped (already active): {skippedActive}.',
+      usersGrantNoneSelected: 'Select at least one waitlist account.',
       usersSuspend: 'Suspend',
       usersReinstate: 'Reinstate',
       usersDeleteUser: 'Delete user',
@@ -3377,6 +3426,21 @@ export const translations: Record<Language, Translations> = {
       registrationLanguageAlertTitle: 'La lingua non potrà essere modificata',
       registrationLanguageAlertMessage:
         'La lingua selezionata verrà usata per email, onboarding e tutta l\'app. Dopo la registrazione non potrai più cambiarla.',
+    },
+    waitlist: {
+      landingTitle: 'Entra in lista d’attesa',
+      landingLead:
+        'Registrati ed entra nella nostra lista d’attesa. Apriremo gradualmente la piattaforma in base alla data di registrazione: se vuoi essere tra i pionieri di Biography Library, iscriviti ora.',
+      landingBeta: 'La piattaforma è in versione beta: alcune parti potrebbero non funzionare correttamente.',
+      alreadyHaveAccess: 'Hai già l’accesso? Accedi',
+      holdingTitle: 'Sei in lista d’attesa',
+      holdingLead:
+        'Apriremo l’accesso gradualmente, partendo da chi si è iscritto prima. Riceverai un’email quando sarà il tuo turno. Non dovrai registrarti di nuovo.',
+      registeredOn: 'Ti sei registrato il {date}.',
+      holdingBeta: 'La piattaforma è in versione beta: alcune parti potrebbero non funzionare correttamente.',
+      betaBanner: 'Biography Library è in versione beta. Alcune parti potrebbero non funzionare correttamente.',
+      localSaveBanner: 'Dopo ogni sessione di scrittura, salva una copia sul computer.',
+      exportHint: 'Nell’editor apri Esporta e scarica un file di testo UTF-8 e un PDF.',
     },
     accountSettings: {
       language: 'Lingua',
@@ -4485,6 +4549,17 @@ export const translations: Record<Language, Translations> = {
       usersColStatus: 'Account',
       usersStatusActive: 'Attivo',
       usersStatusSuspended: 'Sospeso',
+      usersStatusWaitlist: 'Lista d’attesa',
+      usersFilterAll: 'Tutti gli account',
+      usersGrantAccess: 'Dai accesso',
+      usersSelectVisible: 'Seleziona visibili',
+      usersSelectOldest: 'Seleziona i più vecchi',
+      usersOldestCount: 'Quanti dei primi iscritti?',
+      usersGrantConfirmTitle: 'Dare accesso a questi account?',
+      usersGrantConfirmDetail:
+        '{count} persone potranno accedere e scrivere. Ognuna riceverà un’email. Chi è già attivo viene saltato.',
+      usersToastGranted: 'Accesso concesso: {granted}. Saltati (già attivi): {skippedActive}.',
+      usersGrantNoneSelected: 'Seleziona almeno un account in lista d’attesa.',
       usersSuspend: 'Sospendi',
       usersReinstate: 'Riattiva',
       usersDeleteUser: 'Elimina utente',
@@ -5033,6 +5108,21 @@ export const translations: Record<Language, Translations> = {
       registrationLanguageAlertTitle: 'La langue ne pourra pas \u00eatre modifi\u00e9e',
       registrationLanguageAlertMessage:
         'La langue s\u00e9lectionn\u00e9e sera utilis\u00e9e pour les e-mails, l\u2019onboarding et toute l\u2019application. Apr\u00e8s l\u2019inscription, vous ne pourrez plus la modifier.',
+    },
+    waitlist: {
+      landingTitle: 'Rejoindre la liste d’attente',
+      landingLead:
+        'Inscrivez-vous et rejoignez notre liste d’attente. Nous ouvrirons la plateforme progressivement selon la date d’inscription : si vous voulez être parmi les pionniers de Biography Library, inscrivez-vous maintenant.',
+      landingBeta: 'La plateforme est en version bêta : certaines parties peuvent ne pas fonctionner correctement.',
+      alreadyHaveAccess: 'Vous avez déjà accès ? Connexion',
+      holdingTitle: 'Vous êtes sur la liste d’attente',
+      holdingLead:
+        'Nous ouvrirons l’accès progressivement, en commençant par les inscriptions les plus anciennes. Vous recevrez un e-mail lorsque ce sera votre tour. Vous n’aurez pas à vous inscrire à nouveau.',
+      registeredOn: 'Vous vous êtes inscrit le {date}.',
+      holdingBeta: 'La plateforme est en version bêta : certaines parties peuvent ne pas fonctionner correctement.',
+      betaBanner: 'Biography Library est en version bêta. Certaines parties peuvent ne pas fonctionner correctement.',
+      localSaveBanner: 'Après chaque session d’écriture, enregistrez une copie sur votre ordinateur.',
+      exportHint: 'Dans l’éditeur, ouvrez Exporter et téléchargez un fichier texte UTF-8 et un PDF.',
     },
     accountSettings: {
       language: 'Langue',
@@ -6141,6 +6231,17 @@ export const translations: Record<Language, Translations> = {
       usersColStatus: 'Compte',
       usersStatusActive: 'Actif',
       usersStatusSuspended: 'Suspendu',
+      usersStatusWaitlist: 'Liste d’attente',
+      usersFilterAll: 'Tous les comptes',
+      usersGrantAccess: 'Donner l’accès',
+      usersSelectVisible: 'Sélectionner les visibles',
+      usersSelectOldest: 'Sélectionner les plus anciens',
+      usersOldestCount: 'Combien des premières inscriptions ?',
+      usersGrantConfirmTitle: 'Donner l’accès à ces comptes ?',
+      usersGrantConfirmDetail:
+        '{count} personnes pourront se connecter et écrire. Chacune recevra un e-mail. Les comptes déjà actifs sont ignorés.',
+      usersToastGranted: 'Accès accordé : {granted}. Ignorés (déjà actifs) : {skippedActive}.',
+      usersGrantNoneSelected: 'Sélectionnez au moins un compte en liste d’attente.',
       usersSuspend: 'Suspendre',
       usersReinstate: 'Réactiver',
       usersDeleteUser: 'Supprimer l’utilisateur',
@@ -6689,6 +6790,21 @@ export const translations: Record<Language, Translations> = {
       registrationLanguageAlertTitle: 'Sprache kann sp\u00e4ter nicht ge\u00e4ndert werden',
       registrationLanguageAlertMessage:
         'Die gew\u00e4hlte Sprache gilt f\u00fcr E-Mails, Onboarding und die gesamte App. Nach der Registrierung ist keine \u00c4nderung mehr m\u00f6glich.',
+    },
+    waitlist: {
+      landingTitle: 'Auf die Warteliste',
+      landingLead:
+        'Registrieren Sie sich und treten Sie unserer Warteliste bei. Wir öffnen die Plattform schrittweise nach Anmeldedatum: Wenn Sie zu den Pionieren von Biography Library gehören möchten, melden Sie sich jetzt an.',
+      landingBeta: 'Die Plattform ist in der Beta: Einige Teile funktionieren möglicherweise nicht korrekt.',
+      alreadyHaveAccess: 'Haben Sie schon Zugang? Anmelden',
+      holdingTitle: 'Sie stehen auf der Warteliste',
+      holdingLead:
+        'Wir öffnen den Zugang schrittweise, beginnend mit den frühesten Anmeldungen. Sie erhalten eine E-Mail, wenn Sie an der Reihe sind. Sie müssen sich nicht erneut registrieren.',
+      registeredOn: 'Sie haben sich am {date} registriert.',
+      holdingBeta: 'Die Plattform ist in der Beta: Einige Teile funktionieren möglicherweise nicht korrekt.',
+      betaBanner: 'Biography Library ist in der Beta. Einige Teile funktionieren möglicherweise nicht korrekt.',
+      localSaveBanner: 'Speichern Sie nach jeder Schreibsitzung eine Kopie auf Ihrem Computer.',
+      exportHint: 'Öffnen Sie im Editor Export und laden Sie eine UTF-8-Textdatei und ein PDF herunter.',
     },
     accountSettings: {
       language: 'Sprache',
@@ -7797,6 +7913,17 @@ export const translations: Record<Language, Translations> = {
       usersColStatus: 'Konto',
       usersStatusActive: 'Aktiv',
       usersStatusSuspended: 'Gesperrt',
+      usersStatusWaitlist: 'Warteliste',
+      usersFilterAll: 'Alle Konten',
+      usersGrantAccess: 'Zugang geben',
+      usersSelectVisible: 'Sichtbare auswählen',
+      usersSelectOldest: 'Älteste auswählen',
+      usersOldestCount: 'Wie viele der frühesten Anmeldungen?',
+      usersGrantConfirmTitle: 'Diesen Konten Zugang geben?',
+      usersGrantConfirmDetail:
+        '{count} Personen können sich anmelden und schreiben. Jede erhält eine E-Mail. Bereits aktive Konten werden übersprungen.',
+      usersToastGranted: 'Zugang gewährt: {granted}. Übersprungen (bereits aktiv): {skippedActive}.',
+      usersGrantNoneSelected: 'Wählen Sie mindestens ein Wartelisten-Konto.',
       usersSuspend: 'Sperren',
       usersReinstate: 'Wiederherstellen',
       usersDeleteUser: 'Benutzer löschen',

@@ -5,6 +5,7 @@ import { User, Session } from '@supabase/supabase-js';
 import { supabase } from './supabase';
 import { clearSupabaseAuthStorage, redirectAfterSignOut } from './auth-storage';
 import type { Language } from '@/lib/i18n/translations';
+import type { AccountStatus } from '@/lib/waitlist';
 
 type FontSize = 'small' | 'normal' | 'large' | 'extra-large';
 
@@ -16,7 +17,9 @@ interface AuthContextType {
   user: User | null;
   session: Session | null;
   loading: boolean;
+  profileReady: boolean;
   role: UserRole | null;
+  accountStatus: AccountStatus | null;
   fontSize: FontSize;
   setFontSize: (size: FontSize) => void;
   signIn: (email: string, password: string) => Promise<{ error: string | null; emailNotConfirmed?: boolean }>;
@@ -30,7 +33,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
+  const [profileReady, setProfileReady] = useState(false);
   const [role, setRole] = useState<UserRole | null>(null);
+  const [accountStatus, setAccountStatus] = useState<AccountStatus | null>(null);
   const [fontSize, setFontSize] = useState<FontSize>('normal');
 
   const loadProfile = useCallback(async (userId: string) => {
@@ -61,6 +66,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     if (!data) {
       setRole(null);
+      setAccountStatus(null);
+      setProfileReady(true);
       return;
     }
 
@@ -73,7 +80,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
       await supabase.auth.signOut();
       setRole(null);
+      setAccountStatus(null);
+      setProfileReady(true);
       return;
+    }
+
+    if (status === 'waitlist' || status === 'active') {
+      setAccountStatus(status);
+    } else {
+      setAccountStatus('active');
     }
 
     if (data.role && ['user', 'reviewer', 'admin', 'super_admin'].includes(data.role)) {
@@ -92,6 +107,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       };
       document.documentElement.style.fontSize = fontSizeMap[data.ui_font_size as FontSize];
     }
+    setProfileReady(true);
   }, []);
 
   useEffect(() => {
@@ -99,7 +115,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setSession(session);
       setUser(session?.user ?? null);
       if (session?.user) {
+        setProfileReady(false);
         loadProfile(session.user.id);
+      } else {
+        setProfileReady(true);
       }
     });
 
@@ -108,9 +127,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setSession(session);
         setUser(session?.user ?? null);
         if (session?.user) {
+          setProfileReady(false);
           loadProfile(session.user.id);
         } else {
           setRole(null);
+          setAccountStatus(null);
+          setProfileReady(true);
         }
         // Wait for INITIAL_SESSION so we do not flash login/register forms before
         // persisted session is restored (getSession can briefly return null).
@@ -141,10 +163,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         .select('account_status')
         .eq('id', data.user.id)
         .maybeSingle();
-      if (
-        !profErr &&
-        (prof as { account_status?: string } | null)?.account_status === 'suspended'
-      ) {
+      const status = (prof as { account_status?: string } | null)?.account_status;
+      if (!profErr && status === 'suspended') {
         await supabase.auth.signOut();
         return { error: 'ACCOUNT_SUSPENDED' };
       }
@@ -182,6 +202,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setUser(null);
     setSession(null);
     setRole(null);
+    setAccountStatus(null);
+    setProfileReady(true);
 
     try {
       const { error } = await supabase.auth.signOut({ scope: 'global' });
@@ -204,7 +226,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   return (
-    <AuthContext.Provider value={{ user, session, loading, role, fontSize, setFontSize, signIn, signUp, signOut }}>
+    <AuthContext.Provider value={{ user, session, loading, profileReady, role, accountStatus, fontSize, setFontSize, signIn, signUp, signOut }}>
       {children}
     </AuthContext.Provider>
   );

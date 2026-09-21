@@ -7,6 +7,8 @@ export type EmailTemplateId =
   | 'auth_reset_password'
   | 'auth_email_change'
   | 'welcome'
+  | 'welcome_waitlist'
+  | 'waitlist_access_granted'
   | 'account_suspended'
   | 'account_reinstated'
   | 'account_deleted'

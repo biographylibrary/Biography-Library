@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { buildServiceClient } from '@/lib/server/review-submit-pipeline';
-import { sendWelcomeEmail } from '@/lib/server/email';
+import { sendTemplateEmail } from '@/lib/server/email';
 import { resolveUserEmailLocale } from '@shared/email/locale';
 
 export async function POST(req: NextRequest) {
@@ -40,7 +40,7 @@ export async function POST(req: NextRequest) {
   const service = buildServiceClient();
   const { data: profile, error: profileErr } = await service
     .from('profiles')
-    .select('id, email, language, welcome_email_sent_at')
+    .select('id, email, language, welcome_email_sent_at, account_status')
     .eq('id', userId)
     .maybeSingle();
 
@@ -65,8 +65,18 @@ export async function POST(req: NextRequest) {
       : null;
   const locale = resolveUserEmailLocale({ profileLanguage: language, signupLanguage });
 
+  const templateId =
+    (profile as { account_status?: string }).account_status === 'waitlist'
+      ? 'welcome_waitlist'
+      : 'welcome';
+
   try {
-    await sendWelcomeEmail(email, locale, userId);
+    await sendTemplateEmail({
+      to: email,
+      templateId,
+      locale,
+      idempotencyKey: `${templateId}/${userId}`,
+    });
     await service
       .from('profiles')
       .update({ welcome_email_sent_at: new Date().toISOString() })

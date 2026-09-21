@@ -51,9 +51,16 @@ export async function PATCH(
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
   }
 
+  const staff = newRole === 'reviewer' || newRole === 'admin' || newRole === 'super_admin';
+  const patch: Record<string, unknown> = { role: newRole };
+  if (staff) {
+    patch.account_status = 'active';
+    patch.waitlist_granted_at = new Date().toISOString();
+  }
+
   const { error: upErr } = await service
     .from('profiles')
-    .update({ role: newRole })
+    .update(patch)
     .eq('id', targetId);
 
   if (upErr) {

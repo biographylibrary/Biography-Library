@@ -89,7 +89,7 @@ function varsWithDefaults(
     dashboardUrl: `${siteUrl}/dashboard`,
     workspaceUrl: `${siteUrl}/workspace`,
     echoUrl: `${siteUrl}/dashboard`,
-    loginUrl: `${siteUrl}/`,
+    loginUrl: `${siteUrl}/login`,
     contactsUrl: 'https://biographylibrary.org/contacts',
     biographyTitle: String(vars.biographyTitle ?? ''),
     reviewerMessage: String(vars.reviewerMessage ?? ''),
@@ -160,7 +160,7 @@ function getTemplateInner(
           subject: '{siteName} — Confirm your email',
           paragraphs: [
             'Hello,',
-            'Thank you for signing up. Please confirm your email address to activate your account.',
+            'Thank you for signing up. Please confirm your email address to join the waitlist.',
             `LINK:${v.confirmUrl}|Confirm email address`,
             'If you did not create an account, you can ignore this message.',
           ],
@@ -169,7 +169,7 @@ function getTemplateInner(
           subject: '{siteName} — Conferma la tua email',
           paragraphs: [
             'Ciao,',
-            'Grazie per esserti registrato. Conferma il tuo indirizzo email per attivare l\'account.',
+            'Grazie per esserti registrato. Conferma il tuo indirizzo email per entrare nella lista d’attesa.',
             `LINK:${v.confirmUrl}|Conferma indirizzo email`,
             'Se non hai creato un account, ignora questo messaggio.',
           ],
@@ -178,7 +178,7 @@ function getTemplateInner(
           subject: '{siteName} — Confirmez votre email',
           paragraphs: [
             'Bonjour,',
-            'Merci pour votre inscription. Veuillez confirmer votre adresse email pour activer votre compte.',
+            'Merci pour votre inscription. Veuillez confirmer votre adresse email pour rejoindre la liste d’attente.',
             `LINK:${v.confirmUrl}|Confirmer l'adresse email`,
             'Si vous n\'avez pas créé de compte, ignorez ce message.',
           ],
@@ -187,7 +187,7 @@ function getTemplateInner(
           subject: '{siteName} — E-Mail bestätigen',
           paragraphs: [
             'Hallo,',
-            'Vielen Dank für Ihre Registrierung. Bitte bestätigen Sie Ihre E-Mail-Adresse, um Ihr Konto zu aktivieren.',
+            'Vielen Dank für Ihre Registrierung. Bitte bestätigen Sie Ihre E-Mail-Adresse, um auf die Warteliste zu kommen.',
             `LINK:${v.confirmUrl}|E-Mail-Adresse bestätigen`,
             'Wenn Sie kein Konto erstellt haben, ignorieren Sie diese Nachricht.',
           ],
@@ -299,6 +299,96 @@ function getTemplateInner(
             'HTML:<strong>Veröffentlichung</strong><br>Wenn der Text bereit ist: Abschlussprüfung mit PDF-Entwurf → zur Freigabe einreichen → KI- und menschliche Prüfung → Veröffentlichung.',
             'HTML:<strong>Autobiografie-Regeln</strong><br>Eine Biografie pro Konto. Nach dem ersten veröffentlichten Kapitel wird das nächste nach 365 Tagen freigeschaltet.',
             `LINK:${v.workspaceUrl}|Zum Workspace`,
+          ],
+        },
+      });
+    case 'welcome_waitlist':
+      return inner(locale, {
+        en: {
+          subject: '{siteName} — You are on the waitlist',
+          paragraphs: [
+            'Hello,',
+            'Thank you for confirming your email. You are on the Biography Library waitlist. You will not need to register again.',
+            'We will open the platform gradually, in order of registration date. You will receive another email when you have access.',
+            'The platform is in beta: some parts may not work correctly.',
+          ],
+        },
+        it: {
+          subject: '{siteName} — Sei in lista d’attesa',
+          paragraphs: [
+            'Ciao,',
+            'Grazie per aver confermato la tua email. Sei in lista d’attesa di Biography Library. Non dovrai registrarti di nuovo.',
+            'Apriremo la piattaforma gradualmente, in base alla data di registrazione. Riceverai un’altra email quando avrai accesso.',
+            'La piattaforma è in versione beta: alcune parti potrebbero non funzionare correttamente.',
+          ],
+        },
+        fr: {
+          subject: '{siteName} — Vous êtes sur la liste d’attente',
+          paragraphs: [
+            'Bonjour,',
+            'Merci d’avoir confirmé votre e-mail. Vous êtes sur la liste d’attente de Biography Library. Vous n’aurez pas à vous inscrire à nouveau.',
+            'Nous ouvrirons la plateforme progressivement, selon la date d’inscription. Vous recevrez un autre e-mail lorsque vous aurez accès.',
+            'La plateforme est en version bêta : certaines parties peuvent ne pas fonctionner correctement.',
+          ],
+        },
+        de: {
+          subject: '{siteName} — Sie stehen auf der Warteliste',
+          paragraphs: [
+            'Hallo,',
+            'Danke, dass Sie Ihre E-Mail bestätigt haben. Sie stehen auf der Warteliste von Biography Library. Sie müssen sich nicht erneut registrieren.',
+            'Wir öffnen die Plattform schrittweise nach Anmeldedatum. Sie erhalten eine weitere E-Mail, sobald Sie Zugang haben.',
+            'Die Plattform ist in der Beta: Einige Teile funktionieren möglicherweise nicht korrekt.',
+          ],
+        },
+      });
+    case 'waitlist_access_granted':
+      return inner(locale, {
+        en: {
+          subject: '{siteName} — You now have access',
+          paragraphs: [
+            'Hello,',
+            'You now have access to Biography Library.',
+            'The platform is in beta: some parts may not work correctly.',
+            'After every writing session, save a copy on your computer. In the editor, open Export and download a UTF-8 text file and a PDF.',
+            'We welcome your feedback and reports of problems.',
+            `LINK:${v.contactsUrl}|Contact us`,
+            `LINK:${v.loginUrl}|Sign in`,
+          ],
+        },
+        it: {
+          subject: '{siteName} — Da ora hai accesso',
+          paragraphs: [
+            'Ciao,',
+            'Da ora hai accesso a Biography Library.',
+            'La piattaforma è in versione beta: alcune parti potrebbero non funzionare correttamente.',
+            'Dopo ogni sessione di scrittura, salva una copia sul computer. Nell’editor apri Esporta e scarica un file di testo UTF-8 e un PDF.',
+            'Ci fa piacere il tuo feedback e la segnalazione dei problemi.',
+            `LINK:${v.contactsUrl}|Contattaci`,
+            `LINK:${v.loginUrl}|Accedi`,
+          ],
+        },
+        fr: {
+          subject: '{siteName} — Vous avez désormais accès',
+          paragraphs: [
+            'Bonjour,',
+            'Vous avez désormais accès à Biography Library.',
+            'La plateforme est en version bêta : certaines parties peuvent ne pas fonctionner correctement.',
+            'Après chaque session d’écriture, enregistrez une copie sur votre ordinateur. Dans l’éditeur, ouvrez Exporter et téléchargez un fichier texte UTF-8 et un PDF.',
+            'Vos retours et signalements de problèmes sont les bienvenus.',
+            `LINK:${v.contactsUrl}|Nous contacter`,
+            `LINK:${v.loginUrl}|Se connecter`,
+          ],
+        },
+        de: {
+          subject: '{siteName} — Sie haben jetzt Zugang',
+          paragraphs: [
+            'Hallo,',
+            'Sie haben jetzt Zugang zu Biography Library.',
+            'Die Plattform ist in der Beta: Einige Teile funktionieren möglicherweise nicht korrekt.',
+            'Speichern Sie nach jeder Schreibsitzung eine Kopie auf Ihrem Computer. Öffnen Sie im Editor Export und laden Sie eine UTF-8-Textdatei und ein PDF herunter.',
+            'Wir freuen uns über Rückmeldungen und Hinweise auf Probleme.',
+            `LINK:${v.contactsUrl}|Kontakt`,
+            `LINK:${v.loginUrl}|Anmelden`,
           ],
         },
       });
