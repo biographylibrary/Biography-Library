@@ -1,6 +1,6 @@
 # Biography Library — Platform Knowledge Base
 
-Version: 1.3 — 2026-06-25
+Version: 1.4 — 2026-09-21
 
 Reference language: English. Echo, Help, and platform assistants answer in the user's language using these facts. Update this file whenever product rules or UX change, then run `npm run kb:sync`.
 
@@ -28,7 +28,7 @@ Key principles: (1) Every life deserves memory. (2) Only your own autobiography 
 
 ## registration_and_onboarding
 
-Registration needs first name, last name, email, password. Must be 18+. After signup, complete the introduction wizard at `/onboarding` (not the dashboard) to create your one biography: choose type (autobiography or memorial of a deceased direct family member), confirm legal declarations, enter title or protagonist/writer names, choose writing path (guided sections, import text, or publish-ready), and pick visibility. Writing mode (Sections vs Free Flow) is chosen during onboarding and cannot be changed after creation. The dashboard only shows your existing biography; it does not offer memorial setup.
+Registration needs first name, last name, email, password. Must be 18+. New accounts join a waitlist (`account_status = waitlist`): the public home `/` is the waitlist landing; sign-in is at `/login`. After email confirmation you see only your registration date, never a queue position. Access is granted by staff; you then complete the introduction wizard at `/onboarding` (not the dashboard) to create your one biography: choose type (autobiography or memorial of a deceased direct family member), confirm legal declarations, enter title or protagonist/writer names, choose writing path (guided sections, import text, or publish-ready), and pick visibility. Writing mode (Sections vs Free Flow) is chosen during onboarding and cannot be changed after creation. The dashboard only shows your existing biography; it does not offer memorial setup. The public catalogue and UM resolver stay public without an account.
 
 ## writing_modes
 
@@ -52,7 +52,7 @@ Import text (sidebar): paste or upload into current chapter (Sections) or at cur
 
 ## rights_chapters
 
-Author keeps full copyright; platform is custodian only. No commercial AI training on private/semi-private/family biographies. Autobiography chapters: after first publish, new chapter allowed after minimum 365 days; published chapters are immutable. After author's death, autobiography frozen; family may write separate linked biographies using their own accounts. Deceased-person biographies: only direct family; published like autobiographies with reader reports reviewed by moderation.
+Author keeps full copyright; platform is custodian only. No commercial AI training on private/semi-private/family biographies. Autobiography chapters: after first publish, new chapter allowed after minimum 365 days; published chapters are immutable. After author's death, autobiography frozen; family may write separate linked biographies using their own accounts. Deceased-person biographies: only direct family; 30-day temporary review window after publication (`provisional_until` when present in code, not a `provisional` status). A report remains possible after that window, forever.
 
 ## faq
 

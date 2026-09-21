@@ -9,14 +9,15 @@
 | [`README.md`](README.md) | Setup, script, contribute |
 | [`.cursor/plans/`](.cursor/plans/) | Piani Cursor salvati nel workspace |
 
-Ultimo aggiornamento: giugno 2026.
+Ultimo aggiornamento: 21 settembre 2026.
 
 ---
 
 ## Stato attuale (rilasciato / stabile)
 
 ### Account e biografie
-- **Un account = una biografia** (autobiografia o memorial, scelta in `/onboarding`).
+- **Un account = una biografia** (autobiografia o memorial, scelta in `/onboarding` dopo l’accesso).
+- Lista d’attesa beta: registrazione sulla home `/`; `profiles.account_status` è `active` | `suspended` | `waitlist`; holding `/waitlist` con sola data di registrazione; login su `/login`; catalogo e risolutore restano pubblici.
 - Knowledge piattaforma per Echo/Help: [`docs/PLATFORM_KB.md`](docs/PLATFORM_KB.md) — aggiornare + `npm run kb:sync` + seed RAG dopo modifiche.
 
 ### Editor e contenuti
@@ -24,20 +25,31 @@ Ultimo aggiornamento: giugno 2026.
 - Editor Tiptap con salvataggio su Supabase
 - Galleria media con layout foto (`full-page`, `cover`, `two-vertical`, …)
 - i18n completo per stringhe UI in 4 lingue
+- Pannello permanenza: eventi nascita/morte (EDTF), luoghi senza chiedere coordinate, relazioni
+
+### Identificativo UM
+- Specifica v1.0: [`docs/UM-IDENTIFIER-SPEC.md`](docs/UM-IDENTIFIER-SPEC.md)
+- Mint alla creazione; registro `um_identifiers`; **mai rigenerare** un ID emesso
+- Risolutore `/id/[umId]`; variabile **`UM_ID_BASE_URL`** (non `NEXT_PUBLIC_UM_ID_BASE_URL`)
+- Export testo: intestazione invariante; luogo `nome | lat | lon | WGS 84 | geonames | wikidata`
 
 ### Pubblicazione
 - Invio in revisione via `POST /api/review/submit`
 - Pipeline server: `lib/server/review-submit-pipeline.ts`
-- Screening AI Infomaniak (Apertus) prima della coda moderazione
-- Stati biografia: draft → in review → approved / revision needed → published
+- Screening AI Infomaniak prima della coda moderazione
+- Stati biografia (CHECK attuale): `draft`, `sections_complete`, `final_version`, `pdf_draft`, `locked_pending_screening`, `under_review`, `published`, `removed`
+- `pdf_draft`: giri di bozza PDF con filigrana (`pdf_draft_iteration` 1–3)
+- `locked_pending_screening`: PDF finale approvato, testo bloccato, screening AI in corso
+- Non esiste lo stato `provisional`. I 30 giorni memorial, quando arriveranno in codice, sono la colonna `provisional_until`
+- Stati previsti nel cantiere segnalazioni (non ancora in CHECK): `suspended_pending_verification`, `revision_requested`, `revision_pending_review`, `revision_overdue`
 
 ### Export PDF
 - Generazione client (`lib/pdf-export.ts`) e server (`lib/export-server.ts`)
 - Draft PDF con watermark; PDF finale via `approve-final-pdf` / `start-pdf-draft`
-- Artifact storage: `lib/server/final-pdf-artifacts.ts`
+- Artifact storage: `lib/server/final-pdf-artifacts.ts`; txt/docx depositati via `permanence-text-export`
 
 ### Admin
-- Coda moderazione, gestione utenti, statistiche AI
+- Coda moderazione, gestione utenti (incluso filtro waitlist e concessione accesso), statistiche AI
 
 ---
 

@@ -35,8 +35,9 @@ Controllare che sul **processo che esegue Next** siano impostate (non committate
 - [ ] `NEXT_PUBLIC_SUPABASE_URL`
 - [ ] `NEXT_PUBLIC_SUPABASE_ANON_KEY`
 - [ ] `SUPABASE_SERVICE_ROLE_KEY` (solo server — route API tipo `/api/review/submit`, publication, ecc.)
-- [ ] `INFOMANIAK_AI_ENDPOINT`, `INFOMANIAK_AI_TOKEN`, `INFOMANIAK_AI_MODEL` = `google/gemma-4-31B-it` (screening lato route Next)
+- [ ] `INFOMANIAK_AI_ENDPOINT`, `INFOMANIAK_AI_TOKEN`, `AGENT_MODEL_REVIEWER` / `INFOMANIAK_AI_MODEL_PRIMARY` as in `.env.example` (screening on Next routes; there is no `INFOMANIAK_AI_MODEL`)
 - [ ] `NEXT_PUBLIC_APP_URL` (URL canonico produzione, es. `https://…`)
+- [ ] `UM_ID_BASE_URL` (solo server — URL del risolutore UM; non esiste `NEXT_PUBLIC_UM_ID_BASE_URL`)
 - [ ] `NEXT_PUBLIC_APP_ENV` = `production` (se usato)
 
 **Supabase Dashboard** (progetto produzione):
@@ -72,15 +73,15 @@ Eseguire in **produzione** (o staging identico) con account di test dedicati.
 
 | # | Flusso | Cosa verificare |
 |---|--------|------------------|
-| **1** | **Registrazione e conferma email** | Nuovo utente → email conferma (Resend/hook, lingua browser) → link conferma → **email benvenuto** → accesso ok. |
-| **2** | **Login e creazione biografia** | Login → dashboard → crea biografia → salvataggio base (titolo, modalità). |
+| **1** | **Registrazione e conferma email** | Home `/` = landing lista d’attesa; accesso su `/login`. Nuovo utente → email conferma (Resend/hook, lingua browser) → link conferma → **email waitlist** → pagina `/waitlist` con **sola data di registrazione** (mai il numero in coda). |
+| **2** | **Login e creazione biografia** | Account già `active`: login → dashboard o `/onboarding` se manca la biografia. Account `waitlist`: login → `/waitlist`, non il pannello. |
 | **3** | **Editor e (opzionale) IA** | Apertura editor, salvataggio testo, una azione IA se i token/quota lo permettono. |
 | **4** | **Verso pubblicazione (PDF)** | Final review → **Start PDF phase** (`start-pdf-draft`) → upload `cover_a5` + toggle copyright page → export draft PDF (round 1–3) → **`draft-ai-review`** salva feedback → approve final PDF → screening → `published` o `under_review`; stati e `listing_cover_url` coerenti. |
 | **5** | **Lettura pubblica** | Biografia `published` + `public`: comparsa in elenco pubblico e/o pagina view; oppure link **link-only** con token. |
 
 Opzionale:
 
-- [ ] **Admin**: login reviewer/admin → coda moderazione raggiungibile.
+- [ ] **Admin**: login reviewer/admin → coda moderazione raggiungibile; da `/admin/users` concedere accesso a un account `waitlist` (grant in blocco).
 - [ ] **Reviewer languages**: in `/admin/users`, assegnare IT a un reviewer → biografia IT in coda assegnata correttamente (`pickReviewer` + `reviewer_languages`).
 - [ ] **Middleware**: `GET /api/admin/users` senza Bearer → 401; utente non-staff → 403.
 - [ ] **Segnalazione errori**: verifica che `log-error` (se usato) non fallisca in modo silenzioso.
@@ -94,4 +95,4 @@ Opzionale:
 
 ---
 
-*Ultimo aggiornamento: allineato a conferma email + SMTP custom in produzione.*
+*Ultimo aggiornamento: 21 settembre 2026 — lista d’attesa beta, `UM_ID_BASE_URL`, nomi modello AI allineati a `.env.example`.*
