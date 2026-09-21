@@ -1,6 +1,13 @@
 # Piano permanenza — stato
 
-Aggiornato: 4 settembre 2026 (Anno 0 UM).
+Aggiornato: 21 settembre 2026 (Anno 0 UM).
+
+## Dopo la chiusura del piano
+
+- Finestra scorrevole dal menù in basso (#64). La morte si mostra solo nel memoriale.
+- Autobiografia in prima persona («I miei dati»). Spariscono «come la conosci», «come lo sai», la nota e «quanto sei sicuro», anche sulle persone collegate. Il memoriale le tiene.
+- Luoghi di vita in più, per entrambi i tipi: pulsante «Aggiungi un luogo». Stessa tabella `person_events`, `event_type = residence`, chiave `biography_id`. Nessuna migrazione.
+- Il salvataggio della finestra scrive subito quelle righe. Il testo depositato e l’intestazione PDF le incorporano alla revisione e all’approvazione del PDF, perché rileggono tutti gli eventi della scheda.
 
 ## Chiuso
 

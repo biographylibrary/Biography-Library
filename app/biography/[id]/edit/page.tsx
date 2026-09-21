@@ -2280,6 +2280,9 @@ const [isPublishing, setIsPublishing] = useState(false);
             showPhotosPanel={showPhotosPanel}
             showBookStructurePanel={showBookStructurePanel}
             showPermanencePanel={showPermanencePanel}
+            permanenceLabel={
+              biographyType === 'autobiography' ? t.permanence.titleSelf : t.permanence.title
+            }
             showImportDialog={showImportDialog}
             completedSections={completedSections}
             onMarkSectionComplete={

@@ -34,7 +34,9 @@ export function PermanenceDialog({
     <EditorSidebarDialog
       open={open}
       onOpenChange={onOpenChange}
-      title={t.permanence.title}
+      title={
+        biographyType === 'autobiography' ? t.permanence.titleSelf : t.permanence.title
+      }
       icon={<Landmark className="h-5 w-5 text-primary" />}
       bodyClassName="px-4 py-4"
     >
@@ -45,6 +47,7 @@ export function PermanenceDialog({
           recordLanguageTag={recordLanguageTag}
           recordScript={recordScript}
           showDeath={biographyType === 'memorial'}
+          isAutobiography={biographyType === 'autobiography'}
           disabled={disabled}
           hideTitle
           onNameSaved={onNameSaved}

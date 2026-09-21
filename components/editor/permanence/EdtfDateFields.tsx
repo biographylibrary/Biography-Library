@@ -33,6 +33,8 @@ interface EdtfDateFieldsProps {
   onAsGivenChange: (value: string) => void;
   labels: Labels;
   disabled?: boolean;
+  /** Hidden on autobiographies: the author is the source of the date. */
+  showAsGiven?: boolean;
 }
 
 export function EdtfDateFields({
@@ -42,6 +44,7 @@ export function EdtfDateFields({
   onAsGivenChange,
   labels,
   disabled = false,
+  showAsGiven = true,
 }: EdtfDateFieldsProps) {
   const showMonth = value.precision === 'day' || value.precision === 'month';
   const showDay = value.precision === 'day';
@@ -114,16 +117,18 @@ export function EdtfDateFields({
         </div>
       )}
 
-      <div className="space-y-1.5">
-        <Label className="text-xs text-muted-foreground">{labels.asGivenLabel}</Label>
-        <Input
-          value={asGivenFree}
-          onChange={(e) => onAsGivenChange(e.target.value)}
-          disabled={disabled}
-          className="h-9"
-          placeholder={labels.asGivenHint}
-        />
-      </div>
+      {showAsGiven && (
+        <div className="space-y-1.5">
+          <Label className="text-xs text-muted-foreground">{labels.asGivenLabel}</Label>
+          <Input
+            value={asGivenFree}
+            onChange={(e) => onAsGivenChange(e.target.value)}
+            disabled={disabled}
+            className="h-9"
+            placeholder={labels.asGivenHint}
+          />
+        </div>
+      )}
     </div>
   );
 }

@@ -36,15 +36,16 @@ Fondatore unico, non sviluppatore: costruisce con Claude Code e Cursor. Non ci s
 - Cooldown tra capitoli pubblicati (per utenti free, bypassato per staff)
 - Cronologia revisioni
 
-**Permanenza e identificativo UM** (su `main`: #52–#58)
+**Permanenza e identificativo UM** (su `main`: #52–#58, finestra dati #64)
 - Ogni scheda riceve alla creazione un **identificativo UM** immutabile (`lib/um-id.ts`, registro `um_identifiers`, mint server-side). Gli ID emessi non si rigenerano.
 - Risolutore stabile `/id/[umId]` (anche forme senza trattini / miste); rewrite `/UM…`; base URL **`UM_ID_BASE_URL`** (server-only, in produzione)
 - Specifica pubblica depositata: `docs/UM-IDENTIFIER-SPEC.md` (v1.0, cambio anno in UTC)
 - Notazione **Anno UM** (epoca 2026) solo per eventi di archivio: footer, `/credits`, data pubblicazione, colophon PDF, admin, email — mai sulle date di vita
-- Schema a eventi: `person_events` (nascita/morte con EDTF, luogo, provenienza) e `person_relations` (etichetta autorevole)
-- Luoghi: l’autore non digita coordinate; riga invariante `nome | lat | lon | WGS 84 | geonames | wikidata` (UNKNOWN sui numeri mancanti); Nominatim con `extratags=1`
+- Schema a eventi, una riga per fatto, sempre legata a `biography_id`: `person_events` (nascita, morte, luoghi di vita con `event_type = residence`) e `person_relations` (etichetta autorevole). I luoghi in più non chiedono una migrazione: `event_type` è testo libero.
+- «Salva questi dati» scrive subito nel database di quella scheda (nome su `biographies`, eventi e persone sulle due tabelle). Il testo depositato (txt, docx, intestazione PDF) rilegge tutte le righe di `person_events`, luoghi di vita compresi, quando la scheda va in revisione o si approva il PDF. Salvare la finestra non rigenera da solo un file già depositato.
+- Luoghi: l’autore non digita coordinate; riga invariante `nome | lat | lon | WGS 84 | geonames | wikidata` (UNKNOWN sui numeri mancanti); Nominatim con `extratags=1`. Nascita (e morte, solo memoriale) più altri luoghi di vita, con «Aggiungi un luogo».
 - Colonne identità scheda: `record_language_tag` / script / direzione, `name_as_written`, diritti, `published_at_iso` + `published_um_year`
-- Editor: pannello permanenza (date → EDTF senza esporre EDTF, luoghi via GeoNames/Nominatim, «come lo sai», relazioni)
+- Editor: voce in basso, finestra scorrevole. Autobiografia: «I miei dati» (IT/EN/FR/DE), senza «come la conosci», «come lo sai», nota e sicurezza. Memoriale: «Chi era questa persona» e quelle domande restano, anche sui luoghi in più e sulle persone. La morte non si mostra nell’autobiografia.
 - Licenza contenuto scelta dall'autore alla pubblicazione: **CC BY-NC-SA 4.0** (default) o **CC BY-SA 4.0**; upgrade solo 1→2; metadati sempre **CC0** (termini + crediti)
 - Export testo UTF-8 invariante per supporti fisici; PDF con intestazione invariante + colophon (senza nuovi font Noto su jsPDF)
 - NFC sui percorsi di scrittura principali; `resolveRecordLanguageTag` preferisce `record_language_tag`
@@ -249,7 +250,7 @@ supabase/
   functions/         # 6 Edge Functions
 
 components/
-  editor/permanence/   # PermanencePanel, date EDTF, luoghi, provenienza
+  editor/permanence/   # finestra dati: date EDTF, luoghi di vita, provenienza solo memoriale
   editor/LicenseChoiceDialog.tsx / AuthorLicensePanel.tsx
   agents/AgentChat.tsx
   echo/
