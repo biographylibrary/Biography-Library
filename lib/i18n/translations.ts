@@ -651,9 +651,13 @@ export interface Translations {
   };
   permanence: {
     title: string;
+    titleSelf: string;
     why: string;
+    whySelf: string;
     nameAsWritten: string;
+    nameAsWrittenSelf: string;
     nameHint: string;
+    nameHintSelf: string;
     nameRequired: string;
     romanized: string;
     romanizationSystem: string;
@@ -673,6 +677,13 @@ export interface Translations {
     dateAsGiven: string;
     dateAsGivenHint: string;
     place: string;
+    birthPlace: string;
+    deathPlace: string;
+    placesTitle: string;
+    placesHint: string;
+    placesHintSelf: string;
+    addPlace: string;
+    removePlace: string;
     placePlaceholder: string;
     placeHint: string;
     clear: string;
@@ -693,6 +704,7 @@ export interface Translations {
     saved: string;
     loading: string;
     relationsTitle: string;
+    relationsTitleSelf: string;
     relationsHint: string;
     addRelation: string;
     removeRelation: string;
@@ -2331,9 +2343,13 @@ export const translations: Record<Language, Translations> = {
     },
     permanence: {
       title: 'Who this person was',
+      titleSelf: 'My details',
       why: 'These details are not bureaucracy. They are what will let someone a thousand years from now understand who this person was.',
+      whySelf: 'These details are not bureaucracy. They are what will let someone a thousand years from now understand who you are.',
       nameAsWritten: 'Name as written',
+      nameAsWrittenSelf: 'My name as written',
       nameHint: 'Write the name the way the person wrote it or was known. Do not reorder it.',
+      nameHintSelf: 'Write your name the way you write it. Do not reorder it.',
       nameRequired: 'A name is required.',
       romanized: 'Romanized name (optional)',
       romanizationSystem: 'Romanization system',
@@ -2353,6 +2369,13 @@ export const translations: Record<Language, Translations> = {
       dateAsGiven: 'As you know it (optional)',
       dateAsGivenHint: 'e.g. spring 1948, circa 1893',
       place: 'Place',
+      birthPlace: 'Place of birth',
+      deathPlace: 'Place of death',
+      placesTitle: 'Other places',
+      placesHint: 'The place of birth is above. Add the other places where this person lived.',
+      placesHintSelf: 'The place of birth is above. Add the other places where you have lived.',
+      addPlace: 'Add a place',
+      removePlace: 'Remove this place',
       placePlaceholder: 'Start typing a place name',
       placeHint: 'Pick a locality from the list. We never ask for an address or coordinates.',
       clear: 'Clear',
@@ -2373,6 +2396,7 @@ export const translations: Record<Language, Translations> = {
       saved: 'Details saved',
       loading: 'Loading…',
       relationsTitle: 'People connected to this life',
+      relationsTitleSelf: 'People connected to me',
       relationsHint:
         'Write the relationship in your own words. The short type is only a hint for the archive.',
       addRelation: 'Add a person',
@@ -4034,9 +4058,13 @@ export const translations: Record<Language, Translations> = {
     },
     permanence: {
       title: 'Chi era questa persona',
+      titleSelf: 'I miei dati',
       why: 'Questi dati non sono burocrazia. Sono ciò che permetterà a qualcuno fra mille anni di capire chi era questa persona.',
+      whySelf: 'Questi dati non sono burocrazia. Sono ciò che permetterà a qualcuno fra mille anni di capire chi sei.',
       nameAsWritten: 'Nome come scritto',
+      nameAsWrittenSelf: 'Il mio nome come scritto',
       nameHint: 'Scrivi il nome come la persona lo scriveva o era conosciuta. Non riordinarlo.',
+      nameHintSelf: 'Scrivi il tuo nome come lo scrivi. Non riordinarlo.',
       nameRequired: 'Il nome è obbligatorio.',
       romanized: 'Nome romanizzato (facoltativo)',
       romanizationSystem: 'Sistema di romanizzazione',
@@ -4056,6 +4084,13 @@ export const translations: Record<Language, Translations> = {
       dateAsGiven: 'Come la conosci (facoltativo)',
       dateAsGivenHint: 'es. primavera 1948, circa 1893',
       place: 'Luogo',
+      birthPlace: 'Luogo di nascita',
+      deathPlace: 'Luogo di morte',
+      placesTitle: 'Altri luoghi',
+      placesHint: 'Il luogo di nascita è sopra. Aggiungi gli altri posti in cui ha vissuto.',
+      placesHintSelf: 'Il luogo di nascita è sopra. Aggiungi gli altri posti in cui hai vissuto.',
+      addPlace: 'Aggiungi un luogo',
+      removePlace: 'Togli questo luogo',
       placePlaceholder: 'Inizia a digitare un luogo',
       placeHint: 'Scegli una località dall\'elenco. Non chiediamo mai un indirizzo né le coordinate.',
       clear: 'Cancella',
@@ -4076,6 +4111,7 @@ export const translations: Record<Language, Translations> = {
       saved: 'Dati salvati',
       loading: 'Caricamento…',
       relationsTitle: 'Persone legate a questa vita',
+      relationsTitleSelf: 'Persone legate a me',
       relationsHint:
         'Scrivi la relazione con le tue parole. Il tipo breve è solo un indizio per l\'archivio.',
       addRelation: 'Aggiungi una persona',
@@ -5737,9 +5773,13 @@ export const translations: Record<Language, Translations> = {
     },
     permanence: {
       title: 'Qui était cette personne',
+      titleSelf: 'Mes données',
       why: 'Ces détails ne sont pas de la paperasse. C\'est ce qui permettra à quelqu\'un dans mille ans de comprendre qui était cette personne.',
+      whySelf: 'Ces détails ne sont pas de la paperasse. C\'est ce qui permettra à quelqu\'un dans mille ans de comprendre qui tu es.',
       nameAsWritten: 'Nom tel qu\'écrit',
+      nameAsWrittenSelf: 'Mon nom tel que je l\'écris',
       nameHint: 'Écris le nom comme la personne l\'écrivait ou était connue. Ne le réordonne pas.',
+      nameHintSelf: 'Écris ton nom comme tu l\'écris. Ne le réordonne pas.',
       nameRequired: 'Un nom est obligatoire.',
       romanized: 'Nom romanisé (facultatif)',
       romanizationSystem: 'Système de romanisation',
@@ -5759,6 +5799,13 @@ export const translations: Record<Language, Translations> = {
       dateAsGiven: 'Comme tu la connais (facultatif)',
       dateAsGivenHint: 'ex. printemps 1948, vers 1893',
       place: 'Lieu',
+      birthPlace: 'Lieu de naissance',
+      deathPlace: 'Lieu de décès',
+      placesTitle: 'Autres lieux',
+      placesHint: 'Le lieu de naissance est au-dessus. Ajoute les autres endroits où cette personne a vécu.',
+      placesHintSelf: 'Le lieu de naissance est au-dessus. Ajoute les autres endroits où tu as vécu.',
+      addPlace: 'Ajouter un lieu',
+      removePlace: 'Retirer ce lieu',
       placePlaceholder: 'Commence à taper un lieu',
       placeHint: 'Choisis une localité dans la liste. Nous ne demandons jamais une adresse ni des coordonnées.',
       clear: 'Effacer',
@@ -5779,6 +5826,7 @@ export const translations: Record<Language, Translations> = {
       saved: 'Détails enregistrés',
       loading: 'Chargement…',
       relationsTitle: 'Personnes liées à cette vie',
+      relationsTitleSelf: 'Personnes liées à moi',
       relationsHint:
         'Écris la relation avec tes mots. Le type court n\'est qu\'un indice pour l\'archive.',
       addRelation: 'Ajouter une personne',
@@ -7440,9 +7488,13 @@ export const translations: Record<Language, Translations> = {
     },
     permanence: {
       title: 'Wer diese Person war',
+      titleSelf: 'Meine Angaben',
       why: 'Diese Angaben sind keine Bürokratie. Sie ermöglichen jemandem in tausend Jahren zu verstehen, wer diese Person war.',
+      whySelf: 'Diese Angaben sind keine Bürokratie. Sie ermöglichen jemandem in tausend Jahren zu verstehen, wer du bist.',
       nameAsWritten: 'Name wie geschrieben',
+      nameAsWrittenSelf: 'Mein Name, wie ich ihn schreibe',
       nameHint: 'Schreibe den Namen so, wie die Person ihn schrieb oder bekannt war. Ordne ihn nicht um.',
+      nameHintSelf: 'Schreibe deinen Namen so, wie du ihn schreibst. Ordne ihn nicht um.',
       nameRequired: 'Ein Name ist erforderlich.',
       romanized: 'Romanisierter Name (optional)',
       romanizationSystem: 'Romanisierungssystem',
@@ -7462,6 +7514,13 @@ export const translations: Record<Language, Translations> = {
       dateAsGiven: 'Wie du es kennst (optional)',
       dateAsGivenHint: 'z. B. Frühling 1948, etwa 1893',
       place: 'Ort',
+      birthPlace: 'Geburtsort',
+      deathPlace: 'Sterbeort',
+      placesTitle: 'Weitere Orte',
+      placesHint: 'Der Geburtsort steht oben. Füge die anderen Orte hinzu, an denen diese Person gelebt hat.',
+      placesHintSelf: 'Der Geburtsort steht oben. Füge die anderen Orte hinzu, an denen du gelebt hast.',
+      addPlace: 'Ort hinzufügen',
+      removePlace: 'Diesen Ort entfernen',
       placePlaceholder: 'Ort tippen',
       placeHint: 'Wähle einen Ort aus der Liste. Wir fragen nie nach Adresse oder Koordinaten.',
       clear: 'Löschen',
@@ -7482,6 +7541,7 @@ export const translations: Record<Language, Translations> = {
       saved: 'Angaben gespeichert',
       loading: 'Laden…',
       relationsTitle: 'Menschen in diesem Leben',
+      relationsTitleSelf: 'Menschen, die mit mir verbunden sind',
       relationsHint:
         'Beschreibe die Beziehung mit deinen Worten. Der kurze Typ ist nur ein Hinweis für das Archiv.',
       addRelation: 'Person hinzufügen',

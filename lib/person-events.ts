@@ -1,5 +1,5 @@
 /**
- * Tipi e helper per person_events (nascita/morte in v1).
+ * Tipi e helper per person_events (nascita, morte, luoghi di vita).
  * Codice + etichetta leggibile nella lingua della scheda (principio 1).
  */
 
@@ -7,7 +7,7 @@ import { dateInputToEdtf, edtfToDateInput, type DateInputState } from '@/lib/dat
 import { nfcNullable, nfcTrim } from '@/lib/nfc';
 import { normalizeWikidataQid } from '@/lib/places';
 
-export type LifeEventType = 'birth' | 'death';
+export type LifeEventType = 'birth' | 'death' | 'residence';
 
 export type AssertedByCode =
   | 'self'
@@ -68,6 +68,7 @@ export const EVENT_LABELS: Record<
 > = {
   birth: { en: 'birth', it: 'nascita', fr: 'naissance', de: 'Geburt' },
   death: { en: 'death', it: 'morte', fr: 'décès', de: 'Tod' },
+  residence: { en: 'lived', it: 'luogo di vita', fr: 'lieu de vie', de: 'Lebensort' },
 };
 
 export const ASSERTED_BY_LABELS: Record<
@@ -121,8 +122,9 @@ export function buildEventRow(params: {
   form: EventFormState;
   recordLang: UiLang;
   existingId?: string | null;
+  sequence?: number;
 }): PersonEventRow {
-  const { biographyId, type, form, recordLang, existingId } = params;
+  const { biographyId, type, form, recordLang, existingId, sequence } = params;
   const derived = dateInputToEdtf(form.date);
   const freeAsGiven = nfcNullable(form.dateAsGivenFree);
   const asGiven = freeAsGiven ?? derived.asGiven;
@@ -137,7 +139,7 @@ export function buildEventRow(params: {
     biography_id: biographyId,
     event_type: type,
     event_label: eventLabel(type, recordLang),
-    sequence: type === 'birth' ? 0 : 1,
+    sequence: sequence ?? (type === 'birth' ? 0 : type === 'death' ? 1 : 10),
     date_edtf: derived.edtf,
     date_as_given: asGiven,
     calendar_code: derived.edtf ? 'gregorian' : null,

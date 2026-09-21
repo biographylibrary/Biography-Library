@@ -29,6 +29,7 @@ interface SectionSidebarProps {
   showPhotosPanel: boolean;
   showBookStructurePanel: boolean;
   showPermanencePanel: boolean;
+  permanenceLabel?: string;
   showImportDialog: boolean;
   showReviewPublicationDialog?: boolean;
   completedSections?: string[];
@@ -62,6 +63,7 @@ export function SectionSidebar({
   showPhotosPanel,
   showBookStructurePanel,
   showPermanencePanel,
+  permanenceLabel,
   showImportDialog,
   showReviewPublicationDialog = false,
   completedSections = [],
@@ -218,7 +220,9 @@ export function SectionSidebar({
             )}
           >
             <Landmark className="h-4 w-4 shrink-0" />
-            <span className="truncate min-w-0 flex-1 text-left">{t.permanence.title}</span>
+            <span className="truncate min-w-0 flex-1 text-left">
+              {permanenceLabel ?? t.permanence.title}
+            </span>
           </button>
         )}
         <button

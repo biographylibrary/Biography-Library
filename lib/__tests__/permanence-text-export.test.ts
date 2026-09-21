@@ -63,6 +63,55 @@ describe('buildPermanencePlainText', () => {
     expect(text).toContain('Una vita.');
   });
 
+  it('adds lived places after birth and death, as place only', () => {
+    const text = buildPermanencePlainText(
+      {
+        um_id: 'um0000k3nq7fx2mvp4',
+        schema_version: 2,
+        record_language_tag: 'it',
+        record_script: 'Latn',
+        record_direction: 'ltr',
+        record_language_endonym: 'italiano',
+        name_as_written: 'Maria Rossi',
+        name_romanized: null,
+        title: 'Maria Rossi',
+        author_name: 'Maria Rossi',
+        subject_name: null,
+        biography_type: 'autobiography',
+        published_at_iso: null,
+        published_um_year: null,
+        rights_statement_uri: null,
+        content_freeflow: '',
+        biography_mode: 'freeflow',
+      },
+      [
+        {
+          event_type: 'residence',
+          event_label: 'luogo di vita',
+          date_edtf: null,
+          date_as_given: null,
+          calendar_label: null,
+          date_start_iso: null,
+          date_start_jdn: null,
+          place_name_as_given: 'Milano',
+          place_lat: 45.4642,
+          place_lon: 9.19,
+          place_geonames_id: 3173435,
+          place_wikidata_qid: 'Q490',
+          asserted_by: null,
+          asserted_by_label: null,
+          confidence: null,
+        },
+      ]
+    );
+
+    expect(text).toContain('EVENTO | EVENT: luogo di vita | lived');
+    expect(text).toContain('Milano | 45.464200 | 9.190000 | WGS 84 | geonames 3173435 | wikidata Q490');
+    const livedAt = text.indexOf('luogo di vita | lived');
+    const livedTail = text.slice(livedAt, livedAt + 400);
+    expect(livedTail).not.toContain('DATA | DATE:');
+  });
+
   it('keeps the six-field place pattern with UNKNOWN for missing numbers', () => {
     const text = buildPermanencePlainText(
       {

@@ -216,8 +216,8 @@ export function formatPlaceExportValue(
 }
 
 function eventEnglish(type: string): string {
-  if (type === 'birth' || type === 'death') {
-    return EVENT_LABELS[type as LifeEventType].en;
+  if (type === 'birth' || type === 'death' || type === 'residence') {
+    return EVENT_LABELS[type].en;
   }
   return type;
 }
@@ -346,6 +346,16 @@ export function buildPermanenceHeaderLines(
     const conf = ev?.confidence?.trim() || 'unknown';
     lines.push(
       `  ${writeValue(dir, bil(lang, 'source'), `${srcLabel} | ${srcEn} (${conf})`)}`
+    );
+  }
+
+  for (const ev of orderedEvents.filter(
+    (e) => e.event_type === 'residence' && e.place_name_as_given?.trim()
+  )) {
+    const labelLocal = ev.event_label?.trim() || EVENT_LABELS.residence[lang];
+    lines.push(writeValue(dir, bil(lang, 'event'), `${labelLocal} | ${eventEnglish('residence')}`));
+    lines.push(
+      `  ${writeValue(dir, bil(lang, 'place'), formatPlaceExportValue(ev, unk))}`
     );
   }
 
