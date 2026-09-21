@@ -5,6 +5,7 @@
 
 import { dateInputToEdtf, edtfToDateInput, type DateInputState } from '@/lib/date-input';
 import { nfcNullable, nfcTrim } from '@/lib/nfc';
+import { normalizeWikidataQid } from '@/lib/places';
 
 export type LifeEventType = 'birth' | 'death';
 
@@ -153,7 +154,7 @@ export function buildEventRow(params: {
     place_lat: form.place?.lat ?? null,
     place_lon: form.place?.lon ?? null,
     place_geonames_id: form.place?.geonamesId ?? null,
-    place_wikidata_qid: nfcNullable(form.place?.wikidataQid),
+    place_wikidata_qid: normalizeWikidataQid(form.place?.wikidataQid),
     asserted_by: form.assertedBy,
     asserted_by_label: assertedByLabel(form.assertedBy, recordLang),
     source_note: nfcNullable(form.sourceNote),
@@ -210,7 +211,7 @@ export function rowToForm(row: {
           lat: Number.isFinite(lat) ? lat : null,
           lon: Number.isFinite(lon) ? lon : null,
           geonamesId: row.place_geonames_id ?? null,
-          wikidataQid: row.place_wikidata_qid ?? null,
+          wikidataQid: normalizeWikidataQid(row.place_wikidata_qid),
         }
       : null,
     placeQuery: hasPlace ? nfcTrim(row.place_name_as_given) : '',

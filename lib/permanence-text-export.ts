@@ -6,6 +6,7 @@
 
 import { saveAs } from 'file-saver';
 import { nfc } from '@/lib/nfc';
+import { normalizeWikidataQid } from '@/lib/places';
 import { formatUmYear, formatDateWithUmYear, toJDN, umYearFromDate } from '@/lib/um';
 import { toCanonical } from '@/lib/um-id';
 import { stripHtmlTags } from '@/lib/export-utils';
@@ -82,6 +83,8 @@ export type PermanenceExportEvent = {
   place_name_as_given: string | null;
   place_lat: number | string | null;
   place_lon: number | string | null;
+  place_geonames_id?: number | string | null;
+  place_wikidata_qid?: string | null;
   asserted_by: string | null;
   asserted_by_label: string | null;
   confidence: string | null;
@@ -178,6 +181,38 @@ function fmtCoord(n: number | string | null | undefined): string | null {
   const num = typeof n === 'number' ? n : Number(n);
   if (!Number.isFinite(num)) return null;
   return num.toFixed(6);
+}
+
+function geonamesToken(raw: number | string | null | undefined): string {
+  if (raw === null || raw === undefined || raw === '') return 'UNKNOWN';
+  const n = typeof raw === 'number' ? raw : Number(raw);
+  if (!Number.isInteger(n) || n <= 0) return 'UNKNOWN';
+  return String(n);
+}
+
+/**
+ * Fixed place pattern for the invariant header and, later, metadata.json:
+ * name | lat | lon | WGS 84 | geonames {id|UNKNOWN} | wikidata {Qid|UNKNOWN}
+ * Missing numbers stay UNKNOWN; the datum slot is always WGS 84.
+ */
+export function formatPlaceExportValue(
+  ev: Pick<
+    PermanenceExportEvent,
+    | 'place_name_as_given'
+    | 'place_lat'
+    | 'place_lon'
+    | 'place_geonames_id'
+    | 'place_wikidata_qid'
+  > | null | undefined,
+  unk: string
+): string {
+  const placeName = ev?.place_name_as_given?.trim();
+  if (!placeName) return unk;
+  const lat = fmtCoord(ev?.place_lat) ?? 'UNKNOWN';
+  const lon = fmtCoord(ev?.place_lon) ?? 'UNKNOWN';
+  const geonames = geonamesToken(ev?.place_geonames_id);
+  const wikidata = normalizeWikidataQid(ev?.place_wikidata_qid) ?? 'UNKNOWN';
+  return `${placeName} | ${lat} | ${lon} | WGS 84 | geonames ${geonames} | wikidata ${wikidata}`;
 }
 
 function eventEnglish(type: string): string {
@@ -302,18 +337,9 @@ export function buildPermanenceHeaderLines(
       `  ${writeValue(dir, bil(lang, 'julianDay'), jdn != null ? String(jdn) : unk)}`
     );
 
-    const placeName = ev?.place_name_as_given?.trim();
-    const lat = fmtCoord(ev?.place_lat);
-    const lon = fmtCoord(ev?.place_lon);
-    let placeVal = unk;
-    if (placeName && lat && lon) {
-      // Recurring pattern: name | latitude | longitude | datum. WGS 84 is
-      // what GeoNames and Nominatim emit; six decimal places match numeric(9,6).
-      placeVal = `${placeName} | ${lat} | ${lon} (WGS 84)`;
-    } else if (placeName) {
-      placeVal = placeName;
-    }
-    lines.push(`  ${writeValue(dir, bil(lang, 'place'), placeVal)}`);
+    lines.push(
+      `  ${writeValue(dir, bil(lang, 'place'), formatPlaceExportValue(ev, unk))}`
+    );
 
     const srcLabel = ev?.asserted_by_label?.trim() || UNKNOWN[lang];
     const srcEn = assertedEnglish(ev?.asserted_by ?? null);
