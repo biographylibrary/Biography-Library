@@ -55,7 +55,7 @@ import { generateBiographyPDF, checkBiographyPdfReadiness, checkPdfPreflight, ge
 import { AdvancedExportDialog } from '@/components/export/AdvancedExportDialog';
 import { LicenseChoiceDialog } from '@/components/editor/LicenseChoiceDialog';
 import { AuthorLicensePanel } from '@/components/editor/AuthorLicensePanel';
-import { PermanencePanel } from '@/components/editor/permanence/PermanencePanel';
+import { PermanenceDialog } from '@/components/editor/PermanenceDialog';
 import { useTranslation } from '@/lib/i18n/i18n-context';
 import { LICENSE_BY_NC_SA_4, type ContentLicenseUri } from '@/lib/rights';
 import { nfcBiographyWriteFields } from '@/lib/nfc-biography';
@@ -146,6 +146,7 @@ export default function BiographyEditorPage() {
   const [showGlobalNotesPanel, setShowGlobalNotesPanel] = useState(false);
   const [showPhotosPanel, setShowPhotosPanel] = useState(false);
   const [showBookStructurePanel, setShowBookStructurePanel] = useState(false);
+  const [showPermanencePanel, setShowPermanencePanel] = useState(false);
   const [showImportDialog, setShowImportDialog] = useState(() => searchParams?.get('import') === '1');
   const [globalNotesCount, setGlobalNotesCount] = useState(0);
   const [globalTodosCount, setGlobalTodosCount] = useState(0);
@@ -2261,6 +2262,7 @@ const [isPublishing, setIsPublishing] = useState(false);
             onToggleNotesPanel={() => setShowGlobalNotesPanel(!showGlobalNotesPanel)}
             onTogglePhotosPanel={() => setShowPhotosPanel(!showPhotosPanel)}
             onToggleBookStructurePanel={() => setShowBookStructurePanel(!showBookStructurePanel)}
+            onTogglePermanencePanel={() => setShowPermanencePanel((v) => !v)}
             onToggleImportText={() => setShowImportDialog((v) => !v)}
             onToggleExportText={() => {
               if (isReviewOrScreeningLockStatus(biographyStatus)) return;
@@ -2277,6 +2279,7 @@ const [isPublishing, setIsPublishing] = useState(false);
             showNotesPanel={showGlobalNotesPanel}
             showPhotosPanel={showPhotosPanel}
             showBookStructurePanel={showBookStructurePanel}
+            showPermanencePanel={showPermanencePanel}
             showImportDialog={showImportDialog}
             completedSections={completedSections}
             onMarkSectionComplete={
@@ -2482,21 +2485,6 @@ const [isPublishing, setIsPublishing] = useState(false);
                   />
                 </div>
               )}
-              {!isFrozen && id && (
-                <div className="shrink-0">
-                  <PermanencePanel
-                    biographyId={id}
-                    nameAsWritten={title}
-                    recordLanguageTag={recordLanguageTag}
-                    recordScript={recordScript}
-                    disabled={isFrozen}
-                    onNameSaved={(name) => {
-                      setTitle(name);
-                      markDirty();
-                    }}
-                  />
-                </div>
-              )}
               {!isFrozen && (
                 <div className="shrink-0">
                   <AuthorLicensePanel
@@ -2619,6 +2607,21 @@ const [isPublishing, setIsPublishing] = useState(false);
         userId={user.id}
         open={showBookStructurePanel}
         onOpenChange={setShowBookStructurePanel}
+      />
+
+      <PermanenceDialog
+        biographyId={id}
+        nameAsWritten={title}
+        recordLanguageTag={recordLanguageTag}
+        recordScript={recordScript}
+        biographyType={biographyType}
+        disabled={isFrozen}
+        open={showPermanencePanel}
+        onOpenChange={setShowPermanencePanel}
+        onNameSaved={(name) => {
+          setTitle(name);
+          markDirty();
+        }}
       />
 
       <PhotoGalleryDialog

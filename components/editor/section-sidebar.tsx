@@ -1,6 +1,6 @@
 'use client';
 
-import { Check, Circle, Flag, ChevronRight, StickyNote, Images, Upload, Download, Lock, BookOpen, FileCheck, RotateCcw, CircleCheck } from 'lucide-react';
+import { Check, Circle, Flag, ChevronRight, StickyNote, Images, Upload, Download, Lock, BookOpen, FileCheck, RotateCcw, CircleCheck, Landmark } from 'lucide-react';
 import {
   BIOGRAPHY_SECTIONS,
   type BiographyContent,
@@ -19,6 +19,7 @@ interface SectionSidebarProps {
   onToggleNotesPanel: () => void;
   onTogglePhotosPanel: () => void;
   onToggleBookStructurePanel: () => void;
+  onTogglePermanencePanel: () => void;
   onToggleImportText: () => void;
   onToggleExportText: () => void;
   onToggleReviewPublication: () => void;
@@ -27,6 +28,7 @@ interface SectionSidebarProps {
   showNotesPanel: boolean;
   showPhotosPanel: boolean;
   showBookStructurePanel: boolean;
+  showPermanencePanel: boolean;
   showImportDialog: boolean;
   showReviewPublicationDialog?: boolean;
   completedSections?: string[];
@@ -51,6 +53,7 @@ export function SectionSidebar({
   onToggleNotesPanel,
   onTogglePhotosPanel,
   onToggleBookStructurePanel,
+  onTogglePermanencePanel,
   onToggleImportText,
   onToggleExportText,
   onToggleReviewPublication,
@@ -58,6 +61,7 @@ export function SectionSidebar({
   showNotesPanel,
   showPhotosPanel,
   showBookStructurePanel,
+  showPermanencePanel,
   showImportDialog,
   showReviewPublicationDialog = false,
   completedSections = [],
@@ -201,6 +205,22 @@ export function SectionSidebar({
       </ScrollArea>
 
       <div className="border-t border-border/50 p-1.5 space-y-0.5 shrink-0">
+        {biographyId && (
+          <button
+            type="button"
+            data-tour-id="permanence-btn"
+            onClick={onTogglePermanencePanel}
+            className={cn(
+              'w-full flex items-center gap-2 px-3 py-1 lg:py-2 rounded-lg text-sm transition-colors',
+              showPermanencePanel
+                ? 'bg-primary/10 text-primary font-medium'
+                : 'text-muted-foreground hover:bg-muted/50 hover:text-foreground'
+            )}
+          >
+            <Landmark className="h-4 w-4 shrink-0" />
+            <span className="truncate min-w-0 flex-1 text-left">{t.permanence.title}</span>
+          </button>
+        )}
         <button
           type="button"
           data-tour-id="notes-btn"
