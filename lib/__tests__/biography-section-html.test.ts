@@ -19,12 +19,18 @@ describe('biographySectionToSafeHtml', () => {
   it('wraps legacy plain text in paragraphs', () => {
     const input = 'First paragraph.\n\nSecond paragraph.';
     const out = biographySectionToSafeHtml(input);
-    expect(out).toBe('<p>First paragraph.</p><p>Second paragraph.</p>');
+    expect(out.replace(/\n/g, '')).toBe('<p>First paragraph.</p><p>Second paragraph.</p>');
   });
 
   it('strips script tags from HTML', () => {
     const out = biographySectionToSafeHtml('<p>Safe</p><script>alert(1)</script>');
     expect(out).not.toContain('script');
     expect(out).toContain('Safe');
+  });
+
+  it('renders Markdown original as HTML', () => {
+    const out = biographySectionToSafeHtml('Hello **world**.');
+    expect(out).toContain('<strong>world</strong>');
+    expect(out).not.toContain('**');
   });
 });

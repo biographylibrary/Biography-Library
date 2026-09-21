@@ -1,4 +1,5 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
+import { storedToArchiveMarkdown } from '@/lib/archive-markdown';
 import { BIOGRAPHY_SECTIONS } from '@/lib/editor-constants';
 
 export const MAX_DRAFT_WORDS = 1500;
@@ -57,9 +58,12 @@ export async function appendDraftToBiography(
   }
 
   if (sectionKey === FREEFLOW_SECTION_KEY) {
-    const current = String((bio as { content_freeflow?: string }).content_freeflow ?? '');
+    const current = storedToArchiveMarkdown(
+      String((bio as { content_freeflow?: string }).content_freeflow ?? '')
+    );
+    const draftMd = storedToArchiveMarkdown(trimmed);
     const sep = current && !current.endsWith('\n') ? '\n\n' : '';
-    const newText = current + sep + trimmed;
+    const newText = current ? current + sep + draftMd : draftMd;
 
     const { error: updateErr } = await serviceClient
       .from('biographies')
@@ -82,9 +86,10 @@ export async function appendDraftToBiography(
   const content: BiographyContent = {
     ...((bio as { content?: BiographyContent }).content ?? {}),
   };
-  const current = content[sectionKey]?.text ?? '';
+  const current = storedToArchiveMarkdown(content[sectionKey]?.text ?? '');
+  const draftMd = storedToArchiveMarkdown(trimmed);
   const sep = current && !current.endsWith('\n') ? '\n\n' : '';
-  const newText = current + sep + trimmed;
+  const newText = current ? current + sep + draftMd : draftMd;
   content[sectionKey] = {
     ...(content[sectionKey] ?? { todo: false, audioTranscript: '' }),
     text: newText,

@@ -2,6 +2,7 @@ import { SupabaseClient } from '@supabase/supabase-js';
 import { createHash } from 'crypto';
 import { embed } from '@/lib/agents/infomaniak-client';
 import { BIOGRAPHY_SECTIONS } from '@/lib/editor-constants';
+import { storedToArchiveMarkdown } from '@/lib/archive-markdown';
 
 const CHUNK_SIZE = 800;
 
@@ -45,7 +46,7 @@ export async function indexBiography(
   const allChunks: { sectionKey: string; index: number; content: string; text_hash: string }[] = [];
 
   for (const section of BIOGRAPHY_SECTIONS) {
-    const text = content[section.key]?.text ?? '';
+    const text = storedToArchiveMarkdown(content[section.key]?.text ?? '');
     for (const c of chunkText(text, section.key)) {
       allChunks.push({
         ...c,

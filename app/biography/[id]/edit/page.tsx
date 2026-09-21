@@ -59,6 +59,7 @@ import { PermanencePanel } from '@/components/editor/permanence/PermanencePanel'
 import { useTranslation } from '@/lib/i18n/i18n-context';
 import { LICENSE_BY_NC_SA_4, type ContentLicenseUri } from '@/lib/rights';
 import { nfcBiographyWriteFields } from '@/lib/nfc-biography';
+import { storedToArchiveMarkdown } from '@/lib/archive-markdown';
 import { Loader as Loader2, Sparkles, Snowflake as SnowflakeIcon, Send as SendIcon, TriangleAlert, Lock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -1212,15 +1213,21 @@ const [isPublishing, setIsPublishing] = useState(false);
   })).filter(s => s.content.trim().length > 50);
 
   const handleApplyStructure = useCallback(async (sectionOrder: string[], structureType: string, rationale: string) => {
-    const combinedText = sectionOrder.map(key => {
-      const sectionData = getSectionData(contentRef.current, key);
-      const sectionInfo = BIOGRAPHY_SECTIONS.find(s => s.key === key);
-      const sectionTitle = t.sectionTitles[key as keyof typeof t.sectionTitles] || sectionInfo?.title || '';
+    const combinedText = storedToArchiveMarkdown(
+      sectionOrder
+        .map((key) => {
+          const sectionData = getSectionData(contentRef.current, key);
+          const sectionInfo = BIOGRAPHY_SECTIONS.find((s) => s.key === key);
+          const sectionTitle =
+            t.sectionTitles[key as keyof typeof t.sectionTitles] || sectionInfo?.title || '';
 
-      if (!sectionData.text.trim()) return '';
+          if (!sectionData.text.trim()) return '';
 
-      return `<h2>${sectionTitle}</h2>\n\n${sectionData.text}`;
-    }).filter(text => text.length > 0).join('\n\n');
+          return `## ${sectionTitle}\n\n${storedToArchiveMarkdown(sectionData.text)}`;
+        })
+        .filter((text) => text.length > 0)
+        .join('\n\n')
+    );
 
     setFinalVersion(combinedText);
     setNarrativeOrder(sectionOrder);
@@ -1244,13 +1251,14 @@ const [isPublishing, setIsPublishing] = useState(false);
   }, [id, t]);
 
   const handleFinalVersionChange = useCallback(async (newContent: string) => {
-    setFinalVersion(newContent);
+    const markdown = storedToArchiveMarkdown(newContent);
+    setFinalVersion(markdown);
 
     try {
       await supabase
         .from('biographies')
         .update({
-          final_version: newContent,
+          final_version: markdown,
         })
         .eq('id', id);
     } catch (err) {
@@ -1609,7 +1617,7 @@ const [isPublishing, setIsPublishing] = useState(false);
   }, [id, t]);
 
   const handlePrepareFreeflowFinal = useCallback(async () => {
-    const text = contentFreeflowRef.current.trim();
+    const text = storedToArchiveMarkdown(contentFreeflowRef.current);
     if (!text) return;
     setPublicationActionLoading('prepare');
     setPublicationActionError(null);

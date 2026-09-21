@@ -1,6 +1,7 @@
 import { Document, Paragraph, TextRun, HeadingLevel, AlignmentType } from 'docx';
 import JSZip from 'jszip';
 import { saveAs } from 'file-saver';
+import { storedToPlainText, storedToSafeHtml } from '@/lib/archive-markdown';
 
 interface BiographyData {
   title: string;
@@ -18,19 +19,7 @@ interface ExportSection {
 }
 
 export function stripHtmlTags(html: string): string {
-  return html
-    .replace(/<p[^>]*>/gi, '')
-    .replace(/<\/p>/gi, '\n\n')
-    .replace(/<br\s*\/?>/gi, '\n')
-    .replace(/<[^>]+>/g, '')
-    .replace(/&amp;/g, '&')
-    .replace(/&lt;/g, '<')
-    .replace(/&gt;/g, '>')
-    .replace(/&nbsp;/g, ' ')
-    .replace(/&quot;/g, '"')
-    .replace(/&#39;/g, "'")
-    .replace(/\n{3,}/g, '\n\n')
-    .trim();
+  return storedToPlainText(html ?? '');
 }
 
 interface InlineRun {
@@ -111,7 +100,7 @@ function htmlToParagraphs(html: string): InlineRun[][] {
 }
 
 function buildDocxParagraphsFromHtml(html: string): Paragraph[] {
-  const paragraphRuns = htmlToParagraphs(html);
+  const paragraphRuns = htmlToParagraphs(storedToSafeHtml(html));
   const result: Paragraph[] = [];
 
   for (const runs of paragraphRuns) {

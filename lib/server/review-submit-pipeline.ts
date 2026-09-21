@@ -2,7 +2,8 @@ import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { purgeAgentMemoryForBiography } from '@/lib/agents/purge-agent-memory';
 import { runPublicationScreening } from '@/lib/agents/screening/run-publication-screening';
 import { getModelForRole } from '@/lib/agents/models';
-import { stripHtml } from '@/lib/pdf-export';
+import { storedToArchiveMarkdown } from '@/lib/archive-markdown';
+import { BIOGRAPHY_SECTIONS } from '@/lib/editor-constants';
 import {
   notifyAuthorPublicationEmail,
   notifyReviewerAssignedEmail,
@@ -153,7 +154,9 @@ export async function fetchBiographyContent(
 ): Promise<{ text: string; authorId: string; contentLanguage: string }> {
   const { data: bio } = await supabase
     .from('biographies')
-    .select('user_id, content_freeflow, content_language, record_language_tag, final_version')
+    .select(
+      'user_id, content, content_freeflow, content_language, record_language_tag, final_version, biography_mode'
+    )
     .eq('id', biographyId)
     .maybeSingle();
 
@@ -163,7 +166,7 @@ export async function fetchBiographyContent(
   const hasTargetKeys = targetSectionKeys && targetSectionKeys.length > 0;
   const finalRaw = (bio as any)?.final_version?.trim();
   if (!hasTargetKeys && finalRaw) {
-    let text = stripHtml(finalRaw);
+    let text = storedToArchiveMarkdown(finalRaw);
     if (text.length > MAX_CONTENT_CHARS) {
       text = text.slice(0, MAX_CONTENT_CHARS);
     }
@@ -172,31 +175,51 @@ export async function fetchBiographyContent(
 
   /** Used below when targeted sections are empty but final_version holds the live text (PDF path). */
   const finalVersionFallback = (): { text: string; authorId: string; contentLanguage: string } => {
-    let text = stripHtml(finalRaw ?? '');
+    let text = storedToArchiveMarkdown(finalRaw ?? '');
     if (text.length > MAX_CONTENT_CHARS) {
       text = text.slice(0, MAX_CONTENT_CHARS);
     }
     return { text, authorId, contentLanguage };
   };
 
-  let query = supabase
-    .from('biography_sections')
-    .select('section_key, content')
-    .eq('biography_id', biographyId)
-    .not('content', 'is', null)
-    .order('section_key', { ascending: true });
+  const jsonContent =
+    ((bio as { content?: Record<string, { text?: string } | undefined> | null }).content ??
+      {}) as Record<string, { text?: string } | undefined>;
 
-  if (targetSectionKeys && targetSectionKeys.length > 0) {
-    query = query.in('section_key', targetSectionKeys);
-  }
-
-  const { data: sections } = await query;
+  const wantedKeys =
+    targetSectionKeys && targetSectionKeys.length > 0
+      ? targetSectionKeys.filter((k) => k !== 'freeflow')
+      : BIOGRAPHY_SECTIONS.map((s) => s.key);
 
   const parts: string[] = [];
 
-  for (const section of (sections as any[]) ?? []) {
-    if (section.content?.trim()) {
-      parts.push(`[SECTION: ${section.section_key}]\n${section.content.trim()}`);
+  for (const key of wantedKeys) {
+    const fromJson = jsonContent[key]?.text?.trim();
+    if (fromJson) {
+      parts.push(`[SECTION: ${key}]\n${storedToArchiveMarkdown(fromJson)}`);
+    }
+  }
+
+  if (parts.length === 0) {
+    let query = supabase
+      .from('biography_sections')
+      .select('section_key, content')
+      .eq('biography_id', biographyId)
+      .not('content', 'is', null)
+      .order('section_key', { ascending: true });
+
+    if (targetSectionKeys && targetSectionKeys.length > 0) {
+      query = query.in('section_key', targetSectionKeys);
+    }
+
+    const { data: sections } = await query;
+
+    for (const section of (sections as any[]) ?? []) {
+      if (section.content?.trim()) {
+        parts.push(
+          `[SECTION: ${section.section_key}]\n${storedToArchiveMarkdown(section.content.trim())}`
+        );
+      }
     }
   }
 
@@ -204,7 +227,9 @@ export async function fetchBiographyContent(
   const includeFreeflow = !isTargeted || targetSectionKeys?.includes('freeflow');
 
   if (includeFreeflow && (bio as any)?.content_freeflow?.trim()) {
-    parts.push(`[SECTION: freeflow]\n${(bio as any).content_freeflow.trim()}`);
+    parts.push(
+      `[SECTION: freeflow]\n${storedToArchiveMarkdown((bio as any).content_freeflow.trim())}`
+    );
   }
 
   let text = parts.join('\n\n');

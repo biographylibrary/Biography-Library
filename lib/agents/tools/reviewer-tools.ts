@@ -1,5 +1,6 @@
 import { SupabaseClient } from '@supabase/supabase-js';
 import { BIOGRAPHY_SECTIONS } from '@/lib/editor-constants';
+import { storedToArchiveMarkdown } from '@/lib/archive-markdown';
 import type { ToolDefinition } from '@/lib/agents/infomaniak-client';
 
 export const SCREENING_VERDICT_TOOL: ToolDefinition = {
@@ -117,10 +118,12 @@ export async function executeReviewerTool(
 
       let sectionText = '';
       if (sectionKey === 'freeflow') {
-        sectionText = (bio as { content_freeflow?: string } | null)?.content_freeflow ?? '';
+        sectionText = storedToArchiveMarkdown(
+          (bio as { content_freeflow?: string } | null)?.content_freeflow ?? ''
+        );
       } else {
         const content = (bio as { content?: BiographyContent } | null)?.content ?? {};
-        sectionText = content[sectionKey]?.text ?? '';
+        sectionText = storedToArchiveMarkdown(content[sectionKey]?.text ?? '');
       }
 
       const { data: statusRow } = await serviceClient

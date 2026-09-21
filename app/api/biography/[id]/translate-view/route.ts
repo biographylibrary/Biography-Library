@@ -4,7 +4,7 @@ import {
   getBiographySectionEntries,
   isViewLanguage,
   sectionContentHash,
-  translateSectionHtml,
+  translateSectionMarkdown,
   type ViewLanguage,
 } from '@/lib/biography-view-translate';
 import {
@@ -99,7 +99,7 @@ export async function POST(
     let usedAi = false;
 
     for (const section of sections) {
-      const hash = sectionContentHash(section.html);
+      const hash = sectionContentHash(section.markdown);
       const cached = cachedByKey.get(section.key);
       if (cached && cached.source_content_hash === hash) {
         translatedSections[section.key] = cached.translated_html;
@@ -107,8 +107,8 @@ export async function POST(
       }
 
       usedAi = true;
-      const translatedHtml = await translateSectionHtml(
-        section.html,
+      const translatedHtml = await translateSectionMarkdown(
+        section.markdown,
         sourceLanguage,
         targetLanguage
       );
