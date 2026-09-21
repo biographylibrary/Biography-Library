@@ -1,4 +1,24 @@
-# Stato della priorità zero — 21 settembre 2026
+# Stato della priorità zero — chiusa il 21 settembre 2026
+
+> **Aggiornamento del 21 settembre, sera.** Lo smoke è verde: tutte le prove
+> sotto sono state eseguite in produzione e hanno dato l'esito atteso. Restano
+> aperti solo i punti della sezione 6 che non riguardano il risolutore.
+>
+> | Prova | Esito |
+> | ----- | ----- |
+> | `UM_ID_BASE_URL` leggibile dall'app | `/api/um-id/base-url` restituisce l'indirizzo |
+> | Identificativo emesso, forma canonica | `UM-0000-1D57-F89R-7C6N` risolve alla scheda |
+> | Forma senza trattini | risolve |
+> | Forma minuscola | risolve |
+> | Identificativo mai emesso | 404 |
+> | Carattere di controllo errato | 404 |
+> | Identificativo emesso che dà 404 | mai accaduto |
+> | Identificativo visibile nella scheda | sì, ed è un collegamento al risolutore |
+>
+> Per arrivarci sono serviti due guasti in produzione introdotti dai merge di
+> quel giorno, entrambi risolti: il deploy che leggeva `.env` con `source` e
+> moriva sul primo valore con uno spazio (#54), e il contenitore che chiedeva
+> la porta 80 a un utente non privilegiato e quindi non partiva (#55).
 
 Documento di passaggio di consegne. Dice dove siamo davvero, cosa ho verificato
 io e cosa resta da fare, distinguendo ciò che si fa da codice da ciò che si fa
@@ -35,10 +55,11 @@ stato unito in `main` il 19 settembre (commit `c685abf`) e porta il risolutore,
 il registro e le migrazioni `20260904*`. Se le migrazioni non fossero state
 applicate, oggi vedremmo ancora un errore sulla tabella mancante.
 
-**Resta da verificare, e serve la produzione:** che un identificativo
-realmente emesso risponda, cioè il caso «identificativo emesso: mai 404». Non
-posso farlo perché non conosco un identificativo emesso e non ho accesso al
-database. È l'ultimo punto dello smoke.
+**Verificato il 21 settembre, sera.** Un identificativo realmente emesso,
+`UM-0000-1D57-F89R-7C6N`, risolve alla sua scheda in tutte e tre le forme
+previste dalla specifica. L'ho trovato senza accedere al database: la scheda
+pubblicata ora mostra il proprio identificativo come collegamento, che è
+esattamente ciò che quel lavoro serviva a ottenere.
 
 ---
 
@@ -189,9 +210,10 @@ git checkout feat/um-permanence -- .env.example .github/workflows/ci.yml CLAUDE.
 
 ## 6. Cosa resta aperto, in ordine
 
-1. **Smoke finale in produzione:** creare una scheda, vedere l'identificativo,
-   verificare che il suo indirizzo risponda e non dia 404. È l'unico punto
-   dello smoke che manca.
+1. ~~Smoke finale in produzione.~~ **Fatto**, vedi l'aggiornamento in testa.
+   Non è stata creata una scheda nuova: la verifica è avvenuta su una scheda
+   già pubblicata, il che copre tutto tranne il passaggio «creazione → UM
+   visibile», che resta da guardare alla prossima scheda creata.
 2. **Le due query SQL** della sezione 4 per chiudere l'audit `frozen_reason`.
 3. **Aprire la pull request** del ramo. `gh` non funziona su questo Mac (binario
    Intel senza Rosetta), quindi va aperta dal browser:
