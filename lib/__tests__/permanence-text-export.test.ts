@@ -1,5 +1,8 @@
 import { describe, expect, it } from 'vitest';
-import { buildPermanencePlainText } from '@/lib/permanence-text-export';
+import {
+  buildPermanencePlainText,
+  formatPlaceExportValue,
+} from '@/lib/permanence-text-export';
 
 describe('buildPermanencePlainText', () => {
   it('emits fixed header with UNKNOWN for missing fields', () => {
@@ -35,6 +38,8 @@ describe('buildPermanencePlainText', () => {
           place_name_as_given: 'Lugano',
           place_lat: 46.0042,
           place_lon: 8.9512,
+          place_geonames_id: 2659836,
+          place_wikidata_qid: 'Q7024',
           asserted_by: 'family',
           asserted_by_label: 'un familiare',
           confidence: 'certain',
@@ -48,7 +53,9 @@ describe('buildPermanencePlainText', () => {
     expect(text).toContain('EVENTO | EVENT: nascita | birth');
     expect(text).toContain('1948-03-14 (EDTF)');
     expect(text).toContain('2432625');
-    expect(text).toContain('Lugano | 46.004200 | 8.951200 (WGS 84)');
+    expect(text).toContain(
+      'Lugano | 46.004200 | 8.951200 | WGS 84 | geonames 2659836 | wikidata Q7024'
+    );
     expect(text).toContain('EVENTO | EVENT: morte | death');
     expect(text).toContain('sconosciuto | UNKNOWN');
     expect(text).toContain('0000 UM');
@@ -56,7 +63,7 @@ describe('buildPermanencePlainText', () => {
     expect(text).toContain('Una vita.');
   });
 
-  it('does not invent WGS 84 when a place has no coordinates', () => {
+  it('keeps the six-field place pattern with UNKNOWN for missing numbers', () => {
     const text = buildPermanencePlainText(
       {
         um_id: 'um0000k3nq7fx2mvp4',
@@ -94,8 +101,28 @@ describe('buildPermanencePlainText', () => {
       ]
     );
 
-    expect(text).toContain('PLACE: the village as remembered');
-    expect(text).not.toContain('WGS 84');
+    expect(text).toContain(
+      'PLACE: the village as remembered | UNKNOWN | UNKNOWN | WGS 84 | geonames UNKNOWN | wikidata UNKNOWN'
+    );
+  });
+
+  it('formatPlaceExportValue always emits name | lat | lon | WGS 84 | gazetteers', () => {
+    expect(
+      formatPlaceExportValue(
+        {
+          place_name_as_given: 'Lugano',
+          place_lat: 46.0042,
+          place_lon: 8.9512,
+          place_geonames_id: 2659836,
+          place_wikidata_qid: 'http://www.wikidata.org/entity/Q7024',
+        },
+        'UNKNOWN'
+      )
+    ).toBe('Lugano | 46.004200 | 8.951200 | WGS 84 | geonames 2659836 | wikidata Q7024');
+
+    expect(
+      formatPlaceExportValue({ place_name_as_given: null, place_lat: null, place_lon: null }, 'sconosciuto | UNKNOWN')
+    ).toBe('sconosciuto | UNKNOWN');
   });
 
   it('puts RTL values on the next indented line', () => {

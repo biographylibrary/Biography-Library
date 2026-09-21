@@ -1,6 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getAuthenticatedUser } from '@/lib/server/onboarding-api-auth';
-import type { PlaceSearchHit } from '@/lib/places';
+import {
+  geonamesSearchUrl,
+  mapGeonamesHit,
+  mapNominatimHit,
+  nominatimSearchUrl,
+  type PlaceSearchHit,
+} from '@/lib/places';
 
 export type { PlaceSearchHit };
 
@@ -42,14 +48,7 @@ async function searchGeonames(
   username: string,
   lang: string
 ): Promise<PlaceSearchHit[]> {
-  const url = new URL('https://secure.geonames.org/searchJSON');
-  url.searchParams.set('q', q);
-  url.searchParams.set('maxRows', '8');
-  url.searchParams.set('featureClass', 'P');
-  url.searchParams.set('username', username);
-  url.searchParams.set('lang', lang);
-
-  const res = await fetch(url.toString(), {
+  const res = await fetch(geonamesSearchUrl(q, username, lang), {
     headers: { Accept: 'application/json' },
     next: { revalidate: 0 },
   });
@@ -73,30 +72,11 @@ async function searchGeonames(
     throw new Error(data.status.message);
   }
 
-  return (data.geonames ?? []).map((g) => {
-    const parts = [g.name, g.adminName1, g.countryName].filter(Boolean);
-    return {
-      name: g.name,
-      displayName: parts.join(', '),
-      lat: Number(g.lat),
-      lon: Number(g.lng),
-      geonamesId: g.geonameId,
-      wikidataQid: null,
-      countryCode: g.countryCode ?? null,
-    };
-  });
+  return (data.geonames ?? []).map(mapGeonamesHit);
 }
 
 async function searchNominatim(q: string, lang: string): Promise<PlaceSearchHit[]> {
-  const url = new URL('https://nominatim.openstreetmap.org/search');
-  url.searchParams.set('q', q);
-  url.searchParams.set('format', 'jsonv2');
-  url.searchParams.set('limit', '8');
-  url.searchParams.set('featureType', 'settlement');
-  url.searchParams.set('addressdetails', '0');
-  url.searchParams.set('accept-language', lang);
-
-  const res = await fetch(url.toString(), {
+  const res = await fetch(nominatimSearchUrl(q, lang), {
     headers: {
       Accept: 'application/json',
       'User-Agent': 'BiographyLibrary/1.0 (permanence; https://biographylibrary.org)',
@@ -111,16 +91,8 @@ async function searchNominatim(q: string, lang: string): Promise<PlaceSearchHit[
     name?: string;
     lat: string;
     lon: string;
-    extratags?: { wikidata?: string };
+    extratags?: Record<string, string>;
   }>;
 
-  return data.map((item) => ({
-    name: item.name || item.display_name.split(',')[0]?.trim() || item.display_name,
-    displayName: item.display_name,
-    lat: Number(item.lat),
-    lon: Number(item.lon),
-    geonamesId: null,
-    wikidataQid: item.extratags?.wikidata ?? null,
-    countryCode: null,
-  }));
+  return data.map(mapNominatimHit);
 }
