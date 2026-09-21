@@ -306,8 +306,12 @@ export function buildPermanenceHeaderLines(
     const lat = fmtCoord(ev?.place_lat);
     const lon = fmtCoord(ev?.place_lon);
     let placeVal = unk;
-    if (placeName) {
-      placeVal = lat && lon ? `${placeName} | ${lat} | ${lon}` : placeName;
+    if (placeName && lat && lon) {
+      // Recurring pattern: name | latitude | longitude | datum. WGS 84 is
+      // what GeoNames and Nominatim emit; six decimal places match numeric(9,6).
+      placeVal = `${placeName} | ${lat} | ${lon} (WGS 84)`;
+    } else if (placeName) {
+      placeVal = placeName;
     }
     lines.push(`  ${writeValue(dir, bil(lang, 'place'), placeVal)}`);
 

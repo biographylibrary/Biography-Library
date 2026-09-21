@@ -48,12 +48,54 @@ describe('buildPermanencePlainText', () => {
     expect(text).toContain('EVENTO | EVENT: nascita | birth');
     expect(text).toContain('1948-03-14 (EDTF)');
     expect(text).toContain('2432625');
-    expect(text).toContain('Lugano | 46.004200 | 8.951200');
+    expect(text).toContain('Lugano | 46.004200 | 8.951200 (WGS 84)');
     expect(text).toContain('EVENTO | EVENT: morte | death');
     expect(text).toContain('sconosciuto | UNKNOWN');
     expect(text).toContain('0000 UM');
     expect(text).toContain('---');
     expect(text).toContain('Una vita.');
+  });
+
+  it('does not invent WGS 84 when a place has no coordinates', () => {
+    const text = buildPermanencePlainText(
+      {
+        um_id: 'um0000k3nq7fx2mvp4',
+        schema_version: 2,
+        record_language_tag: 'en',
+        record_script: 'Latn',
+        record_direction: 'ltr',
+        record_language_endonym: 'English',
+        name_as_written: 'Maria Rossi',
+        name_romanized: null,
+        title: 'Maria Rossi',
+        author_name: 'Maria Rossi',
+        subject_name: null,
+        biography_type: 'autobiography',
+        published_at_iso: '2026-09-03',
+        published_um_year: 0,
+        rights_statement_uri: null,
+      },
+      [
+        {
+          event_type: 'birth',
+          event_label: 'birth',
+          date_edtf: null,
+          date_as_given: null,
+          calendar_label: null,
+          date_start_iso: null,
+          date_start_jdn: null,
+          place_name_as_given: 'the village as remembered',
+          place_lat: null,
+          place_lon: null,
+          asserted_by: null,
+          asserted_by_label: null,
+          confidence: null,
+        },
+      ]
+    );
+
+    expect(text).toContain('PLACE: the village as remembered');
+    expect(text).not.toContain('WGS 84');
   });
 
   it('puts RTL values on the next indented line', () => {

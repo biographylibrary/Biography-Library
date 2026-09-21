@@ -42,3 +42,10 @@ supabase/.temp/
 
 # Output di smoke test locale PDF→JPEG (non serve in repo; se un domani servisse versionarlo, togli questa riga e chiedi in review)
 scripts/.test-cover.jpg
+
+# next-pwa writes these on every production build; keeping them versioned
+# dirties the working tree after `next build`.
+/public/sw.js
+/public/workbox-*.js
+/public/worker-*.js
+/public/fallback-*.js
