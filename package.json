@@ -15,6 +15,7 @@
     "check:dead": "knip --include files",
     "seed:test-biography": "node scripts/seed-test-biography.mjs",
     "demo:enrich": "npx tsx --tsconfig tsconfig.json scripts/enrich-demo-catalog.ts",
+    "exports:regenerate": "npx tsx --tsconfig tsconfig.json scripts/regenerate-exports.ts",
     "kb:sync": "node scripts/sync-platform-kb.mjs",
     "kb:sync:check": "node scripts/sync-platform-kb.mjs --check",
     "kb:seed": "tsx --tsconfig tsconfig.json scripts/seed-kb.ts"

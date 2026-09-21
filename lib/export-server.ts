@@ -221,3 +221,54 @@ export async function buildBiographyDocxBuffer(
   });
   return Packer.toBuffer(doc);
 }
+
+/**
+ * DOCX from the permanence UTF-8 text (invariant header + body).
+ * One paragraph per line; the deposited .docx must carry the same pattern
+ * as the .txt, not a different layout.
+ */
+export async function buildUtf8DocxBuffer(plainText: string): Promise<Buffer> {
+  const {
+    AlignmentType,
+    Document,
+    LineRuleType,
+    PageOrientation,
+    Paragraph,
+    Packer,
+    TextRun,
+  } = await import('docx');
+
+  const lines = plainText.replace(/\r\n/g, '\n').split('\n');
+  const children = lines.map(
+    (line) =>
+      new Paragraph({
+        alignment: AlignmentType.LEFT,
+        spacing: { line: 276, lineRule: LineRuleType.AUTO, after: 0 },
+        children: [
+          new TextRun({
+            text: line.length === 0 ? ' ' : line,
+            font: FONT_BODY,
+            size: SZ_BODY,
+          }),
+        ],
+      })
+  );
+
+  const doc = new Document({
+    sections: [
+      {
+        properties: {
+          page: {
+            size: {
+              width: 11906,
+              height: 16838,
+              orientation: PageOrientation.PORTRAIT,
+            },
+          },
+        },
+        children,
+      },
+    ],
+  });
+  return Packer.toBuffer(doc);
+}

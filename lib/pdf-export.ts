@@ -59,6 +59,8 @@ export interface BiographyData {
   final_version?: string | null;
   status?: string;
   created_at: string;
+  /** Permanent identifier; the PDF header also loads it from the row. */
+  um_id?: string | null;
 }
 
 const DRAFT_WATERMARK_LABELS: Record<number, Record<string, string>> = {

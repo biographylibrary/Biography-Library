@@ -20,14 +20,6 @@ const STAFF_ROLES = new Set(['reviewer', 'admin', 'super_admin']);
 export const SUBMIT_THROTTLE_WINDOW_SECS = 60;
 export const SUBMIT_THROTTLE_MAX = 3;
 
-const FINAL_VERSION_EXPORT_STATUSES = new Set([
-  'final_version',
-  'published',
-  'pdf_draft',
-  'locked_pending_screening',
-  'under_review',
-]);
-
 const AUTO_PUBLISHED_MESSAGES: Record<string, string> = {
   en: 'Your biography has been reviewed and published automatically.',
   it: 'La tua biografia è stata revisionata e pubblicata automaticamente.',
@@ -533,79 +525,10 @@ async function pickReviewer(
 
 export async function generateAndStoreExports(supabase: AnyClient, biographyId: string): Promise<void> {
   try {
-    const { buildBiographyTxtContent, buildBiographyDocxBuffer } = await import('@/lib/export-server');
-    const { data: bio } = await supabase
-      .from('biographies')
-      .select('title, author_name, created_at, content_freeflow, biography_mode, final_version, status')
-      .eq('id', biographyId)
-      .maybeSingle();
-
-    if (!bio) return;
-
-    const { data: sectionRows } = await supabase
-      .from('biography_sections')
-      .select('section_key, content')
-      .eq('biography_id', biographyId)
-      .not('content', 'is', null)
-      .order('section_key', { ascending: true });
-
-    const isFreeFlow = (bio as any).biography_mode === 'freeflow';
-    const finalVersion = typeof (bio as any).final_version === 'string' ? (bio as any).final_version : '';
-    const shouldUseFinalVersion =
-      FINAL_VERSION_EXPORT_STATUSES.has((bio as any).status) && finalVersion.trim().length > 0;
-
-    const sections: Array<{ title: string; content: string }> = isFreeFlow
-      ? [
-          {
-            title: (bio as any).title,
-            content: shouldUseFinalVersion ? finalVersion : (bio as any).content_freeflow ?? '',
-          },
-        ]
-      : shouldUseFinalVersion
-        ? [{ title: (bio as any).title, content: finalVersion }]
-        : ((sectionRows as any[]) ?? [])
-            .filter((r: any) => r.content?.trim())
-            .map((r: any) => ({ title: r.section_key, content: r.content }));
-
-    const title: string = (bio as any).title ?? '';
-    const authorName: string = (bio as any).author_name ?? '';
-    const createdAt: string = (bio as any).created_at ?? new Date().toISOString();
-
-    const txtContent = buildBiographyTxtContent(title, authorName, createdAt, sections);
-    const txtBytes = Buffer.from(txtContent, 'utf-8');
-    const docxBuffer = await buildBiographyDocxBuffer(title, authorName, createdAt, sections);
-
-    const txtPath = `biography-exports/${biographyId}/biography.txt`;
-    const docxPath = `biography-exports/${biographyId}/biography.docx`;
-
-    const [txtUpload, docxUpload] = await Promise.all([
-      supabase.storage.from('biography-exports').upload(txtPath, txtBytes, {
-        contentType: 'text/plain; charset=utf-8',
-        upsert: true,
-      }),
-      supabase.storage.from('biography-exports').upload(docxPath, docxBuffer, {
-        contentType: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-        upsert: true,
-      }),
-    ]);
-
-    if (txtUpload.error) {
-      console.error('[review-submit-pipeline] TXT upload error:', txtUpload.error);
-    }
-    if (docxUpload.error) {
-      console.error('[review-submit-pipeline] DOCX upload error:', docxUpload.error);
-    }
-
-    const { data: txtUrlData } = supabase.storage.from('biography-exports').getPublicUrl(txtPath);
-    const { data: docxUrlData } = supabase.storage.from('biography-exports').getPublicUrl(docxPath);
-
-    await supabase
-      .from('biographies')
-      .update({
-        export_txt_url: txtUrlData?.publicUrl ?? null,
-        export_docx_url: docxUrlData?.publicUrl ?? null,
-      })
-      .eq('id', biographyId);
+    const { generateAndStorePermanenceTextExports } = await import(
+      '@/lib/server/permanence-stored-exports'
+    );
+    await generateAndStorePermanenceTextExports(supabase, biographyId);
   } catch (err) {
     console.error('[review-submit-pipeline] Auto-export failed (non-blocking):', err);
   }
