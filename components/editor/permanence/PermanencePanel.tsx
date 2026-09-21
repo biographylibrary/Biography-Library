@@ -41,6 +41,9 @@ interface PermanencePanelProps {
   nameAsWritten: string;
   recordLanguageTag: string | null;
   recordScript: string | null;
+  /** Death is only for memorials. Autobiographies never show or save it. */
+  showDeath?: boolean;
+  hideTitle?: boolean;
   disabled?: boolean;
   onNameSaved?: (name: string) => void;
 }
@@ -260,6 +263,8 @@ export function PermanencePanel({
   nameAsWritten,
   recordLanguageTag,
   recordScript,
+  showDeath = false,
+  hideTitle = false,
   disabled = false,
   onNameSaved,
 }: PermanencePanelProps) {
@@ -384,9 +389,11 @@ export function PermanencePanel({
       };
 
       const birthId = await upsertOne('birth', birth);
-      const deathId = await upsertOne('death', death);
       if (birthId && !birth.id) setBirth((b) => ({ ...b, id: birthId }));
-      if (deathId && !death.id) setDeath((d) => ({ ...d, id: deathId }));
+      if (showDeath) {
+        const deathId = await upsertOne('death', death);
+        if (deathId && !death.id) setDeath((d) => ({ ...d, id: deathId }));
+      }
 
       if (deletedRelationIds.length > 0) {
         const { error } = await supabase
@@ -443,6 +450,7 @@ export function PermanencePanel({
     biographyId,
     birth,
     death,
+    showDeath,
     deletedRelationIds,
     disabled,
     name,
@@ -467,14 +475,14 @@ export function PermanencePanel({
   }
 
   return (
-    <div className="px-4 sm:px-6 py-4 border-b border-border/30 bg-muted/10 space-y-4">
-      <div className="flex items-start gap-2">
-        <Landmark className="h-4 w-4 text-primary shrink-0 mt-0.5" />
-        <div className="min-w-0 space-y-1">
+    <div className="space-y-4">
+      {!hideTitle && (
+        <div className="flex items-start gap-2">
+          <Landmark className="h-4 w-4 text-primary shrink-0 mt-0.5" />
           <h3 className="text-sm font-medium">{p.title}</h3>
-          <p className="text-sm text-muted-foreground leading-relaxed">{p.why}</p>
         </div>
-      </div>
+      )}
+      <p className="text-sm text-muted-foreground leading-relaxed">{p.why}</p>
 
       <div className="space-y-1.5 max-w-xl">
         <Label className="text-xs text-muted-foreground">{p.nameAsWritten}</Label>
@@ -511,7 +519,7 @@ export function PermanencePanel({
         </div>
       )}
 
-      <div className="grid lg:grid-cols-2 gap-3">
+      <div className={showDeath ? 'grid lg:grid-cols-2 gap-3' : 'space-y-3'}>
         <EventBlock
           title={p.birth}
           form={birth}
@@ -520,14 +528,16 @@ export function PermanencePanel({
           disabled={disabled}
           t={t}
         />
-        <EventBlock
-          title={p.death}
-          form={death}
-          onChange={setDeath}
-          lang={language}
-          disabled={disabled}
-          t={t}
-        />
+        {showDeath && (
+          <EventBlock
+            title={p.death}
+            form={death}
+            onChange={setDeath}
+            lang={language}
+            disabled={disabled}
+            t={t}
+          />
+        )}
       </div>
 
       <div className="space-y-3">
