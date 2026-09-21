@@ -1,8 +1,10 @@
 # Stato della priorità zero — chiusa il 21 settembre 2026
 
-> **Aggiornamento del 21 settembre, sera.** Lo smoke è verde: tutte le prove
-> sotto sono state eseguite in produzione e hanno dato l'esito atteso. Restano
-> aperti solo i punti della sezione 6 che non riguardano il risolutore.
+> **Aggiornamento del 21 settembre 2026 (sera, poi pomeriggio).** Lo smoke
+> sul risolutore è verde. Le query `frozen_reason` in produzione sono vuote.
+> La lista d’attesa beta è su `main` ([#60](https://github.com/BiographyLibrary/Biography-Library/pull/60),
+> `f5f0ddf`). Restano Markdown d’archivio, segnalazioni a tre corsie e
+> documentazione di prodotto fuori da questo file.
 >
 > | Prova | Esito |
 > | ----- | ----- |
@@ -14,23 +16,24 @@
 > | Carattere di controllo errato | 404 |
 > | Identificativo emesso che dà 404 | mai accaduto |
 > | Identificativo visibile nella scheda | sì, ed è un collegamento al risolutore |
+> | Query `frozen_reason` fuori da `death`/`admin_action` | 0 righe |
+> | Query `moderation_reports.decision = 'returned'` | 0 righe |
 >
 > Per arrivarci sono serviti due guasti in produzione introdotti dai merge di
 > quel giorno, entrambi risolti: il deploy che leggeva `.env` con `source` e
 > moriva sul primo valore con uno spazio (#54), e il contenitore che chiedeva
 > la porta 80 a un utente non privilegiato e quindi non partiva (#55).
 
-Documento di passaggio di consegne. Dice dove siamo davvero, cosa ho verificato
-io e cosa resta da fare, distinguendo ciò che si fa da codice da ciò che si fa
-solo in produzione con le credenziali.
+Documento di passaggio di consegne. Dice dove siamo davvero, cosa è stato
+verificato e cosa resta da fare, distinguendo codice e produzione.
 
 ---
 
 ## In una riga
 
 **La priorità zero non è bloccata: il risolutore in produzione funziona.** Il
-500 che l'aveva fatta dichiarare bloccante non è più riproducibile. Restano due
-verifiche che richiedono l'accesso alla produzione e un punto di codice aperto.
+500 che l'aveva fatta dichiarare bloccante non è più riproducibile. Non c’è
+una pull request UM da aprire: quel lavoro è su `main`.
 
 ---
 
@@ -65,107 +68,71 @@ esattamente ciò che quel lavoro serviva a ottenere.
 
 ## 2. Checklist operativa, riga per riga
 
+`main` su GitHub è `f5f0ddf` (21 settembre, #60). Dockerfile e `.dockerignore`
+sono nel repository da [#51](https://github.com/BiographyLibrary/Biography-Library/pull/51).
+`UM_ID_BASE_URL` è in produzione.
+
 | Punto | Stato | Nota |
 | ----- | ----- | ---- |
-| Deploy Jelastic del merge #52 | **fatto** | `c685abf` è su `main` dal 19 settembre e il codice risponde in produzione |
-| Migrazioni `20260904*` | **quasi certamente applicate** | se mancassero, il risolutore darebbe errore sulla tabella `um_identifiers` invece di 404 pulito; conferma con la query in fondo |
-| `scripts/backfill-um-ids.mjs` | **da verificare** | serve una query, vedi sotto |
+| Deploy Jelastic del merge #52 | **fatto** | `c685abf` è su `main` dal 19 settembre |
+| Migrazioni `20260904*` | **quasi certamente applicate** | 404 pulito, non errore sulla tabella; conferma eventuale con la query in fondo |
+| `scripts/backfill-um-ids.mjs` | **da verificare** | query in fondo, se serve |
 | Sottodominio `id` → app Next | **fatto** | verificato dalle risposte HTTP |
-| Variabile base URL | **da rifare con il nome nuovo** | vedi il riquadro qui sotto |
+| `UM_ID_BASE_URL` | **fatto** | `GET /api/um-id/base-url` in produzione |
+| Dockerfile / `.dockerignore` nel repo | **fatto** | #51 su `main`; non si copiano più da `/opt/bl-app` |
+| Export di prova rigenerati | **fatto** | #57, poi di nuovo dopo il pattern luogo #58 |
+| `public/sw.js` in `.gitignore` | **fatto** | #57 |
+| Lista d’attesa beta | **fatto** | #60; home `/` = landing; login su `/login` |
+| Query `frozen_reason` | **fatte, 0 righe** | il percorso `moderation_report` si toglie nel cantiere segnalazioni, senza allargare il CHECK |
 
-### Attenzione: la variabile ha cambiato nome
-
-La checklist dice `NEXT_PUBLIC_UM_ID_BASE_URL`. Quel nome è **superato** dal
-lavoro sul ramo `feat/um-permanence`, non ancora unito.
-
-- Su `main` (produzione oggi): la variabile non è letta da nessuno, perché
-  `lib/um-id-url.ts` non era importato da alcun file. Impostarla o meno non
-  cambia il comportamento.
-- Sul ramo: si chiama **`UM_ID_BASE_URL`**, senza prefisso, ed è obbligatoria.
-  Il codice solleva un errore se manca, di proposito: l'indirizzo finisce
-  dentro documenti depositati che non si correggono più.
-
-**Quindi:** quando il ramo verrà unito, su Jelastic va impostata
-`UM_ID_BASE_URL=https://id.biographylibrary.org` e va tolta la vecchia
-`NEXT_PUBLIC_UM_ID_BASE_URL`. Se ci si dimentica, il PDF finale non viene più
-prodotto. Prima del merge non serve fare nulla.
+La variabile si chiama **`UM_ID_BASE_URL`**, senza prefisso, server-only. Il
+nome `NEXT_PUBLIC_UM_ID_BASE_URL` è morto. Se fosse ancora nel `.env` del
+server si può togliere: il codice non lo legge.
 
 ---
 
-## 3. Cosa ho fatto in questi due giorni
+## 3. Cosa è su `main` (non c’è un ramo UM da aprire)
 
-Tutto è sul ramo `feat/um-permanence`, pubblicato su GitHub, **senza pull
-request aperta**. Tre commit oltre a `main`:
+Il ramo `feat/um-permanence` è stato unito come
+[#53](https://github.com/BiographyLibrary/Biography-Library/pull/53). Non
+c’è una pull request da aprire, né un Dockerfile solo sul server.
 
-**`b3fbff1`** duplica il contenuto di #52 (li ho committati prima di sapere che
-#52 esisteva). Va scartato: vedi «come ripulire il ramo».
+Uniti, in ordine:
 
-**`bce1362` — allineamento delle variabili d'ambiente.** `.env.example` era
-disallineato dal codice: 19 chiavi lette e non documentate, 4 documentate e
-lette da nessuno. Ora elenca tutte le 53 variabili, Next.js ed Edge Function.
-`scripts/check-env.mjs` prende il codice come fonte di verità e fallisce se i
-due divergono; gira in CI. `CLAUDE.md` e `DEPLOYMENT.md` dicono dove va scritta
-una chiave nuova, che sono cinque posti, non due.
+- [#52](https://github.com/BiographyLibrary/Biography-Library/pull/52) — identificativo UM
+- [#53](https://github.com/BiographyLibrary/Biography-Library/pull/53) — env, Vitest in CI, indirizzo di risoluzione, `UM_ID_BASE_URL`
+- [#51](https://github.com/BiographyLibrary/Biography-Library/pull/51) — Dockerfile standalone e `.dockerignore`
+- [#50](https://github.com/BiographyLibrary/Biography-Library/pull/50) — Echo draft card
+- [#54](https://github.com/BiographyLibrary/Biography-Library/pull/54) — lettura `.env` senza `source` (riallinea i deploy falliti di #50/#51)
+- [#55](https://github.com/BiographyLibrary/Biography-Library/pull/55) — mapping `-p 80:3000`
+- [#56](https://github.com/BiographyLibrary/Biography-Library/pull/56) — questo smoke, prima stesura
+- [#57](https://github.com/BiographyLibrary/Biography-Library/pull/57) — export depositati con intestazione invariante
+- [#58](https://github.com/BiographyLibrary/Biography-Library/pull/58) — riga luogo a sei campi, Nominatim `extratags`, COMMENT WGS 84
+- [#60](https://github.com/BiographyLibrary/Biography-Library/pull/60) — lista d’attesa beta
 
-**`0db8a13` — l'indirizzo di risoluzione diventa visibile.** Nella pagina della
-scheda l'identificativo è un collegamento al risolutore con un controllo che
-copia la stringa. Negli export di testo e nel PDF escono due righe distinte:
-l'identificativo nudo come identità, e l'indirizzo datato alla pubblicazione,
-con la nota che l'indirizzo può cambiare mentre l'identificativo no. La
-variabile diventa `UM_ID_BASE_URL`, server-only, esposta al browser da
-`GET /api/um-id/base-url`. Aggiunge anche `npm run check:dead` (knip) in CI,
-che ha trovato 26 altri file scritti e mai collegati, congelati come arretrato
-dichiarato in `knip.jsonc`.
-
-**Non ancora committato, nel working tree:** i due punti della sezione 4.
+CI: typecheck, lint, build, `check:env`, `check:dead`, tutta la suite Vitest.
 
 ---
 
-## 4. Il codice del cantiere P0: fatto
+## 4. Audit `frozen_reason` — chiuso sui dati
 
-### Test in CI — fatto
+Il vincolo ammette solo `death` e `admin_action`. Due punti di codice
+scrivono ancora `'moderation_report'`
+([ModerationDetailPanel.tsx](../components/admin/ModerationDetailPanel.tsx),
+[moderation-decide-pipeline.ts](../lib/server/moderation-decide-pipeline.ts)).
+L’UPDATE viene rifiutato.
 
-La CI eseguiva solo typecheck, lint e build. Ora esegue l'intera suite Vitest,
-`um-id.test.ts` compreso, con gli otto vettori della specifica.
-
-Per arrivarci ho dovuto riparare due file di test che erano rotti da prima e
-avrebbero reso la CI rossa il primo giorno: `agent-chat-handler.test.ts` e
-`echo/tts/route.test.ts`. Entrambi simulavano `buildServiceClient` con un
-oggetto vuoto, mentre il codice chiama `.from('profiles')` per decidere se
-esentare lo staff dal limite di frequenza. Ho sistemato solo i finti oggetti nei
-file di test, non il codice di produzione. **La suite è ora interamente verde:
-205 test passano, nessuno fallisce.**
-
-### Audit `frozen_reason` — analizzato, va chiuso in produzione
-
-Il difetto è confermato nel codice. Il vincolo ammette due soli valori:
+Query eseguite in produzione il 21 settembre: **Success. No rows returned** su
+entrambe. Non ci sono dati da riparare. Il percorso non ha mai persistito.
+**Non si allarga il CHECK.** La rimozione del codice sta nel cantiere
+segnalazioni.
 
 ```sql
--- supabase/migrations/20260324110811_add_biography_chapter_and_freeze_columns.sql:47
-CHECK (frozen_reason IN ('death', 'admin_action'))
-```
-
-Due punti scrivono invece `'moderation_report'`:
-
-- `components/admin/ModerationDetailPanel.tsx:229`, nel caso «return» quando la
-  segnalazione riguarda una scheda già pubblicata;
-- `lib/server/moderation-decide-pipeline.ts:85`, dove
-  `serverFreezeBiography(biographyId, reason = 'moderation_report')` ha proprio
-  quel valore come predefinito.
-
-L'aggiornamento viene quindi rifiutato dal database con una violazione di
-vincolo. Non ho corretto né rimosso niente, perché la domanda giusta viene
-prima: **il percorso è mai stato eseguito?** La risposta cambia il rimedio, e
-si trova solo in produzione:
-
-```sql
--- Righe incoerenti: se il vincolo ha fatto il suo lavoro devono essere zero
 SELECT id, frozen_reason, frozen_at
 FROM biographies
 WHERE frozen_reason IS NOT NULL
   AND frozen_reason NOT IN ('death', 'admin_action');
 
--- Il percorso è stato tentato? Decisioni di moderazione su schede pubblicate
 SELECT id, decision, reviewed_at
 FROM moderation_reports
 WHERE decision = 'returned'
@@ -173,79 +140,35 @@ ORDER BY reviewed_at DESC
 LIMIT 20;
 ```
 
-Se la prima query non restituisce nulla e la seconda sì, il congelamento è
-fallito in silenzio e il problema è la gestione dell'errore, non i dati. Se la
-prima restituisce righe, vanno sistemate prima di toccare il codice.
-
-In entrambi i casi la decisione già presa resta: **il congelamento vale solo per
-`death` e `admin_action`**, quindi quel percorso di codice va rimosso, non il
-vincolo allargato.
-
 ---
 
-## 5. Come ripulire il ramo prima di aprire la pull request
+## 5. Come ripulire il ramo — non più applicabile
 
-Il ramo contiene `b3fbff1`, che duplica #52 già unito. Aprendo una pull request
-così com'è, la differenza mostrerebbe file già presenti su `main`. La differenza
-reale rispetto a `main` è però già corretta, perché Git confronta gli alberi:
-18 file, che sono esattamente il lavoro dei due commit buoni più i due file di
-test riparati.
-
-Verifica prima di tutto:
-
-```bash
-git diff --stat origin/main..feat/um-permanence
-```
-
-Se elenca solo i 18 file attesi, il ramo si può usare così com'è e il commit
-duplicato è solo rumore nella cronologia. Se preferisci una cronologia pulita,
-il modo più semplice è ripartire da `main`:
-
-```bash
-git checkout -b feat/um-resolution-address origin/main
-git checkout feat/um-permanence -- .env.example .github/workflows/ci.yml CLAUDE.md DEPLOYMENT.md app/api/um-id components/biography components/export/AdvancedExportDialog.tsx app/biography knip.jsonc lib package.json package-lock.json scripts/check-env.mjs
-```
+La sezione che spiegava come togliere il commit duplicato di #52 dal ramo
+`feat/um-permanence` è superata: quel ramo è su `main` da #53.
 
 ---
 
 ## 6. Cosa resta aperto, in ordine
 
-1. ~~Smoke finale in produzione.~~ **Fatto**, vedi l'aggiornamento in testa.
-   Non è stata creata una scheda nuova: la verifica è avvenuta su una scheda
-   già pubblicata, il che copre tutto tranne il passaggio «creazione → UM
-   visibile», che resta da guardare alla prossima scheda creata.
-2. **Le due query SQL** della sezione 4 per chiudere l'audit `frozen_reason`.
-3. **Aprire la pull request** del ramo. `gh` non funziona su questo Mac (binario
-   Intel senza Rosetta), quindi va aperta dal browser:
-   https://github.com/BiographyLibrary/Biography-Library/compare/main...feat/um-permanence?expand=1
-4. **Dopo il merge:** impostare `UM_ID_BASE_URL` su Jelastic e togliere la
-   vecchia `NEXT_PUBLIC_UM_ID_BASE_URL`.
-5. **Rigenerare gli export già prodotti**, finché sono tutte schede di prova.
-   Lo script non esiste ancora e va scritto.
-6. **Dockerfile e `.dockerignore` nel repository.** Vivono solo su
-   `/opt/bl-app` e nessuno li ha mai visti; finché è così, il sorgente
-   depositato non permette di ricostruire ciò che gira, il che conta per la
-   AGPL e per la strategia di durata. Servono i dati di accesso SSH, che stanno
-   nel pannello Infomaniak.
-7. **`public/sw.js`** è generato dal build ma versionato: ogni build locale lo
-   sporca. Andrebbe nel `.gitignore`.
-
----
-
-## 7. Aggiornamento di PROGETTO.md — non l'ho toccato
-
-Le correzioni che hai elencato restano tutte da fare, e vanno fatte dopo lo
-smoke, con le decisioni vere in mano: merge #52 del 19 settembre e revisione
-editoriale della specifica; «container Docker standalone» che è nella
-[#51](https://github.com/BiographyLibrary/Biography-Library/pull/51) e non su
-`main`; i 30 giorni delle memorial come colonna `provisional_until` e non come
-stato; originale d'archivio uguale a pacchetto Markdown UTF-8 con il PDF come
-resa; `SPEC.md` fermo a giugno.
-
-Nella base di conoscenza (`docs/PLATFORM_KB.md` e
-`lib/agents/kb/help-kb-sections.locales.ts:57`) i 30 giorni **non si
-cancellano**: si aggiunge che la segnalazione resta possibile anche dopo la
-scadenza, per sempre. Poi `npm run kb:sync`.
+1. Smoke «creazione scheda nuova → UM visibile» alla prossima biografia creata
+   (non è stata creata una scheda nuova il 21 settembre).
+2. Markdown d’archivio (modulo, conversione in prova, pacchetto, `erasePriorContent`).
+3. Segnalazioni a tre corsie, colonna `provisional_until` (non uno stato
+   `provisional`), rimozione del percorso `frozen_reason: 'moderation_report'`.
+4. I 30 giorni memorial restano; la segnalazione resta possibile dopo la
+   scadenza, per sempre. Testi in [PROGETTO.md](../PROGETTO.md), [SPEC.md](../SPEC.md)
+   e KB.
 
 Manuale operativo e testi legali non si toccano: vivono fuori dal repository.
 `lib/i18n/terms-translations.ts` non è il testo legale vigente.
+
+---
+
+## 7. PROGETTO.md e SPEC.md
+
+Allineati in questo stesso passaggio di documentazione: GitHub (`main` =
+`f5f0ddf`), `UM_ID_BASE_URL`, Dockerfile su `main`, lista d’attesa, stati di
+pubblicazione (`pdf_draft`, `locked_pending_screening`), WGS 84 sulla riga
+luogo, nomi morti `INFOMANIAK_AI_MODEL` / `NEXT_PUBLIC_UM_ID_BASE_URL`, secret
+`JELASTIC_*` come posto separato (non in `.env.example`).

@@ -16,8 +16,9 @@ Quando aggiungi, rinomini o togli una chiave, va scritta in tutti i posti che se
 | 4 | Segreti delle Edge Function Supabase | Solo per le chiavi lette da `supabase/functions/*`, che girano su Deno e usano `Deno.env.get`. |
 | 5 | `.github/workflows/ci.yml` | Solo le `NEXT_PUBLIC_*` necessarie al build, con valori segnaposto. |
 | 6 | `Dockerfile` e `deploy.yml` | **Solo le `NEXT_PUBLIC_*`**, come `ARG` piu' `ENV` nel Dockerfile e come `--build-arg` nel deploy. Il `.dockerignore` tiene il `.env` fuori dal contesto di build, quindi una chiave pubblica che non passa di qui finisce vuota nel pacchetto, senza errori. `npm run check:env` verifica anche questo. |
+| 7 | Secret GitHub Actions in `.github/workflows/deploy.yml` | `JELASTIC_HOST`, `JELASTIC_USER`, `JELASTIC_SSH_KEY`, `JELASTIC_PORT`. Servono solo all’SSH del deploy. Non sono variabili dell’app: **non** vanno in `.env.example`. |
 
-I punti 1, 2 e 5 sono verificati automaticamente. I punti 3 e 4 sono manuali e falliscono in silenzio: una chiave dimenticata lì non fa cadere l'applicazione, spegne una funzione senza dirlo a nessuno. Quando una modifica tocca una chiave usata in produzione o da una Edge Function, dillo esplicitamente all'utente nel riepilogo, perché quell'azione può farla solo lui.
+I punti 1, 2 e 5 sono verificati automaticamente. Il punto 6 (`NEXT_PUBLIC_*` in Dockerfile/deploy) è verificato da `check:env`. I punti 3 e 4 sono manuali e falliscono in silenzio: una chiave dimenticata lì non fa cadere l'applicazione, spegne una funzione senza dirlo a nessuno. Il punto 7 non è una variabile dell'app. Quando una modifica tocca una chiave usata in produzione o da una Edge Function, dillo esplicitamente all'utente nel riepilogo, perché quell'azione può farla solo lui.
 
 Non scrivere mai valori reali in `.env.example`: solo segnaposto. Non leggere né stampare il contenuto di `.env.local`.
 

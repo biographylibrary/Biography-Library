@@ -86,8 +86,9 @@ npm run kb:sync:check  # Fail if generated KB files are out of date
 | 4 | Supabase Edge Function secrets | Only for keys read by `supabase/functions/*` (Project Settings → Edge Functions → Secrets). |
 | 5 | `.github/workflows/ci.yml` | Only `NEXT_PUBLIC_*` keys the build needs, with placeholder values. |
 | 6 | `Dockerfile` and `deploy.yml` | **`NEXT_PUBLIC_*` only**, as `ARG` plus `ENV` in the Dockerfile and as `--build-arg` in the deploy. `.dockerignore` keeps `.env` out of the build context, so a public key that does not pass through here ends up empty in the bundle, silently. `npm run check:env` checks this too. |
+| 7 | GitHub Actions secrets in `.github/workflows/deploy.yml` | `JELASTIC_HOST`, `JELASTIC_USER`, `JELASTIC_SSH_KEY`, `JELASTIC_PORT`. SSH for deploy only. Not app env: **do not** list them in `.env.example`. |
 
-Steps 1, 2 and 5 are checked automatically. Steps 3 and 4 are manual and silent when forgotten: a missing key there does not crash the app, it disables a feature. Run `npm run check:env` after any change to see the current list.
+Steps 1, 2 and 5 are checked automatically. Step 6 (`NEXT_PUBLIC_*` in Dockerfile/deploy) is checked by `check:env`. Steps 3 and 4 are manual and silent when forgotten: a missing key there does not crash the app, it disables a feature. Step 7 is not an app variable. Run `npm run check:env` after any change to see the current list.
 
 Note the split: the Next.js API route (`/api/review/submit`) reads AI credentials from host environment variables. The Supabase Edge Functions read them from Supabase secrets. Both need the same token and endpoint set in their respective locations.
 
@@ -217,7 +218,7 @@ Per una **sequenza operativa** (merge → migrazioni prod → env → deploy →
 - All migrations applied in order
 - Edge Functions deployed (ai-assistant, audio-transcription, log-error)
 - Edge Function secrets set: `INFOMANIAK_AI_TOKEN`, `INFOMANIAK_AI_ENDPOINT`, model secrets per `DEPLOYMENT.md` (or unset secrets to use code defaults)
-- Host environment variables set on Jelastic: `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, `INFOMANIAK_AI_ENDPOINT`, `INFOMANIAK_AI_TOKEN`, `INFOMANIAK_AI_MODEL` (`google/gemma-4-31B-it`), `NEXT_PUBLIC_APP_URL`
+- Host environment variables set on Jelastic: `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, `INFOMANIAK_AI_ENDPOINT`, `INFOMANIAK_AI_TOKEN`, `AGENT_MODEL_*` / `INFOMANIAK_AI_MODEL_PRIMARY` as in `.env.example` (there is no `INFOMANIAK_AI_MODEL`), `UM_ID_BASE_URL`, `NEXT_PUBLIC_APP_URL`
 - `npm run build` passes without errors on the container
 - First admin user created via Supabase Auth, then role set to `admin` directly in the `profiles` table
 - Supabase Storage bucket created for biography media with appropriate public/private access policy

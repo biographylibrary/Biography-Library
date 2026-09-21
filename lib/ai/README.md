@@ -17,7 +17,7 @@ Echo / platform guide:
 /api/agents/echo/* → lib/agents/infomaniak-client.ts + kb_chunks RAG / draft review:
 Next.js API routes → lib/server/review-submit-pipeline.ts
        ↓
-Infomaniak AI (INFOMANIAK_AI_MODEL, default: google/gemma-4-31B-it)
+Infomaniak AI (`AGENT_MODEL_*` / `INFOMANIAK_AI_MODEL_PRIMARY`; there is no `INFOMANIAK_AI_MODEL`)
 
 Agent platform (beta):
 /api/agents/* → lib/agents/infomaniak-client.ts
@@ -38,7 +38,7 @@ If secrets are unset, each function uses its code defaults. Old secrets (`Apertu
 
 ### Next.js (`.env.local` / Jelastic)
 
-- `INFOMANIAK_AI_ENDPOINT`, `INFOMANIAK_AI_TOKEN`, `INFOMANIAK_AI_MODEL`
+- `INFOMANIAK_AI_ENDPOINT`, `INFOMANIAK_AI_TOKEN`, `AGENT_MODEL_*` / `INFOMANIAK_AI_MODEL_PRIMARY` (see `.env.example`)
 - `SUPABASE_SERVICE_ROLE_KEY` — required for `/api/review/submit` and `/api/agents/*`
 
 ## Usage

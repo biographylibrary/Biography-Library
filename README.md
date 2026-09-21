@@ -92,7 +92,7 @@ Copy [`.env.example`](./.env.example) to **`.env.local`** (never commit this fil
 Required for local dev:
 
 - `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`
-- `INFOMANIAK_AI_ENDPOINT`, `INFOMANIAK_AI_TOKEN`, `INFOMANIAK_AI_MODEL`
+- `INFOMANIAK_AI_ENDPOINT`, `INFOMANIAK_AI_TOKEN`, and the `AGENT_MODEL_*` / `INFOMANIAK_AI_MODEL_PRIMARY` keys listed in `.env.example`
 - `NEXT_PUBLIC_APP_URL`, `NEXT_PUBLIC_APP_ENV` (optional but recommended)
 
 Server-only routes (e.g. `/api/review/submit`) may also need `SUPABASE_SERVICE_ROLE_KEY` — see `.env.example` and `DEPLOYMENT.md`.

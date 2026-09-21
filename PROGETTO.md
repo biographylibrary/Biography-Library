@@ -16,14 +16,15 @@ Fondatore unico, non sviluppatore: costruisce con Claude Code e Cursor. Non ci s
 
 ---
 
-## Stato dell'implementazione (settembre 2026)
+## Stato dell'implementazione (21 settembre 2026)
 
 ### Funzionalità utente completate
 
 **Autenticazione e profilo**
 - Registrazione, login, reset password, verifica email con Resend
+- Lista d’attesa beta: la home `/` è la landing; login su `/login`; i nuovi account nascono `waitlist`; holding con sola data di registrazione; admin concede l’accesso in blocco
 - Blocco lingua alla registrazione: l'utente sceglie IT/EN/FR/DE e l'app usa quella lingua per tutte le email transazionali
-- Onboarding obbligatorio con wizard a passaggi e tour guidato della piattaforma (anche mobile)
+- Onboarding obbligatorio con wizard a passaggi e tour guidato della piattaforma (anche mobile) — solo dopo l’accesso
 - Impostazioni profilo e notifiche
 
 **Creazione e scrittura biografia**
@@ -35,12 +36,13 @@ Fondatore unico, non sviluppatore: costruisce con Claude Code e Cursor. Non ci s
 - Cooldown tra capitoli pubblicati (per utenti free, bypassato per staff)
 - Cronologia revisioni
 
-**Permanenza e identificativo UM** (piano chiuso, 4 settembre 2026)
-- Ogni scheda riceve alla creazione un **identificativo UM** immutabile (`lib/um-id.ts`, registro `um_identifiers`, mint server-side)
-- Risolutore stabile `/id/[umId]` (anche forme senza trattini / miste); rewrite `/UM…`; base URL `NEXT_PUBLIC_UM_ID_BASE_URL`
+**Permanenza e identificativo UM** (su `main`: #52–#58)
+- Ogni scheda riceve alla creazione un **identificativo UM** immutabile (`lib/um-id.ts`, registro `um_identifiers`, mint server-side). Gli ID emessi non si rigenerano.
+- Risolutore stabile `/id/[umId]` (anche forme senza trattini / miste); rewrite `/UM…`; base URL **`UM_ID_BASE_URL`** (server-only, in produzione)
 - Specifica pubblica depositata: `docs/UM-IDENTIFIER-SPEC.md` (v1.0, cambio anno in UTC)
 - Notazione **Anno UM** (epoca 2026) solo per eventi di archivio: footer, `/credits`, data pubblicazione, colophon PDF, admin, email — mai sulle date di vita
 - Schema a eventi: `person_events` (nascita/morte con EDTF, luogo, provenienza) e `person_relations` (etichetta autorevole)
+- Luoghi: l’autore non digita coordinate; riga invariante `nome | lat | lon | WGS 84 | geonames | wikidata` (UNKNOWN sui numeri mancanti); Nominatim con `extratags=1`
 - Colonne identità scheda: `record_language_tag` / script / direzione, `name_as_written`, diritti, `published_at_iso` + `published_um_year`
 - Editor: pannello permanenza (date → EDTF senza esporre EDTF, luoghi via GeoNames/Nominatim, «come lo sai», relazioni)
 - Licenza contenuto scelta dall'autore alla pubblicazione: **CC BY-NC-SA 4.0** (default) o **CC BY-SA 4.0**; upgrade solo 1→2; metadati sempre **CC0** (termini + crediti)
@@ -90,8 +92,8 @@ Fondatore unico, non sviluppatore: costruisce con Claude Code e Cursor. Non ci s
 ### Infrastruttura e DevOps
 
 **Jelastic**
-- App Next.js in container Docker standalone
-- Ramo `fix/jelastic-docker-disk-prevention` (in merge): prevenzione saturazione disco con immagini Docker, `docker builder prune` automatico
+- App Next.js in container Docker standalone. `Dockerfile` e `.dockerignore` sono su `main` da #51.
+- Deploy SSH da GitHub Actions (`JELASTIC_HOST`, `JELASTIC_USER`, `JELASTIC_SSH_KEY`, `JELASTIC_PORT`: secret del workflow, non variabili dell’app, non in `.env.example`).
 
 **Supabase**
 - Migrazioni applicate incluso blocco permanenza settembre 2026 (`um_identifiers`, colonne B1, `person_events`, `person_relations`, `biography_flat`, backfill licenze)
@@ -100,7 +102,7 @@ Fondatore unico, non sviluppatore: costruisce con Claude Code e Cursor. Non ci s
 - 6 Edge Functions: `audio-transcription`, `ai-assistant`, `auth-send-email`, `log-error`, `send-engagement-emails`, `user-email-confirmed`
 
 **Test**
-- Vitest: agenti, pubblicazione, TTS, più moduli permanenza (`um`, `um-id`, `edtf`, export testo, NFC/lingua)
+- Vitest in CI: identificativo UM (otto vettori), agenti, pubblicazione, TTS, export permanenza, luoghi, lista d’attesa
 
 ---
 
@@ -153,9 +155,13 @@ ECHO_TTS_VOICE_DE=gb_oliver_neutral   # cross-lingua per ora, migliorabile
 
 Tutti e 9 gli step sono marcati `completed`. La Fase 1 è terminata.
 
-### Piano prevenzione disco Jelastic — `.cursor/plans/jelastic_docker_disk_9a89007a.plan.md`
+### Piano prevenzione disco Jelastic
 
-Branch `fix/jelastic-docker-disk-prevention`, da mergiare su main.
+Unito in `main` con #51 (immagine standalone + prune). Non è più un ramo da mergiare.
+
+### Piano Markdown d’archivio e segnalazioni a tre corsie
+
+Aperto. Originale conservato = Markdown UTF-8; tre corsie di segnalazione; `provisional_until` per memorial. Non toccare termini e manuale operativo (vivono fuori repo). Dettaglio: piano Cursor `archivio_md_e_segnalazioni`.
 
 ### Fase 2 — migrazione Infomaniak Public Cloud (rinviata)
 
@@ -175,6 +181,8 @@ Non ancora iniziata. Richiede aiuto professionale. Includerà: PostgreSQL con pg
 - **Licenza contenuto pubblica**: scelta dell'autore (BY-NC-SA default / BY-SA); metadati sempre CC0; upgrade solo unidirezionale in UI.
 - **Anno UM**: solo eventi di archivio (pubblicazione, crediti, colophon); cambio anno in UTC; mai sulle date di vita.
 - **PDF attuale**: non aggiungere famiglie Noto a jsPDF; scritture non latine richiedono un motore diverso (subsetting).
+- **Memorial, 30 giorni**: restano (Manifesto e condizioni, fuori repo). In codice: colonna `provisional_until` quando esisterà, non uno stato `provisional`. La segnalazione resta possibile dopo la scadenza, per sempre.
+- **Originale d’archivio** (cantiere aperto): pacchetto Markdown UTF-8; il PDF è una resa.
 
 ---
 
@@ -201,7 +209,7 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=...
 SUPABASE_SERVICE_ROLE_KEY=...
 
 # Permanenza / UM
-NEXT_PUBLIC_UM_ID_BASE_URL=https://id.biographylibrary.org
+UM_ID_BASE_URL=https://id.biographylibrary.org
 # GEONAMES_USERNAME=...         # opzionale; altrimenti Nominatim per i luoghi
 
 # Email
@@ -224,7 +232,8 @@ app/
   id/[umId]/        # risolutore identificativo UM
   credits/          # Anno UM + nota CC0 metadati
   echo/             # hub Echo
-  dashboard/        # home utente
+  login/            # accesso (la home `/` è la lista d’attesa)
+  waitlist/         # holding: sola data di registrazione
   admin/            # pannello moderatori e staff
 
 lib/
@@ -249,4 +258,4 @@ components/
 
 ---
 
-*Ultimo aggiornamento: 4 settembre 2026*
+*Ultimo aggiornamento: 21 settembre 2026*
