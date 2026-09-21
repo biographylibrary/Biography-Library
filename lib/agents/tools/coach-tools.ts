@@ -1,5 +1,6 @@
 import { SupabaseClient } from '@supabase/supabase-js';
 import { BIOGRAPHY_SECTIONS } from '@/lib/editor-constants';
+import { storedToArchiveMarkdown } from '@/lib/archive-markdown';
 import type { ToolDefinition } from '@/lib/agents/infomaniak-client';
 import {
   appendDraftToBiography,
@@ -160,7 +161,7 @@ export async function executeCoachTool(
         .maybeSingle();
 
       const content = (bio as { content?: BiographyContent } | null)?.content ?? {};
-      const sectionText = content[sectionKey]?.text ?? '';
+      const sectionText = storedToArchiveMarkdown(content[sectionKey]?.text ?? '');
 
       const { data: statusRow } = await serviceClient
         .from('biography_sections')

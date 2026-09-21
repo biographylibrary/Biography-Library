@@ -57,10 +57,6 @@
     "@swc/helpers": "^0.5.23",
     "@tiptap/extension-character-count": "^3.19.0",
     "@tiptap/extension-placeholder": "^3.19.0",
-    "@tiptap/extension-subscript": "^3.19.0",
-    "@tiptap/extension-superscript": "^3.19.0",
-    "@tiptap/extension-text-align": "^3.19.0",
-    "@tiptap/extension-underline": "^3.19.0",
     "@tiptap/react": "^3.19.0",
     "@tiptap/starter-kit": "^3.19.0",
     "@types/file-saver": "^2.0.7",
@@ -89,10 +85,12 @@
     "jszip": "^3.10.1",
     "lucide-react": "^0.446.0",
     "mammoth": "^1.11.0",
+    "markdown-it": "^15.0.2",
     "next": "13.5.1",
     "next-intl": "^4.8.2",
     "next-pwa": "^5.6.0",
     "next-themes": "^0.3.0",
+    "node-html-parser": "^9.0.4",
     "pdfjs-dist": "^4.4.168",
     "postcss": "8.4.30",
     "react": "18.2.0",
@@ -111,6 +109,7 @@
     "zod": "^3.23.8"
   },
   "devDependencies": {
+    "@types/markdown-it": "^14.2.0",
     "knip": "^6.37.0",
     "vite-tsconfig-paths": "^6.1.1",
     "vitest": "^4.1.9"

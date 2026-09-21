@@ -2,12 +2,12 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useEditor, EditorContent } from '@tiptap/react';
-import StarterKit from '@tiptap/starter-kit';
-import Underline from '@tiptap/extension-underline';
-import TextAlign from '@tiptap/extension-text-align';
-import Superscript from '@tiptap/extension-superscript';
-import Subscript from '@tiptap/extension-subscript';
-import Placeholder from '@tiptap/extension-placeholder';
+import { archiveTiptapExtensions } from '@/lib/editor-archive-tiptap';
+import {
+  archiveMarkdownToHtml,
+  htmlToArchiveMarkdown,
+  storedToArchiveMarkdown,
+} from '@/lib/archive-markdown';
 import { ChevronDown, ChevronRight, Loader2 } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
@@ -54,38 +54,31 @@ const EMPTY_DATA: BookStructureData = {
 
 interface RichBlockEditorProps {
   content: string;
-  onChange: (html: string) => void;
+  onChange: (markdown: string) => void;
   placeholder?: string;
 }
 
 function RichBlockEditor({ content, onChange, placeholder }: RichBlockEditorProps) {
   const editor = useEditor({
     immediatelyRender: false,
-    extensions: [
-      StarterKit.configure({ heading: { levels: [1, 2, 3] } }),
-      Underline,
-      TextAlign.configure({
-        types: ['heading', 'paragraph'],
-        alignments: ['left', 'center', 'right', 'justify'],
-      }),
-      Superscript,
-      Subscript,
-      Placeholder.configure({ placeholder }),
-    ],
-    content,
+    extensions: archiveTiptapExtensions(placeholder),
+    content: archiveMarkdownToHtml(storedToArchiveMarkdown(content || '')),
     editorProps: {
       attributes: {
         class: 'min-h-[120px] prose prose-sm max-w-none focus:outline-none px-3 py-2 text-sm',
       },
     },
-    onUpdate: ({ editor }) => {
-      onChange(editor.getHTML());
+    onUpdate: ({ editor: instance }) => {
+      onChange(htmlToArchiveMarkdown(instance.getHTML()));
     },
   });
 
   useEffect(() => {
-    if (editor && content !== editor.getHTML()) {
-      editor.commands.setContent(content || '');
+    if (!editor) return;
+    const incoming = storedToArchiveMarkdown(content || '');
+    const current = htmlToArchiveMarkdown(editor.getHTML());
+    if (incoming !== current) {
+      editor.commands.setContent(archiveMarkdownToHtml(incoming), { emitUpdate: false });
     }
   }, [content, editor]);
 

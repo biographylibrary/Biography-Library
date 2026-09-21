@@ -1,6 +1,7 @@
 import { nfc } from '@/lib/nfc';
+import { storedToArchiveMarkdown } from '@/lib/archive-markdown';
 
-/** NFC su titolo/nomi/testo biografia al salvataggio editor. */
+/** NFC + Markdown d’archivio su titolo/nomi/testo biografia al salvataggio editor. */
 export function nfcBiographyWriteFields(fields: {
   title?: string;
   subject_name?: string | null;
@@ -8,6 +9,7 @@ export function nfcBiographyWriteFields(fields: {
   content_freeflow?: string | null;
   content?: Record<string, { text?: string } | undefined> | null;
   name_as_written?: string | null;
+  final_version?: string | null;
 }): Record<string, unknown> {
   const out: Record<string, unknown> = {};
   if (fields.title !== undefined) out.title = nfc(fields.title);
@@ -21,17 +23,26 @@ export function nfcBiographyWriteFields(fields: {
   }
   if (fields.content_freeflow !== undefined) {
     out.content_freeflow =
-      fields.content_freeflow == null ? null : nfc(fields.content_freeflow);
+      fields.content_freeflow == null
+        ? null
+        : storedToArchiveMarkdown(fields.content_freeflow);
   }
   if (fields.name_as_written !== undefined) {
     out.name_as_written =
       fields.name_as_written == null ? null : nfc(fields.name_as_written);
   }
+  if (fields.final_version !== undefined) {
+    out.final_version =
+      fields.final_version == null
+        ? null
+        : storedToArchiveMarkdown(fields.final_version);
+  }
   if (fields.content !== undefined && fields.content !== null) {
-    const mapped: Record<string, { text: string }> = {};
+    const mapped: Record<string, unknown> = {};
     for (const [key, section] of Object.entries(fields.content)) {
       mapped[key] = {
-        text: typeof section?.text === 'string' ? nfc(section.text) : '',
+        ...section,
+        text: typeof section?.text === 'string' ? storedToArchiveMarkdown(section.text) : '',
       };
     }
     out.content = mapped;

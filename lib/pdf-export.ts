@@ -25,6 +25,7 @@ import {
 } from '@/lib/permanence-text-export';
 
 type PdfSupabase = SupabaseClient<any, any, any>;
+import { storedToPlainText, storedToSafeHtml } from '@/lib/archive-markdown';
 import { BIOGRAPHY_SECTIONS } from './editor-constants';
 import { supabase } from './supabase';
 
@@ -220,26 +221,7 @@ let notoSerifBoldItalicBase64: string | null = null;
 let fontsLoaded = false;
 
 export function stripHtml(html: string): string {
-  if (!html) return '';
-  let text = html;
-  text = text.replace(/<\/p>/gi, '\n\n');
-  text = text.replace(/<br\s*\/?>/gi, '\n');
-  text = text.replace(/<\/li>/gi, '\n');
-  text = text.replace(/<\/h[1-6]>/gi, '\n\n');
-  text = text.replace(/<[^>]+>/g, '');
-  text = text.replace(/&amp;/g, '&');
-  text = text.replace(/&lt;/g, '<');
-  text = text.replace(/&gt;/g, '>');
-  text = text.replace(/&nbsp;/g, ' ');
-  text = text.replace(/&quot;/g, '"');
-  text = text.replace(/&#39;/g, "'");
-  text = text.replace(/[ \t]+/g, ' ');
-  text = text
-    .split('\n')
-    .map((line) => line.trim())
-    .join('\n');
-  text = text.replace(/\n{3,}/g, '\n\n');
-  return text.trim();
+  return storedToPlainText(html ?? '');
 }
 
 async function loadNotoSerifFonts(): Promise<void> {
@@ -1888,7 +1870,7 @@ export async function generateBiographyPDF(
       language: lang,
     };
 
-    semanticCtx.y = renderSemanticHtmlBody(semanticCtx, section.text);
+    semanticCtx.y = renderSemanticHtmlBody(semanticCtx, storedToSafeHtml(section.text));
     lastBodyY = semanticCtx.y;
 
   }

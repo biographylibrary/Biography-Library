@@ -13,23 +13,12 @@ import { useTranslation } from '@/lib/i18n/i18n-context';
 import {
   Bold,
   Italic,
-  Underline,
-  Strikethrough,
-  Superscript,
-  Subscript,
-  AlignLeft,
-  AlignCenter,
-  AlignRight,
-  AlignJustify,
   Heading1,
   Heading2,
   Heading3,
   List,
   ListOrdered,
-  IndentIncrease,
-  IndentDecrease,
   Quote,
-  Minus,
   RemoveFormatting,
   ChevronDown,
   Type,
@@ -99,60 +88,6 @@ export function RichTextToolbar({
           isActive={editor.isActive('italic')}
           title={t.formatting.italic}
           icon={Italic}
-        />
-        <ToolbarButton
-          onClick={() => editor.chain().focus().toggleUnderline().run()}
-          isActive={editor.isActive('underline')}
-          title={t.formatting.underline}
-          icon={Underline}
-        />
-        <ToolbarButton
-          onClick={() => editor.chain().focus().toggleStrike().run()}
-          isActive={editor.isActive('strike')}
-          title={t.formatting.strikethrough}
-          icon={Strikethrough}
-        />
-
-        <Separator orientation="vertical" className="h-6 mx-1" />
-
-        <ToolbarButton
-          onClick={() => editor.chain().focus().toggleSuperscript().run()}
-          isActive={editor.isActive('superscript')}
-          title={t.formatting.superscript}
-          icon={Superscript}
-        />
-        <ToolbarButton
-          onClick={() => editor.chain().focus().toggleSubscript().run()}
-          isActive={editor.isActive('subscript')}
-          title={t.formatting.subscript}
-          icon={Subscript}
-        />
-
-        <Separator orientation="vertical" className="h-6 mx-1" />
-
-        <ToolbarButton
-          onClick={() => editor.chain().focus().setTextAlign('left').run()}
-          isActive={editor.isActive({ textAlign: 'left' })}
-          title={t.formatting.alignLeft}
-          icon={AlignLeft}
-        />
-        <ToolbarButton
-          onClick={() => editor.chain().focus().setTextAlign('center').run()}
-          isActive={editor.isActive({ textAlign: 'center' })}
-          title={t.formatting.alignCenter}
-          icon={AlignCenter}
-        />
-        <ToolbarButton
-          onClick={() => editor.chain().focus().setTextAlign('right').run()}
-          isActive={editor.isActive({ textAlign: 'right' })}
-          title={t.formatting.alignRight}
-          icon={AlignRight}
-        />
-        <ToolbarButton
-          onClick={() => editor.chain().focus().setTextAlign('justify').run()}
-          isActive={editor.isActive({ textAlign: 'justify' })}
-          title={t.formatting.alignJustify}
-          icon={AlignJustify}
         />
 
         <Separator orientation="vertical" className="h-6 mx-1" />
@@ -236,12 +171,6 @@ export function RichTextToolbar({
           title={t.formatting.quote}
           icon={Quote}
         />
-        <ToolbarButton
-          onClick={() => editor.chain().focus().setHorizontalRule().run()}
-          isActive={false}
-          title={t.formatting.horizontalRule}
-          icon={Minus}
-        />
 
         <Separator orientation="vertical" className="h-6 mx-1" />
 
@@ -270,14 +199,6 @@ export function RichTextToolbar({
             <DropdownMenuItem onClick={() => editor.chain().focus().toggleItalic().run()}>
               <Italic className="h-4 w-4 mr-2" />
               {t.formatting.italic}
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => editor.chain().focus().toggleUnderline().run()}>
-              <Underline className="h-4 w-4 mr-2" />
-              {t.formatting.underline}
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => editor.chain().focus().toggleStrike().run()}>
-              <Strikethrough className="h-4 w-4 mr-2" />
-              {t.formatting.strikethrough}
             </DropdownMenuItem>
             <DropdownMenuItem onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}>
               <Heading1 className="h-4 w-4 mr-2" />

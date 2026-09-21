@@ -1,7 +1,9 @@
 import { createHash } from 'crypto';
 import { chat } from '@/lib/agents/infomaniak-client';
-import { biographySectionToSafeHtml } from '@/lib/biography-section-html';
-import { sanitizeHtmlString } from '@/lib/import/html-normalizer';
+import {
+  archiveMarkdownToHtml,
+  storedToArchiveMarkdown,
+} from '@/lib/archive-markdown';
 import type { BiographyViewRow } from '@/lib/server/biography-view-access';
 
 const SUPPORTED_LANGUAGES = ['en', 'it', 'fr', 'de'] as const;
@@ -11,24 +13,27 @@ export function isViewLanguage(value: string): value is ViewLanguage {
   return (SUPPORTED_LANGUAGES as readonly string[]).includes(value);
 }
 
-export function sectionContentHash(html: string): string {
-  return createHash('sha256').update(html.trim()).digest('hex');
+export function sectionContentHash(markdown: string): string {
+  return createHash('sha256').update(markdown.trim()).digest('hex');
 }
 
-export function getBiographySectionEntries(bio: BiographyViewRow): Array<{ key: string; html: string }> {
+export function getBiographySectionEntries(
+  bio: BiographyViewRow
+): Array<{ key: string; markdown: string; html: string }> {
   if (bio.biography_mode === 'freeflow') {
     const text = bio.content_freeflow?.trim() ?? '';
     if (!text) return [];
-    return [{ key: 'freeflow', html: biographySectionToSafeHtml(text) }];
+    const markdown = storedToArchiveMarkdown(text);
+    return [{ key: 'freeflow', markdown, html: archiveMarkdownToHtml(markdown) }];
   }
 
   const content = bio.content ?? {};
   return Object.entries(content)
     .filter(([, section]) => section?.text?.trim())
-    .map(([key, section]) => ({
-      key,
-      html: biographySectionToSafeHtml(section!.text!),
-    }));
+    .map(([key, section]) => {
+      const markdown = storedToArchiveMarkdown(section!.text!);
+      return { key, markdown, html: archiveMarkdownToHtml(markdown) };
+    });
 }
 
 const LANGUAGE_NAMES: Record<ViewLanguage, string> = {
@@ -43,14 +48,27 @@ export async function translateSectionHtml(
   sourceLanguage: ViewLanguage,
   targetLanguage: ViewLanguage
 ): Promise<string> {
+  return translateSectionMarkdown(
+    storedToArchiveMarkdown(html),
+    sourceLanguage,
+    targetLanguage
+  );
+}
+
+export async function translateSectionMarkdown(
+  markdown: string,
+  sourceLanguage: ViewLanguage,
+  targetLanguage: ViewLanguage
+): Promise<string> {
   const systemPrompt =
     'You are a professional literary translator for personal biographies. ' +
-    'Translate the HTML content faithfully. Preserve all HTML tags and structure exactly. ' +
-    'Do not add facts, commentary, or markup. Return only the translated HTML.';
+    'Translate the Markdown content faithfully. Preserve CommonMark structure exactly: ' +
+    'headings, **bold**, *italic*, lists, block quotes, and [links](url). ' +
+    'Do not add facts, commentary, or HTML. Return only the translated Markdown.';
 
   const userPrompt =
     `Translate this biography section from ${LANGUAGE_NAMES[sourceLanguage]} to ${LANGUAGE_NAMES[targetLanguage]}.\n\n` +
-    html;
+    markdown;
 
   const result = await chat({
     role: 'coach',
@@ -64,5 +82,5 @@ export async function translateSectionHtml(
   });
 
   const translated = result.content.trim();
-  return sanitizeHtmlString(translated || html);
+  return archiveMarkdownToHtml(translated || markdown);
 }

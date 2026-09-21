@@ -1,4 +1,5 @@
 import { chat } from '@/lib/agents/infomaniak-client';
+import { storedToPlainText } from '@/lib/archive-markdown';
 
 const LANGUAGE_NAMES: Record<string, string> = {
   en: 'English',
@@ -15,13 +16,6 @@ export type ApertusReviewResult = {
   aiError?: boolean;
 };
 
-function stripHtml(html: string): string {
-  return html
-    .replace(/<[^>]+>/g, ' ')
-    .replace(/\s+/g, ' ')
-    .trim();
-}
-
 export async function runApertusSectionReview(
   sectionTitle: string,
   content: string,
@@ -37,7 +31,7 @@ export async function runApertusSectionReview(
     return errorResult;
   }
 
-  const plain = stripHtml(content).slice(0, MAX_CHARS);
+  const plain = storedToPlainText(content).slice(0, MAX_CHARS);
   if (plain.length < 20) {
     return { ...errorResult, review: '' };
   }

@@ -1,20 +1,20 @@
 'use client';
 
 import { useEditor, EditorContent } from '@tiptap/react';
-import StarterKit from '@tiptap/starter-kit';
-import Underline from '@tiptap/extension-underline';
-import TextAlign from '@tiptap/extension-text-align';
-import Superscript from '@tiptap/extension-superscript';
-import Subscript from '@tiptap/extension-subscript';
 import CharacterCount from '@tiptap/extension-character-count';
-import Placeholder from '@tiptap/extension-placeholder';
 import { useEffect, useRef } from 'react';
 import { RichTextToolbar } from './rich-text-toolbar';
 import type { EditorAiToolsMenuProps } from './editor-ai-tools-menu';
+import { archiveTiptapExtensions } from '@/lib/editor-archive-tiptap';
+import {
+  archiveMarkdownToHtml,
+  htmlToArchiveMarkdown,
+  storedToArchiveMarkdown,
+} from '@/lib/archive-markdown';
 
 interface RichTextEditorProps {
   content: string;
-  onChange: (html: string) => void;
+  onChange: (markdown: string) => void;
   placeholder?: string;
   biographyId?: string;
   editorFontSize?: number;
@@ -39,46 +39,25 @@ export function RichTextEditor({
   const editor = useEditor({
     immediatelyRender: false,
     editable: !isPublished,
-    extensions: [
-      StarterKit.configure({
-        heading: {
-          levels: [1, 2, 3],
-        },
-      }),
-      Underline,
-      TextAlign.configure({
-        types: ['heading', 'paragraph'],
-        alignments: ['left', 'center', 'right', 'justify'],
-        defaultAlignment: 'left',
-      }),
-      Superscript,
-      Subscript,
-      CharacterCount,
-      Placeholder.configure({
-        placeholder,
-      }),
-    ],
-    content,
+    extensions: [...archiveTiptapExtensions(placeholder), CharacterCount],
+    content: archiveMarkdownToHtml(storedToArchiveMarkdown(content || '')),
     editorProps: {
       attributes: {
         class:
           'w-full min-h-[200px] prose prose-sm sm:prose max-w-none focus:outline-none px-4 sm:px-6 py-4',
       },
     },
-    onUpdate: ({ editor }) => {
-      onChange(editor.getHTML());
+    onUpdate: ({ editor: instance }) => {
+      onChange(htmlToArchiveMarkdown(instance.getHTML()));
     },
   });
 
   useEffect(() => {
-    if (editor && content !== editor.getHTML()) {
-      const isPlainText = !content.includes('<') && !content.includes('>');
-      if (isPlainText) {
-        const htmlContent = content.replace(/\n/g, '<br>');
-        editor.commands.setContent(htmlContent || '');
-      } else {
-        editor.commands.setContent(content || '');
-      }
+    if (!editor) return;
+    const incoming = storedToArchiveMarkdown(content || '');
+    const current = htmlToArchiveMarkdown(editor.getHTML());
+    if (incoming !== current) {
+      editor.commands.setContent(archiveMarkdownToHtml(incoming), { emitUpdate: false });
 
       const grew = content.length > lastExternalContentRef.current.length;
       lastExternalContentRef.current = content;
@@ -88,6 +67,8 @@ export function RichTextEditor({
           if (el) el.scrollTop = el.scrollHeight;
         });
       }
+    } else {
+      lastExternalContentRef.current = content;
     }
   }, [content, editor]);
 

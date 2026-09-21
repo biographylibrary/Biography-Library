@@ -1,6 +1,6 @@
 import { SupabaseClient } from '@supabase/supabase-js';
 import { BIOGRAPHY_SECTIONS, type BiographyContent } from '@/lib/editor-constants';
-import { stripHtml } from '@/lib/pdf-export';
+import { storedToArchiveMarkdown, storedToPlainText } from '@/lib/archive-markdown';
 
 export async function sectionsToFreeflow(
   serviceClient: SupabaseClient,
@@ -16,9 +16,9 @@ export async function sectionsToFreeflow(
   for (const s of sections ?? []) {
     const title =
       BIOGRAPHY_SECTIONS.find((b) => b.key === s.section_key)?.title ?? s.section_key;
-    const text = stripHtml(s.content ?? '');
+    const text = storedToArchiveMarkdown(s.content ?? '');
     if (text.trim()) {
-      parts.push(`<h2>${title}</h2>\n<p>${text.replace(/\n/g, '</p><p>')}</p>`);
+      parts.push(`## ${title}\n\n${text}`);
     }
   }
   return parts.join('\n');
@@ -54,15 +54,15 @@ export async function convertBiographyMode(
 
   if (fromMode === 'freeflow' && toMode === 'sections') {
     const freeflow = (bio as { content_freeflow?: string }).content_freeflow ?? '';
-    const plain = stripHtml(freeflow);
-    if (plain.trim()) {
+    const markdown = storedToArchiveMarkdown(freeflow);
+    if (storedToPlainText(markdown).trim()) {
       const firstKey = BIOGRAPHY_SECTIONS[0]?.key ?? 'childhood';
       const content = (bio as { content?: BiographyContent }).content ?? {};
       const updated = {
         ...content,
         [firstKey]: {
           ...(content[firstKey] ?? { text: '', todo: false, audioTranscript: '' }),
-          text: freeflow,
+          text: markdown,
         },
       };
       const { error } = await serviceClient
