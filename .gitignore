@@ -43,6 +43,9 @@ supabase/.temp/
 # Output di smoke test locale PDF→JPEG (non serve in repo; se un domani servisse versionarlo, togli questa riga e chiedi in review)
 scripts/.test-cover.jpg
 
+# Rapporto locale della conversione HTML → Markdown (può citare titoli di schede)
+/reports/
+
 # next-pwa writes these on every production build; keeping them versioned
 # dirties the working tree after `next build`.
 /public/sw.js

@@ -26,6 +26,7 @@ Ultimo aggiornamento: 21 settembre 2026.
 - Galleria media con layout foto (`full-page`, `cover`, `two-vertical`, …)
 - i18n completo per stringhe UI in 4 lingue
 - Finestra dati dal menù in basso. Autobiografia: «I miei dati», senza domande da testimone. Memoriale: «Chi era questa persona», nascita/morte, provenienza e relazioni. Più luoghi di vita (`person_events.event_type = residence`) per entrambe, salvati su `biography_id`. Entrano nel testo di permanenza (txt, docx, intestazione PDF) al deposito, non a ogni salvataggio della finestra.
+- Conversione HTML esistente: colonna `biographies.content_html_legacy` e `npm run markdown:legacy -- --dry-run`. Il rapporto non riscrive le schede. `--apply` non tocca una scheda pubblicata se la conversione perde testo o formattazione.
 
 ### Identificativo UM
 - Specifica v1.0: [`docs/UM-IDENTIFIER-SPEC.md`](docs/UM-IDENTIFIER-SPEC.md)
