@@ -615,6 +615,26 @@ export interface Translations {
     cookiePolicy: string;
     credits: string;
   };
+  creditsPage: {
+    orgHeading: string;
+    nameLabel: string;
+    legalName: string;
+    legalFormLabel: string;
+    legalForm: string;
+    seatLabel: string;
+    seat: string;
+    emailLabel: string;
+    websiteLabel: string;
+    codeLabel: string;
+    licenseLabel: string;
+    lawLabel: string;
+    law: string;
+    courtsLabel: string;
+    courts: string;
+    presidentLabel: string;
+    president: string;
+    umHeading: string;
+  };
   umId: {
     label: string;
     yearWord: string;
@@ -2269,6 +2289,27 @@ export const translations: Record<Language, Translations> = {
       privacyPolicy: 'Privacy',
       cookiePolicy: 'Cookies',
       credits: 'Credits',
+    },
+    creditsPage: {
+      orgHeading: 'Association',
+      nameLabel: 'Name',
+      legalName: 'Biography Library Association',
+      legalFormLabel: 'Legal form',
+      legalForm:
+        'Swiss non-profit association, established under Articles 60 et seq. of the Swiss Civil Code.',
+      seatLabel: 'Registered office',
+      seat: 'Lugano, Ticino, Switzerland',
+      emailLabel: 'Email',
+      websiteLabel: 'Website',
+      codeLabel: 'Source code',
+      licenseLabel: 'Software licence',
+      lawLabel: 'Governing law',
+      law: 'Swiss law (Civil Code, Code of Obligations, nFADP, Criminal Code).',
+      courtsLabel: 'Jurisdiction',
+      courts: 'Courts of Lugano, Ticino, Switzerland.',
+      presidentLabel: 'President',
+      president: 'Claudio Brignole',
+      umHeading: 'Universal Memory year',
     },
     umId: {
       label: 'Permanent identifier',
@@ -3952,6 +3993,27 @@ export const translations: Record<Language, Translations> = {
       cookiePolicy: 'Cookie',
       credits: 'Crediti',
     },
+    creditsPage: {
+      orgHeading: 'Associazione',
+      nameLabel: 'Denominazione',
+      legalName: 'Associazione Biography Library',
+      legalFormLabel: 'Forma giuridica',
+      legalForm:
+        'Associazione svizzera senza scopo di lucro, costituita ai sensi degli articoli 60 e seguenti del Codice civile svizzero.',
+      seatLabel: 'Sede',
+      seat: 'Lugano, Ticino, Svizzera',
+      emailLabel: 'Email',
+      websiteLabel: 'Sito web',
+      codeLabel: 'Codice sorgente',
+      licenseLabel: 'Licenza del software',
+      lawLabel: 'Diritto applicabile',
+      law: 'Diritto svizzero (Codice civile, Codice delle obbligazioni, nLPD, Codice penale).',
+      courtsLabel: 'Foro competente',
+      courts: 'Tribunali di Lugano, Ticino, Svizzera.',
+      presidentLabel: 'Presidente',
+      president: 'Claudio Brignole',
+      umHeading: 'Anno della Memoria Universale',
+    },
     umId: {
       label: 'Identificativo permanente',
       yearWord: 'Anno',
@@ -5634,6 +5696,27 @@ export const translations: Record<Language, Translations> = {
       cookiePolicy: 'Cookies',
       credits: 'Crédits',
     },
+    creditsPage: {
+      orgHeading: 'Association',
+      nameLabel: 'Dénomination',
+      legalName: 'Association Biography Library',
+      legalFormLabel: 'Forme juridique',
+      legalForm:
+        'Association suisse à but non lucratif, constituée conformément aux articles 60 et suivants du Code civil suisse.',
+      seatLabel: 'Siège',
+      seat: 'Lugano, Tessin, Suisse',
+      emailLabel: 'E-mail',
+      websiteLabel: 'Site web',
+      codeLabel: 'Code source',
+      licenseLabel: 'Licence du logiciel',
+      lawLabel: 'Droit applicable',
+      law: 'Droit suisse (Code civil, Code des obligations, nLPD, Code pénal).',
+      courtsLabel: 'For compétent',
+      courts: 'Tribunaux de Lugano, Tessin, Suisse.',
+      presidentLabel: 'Président',
+      president: 'Claudio Brignole',
+      umHeading: 'Année de la Mémoire Universelle',
+    },
     umId: {
       label: 'Identifiant permanent',
       yearWord: 'An',
@@ -7315,6 +7398,27 @@ export const translations: Record<Language, Translations> = {
       privacyPolicy: 'Datenschutz',
       cookiePolicy: 'Cookies',
       credits: 'Impressum',
+    },
+    creditsPage: {
+      orgHeading: 'Verein',
+      nameLabel: 'Name',
+      legalName: 'Verein Biography Library',
+      legalFormLabel: 'Rechtsform',
+      legalForm:
+        'Schweizerischer Verein ohne Gewinnzweck, gegründet nach den Artikeln 60 ff. des Schweizerischen Zivilgesetzbuchs.',
+      seatLabel: 'Sitz',
+      seat: 'Lugano, Tessin, Schweiz',
+      emailLabel: 'E-Mail',
+      websiteLabel: 'Website',
+      codeLabel: 'Quellcode',
+      licenseLabel: 'Softwarelizenz',
+      lawLabel: 'Anwendbares Recht',
+      law: 'Schweizerisches Recht (ZGB, OR, DSG, StGB).',
+      courtsLabel: 'Gerichtsstand',
+      courts: 'Gerichte von Lugano, Tessin, Schweiz.',
+      presidentLabel: 'Präsident',
+      president: 'Claudio Brignole',
+      umHeading: 'Jahr der Universellen Erinnerung',
     },
     umId: {
       label: 'Dauerhafte Kennung',
