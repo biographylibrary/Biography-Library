@@ -15,7 +15,7 @@ import {
 
 export const UM_SPEC_VERSION = '1.0';
 
-export type ArchiveReason = 'publication' | 'provisional_expired' | 'republication';
+export type ArchiveReason = 'publication' | 'provisional_expired' | 'republication' | 'data_protection';
 export type ArchiveVersionStatus = 'stored' | 'destroyed';
 
 export type ArchiveVersionEntry = {
@@ -103,6 +103,8 @@ export function decideArchiveDeposit(input: {
     if (input.existingVersions.length > 0) return { deposit: false, version: next };
     return { deposit: true, version: 1 };
   }
+
+  if (input.reason === 'data_protection') return { deposit: false, version: next };
 
   if (input.reason === 'provisional_expired') {
     if (input.biographyType !== 'memorial') return { deposit: false, version: next };

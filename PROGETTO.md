@@ -183,7 +183,7 @@ Non ancora iniziata. Richiede aiuto professionale. Includerà: PostgreSQL con pg
 - **Anno UM**: solo eventi di archivio (pubblicazione, crediti, colophon); cambio anno in UTC; mai sulle date di vita.
 - **PDF attuale**: non aggiungere famiglie Noto a jsPDF; scritture non latine richiedono un motore diverso (subsetting).
 - **Memorial, 30 giorni**: restano (Manifesto e condizioni, fuori repo). In codice: colonna `provisional_until` quando esisterà, non uno stato `provisional`. La segnalazione resta possibile dopo la scadenza, per sempre.
-- **Originale d’archivio**: pacchetto `archive/{UM}/v{N}/` nel bucket privato `archive`. Autobiografia: v1 alla pubblicazione. Memorial: v1 solo dopo `provisional_until` (30 giorni), via `POST /api/cron/archive-packages`. Il manifesto non contiene la propria impronta.
+- **Originale d’archivio**: pacchetto `archive/{UM}/v{N}/` nel bucket privato `archive`. Autobiografia: v1 alla pubblicazione. Memorial: v1 solo dopo `provisional_until` (30 giorni), via `POST /api/cron/archive-packages`. Il manifesto non contiene la propria impronta. `erasePriorContent` toglie la versione precedente da storage, HTML legacy, cronologia, PDF esportati e chunk; dice al segnalante che le copie già scaricate non si ritirano.
 
 ---
 
