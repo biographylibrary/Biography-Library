@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getCallerStaffContext, isStaffModerator } from '@/lib/server/admin-api-auth';
-import { isBiographyPublicationStatus } from '@/lib/publication-state';
+import { statusRestoredByAppeal } from '@/lib/public-visibility';
 import { notifyAuthorPublicationEmail } from '@/lib/server/email/publication-helpers';
 import { writeModerationMessage } from '@/lib/server/moderation-register';
 import { buildServiceClient } from '@/lib/server/review-submit-pipeline';
@@ -56,19 +56,15 @@ export async function POST(req: NextRequest) {
     .eq('appeal_status', 'pending');
   if (appealErr) return NextResponse.json({ error: appealErr.message }, { status: 500 });
 
-  let restored = false;
-  if (
-    outcome === 'upheld' &&
-    row.biography_status_before_decision &&
-    isBiographyPublicationStatus(row.biography_status_before_decision)
-  ) {
+  const restoredStatus = statusRestoredByAppeal(outcome, row.biography_status_before_decision);
+  if (restoredStatus) {
     const { error: bioErr } = await svc
       .from('biographies')
-      .update({ status: row.biography_status_before_decision })
+      .update({ status: restoredStatus })
       .eq('id', row.biography_id);
     if (bioErr) return NextResponse.json({ error: bioErr.message }, { status: 500 });
-    restored = true;
   }
+  const restored = restoredStatus != null;
 
   const message = outcome === 'upheld'
     ? `Appeal accepted. Biography status ${restored ? `returned to ${row.biography_status_before_decision}` : 'left unchanged'}.`

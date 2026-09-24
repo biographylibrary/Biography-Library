@@ -63,4 +63,16 @@ describe('archive package', () => {
       }).deposit
     ).toBe(false);
   });
+
+  it('waits to deposit a republished memorial until the new window has passed', () => {
+    expect(
+      decideArchiveDeposit({
+        biographyType: 'memorial',
+        provisionalUntil: '2026-04-30T00:00:00.000Z',
+        now: new Date('2026-05-01T00:00:00.000Z'),
+        existingVersions: [1],
+        reason: 'republication',
+      }).deposit
+    ).toBe(true);
+  });
 });

@@ -3,6 +3,7 @@ import { redirect, notFound } from 'next/navigation';
 import type { Metadata } from 'next';
 import { buildServiceClient } from '@/lib/server/review-submit-pipeline';
 import { isValidUmId, normalizeUmId, toCanonical } from '@/lib/um-id';
+import { umRecordIsConsultable } from '@/lib/public-visibility';
 import { formatDateWithUmYear } from '@/lib/um';
 import { translations, type Language } from '@/lib/i18n/translations';
 
@@ -89,10 +90,11 @@ export default async function UmIdResolverPage({
         .eq('id', bio.user_id)
         .maybeSingle();
 
-      const isPubliclyReadable =
-        bio.status === 'published' &&
-        bio.visibility === 'public' &&
-        (profile as { account_status?: string } | null)?.account_status === 'active';
+      const isPubliclyReadable = umRecordIsConsultable({
+        status: bio.status,
+        visibility: bio.visibility,
+        accountStatus: (profile as { account_status?: string } | null)?.account_status,
+      });
 
       if (isPubliclyReadable) {
         redirect(
