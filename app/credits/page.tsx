@@ -8,6 +8,7 @@ const ASSOCIATION_EMAIL = 'support@biographylibrary.org';
 const ASSOCIATION_WEBSITE = 'https://biographylibrary.org';
 const ASSOCIATION_GITHUB = 'https://github.com/BiographyLibrary/Biography-Library';
 const SOFTWARE_LICENSE = 'AGPL-3.0';
+const ZEFIX_URL = 'https://www.zefix.ch/en/search/entity/list/firm/1735068';
 
 function CreditRow({ label, children }: { label: string; children: React.ReactNode }) {
   return (
@@ -35,6 +36,13 @@ export default function CreditsPage() {
         <CreditRow label={c.legalFormLabel}>{c.legalForm}</CreditRow>
         <CreditRow label={c.seatLabel}>{c.seat}</CreditRow>
         <CreditRow label={c.presidentLabel}>{c.president}</CreditRow>
+        <CreditRow label={c.uidLabel}>{c.uid}</CreditRow>
+        <CreditRow label={c.registerLabel}>{c.register}</CreditRow>
+        <CreditRow label={c.zefixLabel}>
+          <a className="text-primary hover:underline" href={ZEFIX_URL} target="_blank" rel="noopener noreferrer">
+            {ZEFIX_URL}
+          </a>
+        </CreditRow>
         <CreditRow label={c.emailLabel}>
           <a className="text-primary hover:underline" href={`mailto:${ASSOCIATION_EMAIL}`}>
             {ASSOCIATION_EMAIL}

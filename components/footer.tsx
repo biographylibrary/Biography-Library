@@ -4,33 +4,9 @@ import Link from 'next/link';
 import { useTranslation } from '@/lib/i18n/i18n-context';
 import { formatUmYear, umYearFromDate } from '@/lib/um';
 
-const PRIVACY_LINKS: Record<string, string> = {
-  en: 'https://biographylibrary.org/privacy-policy/',
-  it: 'https://biographylibrary.org/it/informativa-sulla-privacy/',
-  fr: 'https://biographylibrary.org/fr/politique-de-confidentialite/',
-  de: 'https://biographylibrary.org/de/datenschutzerklarung/',
-};
-
-const TERMS_LINKS: Record<string, string> = {
-  en: 'https://biographylibrary.org/terms-of-service/',
-  it: 'https://biographylibrary.org/it/termini-di-servizio/',
-  fr: 'https://biographylibrary.org/fr/conditions-dutilisation/',
-  de: 'https://biographylibrary.org/fr/conditions-dutilisation/',
-};
-
-const COOKIE_LINKS: Record<string, string> = {
-  en: 'https://biographylibrary.org/cookie-policy/',
-  it: 'https://biographylibrary.org/it/informativa-sui-cookie/',
-  fr: 'https://biographylibrary.org/fr/politique-des-cookies/',
-  de: 'https://biographylibrary.org/de/cookie-richtlinie/',
-};
-
 export function Footer() {
-  const { t, language } = useTranslation();
+  const { t } = useTranslation();
 
-  const privacyHref = PRIVACY_LINKS[language] ?? PRIVACY_LINKS.en;
-  const termsHref = TERMS_LINKS[language] ?? TERMS_LINKS.en;
-  const cookieHref = COOKIE_LINKS[language] ?? COOKIE_LINKS.en;
   const umLabel = `${t.umId.yearWord} ${formatUmYear(umYearFromDate(new Date()), 'short')}`;
 
   return (
@@ -55,32 +31,17 @@ export function Footer() {
             <span className="text-xs text-muted-foreground">· {umLabel}</span>
           </div>
           <div className="flex items-center gap-3 text-xs text-muted-foreground">
-            <a
-              href={termsHref}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="hover:text-foreground transition-colors"
-            >
+            <Link href="/terms-of-service" className="hover:text-foreground transition-colors">
               {t.footer.termsOfService}
-            </a>
+            </Link>
             <span>•</span>
-            <a
-              href={privacyHref}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="hover:text-foreground transition-colors"
-            >
+            <Link href="/privacy-policy" className="hover:text-foreground transition-colors">
               {t.footer.privacyPolicy}
-            </a>
+            </Link>
             <span>•</span>
-            <a
-              href={cookieHref}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="hover:text-foreground transition-colors"
-            >
+            <Link href="/cookie-policy" className="hover:text-foreground transition-colors">
               {t.footer.cookiePolicy}
-            </a>
+            </Link>
             <span>•</span>
             <Link href="/credits" className="hover:text-foreground transition-colors">
               {t.footer.credits}

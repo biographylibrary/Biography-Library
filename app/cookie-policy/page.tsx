@@ -6,7 +6,7 @@ import { ArrowLeft } from 'lucide-react';
 import { useTranslation } from '@/lib/i18n/i18n-context';
 import { SiteLegalDocument } from '@/components/legal/SiteLegalDocument';
 
-export default function PrivacyPolicyPage() {
+export default function CookiePolicyPage() {
   const router = useRouter();
   const { t } = useTranslation();
 
@@ -19,7 +19,7 @@ export default function PrivacyPolicyPage() {
             {t.common.back}
           </Button>
         </div>
-        <SiteLegalDocument doc="privacy" />
+        <SiteLegalDocument doc="cookies" />
       </div>
     </div>
   );
