@@ -12,6 +12,7 @@ import { Logo } from '@/components/logo';
 import { Loader as Loader2, CircleAlert as AlertCircle } from 'lucide-react';
 import { ThemeToggle } from '@/components/theme-toggle';
 import { postLoginPath } from '@/lib/waitlist';
+import { markBetaLoginNotice } from '@/lib/beta-login-notice';
 
 export function LoginScreen() {
   const [email, setEmail] = useState('');
@@ -63,7 +64,9 @@ export function LoginScreen() {
     if (error) {
       setError(error === 'ACCOUNT_SUSPENDED' ? t.auth.accountSuspended : error);
       setIsLoading(false);
+      return;
     }
+    markBetaLoginNotice();
   };
 
   if (loading || !profileReady || (user && !signedOut && !sessionExpired)) {

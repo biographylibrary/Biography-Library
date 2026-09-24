@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 import { Loader as Loader2 } from 'lucide-react';
 import { postLoginPath } from '@/lib/waitlist';
+import { markBetaLoginNotice } from '@/lib/beta-login-notice';
 
 async function destinationForUser(userId: string): Promise<string> {
   const { data } = await supabase
@@ -60,6 +61,7 @@ export default function AuthCallbackPage() {
           router.replace(`/verify-email?error=${encodeURIComponent(error.message)}`);
         } else {
           if (data.session?.user?.id) {
+            markBetaLoginNotice();
             await triggerWelcomeEmail(data.session.user.id);
             router.replace(await destinationForUser(data.session.user.id));
           } else {
@@ -78,6 +80,7 @@ export default function AuthCallbackPage() {
           router.replace('/reset-password');
         } else {
           if (data.session?.user?.id) {
+            markBetaLoginNotice();
             await triggerWelcomeEmail(data.session.user.id);
             router.replace(await destinationForUser(data.session.user.id));
           } else {
@@ -101,6 +104,7 @@ export default function AuthCallbackPage() {
             router.replace('/reset-password');
           } else {
             if (data.session?.user?.id) {
+              markBetaLoginNotice();
               await triggerWelcomeEmail(data.session.user.id);
               router.replace(await destinationForUser(data.session.user.id));
             } else {
