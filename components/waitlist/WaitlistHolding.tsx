@@ -9,7 +9,6 @@ import { supabase } from '@/lib/supabase';
 import { Logo } from '@/components/logo';
 import { Button } from '@/components/ui/button';
 import { ThemeToggle } from '@/components/theme-toggle';
-import { BetaLocalSaveBanner } from '@/components/waitlist/BetaLocalSaveBanner';
 import { postLoginPath } from '@/lib/waitlist';
 
 function formatRegisteredOn(iso: string, language: string): string {
@@ -84,7 +83,6 @@ export function WaitlistHolding() {
             <p className="text-sm text-muted-foreground leading-relaxed">{t.waitlist.holdingLead}</p>
             <p className="text-sm text-muted-foreground">{t.waitlist.holdingBeta}</p>
           </div>
-          <BetaLocalSaveBanner />
           <Button
             variant="outline"
             className="w-full"
