@@ -49,6 +49,10 @@ const BIOGRAPHY_STATUS_LABELS: Record<string, string> = {
   under_review: 'Under Review',
   published: 'Published',
   removed: 'Removed',
+  suspended_pending_verification: 'Suspended pending verification',
+  revision_requested: 'Revision requested',
+  revision_pending_review: 'Revision pending review',
+  revision_overdue: 'Revision overdue',
 };
 
 export function ModerationDetailPanel({ report, onClose, onRefresh }: ModerationDetailPanelProps) {

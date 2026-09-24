@@ -7,7 +7,32 @@ export type ReportType =
   | 'right_to_oblivion'
   | 'impersonation'
   | 'copyright'
-  | 'other';
+  | 'other'
+  | 'illegal_content'
+  | 'sensitive_personal_data'
+  | 'defamation';
+
+export type ReportOrigin = 'in_app' | 'email_channel' | 'screening';
+
+export type AppealStatus = 'pending' | 'upheld' | 'rejected';
+
+/** Lane is derived from report_type. Types not named here stay unclassified. */
+export type ReportLane = 'immediate' | 'ordinary' | 'level1';
+
+const REPORT_LANES: Partial<Record<ReportType, ReportLane>> = {
+  living_person: 'immediate',
+  illegal_content: 'immediate',
+  right_to_oblivion: 'ordinary',
+  sensitive_personal_data: 'ordinary',
+  defamation: 'ordinary',
+  copyright: 'ordinary',
+  other: 'ordinary',
+  level1_content: 'level1',
+};
+
+export function reportLane(type: ReportType): ReportLane | null {
+  return REPORT_LANES[type] ?? null;
+}
 
 export type ReportStatus = 'unassigned' | 'assigned' | 'in_review' | 'decided';
 
@@ -51,6 +76,13 @@ export interface ModerationReport {
   biography_id: string;
   reporter_id: string | null;
   reporter_email: string | null;
+  reporter_name: string | null;
+  origin: ReportOrigin | null;
+  appeal_status: AppealStatus | null;
+  appeal_submitted_at: string | null;
+  appeal_decided_at: string | null;
+  appeal_reason: string | null;
+  biography_status_before_decision: string | null;
   report_type: ReportType;
   description: string | null;
   status: ReportStatus;

@@ -33,6 +33,14 @@ export function useModerationReports(filters: ModerationFilters): UseModerationR
             id,
             biography_id,
             reporter_id,
+            reporter_email,
+            reporter_name,
+            origin,
+            appeal_status,
+            appeal_submitted_at,
+            appeal_decided_at,
+            appeal_reason,
+            biography_status_before_decision,
             report_type,
             description,
             status,
@@ -98,9 +106,18 @@ export function useModerationReports(filters: ModerationFilters): UseModerationR
           id: row.id,
           biography_id: row.biography_id,
           reporter_id: row.reporter_id,
-          reporter_email: row.reporter_id
-            ? (profileMap[row.reporter_id]?.email ?? profileMap[row.reporter_id]?.name ?? null)
-            : null,
+          reporter_email: row.reporter_email
+            ?? (row.reporter_id
+              ? (profileMap[row.reporter_id]?.email ?? profileMap[row.reporter_id]?.name ?? null)
+              : null),
+          reporter_name: row.reporter_name
+            ?? (row.reporter_id ? (profileMap[row.reporter_id]?.name ?? null) : null),
+          origin: row.origin ?? null,
+          appeal_status: row.appeal_status ?? null,
+          appeal_submitted_at: row.appeal_submitted_at ?? null,
+          appeal_decided_at: row.appeal_decided_at ?? null,
+          appeal_reason: row.appeal_reason ?? null,
+          biography_status_before_decision: row.biography_status_before_decision ?? null,
           report_type: row.report_type,
           description: row.description,
           status: row.status,

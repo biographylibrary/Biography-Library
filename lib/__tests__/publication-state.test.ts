@@ -6,6 +6,7 @@ import {
   isFinalVersionSourceStatus,
   isLockedPendingScreeningStatus,
   isPdfDraftPhaseStatus,
+  isHiddenFromPublicCatalog,
   isReviewOrScreeningLockStatus,
   type BiographyPublicationStatus,
 } from '@/lib/publication-state';
@@ -30,8 +31,12 @@ describe('publication-state', () => {
       'under_review',
       'published',
       'removed',
+      'suspended_pending_verification',
+      'revision_pending_review',
+      'revision_overdue',
     ];
 
+    expect(isAuthorTextEditableStatus('revision_requested')).toBe(true);
     for (const status of editable) {
       expect(isAuthorTextEditableStatus(status)).toBe(true);
     }
@@ -53,7 +58,17 @@ describe('publication-state', () => {
   it('groups review and screening lock statuses', () => {
     expect(isReviewOrScreeningLockStatus('under_review')).toBe(true);
     expect(isReviewOrScreeningLockStatus('locked_pending_screening')).toBe(true);
+    expect(isReviewOrScreeningLockStatus('revision_pending_review')).toBe(true);
+    expect(isReviewOrScreeningLockStatus('revision_requested')).toBe(false);
     expect(isReviewOrScreeningLockStatus('draft')).toBe(false);
+  });
+
+  it('hides revision and suspension statuses from the public catalog', () => {
+    expect(isHiddenFromPublicCatalog('revision_requested')).toBe(true);
+    expect(isHiddenFromPublicCatalog('revision_pending_review')).toBe(true);
+    expect(isHiddenFromPublicCatalog('revision_overdue')).toBe(true);
+    expect(isHiddenFromPublicCatalog('suspended_pending_verification')).toBe(true);
+    expect(isHiddenFromPublicCatalog('published')).toBe(false);
   });
 
   it('uses final_version as PDF body source for late-stage statuses', () => {

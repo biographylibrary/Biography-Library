@@ -178,6 +178,14 @@ export function MainBiographyCard({ biography, userName, userId, onDeleteClick, 
         };
       case 'removed':
         return { text: t.dashboard.statusRemoved, className: 'bg-brand-wineDark text-brand-paper' };
+      case 'suspended_pending_verification':
+        return { text: t.dashboard.statusSuspendedPendingVerification, className: 'bg-brand-wineDark text-brand-paper' };
+      case 'revision_requested':
+        return { text: t.dashboard.statusRevisionRequested, className: 'bg-brand-mustardLight text-brand-ink' };
+      case 'revision_pending_review':
+        return { text: t.dashboard.statusRevisionPendingReview, className: 'bg-brand-mustardLight text-brand-ink' };
+      case 'revision_overdue':
+        return { text: t.dashboard.statusRevisionOverdue, className: 'bg-brand-wineDark text-brand-paper' };
       default:
         return { text: t.dashboard.draft, className: 'bg-[#DDCF88] text-[#121212]' };
     }
