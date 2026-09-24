@@ -1188,6 +1188,10 @@ export interface Translations {
     freezeAndNotifyAuthor: string;
     confirmFreezeAndNotify: string;
     confirmFreezeAndNotifyDetail: string;
+    confirmRequestRevision: string;
+    confirmRequestRevisionDetail: string;
+    appealUphold: string;
+    appealReject: string;
     notifyFrozenFromReport: string;
     moderationFreezeWhileReviewingDetail: string;
     takeOwnership: string;
@@ -2916,6 +2920,10 @@ export const translations: Record<Language, Translations> = {
       freezeAndNotifyAuthor: 'Freeze and notify author',
       confirmFreezeAndNotify: 'Freeze and notify the author?',
       confirmFreezeAndNotifyDetail: 'The biography stays published but becomes read-only for the author. Your message will be sent.',
+      confirmRequestRevision: 'Ask the author to revise',
+      confirmRequestRevisionDetail: 'The biography leaves the public catalog. The author has 30 days to send a revision. It does not come back into view while that is open.',
+      appealUphold: 'Accept the appeal',
+      appealReject: 'Reject the appeal',
       notifyFrozenFromReport: 'Your biography was frozen following a reader report. Please check your notifications.',
       moderationFreezeWhileReviewingDetail: 'The biography becomes read-only for the author and the report is closed.',
       takeOwnership: 'Take ownership',
@@ -4661,6 +4669,10 @@ export const translations: Record<Language, Translations> = {
       freezeAndNotifyAuthor: 'Congela e notifica autore',
       confirmFreezeAndNotify: 'Congelare e notificare l\'autore?',
       confirmFreezeAndNotifyDetail: 'La biografia resta pubblicata ma diventa di sola lettura per l\'autore. Verrà inviato il tuo messaggio.',
+      confirmRequestRevision: 'Chiedi la revisione all’autore',
+      confirmRequestRevisionDetail: 'La scheda esce dal catalogo pubblico. L’autore ha 30 giorni per rimandare il testo. Nel frattempo non torna visibile.',
+      appealUphold: 'Accogli il ricorso',
+      appealReject: 'Respingi il ricorso',
       notifyFrozenFromReport: 'La tua biografia è stata congelata in seguito a una segnalazione. Controlla le notifiche.',
       moderationFreezeWhileReviewingDetail: 'La biografia diventa di sola lettura per l\'autore e la segnalazione viene chiusa.',
       takeOwnership: 'Prendi in carico',
@@ -6406,6 +6418,10 @@ export const translations: Record<Language, Translations> = {
       freezeAndNotifyAuthor: 'Geler et notifier l\'auteur',
       confirmFreezeAndNotify: 'Geler et notifier l\'auteur ?',
       confirmFreezeAndNotifyDetail: 'La biographie reste publiée mais devient en lecture seule pour l\'auteur. Votre message sera envoyé.',
+      confirmRequestRevision: 'Demander une révision à l’auteur',
+      confirmRequestRevisionDetail: 'La fiche quitte le catalogue public. L’auteur a 30 jours pour renvoyer le texte. Elle ne redevient pas visible pendant ce délai.',
+      appealUphold: 'Accueillir le recours',
+      appealReject: 'Rejeter le recours',
       notifyFrozenFromReport: 'Votre biographie a été gelée suite à un signalement. Consultez vos notifications.',
       moderationFreezeWhileReviewingDetail: 'La biographie devient en lecture seule pour l\'auteur et le signalement est clos.',
       takeOwnership: 'Prendre en charge',
@@ -8151,6 +8167,10 @@ export const translations: Record<Language, Translations> = {
       freezeAndNotifyAuthor: 'Einfrieren und Autor benachrichtigen',
       confirmFreezeAndNotify: 'Einfrieren und Autor benachrichtigen?',
       confirmFreezeAndNotifyDetail: 'Die Biografie bleibt veröffentlicht, wird für den Autor aber schreibgeschützt. Ihre Nachricht wird gesendet.',
+      confirmRequestRevision: 'Überarbeitung vom Autor verlangen',
+      confirmRequestRevisionDetail: 'Die Biografie verlässt den öffentlichen Katalog. Die Autorin oder der Autor hat 30 Tage, um den Text erneut zu senden. In dieser Zeit wird sie nicht wieder sichtbar.',
+      appealUphold: 'Einspruch annehmen',
+      appealReject: 'Einspruch ablehnen',
       notifyFrozenFromReport: 'Ihre Biografie wurde nach einer Lesermeldung eingefroren. Bitte prüfen Sie Ihre Benachrichtigungen.',
       moderationFreezeWhileReviewingDetail: 'Die Biografie wird für den Autor schreibgeschützt und die Meldung wird geschlossen.',
       takeOwnership: 'Übernehmen',

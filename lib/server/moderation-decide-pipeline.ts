@@ -2,6 +2,8 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 import { buildServiceClient } from '@/lib/server/review-submit-pipeline';
 import type { ModerationDecision } from '@/lib/moderation/types';
 import type { BiographyDecisionPatch } from '@/lib/moderation/moderation-actions';
+import { notifyAuthorPublicationEmail } from '@/lib/server/email/publication-helpers';
+import { writeModerationMessage } from '@/lib/server/moderation-register';
 
 export type ModerationServerResult = {
   error: string | null;
@@ -82,8 +84,11 @@ export async function serverTakeOwnership(
 
 export async function serverFreezeBiography(
   biographyId: string,
-  reason = 'moderation_report',
+  reason = 'admin_action',
 ): Promise<ModerationServerResult> {
+  if (reason !== 'death' && reason !== 'admin_action') {
+    return { error: 'Freeze reason must be death or admin_action' };
+  }
   const service = buildServiceClient();
   const now = new Date().toISOString();
   const { error } = await service
@@ -157,6 +162,38 @@ export async function serverSubmitDecision(params: {
 
   const notifyError = await insertNotification(service, authorId, notificationMessage);
   if (notifyError) return { error: notifyError, conflict: false };
+
+  if (bioPatch?.status === 'revision_requested') {
+    const { error: clockErr } = await service
+      .from('moderation_reports')
+      .update({ author_revision_requested_at: now })
+      .eq('id', reportId);
+    if (clockErr) return { error: clockErr.message, conflict: false };
+    try {
+      await notifyAuthorPublicationEmail({
+        client: service,
+        authorId,
+        biographyId,
+        templateId: 'report_revision_requested',
+        vars: { reviewerMessage: notificationMessage },
+        notificationMessage: notificationMessage || 'A revision was requested. You have 30 days.',
+      });
+    } catch (err) {
+      console.error('[moderation-decide] revision email', err);
+    }
+  }
+
+  try {
+    await writeModerationMessage(service, {
+      reportId,
+      senderId: moderatorId,
+      recipientId: authorId,
+      message: `Decision ${decision}. Biography status: ${bioPatch?.status ?? 'unchanged'}. ${notificationMessage}`.trim(),
+    });
+  } catch (err) {
+    const message = err instanceof Error ? err.message : 'register failed';
+    return { error: message, conflict: false };
+  }
 
   return { error: null, conflict: false };
 }

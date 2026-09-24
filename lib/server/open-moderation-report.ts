@@ -3,6 +3,7 @@ import { laneEffect, laneRegisterMessage, type LaneEffect } from '@/lib/moderati
 import type { ReportOrigin, ReportType } from '@/lib/moderation/types';
 import { notifyAuthorPublicationEmail } from '@/lib/server/email/publication-helpers';
 import { sendTemplateEmail } from '@/lib/server/email';
+import { writeModerationMessage } from '@/lib/server/moderation-register';
 
 type AnyClient = SupabaseClient<any, any, any>;
 
@@ -64,7 +65,7 @@ export async function openModerationReport(
 ): Promise<OpenReportResult> {
   const { data: bio, error: bioErr } = await svc
     .from('biographies')
-    .select('id, status, user_id, record_language_tag, content_language')
+    .select('id, status, user_id, title, record_language_tag, content_language')
     .eq('id', input.biographyId)
     .maybeSingle();
 
@@ -143,6 +144,39 @@ export async function openModerationReport(
       });
     } catch (err) {
       console.error('[open-moderation-report] removal email', err);
+    }
+  }
+
+  let receiptEmail = input.reporterEmail;
+  let receiptLocale: string | null = null;
+  if (!receiptEmail && input.reporterId) {
+    const { data: profile } = await svc
+      .from('profiles')
+      .select('email, language')
+      .eq('id', input.reporterId)
+      .maybeSingle();
+    receiptEmail = (profile as { email?: string | null } | null)?.email ?? null;
+    receiptLocale = (profile as { language?: string | null } | null)?.language ?? null;
+  }
+  if (receiptEmail) {
+    try {
+      await sendTemplateEmail({
+        to: receiptEmail,
+        templateId: 'report_receipt',
+        locale: receiptLocale,
+        vars: { biographyTitle: (bio as { title?: string | null }).title ?? '' },
+        idempotencyKey: `report-receipt/${reportId}`,
+      });
+      await svc.from('moderation_reports').update({ receipt_sent_at: new Date().toISOString() }).eq('id', reportId);
+      await writeModerationMessage(svc, {
+        reportId,
+        senderId: input.senderId,
+        recipientId: input.reporterId,
+        internal: true,
+        message: 'Receipt sent to the reporter.',
+      });
+    } catch (err) {
+      console.error('[open-moderation-report] receipt', err);
     }
   }
 

@@ -525,6 +525,55 @@ function getTemplateInner(
         fr: { subject: '{siteName} — Signalement prioritaire', paragraphs: ['Bonjour,', 'Un signalement pour personne vivante ou contenu illégal est arrivé. La fiche a été suspendue et n’est plus publique.', 'L’auteur a 14 jours pour envoyer un certificat de décès ou un document équivalent.'] },
         de: { subject: '{siteName} — Meldung mit hoher Priorität', paragraphs: ['Hallo,', 'Eine Meldung zu einer lebenden Person oder zu illegalem Inhalt ist eingegangen. Die Biografie wurde ausgesetzt und ist nicht mehr öffentlich.', 'Die Autorin oder der Autor hat 14 Tage Zeit für eine Sterbeurkunde oder ein gleichwertiges Dokument.'] },
       });
+    case 'report_receipt':
+      return inner(locale, {
+        en: { subject: '{siteName} — We received your report', paragraphs: ['Hello,', 'We received your report about "{biographyTitle}".', 'A reviewer will decide within 30 days.'] },
+        it: { subject: '{siteName} — Abbiamo ricevuto la segnalazione', paragraphs: ['Ciao,', 'Abbiamo ricevuto la segnalazione su "{biographyTitle}".', 'Un revisore decide entro 30 giorni.'] },
+        fr: { subject: '{siteName} — Nous avons reçu votre signalement', paragraphs: ['Bonjour,', 'Nous avons reçu votre signalement sur « {biographyTitle} ».', 'Un réviseur décidera sous 30 jours.'] },
+        de: { subject: '{siteName} — Wir haben Ihre Meldung erhalten', paragraphs: ['Hallo,', 'Wir haben Ihre Meldung zu „{biographyTitle}" erhalten.', 'Eine Prüferin oder ein Prüfer entscheidet binnen 30 Tagen.'] },
+      });
+    case 'report_reviewer_reminder':
+      return inner(locale, {
+        en: { subject: '{siteName} — Report still waiting, day {day}', paragraphs: ['Hello,', 'The report on "{biographyTitle}" is still open.', 'This is the reminder for day {day} of the 30 days to decide.'] },
+        it: { subject: '{siteName} — Segnalazione ancora aperta, giorno {day}', paragraphs: ['Ciao,', 'La segnalazione su "{biographyTitle}" è ancora aperta.', 'Questo è il promemoria del giorno {day} sui 30 per decidere.'] },
+        fr: { subject: '{siteName} — Signalement encore ouvert, jour {day}', paragraphs: ['Bonjour,', 'Le signalement sur « {biographyTitle} » est encore ouvert.', 'Ceci est le rappel du jour {day} sur les 30 jours pour décider.'] },
+        de: { subject: '{siteName} — Meldung noch offen, Tag {day}', paragraphs: ['Hallo,', 'Die Meldung zu „{biographyTitle}" ist noch offen.', 'Dies ist die Erinnerung am Tag {day} der 30 Tage bis zur Entscheidung.'] },
+      });
+    case 'report_revision_requested':
+      return inner(locale, {
+        en: { subject: '{siteName} — Revision requested', paragraphs: ['Hello,', 'Your biography "{biographyTitle}" is no longer public.', 'You have 30 days to send a revision. It stays out of the catalog until a reviewer accepts it.', v.reviewerMessage ? `HTML:<strong>Note:</strong> ${esc(v.reviewerMessage)}` : ''] },
+        it: { subject: '{siteName} — Revisione richiesta', paragraphs: ['Ciao,', 'La tua biografia "{biographyTitle}" non è più pubblica.', 'Hai 30 giorni per rimandare il testo. Resta fuori dal catalogo finché un revisore non la accetta.', v.reviewerMessage ? `HTML:<strong>Nota:</strong> ${esc(v.reviewerMessage)}` : ''] },
+        fr: { subject: '{siteName} — Révision demandée', paragraphs: ['Bonjour,', 'Votre biographie « {biographyTitle} » n’est plus publique.', 'Vous avez 30 jours pour renvoyer le texte. Elle reste hors du catalogue jusqu’à l’acceptation d’un réviseur.', v.reviewerMessage ? `HTML:<strong>Note :</strong> ${esc(v.reviewerMessage)}` : ''] },
+        de: { subject: '{siteName} — Überarbeitung angefordert', paragraphs: ['Hallo,', 'Ihre Biografie „{biographyTitle}" ist nicht mehr öffentlich.', 'Sie haben 30 Tage, um den Text erneut zu senden. Sie bleibt außerhalb des Katalogs, bis eine Prüferin oder ein Prüfer sie annimmt.', v.reviewerMessage ? `HTML:<strong>Hinweis:</strong> ${esc(v.reviewerMessage)}` : ''] },
+      });
+    case 'report_author_revision_reminder':
+      return inner(locale, {
+        en: { subject: '{siteName} — {day} of 30 days to send the revision', paragraphs: ['Hello,', 'Your biography "{biographyTitle}" is still waiting for your revision.', 'Day {day} of 30. After that it stays out of the catalog.'] },
+        it: { subject: '{siteName} — Giorno {day} di 30 per la revisione', paragraphs: ['Ciao,', 'La tua biografia "{biographyTitle}" aspetta ancora la revisione.', 'Giorno {day} di 30. Dopo resta fuori dal catalogo.'] },
+        fr: { subject: '{siteName} — Jour {day} sur 30 pour la révision', paragraphs: ['Bonjour,', 'Votre biographie « {biographyTitle} » attend encore votre révision.', 'Jour {day} sur 30. Ensuite elle reste hors du catalogue.'] },
+        de: { subject: '{siteName} — Tag {day} von 30 für die Überarbeitung', paragraphs: ['Hallo,', 'Ihre Biografie „{biographyTitle}" wartet noch auf die Überarbeitung.', 'Tag {day} von 30. Danach bleibt sie außerhalb des Katalogs.'] },
+      });
+    case 'report_revision_overdue':
+      return inner(locale, {
+        en: { subject: '{siteName} — Revision deadline passed', paragraphs: ['Hello,', 'The 30 days to revise "{biographyTitle}" have passed.', 'The biography stays out of the public catalog.'] },
+        it: { subject: '{siteName} — Tempo per la revisione scaduto', paragraphs: ['Ciao,', 'I 30 giorni per rivedere "{biographyTitle}" sono passati.', 'La scheda resta fuori dal catalogo pubblico.'] },
+        fr: { subject: '{siteName} — Délai de révision dépassé', paragraphs: ['Bonjour,', 'Les 30 jours pour réviser « {biographyTitle} » sont passés.', 'La fiche reste hors du catalogue public.'] },
+        de: { subject: '{siteName} — Frist für die Überarbeitung abgelaufen', paragraphs: ['Hallo,', 'Die 30 Tage zur Überarbeitung von „{biographyTitle}" sind vorbei.', 'Die Biografie bleibt außerhalb des öffentlichen Katalogs.'] },
+      });
+    case 'report_appeal_opened':
+      return inner(locale, {
+        en: { subject: '{siteName} — An author filed an appeal', paragraphs: ['Hello,', 'The author of "{biographyTitle}" filed an appeal.', 'The biography stays in the state of the decision until you decide the appeal.'] },
+        it: { subject: '{siteName} — Un autore ha presentato ricorso', paragraphs: ['Ciao,', 'L’autore di "{biographyTitle}" ha presentato ricorso.', 'La scheda resta nello stato della decisione finché non decidete il ricorso.'] },
+        fr: { subject: '{siteName} — Un auteur a formé un recours', paragraphs: ['Bonjour,', 'L’auteur de « {biographyTitle} » a formé un recours.', 'La fiche reste dans l’état de la décision jusqu’à votre décision sur le recours.'] },
+        de: { subject: '{siteName} — Einspruch eingegangen', paragraphs: ['Hallo,', 'Die Autorin oder der Autor von „{biographyTitle}" hat Einspruch eingelegt.', 'Die Biografie bleibt im Zustand der Entscheidung, bis Sie über den Einspruch entscheiden.'] },
+      });
+    case 'report_appeal_result':
+      return inner(locale, {
+        en: { subject: '{siteName} — Appeal decided', paragraphs: ['Hello,', 'The appeal on "{biographyTitle}" was {outcome}.', 'While the appeal was open, the biography stayed in the state of the earlier decision.'] },
+        it: { subject: '{siteName} — Ricorso deciso', paragraphs: ['Ciao,', 'Il ricorso su "{biographyTitle}" è stato {outcome}.', 'Finché il ricorso era aperto, la scheda è restata nello stato della decisione precedente.'] },
+        fr: { subject: '{siteName} — Recours tranché', paragraphs: ['Bonjour,', 'Le recours sur « {biographyTitle} » a été {outcome}.', 'Pendant le recours, la fiche est restée dans l’état de la décision précédente.'] },
+        de: { subject: '{siteName} — Einspruch entschieden', paragraphs: ['Hallo,', 'Der Einspruch zu „{biographyTitle}" wurde {outcome}.', 'Solange der Einspruch offen war, blieb die Biografie im Zustand der früheren Entscheidung.'] },
+      });
     case 'engagement_pdf_draft_reminder':
       return inner(locale, {
         en: { subject: '{siteName} — Reminder: complete your PDF draft', paragraphs: ['Hello,', 'Your biography "{biographyTitle}" is still in the PDF draft phase (round {draftIteration}/3).', 'Open the editor to export your draft PDF and continue toward publication.', `LINK:${v.editorUrl}|Continue PDF draft`] },
