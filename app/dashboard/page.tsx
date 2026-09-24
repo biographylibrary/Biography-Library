@@ -19,8 +19,6 @@ import {
 import { Loader as Loader2, CircleAlert as AlertCircle, Mail, CircleCheck as CheckCircle2 } from 'lucide-react';
 import { useTranslation } from '@/lib/i18n/i18n-context';
 import { toast } from 'sonner';
-import { BetaLocalSaveBanner } from '@/components/waitlist/BetaLocalSaveBanner';
-
 export default function DashboardPage() {
   const { user, loading: authLoading } = useAuth();
   const router = useRouter();
@@ -183,7 +181,6 @@ export default function DashboardPage() {
     <div className="h-full bg-[#ECE9E4] dark:bg-[#1F2121] flex items-center justify-center">
 
       <main className="w-full max-w-2xl px-4 sm:px-6 py-8 space-y-4">
-        <BetaLocalSaveBanner />
         {isLoadingBios ? (
           <div className="flex justify-center py-16">
             <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />

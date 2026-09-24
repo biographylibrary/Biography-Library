@@ -126,10 +126,13 @@ export function Header() {
           )}
         </div>
 
-        <div className="absolute left-1/2 -translate-x-1/2 flex items-center">
+        <div className="absolute left-1/2 -translate-x-1/2">
           <Link href={homeHref} className="flex items-center">
             <Logo height={48} />
           </Link>
+          <span className="absolute left-full top-1/2 -translate-y-1/2 ml-2 text-[10px] font-medium tracking-widest text-muted-foreground">
+            BETA
+          </span>
         </div>
 
         <div className="flex-1 flex items-center justify-end gap-1">

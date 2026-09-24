@@ -5,7 +5,6 @@ import { useRouter, useParams, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/lib/auth-context';
 import { supabase } from '@/lib/supabase';
 import { EditorTopBar } from '@/components/editor/editor-top-bar';
-import { BetaLocalSaveBanner } from '@/components/waitlist/BetaLocalSaveBanner';
 import { ReportDeadlineBanner } from '@/components/editor/ReportDeadlineBanner';
 import { SectionSidebar } from '@/components/editor/section-sidebar';
 import { PathChangeDialog } from '@/components/echo/PathChangeDialog';
@@ -1963,7 +1962,6 @@ const [isPublishing, setIsPublishing] = useState(false);
         onMobileMenuToggle={() => setShowMobileSidebar((open) => !open)}
       />
 
-      <BetaLocalSaveBanner compact />
       <ReportDeadlineBanner biographyId={id} status={biographyStatus} language={language} />
 
       <LicenseChoiceDialog

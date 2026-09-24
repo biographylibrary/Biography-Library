@@ -4,7 +4,6 @@ import Link from 'next/link';
 import { Logo } from '@/components/logo';
 import { ThemeToggle } from '@/components/theme-toggle';
 import { RegisterForm } from '@/components/auth/RegisterForm';
-import { BetaLocalSaveBanner } from '@/components/waitlist/BetaLocalSaveBanner';
 import { useTranslation } from '@/lib/i18n/i18n-context';
 
 export function WaitlistLanding() {
@@ -27,7 +26,6 @@ export function WaitlistLanding() {
             <p className="text-sm text-muted-foreground leading-relaxed">{t.waitlist.landingLead}</p>
             <p className="text-sm text-muted-foreground">{t.waitlist.landingBeta}</p>
           </div>
-          <BetaLocalSaveBanner />
           <RegisterForm embedded />
           <p className="text-center text-sm text-muted-foreground">
             <Link href="/login" className="font-medium text-primary hover:text-primary/80 transition-colors">
