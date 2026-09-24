@@ -8,6 +8,7 @@ export function isMobileEditorLayout(): boolean {
 
 const SIDEBAR_TOUR_TARGETS = new Set([
   '[data-tour-id="section-list"]',
+  '[data-tour-id="permanence-btn"]',
   '[data-tour-id="notes-btn"]',
   '[data-tour-id="photos-btn"]',
   '[data-tour-id="book-structure-btn"]',

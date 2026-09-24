@@ -1593,6 +1593,10 @@ export interface Translations {
     mobileMenuTitle: string;
     mobileMenuDesc: string;
     mobileSidebarOverviewHint: string;
+    permanenceSelfTitle: string;
+    permanenceSelfDesc: string;
+    permanenceMemorialTitle: string;
+    permanenceMemorialDesc: string;
   };
   echo: {
     hubEmpty: string;
@@ -3310,6 +3314,12 @@ export const translations: Record<Language, Translations> = {
         'On phones and tablets, tap the menu icon at the top right of the editor bar to open chapters and tools. The tour opens this panel automatically in the next steps.',
       mobileSidebarOverviewHint:
         'The chapter list and tools live in this panel. On phones and tablets, open it with the menu button at the top right of the editor bar.',
+      permanenceSelfTitle: 'My details',
+      permanenceSelfDesc:
+        'Open this to record your name, your birth, the places you have lived, and the people connected to you. This is not the story text. It stays with the record.',
+      permanenceMemorialTitle: 'Who this person was',
+      permanenceMemorialDesc:
+        'Open this to record their name, birth and death, the places they lived, and the people connected to this life. This is not the story text. It stays with the record.',
     },
     echo: {
       hubEmpty: 'Hello! I\'m Echo. I\'ll guide you through writing your biography — by voice or text.',
@@ -5025,6 +5035,12 @@ export const translations: Record<Language, Translations> = {
         'Su telefono e tablet, tocca l\'icona menu in alto a destra nella barra dell\'editor per aprire capitoli e strumenti. Il tour aprirà questo pannello automaticamente nei passi successivi.',
       mobileSidebarOverviewHint:
         'L\'elenco capitoli e gli strumenti sono in questo pannello. Su telefono e tablet, aprilo con il pulsante menu in alto a destra nella barra dell\'editor.',
+      permanenceSelfTitle: 'I miei dati',
+      permanenceSelfDesc:
+        'Aprilo per scrivere il tuo nome, la nascita, i luoghi in cui hai vissuto e le persone legate a te. Non è il testo della storia: resta con la scheda.',
+      permanenceMemorialTitle: 'Chi era questa persona',
+      permanenceMemorialDesc:
+        'Aprilo per scrivere il nome, nascita e morte, i luoghi in cui ha vissuto e le persone legate a questa vita. Non è il testo della storia: resta con la scheda.',
     },
     echo: {
       hubEmpty: 'Ciao! Sono Echo. Ti guido nella biografia — a voce o per iscritto.',
@@ -6740,6 +6756,12 @@ export const translations: Record<Language, Translations> = {
         'Sur téléphone et tablette, touchez l\'icône menu en haut à droite de la barre d\'édition pour ouvrir chapitres et outils. Le tour ouvrira ce panneau automatiquement aux étapes suivantes.',
       mobileSidebarOverviewHint:
         'La liste des chapitres et les outils sont dans ce panneau. Sur téléphone et tablette, ouvrez-le avec le bouton menu en haut à droite de la barre d\'édition.',
+      permanenceSelfTitle: 'Mes données',
+      permanenceSelfDesc:
+        'Ouvrez-le pour noter votre nom, votre naissance, les lieux où vous avez vécu et les personnes liées à vous. Ce n’est pas le texte de l’histoire : cela reste avec la fiche.',
+      permanenceMemorialTitle: 'Qui était cette personne',
+      permanenceMemorialDesc:
+        'Ouvrez-le pour noter le nom, la naissance et le décès, les lieux où cette personne a vécu et les personnes liées à cette vie. Ce n’est pas le texte de l’histoire : cela reste avec la fiche.',
     },
     echo: {
       hubEmpty: 'Bonjour ! Je suis Echo. Je vous guide pour votre biographie — à voix ou par écrit.',
@@ -8455,6 +8477,12 @@ export const translations: Record<Language, Translations> = {
         'Auf Smartphone und Tablet tippen Sie auf das Menüsymbol oben rechts in der Editor-Leiste, um Kapitel und Werkzeuge zu öffnen. Die Tour öffnet dieses Panel in den nächsten Schritten automatisch.',
       mobileSidebarOverviewHint:
         'Kapitelliste und Werkzeuge befinden sich in diesem Panel. Auf Smartphone und Tablet öffnen Sie es mit der Menütaste oben rechts in der Editor-Leiste.',
+      permanenceSelfTitle: 'Meine Angaben',
+      permanenceSelfDesc:
+        'Öffnen Sie dies, um Ihren Namen, die Geburt, die Orte, an denen Sie gelebt haben, und die Menschen, die mit Ihnen verbunden sind, festzuhalten. Das ist nicht der Text der Geschichte: es bleibt bei der Akte.',
+      permanenceMemorialTitle: 'Wer diese Person war',
+      permanenceMemorialDesc:
+        'Öffnen Sie dies, um den Namen, Geburt und Tod, die Lebensorte und die Menschen in diesem Leben festzuhalten. Das ist nicht der Text der Geschichte: es bleibt bei der Akte.',
     },
     echo: {
       hubEmpty: 'Hallo! Ich bin Echo. Ich begleite Sie bei Ihrer Biografie — per Sprache oder Text.',

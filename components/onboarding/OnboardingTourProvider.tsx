@@ -18,6 +18,7 @@ interface OnboardingTourProviderProps {
   active: boolean;
   writingPath: WritingPath;
   biographyMode: 'sections' | 'freeflow';
+  biographyType?: 'autobiography' | 'memorial';
   onOpenMobileSidebar?: () => void;
   onCloseMobileSidebar?: () => void;
   onFinished: () => void;
@@ -46,6 +47,7 @@ export function OnboardingTourProvider({
   active,
   writingPath,
   biographyMode,
+  biographyType = 'autobiography',
   onOpenMobileSidebar,
   onCloseMobileSidebar,
   onFinished,
@@ -131,6 +133,7 @@ export function OnboardingTourProvider({
 
     const steps = getTourSteps(writingPath, biographyMode, {
       mobileLayout: isMobileEditorLayout(),
+      biographyType,
     });
     stepsRef.current = steps;
     stepIndexRef.current = 0;
@@ -220,6 +223,7 @@ export function OnboardingTourProvider({
   }, [
     active,
     biographyMode,
+    biographyType,
     writingPath,
     language,
     finishTour,
