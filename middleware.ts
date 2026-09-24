@@ -59,7 +59,11 @@ export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
   // UM identifier at site root → /id/... (any host: app. or id.)
-  const umRoot = pathname.match(/^\/(UM|um|Um|uM)([-\s]?[\dA-Za-z][\dA-Za-z\s-]*)$/);
+  // /um-identifier is the public specification page, not an identifier.
+  const umRoot =
+    pathname === '/um-identifier'
+      ? null
+      : pathname.match(/^\/(UM|um|Um|uM)([-\s]?[\dA-Za-z][\dA-Za-z\s-]*)$/);
   if (umRoot) {
     const raw = `${umRoot[1]}${umRoot[2]}`.replace(/\s+/g, '');
     const url = req.nextUrl.clone();
