@@ -19,6 +19,8 @@ export type EmailTemplateId =
   | 'publication_returned'
   | 'publication_removed'
   | 'reviewer_assigned'
+  | 'report_immediate_author'
+  | 'report_immediate_reviewer'
   | 'admin_bio_force_published'
   | 'admin_bio_set_draft'
   | 'admin_bio_removed'

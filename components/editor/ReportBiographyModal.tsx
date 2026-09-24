@@ -29,6 +29,9 @@ type ReportType =
   | 'right_to_oblivion'
   | 'impersonation'
   | 'copyright'
+  | 'illegal_content'
+  | 'sensitive_personal_data'
+  | 'defamation'
   | 'other';
 
 interface Props {
@@ -49,7 +52,10 @@ export function ReportBiographyModal({ biographyId, open, onOpenChange, onSucces
     { value: 'level1_content', label: t.view.reportTypeLevel1 },
     { value: 'level2_content', label: t.view.reportTypeLevel2 },
     { value: 'living_person', label: t.view.reportTypeLivingPerson },
+    { value: 'illegal_content', label: t.view.reportTypeIllegalContent },
     { value: 'right_to_oblivion', label: t.view.reportTypeRightToOblivion },
+    { value: 'sensitive_personal_data', label: t.view.reportTypeSensitivePersonalData },
+    { value: 'defamation', label: t.view.reportTypeDefamation },
     { value: 'impersonation', label: t.view.reportTypeImpersonation },
     { value: 'copyright', label: t.view.reportTypeCopyright },
     { value: 'other', label: t.view.reportTypeOther },
@@ -95,6 +101,10 @@ export function ReportBiographyModal({ biographyId, open, onOpenChange, onSucces
 
     setSubmitting(false);
 
+    if (res.status === 429) {
+      setInlineError(t.view.reportRateLimited);
+      return;
+    }
     if (!res.ok) {
       setInlineError(t.view.reportError);
       return;

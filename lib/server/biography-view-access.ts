@@ -1,4 +1,5 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
+import { isBiographyPublicationStatus, isHiddenFromPublicCatalog } from '@/lib/publication-state';
 import type { AnyClient } from '@/lib/server/review-submit-pipeline';
 
 export type BiographyViewAccessType = 'public' | 'share-token' | 'owner-staff';
@@ -64,6 +65,10 @@ export async function verifyBiographyViewAccess(
       .eq('id', biographyId)
       .maybeSingle();
     if (!full) return { ok: false, status: 404 };
+    const shared = full as BiographyViewRow;
+    if (isBiographyPublicationStatus(shared.status) && isHiddenFromPublicCatalog(shared.status)) {
+      return { ok: false, status: 403 };
+    }
     return {
       ok: true,
       biography: full as BiographyViewRow,

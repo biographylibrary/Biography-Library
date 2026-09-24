@@ -8,10 +8,13 @@ import { useModerationReports } from '@/lib/moderation/use-moderation-reports';
 import { ModerationFilters } from '@/components/admin/ModerationFilters';
 import { ModerationTable } from '@/components/admin/ModerationTable';
 import { ModerationDetailPanel } from '@/components/admin/ModerationDetailPanel';
+import { EmailChannelReportDialog } from '@/components/admin/EmailChannelReportDialog';
+import { Button } from '@/components/ui/button';
 
 function ModerationContent() {
   const { t } = useTranslation();
   const [selectedReport, setSelectedReport] = useState<ModerationReport | null>(null);
+  const [emailOpen, setEmailOpen] = useState(false);
 
   const [filters, setFilters] = useState<FiltersType>({
     status: 'all',
@@ -48,6 +51,9 @@ function ModerationContent() {
               {t.admin.moderationSubtitle}
             </p>
           </div>
+          <Button variant="outline" className="ml-auto" onClick={() => setEmailOpen(true)}>
+            {t.admin.emailReportOpen}
+          </Button>
         </div>
 
         <div className="flex flex-col gap-5">
@@ -59,6 +65,12 @@ function ModerationContent() {
             onOpen={setSelectedReport}
           />
         </div>
+
+      <EmailChannelReportDialog
+        open={emailOpen}
+        onOpenChange={setEmailOpen}
+        onCreated={refresh}
+      />
 
       <ModerationDetailPanel
         report={selectedReport}
