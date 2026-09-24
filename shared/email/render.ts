@@ -511,6 +511,20 @@ function getTemplateInner(
         fr: { subject: '{siteName} — Vous pouvez écrire le prochain chapitre', paragraphs: ['Bonjour,', 'Le prochain chapitre de « {biographyTitle} » est maintenant disponible (règle des 365 jours).', v.availableDate ? `Disponible depuis : ${v.availableDate}.` : '', `LINK:${v.editorUrl}|Écrire le prochain chapitre`] },
         de: { subject: '{siteName} — Sie können das nächste Kapitel schreiben', paragraphs: ['Hallo,', 'Das nächste Kapitel von „{biographyTitle}" ist jetzt verfügbar (365-Tage-Regel).', v.availableDate ? `Verfügbar seit: ${v.availableDate}.` : '', `LINK:${v.editorUrl}|Nächstes Kapitel schreiben`] },
       });
+    case 'report_immediate_author':
+      return inner(locale, {
+        en: { subject: '{siteName} — Biography suspended: document needed in 14 days', paragraphs: ['Hello,', 'Your biography "{biographyTitle}" is no longer public.', 'Within 14 days, send a death certificate or an equivalent document. If we do not receive it, the biography stays out of the public catalog and a reviewer will decide.'] },
+        it: { subject: '{siteName} — Scheda sospesa: documento entro 14 giorni', paragraphs: ['Ciao,', 'La tua biografia "{biographyTitle}" non è più pubblica.', 'Entro 14 giorni invia un certificato di morte o un documento equivalente. Se non arriva, la scheda resta fuori dal catalogo e decide un revisore.'] },
+        fr: { subject: '{siteName} — Fiche suspendue : document sous 14 jours', paragraphs: ['Bonjour,', 'Votre biographie « {biographyTitle} » n’est plus publique.', 'Sous 14 jours, envoyez un certificat de décès ou un document équivalent. Sans réponse, la fiche reste hors du catalogue et un réviseur décidera.'] },
+        de: { subject: '{siteName} — Biografie ausgesetzt: Dokument binnen 14 Tagen', paragraphs: ['Hallo,', 'Ihre Biografie „{biographyTitle}" ist nicht mehr öffentlich.', 'Senden Sie binnen 14 Tagen eine Sterbeurkunde oder ein gleichwertiges Dokument. Ohne Antwort bleibt die Biografie außerhalb des Katalogs und eine Prüferin oder ein Prüfer entscheidet.'] },
+      });
+    case 'report_immediate_reviewer':
+      return inner(locale, {
+        en: { subject: '{siteName} — High-priority report', paragraphs: ['Hello,', 'A report about a living person or illegal content arrived. The biography was suspended and is no longer public.', 'The author has 14 days to send a death certificate or an equivalent document.'] },
+        it: { subject: '{siteName} — Segnalazione ad alta priorità', paragraphs: ['Ciao,', 'È arrivata una segnalazione per persona in vita o contenuto illegale. La scheda è stata sospesa e non è più pubblica.', 'L’autore ha 14 giorni per inviare un certificato di morte o un documento equivalente.'] },
+        fr: { subject: '{siteName} — Signalement prioritaire', paragraphs: ['Bonjour,', 'Un signalement pour personne vivante ou contenu illégal est arrivé. La fiche a été suspendue et n’est plus publique.', 'L’auteur a 14 jours pour envoyer un certificat de décès ou un document équivalent.'] },
+        de: { subject: '{siteName} — Meldung mit hoher Priorität', paragraphs: ['Hallo,', 'Eine Meldung zu einer lebenden Person oder zu illegalem Inhalt ist eingegangen. Die Biografie wurde ausgesetzt und ist nicht mehr öffentlich.', 'Die Autorin oder der Autor hat 14 Tage Zeit für eine Sterbeurkunde oder ein gleichwertiges Dokument.'] },
+      });
     case 'engagement_pdf_draft_reminder':
       return inner(locale, {
         en: { subject: '{siteName} — Reminder: complete your PDF draft', paragraphs: ['Hello,', 'Your biography "{biographyTitle}" is still in the PDF draft phase (round {draftIteration}/3).', 'Open the editor to export your draft PDF and continue toward publication.', `LINK:${v.editorUrl}|Continue PDF draft`] },

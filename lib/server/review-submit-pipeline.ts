@@ -639,6 +639,7 @@ export async function runReviewSubmitScreening(
         biography_id: biographyId,
         reporter_id: null,
         report_type: 'level2_content',
+        origin: 'screening',
         description: 'AI screening failed — routed to manual review',
         status: 'unassigned',
         ai_analysis: {
@@ -771,6 +772,7 @@ export async function runReviewSubmitScreening(
       biography_id: biographyId,
       reporter_id: null,
       report_type: 'level2_content',
+      origin: 'screening',
       description: isRescreen
         ? 'Automated AI re-screening of revised sections'
         : 'Automated AI content screening',

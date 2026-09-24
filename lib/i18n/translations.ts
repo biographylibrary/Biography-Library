@@ -590,6 +590,10 @@ export interface Translations {
     reportTypeImpersonation: string;
     reportTypeCopyright: string;
     reportTypeOther: string;
+    reportTypeIllegalContent: string;
+    reportTypeSensitivePersonalData: string;
+    reportTypeDefamation: string;
+    reportRateLimited: string;
     writtenIn: string;
     contentRightsNoticeAriaLabel: string;
     contentRightsNoticeParagraph1: string;
@@ -1109,6 +1113,15 @@ export interface Translations {
     frozenBannerMessage: string;
     moderationTitle: string;
     moderationSubtitle: string;
+    emailReportOpen: string;
+    emailReportTitle: string;
+    emailReportBiographyId: string;
+    emailReportName: string;
+    emailReportEmail: string;
+    emailReportDescription: string;
+    emailReportSubmit: string;
+    emailReportSuccess: string;
+    emailReportError: string;
     moderationUnassignedBadge: string;
     filterStatus: string;
     filterType: string;
@@ -2289,6 +2302,10 @@ export const translations: Record<Language, Translations> = {
       reportTypeImpersonation: 'False identity',
       reportTypeCopyright: 'Copyright violation',
       reportTypeOther: 'Other',
+      reportTypeIllegalContent: 'Illegal content',
+      reportTypeSensitivePersonalData: 'Sensitive personal data',
+      reportTypeDefamation: 'Defamation',
+      reportRateLimited: 'Too many reports. Please wait an hour and try again.',
       writtenIn: 'Written in {language}',
       contentRightsNoticeAriaLabel: 'Copyright and AI use notice',
       contentRightsNoticeParagraph1:
@@ -2824,6 +2841,15 @@ export const translations: Record<Language, Translations> = {
       frozenBannerMessage: 'This biography is read-only and cannot be edited.',
       moderationTitle: 'Moderation',
       moderationSubtitle: 'User reports and flagged content — for AI author review use Review',
+      emailReportOpen: 'Open a case from email',
+      emailReportTitle: 'Report received by email',
+      emailReportBiographyId: 'Biography id',
+      emailReportName: 'Name of the person who wrote',
+      emailReportEmail: 'Email of the person who wrote',
+      emailReportDescription: 'What they wrote',
+      emailReportSubmit: 'Open the case',
+      emailReportSuccess: 'Case opened',
+      emailReportError: 'Could not open the case',
       moderationUnassignedBadge: 'unassigned',
       filterStatus: 'Status',
       filterType: 'Type',
@@ -4021,6 +4047,10 @@ export const translations: Record<Language, Translations> = {
       reportTypeImpersonation: 'Falsa identit\u00e0',
       reportTypeCopyright: 'Violazione del copyright',
       reportTypeOther: 'Altro',
+      reportTypeIllegalContent: 'Contenuto illegale',
+      reportTypeSensitivePersonalData: 'Dati personali sensibili',
+      reportTypeDefamation: 'Diffamazione',
+      reportRateLimited: 'Troppe segnalazioni. Attendi un’ora e riprova.',
       writtenIn: 'Scritta in {language}',
       contentRightsNoticeAriaLabel: 'Avviso copyright e uso IA',
       contentRightsNoticeParagraph1:
@@ -4556,6 +4586,15 @@ export const translations: Record<Language, Translations> = {
       frozenBannerMessage: 'Questa biografia è di sola lettura e non può essere modificata.',
       moderationTitle: 'Moderazione',
       moderationSubtitle: 'Segnalazioni utenti e contenuti segnalati — per la revisione AI dell\u2019autore usa Revisione',
+      emailReportOpen: 'Apri una pratica da email',
+      emailReportTitle: 'Segnalazione arrivata per email',
+      emailReportBiographyId: 'Identificativo della scheda',
+      emailReportName: 'Nome di chi ha scritto',
+      emailReportEmail: 'Email di chi ha scritto',
+      emailReportDescription: 'Che cosa ha scritto',
+      emailReportSubmit: 'Apri la pratica',
+      emailReportSuccess: 'Pratica aperta',
+      emailReportError: 'Non sono riuscito ad aprire la pratica',
       moderationUnassignedBadge: 'non assegnate',
       filterStatus: 'Stato',
       filterType: 'Tipo',
@@ -5753,6 +5792,10 @@ export const translations: Record<Language, Translations> = {
       reportTypeImpersonation: 'Fausse identit\u00e9',
       reportTypeCopyright: 'Violation du droit d\'auteur',
       reportTypeOther: 'Autre',
+      reportTypeIllegalContent: 'Contenu illégal',
+      reportTypeSensitivePersonalData: 'Données personnelles sensibles',
+      reportTypeDefamation: 'Diffamation',
+      reportRateLimited: 'Trop de signalements. Attendez une heure et réessayez.',
       writtenIn: 'Écrite en {language}',
       contentRightsNoticeAriaLabel: 'Avis de droit d\'auteur et d\'usage IA',
       contentRightsNoticeParagraph1:
@@ -6288,6 +6331,15 @@ export const translations: Record<Language, Translations> = {
       frozenBannerMessage: 'Cette biographie est en lecture seule et ne peut pas être modifiée.',
       moderationTitle: 'Modération',
       moderationSubtitle: 'Signalements utilisateurs et contenus signal\u00e9s — pour la r\u00e9vision IA de l\u2019auteur, voir R\u00e9vision',
+      emailReportOpen: 'Ouvrir un dossier depuis un e-mail',
+      emailReportTitle: 'Signalement reçu par e-mail',
+      emailReportBiographyId: 'Identifiant de la fiche',
+      emailReportName: 'Nom de la personne qui a écrit',
+      emailReportEmail: 'E-mail de la personne qui a écrit',
+      emailReportDescription: 'Ce qu’elle a écrit',
+      emailReportSubmit: 'Ouvrir le dossier',
+      emailReportSuccess: 'Dossier ouvert',
+      emailReportError: 'Impossible d’ouvrir le dossier',
       moderationUnassignedBadge: 'non assignés',
       filterStatus: 'Statut',
       filterType: 'Type',
@@ -7485,6 +7537,10 @@ export const translations: Record<Language, Translations> = {
       reportTypeImpersonation: 'Falsche Identit\u00e4t',
       reportTypeCopyright: 'Urheberrechtsverletzung',
       reportTypeOther: 'Sonstiges',
+      reportTypeIllegalContent: 'Illegaler Inhalt',
+      reportTypeSensitivePersonalData: 'Sensible personenbezogene Daten',
+      reportTypeDefamation: 'Verleumdung',
+      reportRateLimited: 'Zu viele Meldungen. Bitte warten Sie eine Stunde und versuchen Sie es erneut.',
       writtenIn: 'Geschrieben in {language}',
       contentRightsNoticeAriaLabel: 'Hinweis zu Urheberrecht und KI-Nutzung',
       contentRightsNoticeParagraph1:
@@ -8020,6 +8076,15 @@ export const translations: Record<Language, Translations> = {
       frozenBannerMessage: 'Diese Biografie ist schreibgeschützt und kann nicht bearbeitet werden.',
       moderationTitle: 'Moderation',
       moderationSubtitle: 'Nutzer-Meldungen und gemeldete Inhalte — f\u00fcr KI-Autorenpr\u00fcfung siehe Pr\u00fcfung',
+      emailReportOpen: 'Vorgang aus E-Mail öffnen',
+      emailReportTitle: 'Meldung per E-Mail',
+      emailReportBiographyId: 'Kennung der Biografie',
+      emailReportName: 'Name der Person, die geschrieben hat',
+      emailReportEmail: 'E-Mail der Person, die geschrieben hat',
+      emailReportDescription: 'Was sie geschrieben hat',
+      emailReportSubmit: 'Vorgang öffnen',
+      emailReportSuccess: 'Vorgang geöffnet',
+      emailReportError: 'Der Vorgang konnte nicht geöffnet werden',
       moderationUnassignedBadge: 'nicht zugewiesen',
       filterStatus: 'Status',
       filterType: 'Typ',

@@ -163,6 +163,7 @@ export async function POST(req: NextRequest) {
           biography_id: biographyId,
           reporter_id: null,
           report_type: 'level2_content',
+          origin: 'screening',
           description: 'Draft AI review flagged severity-3 content before final submission',
           status: 'unassigned',
           ai_analysis: {
