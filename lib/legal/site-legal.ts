@@ -13,7 +13,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "version",
-        "text": "Versione 1.0 – Marzo 2026"
+        "text": "Versione 1.0 – 25 settembre 2026"
       },
       {
         "kind": "heading",
@@ -373,7 +373,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "paragraph",
-        "text": "Database: lo stack tecnologico definitivo per il database di produzione non è ancora stato finalizzato. La soluzione selezionata sarà ospitata esclusivamente su infrastruttura svizzera. Questa Informativa sarà aggiornata prima del lancio pubblico."
+        "text": "L’app è in linea, in versione beta. I dati dell’account e delle biografie restano sull’infrastruttura usata per il servizio."
       },
       {
         "kind": "heading",
@@ -417,11 +417,11 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "paragraph",
-        "text": "Quando un familiare pubblica la biografia di una persona deceduta, questa viene contrassegnata come “temporanea” per i primi 30 giorni. Durante questo periodo:"
+        "text": "Quando un familiare pubblica la biografia di una persona deceduta, questa resta pubblica nel catalogo, con la dicitura “Nei primi 30 giorni”. Non è uno stato separato. Durante questo periodo:"
       },
       {
         "kind": "item",
-        "text": "La biografia è pubblica e visibile a tutti, contrassegnata come “in revisione temporanea”"
+        "text": "La biografia resta pubblicata e consultabile"
       },
       {
         "kind": "item",
@@ -441,11 +441,11 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "item",
-        "text": "Nessuna segnalazione ricevuta → la biografia diventa definitiva"
+        "text": "La dicitura sparisce e la biografia resta pubblicata"
       },
       {
         "kind": "item",
-        "text": "Segnalazione ricevuta → l'autore riceve una richiesta di modificare o rimuovere il contenuto indicato, valutata in base alla natura e alla validità della segnalazione"
+        "text": "Una segnalazione si può fare anche dopo i 30 giorni. Se la biografia viene ripubblicata dopo una revisione richiesta, i 30 giorni ricominciano"
       },
       {
         "kind": "paragraph",
@@ -629,7 +629,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "paragraph",
-        "text": "Tutta l'elaborazione dell'IA avviene in Svizzera tramite i sistemi di IA di Infomaniak, basati su modelli open source. Nessun dato viene inviato a fornitori di IA di terze parti. Ogni suggerimento è contrassegnato dal badge “Suggerimento IA”. Puoi disabilitare l'IA in qualsiasi momento."
+        "text": "La scrittura dell’assistente avviene in Svizzera tramite i sistemi di IA di Infomaniak. Se usi la voce, la risposta parlata è generata da un servizio nell’Unione europea (Francia). Puoi non usare la voce."
       },
       {
         "kind": "heading",
@@ -793,7 +793,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "paragraph",
-        "text": "Cronologia delle versioni: v1.0 — Marzo 2026 — Versione iniziale"
+        "text": "Cronologia delle versioni: v1.0 — 25 settembre 2026 — Aggiornamento: piattaforma in linea, primi 30 giorni, cookie dell’app"
       },
       {
         "kind": "heading",
@@ -873,7 +873,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "paragraph",
-        "text": "Versione: 1.0 | Marzo 2026 | Licenza del documento: CC BY-SA 4.0"
+        "text": "Versione: 1.0 | 25 settembre 2026 | Licenza del documento: CC BY-SA 4.0"
       },
       {
         "kind": "paragraph",
@@ -899,7 +899,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "version",
-        "text": "Version 1.0 – March 2026"
+        "text": "Version 1.0 – 25 September 2026"
       },
       {
         "kind": "heading",
@@ -1259,7 +1259,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "paragraph",
-        "text": "Database: the definitive technology stack for the production database has not yet been finalised. The selected solution will be hosted exclusively on Swiss infrastructure. This Policy will be updated before the public launch."
+        "text": "The app is online, in beta. Account and biography data stay on the infrastructure used for the service."
       },
       {
         "kind": "heading",
@@ -1303,11 +1303,11 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "paragraph",
-        "text": "When a family member publishes a biography of a deceased person, it is marked as “temporary” for the first 30 days. During this period:"
+        "text": "When a family member publishes a biography of a deceased person, it stays public in the catalogue, marked “In the first 30 days”. That mark is not a separate status. During this period:"
       },
       {
         "kind": "item",
-        "text": "The biography is public and visible to everyone, marked as “under temporary review”"
+        "text": "The biography stays published and readable"
       },
       {
         "kind": "item",
@@ -1327,11 +1327,11 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "item",
-        "text": "No reports received → the biography becomes definitive"
+        "text": "The mark disappears and the biography stays published"
       },
       {
         "kind": "item",
-        "text": "Report received → the author receives a request to modify or remove the indicated content, assessed based on the nature and validity of the report"
+        "text": "A report can still be filed after the 30 days. If the biography is published again after a requested revision, the 30 days start again"
       },
       {
         "kind": "paragraph",
@@ -1515,7 +1515,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "paragraph",
-        "text": "All AI processing takes place in Switzerland via Infomaniak’s AI systems, based on open source models. No data is sent to third-party AI providers. Every suggestion is marked with the “AI Suggestion” badge. You may disable AI at any time."
+        "text": "The assistant’s writing runs in Switzerland through Infomaniak’s AI systems. If you use the voice, the spoken reply is generated by a service in the European Union (France). You can leave the voice off."
       },
       {
         "kind": "heading",
@@ -1679,7 +1679,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "paragraph",
-        "text": "Version history: v1.0 — March 2026 — Initial version"
+        "text": "Version history: v1.0 — 25 September 2026 — Update: platform online, first 30 days, app cookies"
       },
       {
         "kind": "heading",
@@ -1759,7 +1759,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "paragraph",
-        "text": "Version: 1.0 | March 2026 | Document licence: CC BY-SA 4.0"
+        "text": "Version: 1.0 | 25 September 2026 | Document licence: CC BY-SA 4.0"
       },
       {
         "kind": "paragraph",
@@ -1785,7 +1785,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "version",
-        "text": "Version 1.0 – Mars 2026"
+        "text": "Version 1.0 – 25 septembre 2026"
       },
       {
         "kind": "heading",
@@ -2145,7 +2145,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "paragraph",
-        "text": "Base de données : la pile technologique définitive pour la base de données de production n'a pas encore été finalisée. La solution retenue sera hébergée exclusivement sur une infrastructure suisse. Cette Politique sera mise à jour avant le lancement public."
+        "text": "L’app est en ligne, en version bêta. Les données du compte et des biographies restent sur l’infrastructure utilisée pour le service."
       },
       {
         "kind": "heading",
@@ -2189,11 +2189,11 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "paragraph",
-        "text": "Lorsqu'un membre de la famille publie la biographie d'une personne décédée, celle-ci est marquée comme “ temporaire ” pendant les 30 premiers jours. Durant cette période :"
+        "text": "Lorsqu'un membre de la famille publie la biographie d'une personne décédée, elle reste publique dans le catalogue, avec la mention « Dans les 30 premiers jours ». Ce n'est pas un statut à part. Durant cette période :"
       },
       {
         "kind": "item",
-        "text": "La biographie est publique et visible par tous, marquée comme “ en cours d'examen temporaire ”"
+        "text": "La biographie reste publiée et consultable"
       },
       {
         "kind": "item",
@@ -2213,11 +2213,11 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "item",
-        "text": "Aucun signalement reçu → la biographie devient définitive"
+        "text": "La mention disparaît et la biographie reste publiée"
       },
       {
         "kind": "item",
-        "text": "Signalement reçu → l'auteur reçoit une demande de modification ou de suppression du contenu indiqué, évaluée en fonction de la nature et de la validité du signalement"
+        "text": "Un signalement peut encore être fait après les 30 jours. Si la biographie est publiée de nouveau après une révision demandée, les 30 jours recommencent"
       },
       {
         "kind": "paragraph",
@@ -2401,7 +2401,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "paragraph",
-        "text": "Tout le traitement de l'IA a lieu en Suisse via les systèmes d'IA d'Infomaniak, basés sur des modèles open source. Aucune donnée n'est envoyée à des fournisseurs d'IA tiers. Chaque suggestion est marquée du badge “ Suggestion de l'IA ”. Vous pouvez désactiver l'IA à tout moment."
+        "text": "L’écriture de l’assistant se fait en Suisse via les systèmes d’IA d’Infomaniak. Si vous utilisez la voix, la réponse parlée est produite par un service dans l’Union européenne (France). Vous pouvez ne pas utiliser la voix."
       },
       {
         "kind": "heading",
@@ -2565,7 +2565,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "paragraph",
-        "text": "Historique des versions : v1.0 — Mars 2026 — Version initiale"
+        "text": "Historique des versions : v1.0 — 25 septembre 2026 — Mise à jour : plateforme en ligne, 30 premiers jours, cookies de l’app"
       },
       {
         "kind": "heading",
@@ -2645,7 +2645,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "paragraph",
-        "text": "Version : 1.0 | Mars 2026 | Licence du document : CC BY-SA 4.0"
+        "text": "Version : 1.0 | 25 septembre 2026 | Licence du document : CC BY-SA 4.0"
       },
       {
         "kind": "paragraph",
@@ -2671,7 +2671,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "version",
-        "text": "Version 1.0 – März 2026"
+        "text": "Version 1.0 – 25. September 2026"
       },
       {
         "kind": "heading",
@@ -3031,7 +3031,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "paragraph",
-        "text": "Datenbank: Der endgültige Technologie-Stack für die Produktionsdatenbank steht noch nicht fest. Die gewählte Lösung wird ausschließlich auf Schweizer Infrastruktur gehostet. Diese Richtlinie wird vor der öffentlichen Markteinführung aktualisiert."
+        "text": "Die App ist online, in der Beta. Konto- und Biografiedaten bleiben auf der für den Dienst genutzten Infrastruktur."
       },
       {
         "kind": "heading",
@@ -3075,11 +3075,11 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "paragraph",
-        "text": "Wenn ein Familienmitglied eine Biografie einer verstorbenen Person veröffentlicht, wird diese für die ersten 30 Tage als “vorläufig” markiert. Während dieses Zeitraums:"
+        "text": "Wenn ein Familienmitglied eine Biografie einer verstorbenen Person veröffentlicht, bleibt sie im Katalog öffentlich, mit dem Hinweis „In den ersten 30 Tagen“. Das ist kein eigener Status. Während dieses Zeitraums:"
       },
       {
         "kind": "item",
-        "text": "Die Biografie ist öffentlich und sichtbar für alle, markiert als “in vorläufiger Prüfung”"
+        "text": "Die Biografie bleibt veröffentlicht und lesbar"
       },
       {
         "kind": "item",
@@ -3099,11 +3099,11 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "item",
-        "text": "Keine Meldungen erhalten → die Biografie wird endgültig"
+        "text": "Der Hinweis verschwindet und die Biografie bleibt veröffentlicht"
       },
       {
         "kind": "item",
-        "text": "Meldung erhalten → der Autor erhält eine Aufforderung, die angegebenen Inhalte zu ändern oder zu entfernen, bewertet nach Art und Stichhaltigkeit der Meldung"
+        "text": "Eine Meldung ist auch nach den 30 Tagen möglich. Wird die Biografie nach einer verlangten Überarbeitung erneut veröffentlicht, beginnen die 30 Tage von neuem"
       },
       {
         "kind": "paragraph",
@@ -3287,7 +3287,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "paragraph",
-        "text": "Die gesamte KI-Verarbeitung findet in der Schweiz über die KI-Systeme von Infomaniak statt, basierend auf Open-Source-Modellen. Es werden keine Daten an Drittanbieter von KI gesendet. Jeder Vorschlag ist mit der Kennzeichnung “KI-Vorschlag” versehen. Sie können die KI jederzeit deaktivieren."
+        "text": "Das Schreiben des Assistenten läuft in der Schweiz über die KI-Systeme von Infomaniak. Wenn Sie die Stimme nutzen, wird die gesprochene Antwort von einem Dienst in der Europäischen Union (Frankreich) erzeugt. Sie können die Stimme auslassen."
       },
       {
         "kind": "heading",
@@ -3451,7 +3451,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "paragraph",
-        "text": "Versionsverlauf: v1.0 — März 2026 — Erste Version"
+        "text": "Versionsverlauf: v1.0 — 25. September 2026 — Aktualisierung: Plattform online, erste 30 Tage, Cookies der App"
       },
       {
         "kind": "heading",
@@ -3531,7 +3531,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "paragraph",
-        "text": "Version: 1.0 | März 2026 | Dokumentenlizenz: CC BY-SA 4.0"
+        "text": "Version: 1.0 | 25. September 2026 | Dokumentenlizenz: CC BY-SA 4.0"
       },
       {
         "kind": "paragraph",
@@ -3559,7 +3559,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "version",
-        "text": "Versione 1.0 – Marzo 2026"
+        "text": "Versione 1.0 – 25 settembre 2026"
       },
       {
         "kind": "heading",
@@ -3759,11 +3759,11 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "heading",
-        "text": "Quando un familiare pubblica la biografia di una persona deceduta, questa viene contrassegnata come “temporanea” per i primi 30 giorni. Durante questo periodo la biografia è pubblica e visibile a tutti, contrassegnata come “in fase di revisione temporanea”. Chiunque venga menzionato — o i suoi familiari diretti — può presentare una segnalazione e richiedere di non comparire. L'autore può avvisare le persone citate ma non è tenuto a farlo. Il pulsante “Segnala” è sempre accessibile."
+        "text": "Quando un familiare pubblica la biografia di una persona deceduta, questa resta pubblica nel catalogo, con la dicitura “Nei primi 30 giorni”. Non è uno stato separato. Chiunque venga menzionato — o i suoi familiari diretti — può presentare una segnalazione. L'autore può avvisare le persone citate ma non è tenuto a farlo. Il pulsante “Segnala” resta accessibile anche dopo i 30 giorni."
       },
       {
         "kind": "paragraph",
-        "text": "Allo scadere dei 30 giorni: nessuna segnalazione → la biografia diventa definitiva. Segnalazione ricevuta → l'autore riceve una richiesta di modifica o rimozione del contenuto indicato, valutata in base alla sua natura e validità."
+        "text": "Allo scadere dei 30 giorni la dicitura sparisce e la biografia resta pubblicata. Una segnalazione resta possibile anche dopo. Se la biografia viene ripubblicata dopo una revisione richiesta, i 30 giorni ricominciano."
       },
       {
         "kind": "paragraph",
@@ -3823,7 +3823,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "heading",
-        "text": "Per tutti i dettagli, consulta la nostra Informativa sulla Privacy su biographylibrary.org/privacy."
+        "text": "Per tutti i dettagli, consulta l’Informativa sulla privacy in questa app."
       },
       {
         "kind": "heading",
@@ -4071,7 +4071,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "heading",
-        "text": "Cronologia delle versioni: v1.0 — Marzo 2026 — Versione iniziale"
+        "text": "Cronologia delle versioni: v1.0 — 25 settembre 2026 — Aggiornamento: piattaforma in linea, primi 30 giorni, cookie dell’app"
       },
       {
         "kind": "paragraph",
@@ -4119,7 +4119,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "heading",
-        "text": "Versione: 1.0 | Marzo 2026 | La versione inglese è la versione legalmente vincolante."
+        "text": "Versione: 1.0 | 25 settembre 2026 | La versione inglese è la versione legalmente vincolante."
       },
       {
         "kind": "paragraph",
@@ -4145,7 +4145,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "version",
-        "text": "Version 1.0 – March 2026"
+        "text": "Version 1.0 – 25 September 2026"
       },
       {
         "kind": "heading",
@@ -4345,11 +4345,11 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "heading",
-        "text": "When a family member publishes a biography of a deceased person, it is marked as “temporary” for the first 30 days. During this period the biography is public and visible to everyone, marked as “under temporary review”. Anyone mentioned — or their direct family members — may file a report and request not to appear. The author may notify cited persons but is not required to do so. The “Report” button is always accessible."
+        "text": "When a family member publishes a biography of a deceased person, it stays public in the catalogue, marked “In the first 30 days”. That mark is not a separate status. Anyone mentioned — or their direct family members — may file a report. The author may notify cited persons but is not required to do so. The “Report” button stays available after the 30 days as well."
       },
       {
         "kind": "paragraph",
-        "text": "At the end of 30 days: no reports → biography becomes definitive. Report received → the author receives a request to modify or remove the indicated content, assessed based on its nature and validity."
+        "text": "When the 30 days end, the mark disappears and the biography stays published. A report remains possible afterwards. If the biography is published again after a requested revision, the 30 days start again."
       },
       {
         "kind": "paragraph",
@@ -4409,7 +4409,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "heading",
-        "text": "For full details, see our Privacy Policy at biographylibrary.org/privacy."
+        "text": "For full details, see the Privacy Policy in this app."
       },
       {
         "kind": "heading",
@@ -4633,7 +4633,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "heading",
-        "text": "Optional AI features, processed in Switzerland via Infomaniak’s AI systems based on open source models. No data sent to third-party providers."
+        "text": "Optional AI features: writing stays in Switzerland via Infomaniak. If you use the voice, the spoken reply is generated in the European Union (France). You can leave the voice off."
       },
       {
         "kind": "heading",
@@ -4657,7 +4657,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "heading",
-        "text": "Version history: v1.0 — March 2026 — Initial version"
+        "text": "Version history: v1.0 — 25 September 2026 — Update: platform online, first 30 days, app cookies"
       },
       {
         "kind": "paragraph",
@@ -4705,7 +4705,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "heading",
-        "text": "Version: 1.0 | March 2026 | The English version is the legally binding version."
+        "text": "Version: 1.0 | 25 September 2026 | The English version is the legally binding version."
       },
       {
         "kind": "paragraph",
@@ -4731,7 +4731,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "version",
-        "text": "Version 1.0 – Mars 2026"
+        "text": "Version 1.0 – 25 septembre 2026"
       },
       {
         "kind": "heading",
@@ -4931,11 +4931,11 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "heading",
-        "text": "Lorsqu'un membre de la famille publie la biographie d'une personne décédée, celle-ci est marquée comme “ temporaire ” pendant les 30 premiers jours. Durant cette période, la biographie est publique et visible par tous, marquée comme “ en cours d'examen temporaire ”. Toute personne mentionnée — ou les membres directs de sa famille — peut déposer un signalement et demander à ne pas y figurer. L'auteur peut informer les personnes citées mais n'est pas tenu de le faire. Le bouton “ Signaler ” est toujours accessible."
+        "text": "Lorsqu'un membre de la famille publie la biographie d'une personne décédée, elle reste publique dans le catalogue, avec la mention « Dans les 30 premiers jours ». Ce n'est pas un statut à part. Toute personne mentionnée — ou les membres directs de sa famille — peut déposer un signalement. L'auteur peut informer les personnes citées mais n'est pas tenu de le faire. Le bouton « Signaler » reste accessible aussi après les 30 jours."
       },
       {
         "kind": "paragraph",
-        "text": "À la fin des 30 jours : aucun signalement → la biographie devient définitive. Signalement reçu → l'auteur reçoit une demande de modification ou de suppression du contenu indiqué, évaluée en fonction de sa nature et de sa validité."
+        "text": "À la fin des 30 jours, la mention disparaît et la biographie reste publiée. Un signalement reste possible ensuite. Si la biographie est publiée de nouveau après une révision demandée, les 30 jours recommencent."
       },
       {
         "kind": "paragraph",
@@ -4995,7 +4995,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "heading",
-        "text": "Pour plus de détails, consultez notre Politique de confidentialité sur biographylibrary.org/privacy."
+        "text": "Pour plus de détails, consultez la Politique de confidentialité dans cette app."
       },
       {
         "kind": "heading",
@@ -5219,7 +5219,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "heading",
-        "text": "Fonctionnalités d'IA facultatives, traitées en Suisse via les systèmes d'IA d'Infomaniak basés sur des modèles open source. Aucune donnée n'est envoyée à des fournisseurs tiers."
+        "text": "Fonctions d’IA facultatives : l’écriture reste en Suisse via Infomaniak. Si vous utilisez la voix, la réponse parlée est produite dans l’Union européenne (France). Vous pouvez ne pas utiliser la voix."
       },
       {
         "kind": "heading",
@@ -5243,7 +5243,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "heading",
-        "text": "Historique des versions : v1.0 — Mars 2026 — Version initiale"
+        "text": "Historique des versions : v1.0 — 25 septembre 2026 — Mise à jour : plateforme en ligne, 30 premiers jours, cookies de l’app"
       },
       {
         "kind": "paragraph",
@@ -5291,7 +5291,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "heading",
-        "text": "Version: 1.0 | Mars 2026 | La version anglaise est la version juridiquement contraignante."
+        "text": "Version: 1.0 | 25 septembre 2026 | La version anglaise est la version juridiquement contraignante."
       },
       {
         "kind": "paragraph",
@@ -5317,7 +5317,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "version",
-        "text": "Version 1.0 – März 2026"
+        "text": "Version 1.0 – 25. September 2026"
       },
       {
         "kind": "heading",
@@ -5517,11 +5517,11 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "heading",
-        "text": "Wenn ein Familienmitglied eine Biografie einer verstorbenen Person veröffentlicht, wird diese für die ersten 30 Tage als “temporär” markiert. Während dieser Zeit ist die Biografie öffentlich und für jeden sichtbar, gekennzeichnet als “in vorübergehender Prüfung”. Jede erwähnte Person — oder deren direkte Familienangehörige — kann eine Meldung einreichen und beantragen, nicht erwähnt zu werden. Der Autor kann zitierte Personen benachrichtigen, ist dazu jedoch nicht verpflichtet. Die Schaltfläche “Melden” ist jederzeit zugänglich."
+        "text": "Wenn ein Familienmitglied eine Biografie einer verstorbenen Person veröffentlicht, bleibt sie im Katalog öffentlich, mit dem Hinweis „In den ersten 30 Tagen“. Das ist kein eigener Status. Jede erwähnte Person — oder deren direkte Familienangehörige — kann eine Meldung einreichen. Der Autor kann zitierte Personen benachrichtigen, ist dazu jedoch nicht verpflichtet. Die Schaltfläche „Melden“ bleibt auch nach den 30 Tagen zugänglich."
       },
       {
         "kind": "paragraph",
-        "text": "Nach Ablauf von 30 Tagen: keine Meldungen → Biografie wird endgültig. Meldung erhalten → der Autor erhält die Aufforderung, den angegebenen Inhalt zu ändern oder zu entfernen, bewertet nach dessen Art und Stichhaltigkeit."
+        "text": "Nach Ablauf der 30 Tage verschwindet der Hinweis und die Biografie bleibt veröffentlicht. Eine Meldung bleibt danach möglich. Wird die Biografie nach einer verlangten Überarbeitung erneut veröffentlicht, beginnen die 30 Tage von neuem."
       },
       {
         "kind": "paragraph",
@@ -5581,7 +5581,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "heading",
-        "text": "Ausführliche Informationen finden Sie in unserer Datenschutzerklärung unter biographylibrary.org/privacy."
+        "text": "Ausführliche Informationen finden Sie in der Datenschutzerklärung in dieser App."
       },
       {
         "kind": "heading",
@@ -5805,7 +5805,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "heading",
-        "text": "Optionale KI-Funktionen, verarbeitet in der Schweiz über die KI-Systeme von Infomaniak basierend auf Open-Source-Modellen. Es werden keine Daten an Drittanbieter gesendet."
+        "text": "Optionale KI-Funktionen: das Schreiben bleibt in der Schweiz über Infomaniak. Wenn Sie die Stimme nutzen, wird die gesprochene Antwort in der Europäischen Union (Frankreich) erzeugt. Sie können die Stimme auslassen."
       },
       {
         "kind": "heading",
@@ -5829,7 +5829,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "heading",
-        "text": "Versionsverlauf: v1.0 — März 2026 — Erste Version"
+        "text": "Versionsverlauf: v1.0 — 25. September 2026 — Aktualisierung: Plattform online, erste 30 Tage, Cookies der App"
       },
       {
         "kind": "paragraph",
@@ -5877,7 +5877,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "heading",
-        "text": "Version: 1.0 | März 2026 | Die englische Version ist die rechtlich bindende Version."
+        "text": "Version: 1.0 | 25. September 2026 | Die englische Version ist die rechtlich bindende Version."
       },
       {
         "kind": "paragraph",
@@ -5905,7 +5905,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "version",
-        "text": "Versione 1.0 – Marzo 2026"
+        "text": "Versione 1.0 – 25 settembre 2026"
       },
       {
         "kind": "heading",
@@ -5917,11 +5917,11 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "paragraph",
-        "text": "Questa Informativa sui Cookie si applica al sito web istituzionale biographylibrary.org, realizzato su WordPress e ospitato sull'infrastruttura Infomaniak in Svizzera."
+        "text": "Questa Informativa sui Cookie si applica all’app app.biographylibrary.org, dove si scrivono e si consultano le biografie. L’app è in versione beta."
       },
       {
         "kind": "paragraph",
-        "text": "⚠️ La piattaforma Biography Library (l'archivio biografico vero e proprio) non è ancora online. Quando sarà disponibile, questa Informativa sui Cookie verrà aggiornata con una sezione dedicata che descriverà i cookie e i meccanismi tecnici specifici della piattaforma."
+        "text": "Il sito istituzionale biographylibrary.org può usare strumenti propri. Qui sono descritti i meccanismi dell’app, non quelli di WordPress."
       },
       {
         "kind": "heading",
@@ -5945,107 +5945,27 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "heading",
-        "text": "3.1 Cookie Tecnici di WordPress"
+        "text": "3.1 Sessione di accesso"
       },
       {
         "kind": "paragraph",
-        "text": "WordPress potrebbe impostare alcuni cookie tecnici sul tuo dispositivo. Per i visitatori non registrati, normalmente non viene impostato alcun cookie. I seguenti cookie riguardano esclusivamente gli amministratori del sito:"
+        "text": "L’accesso all’account è ricordato nel browser, solo per riconoscerti. Non serve a pubblicità né a profilazione."
       },
       {
         "kind": "heading",
-        "text": "Cookie"
+        "text": "3.2 Lingua"
       },
       {
         "kind": "paragraph",
-        "text": "Durata"
-      },
-      {
-        "kind": "paragraph",
-        "text": "Finalità"
-      },
-      {
-        "kind": "paragraph",
-        "text": "wordpress_[hash]"
-      },
-      {
-        "kind": "paragraph",
-        "text": "Sessione"
-      },
-      {
-        "kind": "paragraph",
-        "text": "Autenticazione dell'amministratore"
-      },
-      {
-        "kind": "paragraph",
-        "text": "wordpress_logged_in_[hash]"
-      },
-      {
-        "kind": "paragraph",
-        "text": "Sessione"
-      },
-      {
-        "kind": "paragraph",
-        "text": "Verifica dello stato di accesso"
-      },
-      {
-        "kind": "paragraph",
-        "text": "wp-settings-[userid]"
-      },
-      {
-        "kind": "paragraph",
-        "text": "1 anno"
-      },
-      {
-        "kind": "paragraph",
-        "text": "Preferenze dell'interfaccia di amministrazione"
-      },
-      {
-        "kind": "paragraph",
-        "text": "Questi cookie non vengono mai impostati per i normali visitatori del sito web pubblico."
+        "text": "La lingua scelta, italiano, inglese, francese o tedesco, è salvata nel browser. Non è un cookie di tracciamento."
       },
       {
         "kind": "heading",
-        "text": "3.2 Cookie di preferenza della lingua — TranslatePress"
+        "text": "3.3 Voce di Echo"
       },
       {
         "kind": "paragraph",
-        "text": "Il sito web utilizza TranslatePress per offrire contenuti in più lingue (inglese, italiano, francese, tedesco). Per ricordare la lingua scelta, TranslatePress imposta un cookie tecnico:"
-      },
-      {
-        "kind": "heading",
-        "text": "Cookie"
-      },
-      {
-        "kind": "paragraph",
-        "text": "Durata"
-      },
-      {
-        "kind": "paragraph",
-        "text": "Finalità"
-      },
-      {
-        "kind": "paragraph",
-        "text": "trp_language"
-      },
-      {
-        "kind": "paragraph",
-        "text": "1 anno"
-      },
-      {
-        "kind": "paragraph",
-        "text": "Memorizza la preferenza linguistica scelta dal visitatore"
-      },
-      {
-        "kind": "paragraph",
-        "text": "Questo cookie è strettamente necessario per il corretto funzionamento del sito web multilingue. Non contiene dati di identificazione personale."
-      },
-      {
-        "kind": "heading",
-        "text": "3.3 SEO — Rank Math"
-      },
-      {
-        "kind": "paragraph",
-        "text": "Il sito web utilizza Rank Math SEO PRO per la gestione dell'ottimizzazione per i motori di ricerca. Rank Math opera principalmente lato server e tramite i metadati delle pagine. Non imposta cookie di tracciamento o di profilazione sui visitatori."
+        "text": "Se usi la voce, la risposta parlata è generata da un servizio nell’Unione europea (Francia). La scrittura dell’assistente resta in Svizzera. Non è un cookie."
       },
       {
         "kind": "heading",
@@ -6077,7 +5997,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "item",
-        "text": "❌ Nessun dato inviato a server al di fuori della Svizzera"
+        "text": "❌ Nessun cookie di tracciamento inviato fuori dalla Svizzera. La voce parlata di Echo, se la usi, è generata nell’Unione europea"
       },
       {
         "kind": "paragraph",
@@ -6185,7 +6105,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "paragraph",
-        "text": "Versione: 1.0 | Marzo 2026 | Licenza del documento: CC BY-SA 4.0 La versione inglese è quella legalmente vincolante."
+        "text": "Versione: 1.0 | 25 settembre 2026 | Licenza del documento: CC BY-SA 4.0 La versione inglese è quella legalmente vincolante."
       },
       {
         "kind": "paragraph",
@@ -6211,7 +6131,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "version",
-        "text": "Version 1.0 – March 2026"
+        "text": "Version 1.0 – 25 September 2026"
       },
       {
         "kind": "heading",
@@ -6223,11 +6143,11 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "paragraph",
-        "text": "This Cookie Policy applies to the institutional website biographylibrary.org, built on WordPress and hosted on Infomaniak infrastructure in Switzerland."
+        "text": "This Cookie Policy applies to the app at app.biographylibrary.org, where biographies are written and read. The app is in beta."
       },
       {
         "kind": "paragraph",
-        "text": "⚠️ The Biography Library platform (the biographical archive itself) is not yet online. When it becomes available, this Cookie Policy will be updated with a dedicated section describing the platform-specific cookies and technical mechanisms."
+        "text": "The institutional site biographylibrary.org may use its own tools. This page describes the app, not WordPress."
       },
       {
         "kind": "heading",
@@ -6251,107 +6171,27 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "heading",
-        "text": "3.1 WordPress Technical Cookies"
+        "text": "3.1 Sign-in session"
       },
       {
         "kind": "paragraph",
-        "text": "WordPress may set some technical cookies on your device. For non-registered visitors, no cookies are normally set. The following cookies concern site administrators only:"
+        "text": "The account sign-in is remembered in the browser, only to recognise you. It is not used for advertising or profiling."
       },
       {
         "kind": "heading",
-        "text": "Cookie"
+        "text": "3.2 Language"
       },
       {
         "kind": "paragraph",
-        "text": "Duration"
-      },
-      {
-        "kind": "paragraph",
-        "text": "Purpose"
-      },
-      {
-        "kind": "paragraph",
-        "text": "wordpress_[hash]"
-      },
-      {
-        "kind": "paragraph",
-        "text": "Session"
-      },
-      {
-        "kind": "paragraph",
-        "text": "Administrator authentication"
-      },
-      {
-        "kind": "paragraph",
-        "text": "wordpress_logged_in_[hash]"
-      },
-      {
-        "kind": "paragraph",
-        "text": "Session"
-      },
-      {
-        "kind": "paragraph",
-        "text": "Login status verification"
-      },
-      {
-        "kind": "paragraph",
-        "text": "wp-settings-[userid]"
-      },
-      {
-        "kind": "paragraph",
-        "text": "1 year"
-      },
-      {
-        "kind": "paragraph",
-        "text": "Administration interface preferences"
-      },
-      {
-        "kind": "paragraph",
-        "text": "These cookies are never set for ordinary visitors to the public website."
+        "text": "The chosen language, Italian, English, French, or German, is saved in the browser. It is not a tracking cookie."
       },
       {
         "kind": "heading",
-        "text": "3.2 Language Preference Cookie — TranslatePress"
+        "text": "3.3 Echo’s voice"
       },
       {
         "kind": "paragraph",
-        "text": "The website uses TranslatePress to offer content in multiple languages (English, Italian, French, German). To remember your chosen language, TranslatePress sets one technical cookie:"
-      },
-      {
-        "kind": "heading",
-        "text": "Cookie"
-      },
-      {
-        "kind": "paragraph",
-        "text": "Duration"
-      },
-      {
-        "kind": "paragraph",
-        "text": "Purpose"
-      },
-      {
-        "kind": "paragraph",
-        "text": "trp_language"
-      },
-      {
-        "kind": "paragraph",
-        "text": "1 year"
-      },
-      {
-        "kind": "paragraph",
-        "text": "Stores the visitor’s chosen language preference"
-      },
-      {
-        "kind": "paragraph",
-        "text": "This cookie is strictly necessary for the correct functioning of the multilingual website. It contains no personally identifiable data."
-      },
-      {
-        "kind": "heading",
-        "text": "3.3 SEO — Rank Math"
-      },
-      {
-        "kind": "paragraph",
-        "text": "The website uses Rank Math SEO PRO for search engine optimisation management. Rank Math operates primarily server-side and through page metadata. It does not set tracking or profiling cookies on visitors."
+        "text": "If you use the voice, the spoken reply is generated by a service in the European Union (France). The assistant’s writing stays in Switzerland. This is not a cookie."
       },
       {
         "kind": "heading",
@@ -6383,7 +6223,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "item",
-        "text": "❌ No data sent to servers outside Switzerland"
+        "text": "❌ No tracking cookie is sent outside Switzerland. Echo’s spoken voice, if you use it, is generated in the European Union"
       },
       {
         "kind": "paragraph",
@@ -6491,7 +6331,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "paragraph",
-        "text": "Version: 1.0 | March 2026 | Document licence: CC BY-SA 4.0 The English version is the legally binding version."
+        "text": "Version: 1.0 | 25 September 2026 | Document licence: CC BY-SA 4.0 The English version is the legally binding version."
       },
       {
         "kind": "paragraph",
@@ -6517,7 +6357,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "version",
-        "text": "Version 1.0 – Mars 2026"
+        "text": "Version 1.0 – 25 septembre 2026"
       },
       {
         "kind": "heading",
@@ -6529,11 +6369,11 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "paragraph",
-        "text": "Cette politique en matière de cookies s'applique au site institutionnel biographylibrary.org, créé sur WordPress et hébergé sur l'infrastructure d'Infomaniak en Suisse."
+        "text": "Cette politique en matière de cookies s’applique à l’app app.biographylibrary.org, où les biographies sont écrites et consultées. L’app est en version bêta."
       },
       {
         "kind": "paragraph",
-        "text": "⚠️ La plateforme Biography Library (les archives biographiques elles-mêmes) n'est pas encore en ligne. Lorsqu'elle sera disponible, cette politique en matière de cookies sera mise à jour avec une section dédiée décrivant les cookies et les mécanismes techniques spécifiques à la plateforme."
+        "text": "Le site institutionnel biographylibrary.org peut utiliser ses propres outils. Cette page décrit l’app, pas WordPress."
       },
       {
         "kind": "heading",
@@ -6557,107 +6397,27 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "heading",
-        "text": "3.1 Cookies techniques de WordPress"
+        "text": "3.1 Session de connexion"
       },
       {
         "kind": "paragraph",
-        "text": "WordPress peut installer certains cookies techniques sur votre appareil. Pour les visiteurs non enregistrés, aucun cookie n'est normalement installé. Les cookies suivants concernent uniquement les administrateurs du site :"
+        "text": "La connexion au compte est mémorisée dans le navigateur, seulement pour vous reconnaître. Elle ne sert ni à la publicité ni au profilage."
       },
       {
         "kind": "heading",
-        "text": "Cookie"
+        "text": "3.2 Langue"
       },
       {
         "kind": "paragraph",
-        "text": "Durée"
-      },
-      {
-        "kind": "paragraph",
-        "text": "Finalité"
-      },
-      {
-        "kind": "paragraph",
-        "text": "wordpress_[hash]"
-      },
-      {
-        "kind": "paragraph",
-        "text": "Session"
-      },
-      {
-        "kind": "paragraph",
-        "text": "Authentification de l'administrateur"
-      },
-      {
-        "kind": "paragraph",
-        "text": "wordpress_logged_in_[hash]"
-      },
-      {
-        "kind": "paragraph",
-        "text": "Session"
-      },
-      {
-        "kind": "paragraph",
-        "text": "Vérification du statut de connexion"
-      },
-      {
-        "kind": "paragraph",
-        "text": "wp-settings-[userid]"
-      },
-      {
-        "kind": "paragraph",
-        "text": "1 an"
-      },
-      {
-        "kind": "paragraph",
-        "text": "Préférences de l'interface d'administration"
-      },
-      {
-        "kind": "paragraph",
-        "text": "Ces cookies ne sont jamais définis pour les visiteurs ordinaires du site web public."
+        "text": "La langue choisie, italien, anglais, français ou allemand, est enregistrée dans le navigateur. Ce n’est pas un cookie de suivi."
       },
       {
         "kind": "heading",
-        "text": "3.2 Cookie de préférence de langue — TranslatePress"
+        "text": "3.3 Voix d’Echo"
       },
       {
         "kind": "paragraph",
-        "text": "Le site web utilise TranslatePress pour proposer du contenu en plusieurs langues (anglais, italien, français, allemand). Pour mémoriser la langue que vous avez choisie, TranslatePress définit un cookie technique :"
-      },
-      {
-        "kind": "heading",
-        "text": "Cookie"
-      },
-      {
-        "kind": "paragraph",
-        "text": "Durée"
-      },
-      {
-        "kind": "paragraph",
-        "text": "Finalité"
-      },
-      {
-        "kind": "paragraph",
-        "text": "trp_language"
-      },
-      {
-        "kind": "paragraph",
-        "text": "1 an"
-      },
-      {
-        "kind": "paragraph",
-        "text": "Stocke la préférence de langue choisie par le visiteur"
-      },
-      {
-        "kind": "paragraph",
-        "text": "Ce cookie est strictement nécessaire au bon fonctionnement du site web multilingue. Il ne contient aucune donnée personnellement identifiable."
-      },
-      {
-        "kind": "heading",
-        "text": "3.3 SEO — Rank Math"
-      },
-      {
-        "kind": "paragraph",
-        "text": "Le site web utilise Rank Math SEO PRO pour la gestion de l'optimisation pour les moteurs de recherche. Rank Math fonctionne principalement côté serveur et via les métadonnées des pages. Il ne définit aucun cookie de suivi ou de profilage sur les visiteurs."
+        "text": "Si vous utilisez la voix, la réponse parlée est produite par un service dans l’Union européenne (France). L’écriture de l’assistant reste en Suisse. Ce n’est pas un cookie."
       },
       {
         "kind": "heading",
@@ -6689,7 +6449,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "item",
-        "text": "❌ Aucune donnée envoyée à des serveurs en dehors de la Suisse"
+        "text": "❌ Aucun cookie de suivi n’est envoyé hors de Suisse. La voix parlée d’Echo, si vous l’utilisez, est produite dans l’Union européenne"
       },
       {
         "kind": "paragraph",
@@ -6797,7 +6557,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "paragraph",
-        "text": "Version : 1.0 | Mars 2026 | Licence du document : CC BY-SA 4.0 La version anglaise est la version juridiquement contraignante."
+        "text": "Version : 1.0 | 25 septembre 2026 | Licence du document : CC BY-SA 4.0 La version anglaise est la version juridiquement contraignante."
       },
       {
         "kind": "paragraph",
@@ -6823,7 +6583,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "version",
-        "text": "Version 1.0 – März 2026"
+        "text": "Version 1.0 – 25. September 2026"
       },
       {
         "kind": "heading",
@@ -6835,11 +6595,11 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "paragraph",
-        "text": "Diese Cookie-Richtlinie gilt für die institutionelle Website biographylibrary.org, die auf WordPress basiert und auf der Infrastruktur von Infomaniak in der Schweiz gehostet wird."
+        "text": "Diese Cookie-Richtlinie gilt für die App unter app.biographylibrary.org, wo Biografien geschrieben und gelesen werden. Die App ist in der Beta."
       },
       {
         "kind": "paragraph",
-        "text": "⚠️ Die Plattform Biography Library (das biografische Archiv selbst) ist noch nicht online. Sobald sie verfügbar ist, wird diese Cookie-Richtlinie um einen speziellen Abschnitt aktualisiert, der die plattformspezifischen Cookies und technischen Mechanismen beschreibt."
+        "text": "Die institutionelle Website biographylibrary.org kann eigene Werkzeuge nutzen. Diese Seite beschreibt die App, nicht WordPress."
       },
       {
         "kind": "heading",
@@ -6863,107 +6623,27 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "heading",
-        "text": "3.1 Technische WordPress-Cookies"
+        "text": "3.1 Anmeldesitzung"
       },
       {
         "kind": "paragraph",
-        "text": "WordPress kann einige technische Cookies auf Ihrem Gerät setzen. Für nicht registrierte Besucher werden normalerweise keine Cookies gesetzt. Die folgenden Cookies betreffen nur Website-Administratoren:"
+        "text": "Die Anmeldung am Konto wird im Browser gespeichert, nur um Sie wiederzuerkennen. Sie dient nicht der Werbung oder der Profilbildung."
       },
       {
         "kind": "heading",
-        "text": "Cookie"
+        "text": "3.2 Sprache"
       },
       {
         "kind": "paragraph",
-        "text": "Dauer"
-      },
-      {
-        "kind": "paragraph",
-        "text": "Zweck"
-      },
-      {
-        "kind": "paragraph",
-        "text": "wordpress_[hash]"
-      },
-      {
-        "kind": "paragraph",
-        "text": "Sitzung"
-      },
-      {
-        "kind": "paragraph",
-        "text": "Administrator-Authentifizierung"
-      },
-      {
-        "kind": "paragraph",
-        "text": "wordpress_logged_in_[hash]"
-      },
-      {
-        "kind": "paragraph",
-        "text": "Sitzung"
-      },
-      {
-        "kind": "paragraph",
-        "text": "Überprüfung des Anmeldestatus"
-      },
-      {
-        "kind": "paragraph",
-        "text": "wp-settings-[userid]"
-      },
-      {
-        "kind": "paragraph",
-        "text": "1 Jahr"
-      },
-      {
-        "kind": "paragraph",
-        "text": "Einstellungen der Administrationsoberfläche"
-      },
-      {
-        "kind": "paragraph",
-        "text": "Diese Cookies werden niemals für normale Besucher der öffentlichen Website gesetzt."
+        "text": "Die gewählte Sprache, Italienisch, Englisch, Französisch oder Deutsch, wird im Browser gespeichert. Das ist kein Tracking-Cookie."
       },
       {
         "kind": "heading",
-        "text": "3.2 Sprachpräferenz-Cookie — TranslatePress"
+        "text": "3.3 Echos Stimme"
       },
       {
         "kind": "paragraph",
-        "text": "Die Website verwendet TranslatePress, um Inhalte in mehreren Sprachen (Englisch, Italienisch, Französisch, Deutsch) anzubieten. Um sich Ihre gewählte Sprache zu merken, setzt TranslatePress ein technisches Cookie:"
-      },
-      {
-        "kind": "heading",
-        "text": "Cookie"
-      },
-      {
-        "kind": "paragraph",
-        "text": "Dauer"
-      },
-      {
-        "kind": "paragraph",
-        "text": "Zweck"
-      },
-      {
-        "kind": "paragraph",
-        "text": "trp_language"
-      },
-      {
-        "kind": "paragraph",
-        "text": "1 Jahr"
-      },
-      {
-        "kind": "paragraph",
-        "text": "Speichert die vom Besucher gewählte Sprachpräferenz"
-      },
-      {
-        "kind": "paragraph",
-        "text": "Dieses Cookie ist für das korrekte Funktionieren der mehrsprachigen Website unbedingt erforderlich. Es enthält keine personenbezogenen Daten."
-      },
-      {
-        "kind": "heading",
-        "text": "3.3 SEO — Rank Math"
-      },
-      {
-        "kind": "paragraph",
-        "text": "Die Website verwendet Rank Math SEO PRO für die Verwaltung der Suchmaschinenoptimierung. Rank Math arbeitet hauptsächlich serverseitig und über Seiten-Metadaten. Es setzt keine Tracking- oder Profiling-Cookies bei Besuchern."
+        "text": "Wenn Sie die Stimme nutzen, wird die gesprochene Antwort von einem Dienst in der Europäischen Union (Frankreich) erzeugt. Das Schreiben des Assistenten bleibt in der Schweiz. Das ist kein Cookie."
       },
       {
         "kind": "heading",
@@ -6995,7 +6675,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "item",
-        "text": "❌ Keine Datenübermittlung an Server außerhalb der Schweiz"
+        "text": "❌ Kein Tracking-Cookie wird außerhalb der Schweiz gesendet. Echos gesprochene Stimme wird, wenn Sie sie nutzen, in der Europäischen Union erzeugt"
       },
       {
         "kind": "paragraph",
@@ -7103,7 +6783,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "paragraph",
-        "text": "Version: 1.0 | März 2026 | Dokumentenlizenz: CC BY-SA 4.0 Die englische Version ist die rechtlich bindende Version."
+        "text": "Version: 1.0 | 25. September 2026 | Dokumentenlizenz: CC BY-SA 4.0 Die englische Version ist die rechtlich bindende Version."
       },
       {
         "kind": "paragraph",
