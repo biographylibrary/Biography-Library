@@ -4,6 +4,7 @@ import type { ModerationDecision } from '@/lib/moderation/types';
 import type { BiographyDecisionPatch } from '@/lib/moderation/moderation-actions';
 import { notifyAuthorPublicationEmail } from '@/lib/server/email/publication-helpers';
 import { writeModerationMessage } from '@/lib/server/moderation-register';
+import { provisionalUntilOnFirstPublish, republicationClock } from '@/lib/provisional-window';
 
 export type ModerationServerResult = {
   error: string | null;
@@ -151,13 +152,40 @@ export async function serverSubmitDecision(params: {
   if (reportError) return { error: reportError.message, conflict: false };
   if (!updated) return { error: null, conflict: true };
 
+  let republication = false;
   if (bioPatch && Object.keys(bioPatch).length > 0) {
-    const { error: bioError } = await service
-      .from('biographies')
-      .update(bioPatch)
-      .eq('id', biographyId);
-
+    const patch: Record<string, unknown> = { ...bioPatch };
+    if (patch.status === 'published') {
+      const { data: current } = await service
+        .from('biographies')
+        .select('status, biography_type, published_at, provisional_until')
+        .eq('id', biographyId)
+        .maybeSingle();
+      const row = current as {
+        status?: string;
+        biography_type?: string | null;
+        published_at?: string | null;
+        provisional_until?: string | null;
+      } | null;
+      if (row?.status === 'revision_pending_review') {
+        delete patch.published_at;
+        Object.assign(patch, republicationClock(row.biography_type, now));
+        republication = true;
+      } else if (row?.biography_type === 'memorial' && !row.provisional_until && typeof patch.published_at === 'string') {
+        const until = provisionalUntilOnFirstPublish('memorial', patch.published_at);
+        if (until) patch.provisional_until = until;
+      }
+    }
+    const { error: bioError } = await service.from('biographies').update(patch).eq('id', biographyId);
     if (bioError) return { error: bioError.message, conflict: false };
+    if (republication) {
+      try {
+        const { syncArchivePackage } = await import('@/lib/server/archive-package-store');
+        await syncArchivePackage(service, biographyId, 'republication');
+      } catch (err) {
+        console.error('[moderation-decide] archive package failed (non-blocking)', err);
+      }
+    }
   }
 
   const notifyError = await insertNotification(service, authorId, notificationMessage);

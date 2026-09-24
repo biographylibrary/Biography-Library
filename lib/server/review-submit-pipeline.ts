@@ -696,14 +696,29 @@ export async function runReviewSubmitScreening(
     const { ensureUmIdFor } = await import('@/lib/server/um-id-registry');
     await ensureUmIdFor(serviceClient, biographyId);
 
-    await serviceClient
+    const { data: priorBio } = await serviceClient
       .from('biographies')
-      .update({
-        status: 'published',
-        published_at: new Date().toISOString(),
-        ai_screening_status: 'passed',
-      })
-      .eq('id', biographyId);
+      .select('biography_type, published_at, provisional_until')
+      .eq('id', biographyId)
+      .maybeSingle();
+    const prior = priorBio as {
+      biography_type?: string | null;
+      published_at?: string | null;
+      provisional_until?: string | null;
+    } | null;
+    const publishedAt = prior?.published_at ?? new Date().toISOString();
+    const publishPatch: Record<string, string> = {
+      status: 'published',
+      ai_screening_status: 'passed',
+    };
+    if (!prior?.published_at) publishPatch.published_at = publishedAt;
+    if (prior?.biography_type === 'memorial' && !prior.provisional_until && !prior.published_at) {
+      const { provisionalUntilOnFirstPublish } = await import('@/lib/provisional-window');
+      const until = provisionalUntilOnFirstPublish('memorial', publishedAt);
+      if (until) publishPatch.provisional_until = until;
+    }
+
+    await serviceClient.from('biographies').update(publishPatch).eq('id', biographyId);
 
     try {
       const { syncArchivePackage } = await import('@/lib/server/archive-package-store');

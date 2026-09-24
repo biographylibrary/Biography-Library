@@ -571,6 +571,7 @@ export interface Translations {
     notFoundOrDenied: string;
     biographyPrivate: string;
     archivedBanner: string;
+    provisionalMark: string;
     publishedOn: string;
     reportButton: string;
     reportModalTitle: string;
@@ -1475,6 +1476,7 @@ export interface Translations {
     filterAll: string;
     typeAutobiography: string;
     typeMemorial: string;
+    provisionalMark: string;
     langAll: string;
     chaptersCount: string;
     publishedOn: string;
@@ -2287,6 +2289,7 @@ export const translations: Record<Language, Translations> = {
       notFoundOrDenied: 'Biography not found or access denied',
       biographyPrivate: 'This biography is private',
       archivedBanner: 'This biography has been archived.',
+      provisionalMark: 'In the first 30 days',
       publishedOn: 'Published',
       reportButton: 'Report',
       reportModalTitle: 'Report this biography',
@@ -3211,6 +3214,7 @@ export const translations: Record<Language, Translations> = {
       filterAll: 'All',
       typeAutobiography: 'Autobiography',
       typeMemorial: 'Memorial',
+      provisionalMark: 'In the first 30 days',
       langAll: 'All languages',
       chaptersCount: 'Chapters',
       publishedOn: 'Published',
@@ -4036,6 +4040,7 @@ export const translations: Record<Language, Translations> = {
       notFoundOrDenied: 'Biografia non trovata o accesso negato',
       biographyPrivate: 'Questa biografia \u00e8 privata',
       archivedBanner: 'Questa biografia \u00e8 stata archiviata.',
+      provisionalMark: 'Nei primi 30 giorni',
       publishedOn: 'Pubblicato',
       reportButton: 'Segnala',
       reportModalTitle: 'Segnala questa biografia',
@@ -4960,6 +4965,7 @@ export const translations: Record<Language, Translations> = {
       filterAll: 'Tutti',
       typeAutobiography: 'Autobiografia',
       typeMemorial: 'Memoriale',
+      provisionalMark: 'Nei primi 30 giorni',
       langAll: 'Tutte le lingue',
       chaptersCount: 'Capitoli',
       publishedOn: 'Pubblicato',
@@ -5785,6 +5791,7 @@ export const translations: Record<Language, Translations> = {
       notFoundOrDenied: 'Biographie introuvable ou acc\u00e8s refus\u00e9',
       biographyPrivate: 'Cette biographie est priv\u00e9e',
       archivedBanner: 'Cette biographie a \u00e9t\u00e9 archiv\u00e9e.',
+      provisionalMark: 'Dans les 30 premiers jours',
       publishedOn: 'Publi\u00e9',
       reportButton: 'Signaler',
       reportModalTitle: 'Signaler cette biographie',
@@ -6709,6 +6716,7 @@ export const translations: Record<Language, Translations> = {
       filterAll: 'Tous',
       typeAutobiography: 'Autobiographie',
       typeMemorial: 'Mémorial',
+      provisionalMark: 'Dans les 30 premiers jours',
       langAll: 'Toutes les langues',
       chaptersCount: 'Chapitres',
       publishedOn: 'Publié',
@@ -7534,6 +7542,7 @@ export const translations: Record<Language, Translations> = {
       notFoundOrDenied: 'Biografie nicht gefunden oder Zugriff verweigert',
       biographyPrivate: 'Diese Biografie ist privat',
       archivedBanner: 'Diese Biografie wurde archiviert.',
+      provisionalMark: 'In den ersten 30 Tagen',
       publishedOn: 'Ver\u00f6ffentlicht',
       reportButton: 'Melden',
       reportModalTitle: 'Diese Biografie melden',
@@ -8458,6 +8467,7 @@ export const translations: Record<Language, Translations> = {
       filterAll: 'Alle',
       typeAutobiography: 'Autobiografie',
       typeMemorial: 'Gedenkschrift',
+      provisionalMark: 'In den ersten 30 Tagen',
       langAll: 'Alle Sprachen',
       chaptersCount: 'Kapitel',
       publishedOn: 'Veröffentlicht',

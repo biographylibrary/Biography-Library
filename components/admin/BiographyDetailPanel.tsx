@@ -8,6 +8,7 @@ import { useAuth } from '@/lib/auth-context';
 import { supabase } from '@/lib/supabase';
 import { createNotification } from '@/lib/notifications-service';
 import { sendAuthorEmailFromClient } from '@/lib/client/send-author-email';
+import { provisionalUntilOnFirstPublish } from '@/lib/provisional-window';
 import type { EmailTemplateId } from '@/lib/server/email';
 import { useToast } from '@/hooks/use-toast';
 import {
@@ -213,8 +214,11 @@ export function BiographyDetailPanel({ biography, onClose, onRefresh }: Biograph
       }
 
       const updateData: Record<string, unknown> = { status: newStatus };
-      if (action === 'force_publish') {
-        updateData.published_at = new Date().toISOString();
+      if (action === 'force_publish' && !biography.published_at) {
+        const publishedAt = new Date().toISOString();
+        updateData.published_at = publishedAt;
+        const until = provisionalUntilOnFirstPublish(biography.type, publishedAt);
+        if (until) updateData.provisional_until = until;
       }
 
       const { error } = await supabase

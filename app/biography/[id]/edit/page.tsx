@@ -52,6 +52,7 @@ import { toast } from 'sonner';
 import type { Biography, BiographyPublicationStatus } from '@/lib/biographies';
 import { canPublishNextChapter } from '@/lib/biography-chapter-cooldown';
 import { isBiographyPublicationStatus, isReviewOrScreeningLockStatus } from '@/lib/publication-state';
+import { provisionalUntilOnFirstPublish } from '@/lib/provisional-window';
 import { generateBiographyPDF, checkBiographyPdfReadiness, checkPdfPreflight, getPdfReadinessMessage } from '@/lib/pdf-export';
 import { AdvancedExportDialog } from '@/components/export/AdvancedExportDialog';
 import { LicenseChoiceDialog } from '@/components/editor/LicenseChoiceDialog';
@@ -1429,12 +1430,16 @@ const [isPublishing, setIsPublishing] = useState(false);
     }
 
     try {
+      const publishedAt = new Date().toISOString();
+      const publishPatch: { status: 'published'; published_at: string; provisional_until?: string } = {
+        status: 'published',
+        published_at: publishedAt,
+      };
+      const until = provisionalUntilOnFirstPublish(biography?.biography_type, publishedAt);
+      if (until) publishPatch.provisional_until = until;
       const { error } = await supabase
         .from('biographies')
-        .update({
-          status: 'published',
-          published_at: new Date().toISOString(),
-        })
+        .update(publishPatch)
         .eq('id', id);
 
       if (error) {

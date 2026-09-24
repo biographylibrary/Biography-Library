@@ -4,6 +4,8 @@ import { ModerationDecision, ModeratorNotes } from './types';
 export type BiographyDecisionPatch = {
   status?: 'published' | 'draft' | 'removed' | 'revision_requested';
   published_at?: string;
+  revised_at?: string;
+  provisional_until?: string | null;
   is_frozen?: boolean;
   frozen_at?: string | null;
   frozen_reason?: string | null;
