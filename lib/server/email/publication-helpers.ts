@@ -46,6 +46,7 @@ export async function notifyAuthorPublicationEmail(params: {
   contentLanguage?: string;
   vars?: Record<string, string>;
   notificationMessage: string;
+  idempotencyKey?: string;
 }): Promise<void> {
   const author = await fetchProfileEmailContext(params.client, params.authorId);
   const title = await fetchBiographyTitle(params.client, params.biographyId);
@@ -62,7 +63,7 @@ export async function notifyAuthorPublicationEmail(params: {
       editorUrl: editorUrl(params.biographyId),
       ...params.vars,
     },
-    idempotencyKey: `${params.templateId}/${params.authorId}/${params.biographyId}`,
+    idempotencyKey: params.idempotencyKey ?? `${params.templateId}/${params.authorId}/${params.biographyId}`,
     notificationMessage: params.notificationMessage,
   });
 }

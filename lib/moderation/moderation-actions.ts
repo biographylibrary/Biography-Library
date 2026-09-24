@@ -2,7 +2,7 @@ import { supabase } from '@/lib/supabase';
 import { ModerationDecision, ModeratorNotes } from './types';
 
 export type BiographyDecisionPatch = {
-  status?: 'published' | 'draft' | 'removed';
+  status?: 'published' | 'draft' | 'removed' | 'revision_requested';
   published_at?: string;
   is_frozen?: boolean;
   frozen_at?: string | null;
@@ -62,7 +62,7 @@ export async function claimReportReview(reportId: string, userId: string): Promi
 
 export async function freezeBiography(
   biographyId: string,
-  reason = 'moderation_report',
+  reason = 'admin_action',
 ): Promise<{ error: string | null }> {
   const { payload } = await moderationApiPost({ action: 'freeze', biographyId, reason });
   return { error: payload.error ?? null };
