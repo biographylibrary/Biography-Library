@@ -125,6 +125,8 @@ export interface Translations {
     betaBanner: string;
     localSaveBanner: string;
     exportHint: string;
+    loginNotice: string;
+    loginNoticeClose: string;
   };
   accountSettings: {
     language: string;
@@ -1828,6 +1830,9 @@ export const translations: Record<Language, Translations> = {
       betaBanner: 'Biography Library is in beta. Some parts may not work correctly.',
       localSaveBanner: 'After every writing session, save a copy on your computer.',
       exportHint: 'In the editor, open Export and download a UTF-8 text file and a PDF.',
+      loginNotice:
+        'Biography Library is in beta. Some parts may not work correctly. After every writing session, save a copy on your computer. In the editor, open Export and download a text file and/or a PDF.',
+      loginNoticeClose: 'I understand',
     },
     accountSettings: {
       language: 'Language',
@@ -3578,6 +3583,9 @@ export const translations: Record<Language, Translations> = {
       betaBanner: 'Biography Library è in versione beta. Alcune parti potrebbero non funzionare correttamente.',
       localSaveBanner: 'Dopo ogni sessione di scrittura, salva una copia sul computer.',
       exportHint: 'Nell’editor apri Esporta e scarica un file di testo UTF-8 e un PDF.',
+      loginNotice:
+        'Biography Library è in versione beta. Alcune parti potrebbero non funzionare correttamente. Dopo ogni sessione di scrittura, salva una copia sul computer. Nell’editor apri Esporta e scarica un file di testo e / o un PDF.',
+      loginNoticeClose: 'Ho capito',
     },
     accountSettings: {
       language: 'Lingua',
@@ -5330,6 +5338,9 @@ export const translations: Record<Language, Translations> = {
       betaBanner: 'Biography Library est en version bêta. Certaines parties peuvent ne pas fonctionner correctement.',
       localSaveBanner: 'Après chaque session d’écriture, enregistrez une copie sur votre ordinateur.',
       exportHint: 'Dans l’éditeur, ouvrez Exporter et téléchargez un fichier texte UTF-8 et un PDF.',
+      loginNotice:
+        'Biography Library est en version bêta. Certaines parties peuvent ne pas fonctionner correctement. Après chaque session d’écriture, enregistrez une copie sur votre ordinateur. Dans l’éditeur, ouvrez Exporter et téléchargez un fichier texte et/ou un PDF.',
+      loginNoticeClose: 'J’ai compris',
     },
     accountSettings: {
       language: 'Langue',
@@ -7082,6 +7093,9 @@ export const translations: Record<Language, Translations> = {
       betaBanner: 'Biography Library ist in der Beta. Einige Teile funktionieren möglicherweise nicht korrekt.',
       localSaveBanner: 'Speichern Sie nach jeder Schreibsitzung eine Kopie auf Ihrem Computer.',
       exportHint: 'Öffnen Sie im Editor Export und laden Sie eine UTF-8-Textdatei und ein PDF herunter.',
+      loginNotice:
+        'Biography Library ist in der Beta. Einige Teile funktionieren möglicherweise nicht korrekt. Speichern Sie nach jeder Schreibsitzung eine Kopie auf Ihrem Computer. Öffnen Sie im Editor Export und laden Sie eine Textdatei und/oder ein PDF herunter.',
+      loginNoticeClose: 'Verstanden',
     },
     accountSettings: {
       language: 'Sprache',

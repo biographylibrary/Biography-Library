@@ -4,6 +4,7 @@ import { Providers } from './providers';
 import { ConditionalHeader } from '@/components/conditional-header';
 import { Footer } from '@/components/footer';
 import { PwaInstallPrompt } from '@/components/pwa-install-prompt';
+import { BetaLoginNotice } from '@/components/auth/BetaLoginNotice';
 import { DevUnregisterServiceWorker } from '@/components/dev-unregister-sw';
 import { DEV_CLEAR_PWA_SCRIPT } from '@/lib/dev-clear-pwa';
 
@@ -107,6 +108,7 @@ export default function RootLayout({
             <Footer />
           </div>
           <PwaInstallPrompt />
+          <BetaLoginNotice />
           <DevUnregisterServiceWorker />
         </Providers>
       </body>
