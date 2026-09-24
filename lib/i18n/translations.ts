@@ -158,6 +158,10 @@ export interface Translations {
     statusUnderReview: string;
     statusPdfDraft: string;
     statusLockedPendingScreening: string;
+    statusSuspendedPendingVerification: string;
+    statusRevisionRequested: string;
+    statusRevisionPendingReview: string;
+    statusRevisionOverdue: string;
     underReviewMessage: string;
     untitledBiography: string;
     goToWorkspace: string;
@@ -1125,6 +1129,9 @@ export interface Translations {
     typeImpersonation: string;
     typeCopyright: string;
     typeOther: string;
+    typeIllegalContent: string;
+    typeSensitivePersonalData: string;
+    typeDefamation: string;
     colDate: string;
     colType: string;
     colBiography: string;
@@ -1369,6 +1376,10 @@ export interface Translations {
     bioStatusPdfDraft: string;
     bioStatusLockedPendingScreening: string;
     bioStatusRemoved: string;
+    bioStatusSuspendedPendingVerification: string;
+    bioStatusRevisionRequested: string;
+    bioStatusRevisionPendingReview: string;
+    bioStatusRevisionOverdue: string;
     bioTypeAll: string;
     bioTypeAutobiography: string;
     bioTypeDeceased: string;
@@ -1830,6 +1841,10 @@ export const translations: Record<Language, Translations> = {
       statusUnderReview: 'Under review',
       statusPdfDraft: 'PDF draft',
       statusLockedPendingScreening: 'Pending screening',
+      statusSuspendedPendingVerification: 'Suspended pending verification',
+      statusRevisionRequested: 'Revision requested',
+      statusRevisionPendingReview: 'Revision pending review',
+      statusRevisionOverdue: 'Revision overdue',
       underReviewMessage: 'Our team is reviewing your biography. You will be notified of the outcome.',
       untitledBiography: 'Untitled Biography',
       goToWorkspace: 'Go to Workspace',
@@ -2829,6 +2844,9 @@ export const translations: Record<Language, Translations> = {
       typeImpersonation: 'Impersonation',
       typeCopyright: 'Copyright',
       typeOther: 'Other',
+      typeIllegalContent: 'Illegal content',
+      typeSensitivePersonalData: 'Sensitive personal data',
+      typeDefamation: 'Defamation',
       colDate: 'Date',
       colType: 'Type',
       colBiography: 'Biography',
@@ -3077,6 +3095,10 @@ export const translations: Record<Language, Translations> = {
       bioStatusPdfDraft: 'PDF draft',
       bioStatusLockedPendingScreening: 'Pending screening',
       bioStatusRemoved: 'Removed',
+      bioStatusSuspendedPendingVerification: 'Suspended pending verification',
+      bioStatusRevisionRequested: 'Revision requested',
+      bioStatusRevisionPendingReview: 'Revision pending review',
+      bioStatusRevisionOverdue: 'Revision overdue',
       bioTypeAll: 'All types',
       bioTypeAutobiography: 'Autobiography',
       bioTypeDeceased: 'Deceased',
@@ -3549,6 +3571,10 @@ export const translations: Record<Language, Translations> = {
       statusUnderReview: 'In revisione',
       statusPdfDraft: 'Bozza PDF',
       statusLockedPendingScreening: 'In attesa di screening',
+      statusSuspendedPendingVerification: 'Sospesa in verifica',
+      statusRevisionRequested: 'Revisione richiesta',
+      statusRevisionPendingReview: 'Revisione in esame',
+      statusRevisionOverdue: 'Revisione scaduta',
       underReviewMessage: 'Il nostro team sta esaminando la tua biografia. Sarai informato dell\'esito.',
       untitledBiography: 'Biografia senza titolo',
       goToWorkspace: 'Vai al Workspace',
@@ -4550,6 +4576,9 @@ export const translations: Record<Language, Translations> = {
       typeImpersonation: 'Impersonificazione',
       typeCopyright: 'Copyright',
       typeOther: 'Altro',
+      typeIllegalContent: 'Contenuto illegale',
+      typeSensitivePersonalData: 'Dati personali sensibili',
+      typeDefamation: 'Diffamazione',
       colDate: 'Data',
       colType: 'Tipo',
       colBiography: 'Biografia',
@@ -4798,6 +4827,10 @@ export const translations: Record<Language, Translations> = {
       bioStatusPdfDraft: 'Bozza PDF',
       bioStatusLockedPendingScreening: 'In attesa di screening',
       bioStatusRemoved: 'Rimossa',
+      bioStatusSuspendedPendingVerification: 'Sospesa in verifica',
+      bioStatusRevisionRequested: 'Revisione richiesta',
+      bioStatusRevisionPendingReview: 'Revisione in esame',
+      bioStatusRevisionOverdue: 'Revisione scaduta',
       bioTypeAll: 'Tutti i tipi',
       bioTypeAutobiography: 'Autobiografia',
       bioTypeDeceased: 'Defunto',
@@ -5270,6 +5303,10 @@ export const translations: Record<Language, Translations> = {
       statusUnderReview: 'En cours d\'examen',
       statusPdfDraft: 'Brouillon PDF',
       statusLockedPendingScreening: 'En attente de filtrage',
+      statusSuspendedPendingVerification: 'Suspendue en vérification',
+      statusRevisionRequested: 'Révision demandée',
+      statusRevisionPendingReview: 'Révision en examen',
+      statusRevisionOverdue: 'Révision en retard',
       underReviewMessage: 'Notre équipe examine votre biographie. Vous serez informé du résultat.',
       untitledBiography: 'Biographie sans titre',
       goToWorkspace: 'Aller au Workspace',
@@ -6271,6 +6308,9 @@ export const translations: Record<Language, Translations> = {
       typeImpersonation: 'Usurpation d\'identité',
       typeCopyright: 'Droits d\'auteur',
       typeOther: 'Autre',
+      typeIllegalContent: 'Contenu illégal',
+      typeSensitivePersonalData: 'Données personnelles sensibles',
+      typeDefamation: 'Diffamation',
       colDate: 'Date',
       colType: 'Type',
       colBiography: 'Biographie',
@@ -6519,6 +6559,10 @@ export const translations: Record<Language, Translations> = {
       bioStatusPdfDraft: 'Brouillon PDF',
       bioStatusLockedPendingScreening: 'Filtrage en attente',
       bioStatusRemoved: 'Supprimée',
+      bioStatusSuspendedPendingVerification: 'Suspendue en vérification',
+      bioStatusRevisionRequested: 'Révision demandée',
+      bioStatusRevisionPendingReview: 'Révision en examen',
+      bioStatusRevisionOverdue: 'Révision en retard',
       bioTypeAll: 'Tous les types',
       bioTypeAutobiography: 'Autobiographie',
       bioTypeDeceased: 'Défunt',
@@ -6991,6 +7035,10 @@ export const translations: Record<Language, Translations> = {
       statusUnderReview: 'In Prüfung',
       statusPdfDraft: 'PDF-Entwurf',
       statusLockedPendingScreening: 'Screening ausstehend',
+      statusSuspendedPendingVerification: 'Ausgesetzt zur Prüfung',
+      statusRevisionRequested: 'Überarbeitung angefordert',
+      statusRevisionPendingReview: 'Überarbeitung in Prüfung',
+      statusRevisionOverdue: 'Überarbeitung überfällig',
       underReviewMessage: 'Unser Team prüft Ihre Biografie. Sie werden über das Ergebnis informiert.',
       untitledBiography: 'Biografie ohne Titel',
       goToWorkspace: 'Zum Workspace',
@@ -7992,6 +8040,9 @@ export const translations: Record<Language, Translations> = {
       typeImpersonation: 'Identitätsmissbrauch',
       typeCopyright: 'Urheberrecht',
       typeOther: 'Sonstiges',
+      typeIllegalContent: 'Illegaler Inhalt',
+      typeSensitivePersonalData: 'Sensible personenbezogene Daten',
+      typeDefamation: 'Verleumdung',
       colDate: 'Datum',
       colType: 'Typ',
       colBiography: 'Biografie',
@@ -8240,6 +8291,10 @@ export const translations: Record<Language, Translations> = {
       bioStatusPdfDraft: 'PDF-Entwurf',
       bioStatusLockedPendingScreening: 'Screening ausstehend',
       bioStatusRemoved: 'Entfernt',
+      bioStatusSuspendedPendingVerification: 'Ausgesetzt zur Prüfung',
+      bioStatusRevisionRequested: 'Überarbeitung angefordert',
+      bioStatusRevisionPendingReview: 'Überarbeitung in Prüfung',
+      bioStatusRevisionOverdue: 'Überarbeitung überfällig',
       bioTypeAll: 'Alle Typen',
       bioTypeAutobiography: 'Autobiografie',
       bioTypeDeceased: 'Verstorben',

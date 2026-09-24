@@ -12,6 +12,10 @@ export const BIOGRAPHY_STATUS_VALUES = [
   'under_review',
   'published',
   'removed',
+  'suspended_pending_verification',
+  'revision_requested',
+  'revision_pending_review',
+  'revision_overdue',
 ] as const;
 
 export type BiographyPublicationStatus = (typeof BIOGRAPHY_STATUS_VALUES)[number];
@@ -26,7 +30,8 @@ export function isAuthorTextEditableStatus(status: BiographyPublicationStatus): 
     status === 'draft' ||
     status === 'sections_complete' ||
     status === 'final_version' ||
-    status === 'pdf_draft'
+    status === 'pdf_draft' ||
+    status === 'revision_requested'
   );
 }
 
@@ -59,5 +64,20 @@ export function isFinalVersionSourceStatus(status: BiographyPublicationStatus): 
  * Editor / section read-only flags that mirror `under_review` (full lock until partial revision unlock is implemented).
  */
 export function isReviewOrScreeningLockStatus(status: BiographyPublicationStatus): boolean {
-  return status === 'under_review' || status === 'locked_pending_screening';
+  return (
+    status === 'under_review' ||
+    status === 'locked_pending_screening' ||
+    status === 'revision_pending_review'
+  );
+}
+
+/** Not in the public catalog. Memorials inside provisional_until stay published. */
+export function isHiddenFromPublicCatalog(status: BiographyPublicationStatus): boolean {
+  return (
+    status === 'revision_requested' ||
+    status === 'revision_pending_review' ||
+    status === 'revision_overdue' ||
+    status === 'suspended_pending_verification' ||
+    status === 'removed'
+  );
 }

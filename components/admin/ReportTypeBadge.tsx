@@ -16,6 +16,9 @@ const TYPE_STYLES: Record<string, string> = {
   right_to_oblivion: 'bg-[#DDCF88] text-[#121212] dark:bg-[#DDCF88]/20 dark:text-[#DDCF88]',
   impersonation: 'bg-[#DDCF88] text-[#121212] dark:bg-[#DDCF88]/20 dark:text-[#DDCF88]',
   copyright: 'bg-[#DDCF88] text-[#121212] dark:bg-[#DDCF88]/20 dark:text-[#DDCF88]',
+  illegal_content: 'bg-[#6D323E] text-white dark:bg-[#6D323E] dark:text-white',
+  sensitive_personal_data: 'bg-[#DDCF88] text-[#121212] dark:bg-[#DDCF88]/20 dark:text-[#DDCF88]',
+  defamation: 'bg-[#DDCF88] text-[#121212] dark:bg-[#DDCF88]/20 dark:text-[#DDCF88]',
   other: 'bg-brand-beigeBg text-brand-greenDark dark:bg-brand-ink/35 dark:text-brand-beigeLight',
 };
 
@@ -29,6 +32,9 @@ function getTypeLabel(type: ReportType, t: ReturnType<typeof useTranslation>['t'
     case 'right_to_oblivion': return t.admin.typeRightToOblivion;
     case 'impersonation': return t.admin.typeImpersonation;
     case 'copyright': return t.admin.typeCopyright;
+    case 'illegal_content': return t.admin.typeIllegalContent;
+    case 'sensitive_personal_data': return t.admin.typeSensitivePersonalData;
+    case 'defamation': return t.admin.typeDefamation;
     case 'other': return t.admin.typeOther;
   }
 }

@@ -58,6 +58,9 @@ export function ModerationFilters({ filters, onChange }: ModerationFiltersProps)
             <SelectItem value="right_to_oblivion">{t.admin.typeRightToOblivion}</SelectItem>
             <SelectItem value="impersonation">{t.admin.typeImpersonation}</SelectItem>
             <SelectItem value="copyright">{t.admin.typeCopyright}</SelectItem>
+            <SelectItem value="illegal_content">{t.admin.typeIllegalContent}</SelectItem>
+            <SelectItem value="sensitive_personal_data">{t.admin.typeSensitivePersonalData}</SelectItem>
+            <SelectItem value="defamation">{t.admin.typeDefamation}</SelectItem>
             <SelectItem value="other">{t.admin.typeOther}</SelectItem>
           </SelectContent>
         </Select>

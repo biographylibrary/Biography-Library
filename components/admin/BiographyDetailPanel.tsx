@@ -73,6 +73,10 @@ function StatusBadge({ status }: { status: string }) {
       className: 'bg-[#C4DAEB] text-[#121212] border-[#C4DAEB] dark:bg-[#C4DAEB]/20 dark:text-[#C4DAEB] dark:border-brand-blue/40',
     },
     removed: { label: t.admin.bioStatusRemoved, className: 'bg-[#6D323E] text-white border-[#6D323E] dark:bg-[#6D323E] dark:text-white dark:border-[#944454]/50' },
+    suspended_pending_verification: { label: t.admin.bioStatusSuspendedPendingVerification, className: 'bg-[#6D323E] text-white border-[#6D323E] dark:bg-[#6D323E] dark:text-white dark:border-[#944454]/50' },
+    revision_requested: { label: t.admin.bioStatusRevisionRequested, className: 'bg-[#DDCF88] text-[#121212] border-[#DDCF88] dark:bg-[#DDCF88]/20 dark:text-[#DDCF88] dark:border-[#DDCF88]/50' },
+    revision_pending_review: { label: t.admin.bioStatusRevisionPendingReview, className: 'bg-[#DDCF88] text-[#121212] border-[#DDCF88] dark:bg-[#DDCF88]/20 dark:text-[#DDCF88] dark:border-[#DDCF88]/50' },
+    revision_overdue: { label: t.admin.bioStatusRevisionOverdue, className: 'bg-[#6D323E] text-white border-[#6D323E] dark:bg-[#6D323E] dark:text-white dark:border-[#944454]/50' },
   };
   const cfg = map[status] ?? map['draft'];
   return (

@@ -51,6 +51,7 @@ export async function POST(req: NextRequest) {
     report_type: reportType,
     description,
     reporter_id: auth.user.id,
+    origin: 'in_app',
     status: 'unassigned',
   });
 

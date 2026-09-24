@@ -34,6 +34,10 @@ function StatusBadge({ status, t }: { status: string; t: any }) {
     locked_pending_screening:
       'bg-[#C4DAEB] text-[#121212] border-brand-blue/40 dark:bg-[#C4DAEB]/20 dark:text-[#C4DAEB] dark:border-brand-blue/35',
     removed: 'bg-[#6D323E] text-white border-brand-wine/35 dark:bg-[#6D323E] dark:text-white dark:border-brand-wine/45',
+    suspended_pending_verification: 'bg-[#6D323E] text-white border-brand-wine/35 dark:bg-[#6D323E] dark:text-white dark:border-brand-wine/45',
+    revision_requested: 'bg-[#DDCF88] text-[#121212] border-brand-mustardDark/50 dark:bg-[#DDCF88]/20 dark:text-[#DDCF88] dark:border-brand-mustardDark/40',
+    revision_pending_review: 'bg-[#DDCF88] text-[#121212] border-brand-mustardDark/50 dark:bg-[#DDCF88]/20 dark:text-[#DDCF88] dark:border-brand-mustardDark/40',
+    revision_overdue: 'bg-[#6D323E] text-white border-brand-wine/35 dark:bg-[#6D323E] dark:text-white dark:border-brand-wine/45',
   };
   const labels: Record<string, string> = {
     draft: t.admin.bioStatusDraft,
@@ -42,6 +46,10 @@ function StatusBadge({ status, t }: { status: string; t: any }) {
     pdf_draft: t.admin.bioStatusPdfDraft,
     locked_pending_screening: t.admin.bioStatusLockedPendingScreening,
     removed: t.admin.bioStatusRemoved,
+    suspended_pending_verification: t.admin.bioStatusSuspendedPendingVerification,
+    revision_requested: t.admin.bioStatusRevisionRequested,
+    revision_pending_review: t.admin.bioStatusRevisionPendingReview,
+    revision_overdue: t.admin.bioStatusRevisionOverdue,
   };
   const cls = map[status] ?? map['draft'];
   return (

@@ -33,6 +33,10 @@ export function BiographyCard({ biography, onEdit, onDelete }: BiographyCardProp
     },
     published: { label: t.dashboard.statusPublished, className: 'text-brand-greenDark bg-brand-greenLight/45 dark:bg-brand-greenLight/15 dark:text-brand-greenLight' },
     removed: { label: t.dashboard.statusRemoved, className: 'text-brand-paper bg-brand-wineDark' },
+    suspended_pending_verification: { label: t.dashboard.statusSuspendedPendingVerification, className: 'text-brand-paper bg-brand-wineDark' },
+    revision_requested: { label: t.dashboard.statusRevisionRequested, className: 'text-[#121212] bg-[#DDCF88] dark:bg-[#DDCF88]/20 dark:text-[#DDCF88]' },
+    revision_pending_review: { label: t.dashboard.statusRevisionPendingReview, className: 'text-[#121212] bg-[#DDCF88] dark:bg-[#DDCF88]/20 dark:text-[#DDCF88]' },
+    revision_overdue: { label: t.dashboard.statusRevisionOverdue, className: 'text-brand-paper bg-brand-wineDark' },
   };
 
   const isUnderReview = biography.status === 'under_review';
