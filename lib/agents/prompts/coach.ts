@@ -1,4 +1,5 @@
 import { BIOGRAPHY_SECTIONS } from '@/lib/editor-constants';
+import { PLAIN_PROSE_AND_MEANING } from '@/lib/agents/prompts/plain-meaning';
 import type { BiographyNarrativeContext } from '@/lib/biography-narrative-context';
 import { isMemorialNarrative } from '@/lib/biography-narrative-context';
 
@@ -38,6 +39,7 @@ export function buildCoachSystemPrompt(
     `- reopen_section: reopen a completed section when the user wants to edit it again.\n` +
     `- Use get_progress to see which sections are already complete.\n\n` +
     `Rules: never invent biographical facts; work from what the user shares. ` +
-    `Ask one thoughtful question at a time. Do not call propose_draft without explicit user request.`
+    `Ask one thoughtful question at a time. Do not call propose_draft without explicit user request.\n\n` +
+    PLAIN_PROSE_AND_MEANING
   );
 }
