@@ -645,6 +645,11 @@ export interface Translations {
     courts: string;
     presidentLabel: string;
     president: string;
+    uidLabel: string;
+    uid: string;
+    registerLabel: string;
+    register: string;
+    zefixLabel: string;
     umHeading: string;
   };
   umId: {
@@ -2371,6 +2376,11 @@ export const translations: Record<Language, Translations> = {
       courts: 'Courts of Lugano, Ticino, Switzerland.',
       presidentLabel: 'President',
       president: 'Claudio Brignole',
+      uidLabel: 'UID number',
+      uid: 'CHE-416.014.530',
+      registerLabel: 'Commercial register',
+      register: 'Canton Ticino',
+      zefixLabel: 'Zefix record',
       umHeading: 'Universal Memory year',
     },
     umId: {
@@ -4126,6 +4136,11 @@ export const translations: Record<Language, Translations> = {
       courts: 'Tribunali di Lugano, Ticino, Svizzera.',
       presidentLabel: 'Presidente',
       president: 'Claudio Brignole',
+      uidLabel: 'Numero UID',
+      uid: 'CHE-416.014.530',
+      registerLabel: 'Registro di commercio',
+      register: 'Cantone Ticino',
+      zefixLabel: 'Scheda Zefix',
       umHeading: 'Anno della Memoria Universale',
     },
     umId: {
@@ -5881,6 +5896,11 @@ export const translations: Record<Language, Translations> = {
       courts: 'Tribunaux de Lugano, Tessin, Suisse.',
       presidentLabel: 'Président',
       president: 'Claudio Brignole',
+      uidLabel: 'Numéro IDE',
+      uid: 'CHE-416.014.530',
+      registerLabel: 'Registre du commerce',
+      register: 'Canton du Tessin',
+      zefixLabel: 'Fiche Zefix',
       umHeading: 'Année de la Mémoire Universelle',
     },
     umId: {
@@ -7636,6 +7656,11 @@ export const translations: Record<Language, Translations> = {
       courts: 'Gerichte von Lugano, Tessin, Schweiz.',
       presidentLabel: 'Präsident',
       president: 'Claudio Brignole',
+      uidLabel: 'UID-Nummer',
+      uid: 'CHE-416.014.530',
+      registerLabel: 'Handelsregister',
+      register: 'Kanton Tessin',
+      zefixLabel: 'Zefix-Eintrag',
       umHeading: 'Jahr der Universellen Erinnerung',
     },
     umId: {
