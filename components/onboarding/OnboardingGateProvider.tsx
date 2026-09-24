@@ -25,6 +25,7 @@ const PUBLIC_PREFIXES = [
   '/privacy-policy',
   '/cookie-policy',
   '/biographies',
+  '/um-identifier',
   '/',
 ];
 

@@ -85,6 +85,10 @@ export function Footer() {
             <Link href="/credits" className="hover:text-foreground transition-colors">
               {t.footer.credits}
             </Link>
+            <span>•</span>
+            <Link href="/um-identifier" className="hover:text-foreground transition-colors">
+              {t.footer.umIdentifier}
+            </Link>
           </div>
         </div>
       </div>

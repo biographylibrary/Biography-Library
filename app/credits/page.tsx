@@ -73,6 +73,11 @@ export default function CreditsPage() {
         </p>
         <p className="text-sm text-muted-foreground leading-relaxed">{t.umId.creditsBody}</p>
         <p className="text-sm text-muted-foreground leading-relaxed">{t.umId.metadataCc0}</p>
+        <p className="text-sm">
+          <Link href="/um-identifier" className="text-primary hover:underline">
+            {t.footer.umIdentifier}
+          </Link>
+        </p>
       </section>
 
       <p className="text-sm">

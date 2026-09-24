@@ -17,6 +17,7 @@ const WAITLIST_STAY_EXACT = new Set([
   '/reset-password',
   '/verify-email',
   '/credits',
+  '/um-identifier',
   '/biographies',
 ]);
 

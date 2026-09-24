@@ -623,6 +623,7 @@ export interface Translations {
     privacyPolicy: string;
     cookiePolicy: string;
     credits: string;
+    umIdentifier: string;
   };
   creditsPage: {
     orgHeading: string;
@@ -2344,6 +2345,7 @@ export const translations: Record<Language, Translations> = {
       privacyPolicy: 'Privacy',
       cookiePolicy: 'Cookies',
       credits: 'Credits',
+      umIdentifier: 'UM identifier',
     },
     creditsPage: {
       orgHeading: 'Association',
@@ -4095,6 +4097,7 @@ export const translations: Record<Language, Translations> = {
       privacyPolicy: 'Privacy',
       cookiePolicy: 'Cookie',
       credits: 'Crediti',
+      umIdentifier: 'Identificativo UM',
     },
     creditsPage: {
       orgHeading: 'Associazione',
@@ -5846,6 +5849,7 @@ export const translations: Record<Language, Translations> = {
       privacyPolicy: 'Confidentialit\u00e9',
       cookiePolicy: 'Cookies',
       credits: 'Crédits',
+      umIdentifier: 'Identifiant UM',
     },
     creditsPage: {
       orgHeading: 'Association',
@@ -7597,6 +7601,7 @@ export const translations: Record<Language, Translations> = {
       privacyPolicy: 'Datenschutz',
       cookiePolicy: 'Cookies',
       credits: 'Impressum',
+      umIdentifier: 'UM-Kennung',
     },
     creditsPage: {
       orgHeading: 'Verein',
