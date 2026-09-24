@@ -162,7 +162,7 @@ Unito in `main` con #51 (immagine standalone + prune). Non è più un ramo da me
 
 ### Piano Markdown d’archivio e segnalazioni a tre corsie
 
-Aperto. Originale conservato = Markdown UTF-8; tre corsie di segnalazione; `provisional_until` per memorial. La conversione dell’HTML già salvato è in prova: colonna `content_html_legacy` e `npm run markdown:legacy -- --dry-run` (nessuna sovrascrittura; le schede pubblicate con perdita restano per la revisione a mano). Seguito UI, non prima: problemi rimasti sulla finestra dati, e tour di onboarding con «I miei dati» / «Chi era questa persona». Non toccare termini e manuale operativo (vivono fuori repo). Dettaglio: piano Cursor `archivio_md_e_segnalazioni`.
+Aperto. Originale conservato = Markdown UTF-8; tre corsie di segnalazione; `provisional_until` per memorial. La conversione dell’HTML già salvato è in prova: colonna `content_html_legacy` e `npm run markdown:legacy -- --dry-run` (nessuna sovrascrittura; le schede pubblicate con perdita restano per la revisione a mano). Tour di onboarding: voce «I miei dati» o «Chi era questa persona» sul pulsante in basso. Nella finestra il salvataggio resta visibile e l’elenco luoghi non viene tagliato. Non toccare termini e manuale operativo (vivono fuori repo). Dettaglio: piano Cursor `archivio_md_e_segnalazioni`.
 
 ### Fase 2 — migrazione Infomaniak Public Cloud (rinviata)
 

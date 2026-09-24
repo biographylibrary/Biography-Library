@@ -78,6 +78,7 @@ function EditorOnboardingTour({
   active,
   writingPath,
   biographyMode,
+  biographyType,
   onOpenMobileSidebar,
   onCloseMobileSidebar,
   onTourFinished,
@@ -85,6 +86,7 @@ function EditorOnboardingTour({
   active: boolean;
   writingPath: WritingPath;
   biographyMode: 'sections' | 'freeflow';
+  biographyType: 'autobiography' | 'memorial';
   onOpenMobileSidebar: () => void;
   onCloseMobileSidebar: () => void;
   onTourFinished: () => void;
@@ -94,6 +96,7 @@ function EditorOnboardingTour({
       active={active}
       writingPath={writingPath}
       biographyMode={biographyMode}
+      biographyType={biographyType}
       onOpenMobileSidebar={onOpenMobileSidebar}
       onCloseMobileSidebar={onCloseMobileSidebar}
       onFinished={onTourFinished}
@@ -2780,6 +2783,7 @@ const [isPublishing, setIsPublishing] = useState(false);
         active={tourActive && !isLoading}
         writingPath={tourWritingPath}
         biographyMode={biographyMode}
+        biographyType={biographyType}
         onOpenMobileSidebar={() => setShowMobileSidebar(true)}
         onCloseMobileSidebar={() => setShowMobileSidebar(false)}
         onTourFinished={handleTourFinished}

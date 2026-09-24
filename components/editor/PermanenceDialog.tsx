@@ -38,7 +38,8 @@ export function PermanenceDialog({
         biographyType === 'autobiography' ? t.permanence.titleSelf : t.permanence.title
       }
       icon={<Landmark className="h-5 w-5 text-primary" />}
-      bodyClassName="px-4 py-4"
+      bodyClassName="px-4 py-4 flex flex-col min-h-0 overflow-hidden"
+      bodyScroll={false}
     >
       {open && (
         <PermanencePanel

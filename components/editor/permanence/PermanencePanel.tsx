@@ -571,7 +571,8 @@ export function PermanencePanel({
   }
 
   return (
-    <div className="space-y-4">
+    <div className="flex flex-1 flex-col min-h-0 gap-4">
+      <div className="space-y-4 overflow-y-auto min-h-0 flex-1 pr-1">
       {!hideTitle && (
         <div className="flex items-start gap-2">
           <Landmark className="h-4 w-4 text-primary shrink-0 mt-0.5" />
@@ -621,7 +622,7 @@ export function PermanencePanel({
         </div>
       )}
 
-      <div className={showDeath ? 'grid lg:grid-cols-2 gap-3' : 'space-y-3'}>
+      <div className="space-y-3">
         <EventBlock
           title={p.birth}
           form={birth}
@@ -796,11 +797,15 @@ export function PermanencePanel({
         )}
       </div>
 
+      </div>
+
       {!disabled && (
-        <Button type="button" size="sm" onClick={() => void handleSave()} disabled={saving}>
-          {saving ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
-          {p.save}
-        </Button>
+        <div className="shrink-0 border-t border-border/50 pt-3">
+          <Button type="button" size="sm" onClick={() => void handleSave()} disabled={saving}>
+            {saving ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+            {p.save}
+          </Button>
+        </div>
       )}
     </div>
   );

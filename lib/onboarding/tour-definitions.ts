@@ -34,8 +34,29 @@ function getTopBarSteps(): TourStepDefinition[] {
   ];
 }
 
-function getSharedSidebarSteps(): TourStepDefinition[] {
+function permanenceStep(
+  biographyType: 'autobiography' | 'memorial',
+): TourStepDefinition {
+  return biographyType === 'memorial'
+    ? step(
+        'permanence',
+        '[data-tour-id="permanence-btn"]',
+        'permanenceMemorialTitle',
+        'permanenceMemorialDesc',
+      )
+    : step(
+        'permanence',
+        '[data-tour-id="permanence-btn"]',
+        'permanenceSelfTitle',
+        'permanenceSelfDesc',
+      );
+}
+
+function getSharedSidebarSteps(
+  biographyType: 'autobiography' | 'memorial',
+): TourStepDefinition[] {
   return [
+    permanenceStep(biographyType),
     step('notes', '[data-tour-id="notes-btn"]', 'notesTitle', 'notesDesc'),
     step('photos', '[data-tour-id="photos-btn"]', 'photosTitle', 'photosDesc'),
     step(
@@ -58,10 +79,10 @@ function getSharedSidebarSteps(): TourStepDefinition[] {
 export function getTourSteps(
   path: WritingPath,
   mode: 'sections' | 'freeflow',
-  options?: { mobileLayout?: boolean },
+  options?: { mobileLayout?: boolean; biographyType?: 'autobiography' | 'memorial' },
 ): TourStepDefinition[] {
   const mobileLayout = options?.mobileLayout ?? isMobileEditorLayout();
-  const base = getBaseTourSteps(path, mode);
+  const base = getBaseTourSteps(path, mode, options?.biographyType ?? 'autobiography');
   if (!mobileLayout) return base;
   return [MOBILE_MENU_STEP, ...base];
 }
@@ -69,6 +90,7 @@ export function getTourSteps(
 function getBaseTourSteps(
   path: WritingPath,
   mode: 'sections' | 'freeflow',
+  biographyType: 'autobiography' | 'memorial',
 ): TourStepDefinition[] {
   if (path === 'sections' || (path === 'freeflow_import' && mode === 'sections')) {
     return [
@@ -93,7 +115,7 @@ function getBaseTourSteps(
         'echoVoiceTitle',
         'echoVoiceDesc',
       ),
-      ...getSharedSidebarSteps(),
+      ...getSharedSidebarSteps(biographyType),
     ];
   }
 
@@ -108,7 +130,7 @@ function getBaseTourSteps(
         'echoVoiceFreeflowTitle',
         'echoVoiceFreeflowDesc',
       ),
-      ...getSharedSidebarSteps(),
+      ...getSharedSidebarSteps(biographyType),
     ];
   }
 
@@ -118,6 +140,7 @@ function getBaseTourSteps(
     step('import-text', '[data-tour-id="import-btn"]', 'publishImportTitle', 'publishImportDesc'),
     step('editor-main', '[data-tour-id="editor-main"]', 'publishFinalTitle', 'publishFinalDesc'),
     step('export-text', '[data-tour-id="export-pdf-btn"]', 'publishExportTitle', 'publishExportDesc'),
+    permanenceStep(biographyType),
     step('notes', '[data-tour-id="notes-btn"]', 'notesTitle', 'notesDesc'),
     step('photos', '[data-tour-id="photos-btn"]', 'photosTitle', 'photosDesc'),
     step(
