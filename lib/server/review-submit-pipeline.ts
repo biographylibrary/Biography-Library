@@ -704,6 +704,13 @@ export async function runReviewSubmitScreening(
       })
       .eq('id', biographyId);
 
+    try {
+      const { syncArchivePackage } = await import('@/lib/server/archive-package-store');
+      await syncArchivePackage(serviceClient, biographyId, 'publication');
+    } catch (err) {
+      console.error('[review-submit-pipeline] archive package failed (non-blocking):', err);
+    }
+
     if (isRescreen && previousReportId) {
       await serviceClient
         .from('moderation_reports')
