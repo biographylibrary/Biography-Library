@@ -11,6 +11,7 @@ import {
   type PublishedBiography,
 } from '@/lib/biographies';
 import { formatMemorialAuthorAttribution, memorialSubjectName } from '@/lib/biography-display';
+import { isWithinProvisionalWindow } from '@/lib/provisional-window';
 import {
   biographyMatchesLanguageFilter,
   fetchPublishedTranslationLocales,
@@ -209,6 +210,11 @@ function BiographyCard({ bio, t, featured, translationLanguages = [] }: Biograph
           <span className="text-xs font-medium text-muted-foreground">
             {typeLabel}
           </span>
+          {isWithinProvisionalWindow(bio.provisional_until) && (
+            <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-[#DDCF88] text-[#121212]">
+              {t.publicBiographies.provisionalMark}
+            </span>
+          )}
         </div>
       </div>
     </Link>

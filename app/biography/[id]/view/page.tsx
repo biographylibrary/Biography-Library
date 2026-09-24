@@ -27,6 +27,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Toaster } from '@/components/ui/toaster';
 import { logger } from '@/lib/logger';
 import { memorialSubjectName } from '@/lib/biography-display';
+import { isWithinProvisionalWindow } from '@/lib/provisional-window';
 import { BiographySectionBody } from '@/components/biography/BiographySectionBody';
 import { BiographyContentRightsNotice } from '@/components/biography/BiographyContentRightsNotice';
 import { BiographyLanguageBadges } from '@/components/biography/BiographyLanguageBadges';
@@ -50,6 +51,7 @@ interface BiographyViewData {
   share_token: string | null;
   created_at: string;
   published_at: string | null;
+  provisional_until?: string | null;
   is_frozen: boolean | null;
   frozen_at: string | null;
   export_txt_url: string | null;
@@ -70,7 +72,7 @@ interface SectionWithDate {
 type ViewError = 'not-found' | 'private' | 'invalid-token' | null;
 
 const BIOGRAPHY_VIEW_SELECT =
-  'id, title, subject_name, biography_type, author_name, um_id, content, visibility, status, share_token, created_at, published_at, is_frozen, frozen_at, export_txt_url, export_docx_url, listing_cover_url, content_language, record_language_tag, final_pdf_url';
+  'id, title, subject_name, biography_type, author_name, um_id, content, visibility, status, share_token, created_at, published_at, provisional_until, is_frozen, frozen_at, export_txt_url, export_docx_url, listing_cover_url, content_language, record_language_tag, final_pdf_url';
 
 const VIEW_LANGUAGES: ViewLanguage[] = ['en', 'it', 'fr', 'de'];
 
@@ -606,6 +608,12 @@ export default function BiographyViewPage() {
                 className="w-full h-full object-cover object-top"
               />
             </div>
+          </div>
+        )}
+
+        {isWithinProvisionalWindow(biography.provisional_until) && (
+          <div className="mb-4 text-sm text-[#121212] bg-[#DDCF88] border border-[#DDCF88] rounded-lg px-4 py-2.5">
+            {t.view.provisionalMark}
           </div>
         )}
 

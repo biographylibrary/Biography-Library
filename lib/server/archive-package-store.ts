@@ -10,6 +10,7 @@ import {
   type ArchiveReason,
   type ArchiveVersionEntry,
 } from '@/lib/archive-package';
+import { provisionalUntilOnFirstPublish } from '@/lib/provisional-window';
 import { storedToArchiveMarkdown } from '@/lib/archive-markdown';
 import { loadPermanenceExportBundle } from '@/lib/server/permanence-stored-exports';
 import { umIdBaseUrl } from '@/lib/um-id-url';
@@ -77,9 +78,7 @@ export async function syncArchivePackage(
   let provisionalUntil = (bio.provisional_until as string | null) ?? null;
 
   if (biographyType === 'memorial' && reason === 'publication' && bio.published_at && !provisionalUntil) {
-    const until = new Date(bio.published_at as string);
-    until.setUTCDate(until.getUTCDate() + 30);
-    provisionalUntil = until.toISOString();
+    provisionalUntil = provisionalUntilOnFirstPublish('memorial', bio.published_at as string);
     await svc.from('biographies').update({ provisional_until: provisionalUntil }).eq('id', biographyId);
   }
 
