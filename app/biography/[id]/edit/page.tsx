@@ -4,7 +4,6 @@ import { useEffect, useState, useCallback, useRef } from 'react';
 import { useRouter, useParams, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/lib/auth-context';
 import { supabase } from '@/lib/supabase';
-import { EditorTopBar } from '@/components/editor/editor-top-bar';
 import { ReportDeadlineBanner } from '@/components/editor/ReportDeadlineBanner';
 import { SectionSidebar } from '@/components/editor/section-sidebar';
 import { PathChangeDialog } from '@/components/echo/PathChangeDialog';
@@ -12,6 +11,10 @@ import { GuidedSectionWorkspace } from '@/components/echo/GuidedSectionWorkspace
 import { EchoShell } from '@/components/echo/EchoShell';
 import { OnboardingTourProvider } from '@/components/onboarding/OnboardingTourProvider';
 import { useOnboardingGate } from '@/components/onboarding/OnboardingGateProvider';
+import {
+  EDITOR_SIDEBAR_STATE_EVENT,
+  EDITOR_SIDEBAR_TOGGLE_EVENT,
+} from '@/lib/onboarding/tour-mobile';
 import type { WritingPath } from '@/lib/onboarding/types';
 import { GlobalNotesPanel } from '@/components/editor/GlobalNotesPanel';
 import { BookStructureDialog } from '@/components/editor/BookStructureDialog';
@@ -141,12 +144,23 @@ export default function BiographyEditorPage() {
   const [licenseBusy, setLicenseBusy] = useState(false);
   const [status, setStatus] = useState<'draft' | 'sections_complete'>('draft');
   const [shareToken, setShareToken] = useState<string | null>(null);
+  const [shareDialogOpen, setShareDialogOpen] = useState(false);
   const [content, setContent] = useState<BiographyContent>(getEmptyContent());
   const [activeSection, setActiveSection] = useState<string>(
     BIOGRAPHY_SECTIONS[0].key
   );
   const [saveStatus, setSaveStatus] = useState<SaveStatus>('saved');
   const [showMobileSidebar, setShowMobileSidebar] = useState(false);
+
+  useEffect(() => {
+    const onToggle = () => setShowMobileSidebar((open) => !open);
+    window.addEventListener(EDITOR_SIDEBAR_TOGGLE_EVENT, onToggle);
+    return () => window.removeEventListener(EDITOR_SIDEBAR_TOGGLE_EVENT, onToggle);
+  }, []);
+
+  useEffect(() => {
+    window.dispatchEvent(new CustomEvent(EDITOR_SIDEBAR_STATE_EVENT, { detail: showMobileSidebar }));
+  }, [showMobileSidebar]);
   const [showGlobalNotesPanel, setShowGlobalNotesPanel] = useState(false);
   const [showPhotosPanel, setShowPhotosPanel] = useState(false);
   const [showBookStructurePanel, setShowBookStructurePanel] = useState(false);
@@ -1948,20 +1962,6 @@ const [isPublishing, setIsPublishing] = useState(false);
       onSectionCompletionChanged={handleEchoSectionCompletion}
     >
     <div className="h-full flex flex-col bg-[#ECE9E4] dark:bg-[#1F2121] overflow-hidden">
-      <EditorTopBar
-        title={title}
-        privacy={privacy}
-        saveStatus={saveStatus}
-        onTitleChange={handleTitleChange}
-        onPrivacyChange={handlePrivacyChange}
-        isFrozen={isFrozen}
-        authorName={authorName}
-        onAuthorNameChange={handleAuthorNameChange}
-        biographyType={biographyType}
-        mobileMenuOpen={showMobileSidebar}
-        onMobileMenuToggle={() => setShowMobileSidebar((open) => !open)}
-      />
-
       <ReportDeadlineBanner biographyId={id} status={biographyStatus} language={language} />
 
       <LicenseChoiceDialog
@@ -2279,6 +2279,9 @@ const [isPublishing, setIsPublishing] = useState(false);
               if (isReviewOrScreeningLockStatus(biographyStatus)) return;
               setShowExportDialog(true);
             }}
+            onOpenShareLink={() => setShareDialogOpen(true)}
+            showShareLink={privacy !== 'private'}
+            shareLinkOpen={shareDialogOpen}
             onToggleReviewPublication={() => {
               setShowReviewPublicationDialog((open) => {
                 if (!open) setSubmitPreflightError(null);
@@ -2312,6 +2315,15 @@ const [isPublishing, setIsPublishing] = useState(false);
             lockedSectionKeys={
               isRevisionMode && !showFinalVersionEditorLayout ? editableSectionKeys : undefined
             }
+            title={title}
+            onTitleChange={handleTitleChange}
+            authorName={authorName}
+            onAuthorNameChange={handleAuthorNameChange}
+            biographyType={biographyType}
+            isFrozen={isFrozen}
+            saveStatus={saveStatus}
+            privacy={privacy}
+            onPrivacyChange={handlePrivacyChange}
           />
         </aside>
 
@@ -2489,16 +2501,6 @@ const [isPublishing, setIsPublishing] = useState(false);
                 </div>
               )}
 
-              {biographyMode === 'sections' && (
-                <div className="shrink-0">
-                  <ShareLinkPanel
-                    biographyId={id}
-                    visibility={privacy}
-                    currentShareToken={shareToken}
-                    onTokenGenerated={setShareToken}
-                  />
-                </div>
-              )}
               {!isFrozen && (
                 <div className="shrink-0">
                   <AuthorLicensePanel
@@ -2517,6 +2519,15 @@ const [isPublishing, setIsPublishing] = useState(false);
 
         </div>
       </div>
+
+      <ShareLinkPanel
+        open={shareDialogOpen}
+        onOpenChange={setShareDialogOpen}
+        biographyId={id}
+        visibility={privacy}
+        currentShareToken={shareToken}
+        onTokenGenerated={setShareToken}
+      />
 
       <AiSuggestionsDialog
         open={!!aiState.type}

@@ -11,7 +11,7 @@ export function Footer() {
 
   return (
     <footer className="border-t border-border/50 bg-[#ECE9E4] dark:bg-[#1F2121] mt-auto py-2 flex items-center">
-      <div className="w-full px-4">
+      <div className="w-full px-2 sm:px-4">
         <div className="flex flex-col items-center gap-1">
           <div className="flex items-center gap-1.5">
             <p className="text-xs text-muted-foreground">
@@ -30,7 +30,7 @@ export function Footer() {
             </svg>
             <span className="text-xs text-muted-foreground">· {umLabel}</span>
           </div>
-          <div className="flex items-center gap-3 text-xs text-muted-foreground">
+          <div className="flex w-full items-center justify-center flex-nowrap whitespace-nowrap gap-[0.35em] text-muted-foreground text-[clamp(8px,2.15vw,12px)]">
             <Link href="/terms-of-service" className="hover:text-foreground transition-colors">
               {t.footer.termsOfService}
             </Link>

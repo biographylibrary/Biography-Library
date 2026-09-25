@@ -15,7 +15,13 @@ const SIDEBAR_TOUR_TARGETS = new Set([
   '[data-tour-id="import-btn"]',
   '[data-tour-id="review-publication-btn"]',
   '[data-tour-id="export-pdf-btn"]',
+  '[data-tour-id="book-title-btn"]',
+  '[data-tour-id="privacy-btn"]',
 ]);
+
+export const OPEN_EDITOR_TOOLS_EVENT = 'bl-open-editor-tools';
+export const EDITOR_SIDEBAR_TOGGLE_EVENT = 'bl-editor-sidebar-toggle';
+export const EDITOR_SIDEBAR_STATE_EVENT = 'bl-editor-sidebar-state';
 
 export function isSidebarTourTarget(target: string): boolean {
   return SIDEBAR_TOUR_TARGETS.has(target);

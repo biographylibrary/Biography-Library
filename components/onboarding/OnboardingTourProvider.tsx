@@ -11,6 +11,7 @@ import { patchOnboarding } from '@/lib/onboarding/onboarding-client';
 import {
   isMobileEditorLayout,
   isSidebarTourTarget,
+  OPEN_EDITOR_TOOLS_EVENT,
   waitForTransition,
 } from '@/lib/onboarding/tour-mobile';
 
@@ -87,7 +88,13 @@ export function OnboardingTourProvider({
   }, []);
 
   const prepareStepEnvironment = useCallback(async (step: TourStepDefinition) => {
-    if (!isMobileEditorLayout()) return;
+    if (step.target.includes('privacy-btn')) {
+      window.dispatchEvent(new Event(OPEN_EDITOR_TOOLS_EVENT));
+    }
+    if (!isMobileEditorLayout()) {
+      if (step.target.includes('privacy-btn')) await waitForTransition();
+      return;
+    }
 
     if (step.id === 'mobile-menu') {
       onCloseMobileSidebarRef.current?.();
