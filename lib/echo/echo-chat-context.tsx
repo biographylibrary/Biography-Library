@@ -332,6 +332,11 @@ export function EchoChatProvider({
   const recallUsageGuide = useCallback(() => {
     const existing = findUsageGuideMessage(messages);
     if (existing) {
+      setMessages((prev) => {
+        const found = findUsageGuideMessage(prev);
+        if (!found) return prev;
+        return [...prev.filter((m) => m.id !== found.id), found];
+      });
       setScrollToMessageId(existing.id);
       return;
     }
@@ -341,7 +346,7 @@ export function EchoChatProvider({
       content: t.echo.usageGuide,
       isUsageGuide: true,
     };
-    setMessages((prev) => [guide, ...prev]);
+    setMessages((prev) => [...prev, guide]);
     setScrollToMessageId(guide.id);
   }, [messages, t.echo.usageGuide, findUsageGuideMessage]);
 

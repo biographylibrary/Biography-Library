@@ -427,6 +427,7 @@ export function SectionSidebar({
         <div className="h-px bg-black dark:bg-white mx-2 my-1" />
         <button
           type="button"
+          data-tour-id="editor-tools-btn"
           onClick={() => setToolsOpen((open) => !open)}
           className="w-full flex items-center gap-2 px-3 py-1 lg:py-2 rounded-lg text-sm text-muted-foreground hover:bg-muted/50 hover:text-foreground"
         >

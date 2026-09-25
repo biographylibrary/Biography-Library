@@ -33,9 +33,12 @@ const it: EchoGuideCopy & { pools: EchoIcebreakerPoolsByContext } = {
 - **Orientamento** — come funziona l'app, cosa fare dopo, riassunto di quello che abbiamo detto
 
 **Come usarci al meglio**
-- Sei già sul capitolo selezionato a sinistra — non serve dirmi quale, a meno che tu non voglia un altro
-- Chiedi una cosa alla volta; per i testi lunghi chiedi una **bozza** — poi usa il pulsante **Inserisci nell'editor** sotto il messaggio (o rispondi «sì») quando sei pronto
-- Puoi usare il **microfono** o la tastiera
+- Il capitolo aperto è già quello su cui lavori: il testo è sopra, sempre modificabile. Non serve dirmi quale, a meno che tu non voglia un altro
+- La striscia nera «Echo - il tuo assistente alla scrittura» apre e chiude la chat. Se la chiudi, spariscono anche il campo e le icone
+- Chiedi una cosa alla volta; per i testi lunghi chiedi una **bozza** — poi usa **Inserisci nell'editor** sotto il messaggio (o rispondi «sì»). Solo allora il testo pulito entra nel capitolo, senza la chat
+- Le conversazioni vecchie restano: apri «Conversazioni precedenti» se vuoi rileggerle. All’apertura non scorro tutta la chat
+- Microfono e voce sono le icone a sinistra del campo
+- Titolo e autore sono nel menu a sinistra, sopra Sezioni e Testo libero. Esporta è sempre visibile in basso. Visibilità e gli altri strumenti sono sotto **Strumenti**. Su telefono il menu è l’icona a sinistra nell’intestazione del sito
 - I suggerimenti sotto la chat sono esempi cliccabili — provaci
 
 **Memoria della conversazione**
@@ -212,10 +215,13 @@ const en: EchoGuideCopy & { pools: EchoIcebreakerPoolsByContext } = {
 - **Orientation** — how the app works, what to do next, a summary of our conversation
 
 **How to get the most from me**
-- You're already on the chapter selected on the left — no need to tell me which, unless you want another
-- Ask one thing at a time; for long text ask for a **draft** — then use the **Insert in editor** button below the message (or reply "yes") when you are ready
-- You can use the **microphone** or the keyboard
-- The suggestions below the chat are clickable examples — try them
+- The open chapter is the one you are writing: the text stays above and is always editable. No need to tell me which, unless you want another
+- The black bar “Echo — your writing assistant” opens and closes the chat. Closing it also hides the writing field and the icons
+- Ask one thing at a time; for long text ask for a **draft** — then use **Insert in editor** under the message (or reply “yes”). Only then does the clean text go into the chapter, without the chat
+- Older conversations stay saved. Open “Earlier conversations” to read them. Opening the chat does not scroll through the whole history
+- Microphone and voice are the icons on the left of the writing field
+- Title and author are in the left menu, above Sections and Free Flow. Export is always visible at the bottom. Visibility and the other tools are under **Tools**. On a phone, the menu is the icon on the left of the site header
+- The suggestions under the chat are clickable examples — try them
 
 **Conversation memory**
 - I keep an **internal summary** of our chat so I can follow you even after many messages
@@ -391,9 +397,12 @@ const fr: EchoGuideCopy & { pools: EchoIcebreakerPoolsByContext } = {
 - **Orientation** — fonctionnement de l'app, prochaines étapes, résumé de notre échange
 
 **Comment bien m'utiliser**
-- Vous êtes déjà sur le chapitre sélectionné à gauche — inutile de me le dire, sauf si vous voulez un autre
-- Une question à la fois ; pour un long texte demandez un **brouillon** — puis utilisez le bouton **Insérer dans l'éditeur** sous le message (ou répondez « oui ») quand vous êtes prêt
-- Vous pouvez utiliser le **microphone** ou le clavier
+- Le chapitre ouvert est celui sur lequel vous travaillez : le texte reste au-dessus et se modifie toujours. Inutile de me dire lequel, sauf si vous en voulez un autre
+- La bande noire « Echo — votre assistant à l’écriture » ouvre et ferme la conversation. La fermer cache aussi le champ et les icônes
+- Une question à la fois ; pour un long texte demandez un **brouillon** — puis utilisez **Insérer dans l'éditeur** sous le message (ou répondez « oui »). Alors seulement le texte propre entre dans le chapitre, sans la conversation
+- Les anciennes conversations restent. Ouvrez « Conversations précédentes » pour les relire. L’ouverture ne fait pas défiler tout l’historique
+- Microphone et voix sont les icônes à gauche du champ
+- Titre et auteur sont dans le menu de gauche, au-dessus de Sections et Texte libre. Exporter est toujours visible en bas. Visibilité et les autres outils sont sous **Outils**. Sur téléphone, le menu est l’icône à gauche dans l’en-tête du site
 - Les suggestions sous le chat sont des exemples cliquables — essayez-les
 
 **Mémoire de la conversation**
@@ -570,9 +579,12 @@ const de: EchoGuideCopy & { pools: EchoIcebreakerPoolsByContext } = {
 - **Orientierung** — App-Funktion, nächste Schritte, Zusammenfassung unseres Gesprächs
 
 **So nutzen Sie mich am besten**
-- Sie sind bereits beim links gewählten Kapitel — Sie müssen es nicht nennen, außer Sie möchten ein anderes
-- Eine Frage nach der anderen; bei langem Text einen **Entwurf** anfordern — dann den Button **In den Editor einfügen** unter der Nachricht nutzen (oder «ja» antworten), wenn Sie bereit sind
-- Sie können **Mikrofon** oder Tastatur verwenden
+- Das offene Kapitel ist das, an dem Sie schreiben: der Text bleibt darüber und ist immer bearbeitbar. Sie müssen es nicht nennen, außer Sie möchten ein anderes
+- Der schwarze Streifen «Echo — dein Schreibassistent» öffnet und schließt den Chat. Schließen blendet auch das Feld und die Symbole aus
+- Eine Frage nach der anderen; bei langem Text einen **Entwurf** anfordern — dann **In den Editor einfügen** unter der Nachricht (oder «ja»). Erst dann kommt der bereinigte Text ins Kapitel, ohne den Chat
+- Ältere Gespräche bleiben gespeichert. «Frühere Gespräche» öffnet sie. Beim Öffnen wird nicht die ganze Historie durchgescrollt
+- Mikrofon und Stimme sind die Symbole links am Schreibfeld
+- Titel und Autor stehen im linken Menü, über Abschnitte und Freier Text. Exportieren ist unten immer sichtbar. Sichtbarkeit und die anderen Werkzeuge liegen unter **Werkzeuge**. Auf dem Telefon ist das Menü das Symbol links in der Kopfzeile
 - Die Vorschläge unter dem Chat sind klickbare Beispiele — probieren Sie sie
 
 **Gesprächserinnerung**

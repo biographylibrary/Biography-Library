@@ -1,6 +1,7 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { OPEN_ECHO_PANEL_EVENT } from '@/lib/onboarding/tour-mobile';
 import { ChevronDown, ChevronUp } from 'lucide-react';
 import { EchoChat } from './EchoChat';
 import { EditorPeek } from './EditorPeek';
@@ -49,6 +50,12 @@ export function GuidedSectionWorkspace({
 }: GuidedSectionWorkspaceProps) {
   const { t } = useTranslation();
   const [echoOpen, setEchoOpen] = useState(true);
+
+  useEffect(() => {
+    const open = () => setEchoOpen(true);
+    window.addEventListener(OPEN_ECHO_PANEL_EVENT, open);
+    return () => window.removeEventListener(OPEN_ECHO_PANEL_EVENT, open);
+  }, []);
 
   const sectionTitle =
     t.sectionTitles[activeSection as keyof typeof t.sectionTitles] ||
