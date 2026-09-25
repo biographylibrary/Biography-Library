@@ -54,6 +54,18 @@ export function GuidedSectionWorkspace({
     BIOGRAPHY_SECTIONS.find((s) => s.key === activeSection)?.title ||
     activeSection;
 
+  const echoBar = (
+    <button
+      type="button"
+      className="h-8 shrink-0 w-full flex items-center justify-between gap-2 px-3 bg-black text-white text-sm"
+      aria-expanded={echoOpen}
+      onClick={() => setEchoOpen((open) => !open)}
+    >
+      <span className="truncate text-left">{t.echo.assistantBar}</span>
+      {echoOpen ? <ChevronDown className="h-4 w-4 shrink-0" /> : <ChevronUp className="h-4 w-4 shrink-0" />}
+    </button>
+  );
+
   return (
     <div className="flex flex-col h-full min-h-0">
       <div className="flex items-center justify-between px-3 h-12 border-b border-border/50 shrink-0 gap-2">
@@ -130,18 +142,16 @@ export function GuidedSectionWorkspace({
           echoOpen ? 'h-[min(42vh,340px)] min-h-[220px]' : 'h-8'
         )}
       >
-        {echoOpen && (
-          <EchoChat className="flex-1 min-h-0 border-t border-border/50" headerLayout="horizontal" showOrb />
+        {echoOpen ? (
+          <EchoChat
+            className="flex-1 min-h-0 border-t border-border/50"
+            headerLayout="horizontal"
+            showOrb
+            beforeComposer={echoBar}
+          />
+        ) : (
+          echoBar
         )}
-        <button
-          type="button"
-          className="h-8 shrink-0 w-full flex items-center justify-between gap-2 px-3 bg-black text-white text-sm"
-          aria-expanded={echoOpen}
-          onClick={() => setEchoOpen((open) => !open)}
-        >
-          <span className="truncate text-left">{t.echo.assistantBar}</span>
-          {echoOpen ? <ChevronDown className="h-4 w-4 shrink-0" /> : <ChevronUp className="h-4 w-4 shrink-0" />}
-        </button>
       </div>
     </div>
   );

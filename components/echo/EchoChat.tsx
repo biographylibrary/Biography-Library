@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
 import { Loader, Send } from 'lucide-react';
 import { useAuth } from '@/lib/auth-context';
 import { useTranslation } from '@/lib/i18n/i18n-context';
@@ -33,6 +33,7 @@ export interface EchoChatProps {
   headerLayout?: 'vertical' | 'horizontal';
   voiceEnabled?: boolean;
   compact?: boolean;
+  beforeComposer?: ReactNode;
 }
 
 export function EchoChat({
@@ -43,6 +44,7 @@ export function EchoChat({
   headerLayout = 'vertical',
   voiceEnabled = true,
   compact = false,
+  beforeComposer,
 }: EchoChatProps) {
   const { session } = useAuth();
   const { language, t } = useTranslation();
@@ -364,6 +366,8 @@ export function EchoChat({
           <EchoSpeakingBanner onStopSpeaking={stopSpeaking} />
         </div>
       )}
+
+      {beforeComposer}
 
       <div
         className={cn(
