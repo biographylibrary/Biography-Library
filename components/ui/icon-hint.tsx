@@ -15,14 +15,18 @@ export function IconHint({ label, children, maxWidth, side = 'top' }: IconHintPr
   const anchorRef = useRef<HTMLSpanElement>(null);
   const timer = useRef<number | null>(null);
   const pinnedUntil = useRef(0);
-  const [box, setBox] = useState<{ top: number; left: number } | null>(null);
+  const [box, setBox] = useState<{ top: number; left: number; align: 'left' | 'right' } | null>(null);
 
   const place = () => {
     const rect = anchorRef.current?.getBoundingClientRect();
     if (!rect) return;
+    const align: 'left' | 'right' =
+      rect.left + rect.width / 2 < window.innerWidth / 2 ? 'left' : 'right';
+    const edge = 8;
     setBox({
       top: side === 'top' ? rect.top - 6 : rect.bottom + 6,
-      left: rect.left + rect.width / 2,
+      left: align === 'left' ? Math.max(rect.left, edge) : Math.min(rect.right, window.innerWidth - edge),
+      align,
     });
   };
 
@@ -65,7 +69,14 @@ export function IconHint({ label, children, maxWidth, side = 'top' }: IconHintPr
             style={{
               top: box.top,
               left: box.left,
-              transform: side === 'top' ? 'translate(-50%, -100%)' : 'translate(-50%, 0)',
+              transform:
+                box.align === 'right'
+                  ? side === 'top'
+                    ? 'translate(-100%, -100%)'
+                    : 'translate(-100%, 0)'
+                  : side === 'top'
+                    ? 'translate(0, -100%)'
+                    : 'translate(0, 0)',
             }}
           >
             {label}
