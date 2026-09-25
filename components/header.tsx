@@ -1,9 +1,10 @@
 'use client';
 
-import { Bell, BookOpen, LogOut, Shield, Settings } from 'lucide-react';
+import { Bell, BookOpen, LayoutDashboard, LogOut, Shield, Settings } from 'lucide-react';
 import { useAuth, ADMIN_ROLES } from '@/lib/auth-context';
 import { isStaffRole } from '@/lib/waitlist';
 import { useTranslation } from '@/lib/i18n/i18n-context';
+import { useTheme } from 'next-themes';
 import { Logo } from '@/components/logo';
 import {
   DropdownMenu,
@@ -13,6 +14,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { Switch } from '@/components/ui/switch';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { useRouter, usePathname } from 'next/navigation';
@@ -28,7 +30,13 @@ export function Header() {
   const router = useRouter();
   const pathname = usePathname();
   const { t } = useTranslation();
+  const { resolvedTheme, setTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const refreshUnreadCount = useCallback(async () => {
     if (!user) {
@@ -84,6 +92,7 @@ export function Header() {
     pathname === '/waitlist';
   const onWaitlist = accountStatus === 'waitlist' && !isStaffRole(role);
   const homeHref = onWaitlist ? '/waitlist' : user ? '/dashboard' : '/';
+  const isDark = mounted && resolvedTheme === 'dark';
   const showAdminLink = user && role && ADMIN_ROLES.includes(role);
   const adminLinkLabel = role === 'reviewer' ? t.nav.reviewer : t.nav.admin;
 
@@ -189,9 +198,36 @@ export function Header() {
 
                 <DropdownMenuSeparator />
 
+                <div
+                  className="flex items-center justify-between px-3 py-2 cursor-pointer select-none hover:bg-accent rounded-sm mx-1"
+                  onClick={() => setTheme(isDark ? 'light' : 'dark')}
+                >
+                  <span className="text-sm">{t.nav.darkMode}</span>
+                  <Switch
+                    checked={isDark}
+                    onCheckedChange={(checked) => setTheme(checked ? 'dark' : 'light')}
+                    onClick={(e) => e.stopPropagation()}
+                    className="pointer-events-none"
+                  />
+                </div>
+
+                <DropdownMenuSeparator />
+
+                <DropdownMenuItem asChild>
+                  <Link href="/biographies" className="flex items-center gap-2 cursor-pointer">
+                    <BookOpen className="h-4 w-4" />
+                    <span>{t.nav.demoBiographies}</span>
+                  </Link>
+                </DropdownMenuItem>
+
                 <DropdownMenuItem onClick={() => router.push('/workspace')} className="flex items-center gap-2 cursor-pointer">
-                  <BookOpen className="h-4 w-4" />
-                  <span>{t.nav.myBiography}</span>
+                  <LayoutDashboard className="h-4 w-4" />
+                  <span>{t.nav.workspace}</span>
+                </DropdownMenuItem>
+
+                <DropdownMenuItem onClick={() => router.push('/dashboard')} className="flex items-center gap-2 cursor-pointer">
+                  <LayoutDashboard className="h-4 w-4" />
+                  <span>{t.nav.dashboard}</span>
                 </DropdownMenuItem>
 
                 {showAdminLink && (
