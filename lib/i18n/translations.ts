@@ -23,6 +23,7 @@ export interface Translations {
   };
   nav: {
     demoBiographies: string;
+    myBiography: string;
     workspace: string;
     dashboard: string;
     biography: string;
@@ -167,6 +168,8 @@ export interface Translations {
     underReviewMessage: string;
     untitledBiography: string;
     goToWorkspace: string;
+    continueWriting: string;
+    startWriting: string;
     continueLastSection: string;
     updateAvailabilityMessage: string;
     oneBiographyLimit: string;
@@ -378,6 +381,7 @@ export interface Translations {
     publishedChapterNotice: string;
     freeFlowTab: string;
     sectionsTab: string;
+    tools: string;
     freeFlowReadOnly: string;
     importFreeFlowHint: string;
     importSaveTo: string;
@@ -1728,6 +1732,7 @@ export const translations: Record<Language, Translations> = {
     },
     nav: {
       demoBiographies: 'Demo biographies',
+      myBiography: 'My biography',
       workspace: 'Workspace',
       dashboard: 'Dashboard',
       biography: 'Biography',
@@ -1878,6 +1883,8 @@ export const translations: Record<Language, Translations> = {
       underReviewMessage: 'Our team is reviewing your biography. You will be notified of the outcome.',
       untitledBiography: 'Untitled Biography',
       goToWorkspace: 'Go to Workspace',
+      continueWriting: 'Continue writing',
+      startWriting: 'Start',
       continueLastSection: 'Continue Last Section',
       updateAvailabilityMessage: 'You can add a new chapter to your biography once a year to capture what has changed in your life.',
       oneBiographyLimit: 'You already have a biography. Each account is limited to one biography to maintain focus and quality.',
@@ -2092,6 +2099,7 @@ export const translations: Record<Language, Translations> = {
       publishedChapterNotice: 'This chapter is published and cannot be edited.',
       freeFlowTab: 'Free Flow',
       sectionsTab: 'Sections',
+      tools: 'Tools',
       freeFlowReadOnly: 'Free Flow text (read only)',
       importFreeFlowHint: 'Importing a biography written elsewhere? Choose Free Flow. You can manually copy sections later.\nImporting a single section from a Biography Library export? Paste only that section\'s text and select which section to save it to.',
       importSaveTo: 'Save to',
@@ -3486,6 +3494,7 @@ export const translations: Record<Language, Translations> = {
     },
     nav: {
       demoBiographies: 'Biografie demo',
+      myBiography: 'La mia biografia',
       workspace: 'Workspace',
       dashboard: 'Dashboard',
       biography: 'Biografia',
@@ -3636,6 +3645,8 @@ export const translations: Record<Language, Translations> = {
       underReviewMessage: 'Il nostro team sta esaminando la tua biografia. Sarai informato dell\'esito.',
       untitledBiography: 'Biografia senza titolo',
       goToWorkspace: 'Vai al Workspace',
+      continueWriting: 'Continua a scrivere',
+      startWriting: 'Inizia',
       continueLastSection: 'Continua Ultima Sezione',
       updateAvailabilityMessage: 'Puoi aggiungere un nuovo capitolo alla tua biografia una volta all\'anno, per raccontare ciò che è cambiato nella tua vita.',
       oneBiographyLimit: 'Hai già una biografia. Ogni account può averne una sola, per mantenere focus e qualità.',
@@ -3850,6 +3861,7 @@ export const translations: Record<Language, Translations> = {
       publishedChapterNotice: 'Questo capitolo è pubblicato e non può essere modificato.',
       freeFlowTab: 'Testo libero',
       sectionsTab: 'Sezioni',
+      tools: 'Strumenti',
       freeFlowReadOnly: 'Testo libero (sola lettura)',
       importFreeFlowHint: 'Stai importando una biografia scritta altrove? Scegli Testo libero. Potrai copiare le sezioni manualmente in seguito.\nStai importando una singola sezione da un export di Biography Library? Incolla solo il testo di quella sezione e scegli in quale sezione salvarlo.',
       importSaveTo: 'Salva in',
@@ -5246,6 +5258,7 @@ export const translations: Record<Language, Translations> = {
     },
     nav: {
       demoBiographies: 'Biographies démo',
+      myBiography: 'Ma biographie',
       workspace: 'Workspace',
       dashboard: 'Tableau de bord',
       biography: 'Biographie',
@@ -5396,6 +5409,8 @@ export const translations: Record<Language, Translations> = {
       underReviewMessage: 'Notre équipe examine votre biographie. Vous serez informé du résultat.',
       untitledBiography: 'Biographie sans titre',
       goToWorkspace: 'Aller au Workspace',
+      continueWriting: 'Continuer à écrire',
+      startWriting: 'Commencer',
       continueLastSection: 'Continuer Dernière Section',
       updateAvailabilityMessage: 'Vous pouvez ajouter un nouveau chapitre à votre biographie une fois par an, pour raconter ce qui a changé dans votre vie.',
       oneBiographyLimit: 'Vous avez déjà une biographie. Chaque compte est limité à une biographie pour préserver la qualité.',
@@ -5610,6 +5625,7 @@ export const translations: Record<Language, Translations> = {
       publishedChapterNotice: 'Ce chapitre est publié et ne peut pas être modifié.',
       freeFlowTab: 'Texte libre',
       sectionsTab: 'Sections',
+      tools: 'Outils',
       freeFlowReadOnly: 'Texte libre (lecture seule)',
       importFreeFlowHint: 'Vous importez une biographie écrite ailleurs ? Choisissez Texte libre. Vous pourrez copier les sections manuellement ensuite.\nVous importez une section depuis un export Biography Library ? Collez uniquement le texte de cette section et choisissez où l\'enregistrer.',
       importSaveTo: 'Enregistrer dans',
@@ -7006,6 +7022,7 @@ export const translations: Record<Language, Translations> = {
     },
     nav: {
       demoBiographies: 'Demo-Biografien',
+      myBiography: 'Meine Biografie',
       workspace: 'Workspace',
       dashboard: 'Dashboard',
       biography: 'Biografie',
@@ -7156,6 +7173,8 @@ export const translations: Record<Language, Translations> = {
       underReviewMessage: 'Unser Team prüft Ihre Biografie. Sie werden über das Ergebnis informiert.',
       untitledBiography: 'Biografie ohne Titel',
       goToWorkspace: 'Zum Workspace',
+      continueWriting: 'Weiter schreiben',
+      startWriting: 'Beginnen',
       continueLastSection: 'Letzte Sektion Fortsetzen',
       updateAvailabilityMessage: 'Sie können Ihrer Biografie einmal im Jahr ein neues Kapitel hinzufügen, um zu erzählen, was sich in Ihrem Leben verändert hat.',
       oneBiographyLimit: 'Sie haben bereits eine Biografie. Jedes Konto ist auf eine Biografie beschränkt, um Fokus und Qualität zu bewahren.',
@@ -7370,6 +7389,7 @@ export const translations: Record<Language, Translations> = {
       publishedChapterNotice: 'Dieses Kapitel ist veröffentlicht und kann nicht bearbeitet werden.',
       freeFlowTab: 'Freier Text',
       sectionsTab: 'Abschnitte',
+      tools: 'Werkzeuge',
       freeFlowReadOnly: 'Freier Text (nur lesen)',
       importFreeFlowHint: 'Importieren Sie eine woanders geschriebene Biografie? Wählen Sie Freier Text. Sie können Abschnitte später manuell kopieren.\nImportieren Sie einen einzelnen Abschnitt aus einem Biography Library-Export? Fügen Sie nur den Text dieses Abschnitts ein und wählen Sie, wo er gespeichert werden soll.',
       importSaveTo: 'Speichern in',
