@@ -36,7 +36,7 @@ export const DEFAULT_MODELS: Record<AgentRole, { primary: string; fallback: stri
     fallback: 'mistralai/Ministral-3-14B-Instruct-2512',
   },
   apertus: {
-    primary: 'swiss-ai/Apertus-70B-Instruct-2509',
+    primary: 'swiss-ai/Apertus-v1.5-70B',
     fallback: 'mistralai/Mistral-Small-4-119B-2603',
   },
   embedding: {

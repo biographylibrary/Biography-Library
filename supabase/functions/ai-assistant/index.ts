@@ -20,6 +20,8 @@ const PRIMARY_MODEL =
   Deno.env.get('INFOMANIAK_AI_MODEL_PRIMARY') ?? 'google/gemma-4-31B-it';
 const FALLBACK_MODEL =
   Deno.env.get('INFOMANIAK_AI_MODEL_FALLBACK') ?? 'mistralai/Mistral-Small-4-119B-2603';
+const GRAMMAR_MODEL =
+  Deno.env.get('INFOMANIAK_AI_MODEL_GRAMMAR') ?? 'swiss-ai/Apertus-v1.5-70B';
 
 const LANGUAGE_NAMES: Record<string, string> = {
   en: "English",
@@ -521,9 +523,9 @@ async function callAIWithFallback(
   payload: object,
   endpoint: string,
   token: string,
-  timeoutMs = 28_000
+  timeoutMs = 28_000,
+  models: string[] = [PRIMARY_MODEL, FALLBACK_MODEL]
 ): Promise<{ data: unknown; modelUsed: string }> {
-  const models = [PRIMARY_MODEL, FALLBACK_MODEL];
 
   for (let i = 0; i < models.length; i++) {
     const model = models[i];
@@ -991,11 +993,15 @@ Deno.serve(async (req: Request) => {
           { role: "user", content: userPrompt },
         ],
       };
+      const grammarModels = [GRAMMAR_MODEL, PRIMARY_MODEL, FALLBACK_MODEL].filter(
+        (model, index, all) => all.indexOf(model) === index
+      );
       const { data: aiResult, modelUsed: usedModel } = await callAIWithFallback(
         aiPayload,
         infomaniakEndpoint,
         infomaniakToken,
-        aiTimeoutMs
+        aiTimeoutMs,
+        action === "grammar" ? grammarModels : undefined
       );
       modelUsed = usedModel;
       const result = aiResult as any;
