@@ -424,6 +424,7 @@ export function SectionSidebar({
             <span className="truncate min-w-0 flex-1 text-left">{t.biography.shareLink}</span>
           </button>
         )}
+        <div className="h-px bg-black dark:bg-white mx-2 my-1" />
         <button
           type="button"
           onClick={() => setToolsOpen((open) => !open)}
