@@ -142,12 +142,12 @@ export function GuidedSectionWorkspace({
           echoOpen && 'h-[min(42vh,340px)] min-h-[220px]'
         )}
       >
+        {echoBar}
         <EchoChat
-          className={cn('min-h-0', echoOpen && 'flex-1 border-t border-border/50')}
+          className={cn('min-h-0', echoOpen && 'flex-1')}
           headerLayout="horizontal"
           showOrb
           conversationOpen={echoOpen}
-          beforeComposer={echoBar}
         />
       </div>
     </div>
