@@ -168,8 +168,7 @@ export default function BiographyEditorPage() {
   const [showImportDialog, setShowImportDialog] = useState(() => searchParams?.get('import') === '1');
   const [globalNotesCount, setGlobalNotesCount] = useState(0);
   const [globalTodosCount, setGlobalTodosCount] = useState(0);
-  const [editorPeekOpen, setEditorPeekOpen] = useState(false);
-  const [editorFontSize, setEditorFontSize] = useState<number>(16);
+  const [editorFontSize, setEditorFontSize] = useState<number>(15);
 
   const [aiEnabled, setAiEnabled] = useState(false);
   const [aiState, setAiState] = useState<AiPanelState>(INITIAL_AI_STATE);
@@ -338,7 +337,7 @@ const [isPublishing, setIsPublishing] = useState(false);
         );
         setIsFrozen(data.is_frozen || false);
         setShareToken(data.share_token || null);
-        setEditorFontSize(data.editor_font_size || 16);
+        setEditorFontSize(data.editor_font_size || 15);
         setFinalVersion(data.final_version || '');
         setNarrativeOrder((data.narrative_order as string[]) || []);
         setBiographyMode((data.biography_mode as 'sections' | 'freeflow') || 'sections');
@@ -1196,7 +1195,6 @@ const [isPublishing, setIsPublishing] = useState(false);
         dirtyRef.current = false;
         setSaveStatus('saved');
         setActiveSection(sectionKey);
-        setEditorPeekOpen(true);
       } finally {
         applyingEchoDraftRef.current = false;
       }
@@ -1218,7 +1216,6 @@ const [isPublishing, setIsPublishing] = useState(false);
       return;
     }
     setActiveSection(sectionKey);
-    setEditorPeekOpen(true);
   }, []);
 
 
@@ -1943,10 +1940,7 @@ const [isPublishing, setIsPublishing] = useState(false);
     !isSectionOrFreeflowRevisionLocked &&
     !reviewQueueLocksEditor;
 
-  const showEchoBubble =
-    echoBubbleEditorUnlocked &&
-    (biographyMode === 'freeflow' ||
-      (biographyMode === 'sections' && editorPeekOpen));
+  const showEchoBubble = echoBubbleEditorUnlocked && biographyMode === 'freeflow';
 
   return (
     <EchoShell
@@ -2365,8 +2359,6 @@ const [isPublishing, setIsPublishing] = useState(false);
                     isSectionOrFreeflowRevisionLocked ||
                     reviewQueueLocksEditor
                   }
-                  editorPeekOpen={editorPeekOpen}
-                  onEditorPeekOpenChange={setEditorPeekOpen}
                   aiEnabled={aiEnabled}
                   aiUsageRefresh={aiUsageRefresh}
                   aiLoading={aiState.loading}

@@ -15,6 +15,7 @@ import {
   Wand2,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { IconHint } from '@/components/ui/icon-hint';
 
 export interface EditorAiToolsMenuProps {
   aiEnabled?: boolean;
@@ -42,17 +43,18 @@ export function EditorAiToolsMenu({
   if (!aiEnabled) return null;
 
   return (
+    <IconHint label={t.echo.aiToolsMenu} maxWidth={639}>
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button
-          type="button"
-          variant="outline"
-          size="sm"
-          className={cn('gap-1 text-xs h-8 px-2 shrink-0', buttonClassName, className)}
-        >
-          <MoreHorizontal className="h-3.5 w-3.5" />
-          <span className="hidden sm:inline">{t.echo.aiToolsMenu}</span>
-        </Button>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            className={cn('gap-1 text-xs h-8 px-2 shrink-0', buttonClassName, className)}
+          >
+            <MoreHorizontal className="h-3.5 w-3.5" />
+            <span className="hidden sm:inline">{t.echo.aiToolsMenu}</span>
+          </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="start">
         {onGrammarCheck && (
@@ -84,5 +86,6 @@ export function EditorAiToolsMenu({
         )}
       </DropdownMenuContent>
     </DropdownMenu>
+    </IconHint>
   );
 }

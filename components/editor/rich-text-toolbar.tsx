@@ -26,6 +26,7 @@ import {
 import { EditorFontSizeControl } from './editor-font-size-control';
 import { EditorAiToolsMenu, type EditorAiToolsMenuProps } from './editor-ai-tools-menu';
 import { cn } from '@/lib/utils';
+import { IconHint } from '@/components/ui/icon-hint';
 
 interface RichTextToolbarProps {
   editor: Editor | null;
@@ -61,21 +62,23 @@ export function RichTextToolbar({
     icon: React.ComponentType<{ className?: string }>;
     disabled?: boolean;
   }) => (
-    <Button
-      type="button"
-      variant={isActive ? 'default' : 'ghost'}
-      size="sm"
-      className={cn('h-8 w-8 p-0', isActive && 'bg-primary text-primary-foreground')}
-      onClick={onClick}
-      title={title}
-      disabled={disabled}
-    >
-      <Icon className="h-4 w-4" />
-    </Button>
+    <IconHint label={title}>
+      <Button
+        type="button"
+        variant={isActive ? 'default' : 'ghost'}
+        size="sm"
+        className={cn('h-8 w-8 p-0', isActive && 'bg-primary text-primary-foreground')}
+        onClick={onClick}
+        title={title}
+        disabled={disabled}
+      >
+        <Icon className="h-4 w-4" />
+      </Button>
+    </IconHint>
   );
 
   return (
-    <div className="flex flex-wrap items-center gap-1 px-4 sm:px-6 py-2 border-b border-border/30 bg-muted/30">
+    <div className="flex flex-nowrap sm:flex-wrap items-center gap-1 px-3 py-2 border-b border-border/30 bg-muted/30 overflow-x-auto sm:overflow-visible">
       <div className="hidden md:flex items-center gap-0.5 flex-wrap">
         <ToolbarButton
           onClick={() => editor.chain().focus().toggleBold().run()}
@@ -238,7 +241,7 @@ export function RichTextToolbar({
         </>
       )}
 
-      <div className="w-full sm:w-auto sm:ml-auto text-xs text-muted-foreground text-right shrink-0">
+      <div className="ml-auto text-xs text-muted-foreground text-right shrink-0 whitespace-nowrap pl-2">
         {editor.storage.characterCount?.characters() || 0} {t.editor.chars}
       </div>
     </div>

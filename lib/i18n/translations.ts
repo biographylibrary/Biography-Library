@@ -1668,6 +1668,7 @@ export interface Translations {
     errorGeneric: string;
     openEcho: string;
     closeEcho: string;
+    assistantBar: string;
     aiToolsMenu: string;
     changePath: string;
     changePathTitle: string;
@@ -1680,6 +1681,7 @@ export interface Translations {
     exitConcentration: string;
     consultEcho: string;
     stopSpeaking: string;
+    microphone: string;
     muteVoice: string;
     unmuteVoice: string;
     speakingBanner: string;
@@ -1709,6 +1711,7 @@ export interface Translations {
     insertDraftContinueChat: string;
     insertDraftPendingBadge: string;
     loadOlderMessages: string;
+    earlierConversations: string;
     loadingOlderMessages: string;
     icebreakerPools: EchoIcebreakerPoolsByContext;
   };
@@ -3356,10 +3359,10 @@ export const translations: Record<Language, Translations> = {
         'This button shows who can see your biography. Tap it to cycle between Private, Family link, and Public.',
       echoPanelTitle: 'Write with Echo',
       echoPanelDesc:
-        'Chat with Echo here to draft your chapter by text or voice. Ask questions, get suggestions, or request a draft.',
-      editSectionTitle: 'Edit',
+        'Echo sits below the chapter. Ask questions or request a draft. The clean text goes into the chapter only if you accept it.',
+      editSectionTitle: 'The chapter',
       editSectionDesc:
-        'Use Edit to open the text editor for this chapter. Refine Echo’s draft, paste your own text, or write directly — Echo stays available as your assistant.',
+        'The chapter text is always here. You can correct it, paste, or write directly. Echo, below, suggests changes and asks questions. Only if you accept does the clean text go into this chapter.',
       aiCreditsTitle: 'AI credits',
       aiCreditsDesc:
         'This counter shows how many AI-assisted actions you have left today and this week. Standard accounts have daily and weekly limits.',
@@ -3433,6 +3436,7 @@ export const translations: Record<Language, Translations> = {
       statusLoadingOlder: 'Loading earlier messages…',
       errorGeneric: 'Something went wrong. Please try again.',
       openEcho: 'Ask Echo',
+      assistantBar: 'Echo — your writing assistant',
       closeEcho: 'Close',
       aiToolsMenu: 'AI tools',
       changePath: 'Change writing path',
@@ -3446,6 +3450,7 @@ export const translations: Record<Language, Translations> = {
       exitConcentration: 'Exit concentration mode',
       consultEcho: 'Echo',
       stopSpeaking: 'Stop',
+      microphone: 'Microphone',
       muteVoice: 'Mute Echo voice',
       unmuteVoice: 'Unmute Echo voice',
       speakingBanner: 'Echo is reading aloud…',
@@ -3472,6 +3477,7 @@ export const translations: Record<Language, Translations> = {
       insertDraftContinueChat: 'Continue in chat',
       insertDraftPendingBadge: '{count} draft to insert',
       loadOlderMessages: 'Load older messages',
+      earlierConversations: 'Earlier conversations',
       loadingOlderMessages: 'Loading…',
       ...getEchoGuideCopy('en'),
       icebreakerPools: getEchoIcebreakerPools('en'),
@@ -5120,10 +5126,10 @@ export const translations: Record<Language, Translations> = {
         'Questo pulsante indica chi può vedere la biografia. Toccalo per passare tra Privata, Link famiglia e Pubblica.',
       echoPanelTitle: 'Scrivi con Echo',
       echoPanelDesc:
-        'Chatta con Echo qui per abbozzare il capitolo a testo o voce. Fai domande, chiedi suggerimenti o una bozza.',
-      editSectionTitle: 'Modifica',
+        'Echo sta sotto il capitolo. Fai domande o chiedi una bozza. Il testo pulito entra nel capitolo solo se lo accetti.',
+      editSectionTitle: 'Il capitolo',
       editSectionDesc:
-        'Usa Modifica per aprire l\'editor del capitolo. Correggi la bozza di Echo, incolla il tuo testo o scrivi direttamente — Echo resta il tuo assistente.',
+        'Il testo del capitolo è sempre qui. Puoi correggerlo, incollare o scrivere direttamente. Echo, sotto, propone aggiustamenti e fa domande. Solo se accetti, il testo pulito entra in questo capitolo.',
       aiCreditsTitle: 'Crediti AI',
       aiCreditsDesc:
         'Questo contatore mostra quante azioni assistite da AI ti restano oggi e questa settimana. Gli account standard hanno limiti giornalieri e settimanali.',
@@ -5197,6 +5203,7 @@ export const translations: Record<Language, Translations> = {
       statusLoadingOlder: 'Carico messaggi precedenti…',
       errorGeneric: 'Qualcosa è andato storto. Riprova.',
       openEcho: 'Chiedi a Echo',
+      assistantBar: 'Echo - il tuo assistente alla scrittura',
       closeEcho: 'Chiudi',
       aiToolsMenu: 'Strumenti AI',
       changePath: 'Cambia percorso',
@@ -5210,6 +5217,7 @@ export const translations: Record<Language, Translations> = {
       exitConcentration: 'Esci dalla concentrazione',
       consultEcho: 'Echo',
       stopSpeaking: 'Interrompi',
+      microphone: 'Microfono',
       muteVoice: 'Disattiva voce di Echo',
       unmuteVoice: 'Attiva voce di Echo',
       speakingBanner: 'Echo sta leggendo ad alta voce…',
@@ -5236,6 +5244,7 @@ export const translations: Record<Language, Translations> = {
       insertDraftContinueChat: 'Continua in chat',
       insertDraftPendingBadge: '{count} bozza da inserire',
       loadOlderMessages: 'Carica messaggi precedenti',
+      earlierConversations: 'Conversazioni precedenti',
       loadingOlderMessages: 'Caricamento…',
       ...getEchoGuideCopy('it'),
       icebreakerPools: getEchoIcebreakerPools('it'),
@@ -6884,10 +6893,10 @@ export const translations: Record<Language, Translations> = {
         'Ce bouton indique qui peut voir votre biographie. Touchez-le pour passer entre Privé, Lien famille et Public.',
       echoPanelTitle: 'Écrire avec Echo',
       echoPanelDesc:
-        'Discutez avec Echo ici pour rédiger votre chapitre par texte ou voix. Posez des questions, demandez des suggestions ou un brouillon.',
-      editSectionTitle: 'Modifier',
+        'Echo est sous le chapitre. Posez des questions ou demandez un brouillon. Le texte propre n\'entre dans le chapitre que si vous l\'acceptez.',
+      editSectionTitle: 'Le chapitre',
       editSectionDesc:
-        'Utilisez Modifier pour ouvrir l\'éditeur de texte du chapitre. Affinez le brouillon d\'Echo, collez votre texte ou écrivez directement — Echo reste votre assistant.',
+        'Le texte du chapitre est toujours ici. Vous pouvez le corriger, coller ou écrire directement. Echo, en dessous, propose des ajustements et pose des questions. Le texte propre n\'entre dans ce chapitre que si vous l\'acceptez.',
       aiCreditsTitle: 'Crédits IA',
       aiCreditsDesc:
         'Ce compteur indique combien d\'actions assistées par IA il vous reste aujourd\'hui et cette semaine. Les comptes standard ont des limites quotidiennes et hebdomadaires.',
@@ -6961,6 +6970,7 @@ export const translations: Record<Language, Translations> = {
       statusLoadingOlder: 'Chargement des messages précédents…',
       errorGeneric: 'Une erreur s\'est produite. Réessayez.',
       openEcho: 'Demander à Echo',
+      assistantBar: 'Echo — votre assistant à l’écriture',
       closeEcho: 'Fermer',
       aiToolsMenu: 'Outils IA',
       changePath: 'Changer de parcours',
@@ -6974,6 +6984,7 @@ export const translations: Record<Language, Translations> = {
       exitConcentration: 'Quitter le mode concentration',
       consultEcho: 'Echo',
       stopSpeaking: 'Arrêter',
+      microphone: 'Microphone',
       muteVoice: 'Couper la voix d\'Echo',
       unmuteVoice: 'Activer la voix d\'Echo',
       speakingBanner: 'Echo lit à voix haute…',
@@ -7000,6 +7011,7 @@ export const translations: Record<Language, Translations> = {
       insertDraftContinueChat: 'Continuer dans le chat',
       insertDraftPendingBadge: '{count} brouillon à insérer',
       loadOlderMessages: 'Charger les messages précédents',
+      earlierConversations: 'Conversations précédentes',
       loadingOlderMessages: 'Chargement…',
       ...getEchoGuideCopy('fr'),
       icebreakerPools: getEchoIcebreakerPools('fr'),
@@ -8648,10 +8660,10 @@ export const translations: Record<Language, Translations> = {
         'Diese Schaltfläche zeigt, wer Ihre Biografie sehen kann. Tippen Sie, um zwischen Privat, Familienlink und Öffentlich zu wechseln.',
       echoPanelTitle: 'Mit Echo schreiben',
       echoPanelDesc:
-        'Chatten Sie hier mit Echo, um Ihr Kapitel per Text oder Sprache zu entwerfen. Stellen Sie Fragen, holen Sie sich Vorschläge oder einen Entwurf.',
-      editSectionTitle: 'Bearbeiten',
+        'Echo steht unter dem Kapitel. Stellen Sie Fragen oder bitten Sie um einen Entwurf. Der bereinigte Text kommt nur ins Kapitel, wenn Sie ihn annehmen.',
+      editSectionTitle: 'Das Kapitel',
       editSectionDesc:
-        'Nutzen Sie Bearbeiten, um den Texteditor für dieses Kapitel zu öffnen. Überarbeiten Sie Echos Entwurf, fügen Sie eigenen Text ein oder schreiben Sie direkt — Echo bleibt Ihr Assistent.',
+        'Der Kapiteltext ist immer hier. Sie können ihn korrigieren, einfügen oder direkt schreiben. Echo darunter schlägt Änderungen vor und stellt Fragen. Nur wenn Sie annehmen, kommt der bereinigte Text in dieses Kapitel.',
       aiCreditsTitle: 'KI-Guthaben',
       aiCreditsDesc:
         'Dieser Zähler zeigt, wie viele KI-gestützte Aktionen Ihnen heute und diese Woche noch bleiben. Standardkonten haben tägliche und wöchentliche Limits.',
@@ -8725,6 +8737,7 @@ export const translations: Record<Language, Translations> = {
       statusLoadingOlder: 'Frühere Nachrichten werden geladen…',
       errorGeneric: 'Etwas ist schiefgelaufen. Bitte erneut versuchen.',
       openEcho: 'Echo fragen',
+      assistantBar: 'Echo — dein Schreibassistent',
       closeEcho: 'Schließen',
       aiToolsMenu: 'KI-Werkzeuge',
       changePath: 'Schreibweg wechseln',
@@ -8738,6 +8751,7 @@ export const translations: Record<Language, Translations> = {
       exitConcentration: 'Konzentrationsmodus beenden',
       consultEcho: 'Echo',
       stopSpeaking: 'Stoppen',
+      microphone: 'Mikrofon',
       muteVoice: 'Echo-Stimme stummschalten',
       unmuteVoice: 'Echo-Stimme aktivieren',
       speakingBanner: 'Echo liest vor…',
@@ -8764,6 +8778,7 @@ export const translations: Record<Language, Translations> = {
       insertDraftContinueChat: 'Im Chat fortfahren',
       insertDraftPendingBadge: '{count} Entwurf einzufügen',
       loadOlderMessages: 'Ältere Nachrichten laden',
+      earlierConversations: 'Frühere Gespräche',
       loadingOlderMessages: 'Laden…',
       ...getEchoGuideCopy('de'),
       icebreakerPools: getEchoIcebreakerPools('de'),

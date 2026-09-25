@@ -4,6 +4,7 @@ import { Square, Volume2, VolumeX } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useTranslation } from '@/lib/i18n/i18n-context';
 import { cn } from '@/lib/utils';
+import { IconHint } from '@/components/ui/icon-hint';
 
 interface EchoSpeakingBannerProps {
   onStopSpeaking: () => void;
@@ -42,10 +43,12 @@ export function EchoVoiceOutputButton({
   voiceOutputEnabled,
   onToggleVoiceOutput,
   compact = false,
-}: EchoVoiceOutputButtonProps) {
+  className,
+}: EchoVoiceOutputButtonProps & { className?: string }) {
   const { t } = useTranslation();
 
   return (
+    <IconHint label={voiceOutputEnabled ? t.echo.muteVoice : t.echo.unmuteVoice}>
     <Button
       type="button"
       size="icon"
@@ -54,6 +57,7 @@ export function EchoVoiceOutputButton({
       aria-pressed={!voiceOutputEnabled}
       className={cn(
         'h-11 w-11 shrink-0',
+        className,
         voiceOutputEnabled
           ? 'border-border bg-background text-foreground'
           : 'border-brand-ink bg-muted text-brand-ink'
@@ -63,6 +67,7 @@ export function EchoVoiceOutputButton({
     >
       {voiceOutputEnabled ? <Volume2 className="h-4 w-4" /> : <VolumeX className="h-4 w-4" />}
     </Button>
+    </IconHint>
   );
 }
 
@@ -80,6 +85,7 @@ export function EchoStopSpeakingButton({
   const { t } = useTranslation();
 
   return (
+    <IconHint label={t.echo.stopSpeaking}>
     <Button
       type="button"
       size="icon"
@@ -90,5 +96,6 @@ export function EchoStopSpeakingButton({
     >
       <Square className="h-4 w-4 fill-current" />
     </Button>
+    </IconHint>
   );
 }
