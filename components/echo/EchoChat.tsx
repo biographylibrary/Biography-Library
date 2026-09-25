@@ -7,6 +7,7 @@ import { useTranslation } from '@/lib/i18n/i18n-context';
 import { useEchoChat } from '@/lib/echo/echo-chat-context';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import { IconHint } from '@/components/ui/icon-hint';
 import { EchoAvatar } from './EchoAvatar';
 import { EchoVoiceSession } from './EchoVoiceSession';
 import { EchoMessageContent } from './EchoMessageContent';
@@ -424,6 +425,7 @@ export function EchoChat({
               />
             </>
           )}
+          <IconHint label={t.conversation.send}>
           <Button
             type="button"
             size="icon"
@@ -447,6 +449,7 @@ export function EchoChat({
               <Send className={flushChrome ? 'h-3.5 w-3.5' : 'h-4 w-4'} />
             )}
           </Button>
+          </IconHint>
         </div>
         <textarea
           ref={inputRef}

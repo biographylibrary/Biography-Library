@@ -26,6 +26,7 @@ import {
 import { EditorFontSizeControl } from './editor-font-size-control';
 import { EditorAiToolsMenu, type EditorAiToolsMenuProps } from './editor-ai-tools-menu';
 import { cn } from '@/lib/utils';
+import { IconHint } from '@/components/ui/icon-hint';
 
 interface RichTextToolbarProps {
   editor: Editor | null;
@@ -61,17 +62,19 @@ export function RichTextToolbar({
     icon: React.ComponentType<{ className?: string }>;
     disabled?: boolean;
   }) => (
-    <Button
-      type="button"
-      variant={isActive ? 'default' : 'ghost'}
-      size="sm"
-      className={cn('h-8 w-8 p-0', isActive && 'bg-primary text-primary-foreground')}
-      onClick={onClick}
-      title={title}
-      disabled={disabled}
-    >
-      <Icon className="h-4 w-4" />
-    </Button>
+    <IconHint label={title}>
+      <Button
+        type="button"
+        variant={isActive ? 'default' : 'ghost'}
+        size="sm"
+        className={cn('h-8 w-8 p-0', isActive && 'bg-primary text-primary-foreground')}
+        onClick={onClick}
+        title={title}
+        disabled={disabled}
+      >
+        <Icon className="h-4 w-4" />
+      </Button>
+    </IconHint>
   );
 
   return (

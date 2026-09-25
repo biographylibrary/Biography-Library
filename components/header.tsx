@@ -19,6 +19,7 @@ import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { useRouter, usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
+import { IconHint } from '@/components/ui/icon-hint';
 import { useEffect, useState, useCallback } from 'react';
 import {
   fetchUnreadNotificationCount,
@@ -125,6 +126,10 @@ export function Header() {
       <div className="h-16 flex items-center relative px-4 sm:px-6 lg:px-8">
         <div className="flex-1 flex items-center">
           {isEditorPage && (
+            <IconHint
+              label={editorSidebarOpen ? t.common.close : t.onboardingTour.mobileMenuTitle}
+              side="bottom"
+            >
             <Button
               type="button"
               size="icon"
@@ -135,6 +140,7 @@ export function Header() {
             >
               {editorSidebarOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
             </Button>
+            </IconHint>
           )}
         </div>
 

@@ -3,6 +3,8 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Loader2, Mic, MicOff } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { IconHint } from '@/components/ui/icon-hint';
+import { useTranslation } from '@/lib/i18n/i18n-context';
 import { cn } from '@/lib/utils';
 import { echoOrbStateFromMic } from '@/lib/echo/echo-playback';
 import { EchoTranscriptionError, transcribeAudioWithWhisper } from '@/lib/echo/whisper-stt';
@@ -125,10 +127,12 @@ export function EchoVoiceSession({
     else if (phase === 'idle') void startRecording();
   };
 
+  const { t } = useTranslation();
   const busy = phase !== 'idle';
   const micDisabled = disabled || !supported || !accessToken || phase === 'transcribing';
 
   return (
+    <IconHint label={t.echo.microphone}>
     <Button
       type="button"
       variant={phase === 'recording' ? 'default' : 'outline'}
@@ -156,6 +160,7 @@ export function EchoVoiceSession({
         <Mic className="h-5 w-5" />
       )}
     </Button>
+    </IconHint>
   );
 }
 

@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/button';
 import { CircleCheck as CheckCircle2, RotateCcw } from 'lucide-react';
 import { AiUsageIndicator } from '@/components/editor/ai-usage-indicator';
 import { cn } from '@/lib/utils';
+import { IconHint } from '@/components/ui/icon-hint';
 
 interface GuidedSectionWorkspaceProps {
   biographyId: string;
@@ -88,6 +89,10 @@ export function GuidedSectionWorkspace({
             </div>
           )}
           {!isPublished && onMarkComplete && (
+            <IconHint
+              label={isCompleted ? t.status.markIncomplete : t.status.markComplete}
+              maxWidth={639}
+            >
             <Button
               type="button"
               variant="ghost"
@@ -112,6 +117,7 @@ export function GuidedSectionWorkspace({
                 {isCompleted ? t.status.markIncomplete : t.status.markComplete}
               </span>
             </Button>
+            </IconHint>
           )}
         </div>
       </div>

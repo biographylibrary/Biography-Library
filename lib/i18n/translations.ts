@@ -1681,6 +1681,7 @@ export interface Translations {
     exitConcentration: string;
     consultEcho: string;
     stopSpeaking: string;
+    microphone: string;
     muteVoice: string;
     unmuteVoice: string;
     speakingBanner: string;
@@ -3449,6 +3450,7 @@ export const translations: Record<Language, Translations> = {
       exitConcentration: 'Exit concentration mode',
       consultEcho: 'Echo',
       stopSpeaking: 'Stop',
+      microphone: 'Microphone',
       muteVoice: 'Mute Echo voice',
       unmuteVoice: 'Unmute Echo voice',
       speakingBanner: 'Echo is reading aloud…',
@@ -5215,6 +5217,7 @@ export const translations: Record<Language, Translations> = {
       exitConcentration: 'Esci dalla concentrazione',
       consultEcho: 'Echo',
       stopSpeaking: 'Interrompi',
+      microphone: 'Microfono',
       muteVoice: 'Disattiva voce di Echo',
       unmuteVoice: 'Attiva voce di Echo',
       speakingBanner: 'Echo sta leggendo ad alta voce…',
@@ -6981,6 +6984,7 @@ export const translations: Record<Language, Translations> = {
       exitConcentration: 'Quitter le mode concentration',
       consultEcho: 'Echo',
       stopSpeaking: 'Arrêter',
+      microphone: 'Microphone',
       muteVoice: 'Couper la voix d\'Echo',
       unmuteVoice: 'Activer la voix d\'Echo',
       speakingBanner: 'Echo lit à voix haute…',
@@ -8747,6 +8751,7 @@ export const translations: Record<Language, Translations> = {
       exitConcentration: 'Konzentrationsmodus beenden',
       consultEcho: 'Echo',
       stopSpeaking: 'Stoppen',
+      microphone: 'Mikrofon',
       muteVoice: 'Echo-Stimme stummschalten',
       unmuteVoice: 'Echo-Stimme aktivieren',
       speakingBanner: 'Echo liest vor…',
