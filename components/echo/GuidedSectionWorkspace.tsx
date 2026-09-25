@@ -144,10 +144,9 @@ export function GuidedSectionWorkspace({
       >
         {echoBar}
         <EchoChat
-          className={cn('min-h-0', echoOpen && 'flex-1')}
+          className={cn('min-h-0', echoOpen ? 'flex-1' : 'hidden')}
           headerLayout="horizontal"
           showOrb
-          conversationOpen={echoOpen}
           fontSize={editorFontSize ?? 15}
         />
       </div>

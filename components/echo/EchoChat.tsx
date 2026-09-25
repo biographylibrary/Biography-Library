@@ -299,9 +299,9 @@ export function EchoChat({
           <div
             key={m.id}
             id={`echo-message-${m.id}`}
-            style={{ fontSize: `${fontSize}px`, lineHeight: 1.5 }}
+            style={{ ['--writing-size' as string]: `${fontSize}px`, lineHeight: 1.5 }}
             className={cn(
-              'rounded-lg px-3 py-2 max-w-[90%] scroll-mt-1',
+              'rounded-lg px-3 py-2 max-w-[90%] scroll-mt-1 text-[length:var(--writing-size)] max-sm:!text-[length:calc(var(--writing-size)*0.85)]',
               m.role === 'user'
                 ? 'ml-auto bg-brand-greenLight text-brand-greenDark dark:bg-brand-greenLight/25 dark:text-brand-greenLight'
                 : m.isUsageGuide
@@ -445,9 +445,9 @@ export function EchoChat({
           }}
           placeholder={t.echo.inputPlaceholder}
           rows={flushChrome ? 1 : 2}
-          style={{ fontSize: `${fontSize}px`, lineHeight: 1.5 }}
+          style={{ ['--writing-size' as string]: `${fontSize}px`, lineHeight: 1.5 }}
           className={cn(
-            'min-w-0 rounded-md border bg-background px-3 py-2 overflow-y-auto',
+            'min-w-0 rounded-md border bg-background px-3 py-2 overflow-y-auto text-[length:var(--writing-size)] max-sm:!text-[length:calc(var(--writing-size)*0.85)]',
             flushChrome ? 'h-full min-h-0 resize-none' : 'flex-1 resize-y min-h-14 max-h-40'
           )}
           disabled={loading}
