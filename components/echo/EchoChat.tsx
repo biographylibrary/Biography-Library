@@ -34,6 +34,8 @@ export interface EchoChatProps {
   voiceEnabled?: boolean;
   compact?: boolean;
   beforeComposer?: ReactNode;
+  /** When false, the conversation is hidden and only the composer stays. */
+  conversationOpen?: boolean;
 }
 
 export function EchoChat({
@@ -45,6 +47,7 @@ export function EchoChat({
   voiceEnabled = true,
   compact = false,
   beforeComposer,
+  conversationOpen = true,
 }: EchoChatProps) {
   const { session } = useAuth();
   const { language, t } = useTranslation();
@@ -207,13 +210,13 @@ export function EchoChat({
         {activityStatus}
       </p>
 
-      {showOrb && !compact && headerLayout !== 'horizontal' && (
+      {conversationOpen && showOrb && !compact && headerLayout !== 'horizontal' && (
         <div className="flex justify-center py-4 shrink-0">
           <EchoAvatar state={orbState} size={orbSize} statusText={orbStatusText} />
         </div>
       )}
 
-      {compact && showOrb && (
+      {conversationOpen && compact && showOrb && (
         <div className="flex items-center gap-2 px-1 py-1.5 shrink-0 border-b border-border/40">
           <EchoAvatar state={orbState} size="sm" />
           {orbStatusText && (
@@ -227,7 +230,7 @@ export function EchoChat({
         </div>
       )}
 
-      {!compact && pendingDraftCount > 0 && (
+      {conversationOpen && !compact && pendingDraftCount > 0 && (
         <div
           className={cn(
             'mb-2 px-3 py-1.5 rounded-lg bg-primary/10 border border-primary/25 text-xs text-primary shrink-0',
@@ -238,7 +241,7 @@ export function EchoChat({
         </div>
       )}
 
-      {activeSectionLabel && !compact && (
+      {conversationOpen && activeSectionLabel && !compact && (
         <div
           className={cn(
             'mb-2 px-3 py-2 rounded-lg bg-muted/60 border border-border/50 text-xs text-muted-foreground shrink-0 flex items-center justify-between gap-2 min-w-0 overflow-hidden',
@@ -258,7 +261,7 @@ export function EchoChat({
         </div>
       )}
 
-      <div
+      {conversationOpen && <div
         ref={scrollContainerRef}
         className={cn(
           'flex-1 min-h-0 overflow-y-auto pt-1 pb-1 space-y-2',
@@ -359,7 +362,7 @@ export function EchoChat({
         {!historyLoading && !loading && icebreakersVisible && messages.length > 0 && !compact && (
           <div className="px-1">{icebreakersBlock}</div>
         )}
-      </div>
+      </div>}
 
       {orbState === 'speaking' && !compact && (
         <div className={cn('shrink-0', flushChrome && 'px-3')}>

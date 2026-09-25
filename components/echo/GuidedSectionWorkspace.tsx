@@ -139,19 +139,16 @@ export function GuidedSectionWorkspace({
         data-tour-id="echo-panel"
         className={cn(
           'shrink-0 flex flex-col',
-          echoOpen ? 'h-[min(42vh,340px)] min-h-[220px]' : 'h-8'
+          echoOpen && 'h-[min(42vh,340px)] min-h-[220px]'
         )}
       >
-        {echoOpen ? (
-          <EchoChat
-            className="flex-1 min-h-0 border-t border-border/50"
-            headerLayout="horizontal"
-            showOrb
-            beforeComposer={echoBar}
-          />
-        ) : (
-          echoBar
-        )}
+        <EchoChat
+          className={cn('min-h-0', echoOpen && 'flex-1 border-t border-border/50')}
+          headerLayout="horizontal"
+          showOrb
+          conversationOpen={echoOpen}
+          beforeComposer={echoBar}
+        />
       </div>
     </div>
   );
