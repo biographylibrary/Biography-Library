@@ -11,6 +11,8 @@ import { patchOnboarding } from '@/lib/onboarding/onboarding-client';
 import {
   isMobileEditorLayout,
   isSidebarTourTarget,
+  needsEditorToolsOpen,
+  OPEN_ECHO_PANEL_EVENT,
   OPEN_EDITOR_TOOLS_EVENT,
   waitForTransition,
 } from '@/lib/onboarding/tour-mobile';
@@ -88,11 +90,23 @@ export function OnboardingTourProvider({
   }, []);
 
   const prepareStepEnvironment = useCallback(async (step: TourStepDefinition) => {
-    if (step.target.includes('privacy-btn')) {
+    if (
+      step.target.includes('echo-panel') ||
+      step.target.includes('echo-voice-output')
+    ) {
+      window.dispatchEvent(new Event(OPEN_ECHO_PANEL_EVENT));
+    }
+    if (needsEditorToolsOpen(step.target)) {
       window.dispatchEvent(new Event(OPEN_EDITOR_TOOLS_EVENT));
     }
     if (!isMobileEditorLayout()) {
-      if (step.target.includes('privacy-btn')) await waitForTransition();
+      if (needsEditorToolsOpen(step.target)) {
+        await waitForTransition();
+        document.querySelector<HTMLElement>(step.target)?.scrollIntoView({
+          block: 'nearest',
+          behavior: 'auto',
+        });
+      }
       return;
     }
 

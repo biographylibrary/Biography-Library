@@ -2,7 +2,7 @@
 
 export const HELP_KB_EN = `# Biography Library — Platform Knowledge Base
 
-Version: 1.4 — 2026-09-21
+Version: 1.5 — 2026-09-25
 
 Reference language: English. Echo, Help, and platform assistants answer in the user's language using these facts. Update this file whenever product rules or UX change, then run \`npm run kb:sync\`.
 
@@ -30,19 +30,31 @@ Key principles: (1) Every life deserves memory. (2) Only your own autobiography 
 
 ## registration_and_onboarding
 
-Registration needs first name, last name, email, password. Must be 18+. New accounts join a waitlist (\`account_status = waitlist\`): the public home \`/\` is the waitlist landing; sign-in is at \`/login\`. After email confirmation you see only your registration date, never a queue position. Access is granted by staff; you then complete the introduction wizard at \`/onboarding\` (not the dashboard) to create your one biography: choose type (autobiography or memorial of a deceased direct family member), confirm legal declarations, enter title or protagonist/writer names, choose writing path (guided sections, import text, or publish-ready), and pick visibility. Writing mode (Sections vs Free Flow) is chosen during onboarding and cannot be changed after creation. The dashboard only shows your existing biography; it does not offer memorial setup. The public catalogue and UM resolver stay public without an account.
+Registration needs first name, last name, email, password. Must be 18+. New accounts join a waitlist (\`account_status = waitlist\`): the public home \`/\` is the waitlist landing; sign-in is at \`/login\`. After email confirmation you see only your registration date, never a queue position. Access is granted by staff; you then complete the introduction wizard at \`/onboarding\` (not the dashboard) to create your one biography: choose type (autobiography or memorial of a deceased direct family member), confirm legal declarations, enter title or protagonist/writer names, choose writing path (guided sections, import text, or publish-ready), and pick visibility. Writing mode (Sections vs Free Flow) is chosen during onboarding. Later you can switch with the two tabs under the title in the side menu. If there is already text, the app asks you to confirm; the text is kept. The dashboard only shows your existing biography; it does not offer memorial setup. The public catalogue and UM resolver stay public without an account.
 
 ## writing_modes
 
-Sections mode: nine themed chapters (Childhood, Family, Education, Career, Life Events, Relationships, Challenges, Passions, Legacy). Work one chapter at a time; mark complete when done. Ideal for beginners. Free Flow mode: one continuous document, no predefined sections; same AI tools on selected text. Ideal for experienced writers or importing long existing text. Content is not auto-converted between modes.
+Sections mode: nine themed chapters (Childhood, Family, Education, Career, Life Events, Relationships, Challenges, Passions, Legacy). Work one chapter at a time; mark complete when done. Ideal for beginners. Free Flow mode: one continuous document, no predefined sections; same AI tools on selected text. Ideal for experienced writers or importing long existing text. You can switch modes from the two tabs under the title. If there is already text, the app asks you to confirm and keeps the text. It does not switch in silence.
 
 ## ai_tools
 
-Editor AI tools (top bar): Check Grammar (typos/syntax, meaning preserved), Need Help? (contextual assistance on current section), Summarise, Review (clarity/flow feedback). AI On/Off toggle disables all AI buttons. Usage counter shows daily (40) and weekly (200) limits; heavy actions count as 2. Reset daily midnight UTC, weekly Monday UTC. AI never invents facts or publishes automatically.
+Editor AI tools sit in the formatting bar of the chapter, not in a top bar: Check Grammar (typos/syntax, meaning preserved), Need Help? (contextual assistance on the current section), Summarise, Review (clarity/flow feedback). The AI usage counter is on the chapter title row, before Mark as complete. It shows daily (40) and weekly (200) limits; heavy actions count as 2. Reset daily midnight UTC, weekly Monday UTC. AI never invents facts or publishes automatically.
 
 ## conversation_mode
 
-Conversation Mode (toggle next to Editor Mode) lets users chat with the biography coach instead of writing directly. Share memories, answer questions; ask the coach to add a draft to the editor when ready. Particularly useful for people intimidated by a blank page. Only available in Sections mode, not Free Flow.
+There is no separate Conversation Mode toggle and no Edit button that hides the chapter. In Sections mode the chapter text is always on screen and editable. Echo sits under the chapter: a black bar labelled “Echo — your writing assistant”, open by default. Closing the bar hides the conversation, the writing field, and the microphone icons. Opening it shows the conversation, then the writing field. Echo proposes changes and asks questions. A draft is copied into the open chapter only if you accept it (Insert in editor, or reply yes). The chat itself is not copied. Older messages stay saved; they stay hidden until you open Earlier conversations. In Free Flow, Echo opens from the floating button. Share memories in natural language. Useful when a blank page is intimidating.
+
+## editor_interface
+
+The editor has no top bar. In the left menu, above Sections and Free Flow: the biography title (click to rename) and the author name. Then the chapter list. At the bottom of that menu: save status (Saved / Saving), Export (always visible), and Share link when the biography is not private. A thin divider, then Tools. Inside Tools: visibility (Private, Family, or Public — tap to cycle), My details or Who this person was, notes, photos, book structure, import, and review and publication. On a phone or tablet the same menu opens from the hamburger on the left of the site header, not from a bar under the header. Admin is only inside the account menu on the right, at every screen size.
+
+## um_identifier
+
+Each biography receives one permanent UM identifier when it is created. It is never replaced and never regenerated. The written form looks like UM-0000-XXXX-XXXX-XXXX: UM, a hyphen, the UM year with at least four digits, then the rest. Year 0 UM is Gregorian 2026. Hyphens and letter case do not change which identifier it is. Only Biography Library (Lugano, CHE-416.014.530) issues identifiers. Do not invent one. The public explanation is at /um-identifier. The canonical address is https://id.biographylibrary.org/ followed by the identifier. An issued identifier keeps answering. If the biography cannot be read, the page says the identifier exists and the content is not available. It does not answer as a missing page. The UM year is for archive dates (publication, credits, PDF colophon, site footer). It is never a birth year or a death year.
+
+## memorial_review_window
+
+Memorial biographies only. There is no status called provisional. The 30-day window is the date column provisional_until. While that date is still in the future, a public memorial stays in the catalogue and is marked “In the first 30 days” (Italian: Nei primi 30 giorni). A report is possible during the window and remains possible forever after it. First publication sets the window to 30 days after published_at. A later accepted republication sets revised_at and a new 30-day window from revised_at. It does not replace published_at. The first archive package of a memorial is deposited only after the current window has passed. Autobiographies do not get this window.
 
 ## book_structure_photos
 
@@ -54,8 +66,8 @@ Import text (sidebar): paste or upload into current chapter (Sections) or at cur
 
 ## rights_chapters
 
-Author keeps full copyright; platform is custodian only. No commercial AI training on private/semi-private/family biographies. Autobiography chapters: after first publish, new chapter allowed after minimum 365 days; published chapters are immutable. After author's death, autobiography frozen; family may write separate linked biographies using their own accounts. Deceased-person biographies: only direct family; 30-day temporary review window after publication (\`provisional_until\` when present in code, not a \`provisional\` status). A report remains possible after that window, forever.
+Author keeps full copyright; platform is custodian only. No commercial AI training on private/semi-private/family biographies. Autobiography chapters: after first publish, new chapter allowed after minimum 365 days; published chapters are immutable. After author's death, autobiography frozen; family may write separate linked biographies using their own accounts. Deceased-person biographies: only direct family. See memorial_review_window: 30 days via provisional_until, not a provisional status. A report remains possible after that window, forever.
 
 ## faq
 
-FAQ: One account = one biography (autobiography OR memorial). Need another biography? Use a separate account with another email. Cannot write biography of living friend (only own or deceased direct family). Disable AI with AI On/Off toggle. Notes & To-Do are private, not exported. Conversation Mode = chat coach for memories. Long Word text: import in parts per chapter. After death your autobiography is frozen; family writes separate biographies on separate accounts. Commercial AI does not train on the archive.`;
+FAQ: One account = one biography (autobiography OR memorial). Need another biography? Use a separate account with another email. New accounts wait on the waitlist and see only their registration date, never a queue number. Cannot write a biography of a living friend (only your own or a deceased direct family member). Notes and to-dos are private and not exported. Echo sits under the chapter; closing the black bar hides the chat. Long Word text: import in parts per chapter, from Tools. Export stays visible at the bottom of the side menu. After death your autobiography is frozen; family writes separate biographies on separate accounts. Each biography has one permanent UM identifier. Memorials show “In the first 30 days” while provisional_until is still in the future; they stay in the public catalogue. Commercial AI does not train on the archive.`;

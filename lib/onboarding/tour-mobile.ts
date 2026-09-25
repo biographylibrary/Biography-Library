@@ -20,11 +20,26 @@ const SIDEBAR_TOUR_TARGETS = new Set([
 ]);
 
 export const OPEN_EDITOR_TOOLS_EVENT = 'bl-open-editor-tools';
+export const OPEN_ECHO_PANEL_EVENT = 'bl-open-echo-panel';
 export const EDITOR_SIDEBAR_TOGGLE_EVENT = 'bl-editor-sidebar-toggle';
 export const EDITOR_SIDEBAR_STATE_EVENT = 'bl-editor-sidebar-state';
 
+const TOOLS_PANEL_TARGETS = new Set([
+  '[data-tour-id="privacy-btn"]',
+  '[data-tour-id="permanence-btn"]',
+  '[data-tour-id="notes-btn"]',
+  '[data-tour-id="photos-btn"]',
+  '[data-tour-id="book-structure-btn"]',
+  '[data-tour-id="import-btn"]',
+  '[data-tour-id="review-publication-btn"]',
+]);
+
 export function isSidebarTourTarget(target: string): boolean {
   return SIDEBAR_TOUR_TARGETS.has(target);
+}
+
+export function needsEditorToolsOpen(target: string): boolean {
+  return TOOLS_PANEL_TARGETS.has(target);
 }
 
 export function isSidebarTourActionTarget(target?: string): boolean {

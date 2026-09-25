@@ -27,9 +27,14 @@ function step(
   return { id, target, titleKey, descKey };
 }
 
-function getTopBarSteps(): TourStepDefinition[] {
+function bookTitleStep(): TourStepDefinition {
+  return step('book-title', '[data-tour-id="book-title-btn"]', 'bookTitleTitle', 'bookTitleDesc');
+}
+
+function editorChromeSteps(): TourStepDefinition[] {
   return [
-    step('book-title', '[data-tour-id="book-title-btn"]', 'bookTitleTitle', 'bookTitleDesc'),
+    step('export-text', '[data-tour-id="export-pdf-btn"]', 'exportTextTitle', 'exportTextDesc'),
+    step('editor-tools', '[data-tour-id="editor-tools-btn"]', 'editorToolsTitle', 'editorToolsDesc'),
     step('privacy', '[data-tour-id="privacy-btn"]', 'privacyTitle', 'privacyDesc'),
   ];
 }
@@ -66,7 +71,6 @@ function getSharedSidebarSteps(
       'bookStructureDesc',
     ),
     step('import-text', '[data-tour-id="import-btn"]', 'importTextTitle', 'importTextDesc'),
-    step('export-text', '[data-tour-id="export-pdf-btn"]', 'exportTextTitle', 'exportTextDesc'),
     step(
       'review-publication',
       '[data-tour-id="review-publication-btn"]',
@@ -94,13 +98,13 @@ function getBaseTourSteps(
 ): TourStepDefinition[] {
   if (path === 'sections' || (path === 'freeflow_import' && mode === 'sections')) {
     return [
+      bookTitleStep(),
       step(
         'sections-overview',
         '[data-tour-id="section-list"]',
         'sectionsOverviewTitle',
         'sectionsOverviewDesc',
       ),
-      ...getTopBarSteps(),
       step('echo-panel', '[data-tour-id="echo-panel"]', 'echoPanelTitle', 'echoPanelDesc'),
       step(
         'edit-section',
@@ -115,13 +119,14 @@ function getBaseTourSteps(
         'echoVoiceTitle',
         'echoVoiceDesc',
       ),
+      ...editorChromeSteps(),
       ...getSharedSidebarSteps(biographyType),
     ];
   }
 
   if (path === 'freeflow_import') {
     return [
-      ...getTopBarSteps(),
+      bookTitleStep(),
       step('editor-main', '[data-tour-id="editor-main"]', 'freeflowEditorTitle', 'freeflowEditorDesc'),
       step('echo-bubble', '[data-tour-id="echo-bubble"]', 'echoBubbleTitle', 'echoBubbleDesc'),
       step(
@@ -130,16 +135,19 @@ function getBaseTourSteps(
         'echoVoiceFreeflowTitle',
         'echoVoiceFreeflowDesc',
       ),
+      ...editorChromeSteps(),
       ...getSharedSidebarSteps(biographyType),
     ];
   }
 
   // publish_ready
   return [
-    ...getTopBarSteps(),
-    step('import-text', '[data-tour-id="import-btn"]', 'publishImportTitle', 'publishImportDesc'),
+    bookTitleStep(),
     step('editor-main', '[data-tour-id="editor-main"]', 'publishFinalTitle', 'publishFinalDesc'),
     step('export-text', '[data-tour-id="export-pdf-btn"]', 'publishExportTitle', 'publishExportDesc'),
+    step('editor-tools', '[data-tour-id="editor-tools-btn"]', 'editorToolsTitle', 'editorToolsDesc'),
+    step('privacy', '[data-tour-id="privacy-btn"]', 'privacyTitle', 'privacyDesc'),
+    step('import-text', '[data-tour-id="import-btn"]', 'publishImportTitle', 'publishImportDesc'),
     permanenceStep(biographyType),
     step('notes', '[data-tour-id="notes-btn"]', 'notesTitle', 'notesDesc'),
     step('photos', '[data-tour-id="photos-btn"]', 'photosTitle', 'photosDesc'),
