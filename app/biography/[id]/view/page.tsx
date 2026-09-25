@@ -33,6 +33,7 @@ import { BiographyContentRightsNotice } from '@/components/biography/BiographyCo
 import { BiographyLanguageBadges } from '@/components/biography/BiographyLanguageBadges';
 import { BiographyViewGallery } from '@/components/biography/BiographyViewGallery';
 import { PermanentIdentifier } from '@/components/biography/PermanentIdentifier';
+import { PioneerBadge } from '@/components/biography/PioneerBadge';
 import { formatDateWithUmYear } from '@/lib/um';
 import { resolveRecordLanguageTag } from '@/lib/record-language';
 
@@ -52,6 +53,7 @@ interface BiographyViewData {
   created_at: string;
   published_at: string | null;
   provisional_until?: string | null;
+  is_pioneer?: boolean;
   is_frozen: boolean | null;
   frozen_at: string | null;
   export_txt_url: string | null;
@@ -72,7 +74,7 @@ interface SectionWithDate {
 type ViewError = 'not-found' | 'private' | 'invalid-token' | null;
 
 const BIOGRAPHY_VIEW_SELECT =
-  'id, title, subject_name, biography_type, author_name, um_id, content, visibility, status, share_token, created_at, published_at, provisional_until, is_frozen, frozen_at, export_txt_url, export_docx_url, listing_cover_url, content_language, record_language_tag, final_pdf_url';
+  'id, title, subject_name, biography_type, author_name, um_id, content, visibility, status, share_token, created_at, published_at, provisional_until, is_pioneer, is_frozen, frozen_at, export_txt_url, export_docx_url, listing_cover_url, content_language, record_language_tag, final_pdf_url';
 
 const VIEW_LANGUAGES: ViewLanguage[] = ['en', 'it', 'fr', 'de'];
 
@@ -261,7 +263,7 @@ export default function BiographyViewPage() {
           }
           const { data: fullBio } = await supabase
             .from('biographies')
-            .select('content_language, record_language_tag, final_pdf_url')
+            .select('content_language, record_language_tag, final_pdf_url, is_pioneer')
             .eq('id', resolvedId)
             .maybeSingle();
           if (fullBio && data) {
@@ -272,6 +274,7 @@ export default function BiographyViewPage() {
               fullBio as { record_language_tag?: string | null }
             ).record_language_tag;
             data.final_pdf_url = (fullBio as { final_pdf_url?: string }).final_pdf_url ?? null;
+            data.is_pioneer = (fullBio as { is_pioneer?: boolean }).is_pioneer === true;
           }
           if (data.status === 'published') {
             supabase.rpc('increment_view_count', { biography_uuid: resolvedId });
@@ -626,6 +629,12 @@ export default function BiographyViewPage() {
 
         <article className="prose prose-gray dark:prose-invert max-w-none">
           <div className="mb-12 pb-8 border-b border-border">
+            {biography.is_pioneer && (
+              <div className="mb-4">
+                <PioneerBadge label={t.publicBiographies.pioneer} />
+                <p className="mt-2 text-sm text-muted-foreground">{t.view.pioneerNote}</p>
+              </div>
+            )}
             <h1 className="text-4xl font-serif font-bold mb-2">
               {biography.biography_type === 'memorial'
                 ? memorialSubjectName(biography.subject_name, biography.title)

@@ -60,10 +60,12 @@ export interface PublishedBiography {
   listing_cover_url?: string | null;
   /** Memorial only. The catalog still lists the biography while this date is ahead. */
   provisional_until?: string | null;
+  /** True for the first 10,000 biographies created. */
+  is_pioneer?: boolean;
 }
 
 const PUBLISHED_SELECT =
-  'id, title, subject_name, author_name, content_language, biography_type, chapters_count, published_at, view_count, is_featured, featured_at, slug, listing_cover_url, provisional_until';
+  'id, title, subject_name, author_name, content_language, biography_type, chapters_count, published_at, view_count, is_featured, featured_at, slug, listing_cover_url, provisional_until, is_pioneer';
 
 export async function fetchPublishedBiographies() {
   const { data, error } = await supabase
