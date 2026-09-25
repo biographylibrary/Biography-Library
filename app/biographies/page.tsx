@@ -18,6 +18,7 @@ import {
   type CatalogLanguage,
 } from '@/lib/biography-translation-locales';
 import { BiographyLanguageBadges } from '@/components/biography/BiographyLanguageBadges';
+import { PioneerBadge } from '@/components/biography/PioneerBadge';
 import { supabase } from '@/lib/supabase';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -186,6 +187,11 @@ function BiographyCard({ bio, t, featured, translationLanguages = [] }: Biograph
             className="w-full h-full object-cover"
             loading="lazy"
           />
+        )}
+        {bio.is_pioneer && (
+          <span className="absolute top-2 left-2 z-10">
+            <PioneerBadge label={t.publicBiographies.pioneer} />
+          </span>
         )}
         {featured && (
           <span className="absolute top-2 right-2 flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full bg-[#DDCF88] text-[#121212]">

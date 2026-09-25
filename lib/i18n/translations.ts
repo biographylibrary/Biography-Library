@@ -578,6 +578,7 @@ export interface Translations {
     biographyPrivate: string;
     archivedBanner: string;
     provisionalMark: string;
+    pioneerNote: string;
     publishedOn: string;
     reportButton: string;
     reportModalTitle: string;
@@ -1489,6 +1490,7 @@ export interface Translations {
     typeAutobiography: string;
     typeMemorial: string;
     provisionalMark: string;
+    pioneer: string;
     langAll: string;
     chaptersCount: string;
     publishedOn: string;
@@ -2314,6 +2316,7 @@ export const translations: Record<Language, Translations> = {
       biographyPrivate: 'This biography is private',
       archivedBanner: 'This biography has been archived.',
       provisionalMark: 'In the first 30 days',
+      pioneerNote: 'This is one of the first 10,000 biographies hosted with Biography Library',
       publishedOn: 'Published',
       reportButton: 'Report',
       reportModalTitle: 'Report this biography',
@@ -3245,6 +3248,7 @@ export const translations: Record<Language, Translations> = {
       typeAutobiography: 'Autobiography',
       typeMemorial: 'Memorial',
       provisionalMark: 'In the first 30 days',
+      pioneer: 'Pioneer',
       langAll: 'All languages',
       chaptersCount: 'Chapters',
       publishedOn: 'Published',
@@ -4086,6 +4090,7 @@ export const translations: Record<Language, Translations> = {
       biographyPrivate: 'Questa biografia \u00e8 privata',
       archivedBanner: 'Questa biografia \u00e8 stata archiviata.',
       provisionalMark: 'Nei primi 30 giorni',
+      pioneerNote: 'Questa è tra le prime 10.000 biografie ospitate con Biography Library',
       publishedOn: 'Pubblicato',
       reportButton: 'Segnala',
       reportModalTitle: 'Segnala questa biografia',
@@ -5017,6 +5022,7 @@ export const translations: Record<Language, Translations> = {
       typeAutobiography: 'Autobiografia',
       typeMemorial: 'Memoriale',
       provisionalMark: 'Nei primi 30 giorni',
+      pioneer: 'Pioniere',
       langAll: 'Tutte le lingue',
       chaptersCount: 'Capitoli',
       publishedOn: 'Pubblicato',
@@ -5858,6 +5864,7 @@ export const translations: Record<Language, Translations> = {
       biographyPrivate: 'Cette biographie est priv\u00e9e',
       archivedBanner: 'Cette biographie a \u00e9t\u00e9 archiv\u00e9e.',
       provisionalMark: 'Dans les 30 premiers jours',
+      pioneerNote: 'Elle fait partie des 10 000 premières biographies hébergées avec Biography Library',
       publishedOn: 'Publi\u00e9',
       reportButton: 'Signaler',
       reportModalTitle: 'Signaler cette biographie',
@@ -6789,6 +6796,7 @@ export const translations: Record<Language, Translations> = {
       typeAutobiography: 'Autobiographie',
       typeMemorial: 'Mémorial',
       provisionalMark: 'Dans les 30 premiers jours',
+      pioneer: 'Pionnier',
       langAll: 'Toutes les langues',
       chaptersCount: 'Chapitres',
       publishedOn: 'Publié',
@@ -7630,6 +7638,7 @@ export const translations: Record<Language, Translations> = {
       biographyPrivate: 'Diese Biografie ist privat',
       archivedBanner: 'Diese Biografie wurde archiviert.',
       provisionalMark: 'In den ersten 30 Tagen',
+      pioneerNote: 'Dies ist eine der ersten 10.000 Biografien, die mit Biography Library bewahrt werden',
       publishedOn: 'Ver\u00f6ffentlicht',
       reportButton: 'Melden',
       reportModalTitle: 'Diese Biografie melden',
@@ -8561,6 +8570,7 @@ export const translations: Record<Language, Translations> = {
       typeAutobiography: 'Autobiografie',
       typeMemorial: 'Gedenkschrift',
       provisionalMark: 'In den ersten 30 Tagen',
+      pioneer: 'Pionier',
       langAll: 'Alle Sprachen',
       chaptersCount: 'Kapitel',
       publishedOn: 'Veröffentlicht',
