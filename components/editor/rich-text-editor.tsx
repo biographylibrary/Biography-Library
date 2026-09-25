@@ -44,7 +44,7 @@ export function RichTextEditor({
     editorProps: {
       attributes: {
         class:
-          'w-full min-h-[200px] max-w-none focus:outline-none px-4 sm:px-6 py-4 [&_p]:leading-[1.5] max-sm:!text-[length:calc(var(--writing-size)*0.85)]',
+          'w-full min-h-[200px] max-w-none focus:outline-none px-3 py-4 [&_p]:leading-[1.5] max-sm:!text-[length:calc(var(--writing-size)*0.85)]',
       },
     },
     onUpdate: ({ editor: instance }) => {

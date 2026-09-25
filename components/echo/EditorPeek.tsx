@@ -50,7 +50,7 @@ export function EditorPeek({
       : undefined;
 
   return (
-    <div className={cn('h-full min-h-0 overflow-hidden px-4 py-3', className)}>
+    <div className={cn('h-full min-h-0 overflow-hidden py-3', className)}>
       <RichTextEditor
         content={text}
         onChange={onTextChange}

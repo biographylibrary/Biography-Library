@@ -75,7 +75,7 @@ export function RichTextToolbar({
   );
 
   return (
-    <div className="flex flex-wrap items-center gap-1 px-4 sm:px-6 py-2 border-b border-border/30 bg-muted/30">
+    <div className="flex flex-wrap items-center gap-1 px-3 py-2 border-b border-border/30 bg-muted/30">
       <div className="hidden md:flex items-center gap-0.5 flex-wrap">
         <ToolbarButton
           onClick={() => editor.chain().focus().toggleBold().run()}
