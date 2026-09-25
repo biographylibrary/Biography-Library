@@ -75,7 +75,7 @@ export function RichTextToolbar({
   );
 
   return (
-    <div className="flex flex-wrap items-center gap-1 px-3 py-2 border-b border-border/30 bg-muted/30">
+    <div className="flex flex-nowrap sm:flex-wrap items-center gap-1 px-3 py-2 border-b border-border/30 bg-muted/30 overflow-x-auto sm:overflow-visible">
       <div className="hidden md:flex items-center gap-0.5 flex-wrap">
         <ToolbarButton
           onClick={() => editor.chain().focus().toggleBold().run()}
@@ -238,7 +238,7 @@ export function RichTextToolbar({
         </>
       )}
 
-      <div className="w-full sm:w-auto sm:ml-auto text-xs text-muted-foreground text-right shrink-0">
+      <div className="ml-auto text-xs text-muted-foreground text-right shrink-0 whitespace-nowrap pl-2">
         {editor.storage.characterCount?.characters() || 0} {t.editor.chars}
       </div>
     </div>
