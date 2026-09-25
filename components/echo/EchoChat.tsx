@@ -104,6 +104,12 @@ export function EchoChat({
     [t.sectionTitles, t.onboardingTour.freeflowEditorTitle]
   );
 
+  const [pastOpen, setPastOpen] = useState(false);
+  const recentCount = 4;
+  const visibleMessages =
+    pastOpen || messages.length <= recentCount ? messages : messages.slice(-recentCount);
+  const hasHiddenPast = messages.length > visibleMessages.length;
+
   const insertDialogSectionTitle = insertDialog
     ? sectionTitleFor(insertDialog.sectionKey)
     : '';
@@ -111,10 +117,9 @@ export function EchoChat({
   const scrollToBottom = useCallback(() => {
     const el = scrollContainerRef.current;
     if (!el) return;
-    const streaming = messages.some((m) => m.streaming);
     el.scrollTo({
       top: el.scrollHeight,
-      behavior: streaming ? 'auto' : 'smooth',
+      behavior: 'auto',
     });
   }, [messages]);
 
@@ -275,7 +280,18 @@ export function EchoChat({
             <Loader className="h-5 w-5 animate-spin text-muted-foreground" />
           </div>
         )}
-        {hasMoreOlder && !historyLoading && (
+        {hasHiddenPast && !historyLoading && (
+          <div className="flex justify-center pb-2">
+            <button
+              type="button"
+              className="text-xs text-muted-foreground hover:text-foreground underline-offset-2 hover:underline"
+              onClick={() => setPastOpen(true)}
+            >
+              {t.echo.earlierConversations}
+            </button>
+          </div>
+        )}
+        {pastOpen && hasMoreOlder && !historyLoading && (
           <div className="flex justify-center pb-2">
             <button
               type="button"
@@ -295,7 +311,7 @@ export function EchoChat({
             {icebreakersBlock}
           </div>
         )}
-        {messages.map((m) => (
+        {visibleMessages.map((m) => (
           <div
             key={m.id}
             id={`echo-message-${m.id}`}

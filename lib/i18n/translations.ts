@@ -1710,6 +1710,7 @@ export interface Translations {
     insertDraftContinueChat: string;
     insertDraftPendingBadge: string;
     loadOlderMessages: string;
+    earlierConversations: string;
     loadingOlderMessages: string;
     icebreakerPools: EchoIcebreakerPoolsByContext;
   };
@@ -3474,6 +3475,7 @@ export const translations: Record<Language, Translations> = {
       insertDraftContinueChat: 'Continue in chat',
       insertDraftPendingBadge: '{count} draft to insert',
       loadOlderMessages: 'Load older messages',
+      earlierConversations: 'Earlier conversations',
       loadingOlderMessages: 'Loading…',
       ...getEchoGuideCopy('en'),
       icebreakerPools: getEchoIcebreakerPools('en'),
@@ -5239,6 +5241,7 @@ export const translations: Record<Language, Translations> = {
       insertDraftContinueChat: 'Continua in chat',
       insertDraftPendingBadge: '{count} bozza da inserire',
       loadOlderMessages: 'Carica messaggi precedenti',
+      earlierConversations: 'Conversazioni precedenti',
       loadingOlderMessages: 'Caricamento…',
       ...getEchoGuideCopy('it'),
       icebreakerPools: getEchoIcebreakerPools('it'),
@@ -7004,6 +7007,7 @@ export const translations: Record<Language, Translations> = {
       insertDraftContinueChat: 'Continuer dans le chat',
       insertDraftPendingBadge: '{count} brouillon à insérer',
       loadOlderMessages: 'Charger les messages précédents',
+      earlierConversations: 'Conversations précédentes',
       loadingOlderMessages: 'Chargement…',
       ...getEchoGuideCopy('fr'),
       icebreakerPools: getEchoIcebreakerPools('fr'),
@@ -8769,6 +8773,7 @@ export const translations: Record<Language, Translations> = {
       insertDraftContinueChat: 'Im Chat fortfahren',
       insertDraftPendingBadge: '{count} Entwurf einzufügen',
       loadOlderMessages: 'Ältere Nachrichten laden',
+      earlierConversations: 'Frühere Gespräche',
       loadingOlderMessages: 'Laden…',
       ...getEchoGuideCopy('de'),
       icebreakerPools: getEchoIcebreakerPools('de'),
