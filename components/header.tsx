@@ -173,7 +173,7 @@ export function Header() {
                   size="icon"
                   className="h-9 w-9 rounded-full p-0 hover:opacity-80 relative"
                 >
-                  <span className="flex items-center justify-center h-8 w-8 rounded-full bg-foreground text-background text-xs font-semibold select-none">
+                  <span className="flex items-center justify-center h-9 w-9 rounded-full bg-foreground text-background text-xs font-semibold select-none">
                     {initials}
                   </span>
                   {unreadCount > 0 && (
