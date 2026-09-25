@@ -148,6 +148,7 @@ export function GuidedSectionWorkspace({
           headerLayout="horizontal"
           showOrb
           conversationOpen={echoOpen}
+          fontSize={editorFontSize ?? 15}
         />
       </div>
     </div>

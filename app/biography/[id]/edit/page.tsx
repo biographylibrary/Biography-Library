@@ -168,7 +168,7 @@ export default function BiographyEditorPage() {
   const [showImportDialog, setShowImportDialog] = useState(() => searchParams?.get('import') === '1');
   const [globalNotesCount, setGlobalNotesCount] = useState(0);
   const [globalTodosCount, setGlobalTodosCount] = useState(0);
-  const [editorFontSize, setEditorFontSize] = useState<number>(16);
+  const [editorFontSize, setEditorFontSize] = useState<number>(15);
 
   const [aiEnabled, setAiEnabled] = useState(false);
   const [aiState, setAiState] = useState<AiPanelState>(INITIAL_AI_STATE);
@@ -337,7 +337,7 @@ const [isPublishing, setIsPublishing] = useState(false);
         );
         setIsFrozen(data.is_frozen || false);
         setShareToken(data.share_token || null);
-        setEditorFontSize(data.editor_font_size || 16);
+        setEditorFontSize(data.editor_font_size || 15);
         setFinalVersion(data.final_version || '');
         setNarrativeOrder((data.narrative_order as string[]) || []);
         setBiographyMode((data.biography_mode as 'sections' | 'freeflow') || 'sections');

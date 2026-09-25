@@ -44,7 +44,7 @@ export function RichTextEditor({
     editorProps: {
       attributes: {
         class:
-          'w-full min-h-[200px] prose prose-sm sm:prose max-w-none focus:outline-none px-4 sm:px-6 py-4',
+          'w-full min-h-[200px] max-w-none focus:outline-none px-4 sm:px-6 py-4 [&_p]:leading-[1.5]',
       },
     },
     onUpdate: ({ editor: instance }) => {
@@ -82,6 +82,7 @@ export function RichTextEditor({
     if (editor && editorFontSize) {
       const editorElement = editor.view.dom;
       editorElement.style.fontSize = `${editorFontSize}px`;
+      editorElement.style.lineHeight = '1.5';
     }
   }, [editor, editorFontSize]);
 

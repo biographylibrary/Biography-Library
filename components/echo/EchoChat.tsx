@@ -35,6 +35,8 @@ export interface EchoChatProps {
   compact?: boolean;
   /** When false, the conversation is hidden and only the composer stays. */
   conversationOpen?: boolean;
+  /** Same size as the biography text, on every screen. */
+  fontSize?: number;
 }
 
 export function EchoChat({
@@ -46,6 +48,7 @@ export function EchoChat({
   voiceEnabled = true,
   compact = false,
   conversationOpen = true,
+  fontSize = 15,
 }: EchoChatProps) {
   const { session } = useAuth();
   const { language, t } = useTranslation();
@@ -296,8 +299,9 @@ export function EchoChat({
           <div
             key={m.id}
             id={`echo-message-${m.id}`}
+            style={{ fontSize: `${fontSize}px`, lineHeight: 1.5 }}
             className={cn(
-              'text-sm rounded-lg px-3 py-2 max-w-[90%] scroll-mt-1',
+              'rounded-lg px-3 py-2 max-w-[90%] scroll-mt-1',
               m.role === 'user'
                 ? 'ml-auto bg-brand-greenLight text-brand-greenDark dark:bg-brand-greenLight/25 dark:text-brand-greenLight'
                 : m.isUsageGuide
@@ -441,11 +445,10 @@ export function EchoChat({
           }}
           placeholder={t.echo.inputPlaceholder}
           rows={flushChrome ? 1 : 2}
+          style={{ fontSize: `${fontSize}px`, lineHeight: 1.5 }}
           className={cn(
-            'min-w-0 rounded-md border bg-background px-3 py-2 text-sm overflow-y-auto leading-5',
-            flushChrome ? 'h-full min-h-0 resize-none' : 'flex-1 resize-y min-h-14 max-h-40',
-            'max-sm:text-[11px] max-sm:leading-5 max-sm:placeholder:text-[11px] max-sm:placeholder:whitespace-nowrap',
-            compact && 'text-sm'
+            'min-w-0 rounded-md border bg-background px-3 py-2 overflow-y-auto',
+            flushChrome ? 'h-full min-h-0 resize-none' : 'flex-1 resize-y min-h-14 max-h-40'
           )}
           disabled={loading}
         />
