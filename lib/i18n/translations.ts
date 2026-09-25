@@ -1668,6 +1668,7 @@ export interface Translations {
     errorGeneric: string;
     openEcho: string;
     closeEcho: string;
+    assistantBar: string;
     aiToolsMenu: string;
     changePath: string;
     changePathTitle: string;
@@ -3433,6 +3434,7 @@ export const translations: Record<Language, Translations> = {
       statusLoadingOlder: 'Loading earlier messages…',
       errorGeneric: 'Something went wrong. Please try again.',
       openEcho: 'Ask Echo',
+      assistantBar: 'Echo — your writing assistant',
       closeEcho: 'Close',
       aiToolsMenu: 'AI tools',
       changePath: 'Change writing path',
@@ -5197,6 +5199,7 @@ export const translations: Record<Language, Translations> = {
       statusLoadingOlder: 'Carico messaggi precedenti…',
       errorGeneric: 'Qualcosa è andato storto. Riprova.',
       openEcho: 'Chiedi a Echo',
+      assistantBar: 'Echo - il tuo assistente alla scrittura',
       closeEcho: 'Chiudi',
       aiToolsMenu: 'Strumenti AI',
       changePath: 'Cambia percorso',
@@ -6961,6 +6964,7 @@ export const translations: Record<Language, Translations> = {
       statusLoadingOlder: 'Chargement des messages précédents…',
       errorGeneric: 'Une erreur s\'est produite. Réessayez.',
       openEcho: 'Demander à Echo',
+      assistantBar: 'Echo — votre assistant à l’écriture',
       closeEcho: 'Fermer',
       aiToolsMenu: 'Outils IA',
       changePath: 'Changer de parcours',
@@ -8725,6 +8729,7 @@ export const translations: Record<Language, Translations> = {
       statusLoadingOlder: 'Frühere Nachrichten werden geladen…',
       errorGeneric: 'Etwas ist schiefgelaufen. Bitte erneut versuchen.',
       openEcho: 'Echo fragen',
+      assistantBar: 'Echo — dein Schreibassistent',
       closeEcho: 'Schließen',
       aiToolsMenu: 'KI-Werkzeuge',
       changePath: 'Schreibweg wechseln',

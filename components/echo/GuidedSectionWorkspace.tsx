@@ -1,5 +1,7 @@
 'use client';
 
+import { useState } from 'react';
+import { ChevronDown, ChevronUp } from 'lucide-react';
 import { EchoChat } from './EchoChat';
 import { EditorPeek } from './EditorPeek';
 import { useTranslation } from '@/lib/i18n/i18n-context';
@@ -45,6 +47,7 @@ export function GuidedSectionWorkspace({
   isCompleted = false,
 }: GuidedSectionWorkspaceProps) {
   const { t } = useTranslation();
+  const [echoOpen, setEchoOpen] = useState(true);
 
   const sectionTitle =
     t.sectionTitles[activeSection as keyof typeof t.sectionTitles] ||
@@ -103,7 +106,7 @@ export function GuidedSectionWorkspace({
 
       <div
         data-tour-id="edit-section-btn"
-        className="flex-1 min-h-0 overflow-hidden border-b border-border/50"
+        className="flex-1 min-h-0 overflow-hidden"
       >
         <EditorPeek
           text={sectionText}
@@ -120,8 +123,25 @@ export function GuidedSectionWorkspace({
         />
       </div>
 
-      <div data-tour-id="echo-panel" className="h-[min(42vh,340px)] min-h-[200px] shrink-0 flex flex-col">
-        <EchoChat className="flex-1 min-h-0" headerLayout="horizontal" showOrb />
+      <div
+        data-tour-id="echo-panel"
+        className={cn(
+          'shrink-0 flex flex-col',
+          echoOpen ? 'h-[min(42vh,340px)] min-h-[220px]' : 'h-8'
+        )}
+      >
+        {echoOpen && (
+          <EchoChat className="flex-1 min-h-0 border-t border-border/50" headerLayout="horizontal" showOrb />
+        )}
+        <button
+          type="button"
+          className="h-8 shrink-0 w-full flex items-center justify-between gap-2 px-3 bg-black text-white text-sm"
+          aria-expanded={echoOpen}
+          onClick={() => setEchoOpen((open) => !open)}
+        >
+          <span className="truncate text-left">{t.echo.assistantBar}</span>
+          {echoOpen ? <ChevronDown className="h-4 w-4 shrink-0" /> : <ChevronUp className="h-4 w-4 shrink-0" />}
+        </button>
       </div>
     </div>
   );

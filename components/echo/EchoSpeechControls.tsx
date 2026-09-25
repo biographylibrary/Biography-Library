@@ -42,7 +42,8 @@ export function EchoVoiceOutputButton({
   voiceOutputEnabled,
   onToggleVoiceOutput,
   compact = false,
-}: EchoVoiceOutputButtonProps) {
+  className,
+}: EchoVoiceOutputButtonProps & { className?: string }) {
   const { t } = useTranslation();
 
   return (
@@ -54,6 +55,7 @@ export function EchoVoiceOutputButton({
       aria-pressed={!voiceOutputEnabled}
       className={cn(
         'h-11 w-11 shrink-0',
+        className,
         voiceOutputEnabled
           ? 'border-border bg-background text-foreground'
           : 'border-brand-ink bg-muted text-brand-ink'

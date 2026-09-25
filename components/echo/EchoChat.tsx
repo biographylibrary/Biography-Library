@@ -367,21 +367,64 @@ export function EchoChat({
 
       <div
         className={cn(
-          'flex items-end gap-2 border-t border-border/50 shrink-0 min-w-0',
-          flushChrome ? 'px-3 py-3' : compact ? 'px-2 pt-2 mt-1' : 'px-2 pt-3 mt-2'
+          'border-t border-border/50 shrink-0 min-w-0',
+          flushChrome ? 'grid grid-cols-[auto_1fr] items-stretch gap-1.5 px-2 py-2' : 'flex items-end gap-2',
+          !flushChrome && (compact ? 'px-2 pt-2 mt-1' : 'px-2 pt-3 mt-2')
         )}
       >
-        {voiceEnabled && (
-          <EchoVoiceSession
-            language={language}
-            accessToken={session?.access_token}
-            disabled={loading}
-            onTranscript={(text) => void sendMessage(text)}
-            onError={() => {}}
-            onOrbStateChange={reportOrbState}
-            className="h-11 w-11"
-          />
-        )}
+        <div className={cn(flushChrome ? 'flex flex-col gap-1' : 'contents')}>
+          {voiceEnabled && (
+            <EchoVoiceSession
+              language={language}
+              accessToken={session?.access_token}
+              disabled={loading}
+              onTranscript={(text) => void sendMessage(text)}
+              onError={() => {}}
+              onOrbStateChange={reportOrbState}
+              className={flushChrome ? 'h-8 w-8' : 'h-11 w-11'}
+            />
+          )}
+          {voiceEnabled && (
+            <>
+              {orbState === 'speaking' && !compact && (
+                <EchoStopSpeakingButton
+                  onStopSpeaking={stopSpeaking}
+                  compact={compact}
+                  className={cn(flushChrome ? 'h-8 w-8' : 'max-sm:hidden')}
+                />
+              )}
+              <EchoVoiceOutputButton
+                voiceOutputEnabled={voiceOutputEnabled}
+                onToggleVoiceOutput={toggleVoiceOutput}
+                compact={compact}
+                className={flushChrome ? 'h-8 w-8' : undefined}
+              />
+            </>
+          )}
+          <Button
+            type="button"
+            size="icon"
+            variant="ghost"
+            className={cn(
+              'group shrink-0 rounded-md border border-brand-ink',
+              flushChrome ? 'h-8 w-8' : 'h-11 w-11',
+              'bg-brand-blue text-brand-ink',
+              'enabled:hover:bg-brand-ink enabled:hover:border-brand-ink enabled:hover:text-brand-paper',
+              'enabled:active:bg-brand-ink/90 enabled:active:text-brand-paper',
+              'disabled:opacity-100 disabled:cursor-not-allowed',
+              'dark:bg-brand-blue/30 dark:text-brand-beigeLight dark:border-brand-beigeLight/80',
+              'dark:enabled:hover:bg-brand-ink dark:enabled:hover:border-brand-ink dark:enabled:hover:text-brand-beigeLight'
+            )}
+            disabled={loading || !input.trim()}
+            onClick={() => void sendMessage(input)}
+          >
+            {loading ? (
+              <Loader className={flushChrome ? 'h-3.5 w-3.5 animate-spin' : 'h-4 w-4 animate-spin'} />
+            ) : (
+              <Send className={flushChrome ? 'h-3.5 w-3.5' : 'h-4 w-4'} />
+            )}
+          </Button>
+        </div>
         <textarea
           ref={inputRef}
           data-tour-id="echo-input"
@@ -394,61 +437,15 @@ export function EchoChat({
             }
           }}
           placeholder={t.echo.inputPlaceholder}
-          rows={2}
+          rows={flushChrome ? 1 : 2}
           className={cn(
-            'flex-1 min-w-0 resize-y rounded-md border bg-background px-3 py-2 text-sm min-h-14 max-h-40 overflow-y-auto leading-5',
+            'min-w-0 rounded-md border bg-background px-3 py-2 text-sm overflow-y-auto leading-5',
+            flushChrome ? 'h-full min-h-0 resize-none' : 'flex-1 resize-y min-h-14 max-h-40',
             'max-sm:text-[11px] max-sm:leading-5 max-sm:placeholder:text-[11px] max-sm:placeholder:whitespace-nowrap',
             compact && 'text-sm'
           )}
           disabled={loading}
         />
-        {voiceEnabled && (
-          <>
-            {orbState === 'speaking' && !compact && (
-              <EchoStopSpeakingButton
-                onStopSpeaking={stopSpeaking}
-                compact={compact}
-                className="max-sm:hidden"
-              />
-            )}
-            <EchoVoiceOutputButton
-              voiceOutputEnabled={voiceOutputEnabled}
-              onToggleVoiceOutput={toggleVoiceOutput}
-              compact={compact}
-            />
-          </>
-        )}
-        <Button
-          type="button"
-          size="icon"
-          variant="ghost"
-          className={cn(
-            'group shrink-0 h-11 w-11 rounded-md border border-brand-ink',
-            'bg-brand-blue text-brand-ink',
-            'enabled:hover:bg-brand-ink enabled:hover:border-brand-ink enabled:hover:text-brand-paper',
-            'enabled:active:bg-brand-ink/90 enabled:active:text-brand-paper',
-            'disabled:opacity-100 disabled:cursor-not-allowed',
-            'dark:bg-brand-blue/30 dark:text-brand-beigeLight dark:border-brand-beigeLight/80',
-            'dark:enabled:hover:bg-brand-ink dark:enabled:hover:border-brand-ink dark:enabled:hover:text-brand-beigeLight'
-          )}
-          disabled={loading || !input.trim()}
-          onClick={() => void sendMessage(input)}
-        >
-          {loading ? (
-            <Loader className="h-4 w-4 animate-spin" />
-          ) : (
-            <Send className="h-4 w-4" />
-          )}
-        </Button>
-        {showOrb && !compact && headerLayout === 'horizontal' && (
-          <EchoAvatar
-            state={orbState}
-            size="sm"
-            layout="horizontal"
-            bordered
-            className="shrink-0 self-end"
-          />
-        )}
       </div>
 
       <EchoDraftInsertedDialog
