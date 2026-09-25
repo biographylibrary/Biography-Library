@@ -8,7 +8,6 @@ import { useEchoChat } from '@/lib/echo/echo-chat-context';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { EchoAvatar } from './EchoAvatar';
-import { EchoChatHeader } from './EchoChatHeader';
 import { EchoVoiceSession } from './EchoVoiceSession';
 import { EchoMessageContent } from './EchoMessageContent';
 import {
@@ -187,13 +186,6 @@ export function EchoChat({
     copy: t.echo,
   });
 
-  const activityIsActive =
-    loading ||
-    historyLoading ||
-    loadingOlder ||
-    orbState !== 'idle' ||
-    Boolean(streamingMessage);
-
   const flushChrome = headerLayout === 'horizontal' && !compact;
 
   const icebreakersBlock = icebreakersVisible ? (
@@ -209,13 +201,9 @@ export function EchoChat({
 
   return (
     <div className={cn('flex flex-col min-h-0', className)}>
-      {showOrb && !compact && headerLayout === 'horizontal' && (
-        <EchoChatHeader
-          orbState={orbState}
-          activityStatus={activityStatus}
-          isActive={activityIsActive}
-        />
-      )}
+      <p className="sr-only" aria-live="polite" aria-atomic="true">
+        {activityStatus}
+      </p>
 
       {showOrb && !compact && headerLayout !== 'horizontal' && (
         <div className="flex justify-center py-4 shrink-0">
@@ -379,7 +367,7 @@ export function EchoChat({
 
       <div
         className={cn(
-          'flex items-center gap-2 border-t border-border/50 shrink-0 min-w-0 overflow-hidden',
+          'flex items-end gap-2 border-t border-border/50 shrink-0 min-w-0',
           flushChrome ? 'px-3 py-3' : compact ? 'px-2 pt-2 mt-1' : 'px-2 pt-3 mt-2'
         )}
       >
@@ -406,9 +394,9 @@ export function EchoChat({
             }
           }}
           placeholder={t.echo.inputPlaceholder}
-          rows={1}
+          rows={2}
           className={cn(
-            'flex-1 min-w-0 resize-none rounded-md border bg-background px-3 py-2 text-sm h-11 min-h-11 max-h-11 overflow-y-auto leading-5',
+            'flex-1 min-w-0 resize-y rounded-md border bg-background px-3 py-2 text-sm min-h-14 max-h-40 overflow-y-auto leading-5',
             'max-sm:text-[11px] max-sm:leading-5 max-sm:placeholder:text-[11px] max-sm:placeholder:whitespace-nowrap',
             compact && 'text-sm'
           )}
@@ -452,6 +440,15 @@ export function EchoChat({
             <Send className="h-4 w-4" />
           )}
         </Button>
+        {showOrb && !compact && headerLayout === 'horizontal' && (
+          <EchoAvatar
+            state={orbState}
+            size="sm"
+            layout="horizontal"
+            bordered
+            className="shrink-0 self-end"
+          />
+        )}
       </div>
 
       <EchoDraftInsertedDialog
