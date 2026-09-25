@@ -168,7 +168,6 @@ export default function BiographyEditorPage() {
   const [showImportDialog, setShowImportDialog] = useState(() => searchParams?.get('import') === '1');
   const [globalNotesCount, setGlobalNotesCount] = useState(0);
   const [globalTodosCount, setGlobalTodosCount] = useState(0);
-  const [editorPeekOpen, setEditorPeekOpen] = useState(false);
   const [editorFontSize, setEditorFontSize] = useState<number>(16);
 
   const [aiEnabled, setAiEnabled] = useState(false);
@@ -1196,7 +1195,6 @@ const [isPublishing, setIsPublishing] = useState(false);
         dirtyRef.current = false;
         setSaveStatus('saved');
         setActiveSection(sectionKey);
-        setEditorPeekOpen(true);
       } finally {
         applyingEchoDraftRef.current = false;
       }
@@ -1218,7 +1216,6 @@ const [isPublishing, setIsPublishing] = useState(false);
       return;
     }
     setActiveSection(sectionKey);
-    setEditorPeekOpen(true);
   }, []);
 
 
@@ -1943,10 +1940,7 @@ const [isPublishing, setIsPublishing] = useState(false);
     !isSectionOrFreeflowRevisionLocked &&
     !reviewQueueLocksEditor;
 
-  const showEchoBubble =
-    echoBubbleEditorUnlocked &&
-    (biographyMode === 'freeflow' ||
-      (biographyMode === 'sections' && editorPeekOpen));
+  const showEchoBubble = echoBubbleEditorUnlocked && biographyMode === 'freeflow';
 
   return (
     <EchoShell
@@ -2365,8 +2359,6 @@ const [isPublishing, setIsPublishing] = useState(false);
                     isSectionOrFreeflowRevisionLocked ||
                     reviewQueueLocksEditor
                   }
-                  editorPeekOpen={editorPeekOpen}
-                  onEditorPeekOpenChange={setEditorPeekOpen}
                   aiEnabled={aiEnabled}
                   aiUsageRefresh={aiUsageRefresh}
                   aiLoading={aiState.loading}

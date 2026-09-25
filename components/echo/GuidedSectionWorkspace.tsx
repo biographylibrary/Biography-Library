@@ -5,7 +5,7 @@ import { EditorPeek } from './EditorPeek';
 import { useTranslation } from '@/lib/i18n/i18n-context';
 import { BIOGRAPHY_SECTIONS } from '@/lib/editor-constants';
 import { Button } from '@/components/ui/button';
-import { Pencil, CircleCheck as CheckCircle2, RotateCcw } from 'lucide-react';
+import { CircleCheck as CheckCircle2, RotateCcw } from 'lucide-react';
 import { AiUsageIndicator } from '@/components/editor/ai-usage-indicator';
 import { cn } from '@/lib/utils';
 
@@ -17,8 +17,6 @@ interface GuidedSectionWorkspaceProps {
   editorFontSize?: number;
   onEditorFontSizeChange?: (size: number) => void;
   isPublished?: boolean;
-  editorPeekOpen: boolean;
-  onEditorPeekOpenChange: (open: boolean) => void;
   aiEnabled?: boolean;
   aiUsageRefresh?: number;
   aiLoading?: boolean;
@@ -37,8 +35,6 @@ export function GuidedSectionWorkspace({
   editorFontSize,
   onEditorFontSizeChange,
   isPublished,
-  editorPeekOpen,
-  onEditorPeekOpenChange,
   aiEnabled,
   aiUsageRefresh,
   aiLoading,
@@ -56,86 +52,60 @@ export function GuidedSectionWorkspace({
     activeSection;
 
   return (
-    <div className="flex flex-col h-full min-h-0 relative">
-      {!editorPeekOpen && (
-        <div className="flex items-center justify-between px-3 h-12 border-b border-border/50 shrink-0 gap-2">
-          <h2
-            className="truncate flex-1 min-w-0 text-primary"
-            style={{
-              fontFamily: "'Noto Serif', Georgia, serif",
-              fontWeight: 400,
-              fontSize: '1.0625rem',
-              lineHeight: '1.2',
-              fontSynthesis: 'none',
-            }}
-          >
-            {sectionTitle}
-          </h2>
-          <div className="flex items-center gap-1 sm:gap-2 shrink-0">
-            {!isPublished && onMarkComplete && (
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                className={cn(
-                  'h-8 gap-1 shrink-0 text-xs px-2.5 border bg-transparent',
-                  'text-brand-ink border-brand-ink',
-                  'active:bg-brand-blue active:border-brand-blue/60 active:text-brand-ink',
-                  'dark:text-brand-beigeLight dark:border-brand-beigeLight/30',
-                  'dark:active:bg-brand-blue/30 dark:active:border-brand-blue/45',
-                  isCompleted && 'border-primary/60 text-primary'
-                )}
-                onClick={onMarkComplete}
-                title={isCompleted ? t.status.sectionCompletedHint : t.status.markCompleteWhenFinished}
-              >
-                {isCompleted ? (
-                  <RotateCcw className="h-3.5 w-3.5" />
-                ) : (
-                  <CheckCircle2 className="h-3.5 w-3.5" />
-                )}
-                <span className="hidden sm:inline">
-                  {isCompleted ? t.status.markIncomplete : t.status.markComplete}
-                </span>
-              </Button>
-            )}
-            {aiEnabled && (
-              <div data-tour-id="ai-credits" className="shrink-0">
-                <AiUsageIndicator refreshTrigger={aiUsageRefresh} />
-              </div>
-            )}
+    <div className="flex flex-col h-full min-h-0">
+      <div className="flex items-center justify-between px-3 h-12 border-b border-border/50 shrink-0 gap-2">
+        <h2
+          className="truncate flex-1 min-w-0 text-primary"
+          style={{
+            fontFamily: "'Noto Serif', Georgia, serif",
+            fontWeight: 400,
+            fontSize: '1.0625rem',
+            lineHeight: '1.2',
+            fontSynthesis: 'none',
+          }}
+        >
+          {sectionTitle}
+        </h2>
+        <div className="flex items-center gap-1 sm:gap-2 shrink-0">
+          {!isPublished && onMarkComplete && (
             <Button
               type="button"
               variant="ghost"
               size="sm"
-              data-tour-id="edit-section-btn"
               className={cn(
-                'h-8 gap-1 shrink-0 text-xs px-2.5 border',
-                'bg-brand-greenLight text-brand-ink border-brand-ink',
-                'hover:bg-brand-blue hover:text-brand-ink hover:border-brand-ink',
-                'active:bg-brand-blue active:text-brand-ink active:border-brand-ink',
-                'dark:bg-brand-greenLight/20 dark:text-brand-beigeLight dark:border-brand-beigeLight/30',
-                'dark:hover:bg-brand-blue/30 dark:active:bg-brand-blue/30 dark:hover:border-brand-beigeLight/30 dark:active:border-brand-beigeLight/30'
+                'h-8 gap-1 shrink-0 text-xs px-2.5 border bg-transparent',
+                'text-brand-ink border-brand-ink',
+                'active:bg-brand-blue active:border-brand-blue/60 active:text-brand-ink',
+                'dark:text-brand-beigeLight dark:border-brand-beigeLight/30',
+                'dark:active:bg-brand-blue/30 dark:active:border-brand-blue/45',
+                isCompleted && 'border-primary/60 text-primary'
               )}
-              onClick={() => onEditorPeekOpenChange(true)}
+              onClick={onMarkComplete}
+              title={isCompleted ? t.status.sectionCompletedHint : t.status.markCompleteWhenFinished}
             >
-              <Pencil className="h-3.5 w-3.5" />
-              <span className="hidden sm:inline">{t.common.edit}</span>
+              {isCompleted ? (
+                <RotateCcw className="h-3.5 w-3.5" />
+              ) : (
+                <CheckCircle2 className="h-3.5 w-3.5" />
+              )}
+              <span className="hidden sm:inline">
+                {isCompleted ? t.status.markIncomplete : t.status.markComplete}
+              </span>
             </Button>
-          </div>
+          )}
+          {aiEnabled && (
+            <div data-tour-id="ai-credits" className="shrink-0">
+              <AiUsageIndicator refreshTrigger={aiUsageRefresh} />
+            </div>
+          )}
         </div>
-      )}
+      </div>
 
-      <div className="flex-1 min-h-0 flex flex-col relative overflow-hidden" data-tour-id="echo-panel">
-        <EchoChat
-          className={cn('flex-1 min-h-0', editorPeekOpen && 'hidden')}
-          headerLayout="horizontal"
-          showOrb
-        />
-
+      <div
+        data-tour-id="edit-section-btn"
+        className="flex-1 min-h-0 overflow-hidden border-b border-border/50"
+      >
         <EditorPeek
-          open={editorPeekOpen}
-          onOpenChange={onEditorPeekOpenChange}
-          sectionTitle={sectionTitle}
           text={sectionText}
           onTextChange={onSectionTextChange}
           biographyId={biographyId}
@@ -143,14 +113,15 @@ export function GuidedSectionWorkspace({
           onEditorFontSizeChange={onEditorFontSizeChange}
           isPublished={isPublished}
           aiEnabled={aiEnabled}
-          aiUsageRefresh={aiUsageRefresh}
           aiLoading={aiLoading}
           onGrammarCheck={onGrammarCheck}
           onReviewWithAi={onReviewWithAi}
           onApertusReview={onApertusReview}
-          onMarkComplete={onMarkComplete}
-          isCompleted={isCompleted}
         />
+      </div>
+
+      <div data-tour-id="echo-panel" className="h-[min(42vh,340px)] min-h-[200px] shrink-0 flex flex-col">
+        <EchoChat className="flex-1 min-h-0" headerLayout="horizontal" showOrb />
       </div>
     </div>
   );
