@@ -11,6 +11,10 @@ import { GuidedSectionWorkspace } from '@/components/echo/GuidedSectionWorkspace
 import { EchoShell } from '@/components/echo/EchoShell';
 import { OnboardingTourProvider } from '@/components/onboarding/OnboardingTourProvider';
 import { useOnboardingGate } from '@/components/onboarding/OnboardingGateProvider';
+import {
+  EDITOR_SIDEBAR_STATE_EVENT,
+  EDITOR_SIDEBAR_TOGGLE_EVENT,
+} from '@/lib/onboarding/tour-mobile';
 import type { WritingPath } from '@/lib/onboarding/types';
 import { GlobalNotesPanel } from '@/components/editor/GlobalNotesPanel';
 import { BookStructureDialog } from '@/components/editor/BookStructureDialog';
@@ -60,7 +64,7 @@ import { useTranslation } from '@/lib/i18n/i18n-context';
 import { LICENSE_BY_NC_SA_4, type ContentLicenseUri } from '@/lib/rights';
 import { nfcBiographyWriteFields } from '@/lib/nfc-biography';
 import { storedToArchiveMarkdown } from '@/lib/archive-markdown';
-import { Loader as Loader2, Sparkles, Snowflake as SnowflakeIcon, Send as SendIcon, TriangleAlert, Lock, Menu, X } from 'lucide-react';
+import { Loader as Loader2, Sparkles, Snowflake as SnowflakeIcon, Send as SendIcon, TriangleAlert, Lock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import {
@@ -147,6 +151,16 @@ export default function BiographyEditorPage() {
   );
   const [saveStatus, setSaveStatus] = useState<SaveStatus>('saved');
   const [showMobileSidebar, setShowMobileSidebar] = useState(false);
+
+  useEffect(() => {
+    const onToggle = () => setShowMobileSidebar((open) => !open);
+    window.addEventListener(EDITOR_SIDEBAR_TOGGLE_EVENT, onToggle);
+    return () => window.removeEventListener(EDITOR_SIDEBAR_TOGGLE_EVENT, onToggle);
+  }, []);
+
+  useEffect(() => {
+    window.dispatchEvent(new CustomEvent(EDITOR_SIDEBAR_STATE_EVENT, { detail: showMobileSidebar }));
+  }, [showMobileSidebar]);
   const [showGlobalNotesPanel, setShowGlobalNotesPanel] = useState(false);
   const [showPhotosPanel, setShowPhotosPanel] = useState(false);
   const [showBookStructurePanel, setShowBookStructurePanel] = useState(false);
@@ -1948,19 +1962,6 @@ const [isPublishing, setIsPublishing] = useState(false);
       onSectionCompletionChanged={handleEchoSectionCompletion}
     >
     <div className="h-full flex flex-col bg-[#ECE9E4] dark:bg-[#1F2121] overflow-hidden">
-      <div className="lg:hidden shrink-0 flex items-center h-10 px-2 border-b border-border/50 bg-background/80">
-        <Button
-          type="button"
-          size="icon"
-          data-tour-id="mobile-sidebar-toggle"
-          className="h-9 w-9 rounded-lg bg-black text-white hover:bg-neutral-900 hover:text-white"
-          onClick={() => setShowMobileSidebar((open) => !open)}
-          aria-label={showMobileSidebar ? t.common.close : t.onboardingTour.mobileMenuTitle}
-        >
-          {showMobileSidebar ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-        </Button>
-      </div>
-
       <ReportDeadlineBanner biographyId={id} status={biographyStatus} language={language} />
 
       <LicenseChoiceDialog

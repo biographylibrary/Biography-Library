@@ -385,8 +385,8 @@ export function SectionSidebar({
       </ScrollArea>
 
       <div className="border-t border-border/50 p-1.5 space-y-0.5 shrink-0">
-        <div className={cn('flex items-center gap-2 px-3 py-1 text-xs', status.className)}>
-          <StatusIcon className={cn('h-3.5 w-3.5 shrink-0', saveStatus === 'saving' && 'animate-spin')} />
+        <div className={cn('flex items-center gap-2 px-3 py-1 lg:py-2 text-sm', status.className)}>
+          <StatusIcon className={cn('h-4 w-4 shrink-0', saveStatus === 'saving' && 'animate-spin')} />
           <span className="truncate">{status.text}</span>
         </div>
         <button

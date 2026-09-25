@@ -409,6 +409,7 @@ export function EchoChat({
           rows={1}
           className={cn(
             'flex-1 min-w-0 resize-none rounded-md border bg-background px-3 py-2 text-sm h-11 min-h-11 max-h-11 overflow-y-auto leading-5',
+            'max-sm:text-[11px] max-sm:leading-5 max-sm:placeholder:text-[11px] max-sm:placeholder:whitespace-nowrap',
             compact && 'text-sm'
           )}
           disabled={loading}

@@ -1,6 +1,6 @@
 'use client';
 
-import { Bell, BookOpen, LayoutDashboard, LogOut, Shield, Settings } from 'lucide-react';
+import { Bell, BookOpen, LayoutDashboard, LogOut, Menu, Shield, Settings, X } from 'lucide-react';
 import { useAuth, ADMIN_ROLES } from '@/lib/auth-context';
 import { isStaffRole } from '@/lib/waitlist';
 import { useTranslation } from '@/lib/i18n/i18n-context';
@@ -24,6 +24,10 @@ import {
   fetchUnreadNotificationCount,
   NOTIFICATIONS_CHANGED_EVENT,
 } from '@/lib/notifications-service';
+import {
+  EDITOR_SIDEBAR_STATE_EVENT,
+  EDITOR_SIDEBAR_TOGGLE_EVENT,
+} from '@/lib/onboarding/tour-mobile';
 
 export function Header() {
   const { user, role, accountStatus, signOut } = useAuth();
@@ -33,9 +37,19 @@ export function Header() {
   const { resolvedTheme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
+  const [editorSidebarOpen, setEditorSidebarOpen] = useState(false);
 
   useEffect(() => {
     setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    const onState = (event: Event) => {
+      const open = (event as CustomEvent<boolean>).detail === true;
+      setEditorSidebarOpen(open);
+    };
+    window.addEventListener(EDITOR_SIDEBAR_STATE_EVENT, onState);
+    return () => window.removeEventListener(EDITOR_SIDEBAR_STATE_EVENT, onState);
   }, []);
 
   const refreshUnreadCount = useCallback(async () => {
@@ -110,19 +124,17 @@ export function Header() {
     <header className="border-b border-border bg-[#ECE9E4] dark:bg-[#1F2121] sticky top-0 z-50">
       <div className="h-16 flex items-center relative px-4 sm:px-6 lg:px-8">
         <div className="flex-1 flex items-center">
-          {showAdminLink && (
-            <Link
-              href="/admin"
-              className={cn(
-                'sm:hidden flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-sm font-medium transition-colors',
-                pathname?.startsWith('/admin')
-                  ? 'bg-[#C4DAEB] text-[#121212] dark:bg-[#C4DAEB]/30 dark:text-[#121212]'
-                  : 'text-muted-foreground hover:text-foreground hover:bg-muted/60'
-              )}
+          {isEditorPage && (
+            <Button
+              type="button"
+              size="icon"
+              data-tour-id="mobile-sidebar-toggle"
+              className="lg:hidden h-9 w-9 rounded-lg bg-black text-white hover:bg-neutral-900 hover:text-white"
+              onClick={() => window.dispatchEvent(new Event(EDITOR_SIDEBAR_TOGGLE_EVENT))}
+              aria-label={editorSidebarOpen ? t.common.close : t.onboardingTour.mobileMenuTitle}
             >
-              <Shield className="h-4 w-4" />
-              {adminLinkLabel}
-            </Link>
+              {editorSidebarOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+            </Button>
           )}
         </div>
 
@@ -136,21 +148,6 @@ export function Header() {
         </div>
 
         <div className="flex-1 flex items-center justify-end gap-1">
-          {showAdminLink && (
-            <Link
-              href="/admin"
-              className={cn(
-                'hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors',
-                pathname?.startsWith('/admin')
-                  ? 'bg-[#C4DAEB] text-[#121212] dark:bg-[#C4DAEB]/30 dark:text-[#121212]'
-                  : 'text-muted-foreground hover:text-foreground hover:bg-muted/60'
-              )}
-            >
-              <Shield className="h-3.5 w-3.5" />
-              {adminLinkLabel}
-            </Link>
-          )}
-
           {!user && !isAuthPage && (
             <div className="flex items-center gap-1.5 ml-1">
               <Button variant="ghost" size="sm" asChild>

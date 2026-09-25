@@ -20,6 +20,8 @@ const SIDEBAR_TOUR_TARGETS = new Set([
 ]);
 
 export const OPEN_EDITOR_TOOLS_EVENT = 'bl-open-editor-tools';
+export const EDITOR_SIDEBAR_TOGGLE_EVENT = 'bl-editor-sidebar-toggle';
+export const EDITOR_SIDEBAR_STATE_EVENT = 'bl-editor-sidebar-state';
 
 export function isSidebarTourTarget(target: string): boolean {
   return SIDEBAR_TOUR_TARGETS.has(target);
