@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Check, Circle, Flag, ChevronRight, ChevronDown, StickyNote, Images, Upload, Download, Lock, BookOpen, FileCheck, RotateCcw, CircleCheck, Landmark } from 'lucide-react';
+import { Check, Circle, Flag, ChevronRight, ChevronDown, StickyNote, Images, Upload, Download, Lock, BookOpen, FileCheck, RotateCcw, CircleCheck, Landmark, Link2 } from 'lucide-react';
 import {
   BIOGRAPHY_SECTIONS,
   type BiographyContent,
@@ -24,6 +24,10 @@ interface SectionSidebarProps {
   onToggleImportText: () => void;
   onToggleExportText: () => void;
   onToggleReviewPublication: () => void;
+  /** When set, a share-link item sits beside Tools and opens a popup. */
+  onOpenShareLink?: () => void;
+  showShareLink?: boolean;
+  shareLinkOpen?: boolean;
   /** When true, export control is disabled (e.g. biography under review). */
   exportDisabled?: boolean;
   showNotesPanel: boolean;
@@ -59,6 +63,9 @@ export function SectionSidebar({
   onToggleImportText,
   onToggleExportText,
   onToggleReviewPublication,
+  onOpenShareLink,
+  showShareLink = false,
+  shareLinkOpen = false,
   exportDisabled = false,
   showNotesPanel,
   showPhotosPanel,
@@ -237,6 +244,21 @@ export function SectionSidebar({
           <Download className="h-4 w-4 shrink-0" />
           <span className="truncate min-w-0 flex-1 text-left">{t.notesAndTodos.exportText}</span>
         </button>
+        {showShareLink && onOpenShareLink && (
+          <button
+            type="button"
+            onClick={onOpenShareLink}
+            className={cn(
+              'w-full flex items-center gap-2 px-3 py-1 lg:py-2 rounded-lg text-sm transition-colors',
+              shareLinkOpen
+                ? 'bg-primary/10 text-primary font-medium'
+                : 'text-muted-foreground hover:bg-muted/50 hover:text-foreground'
+            )}
+          >
+            <Link2 className="h-4 w-4 shrink-0" />
+            <span className="truncate min-w-0 flex-1 text-left">{t.biography.shareLink}</span>
+          </button>
+        )}
         <button
           type="button"
           onClick={() => setToolsOpen((open) => !open)}

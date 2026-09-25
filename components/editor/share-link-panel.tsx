@@ -3,11 +3,20 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Link2, Copy, Check } from 'lucide-react';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import { Copy, Check } from 'lucide-react';
 import { useTranslation } from '@/lib/i18n/i18n-context';
 import { supabase } from '@/lib/supabase';
 
 interface ShareLinkPanelProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
   biographyId: string;
   visibility: 'private' | 'link-only' | 'public';
   currentShareToken: string | null;
@@ -15,6 +24,8 @@ interface ShareLinkPanelProps {
 }
 
 export function ShareLinkPanel({
+  open,
+  onOpenChange,
   biographyId,
   visibility,
   currentShareToken,
@@ -47,9 +58,10 @@ export function ShareLinkPanel({
     }
   };
 
-  const shareUrl = currentShareToken
-    ? `${window.location.origin}/biography/${biographyId}/view?token=${currentShareToken}`
-    : '';
+  const shareUrl =
+    currentShareToken && typeof window !== 'undefined'
+      ? `${window.location.origin}/biography/${biographyId}/view?token=${currentShareToken}`
+      : '';
 
   const copyToClipboard = async () => {
     if (!shareUrl) return;
@@ -62,18 +74,20 @@ export function ShareLinkPanel({
     }
   };
 
-  return (
-    <div className="px-4 sm:px-6 py-4 border-b border-border/30 bg-muted/20">
-      <div className="flex items-center gap-2 mb-3">
-        <Link2 className="h-4 w-4 text-primary" />
-        <h3 className="text-sm font-medium">{t.biography.shareLink}</h3>
-      </div>
+  const description =
+    visibility === 'public' ? t.share.publicViewDescription : t.share.familyViewDescription;
 
-      {!currentShareToken ? (
-        <div className="space-y-2">
-          <p className="text-sm text-muted-foreground">
-            {t.share.shareDescription}
-          </p>
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="sm:max-w-lg">
+        <DialogHeader>
+          <DialogTitle>{t.biography.shareLink}</DialogTitle>
+          <DialogDescription>
+            {currentShareToken ? description : t.share.shareDescription}
+          </DialogDescription>
+        </DialogHeader>
+
+        {!currentShareToken ? (
           <Button
             size="sm"
             onClick={generateShareLink}
@@ -82,14 +96,7 @@ export function ShareLinkPanel({
           >
             {isGenerating ? t.share.generating : t.share.generateLink}
           </Button>
-        </div>
-      ) : (
-        <div className="space-y-2">
-          <p className="text-xs text-muted-foreground">
-            {visibility === 'public'
-              ? t.share.publicViewDescription
-              : t.share.familyViewDescription}
-          </p>
+        ) : (
           <div className="flex gap-2">
             <Input
               value={shareUrl}
@@ -116,8 +123,8 @@ export function ShareLinkPanel({
               )}
             </Button>
           </div>
-        </div>
-      )}
-    </div>
+        )}
+      </DialogContent>
+    </Dialog>
   );
 }

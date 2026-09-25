@@ -141,6 +141,7 @@ export default function BiographyEditorPage() {
   const [licenseBusy, setLicenseBusy] = useState(false);
   const [status, setStatus] = useState<'draft' | 'sections_complete'>('draft');
   const [shareToken, setShareToken] = useState<string | null>(null);
+  const [shareDialogOpen, setShareDialogOpen] = useState(false);
   const [content, setContent] = useState<BiographyContent>(getEmptyContent());
   const [activeSection, setActiveSection] = useState<string>(
     BIOGRAPHY_SECTIONS[0].key
@@ -2279,6 +2280,9 @@ const [isPublishing, setIsPublishing] = useState(false);
               if (isReviewOrScreeningLockStatus(biographyStatus)) return;
               setShowExportDialog(true);
             }}
+            onOpenShareLink={() => setShareDialogOpen(true)}
+            showShareLink={privacy !== 'private'}
+            shareLinkOpen={shareDialogOpen}
             onToggleReviewPublication={() => {
               setShowReviewPublicationDialog((open) => {
                 if (!open) setSubmitPreflightError(null);
@@ -2489,16 +2493,6 @@ const [isPublishing, setIsPublishing] = useState(false);
                 </div>
               )}
 
-              {biographyMode === 'sections' && (
-                <div className="shrink-0">
-                  <ShareLinkPanel
-                    biographyId={id}
-                    visibility={privacy}
-                    currentShareToken={shareToken}
-                    onTokenGenerated={setShareToken}
-                  />
-                </div>
-              )}
               {!isFrozen && (
                 <div className="shrink-0">
                   <AuthorLicensePanel
@@ -2517,6 +2511,15 @@ const [isPublishing, setIsPublishing] = useState(false);
 
         </div>
       </div>
+
+      <ShareLinkPanel
+        open={shareDialogOpen}
+        onOpenChange={setShareDialogOpen}
+        biographyId={id}
+        visibility={privacy}
+        currentShareToken={shareToken}
+        onTokenGenerated={setShareToken}
+      />
 
       <AiSuggestionsDialog
         open={!!aiState.type}
