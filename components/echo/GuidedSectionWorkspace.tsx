@@ -82,6 +82,11 @@ export function GuidedSectionWorkspace({
           {sectionTitle}
         </h2>
         <div className="flex items-center gap-1 sm:gap-2 shrink-0">
+          {aiEnabled && (
+            <div data-tour-id="ai-credits" className="shrink-0">
+              <AiUsageIndicator refreshTrigger={aiUsageRefresh} />
+            </div>
+          )}
           {!isPublished && onMarkComplete && (
             <Button
               type="button"
@@ -107,11 +112,6 @@ export function GuidedSectionWorkspace({
                 {isCompleted ? t.status.markIncomplete : t.status.markComplete}
               </span>
             </Button>
-          )}
-          {aiEnabled && (
-            <div data-tour-id="ai-credits" className="shrink-0">
-              <AiUsageIndicator refreshTrigger={aiUsageRefresh} />
-            </div>
           )}
         </div>
       </div>
