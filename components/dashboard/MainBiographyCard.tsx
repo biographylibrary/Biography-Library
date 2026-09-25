@@ -317,9 +317,9 @@ export function MainBiographyCard({ biography, userName, userId, onDeleteClick, 
 
       <div className="space-y-6">
         <div>
-          <div className="flex items-start gap-2 mb-3 w-full">
-            <BookOpen className="h-5 w-5 shrink-0 mt-0.5" />
-            <h2 className="text-lg font-semibold break-words line-clamp-4 flex-1 min-w-0">
+          <div className="relative flex items-center justify-center gap-2 mb-3 w-full">
+            <BookOpen className="h-5 w-5 shrink-0" />
+            <h2 className="text-lg font-semibold leading-5 text-center break-words line-clamp-4">
               {biography.title || t.dashboard.untitledBiography}
             </h2>
             {!showSectionProgressBlock && onDeleteClick && (
@@ -329,7 +329,7 @@ export function MainBiographyCard({ biography, userName, userId, onDeleteClick, 
                     <button
                       type="button"
                       onClick={onDeleteClick}
-                      className="text-muted-foreground hover:text-destructive transition-colors shrink-0 mt-0.5"
+                      className="absolute right-0 text-muted-foreground hover:text-destructive transition-colors shrink-0"
                       aria-label={t.deleteDialog.deleteBiographyLink}
                     >
                       <Trash2 className="h-4 w-4" />
