@@ -50,7 +50,7 @@ export function AiUsageIndicator({ refreshTrigger }: AiUsageIndicatorProps) {
         <Tooltip>
           <TooltipTrigger asChild>
             <div className="flex items-center gap-1 leading-none cursor-default select-none shrink-0">
-              <Sparkles className="h-2.5 w-2.5 shrink-0 text-muted-foreground" />
+              <Sparkles className="h-2.5 w-2.5 shrink-0 text-muted-foreground max-md:hidden" />
               <span className="text-[10px] font-medium leading-none text-muted-foreground">{t.aiUsage.unlimited}</span>
             </div>
           </TooltipTrigger>
@@ -79,7 +79,7 @@ export function AiUsageIndicator({ refreshTrigger }: AiUsageIndicatorProps) {
       <TooltipTrigger asChild>
         <div className="flex items-center gap-1 leading-none cursor-default select-none shrink-0">
           <Sparkles className={cn(
-            'h-2.5 w-2.5 shrink-0',
+            'h-2.5 w-2.5 shrink-0 max-md:hidden',
             (dailyCritical || weeklyCritical) ? 'text-destructive' :
             (dailyWarning || weeklyWarning) ? 'text-brand-mustardDark dark:text-brand-mustardLight' :
             'text-muted-foreground'

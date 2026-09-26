@@ -10,7 +10,7 @@ import {
 import { useTranslation } from '@/lib/i18n/i18n-context';
 import {
   Landmark,
-  MoreHorizontal,
+  MoreVertical,
   SpellCheck,
   Wand2,
 } from 'lucide-react';
@@ -50,9 +50,13 @@ export function EditorAiToolsMenu({
             type="button"
             variant="outline"
             size="sm"
-            className={cn('gap-1 text-xs h-8 px-2 shrink-0', buttonClassName, className)}
+            className={cn(
+              'h-8 w-8 shrink-0 gap-1 rounded-md p-0 text-xs sm:w-auto sm:px-2',
+              buttonClassName,
+              className,
+            )}
           >
-            <MoreHorizontal className="h-3.5 w-3.5" />
+            <MoreVertical className="h-4 w-4" />
             <span className="hidden sm:inline">{t.echo.aiToolsMenu}</span>
           </Button>
       </DropdownMenuTrigger>

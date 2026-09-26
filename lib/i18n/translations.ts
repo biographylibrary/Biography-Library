@@ -515,6 +515,12 @@ export interface Translations {
     horizontalRule: string;
     clearFormatting: string;
     menu: string;
+    styleBold: string;
+    styleItalic: string;
+    styleTitle: string;
+    styleBullet: string;
+    styleNumber: string;
+    styleQuote: string;
   };
   conversation: {
     questionOf: string;
@@ -2279,7 +2285,13 @@ export const translations: Record<Language, Translations> = {
       quote: 'Quote',
       horizontalRule: 'Horizontal Line',
       clearFormatting: 'Clear Formatting',
-      menu: 'Formatting',
+      menu: 'Style',
+      styleBold: 'Bold',
+      styleItalic: 'Italic',
+      styleTitle: 'Title',
+      styleBullet: 'List •',
+      styleNumber: 'List #',
+      styleQuote: 'Quote',
     },
     conversation: {
       questionOf: 'Question {current} of {total} for {section}',
@@ -4089,7 +4101,13 @@ export const translations: Record<Language, Translations> = {
       quote: 'Citazione',
       horizontalRule: 'Linea Separatrice',
       clearFormatting: 'Rimuovi Formattazione',
-      menu: 'Formattazione',
+      menu: 'Stile',
+      styleBold: 'Grassetto',
+      styleItalic: 'Corsivo',
+      styleTitle: 'Titolo',
+      styleBullet: 'Elenco •',
+      styleNumber: 'Elenco #',
+      styleQuote: 'Citazione',
     },
     conversation: {
       questionOf: 'Domanda {current} di {total} per {section}',
@@ -5899,7 +5917,13 @@ export const translations: Record<Language, Translations> = {
       quote: 'Citation',
       horizontalRule: 'Ligne Horizontale',
       clearFormatting: 'Effacer Mise en Forme',
-      menu: 'Mise en forme',
+      menu: 'Style',
+      styleBold: 'Gras',
+      styleItalic: 'Italique',
+      styleTitle: 'Titre',
+      styleBullet: 'Liste •',
+      styleNumber: 'Liste #',
+      styleQuote: 'Citation',
     },
     conversation: {
       questionOf: 'Question {current} sur {total} pour {section}',
@@ -7709,7 +7733,13 @@ export const translations: Record<Language, Translations> = {
       quote: 'Zitat',
       horizontalRule: 'Horizontale Linie',
       clearFormatting: 'Formatierung Entfernen',
-      menu: 'Formatierung',
+      menu: 'Stil',
+      styleBold: 'Fett',
+      styleItalic: 'Kursiv',
+      styleTitle: 'Titel',
+      styleBullet: 'Liste •',
+      styleNumber: 'Liste #',
+      styleQuote: 'Zitat',
     },
     conversation: {
       questionOf: 'Frage {current} von {total} für {section}',
