@@ -14,6 +14,7 @@ import {
 import { splitTextToSizeLang, wrapTextToLines, type WrappedLine } from '@/lib/pdf/text-wrap';
 
 const HEADING_GAP_BEFORE_MM = 5;
+const CHAPTER_TITLE_GAP_AFTER_MM = 8;
 const PARAGRAPH_GAP_AFTER_MM = 2;
 export const PT_BODY = 11;
 export const PT_H1 = 22;
@@ -228,6 +229,9 @@ function renderHeading(
     ctx.doc.text(line, ctx.textStartX(ctx.absolutePage), ctx.y);
     ctx.y += lineH;
   }
+  if (tag === 'h1') {
+    ctx.y += CHAPTER_TITLE_GAP_AFTER_MM;
+  }
   return ctx.y;
 }
 
@@ -335,7 +339,9 @@ export function renderSemanticHtmlBody(
     const nextIsHeading = next ? isHeadingTag(next.tag) : false;
 
     if (isHeadingTag(block.tag)) {
-      if (i > 0 && ctx.y > ctx.textAreaTop + 2) {
+      if (block.tag === 'h1' && i > 0) {
+        ctx.addNewPage();
+      } else if (i > 0 && ctx.y > ctx.textAreaTop + 2) {
         ctx.y += HEADING_GAP_BEFORE_MM;
       }
       ctx.y = renderHeading(ctx, block.inner, block.tag);

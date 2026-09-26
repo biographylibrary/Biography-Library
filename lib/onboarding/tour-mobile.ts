@@ -30,7 +30,6 @@ const TOOLS_PANEL_TARGETS = new Set([
   '[data-tour-id="notes-btn"]',
   '[data-tour-id="photos-btn"]',
   '[data-tour-id="book-structure-btn"]',
-  '[data-tour-id="import-btn"]',
   '[data-tour-id="review-publication-btn"]',
 ]);
 

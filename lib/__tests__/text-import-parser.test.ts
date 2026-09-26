@@ -45,6 +45,13 @@ We visited Corsica every summer.`;
     expect(parsed.content).toContain('<p>Second paragraph.</p>');
   });
 
+  it('keeps bold and italics when the paste is already HTML', () => {
+    const parsed = parsePastedText('<p>Un <strong>fatto</strong> e una <em>voce</em>.</p>', 'it');
+    expect(parsed.content).toContain('<strong>fatto</strong>');
+    expect(parsed.content).toContain('<em>voce</em>');
+    expect(parsed.hasSections).toBe(false);
+  });
+
   it('exposes TextImportError with a stable name', () => {
     const err = new TextImportError('FILE_TOO_LARGE');
     expect(err).toBeInstanceOf(Error);

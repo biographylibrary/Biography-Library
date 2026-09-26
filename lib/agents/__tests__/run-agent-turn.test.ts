@@ -1,6 +1,11 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { SupabaseClient } from '@supabase/supabase-js';
-import { historyToChatMessages, runStreamingAgentTurn, type PreparedAgentTurn } from '@/lib/agents/run-agent-turn';
+import {
+  historyToChatMessages,
+  normalizeToolMessages,
+  runStreamingAgentTurn,
+  type PreparedAgentTurn,
+} from '@/lib/agents/run-agent-turn';
 
 const appendMessage = vi.fn().mockResolvedValue({ id: 'msg-1' });
 const updateAssistantMessageContent = vi.fn().mockResolvedValue({ id: 'msg-1', content: 'ack' });
@@ -68,6 +73,20 @@ describe('historyToChatMessages', () => {
     expect(messages).toHaveLength(3);
     expect(messages[1]).toMatchObject({ role: 'assistant', tool_calls: rows[1].tool_calls });
     expect(messages[2]).toMatchObject({ role: 'tool', tool_call_id: 'tc-1' });
+  });
+
+  it('drops a tool call that has no answer, and keeps the written reply', () => {
+    const messages = normalizeToolMessages([
+      { role: 'user', content: 'ciao' },
+      {
+        role: 'assistant',
+        content: 'Guardo il testo.',
+        tool_calls: [{ id: 'tc-missing', type: 'function', function: { name: 'propose_draft', arguments: '{}' } }],
+      },
+      { role: 'user', content: 'continua' },
+    ]);
+    expect(messages.map((row) => row.role)).toEqual(['user', 'assistant', 'user']);
+    expect(messages[1]).toEqual({ role: 'assistant', content: 'Guardo il testo.' });
   });
 });
 

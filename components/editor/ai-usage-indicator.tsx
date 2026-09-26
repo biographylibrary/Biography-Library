@@ -49,9 +49,9 @@ export function AiUsageIndicator({ refreshTrigger }: AiUsageIndicatorProps) {
       <TooltipProvider>
         <Tooltip>
           <TooltipTrigger asChild>
-            <div className="flex items-center gap-2 px-2 py-1 rounded-md hover:bg-muted/50 transition-colors cursor-default select-none shrink-0">
-              <Sparkles className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
-              <span className="text-xs font-medium text-muted-foreground">{t.aiUsage.unlimited}</span>
+            <div className="flex items-center gap-1 leading-none cursor-default select-none shrink-0">
+              <Sparkles className="h-2.5 w-2.5 shrink-0 text-muted-foreground" />
+              <span className="text-[10px] font-medium leading-none text-muted-foreground">{t.aiUsage.unlimited}</span>
             </div>
           </TooltipTrigger>
           <TooltipContent side="bottom" className="max-w-[200px]">
@@ -77,30 +77,30 @@ export function AiUsageIndicator({ refreshTrigger }: AiUsageIndicatorProps) {
     <TooltipProvider>
     <Tooltip>
       <TooltipTrigger asChild>
-        <div className="flex items-center gap-2 px-2 py-1 rounded-md hover:bg-muted/50 transition-colors cursor-default select-none shrink-0">
+        <div className="flex items-center gap-1 leading-none cursor-default select-none shrink-0">
           <Sparkles className={cn(
-            'h-3.5 w-3.5 shrink-0',
+            'h-2.5 w-2.5 shrink-0',
             (dailyCritical || weeklyCritical) ? 'text-destructive' :
             (dailyWarning || weeklyWarning) ? 'text-brand-mustardDark dark:text-brand-mustardLight' :
             'text-muted-foreground'
           )} />
-          <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-            <span className={cn(
-              'font-medium tabular-nums',
-              dailyCritical ? 'text-destructive' :
-              dailyWarning ? 'text-brand-mustardDark dark:text-brand-mustardLight' : ''
-            )}>
-              {usage.daily_count}/{DAILY_LIMIT}
-            </span>
-            <span className="hidden sm:inline text-muted-foreground/50">·</span>
-            <span className={cn(
-              'hidden sm:inline font-medium tabular-nums',
-              weeklyCritical ? 'text-destructive' :
-              weeklyWarning ? 'text-brand-mustardDark dark:text-brand-mustardLight' : ''
-            )}>
-              {usage.weekly_count}/{WEEKLY_LIMIT}
-            </span>
-          </div>
+          <span className={cn(
+            'text-[10px] font-medium leading-none tabular-nums',
+            dailyCritical ? 'text-destructive' :
+            dailyWarning ? 'text-brand-mustardDark dark:text-brand-mustardLight' :
+            'text-muted-foreground'
+          )}>
+            {usage.daily_count}/{DAILY_LIMIT}
+          </span>
+          <span className="text-[10px] leading-none text-muted-foreground/50">·</span>
+          <span className={cn(
+            'text-[10px] font-medium leading-none tabular-nums',
+            weeklyCritical ? 'text-destructive' :
+            weeklyWarning ? 'text-brand-mustardDark dark:text-brand-mustardLight' :
+            'text-muted-foreground'
+          )}>
+            {usage.weekly_count}/{WEEKLY_LIMIT}
+          </span>
         </div>
       </TooltipTrigger>
       <TooltipContent side="bottom" className="max-w-[200px]">

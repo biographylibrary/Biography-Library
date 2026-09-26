@@ -33,6 +33,7 @@ function bookTitleStep(): TourStepDefinition {
 
 function editorChromeSteps(): TourStepDefinition[] {
   return [
+    step('import-text', '[data-tour-id="import-btn"]', 'importTextTitle', 'importTextDesc'),
     step('export-text', '[data-tour-id="export-pdf-btn"]', 'exportTextTitle', 'exportTextDesc'),
     step('editor-tools', '[data-tour-id="editor-tools-btn"]', 'editorToolsTitle', 'editorToolsDesc'),
     step('privacy', '[data-tour-id="privacy-btn"]', 'privacyTitle', 'privacyDesc'),
@@ -70,7 +71,6 @@ function getSharedSidebarSteps(
       'bookStructureTitle',
       'bookStructureDesc',
     ),
-    step('import-text', '[data-tour-id="import-btn"]', 'importTextTitle', 'importTextDesc'),
     step(
       'review-publication',
       '[data-tour-id="review-publication-btn"]',
@@ -86,82 +86,49 @@ export function getTourSteps(
   options?: { mobileLayout?: boolean; biographyType?: 'autobiography' | 'memorial' },
 ): TourStepDefinition[] {
   const mobileLayout = options?.mobileLayout ?? isMobileEditorLayout();
-  const base = getBaseTourSteps(path, mode, options?.biographyType ?? 'autobiography');
+  const base = getBaseTourSteps(path, mode, options?.biographyType ?? 'autobiography').map((item) =>
+    mobileLayout && item.id === 'chapter-title'
+      ? { ...item, target: '[data-tour-id="formatting-menu-btn"]' }
+      : item
+  );
   if (!mobileLayout) return base;
   return [MOBILE_MENU_STEP, ...base];
 }
 
 function getBaseTourSteps(
-  path: WritingPath,
-  mode: 'sections' | 'freeflow',
+  _path: WritingPath,
+  _mode: 'sections' | 'freeflow',
   biographyType: 'autobiography' | 'memorial',
 ): TourStepDefinition[] {
-  if (path === 'sections' || (path === 'freeflow_import' && mode === 'sections')) {
-    return [
-      bookTitleStep(),
-      step(
-        'sections-overview',
-        '[data-tour-id="section-list"]',
-        'sectionsOverviewTitle',
-        'sectionsOverviewDesc',
-      ),
-      step('echo-panel', '[data-tour-id="echo-panel"]', 'echoPanelTitle', 'echoPanelDesc'),
-      step(
-        'edit-section',
-        '[data-tour-id="edit-section-btn"]',
-        'editSectionTitle',
-        'editSectionDesc',
-      ),
-      step('ai-credits', '[data-tour-id="ai-credits"]', 'aiCreditsTitle', 'aiCreditsDesc'),
-      step(
-        'echo-voice',
-        '[data-tour-id="echo-voice-output"]',
-        'echoVoiceTitle',
-        'echoVoiceDesc',
-      ),
-      ...editorChromeSteps(),
-      ...getSharedSidebarSteps(biographyType),
-    ];
-  }
-
-  if (path === 'freeflow_import') {
-    return [
-      bookTitleStep(),
-      step('editor-main', '[data-tour-id="editor-main"]', 'freeflowEditorTitle', 'freeflowEditorDesc'),
-      step('echo-bubble', '[data-tour-id="echo-bubble"]', 'echoBubbleTitle', 'echoBubbleDesc'),
-      step(
-        'echo-voice',
-        '[data-tour-id="echo-bubble"]',
-        'echoVoiceFreeflowTitle',
-        'echoVoiceFreeflowDesc',
-      ),
-      ...editorChromeSteps(),
-      ...getSharedSidebarSteps(biographyType),
-    ];
-  }
-
-  // publish_ready
   return [
     bookTitleStep(),
-    step('editor-main', '[data-tour-id="editor-main"]', 'publishFinalTitle', 'publishFinalDesc'),
-    step('export-text', '[data-tour-id="export-pdf-btn"]', 'publishExportTitle', 'publishExportDesc'),
-    step('editor-tools', '[data-tour-id="editor-tools-btn"]', 'editorToolsTitle', 'editorToolsDesc'),
-    step('privacy', '[data-tour-id="privacy-btn"]', 'privacyTitle', 'privacyDesc'),
-    step('import-text', '[data-tour-id="import-btn"]', 'publishImportTitle', 'publishImportDesc'),
-    permanenceStep(biographyType),
-    step('notes', '[data-tour-id="notes-btn"]', 'notesTitle', 'notesDesc'),
-    step('photos', '[data-tour-id="photos-btn"]', 'photosTitle', 'photosDesc'),
     step(
-      'book-structure',
-      '[data-tour-id="book-structure-btn"]',
-      'bookStructureTitle',
-      'bookStructureDesc',
+      'sections-overview',
+      '[data-tour-id="section-list"]',
+      'sectionsOverviewTitle',
+      'sectionsOverviewDesc',
     ),
     step(
-      'review-publication',
-      '[data-tour-id="review-publication-btn"]',
-      'reviewPublicationTitle',
-      'reviewPublicationDesc',
+      'edit-section',
+      '[data-tour-id="edit-section-btn"]',
+      'editSectionTitle',
+      'editSectionDesc',
     ),
+    step(
+      'chapter-title',
+      '[data-tour-id="chapter-title-btn"]',
+      'chapterTitleTourTitle',
+      'chapterTitleTourDesc',
+    ),
+    step('echo-panel', '[data-tour-id="echo-panel"]', 'echoPanelTitle', 'echoPanelDesc'),
+    step('ai-credits', '[data-tour-id="ai-credits"]', 'aiCreditsTitle', 'aiCreditsDesc'),
+    step(
+      'echo-voice',
+      '[data-tour-id="echo-voice-output"]',
+      'echoVoiceTitle',
+      'echoVoiceDesc',
+    ),
+    ...editorChromeSteps(),
+    ...getSharedSidebarSteps(biographyType),
   ];
 }

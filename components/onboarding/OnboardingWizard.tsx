@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { User, Flame, Loader as Loader2, PenLine, Upload, BookOpen, Lock, Users, Globe, Info } from 'lucide-react';
+import { User, Flame, Loader as Loader2, Lock, Users, Globe, Info } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -31,7 +31,6 @@ import {
   WIZARD_STEP_ORDER,
   type BiographyTypeChoice,
   type WizardStep,
-  type WritingPath,
 } from '@/lib/onboarding/types';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
@@ -82,7 +81,6 @@ export function OnboardingWizard() {
   const [subjectName, setSubjectName] = useState('');
   const [authorName, setAuthorName] = useState('');
   const [privacy, setPrivacy] = useState<'private' | 'link-only' | 'public'>('private');
-  const [writingPath, setWritingPath] = useState<WritingPath | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [licenseDialogOpen, setLicenseDialogOpen] = useState(false);
 
@@ -126,12 +124,10 @@ export function OnboardingWizard() {
 
   useEffect(() => {
     if (!onboardingState) return;
-    setStep(onboardingState.onboarding_wizard_step ?? 'biography_type');
+    const stored = onboardingState.onboarding_wizard_step ?? 'biography_type';
+    setStep(stored === 'path' ? 'details' : stored);
     if (onboardingState.legal_declaration_type) {
       setBiographyType(onboardingState.legal_declaration_type);
-    }
-    if (onboardingState.onboarding_writing_path) {
-      setWritingPath(onboardingState.onboarding_writing_path);
     }
   }, [onboardingState]);
 
@@ -154,15 +150,13 @@ export function OnboardingWizard() {
           return subjectName.trim().length > 0 && authorName.trim().length > 0;
         }
         return title.trim().length > 0;
-      case 'path':
-        return writingPath !== null;
       default:
         return false;
     }
   };
 
   const finishCreate = async (rightsStatementUri?: ContentLicenseUri | null) => {
-    if (!writingPath || !biographyType || !user) {
+    if (!biographyType || !user) {
       toast.error(t.toast.error);
       return;
     }
@@ -186,7 +180,7 @@ export function OnboardingWizard() {
         return;
       }
 
-      const mode = writingPath === 'sections' ? 'sections' : ('freeflow' as const);
+      const mode = 'freeflow' as const;
       const isMemorial = biographyType === 'memorial';
       const { data, error } = await createBiography(
         user.id,
@@ -208,7 +202,7 @@ export function OnboardingWizard() {
 
       const { error: patchError } = await patchOnboarding({
         action: 'complete_wizard',
-        writingPath,
+        writingPath: 'freeflow_import',
         biographyType,
       });
       if (patchError) {
@@ -222,9 +216,6 @@ export function OnboardingWizard() {
       }
 
       const params = new URLSearchParams({ tour: '1' });
-      if (writingPath === 'freeflow_import' || writingPath === 'publish_ready') {
-        params.set('import', '1');
-      }
       setLicenseDialogOpen(false);
       router.push(`/biography/${data.id}/edit?${params.toString()}`);
       void refreshOnboarding();
@@ -245,7 +236,7 @@ export function OnboardingWizard() {
   const handleContinue = async () => {
     if (!canContinue()) return;
 
-    if (step === 'path') {
+    if (step === 'details') {
       if (privacy === 'public') {
         setLicenseDialogOpen(true);
         return;
@@ -405,58 +396,6 @@ export function OnboardingWizard() {
         </div>
       )}
 
-      {step === 'path' && (
-        <div className="space-y-6 animate-in fade-in duration-300">
-          <div className="space-y-1">
-            <h1 className="text-2xl font-serif font-semibold">{t.onboardingWizard.pathTitle}</h1>
-            <p className="text-muted-foreground text-sm">{t.onboardingWizard.pathSubtitle}</p>
-          </div>
-          <div className="space-y-3">
-            {(
-              [
-                {
-                  id: 'sections' as WritingPath,
-                  icon: PenLine,
-                  title: t.echo.newGuided,
-                  desc: t.writingModeOnboarding.guidedChaptersDescription,
-                },
-                {
-                  id: 'freeflow_import' as WritingPath,
-                  icon: Upload,
-                  title: t.echo.newImport,
-                  desc: t.writingModeOnboarding.importDescription,
-                },
-                {
-                  id: 'publish_ready' as WritingPath,
-                  icon: BookOpen,
-                  title: t.echo.newPublishOnly,
-                  desc: t.onboardingWizard.publishReadyDescription,
-                },
-              ] as const
-            ).map(({ id, icon: Icon, title: cardTitle, desc }) => (
-              <button
-                key={id}
-                type="button"
-                onClick={() => setWritingPath(id)}
-                className={cn(
-                  'w-full text-left flex items-start gap-4 p-4 rounded-xl border-2 transition-all',
-                  writingPath === id ? SELECTED_CHOICE_CLASS : UNSELECTED_CHOICE_CLASS
-                )}
-              >
-                <Icon className="h-6 w-6 text-primary shrink-0 mt-0.5" />
-                <div>
-                  <p className="font-semibold">{cardTitle}</p>
-                  <p className="text-sm text-muted-foreground mt-1">{desc}</p>
-                </div>
-              </button>
-            ))}
-          </div>
-          <Alert>
-            <AlertDescription className="text-sm">{t.onboardingWizard.pathHint}</AlertDescription>
-          </Alert>
-        </div>
-      )}
-
       <div className="flex flex-col sm:flex-row sm:justify-end gap-2 pt-2">
         {step !== 'biography_type' && (
           <Button
@@ -476,7 +415,7 @@ export function OnboardingWizard() {
           disabled={!canContinue() || submitting}
         >
           {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
-          {step === 'path' ? t.onboardingWizard.startTour : t.writingModeOnboarding.continueButton}
+          {step === 'details' ? t.onboardingWizard.startTour : t.writingModeOnboarding.continueButton}
         </Button>
       </div>
     </div>

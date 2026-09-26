@@ -5,6 +5,8 @@ type ToolDraftPayload = {
   preview?: boolean;
   sectionKey?: string;
   draftText?: string;
+  replaceText?: string;
+  replaceAll?: boolean;
 };
 
 function parseToolDraft(content: string): ToolDraftPayload | null {
@@ -31,13 +33,16 @@ export type MessageWithPendingDraft = {
   id: string;
   role: string;
   content: string;
-  pendingDraft?: { sectionKey: string; draftText: string };
+  pendingDraft?: { sectionKey: string; draftText: string; replaceText?: string; replaceAll?: boolean };
 };
 
 export function enrichMessagesWithPendingDrafts(
   allRows: AgentMessageRow[]
 ): MessageWithPendingDraft[] {
-  const draftByAssistantId = new Map<string, { sectionKey: string; draftText: string }>();
+  const draftByAssistantId = new Map<
+    string,
+    { sectionKey: string; draftText: string; replaceText?: string; replaceAll?: boolean }
+  >();
 
   for (let i = 0; i < allRows.length; i++) {
     const row = allRows[i];
@@ -51,6 +56,8 @@ export function enrichMessagesWithPendingDrafts(
         draftByAssistantId.set(row.id, {
           sectionKey: draft.sectionKey,
           draftText: draft.draftText,
+          ...(draft.replaceText ? { replaceText: draft.replaceText } : {}),
+          ...(draft.replaceAll ? { replaceAll: true } : {}),
         });
         break;
       }

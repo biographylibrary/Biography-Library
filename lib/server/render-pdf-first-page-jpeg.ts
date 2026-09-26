@@ -14,7 +14,7 @@ type PdfJsModule = typeof import('pdfjs-dist/legacy/build/pdf.mjs');
 
 let pdfjsPromise: Promise<PdfJsModule> | null = null;
 
-async function loadPdfJs(): Promise<PdfJsModule> {
+export async function loadPdfJs(): Promise<PdfJsModule> {
   if (!pdfjsPromise) {
     pdfjsPromise = (async () => {
       const pdfjs = await import('pdfjs-dist/legacy/build/pdf.mjs');

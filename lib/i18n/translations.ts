@@ -257,6 +257,8 @@ export interface Translations {
   exportDialog: {
     title: string;
     description: string;
+    exportReviewLocked: string;
+    pdfPreview: string;
     pdfNotice: string;
     formatLabel: string;
     contentLabel: string;
@@ -381,6 +383,9 @@ export interface Translations {
     publishedChapterNotice: string;
     freeFlowTab: string;
     sectionsTab: string;
+    chaptersEmpty: string;
+    addChapter: string;
+    newChapterTitle: string;
     tools: string;
     freeFlowReadOnly: string;
     importFreeFlowHint: string;
@@ -412,6 +417,7 @@ export interface Translations {
     bookStructureCreditPlaceholder: string;
     importNoticeSectionsMode: string;
     importNoticeFreeflowMode: string;
+    importConflictQuestion: string;
     importFreeFlowReplace: string;
     importFreeFlowAppend: string;
     bookStructureMainText: string;
@@ -497,6 +503,7 @@ export interface Translations {
     alignRight: string;
     alignJustify: string;
     heading1: string;
+    chapterTitle: string;
     heading2: string;
     heading3: string;
     paragraph: string;
@@ -507,6 +514,7 @@ export interface Translations {
     quote: string;
     horizontalRule: string;
     clearFormatting: string;
+    menu: string;
   };
   conversation: {
     questionOf: string;
@@ -922,6 +930,13 @@ export interface Translations {
     multiImportUnavailable: string;
     loading: string;
     fileTooLarge: string;
+    pdfTooLarge: string;
+    pdfPhoto: string;
+    pdfOneAtATime: string;
+    keepCoverQuestion: string;
+    keepCoverYes: string;
+    keepCoverNo: string;
+    pdfInsidePhoto: string;
     docUnsupported: string;
     formatUnsupported: string;
     tooManyFiles: string;
@@ -1608,6 +1623,8 @@ export interface Translations {
     echoPanelDesc: string;
     editSectionTitle: string;
     editSectionDesc: string;
+    chapterTitleTourTitle: string;
+    chapterTitleTourDesc: string;
     aiCreditsTitle: string;
     aiCreditsDesc: string;
     echoVoiceTitle: string;
@@ -1665,6 +1682,7 @@ export interface Translations {
     statusPreparingReply: string;
     statusReadingMessage: string;
     statusWriting: string;
+    statusWaitingLines: string[];
     statusStillWorking: string;
     statusSlowApology: string;
     statusLoadingHistory: string;
@@ -1714,6 +1732,15 @@ export interface Translations {
     insertDraftDialogDescription: string;
     insertDraftContinueChat: string;
     insertDraftPendingBadge: string;
+    insertDraftReplaceCardTitle: string;
+    insertDraftReplaceCardSubtitle: string;
+    insertDraftReplaceConfirm: string;
+    insertDraftReplaceAllCardTitle: string;
+    insertDraftReplaceAllCardSubtitle: string;
+    insertDraftReplaceAllConfirm: string;
+    insertDraftReplaceMissing: string;
+    undoLastChange: string;
+    undoLastChangeHint: string;
     loadOlderMessages: string;
     earlierConversations: string;
     loadingOlderMessages: string;
@@ -1978,7 +2005,9 @@ export const translations: Record<Language, Translations> = {
     },
     exportDialog: {
       title: 'Export Biography',
-      description: 'Choose format and sections to export',
+      description: 'Choose the format. The whole page is exported.',
+      exportReviewLocked: 'Export is paused while the biography is being reviewed. You can download it again when the review is finished.',
+      pdfPreview: 'PDF preview',
       pdfNotice: 'PDF export is only available once the biography has been completed and approved. You can export in TXT, RTF, and DOCX formats in the meantime.',
       formatLabel: 'Export format',
       contentLabel: 'Content selection',
@@ -2106,6 +2135,9 @@ export const translations: Record<Language, Translations> = {
       publishedChapterNotice: 'This chapter is published and cannot be edited.',
       freeFlowTab: 'Free Flow',
       sectionsTab: 'Sections',
+      chaptersEmpty: 'Chapters appear here when you mark a chapter title.',
+      addChapter: 'Add a chapter',
+      newChapterTitle: 'Chapter',
       tools: 'Tools',
       freeFlowReadOnly: 'Free Flow text (read only)',
       importFreeFlowHint: 'Importing a biography written elsewhere? Choose Free Flow. You can manually copy sections later.\nImporting a single section from a Biography Library export? Paste only that section\'s text and select which section to save it to.',
@@ -2137,9 +2169,10 @@ export const translations: Record<Language, Translations> = {
       bookStructureAcknowledgementsPlaceholder: 'Write the acknowledgements…',
       bookStructureCreditPlaceholder: 'Specific credits…',
       importNoticeSectionsMode: 'You are in Sections mode — text will be imported into the currently selected section. To import into a different chapter, select it first in the sidebar. If you want to import a full biography written elsewhere as a single block, switch to Free Flow mode before importing.',
-      importNoticeFreeflowMode: 'You are in Free Flow mode — ideal for importing text written outside Biography Library. Choose whether to replace your current content or add the imported text at the end. If you prefer a guided, chapter-by-chapter approach, switch to Sections mode before importing.',
-      importFreeFlowReplace: 'Replace all existing content',
-      importFreeFlowAppend: 'Add to the end of existing content',
+      importNoticeFreeflowMode: 'The text is added to your biography as it is, keeping bold, italics and quotations. Headings become chapters in the sidebar.',
+      importConflictQuestion: 'There is already text. Replace it, or add the new text at the end?',
+      importFreeFlowReplace: 'Replace',
+      importFreeFlowAppend: 'Add at the end',
       bookStructureMainText: 'Main text',
       bookStructureImportText: 'Import text',
       bookStructureImportTitle: 'Import main text',
@@ -2177,7 +2210,7 @@ export const translations: Record<Language, Translations> = {
         title: 'Review & Publication',
         description: 'Complete the review workflow and export your biography as a print-ready PDF.',
         incompleteMessage:
-          'Before you can start review and publication, complete every chapter in the sidebar. Each section should have your story written and marked complete.',
+          'The page is still empty. Write or import the biography before review and publication.',
         freeflowEmptyHint: 'Add your biography text in the editor before starting review and publication.',
         statusUnderReview: 'Under review',
         statusLockedPendingScreening: 'Screening in progress',
@@ -2194,7 +2227,7 @@ export const translations: Record<Language, Translations> = {
         stepAiReviewButton: 'Open AI final review',
         stepFreeflowPrepareTitle: 'Prepare final text for PDF',
         stepFreeflowPrepareDesc:
-          'Lock your free-flow text as the final version so you can start watermarked PDF drafts.',
+          'Save the text on the page as the final version so you can start watermarked PDF drafts.',
         stepFreeflowPrepareButton: 'Prepare final text',
         stepSubmitTitle: 'Quick submit (legacy)',
         stepSubmitDesc:
@@ -2235,6 +2268,7 @@ export const translations: Record<Language, Translations> = {
       alignRight: 'Align Right',
       alignJustify: 'Justify',
       heading1: 'Heading 1',
+      chapterTitle: 'Chapter title',
       heading2: 'Heading 2',
       heading3: 'Heading 3',
       paragraph: 'Paragraph',
@@ -2245,6 +2279,7 @@ export const translations: Record<Language, Translations> = {
       quote: 'Quote',
       horizontalRule: 'Horizontal Line',
       clearFormatting: 'Clear Formatting',
+      menu: 'Formatting',
     },
     conversation: {
       questionOf: 'Question {current} of {total} for {section}',
@@ -2649,7 +2684,7 @@ export const translations: Record<Language, Translations> = {
       description: 'Upload a file or paste text to import',
       dragFile: 'Drag a file here or click to select',
       dragFileHint: 'Supported format: .txt (max 5MB)',
-      formats: 'Supported formats: .txt, .docx, .rtf (max 5MB each, up to 10 files)',
+      formats: 'Formats: .txt, .docx, .rtf (max 5MB) and a PDF with selectable text (max 30MB)',
       selectFile: 'Select File',
       or: 'or',
       pasteLabel: 'Paste text directly',
@@ -2675,6 +2710,13 @@ export const translations: Record<Language, Translations> = {
       multiImportUnavailable: 'Multiple section import not available',
       loading: 'Loading...',
       fileTooLarge: 'File too large. Maximum size: 5MB',
+      pdfTooLarge: 'The PDF is too large. Maximum size: 30MB',
+      pdfPhoto: 'This PDF is a photograph of the pages: the text cannot be selected. Use the Word file, or a PDF whose text can be copied. Handwriting and scans are not read.',
+      pdfOneAtATime: 'Import one PDF at a time.',
+      keepCoverQuestion: 'Do you want to keep the original cover?',
+      keepCoverYes: 'Yes, keep it',
+      keepCoverNo: 'No, text only',
+      pdfInsidePhoto: 'The inside pages have no selectable text. If you keep the cover, the story does not go onto the page.',
       docUnsupported: 'Unsupported .doc format. Convert to .docx or .txt',
       formatUnsupported: 'Unsupported format. Use .txt, .docx or .rtf',
       tooManyFiles: 'Too many files. Maximum 10 per import',
@@ -3357,22 +3399,25 @@ export const translations: Record<Language, Translations> = {
     onboardingTour: {
       sectionsOverviewTitle: 'Chapters',
       sectionsOverviewDesc:
-        'Your biography is organised into chapters. Select one from the list to work on it with Echo.',
+        'Chapters appear here when you mark a chapter title. Select one to jump to it. If the list is empty, the text is still one piece.',
       bookTitleTitle: 'Book title',
       bookTitleDesc:
-        'The title is in the side menu, above Sections and Free Flow. Click it to rename the biography. The author name is just underneath.',
+        'The title is at the top of the side menu. Click it to rename the biography. The author name is just underneath.',
       privacyTitle: 'Visibility',
       privacyDesc:
         'This sits inside Tools. It shows who can see the biography. Tap it to switch between Private, Family, and Public.',
       editorToolsTitle: 'Tools',
       editorToolsDesc:
-        'Most editor tools are folded here: visibility, your details, notes, photos, book structure, import, and review. Export stays above this button and is always visible. Share link appears beside Export when the biography is not private.',
+        'Most editor tools are folded here: visibility, your details, notes, photos, book structure, and review. Import and Export stay above this button and are always visible. Share link appears beside Export when the biography is not private.',
       echoPanelTitle: 'Write with Echo',
       echoPanelDesc:
-        'Echo sits below the chapter. Ask questions or request a draft. The clean text goes into the chapter only if you accept it.',
-      editSectionTitle: 'The chapter',
+        'Echo sits under the page. Ask questions or request a draft. The clean text goes into the biography only if you accept it.',
+      editSectionTitle: 'The page',
       editSectionDesc:
-        'The chapter text is always here. You can correct it, paste, or write directly. Echo, below, suggests changes and asks questions. Only if you accept does the clean text go into this chapter.',
+        'The biography is one page. You can correct it, paste, or write directly. Echo, below, suggests changes and asks questions. The clean text goes in only if you accept it.',
+      chapterTitleTourTitle: 'Chapter title',
+      chapterTitleTourDesc:
+        'This marks a line as a chapter title. It appears in the side list, and in the PDF it is larger and starts a new page. The text continues on the same page.',
       aiCreditsTitle: 'AI credits',
       aiCreditsDesc:
         'This counter shows how many AI-assisted actions you have left today and this week. Standard accounts have daily and weekly limits.',
@@ -3387,7 +3432,7 @@ export const translations: Record<Language, Translations> = {
       photosTitle: 'Photos',
       photosDesc: 'Inside Tools. Add images to the gallery and attach them to chapters where needed.',
       importTextTitle: 'Import text',
-      importTextDesc: 'Inside Tools. Paste or upload existing text from Word, PDF, or plain files.',
+      importTextDesc: 'Always visible, just above Export. Paste or upload text from Word, PDF, or a plain file.',
       exportTextTitle: 'Export text',
       exportTextDesc:
         'Export is always visible at the bottom of the side menu, next to the save status. Download TXT or DOCX, or start a PDF draft.',
@@ -3433,16 +3478,25 @@ export const translations: Record<Language, Translations> = {
       inputPlaceholder: 'Type or use the microphone…',
       statusListening: 'Listening…',
       statusSpeaking: 'Speaking…',
-      statusThinking: 'Thinking…',
-      statusFormulatingReply: 'Working on your reply…',
+      statusThinking: 'I\'m thinking…',
+      statusFormulatingReply: 'I\'m reading what you wrote…',
       statusWelcome: 'Write or use the mic — I\'m here to guide you',
       statusReady: 'Ready for your next question',
       statusVoiceMuted: 'Text only — voice off',
-      statusPreparingReply: 'Preparing a reply…',
-      statusReadingMessage: 'Reading your message…',
-      statusWriting: 'Writing…',
-      statusStillWorking: 'This is taking a little longer than usual…',
-      statusSlowApology: 'Sorry for the wait — almost there…',
+      statusPreparingReply: 'I\'m preparing a reply for you…',
+      statusReadingMessage: 'I\'m still working…',
+      statusWriting: 'I\'m writing…',
+      statusWaitingLines: [
+        'I\'m reading what you wrote…',
+        'I\'m thinking it through…',
+        'I\'m preparing a reply for you…',
+        'I\'m still working…',
+        'I\'m taking a little longer, but I haven\'t stopped…',
+        'I\'m still on it, almost there…',
+        'Thanks for waiting, I\'m finishing up…',
+      ],
+      statusStillWorking: 'I\'m taking a little longer, but I haven\'t stopped…',
+      statusSlowApology: 'Thanks for waiting, I\'m finishing up…',
       statusLoadingHistory: 'Loading our conversation…',
       statusLoadingOlder: 'Loading earlier messages…',
       errorGeneric: 'Something went wrong. Please try again.',
@@ -3487,6 +3541,15 @@ export const translations: Record<Language, Translations> = {
       insertDraftDialogDescription: 'Your text was added to {section}. Open the editor to review it now.',
       insertDraftContinueChat: 'Continue in chat',
       insertDraftPendingBadge: '{count} draft to insert',
+      insertDraftReplaceCardTitle: 'I\'ll replace a passage',
+      insertDraftReplaceCardSubtitle: 'The text below takes the place of what you already wrote. I won\'t add it at the end.',
+      insertDraftReplaceConfirm: 'Replace',
+      insertDraftReplaceAllCardTitle: 'I\'ll replace every "{from}"',
+      insertDraftReplaceAllCardSubtitle: 'On the page, every "{from}" becomes "{to}".',
+      insertDraftReplaceAllConfirm: 'Replace all',
+      insertDraftReplaceMissing: 'I couldn\'t find that passage, so I didn\'t add anything at the end.',
+      undoLastChange: 'Undo',
+      undoLastChangeHint: 'Put the text back as it was before the last change',
       loadOlderMessages: 'Load older messages',
       earlierConversations: 'Earlier conversations',
       loadingOlderMessages: 'Loading…',
@@ -3750,7 +3813,9 @@ export const translations: Record<Language, Translations> = {
     },
     exportDialog: {
       title: 'Esporta Biografia',
-      description: 'Scegli il formato e le sezioni da esportare',
+      description: 'Scegli il formato. Esce tutto il foglio.',
+      exportReviewLocked: 'L\'esportazione è in pausa finché la biografia è in revisione. Potrai scaricarla di nuovo quando il controllo è finito.',
+      pdfPreview: 'Anteprima PDF',
       pdfNotice: 'L\'esportazione in PDF è disponibile solo una volta che la biografia è stata completata e approvata. Per ora puoi esportare nei formati TXT, RTF e DOCX.',
       formatLabel: 'Formato di esportazione',
       contentLabel: 'Selezione contenuto',
@@ -3878,6 +3943,9 @@ export const translations: Record<Language, Translations> = {
       publishedChapterNotice: 'Questo capitolo è pubblicato e non può essere modificato.',
       freeFlowTab: 'Testo libero',
       sectionsTab: 'Sezioni',
+      chaptersEmpty: 'I capitoli compaiono qui quando segni un titolo di capitolo.',
+      addChapter: 'Aggiungi un capitolo',
+      newChapterTitle: 'Capitolo',
       tools: 'Strumenti',
       freeFlowReadOnly: 'Testo libero (sola lettura)',
       importFreeFlowHint: 'Stai importando una biografia scritta altrove? Scegli Testo libero. Potrai copiare le sezioni manualmente in seguito.\nStai importando una singola sezione da un export di Biography Library? Incolla solo il testo di quella sezione e scegli in quale sezione salvarlo.',
@@ -3909,9 +3977,10 @@ export const translations: Record<Language, Translations> = {
       bookStructureAcknowledgementsPlaceholder: 'Scrivi i ringraziamenti…',
       bookStructureCreditPlaceholder: 'Crediti specifici…',
       importNoticeSectionsMode: 'Sei in modalità Sezioni — il testo verrà importato nella sezione attualmente selezionata. Per importare in un altro capitolo, selezionalo prima dalla barra laterale. Se vuoi importare una biografia completa scritta altrove come blocco unico, passa alla modalità Testo libero prima di importare.',
-      importNoticeFreeflowMode: 'Sei in modalità Testo libero — ideale per importare testo scritto fuori da Biography Library. Scegli se sostituire il contenuto attuale o aggiungere il testo importato in fondo. Se preferisci un approccio guidato capitolo per capitolo, passa alla modalità Sezioni prima di importare.',
-      importFreeFlowReplace: 'Sostituisci tutto il contenuto esistente',
-      importFreeFlowAppend: 'Aggiungi in fondo al contenuto esistente',
+      importNoticeFreeflowMode: 'Il testo entra nella biografia così com\'è, con grassetto, corsivo e virgolette. I titoli diventano capitoli nella barra laterale.',
+      importConflictQuestion: 'C\'è già un testo. Lo sostituisco o lo aggiungo in fondo?',
+      importFreeFlowReplace: 'Sostituisci',
+      importFreeFlowAppend: 'Aggiungi in fondo',
       bookStructureMainText: 'Testo principale',
       bookStructureImportText: 'Importa testo',
       bookStructureImportTitle: 'Importa testo principale',
@@ -3950,7 +4019,7 @@ export const translations: Record<Language, Translations> = {
         description:
           'Completa il percorso di revisione e pubblica la biografia con export PDF pronto per la stampa.',
         incompleteMessage:
-          'Prima di avviare revisione e pubblicazione, completa ogni capitolo nella barra laterale. Ogni sezione deve contenere il testo e risultare completata.',
+          'Il foglio è ancora vuoto. Scrivi o importa la biografia prima della revisione e della pubblicazione.',
         freeflowEmptyHint:
           'Aggiungi il testo della biografia nell\'editor prima di avviare revisione e pubblicazione.',
         statusUnderReview: 'In revisione',
@@ -3968,7 +4037,7 @@ export const translations: Record<Language, Translations> = {
         stepAiReviewButton: 'Apri revisione finale IA',
         stepFreeflowPrepareTitle: 'Prepara il testo finale per il PDF',
         stepFreeflowPrepareDesc:
-          'Blocca il testo in modalità libera come versione finale per avviare le bozze PDF con filigrana.',
+          'Salva il testo del foglio come versione finale, così puoi avviare le bozze PDF con filigrana.',
         stepFreeflowPrepareButton: 'Prepara testo finale',
         stepSubmitTitle: 'Invio rapido (legacy)',
         stepSubmitDesc:
@@ -4009,6 +4078,7 @@ export const translations: Record<Language, Translations> = {
       alignRight: 'Allinea Destra',
       alignJustify: 'Giustificato',
       heading1: 'Titolo 1',
+      chapterTitle: 'Titolo di capitolo',
       heading2: 'Titolo 2',
       heading3: 'Titolo 3',
       paragraph: 'Paragrafo Normale',
@@ -4019,6 +4089,7 @@ export const translations: Record<Language, Translations> = {
       quote: 'Citazione',
       horizontalRule: 'Linea Separatrice',
       clearFormatting: 'Rimuovi Formattazione',
+      menu: 'Formattazione',
     },
     conversation: {
       questionOf: 'Domanda {current} di {total} per {section}',
@@ -4423,7 +4494,7 @@ export const translations: Record<Language, Translations> = {
       description: 'Carica un file o incolla il testo da importare',
       dragFile: 'Trascina un file qui o clicca per selezionare',
       dragFileHint: 'Formato supportato: .txt (max 5MB)',
-      formats: 'Formati supportati: .txt, .docx, .rtf (max 5MB ciascuno, fino a 10 file)',
+      formats: 'Formati: .txt, .docx, .rtf (max 5 MB) e PDF con testo selezionabile (max 30 MB)',
       selectFile: 'Seleziona File',
       or: 'oppure',
       pasteLabel: 'Incolla il testo direttamente',
@@ -4449,6 +4520,13 @@ export const translations: Record<Language, Translations> = {
       multiImportUnavailable: 'Importazione multipla sezioni non disponibile',
       loading: 'Caricamento...',
       fileTooLarge: 'File troppo grande. Dimensione massima: 5MB',
+      pdfTooLarge: 'Il PDF è troppo grande. Dimensione massima: 30 MB',
+      pdfPhoto: 'Questo PDF è una fotografia delle pagine: il testo non si può selezionare. Serve il file di Word, oppure un PDF in cui il testo si può copiare. La scrittura a mano e le scansioni non si leggono.',
+      pdfOneAtATime: 'Importa un solo PDF per volta.',
+      keepCoverQuestion: 'Vuoi tenere la copertina originale?',
+      keepCoverYes: 'Sì, tienila',
+      keepCoverNo: 'No, solo il testo',
+      pdfInsidePhoto: 'Le pagine interne non hanno testo selezionabile. Se tieni la copertina, il racconto non entra nel foglio.',
       docUnsupported: 'Formato .doc non supportato. Converti in .docx o .txt',
       formatUnsupported: 'Formato non supportato. Usa .txt, .docx o .rtf',
       tooManyFiles: 'Troppi file. Massimo 10 per importazione',
@@ -5131,22 +5209,25 @@ export const translations: Record<Language, Translations> = {
     onboardingTour: {
       sectionsOverviewTitle: 'Capitoli',
       sectionsOverviewDesc:
-        'La biografia è organizzata in capitoli. Selezionane uno dall\'elenco per lavorarci con Echo.',
+        'I capitoli compaiono qui quando segni un titolo di capitolo. Selezionane uno per saltare lì. Se l\'elenco è vuoto, il testo è comunque un pezzo solo.',
       bookTitleTitle: 'Titolo del libro',
       bookTitleDesc:
-        'Il titolo è nel menu a sinistra, sopra Sezioni e Testo libero. Cliccalo per rinominare la biografia. Il nome dell’autore è subito sotto.',
+        'Il titolo è in cima al menu a sinistra. Cliccalo per rinominare la biografia. Il nome dell’autore è subito sotto.',
       privacyTitle: 'Visibilità',
       privacyDesc:
         'Sta dentro Strumenti. Indica chi può vedere la biografia. Toccalo per passare tra Privata, Famiglia e Pubblica.',
       editorToolsTitle: 'Strumenti',
       editorToolsDesc:
-        'Quasi tutti gli strumenti sono qui dentro: visibilità, i dati, note, foto, struttura del libro, importa e revisione. Esporta resta sopra questo pulsante, sempre visibile. Condividi link compare lì accanto quando la biografia non è privata.',
+        'Quasi tutti gli strumenti sono qui dentro: visibilità, i dati, note, foto, struttura del libro e revisione. Importa ed Esporta restano sopra questo pulsante, sempre visibili. Condividi link compare lì accanto quando la biografia non è privata.',
       echoPanelTitle: 'Scrivi con Echo',
       echoPanelDesc:
-        'Echo sta sotto il capitolo. Fai domande o chiedi una bozza. Il testo pulito entra nel capitolo solo se lo accetti.',
-      editSectionTitle: 'Il capitolo',
+        'Echo sta sotto il foglio. Fai domande o chiedi una bozza. Il testo pulito entra nella biografia solo se lo accetti.',
+      editSectionTitle: 'Il foglio',
       editSectionDesc:
-        'Il testo del capitolo è sempre qui. Puoi correggerlo, incollare o scrivere direttamente. Echo, sotto, propone aggiustamenti e fa domande. Solo se accetti, il testo pulito entra in questo capitolo.',
+        'La biografia è un solo foglio. Puoi correggerlo, incollare o scrivere direttamente. Echo, sotto, propone aggiustamenti e fa domande. Il testo pulito entra solo se lo accetti.',
+      chapterTitleTourTitle: 'Titolo di capitolo',
+      chapterTitleTourDesc:
+        'Segna una riga come titolo di capitolo. Compare nell\'elenco a sinistra e, nel PDF, è più grande e apre una pagina nuova. Il testo continua sulla stessa pagina.',
       aiCreditsTitle: 'Crediti AI',
       aiCreditsDesc:
         'Questo contatore mostra quante azioni assistite da AI ti restano oggi e questa settimana. Gli account standard hanno limiti giornalieri e settimanali.',
@@ -5161,7 +5242,7 @@ export const translations: Record<Language, Translations> = {
       photosTitle: 'Foto',
       photosDesc: 'Dentro Strumenti. Aggiungi immagini alla galleria e collegale ai capitoli.',
       importTextTitle: 'Importa testo',
-      importTextDesc: 'Dentro Strumenti. Incolla o carica testo da Word, PDF o file di testo.',
+      importTextDesc: 'Sempre visibile, subito prima di Esporta. Incolla o carica testo da Word, PDF o un file di testo.',
       exportTextTitle: 'Esporta testo',
       exportTextDesc:
         'Esporta è sempre visibile in fondo al menu laterale, accanto allo stato di salvataggio. Scarica TXT o DOCX, oppure avvia una bozza PDF.',
@@ -5208,15 +5289,24 @@ export const translations: Record<Language, Translations> = {
       statusListening: 'Ti ascolto…',
       statusSpeaking: 'Sto parlando…',
       statusThinking: 'Sto pensando…',
-      statusFormulatingReply: 'Sto elaborando la risposta',
+      statusFormulatingReply: 'Sto leggendo quello che mi hai scritto…',
       statusWelcome: 'Scrivi o usa il microfono — sono qui per guidarti',
       statusReady: 'Pronto per la prossima domanda',
       statusVoiceMuted: 'Solo testo — voce disattivata',
-      statusPreparingReply: 'Preparo una risposta…',
-      statusReadingMessage: 'Leggo il tuo messaggio…',
+      statusPreparingReply: 'Sto preparando la risposta per te…',
+      statusReadingMessage: 'Sto ancora lavorando…',
       statusWriting: 'Sto scrivendo…',
-      statusStillWorking: 'Ci sto mettendo un po\' più del solito…',
-      statusSlowApology: 'Scusa l\'attesa, quasi fatto…',
+      statusWaitingLines: [
+        'Sto leggendo quello che mi hai scritto…',
+        'Ci penso un attimo…',
+        'Sto preparando la risposta per te…',
+        'Sto ancora lavorando…',
+        'Ci metto un po\' di più, ma non mi sono fermato…',
+        'Continuo, ci sono quasi…',
+        'Grazie per l\'attesa, sto finendo…',
+      ],
+      statusStillWorking: 'Ci metto un po\' di più, ma non mi sono fermato…',
+      statusSlowApology: 'Grazie per l\'attesa, sto finendo…',
       statusLoadingHistory: 'Recupero la conversazione…',
       statusLoadingOlder: 'Carico messaggi precedenti…',
       errorGeneric: 'Qualcosa è andato storto. Riprova.',
@@ -5261,6 +5351,15 @@ export const translations: Record<Language, Translations> = {
       insertDraftDialogDescription: 'Il testo è stato aggiunto a {section}. Apri l\'editor per verificarlo subito.',
       insertDraftContinueChat: 'Continua in chat',
       insertDraftPendingBadge: '{count} bozza da inserire',
+      insertDraftReplaceCardTitle: 'Sostituisco un pezzo del testo',
+      insertDraftReplaceCardSubtitle: 'Il testo qui sotto prende il posto di quello che hai già scritto. Non lo aggiungo in fondo.',
+      insertDraftReplaceConfirm: 'Sostituisci',
+      insertDraftReplaceAllCardTitle: 'Sostituisco ogni «{from}»',
+      insertDraftReplaceAllCardSubtitle: 'Nel foglio, ogni «{from}» diventa «{to}».',
+      insertDraftReplaceAllConfirm: 'Sostituisci tutti',
+      insertDraftReplaceMissing: 'Non ho trovato quel pezzo nel foglio, quindi non ho aggiunto nulla in fondo.',
+      undoLastChange: 'Annulla',
+      undoLastChangeHint: 'Riporta il testo a com\'era prima dell\'ultimo cambio',
       loadOlderMessages: 'Carica messaggi precedenti',
       earlierConversations: 'Conversazioni precedenti',
       loadingOlderMessages: 'Caricamento…',
@@ -5524,7 +5623,9 @@ export const translations: Record<Language, Translations> = {
     },
     exportDialog: {
       title: 'Exporter la Biographie',
-      description: 'Choisissez le format et les sections à exporter',
+      description: 'Choisissez le format. Toute la page est exportée.',
+      exportReviewLocked: 'L\'export est en pause pendant la révision. Vous pourrez le télécharger à nouveau quand le contrôle sera terminé.',
+      pdfPreview: 'Aperçu PDF',
       pdfNotice: "L'exportation en PDF n'est disponible qu'une fois la biographie terminée et approuvée. Vous pouvez exporter aux formats TXT, RTF et DOCX en attendant.",
       formatLabel: "Format d'exportation",
       contentLabel: 'Sélection du contenu',
@@ -5652,6 +5753,9 @@ export const translations: Record<Language, Translations> = {
       publishedChapterNotice: 'Ce chapitre est publié et ne peut pas être modifié.',
       freeFlowTab: 'Texte libre',
       sectionsTab: 'Sections',
+      chaptersEmpty: 'Les chapitres apparaissent ici quand vous marquez un titre de chapitre.',
+      addChapter: 'Ajouter un chapitre',
+      newChapterTitle: 'Chapitre',
       tools: 'Outils',
       freeFlowReadOnly: 'Texte libre (lecture seule)',
       importFreeFlowHint: 'Vous importez une biographie écrite ailleurs ? Choisissez Texte libre. Vous pourrez copier les sections manuellement ensuite.\nVous importez une section depuis un export Biography Library ? Collez uniquement le texte de cette section et choisissez où l\'enregistrer.',
@@ -5683,9 +5787,10 @@ export const translations: Record<Language, Translations> = {
       bookStructureAcknowledgementsPlaceholder: 'Rédigez les remerciements…',
       bookStructureCreditPlaceholder: 'Crédits spécifiques…',
       importNoticeSectionsMode: 'Vous êtes en mode Sections — le texte sera importé dans la section actuellement sélectionnée. Pour importer dans un autre chapitre, sélectionnez-le d\'abord dans la barre latérale. Pour importer une biographie complète rédigée ailleurs en un seul bloc, passez en mode Texte libre avant d\'importer.',
-      importNoticeFreeflowMode: 'Vous êtes en mode Texte libre — idéal pour importer un texte rédigé en dehors de Biography Library. Choisissez de remplacer votre contenu actuel ou d\'ajouter le texte importé à la fin. Si vous préférez une approche guidée chapitre par chapitre, passez en mode Sections avant d\'importer.',
-      importFreeFlowReplace: 'Remplacer tout le contenu existant',
-      importFreeFlowAppend: 'Ajouter à la fin du contenu existant',
+      importNoticeFreeflowMode: 'Le texte entre dans la biographie tel quel, avec le gras, l\'italique et les guillemets. Les titres deviennent des chapitres dans la barre latérale.',
+      importConflictQuestion: 'Il y a déjà un texte. Le remplacer, ou ajouter le nouveau à la fin ?',
+      importFreeFlowReplace: 'Remplacer',
+      importFreeFlowAppend: 'Ajouter à la fin',
       bookStructureMainText: 'Texte principal',
       bookStructureImportText: 'Importer le texte',
       bookStructureImportTitle: 'Importer le texte principal',
@@ -5724,7 +5829,7 @@ export const translations: Record<Language, Translations> = {
         description:
           'Complétez le parcours de révision et publiez votre biographie avec un export PDF prêt à l’impression.',
         incompleteMessage:
-          'Avant de lancer la révision et la publication, complétez chaque chapitre dans la barre latérale. Chaque section doit contenir votre texte et être marquée comme terminée.',
+          'La page est encore vide. Écrivez ou importez la biographie avant la révision et la publication.',
         freeflowEmptyHint:
           'Ajoutez le texte de votre biographie dans l’éditeur avant de lancer la révision et la publication.',
         statusUnderReview: 'En révision',
@@ -5742,7 +5847,7 @@ export const translations: Record<Language, Translations> = {
         stepAiReviewButton: 'Ouvrir la révision finale IA',
         stepFreeflowPrepareTitle: 'Préparer le texte final pour le PDF',
         stepFreeflowPrepareDesc:
-          'Verrouillez votre texte en flux libre comme version finale pour démarrer les brouillons PDF filigranés.',
+          'Enregistrez le texte de la page comme version finale pour lancer les brouillons PDF avec filigrane.',
         stepFreeflowPrepareButton: 'Préparer le texte final',
         stepSubmitTitle: 'Envoi rapide (legacy)',
         stepSubmitDesc:
@@ -5783,6 +5888,7 @@ export const translations: Record<Language, Translations> = {
       alignRight: 'Aligner à Droite',
       alignJustify: 'Justifier',
       heading1: 'Titre 1',
+      chapterTitle: 'Titre de chapitre',
       heading2: 'Titre 2',
       heading3: 'Titre 3',
       paragraph: 'Paragraphe',
@@ -5793,6 +5899,7 @@ export const translations: Record<Language, Translations> = {
       quote: 'Citation',
       horizontalRule: 'Ligne Horizontale',
       clearFormatting: 'Effacer Mise en Forme',
+      menu: 'Mise en forme',
     },
     conversation: {
       questionOf: 'Question {current} sur {total} pour {section}',
@@ -6197,7 +6304,7 @@ export const translations: Record<Language, Translations> = {
       description: 'Téléchargez un fichier ou collez le texte à importer',
       dragFile: 'Glissez un fichier ici ou cliquez pour sélectionner',
       dragFileHint: 'Format supporté : .txt (max 5MB)',
-      formats: 'Formats supportés : .txt, .docx, .rtf (max 5 Mo chacun, jusqu\'à 10 fichiers)',
+      formats: 'Formats : .txt, .docx, .rtf (max 5 Mo) et PDF avec texte sélectionnable (max 30 Mo)',
       selectFile: 'Sélectionner un Fichier',
       or: 'ou',
       pasteLabel: 'Coller le texte directement',
@@ -6223,6 +6330,13 @@ export const translations: Record<Language, Translations> = {
       multiImportUnavailable: 'Importation de plusieurs sections non disponible',
       loading: 'Chargement...',
       fileTooLarge: 'Fichier trop volumineux. Taille maximale : 5 Mo',
+      pdfTooLarge: 'Le PDF est trop volumineux. Taille maximale : 30 Mo',
+      pdfPhoto: 'Ce PDF est une photographie des pages : le texte ne peut pas être sélectionné. Il faut le fichier Word, ou un PDF dont le texte se copie. L\'écriture manuscrite et les scans ne sont pas lus.',
+      pdfOneAtATime: 'Importez un seul PDF à la fois.',
+      keepCoverQuestion: 'Voulez-vous garder la couverture originale ?',
+      keepCoverYes: 'Oui, la garder',
+      keepCoverNo: 'Non, seulement le texte',
+      pdfInsidePhoto: 'Les pages intérieures n\'ont pas de texte sélectionnable. Si vous gardez la couverture, le récit n\'entre pas dans la page.',
       docUnsupported: 'Format .doc non pris en charge. Convertissez en .docx ou .txt',
       formatUnsupported: 'Format non pris en charge. Utilisez .txt, .docx ou .rtf',
       tooManyFiles: 'Trop de fichiers. Maximum 10 par importation',
@@ -6905,22 +7019,25 @@ export const translations: Record<Language, Translations> = {
     onboardingTour: {
       sectionsOverviewTitle: 'Chapitres',
       sectionsOverviewDesc:
-        'Votre biographie est organisée en chapitres. Sélectionnez-en un dans la liste pour y travailler avec Echo.',
+        'Les chapitres apparaissent ici quand vous marquez un titre de chapitre. Sélectionnez-en un pour y aller. Si la liste est vide, le texte reste d\'un seul tenant.',
       bookTitleTitle: 'Titre du livre',
       bookTitleDesc:
-        'Le titre est dans le menu de gauche, au-dessus de Sections et Texte libre. Cliquez pour renommer la biographie. Le nom de l’auteur est juste en dessous.',
+        'Le titre est en haut du menu de gauche. Cliquez pour renommer la biographie. Le nom de l’auteur est juste en dessous.',
       privacyTitle: 'Visibilité',
       privacyDesc:
         'Il est dans Outils. Il indique qui peut voir la biographie. Touchez-le pour passer de Privé à Famille, puis à Public.',
       editorToolsTitle: 'Outils',
       editorToolsDesc:
-        'La plupart des outils sont repliés ici : visibilité, vos données, notes, photos, structure du livre, import et révision. Exporter reste au-dessus de ce bouton, toujours visible. Le lien de partage apparaît à côté quand la biographie n’est pas privée.',
+        'La plupart des outils sont repliés ici : visibilité, vos données, notes, photos, structure du livre et révision. Importer et Exporter restent au-dessus de ce bouton, toujours visibles. Le lien de partage apparaît à côté quand la biographie n’est pas privée.',
       echoPanelTitle: 'Écrire avec Echo',
       echoPanelDesc:
-        'Echo est sous le chapitre. Posez des questions ou demandez un brouillon. Le texte propre n\'entre dans le chapitre que si vous l\'acceptez.',
-      editSectionTitle: 'Le chapitre',
+        'Echo est sous la page. Posez des questions ou demandez un brouillon. Le texte propre n\'entre dans la biographie que si vous l\'acceptez.',
+      editSectionTitle: 'La page',
       editSectionDesc:
-        'Le texte du chapitre est toujours ici. Vous pouvez le corriger, coller ou écrire directement. Echo, en dessous, propose des ajustements et pose des questions. Le texte propre n\'entre dans ce chapitre que si vous l\'acceptez.',
+        'La biographie est une seule page. Vous pouvez la corriger, coller ou écrire directement. Echo, en dessous, propose des ajustements et pose des questions. Le texte propre n\'entre que si vous l\'acceptez.',
+      chapterTitleTourTitle: 'Titre de chapitre',
+      chapterTitleTourDesc:
+        'Marque une ligne comme titre de chapitre. Il apparaît dans la liste à gauche et, dans le PDF, il est plus grand et commence une nouvelle page. Le texte continue sur la même page.',
       aiCreditsTitle: 'Crédits IA',
       aiCreditsDesc:
         'Ce compteur indique combien d\'actions assistées par IA il vous reste aujourd\'hui et cette semaine. Les comptes standard ont des limites quotidiennes et hebdomadaires.',
@@ -6935,7 +7052,7 @@ export const translations: Record<Language, Translations> = {
       photosTitle: 'Photos',
       photosDesc: 'Dans Outils. Ajoutez des images à la galerie et associez-les aux chapitres.',
       importTextTitle: 'Importer du texte',
-      importTextDesc: 'Dans Outils. Collez ou téléversez du texte depuis Word, PDF ou fichiers texte.',
+      importTextDesc: 'Toujours visible, juste avant Exporter. Collez ou téléversez du texte depuis Word, un PDF ou un fichier texte.',
       exportTextTitle: 'Exporter le texte',
       exportTextDesc:
         'Exporter est toujours visible en bas du menu latéral, à côté de l’état d’enregistrement. Téléchargez en TXT ou DOCX, ou lancez un brouillon PDF.',
@@ -6982,15 +7099,24 @@ export const translations: Record<Language, Translations> = {
       statusListening: 'Je vous écoute…',
       statusSpeaking: 'Je parle…',
       statusThinking: 'Je réfléchis…',
-      statusFormulatingReply: 'J\'élabore la réponse…',
+      statusFormulatingReply: 'Je lis ce que tu m\'as écrit…',
       statusWelcome: 'Écrivez ou utilisez le micro — je suis là pour vous guider',
       statusReady: 'Prêt pour votre prochaine question',
       statusVoiceMuted: 'Texte seul — voix désactivée',
-      statusPreparingReply: 'Je prépare une réponse…',
-      statusReadingMessage: 'Je lis votre message…',
+      statusPreparingReply: 'Je te prépare une réponse…',
+      statusReadingMessage: 'Je travaille encore…',
       statusWriting: 'J\'écris…',
-      statusStillWorking: 'Cela prend un peu plus de temps que d\'habitude…',
-      statusSlowApology: 'Désolé pour l\'attente — j\'y suis presque…',
+      statusWaitingLines: [
+        'Je lis ce que tu m\'as écrit…',
+        'J\'y réfléchis un instant…',
+        'Je te prépare une réponse…',
+        'Je travaille encore…',
+        'Je mets un peu plus de temps, mais je n\'ai pas arrêté…',
+        'J\'y suis encore, j\'y suis presque…',
+        'Merci d\'attendre, je termine…',
+      ],
+      statusStillWorking: 'Je mets un peu plus de temps, mais je n\'ai pas arrêté…',
+      statusSlowApology: 'Merci d\'attendre, je termine…',
       statusLoadingHistory: 'Je charge notre conversation…',
       statusLoadingOlder: 'Chargement des messages précédents…',
       errorGeneric: 'Une erreur s\'est produite. Réessayez.',
@@ -7035,6 +7161,15 @@ export const translations: Record<Language, Translations> = {
       insertDraftDialogDescription: 'Le texte a été ajouté à {section}. Ouvrez l\'éditeur pour le vérifier.',
       insertDraftContinueChat: 'Continuer dans le chat',
       insertDraftPendingBadge: '{count} brouillon à insérer',
+      insertDraftReplaceCardTitle: 'Je remplace un passage',
+      insertDraftReplaceCardSubtitle: 'Le texte ci-dessous prend la place de ce que tu as déjà écrit. Je ne l\'ajoute pas à la fin.',
+      insertDraftReplaceConfirm: 'Remplacer',
+      insertDraftReplaceAllCardTitle: 'Je remplace chaque «{from}»',
+      insertDraftReplaceAllCardSubtitle: 'Dans la page, chaque «{from}» devient «{to}».',
+      insertDraftReplaceAllConfirm: 'Tout remplacer',
+      insertDraftReplaceMissing: 'Je n\'ai pas trouvé ce passage, donc je n\'ai rien ajouté à la fin.',
+      undoLastChange: 'Annuler',
+      undoLastChangeHint: 'Remet le texte comme il était avant le dernier changement',
       loadOlderMessages: 'Charger les messages précédents',
       earlierConversations: 'Conversations précédentes',
       loadingOlderMessages: 'Chargement…',
@@ -7298,7 +7433,9 @@ export const translations: Record<Language, Translations> = {
     },
     exportDialog: {
       title: 'Biografie exportieren',
-      description: 'Format und Abschnitte zum Exportieren auswählen',
+      description: 'Wählen Sie das Format. Die ganze Seite wird exportiert.',
+      exportReviewLocked: 'Der Export pausiert, solange die Biografie geprüft wird. Sie können ihn wieder laden, wenn die Prüfung fertig ist.',
+      pdfPreview: 'PDF-Vorschau',
       pdfNotice: 'Der PDF-Export ist erst verfügbar, wenn die Biografie abgeschlossen und genehmigt wurde. In der Zwischenzeit können Sie in den Formaten TXT, RTF und DOCX exportieren.',
       formatLabel: 'Exportformat',
       contentLabel: 'Inhaltsauswahl',
@@ -7426,6 +7563,9 @@ export const translations: Record<Language, Translations> = {
       publishedChapterNotice: 'Dieses Kapitel ist veröffentlicht und kann nicht bearbeitet werden.',
       freeFlowTab: 'Freier Text',
       sectionsTab: 'Abschnitte',
+      chaptersEmpty: 'Kapitel erscheinen hier, wenn Sie einen Kapiteltitel setzen.',
+      addChapter: 'Kapitel hinzufügen',
+      newChapterTitle: 'Kapitel',
       tools: 'Werkzeuge',
       freeFlowReadOnly: 'Freier Text (nur lesen)',
       importFreeFlowHint: 'Importieren Sie eine woanders geschriebene Biografie? Wählen Sie Freier Text. Sie können Abschnitte später manuell kopieren.\nImportieren Sie einen einzelnen Abschnitt aus einem Biography Library-Export? Fügen Sie nur den Text dieses Abschnitts ein und wählen Sie, wo er gespeichert werden soll.',
@@ -7457,9 +7597,10 @@ export const translations: Record<Language, Translations> = {
       bookStructureAcknowledgementsPlaceholder: 'Danksagungen schreiben…',
       bookStructureCreditPlaceholder: 'Spezifische Credits…',
       importNoticeSectionsMode: 'Sie befinden sich im Abschnittsmodus — der Text wird in den aktuell ausgewählten Abschnitt importiert. Um in ein anderes Kapitel zu importieren, wählen Sie es zuerst in der Seitenleiste aus. Um eine vollständige, anderswo verfasste Biografie als einzelnen Block zu importieren, wechseln Sie vor dem Import in den Freitextmodus.',
-      importNoticeFreeflowMode: 'Sie befinden sich im Freitextmodus — ideal für den Import von Texten, die außerhalb von Biography Library geschrieben wurden. Wählen Sie, ob Sie den aktuellen Inhalt ersetzen oder den importierten Text am Ende hinzufügen möchten. Wenn Sie einen kapitelweisen Ansatz bevorzugen, wechseln Sie vor dem Import in den Abschnittsmodus.',
-      importFreeFlowReplace: 'Gesamten vorhandenen Inhalt ersetzen',
-      importFreeFlowAppend: 'Am Ende des vorhandenen Inhalts hinzufügen',
+      importNoticeFreeflowMode: 'Der Text kommt so in die Biografie, wie er ist, mit Fett, Kursiv und Anführungszeichen. Überschriften werden zu Kapiteln in der Seitenleiste.',
+      importConflictQuestion: 'Es gibt schon Text. Ersetzen oder den neuen Text unten anfügen?',
+      importFreeFlowReplace: 'Ersetzen',
+      importFreeFlowAppend: 'Unten anfügen',
       bookStructureMainText: 'Haupttext',
       bookStructureImportText: 'Text importieren',
       bookStructureImportTitle: 'Haupttext importieren',
@@ -7498,7 +7639,7 @@ export const translations: Record<Language, Translations> = {
         description:
           'Schließen Sie den Überprüfungsablauf ab und veröffentlichen Sie Ihre Biografie mit druckfertigem PDF-Export.',
         incompleteMessage:
-          'Bevor Sie mit Überprüfung und Veröffentlichung beginnen, vervollständigen Sie jedes Kapitel in der Seitenleiste. Jeder Abschnitt sollte Ihren Text enthalten und als abgeschlossen markiert sein.',
+          'Das Blatt ist noch leer. Schreiben oder importieren Sie die Biografie, bevor Sie Überprüfung und Veröffentlichung starten.',
         freeflowEmptyHint:
           'Fügen Sie Ihren Biografietext im Editor hinzu, bevor Sie mit Überprüfung und Veröffentlichung beginnen.',
         statusUnderReview: 'In Überprüfung',
@@ -7516,7 +7657,7 @@ export const translations: Record<Language, Translations> = {
         stepAiReviewButton: 'KI-Abschlussüberprüfung öffnen',
         stepFreeflowPrepareTitle: 'Endtext für PDF vorbereiten',
         stepFreeflowPrepareDesc:
-          'Sperren Sie Ihren Freitext als Endversion, um PDF-Entwürfe mit Wasserzeichen zu starten.',
+          'Speichern Sie den Text auf der Seite als Endfassung, um PDF-Entwürfe mit Wasserzeichen zu starten.',
         stepFreeflowPrepareButton: 'Endtext vorbereiten',
         stepSubmitTitle: 'Schnelleinreichung (Legacy)',
         stepSubmitDesc:
@@ -7557,6 +7698,7 @@ export const translations: Record<Language, Translations> = {
       alignRight: 'Rechtsbündig',
       alignJustify: 'Blocksatz',
       heading1: 'Überschrift 1',
+      chapterTitle: 'Kapiteltitel',
       heading2: 'Überschrift 2',
       heading3: 'Überschrift 3',
       paragraph: 'Absatz',
@@ -7567,6 +7709,7 @@ export const translations: Record<Language, Translations> = {
       quote: 'Zitat',
       horizontalRule: 'Horizontale Linie',
       clearFormatting: 'Formatierung Entfernen',
+      menu: 'Formatierung',
     },
     conversation: {
       questionOf: 'Frage {current} von {total} für {section}',
@@ -7971,7 +8114,7 @@ export const translations: Record<Language, Translations> = {
       description: 'Datei hochladen oder Text einfügen zum Importieren',
       dragFile: 'Datei hierher ziehen oder klicken zum Auswählen',
       dragFileHint: 'Unterstütztes Format: .txt (max 5MB)',
-      formats: 'Unterstützte Formate: .txt, .docx, .rtf (max. 5 MB je Datei, bis zu 10 Dateien)',
+      formats: 'Formate: .txt, .docx, .rtf (max. 5 MB) und PDF mit auswählbarem Text (max. 30 MB)',
       selectFile: 'Datei Auswählen',
       or: 'oder',
       pasteLabel: 'Text direkt einfügen',
@@ -7997,6 +8140,13 @@ export const translations: Record<Language, Translations> = {
       multiImportUnavailable: 'Import mehrerer Abschnitte nicht verfügbar',
       loading: 'Laden...',
       fileTooLarge: 'Datei zu groß. Maximale Größe: 5 MB',
+      pdfTooLarge: 'Das PDF ist zu groß. Maximale Größe: 30 MB',
+      pdfPhoto: 'Dieses PDF ist ein Foto der Seiten: der Text lässt sich nicht auswählen. Es braucht die Word-Datei oder ein PDF, dessen Text sich kopieren lässt. Handschrift und Scans werden nicht gelesen.',
+      pdfOneAtATime: 'Importieren Sie jeweils nur ein PDF.',
+      keepCoverQuestion: 'Möchten Sie das Originalcover behalten?',
+      keepCoverYes: 'Ja, behalten',
+      keepCoverNo: 'Nein, nur den Text',
+      pdfInsidePhoto: 'Die Innenseiten haben keinen auswählbaren Text. Wenn Sie das Cover behalten, kommt die Geschichte nicht auf die Seite.',
       docUnsupported: 'Nicht unterstütztes .doc-Format. In .docx oder .txt konvertieren',
       formatUnsupported: 'Nicht unterstütztes Format. Verwenden Sie .txt, .docx oder .rtf',
       tooManyFiles: 'Zu viele Dateien. Maximal 10 pro Import',
@@ -8679,22 +8829,25 @@ export const translations: Record<Language, Translations> = {
     onboardingTour: {
       sectionsOverviewTitle: 'Kapitel',
       sectionsOverviewDesc:
-        'Ihre Biografie ist in Kapitel gegliedert. Wählen Sie eines aus der Liste, um mit Echo daran zu arbeiten.',
+        'Kapitel erscheinen hier, wenn Sie einen Kapiteltitel setzen. Wählen Sie eines, um dorthin zu springen. Ist die Liste leer, ist der Text trotzdem ein Stück.',
       bookTitleTitle: 'Buchtitel',
       bookTitleDesc:
-        'Der Titel steht im linken Menü, über Abschnitte und Freier Text. Klicken Sie, um die Biografie umzubenennen. Der Autorenname steht direkt darunter.',
+        'Der Titel steht oben im linken Menü. Klicken Sie, um die Biografie umzubenennen. Der Autorenname steht direkt darunter.',
       privacyTitle: 'Sichtbarkeit',
       privacyDesc:
         'Sie liegt unter Werkzeuge. Sie zeigt, wer die Biografie sehen kann. Tippen wechselt zwischen Privat, Familie und Öffentlich.',
       editorToolsTitle: 'Werkzeuge',
       editorToolsDesc:
-        'Die meisten Werkzeuge sind hier eingeklappt: Sichtbarkeit, Ihre Angaben, Notizen, Fotos, Buchstruktur, Import und Überprüfung. Exportieren bleibt über dieser Schaltfläche, immer sichtbar. Link teilen erscheint daneben, wenn die Biografie nicht privat ist.',
+        'Die meisten Werkzeuge sind hier eingeklappt: Sichtbarkeit, Ihre Angaben, Notizen, Fotos, Buchstruktur und Überprüfung. Importieren und Exportieren bleiben über dieser Schaltfläche, immer sichtbar. Link teilen erscheint daneben, wenn die Biografie nicht privat ist.',
       echoPanelTitle: 'Mit Echo schreiben',
       echoPanelDesc:
-        'Echo steht unter dem Kapitel. Stellen Sie Fragen oder bitten Sie um einen Entwurf. Der bereinigte Text kommt nur ins Kapitel, wenn Sie ihn annehmen.',
-      editSectionTitle: 'Das Kapitel',
+        'Echo steht unter der Seite. Stellen Sie Fragen oder bitten Sie um einen Entwurf. Der bereinigte Text kommt nur in die Biografie, wenn Sie ihn annehmen.',
+      editSectionTitle: 'Die Seite',
       editSectionDesc:
-        'Der Kapiteltext ist immer hier. Sie können ihn korrigieren, einfügen oder direkt schreiben. Echo darunter schlägt Änderungen vor und stellt Fragen. Nur wenn Sie annehmen, kommt der bereinigte Text in dieses Kapitel.',
+        'Die Biografie ist eine einzige Seite. Sie können sie korrigieren, einfügen oder direkt schreiben. Echo darunter schlägt Änderungen vor und stellt Fragen. Der bereinigte Text kommt nur hinein, wenn Sie ihn annehmen.',
+      chapterTitleTourTitle: 'Kapiteltitel',
+      chapterTitleTourDesc:
+        'Markiert eine Zeile als Kapiteltitel. Er erscheint in der Liste links und ist im PDF größer und beginnt eine neue Seite. Der Text geht auf derselben Seite weiter.',
       aiCreditsTitle: 'KI-Guthaben',
       aiCreditsDesc:
         'Dieser Zähler zeigt, wie viele KI-gestützte Aktionen Ihnen heute und diese Woche noch bleiben. Standardkonten haben tägliche und wöchentliche Limits.',
@@ -8709,7 +8862,7 @@ export const translations: Record<Language, Translations> = {
       photosTitle: 'Fotos',
       photosDesc: 'Unter Werkzeuge. Bilder zur Galerie hinzufügen und bei Bedarf mit Kapiteln verknüpfen.',
       importTextTitle: 'Text importieren',
-      importTextDesc: 'Unter Werkzeuge. Vorhandenen Text aus Word, PDF oder Textdateien einfügen oder hochladen.',
+      importTextDesc: 'Immer sichtbar, direkt vor Exportieren. Text aus Word, PDF oder einer Textdatei einfügen oder hochladen.',
       exportTextTitle: 'Text exportieren',
       exportTextDesc:
         'Exportieren ist immer unten im Seitenmenü sichtbar, neben dem Speicherstatus. Laden Sie TXT oder DOCX herunter oder starten Sie einen PDF-Entwurf.',
@@ -8756,15 +8909,24 @@ export const translations: Record<Language, Translations> = {
       statusListening: 'Ich höre zu…',
       statusSpeaking: 'Ich spreche…',
       statusThinking: 'Ich denke nach…',
-      statusFormulatingReply: 'Ich erstelle die Antwort…',
+      statusFormulatingReply: 'Ich lese, was du geschrieben hast…',
       statusWelcome: 'Tippen oder Mikrofon — ich begleite Sie',
       statusReady: 'Bereit für Ihre nächste Frage',
       statusVoiceMuted: 'Nur Text — Stimme aus',
-      statusPreparingReply: 'Ich bereite eine Antwort vor…',
-      statusReadingMessage: 'Ich lese Ihre Nachricht…',
+      statusPreparingReply: 'Ich bereite dir eine Antwort vor…',
+      statusReadingMessage: 'Ich arbeite noch…',
       statusWriting: 'Ich schreibe…',
-      statusStillWorking: 'Das dauert etwas länger als sonst…',
-      statusSlowApology: 'Entschuldigen Sie die Wartezeit — gleich fertig…',
+      statusWaitingLines: [
+        'Ich lese, was du geschrieben hast…',
+        'Ich denke kurz nach…',
+        'Ich bereite dir eine Antwort vor…',
+        'Ich arbeite noch…',
+        'Ich brauche etwas länger, aber ich habe nicht aufgehört…',
+        'Ich bin noch dran, fast fertig…',
+        'Danke, dass du wartest, ich mache fertig…',
+      ],
+      statusStillWorking: 'Ich brauche etwas länger, aber ich habe nicht aufgehört…',
+      statusSlowApology: 'Danke, dass du wartest, ich mache fertig…',
       statusLoadingHistory: 'Gespräch wird geladen…',
       statusLoadingOlder: 'Frühere Nachrichten werden geladen…',
       errorGeneric: 'Etwas ist schiefgelaufen. Bitte erneut versuchen.',
@@ -8809,6 +8971,15 @@ export const translations: Record<Language, Translations> = {
       insertDraftDialogDescription: 'Der Text wurde zu {section} hinzugefügt. Öffnen Sie den Editor zur Kontrolle.',
       insertDraftContinueChat: 'Im Chat fortfahren',
       insertDraftPendingBadge: '{count} Entwurf einzufügen',
+      insertDraftReplaceCardTitle: 'Ich ersetze eine Stelle',
+      insertDraftReplaceCardSubtitle: 'Der Text unten ersetzt, was du schon geschrieben hast. Ich hänge ihn nicht unten an.',
+      insertDraftReplaceConfirm: 'Ersetzen',
+      insertDraftReplaceAllCardTitle: 'Ich ersetze jedes „{from}“',
+      insertDraftReplaceAllCardSubtitle: 'Auf der Seite wird jedes „{from}“ zu „{to}“.',
+      insertDraftReplaceAllConfirm: 'Alle ersetzen',
+      insertDraftReplaceMissing: 'Ich habe die Stelle nicht gefunden, also habe ich unten nichts hinzugefügt.',
+      undoLastChange: 'Rückgängig',
+      undoLastChangeHint: 'Setzt den Text auf den Stand vor der letzten Änderung zurück',
       loadOlderMessages: 'Ältere Nachrichten laden',
       earlierConversations: 'Frühere Gespräche',
       loadingOlderMessages: 'Laden…',

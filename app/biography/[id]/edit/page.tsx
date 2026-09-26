@@ -22,7 +22,6 @@ import { AiSuggestionsDialog } from '@/components/editor/ai-suggestions-panel';
 import { ShareLinkPanel } from '@/components/editor/share-link-panel';
 import { PhotoGalleryDialog } from '@/components/editor/PhotoGalleryDialog';
 import { ImportTextDialog } from '@/components/editor/import-text-dialog';
-import { SectionEditor } from '@/components/editor/section-editor';
 import { AISectionReview } from '@/components/editor/AISectionReview';
 import { ApertusReviewDialog } from '@/components/editor/ApertusReviewDialog';
 import { FinalReviewDialog } from '@/components/editor/FinalReviewDialog';
@@ -38,6 +37,11 @@ import {
   getSectionData,
   lastBiographyEditorModeStorageKey,
 } from '@/lib/editor-constants';
+import {
+  appendChapter,
+  composeSingleDocument,
+  listChapterAnchors,
+} from '@/lib/editor/single-document';
 import {
   INITIAL_AI_STATE,
   getFallbackPrompts,
@@ -207,6 +211,8 @@ export default function BiographyEditorPage() {
   const [isFrozen, setIsFrozen] = useState(false);
   const [biographyMode, setBiographyMode] = useState<'sections' | 'freeflow'>('sections');
   const [contentFreeflow, setContentFreeflow] = useState<string>('');
+  const [echoChangeHighlight, setEchoChangeHighlight] = useState<{ id: number; text: string } | null>(null);
+  const [undoSheet, setUndoSheet] = useState<string | null>(null);
   const [pendingModeSwitch, setPendingModeSwitch] = useState<'sections' | 'freeflow' | null>(null);
   const [authorName, setAuthorName] = useState<string>('');
   const [biographyType, setBiographyType] = useState<'autobiography' | 'memorial'>('autobiography');
@@ -340,8 +346,24 @@ const [isPublishing, setIsPublishing] = useState(false);
         setEditorFontSize(data.editor_font_size || 15);
         setFinalVersion(data.final_version || '');
         setNarrativeOrder((data.narrative_order as string[]) || []);
-        setBiographyMode((data.biography_mode as 'sections' | 'freeflow') || 'sections');
-        setContentFreeflow(data.content_freeflow || '');
+        const loadedContent =
+          data.content && typeof data.content === 'object'
+            ? { ...getEmptyContent(), ...(data.content as BiographyContent) }
+            : getEmptyContent();
+        const storedFlow = data.content_freeflow || '';
+        const sheet = composeSingleDocument(loadedContent, storedFlow, (key) => {
+          return t.sectionTitles[key as keyof typeof t.sectionTitles] || key;
+        });
+        setContent(loadedContent);
+        contentRef.current = loadedContent;
+        setContentFreeflow(sheet);
+        contentFreeflowRef.current = sheet;
+        setBiographyMode('freeflow');
+        setActiveSection('freeflow');
+        if (sheet !== storedFlow || (data.biography_mode || 'sections') !== 'freeflow') {
+          dirtyRef.current = true;
+          setSaveStatus('unsaved');
+        }
 
         let resolvedAuthorName = data.author_name ?? '';
         if (!resolvedAuthorName.trim() && user) {
@@ -701,6 +723,17 @@ const [isPublishing, setIsPublishing] = useState(false);
     },
     [markDirty]
   );
+
+  const handleAddChapter = useCallback(() => {
+    setContentFreeflow((prev) => appendChapter(prev, t.editor.newChapterTitle));
+    markDirty();
+  }, [markDirty, t.editor.newChapterTitle]);
+
+  const handleSelectChapter = useCallback((index: number) => {
+    const root = document.querySelector('[data-tour-id="edit-section-btn"]');
+    const heading = root?.querySelectorAll('h1')[index];
+    heading?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }, []);
 
   const handleTextChange = useCallback(
     (text: string) => {
@@ -1168,18 +1201,24 @@ const [isPublishing, setIsPublishing] = useState(false);
   }, []);
 
   const handleCoachDraftApplied = useCallback(
-    async (sectionKey: string) => {
+    async (sectionKey: string, change?: { text: string }) => {
       applyingEchoDraftRef.current = true;
       try {
         if (sectionKey === 'freeflow') {
+          const previousSheet = contentFreeflowRef.current;
           const { data } = await supabase
             .from('biographies')
             .select('content_freeflow')
             .eq('id', id)
             .maybeSingle();
           if (data?.content_freeflow !== undefined) {
-            setContentFreeflow(data.content_freeflow ?? '');
-            contentFreeflowRef.current = data.content_freeflow ?? '';
+            const nextSheet = data.content_freeflow ?? '';
+            if (nextSheet !== previousSheet) setUndoSheet(previousSheet);
+            setContentFreeflow(nextSheet);
+            contentFreeflowRef.current = nextSheet;
+          }
+          if (change?.text) {
+            setEchoChangeHighlight({ id: Date.now(), text: change.text });
           }
           dirtyRef.current = false;
           setSaveStatus('saved');
@@ -1202,6 +1241,16 @@ const [isPublishing, setIsPublishing] = useState(false);
     [id]
   );
 
+  const handleUndoLastChange = useCallback(() => {
+    if (undoSheet == null) return;
+    setContentFreeflow(undoSheet);
+    contentFreeflowRef.current = undoSheet;
+    setUndoSheet(null);
+    setEchoChangeHighlight(null);
+    markDirty();
+    void save();
+  }, [undoSheet, markDirty, save]);
+
   const handleDraftApplying = useCallback(() => {
     applyingEchoDraftRef.current = true;
   }, []);
@@ -1218,9 +1267,6 @@ const [isPublishing, setIsPublishing] = useState(false);
     setActiveSection(sectionKey);
   }, []);
 
-
-  const allSectionsKeys = BIOGRAPHY_SECTIONS.map(s => s.key);
-  const allSectionsComplete = allSectionsKeys.every(key => completedSections.includes(key));
 
   const sectionsForReview = BIOGRAPHY_SECTIONS.map(section => ({
     key: section.key,
@@ -1933,14 +1979,7 @@ const [isPublishing, setIsPublishing] = useState(false);
 
   const activeSectionData = getSectionData(content, activeSection);
 
-  const echoBubbleEditorUnlocked =
-    !showFinalVersionEditorLayout &&
-    (biographyStatus as string) !== 'published' &&
-    !isFrozen &&
-    !isSectionOrFreeflowRevisionLocked &&
-    !reviewQueueLocksEditor;
-
-  const showEchoBubble = echoBubbleEditorUnlocked && biographyMode === 'freeflow';
+  const showEchoBubble = false;
 
   return (
     <EchoShell
@@ -2301,6 +2340,9 @@ const [isPublishing, setIsPublishing] = useState(false);
             }
             biographyMode={biographyMode}
             contentFreeflow={contentFreeflow}
+            chapters={listChapterAnchors(contentFreeflow)}
+            onSelectChapter={handleSelectChapter}
+            onAddChapter={handleAddChapter}
             onModeChange={handleModeChange}
             onModeChangeRequest={handleModeChangeRequest}
             onFreeflowChange={handleFreeflowChange}
@@ -2345,12 +2387,13 @@ const [isPublishing, setIsPublishing] = useState(false);
                   editorFontSize={editorFontSize}
                   onRevertToDraft={!effectivelyLocked ? handleRevertToDraft : undefined}
                 />
-                    ) : biographyMode === 'sections' && !isFrozen ? (
+                    ) : (
                 <GuidedSectionWorkspace
                   biographyId={id}
-                  activeSection={activeSection}
-                  sectionText={activeSectionData.text}
-                  onSectionTextChange={(text) => handleTextChange(text)}
+                  activeSection="freeflow"
+                  documentMode
+                  sectionText={contentFreeflow}
+                  onSectionTextChange={handleFreeflowChange}
                   editorFontSize={editorFontSize}
                   onEditorFontSizeChange={setEditorFontSize}
                   isPublished={
@@ -2362,135 +2405,20 @@ const [isPublishing, setIsPublishing] = useState(false);
                   aiEnabled={aiEnabled}
                   aiUsageRefresh={aiUsageRefresh}
                   aiLoading={aiState.loading}
+                  highlightChange={echoChangeHighlight}
+                  undoLastChange={
+                    undoSheet != null && !isFrozen && !reviewQueueLocksEditor
+                      ? {
+                          label: t.echo.undoLastChange,
+                          hint: t.echo.undoLastChangeHint,
+                          onUndo: handleUndoLastChange,
+                        }
+                      : undefined
+                  }
                   onGrammarCheck={handleGrammarCheck}
                   onReviewWithAi={handleReviewWithAi}
                   onApertusReview={aiEnabled ? handleApertusReview : undefined}
-                  onMarkComplete={
-                    isFrozen ||
-                    reviewQueueLocksEditor ||
-                    (biographyStatus as string) === 'published' ||
-                    isSectionOrFreeflowRevisionLocked
-                      ? undefined
-                      : handleMarkSectionComplete
-                  }
-                  isCompleted={completedSections.includes(activeSection)}
                 />
-              ) : biographyMode === 'freeflow' ? (
-                <div id="echo-freeflow-editor">
-                <SectionEditor
-                  sectionKey="freeflow"
-                  titleOverride={t.editor.freeFlowTab}
-                  data={{ text: contentFreeflow, todo: false, audioTranscript: '' }}
-                  onTextChange={handleFreeflowChange}
-                  onTodoChange={() => {}}
-                  onAudioTranscriptChange={() => {}}
-                  aiEnabled={aiEnabled}
-                  onToggleAi={handleToggleAi}
-                  onGrammarCheck={handleGrammarCheck}
-                  onReviewWithAi={handleReviewWithAi}
-                  onApertusReview={aiEnabled ? handleApertusReview : undefined}
-                  aiLoading={aiState.loading}
-                  biographyId={id}
-                  editorFontSize={editorFontSize}
-                  onEditorFontSizeChange={setEditorFontSize}
-                  onTogglePhotos={() => setShowPhotosPanel((v) => !v)}
-                  onToggleNotes={() => setShowGlobalNotesPanel((v) => !v)}
-                  isPublished={
-                    (biographyStatus as string) === 'published' ||
-                    isFrozen ||
-                    isSectionOrFreeflowRevisionLocked ||
-                    reviewQueueLocksEditor
-                  }
-                  biographyMode="freeflow"
-                />
-                </div>
-              ) : (
-                <SectionEditor
-                  sectionKey={activeSection}
-                  data={activeSectionData}
-                  onTextChange={handleTextChange}
-                  onTodoChange={handleTodoChange}
-                  onAudioTranscriptChange={handleAudioTranscriptChange}
-                  aiEnabled={aiEnabled}
-                  onToggleAi={handleToggleAi}
-                  onGrammarCheck={handleGrammarCheck}
-                  onReviewWithAi={handleReviewWithAi}
-                  onApertusReview={aiEnabled ? handleApertusReview : undefined}
-                  aiLoading={aiState.loading}
-                  biographyId={id}
-                  editorFontSize={editorFontSize}
-                  onEditorFontSizeChange={setEditorFontSize}
-                  onMarkComplete={handleMarkSectionComplete}
-                  isCompleted={completedSections.includes(activeSection)}
-                  onTogglePhotos={() => setShowPhotosPanel((v) => !v)}
-                  onToggleNotes={() => setShowGlobalNotesPanel((v) => !v)}
-                  isPublished={
-                    (biographyStatus as string) === 'published' ||
-                    isFrozen ||
-                    isSectionOrFreeflowRevisionLocked ||
-                    reviewQueueLocksEditor
-                  }
-                  biographyMode="sections"
-                />
-              )}
-
-              {biographyMode === 'sections' &&
-                allSectionsComplete &&
-                (biographyStatus === 'draft' || biographyStatus === 'sections_complete') && (
-                <div className="p-6 border-t border-border/50 bg-gradient-to-br from-primary/5 to-primary/10 shrink-0">
-                  <div className="max-w-3xl mx-auto text-center space-y-4">
-                    <div className="space-y-2">
-                      <h3 className="text-xl font-bold text-foreground">
-                        {language === 'it' ? '🎉 Tutte le Sezioni Complete!' :
-                         language === 'fr' ? '🎉 Toutes les Sections Complètes!' :
-                         language === 'de' ? '🎉 Alle Abschnitte Abgeschlossen!' :
-                         '🎉 All Sections Complete!'}
-                      </h3>
-                      <p className="text-sm text-muted-foreground">
-                        {t.status.sectionCompletedHint}
-                      </p>
-                    </div>
-                    <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
-                      <Button
-                        size="lg"
-                        variant="outline"
-                        onClick={() => setShowFinalReview(true)}
-                        className="gap-2"
-                      >
-                        <Sparkles className="h-5 w-5" />
-                        {language === 'it' ? 'Revisione Finale con IA' :
-                         language === 'fr' ? 'Révision Finale avec IA' :
-                         language === 'de' ? 'Abschließende Überprüfung mit KI' :
-                         'Final Review with AI'}
-                      </Button>
-                      <Button
-                        size="lg"
-                        onClick={handleOpenSubmitDialog}
-                        disabled={isPreflightChecking}
-                        className="gap-2"
-                      >
-                        {isPreflightChecking ? (
-                          <Loader2 className="h-5 w-5 animate-spin" />
-                        ) : (
-                          <SendIcon className="h-5 w-5" />
-                        )}
-                        {language === 'it' ? 'Invia per la Revisione' :
-                         language === 'fr' ? 'Soumettre pour Révision' :
-                         language === 'de' ? 'Zur Überprüfung Einreichen' :
-                         'Submit for Review'}
-                      </Button>
-                    </div>
-                    <p className="text-xs text-muted-foreground max-w-xl mx-auto leading-relaxed">
-                      {t.editor.publicationLegacySubmitHint}
-                    </p>
-                    {submitPreflightError && (
-                      <div className="flex items-center justify-center gap-1.5 text-sm text-destructive">
-                        <TriangleAlert className="h-4 w-4 shrink-0" />
-                        <span>{submitPreflightError}</span>
-                      </div>
-                    )}
-                  </div>
-                </div>
               )}
 
               {!isFrozen && (
@@ -2600,13 +2528,7 @@ const [isPublishing, setIsPublishing] = useState(false);
         onOpenChange={setShowApertusDialog}
         biographyId={id}
         sectionKey={biographyMode === 'freeflow' ? 'freeflow' : activeSection}
-        sectionTitle={
-          biographyMode === 'freeflow'
-            ? t.editor.freeFlowTab
-            : t.sectionTitles[activeSection as keyof typeof t.sectionTitles] ||
-              BIOGRAPHY_SECTIONS.find((s) => s.key === activeSection)?.title ||
-              ''
-        }
+        sectionTitle={title || t.biography.untitled}
       />
 
       <GlobalNotesPanel

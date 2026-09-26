@@ -32,6 +32,7 @@ import { parseEchoMessageContent } from '@/lib/echo/echo-usage-guide';
 import { isAffirmativeDraftReply, isDismissiveDraftReply } from '@/lib/echo/draft-affirmative';
 import { getAppliedDraftMessageIds, markDraftApplied } from '@/lib/echo/draft-applied-storage';
 import { retainOnlyLatestPendingDraft } from '@/lib/echo/echo-thread-pending-drafts';
+import { readActiveEditorTarget } from '@/lib/editor/active-editor-selection';
 
 export interface EchoChatMessage {
   id: string;
@@ -39,7 +40,7 @@ export interface EchoChatMessage {
   content: string;
   streaming?: boolean;
   isUsageGuide?: boolean;
-  pendingDraft?: { sectionKey: string; draftText: string };
+  pendingDraft?: { sectionKey: string; draftText: string; replaceText?: string; replaceAll?: boolean };
   draftDeferred?: boolean;
   draftInserted?: boolean;
   applyingDraft?: boolean;
@@ -52,7 +53,7 @@ function mapStoredMessages(
     id: string;
     role: string;
     content: string;
-    pendingDraft?: { sectionKey: string; draftText: string };
+    pendingDraft?: { sectionKey: string; draftText: string; replaceText?: string; replaceAll?: boolean };
   }>,
   appliedMessageIds: Set<string>
 ): EchoChatMessage[] {
@@ -73,12 +74,24 @@ function countActionablePendingDrafts(messages: EchoChatMessage[]): number {
   ).length;
 }
 
+function userInstructionBefore(
+  list: { id: string; role: string; content: string }[],
+  messageId: string
+): string {
+  const index = list.findIndex((message) => message.id === messageId);
+  const start = index < 0 ? list.length - 1 : index - 1;
+  for (let i = start; i >= 0; i--) {
+    if (list[i].role === 'user' && list[i].content.trim()) return list[i].content.trim();
+  }
+  return '';
+}
+
 function mapStoredMessage(
   m: {
     id: string;
     role: string;
     content: string;
-    pendingDraft?: { sectionKey: string; draftText: string };
+    pendingDraft?: { sectionKey: string; draftText: string; replaceText?: string; replaceAll?: boolean };
   },
   appliedMessageIds: Set<string>
 ): EchoChatMessage {
@@ -98,11 +111,6 @@ function mapStoredMessage(
     draftDeferred: true,
   };
 }
-
-export type EchoInsertDialogState = {
-  messageId: string;
-  sectionKey: string;
-} | null;
 
 interface EchoChatContextValue {
   messages: EchoChatMessage[];
@@ -132,9 +140,6 @@ interface EchoChatContextValue {
   confirmInsertDraft: (messageId: string) => Promise<void>;
   deferInsertDraft: (messageId: string) => void;
   expandInsertDraft: (messageId: string) => void;
-  insertDialog: EchoInsertDialogState;
-  dismissInsertDialog: () => void;
-  openEditorForDraft: (sectionKey: string) => void;
   activeSection?: string;
 }
 
@@ -155,7 +160,10 @@ interface EchoChatProviderProps {
   activeSection?: string;
   biographyMode?: 'sections' | 'freeflow';
   onboardingIncomplete?: boolean;
-  onDraftApplied?: (sectionKey: string) => void;
+  onDraftApplied?: (
+    sectionKey: string,
+    change?: { text: string }
+  ) => void | Promise<void>;
   onDraftApplying?: () => void;
   onDraftApplyFinished?: () => void;
   onFlushEditorSave?: () => Promise<void>;
@@ -175,13 +183,12 @@ export function EchoChatProvider({
   onDraftApplying,
   onDraftApplyFinished,
   onFlushEditorSave,
-  onOpenEditor,
   onSectionCompletionChanged,
   onOnboardingEvent,
 }: EchoChatProviderProps) {
   const { user } = useAuth();
   const { language, t } = useTranslation();
-  const { setOrbState: setContextOrbState, bubbleOpen, setBubbleOpen } = useEcho();
+  const { setOrbState: setContextOrbState, bubbleOpen } = useEcho();
 
   const [messages, setMessages] = useState<EchoChatMessage[]>([]);
   const [input, setInput] = useState('');
@@ -197,7 +204,6 @@ export function EchoChatProvider({
   const [scrollToMessageId, setScrollToMessageId] = useState<string | null>(null);
   const [hasMoreOlder, setHasMoreOlder] = useState(false);
   const [loadingOlder, setLoadingOlder] = useState(false);
-  const [insertDialog, setInsertDialog] = useState<EchoInsertDialogState>(null);
 
   const prevSectionRef = useRef(activeSection);
   const lastSentSectionRef = useRef(activeSection);
@@ -207,7 +213,6 @@ export function EchoChatProvider({
   const oldestLoadedAtRef = useRef<string | null>(null);
   const messagesRef = useRef(messages);
   const threadIdRef = useRef(threadId);
-  const shownInsertDialogRef = useRef<Set<string>>(new Set());
 
   useEffect(() => {
     messagesRef.current = messages;
@@ -359,18 +364,6 @@ export function EchoChatProvider({
     []
   );
 
-  const openEditorForDraft = useCallback(
-    (sectionKey: string) => {
-      setBubbleOpen(false);
-      onOpenEditor?.(sectionKey);
-    },
-    [onOpenEditor, setBubbleOpen]
-  );
-
-  const dismissInsertDialog = useCallback(() => {
-    setInsertDialog(null);
-  }, []);
-
   const loadOlderMessages = useCallback(async () => {
     if (!user || !threadId || !hasMoreOlder || loadingOlder) return;
 
@@ -511,6 +504,28 @@ export function EchoChatProvider({
           await onFlushEditorSave();
         }
 
+        const writesToSheet =
+          biographyMode === 'freeflow' ||
+          echoPage === 'editor_freeflow' ||
+          echoPage === 'editor_sections';
+        const requestedKey = target.pendingDraft.sectionKey;
+        const sectionKey = writesToSheet ? 'freeflow' : requestedKey;
+        const chapterTitle =
+          writesToSheet && requestedKey && requestedKey !== 'freeflow'
+            ? sectionTitleFor(requestedKey)
+            : undefined;
+        const rawReplace = target.pendingDraft.replaceText;
+        const replaceText = rawReplace && rawReplace.trim() ? rawReplace : undefined;
+        const replaceAll = target.pendingDraft.replaceAll === true;
+        const instruction = userInstructionBefore(messagesRef.current, messageId);
+        const editorTarget = readActiveEditorTarget();
+        const focusText =
+          editorTarget.selectedText.trim().length >= 12
+            ? editorTarget.selectedText
+            : editorTarget.blockText.trim().length >= 12
+              ? editorTarget.blockText
+              : undefined;
+
         const res = await fetchWithAgentAuth('/api/agents/echo/apply-draft', {
           method: 'POST',
           headers: {
@@ -518,17 +533,28 @@ export function EchoChatProvider({
           },
           body: JSON.stringify({
             biographyId,
-            sectionKey: target.pendingDraft.sectionKey,
+            sectionKey,
             draftText: target.pendingDraft.draftText,
+            ...(replaceText ? { replaceText } : {}),
+            ...(replaceAll ? { replaceAll: true } : {}),
+            ...(chapterTitle && !replaceText ? { chapterTitle } : {}),
+            ...(instruction ? { instruction } : {}),
+            ...(focusText ? { focusText } : {}),
           }),
         });
 
+        const json = (await res.json().catch(() => ({}))) as {
+          error?: string;
+          code?: string;
+          mode?: string;
+        };
         if (!res.ok) {
-          const json = await res.json().catch(() => ({}));
-          throw new Error((json.error as string) || 'Failed to insert draft');
+          if (json.code === 'replace_not_found') {
+            throw new Error(t.echo.insertDraftReplaceMissing);
+          }
+          throw new Error(json.error || 'Failed to insert draft');
         }
 
-        const sectionKey = target.pendingDraft.sectionKey;
         markDraftApplied(threadIdRef.current, messageId);
 
         setMessages((prev) =>
@@ -546,12 +572,11 @@ export function EchoChatProvider({
           )
         );
 
-        onDraftApplied?.(sectionKey);
-
-        if (!shownInsertDialogRef.current.has(messageId)) {
-          shownInsertDialogRef.current.add(messageId);
-          setInsertDialog({ messageId, sectionKey });
-        }
+        const highlightText =
+          json.mode === 'replaced' && target.pendingDraft.draftText.trim().length >= 8
+            ? target.pendingDraft.draftText
+            : '';
+        await onDraftApplied?.(sectionKey, highlightText ? { text: highlightText } : undefined);
         onDraftApplyFinished?.();
       } catch (err) {
         const message = err instanceof Error ? err.message : t.echo.errorGeneric;
@@ -563,7 +588,7 @@ export function EchoChatProvider({
         onDraftApplyFinished?.();
       }
     },
-    [user, biographyId, onDraftApplied, onDraftApplying, onDraftApplyFinished, onFlushEditorSave, t.echo.errorGeneric]
+    [user, biographyId, biographyMode, echoPage, sectionTitleFor, onDraftApplied, onDraftApplying, onDraftApplyFinished, onFlushEditorSave, t.echo.errorGeneric, t.echo.insertDraftReplaceMissing]
   );
 
   const deferInsertDraft = useCallback((messageId: string) => {
@@ -628,7 +653,12 @@ export function EchoChatProvider({
       };
       const assistantId = `a-${Date.now()}`;
       let activeAssistantId = assistantId;
-      let turnPendingDraft: { sectionKey: string; draftText: string } | null = null;
+      let turnPendingDraft: {
+        sectionKey: string;
+        draftText: string;
+        replaceText?: string;
+        replaceAll?: boolean;
+      } | null = null;
       setMessages((prev) => [
         ...prev,
         userMsg,
@@ -676,6 +706,8 @@ export function EchoChatProvider({
                 turnPendingDraft = {
                   sectionKey: ev.data.sectionKey!,
                   draftText: ev.data.draftText!,
+                  ...(ev.data.replaceText ? { replaceText: ev.data.replaceText } : {}),
+                  ...(ev.data.replaceAll ? { replaceAll: true } : {}),
                 };
                 setMessages((prev) =>
                   prev.map((m) =>
@@ -828,9 +860,6 @@ export function EchoChatProvider({
       confirmInsertDraft,
       deferInsertDraft,
       expandInsertDraft,
-      insertDialog,
-      dismissInsertDialog,
-      openEditorForDraft,
       activeSection,
     }),
     [
@@ -860,9 +889,6 @@ export function EchoChatProvider({
       confirmInsertDraft,
       deferInsertDraft,
       expandInsertDraft,
-      insertDialog,
-      dismissInsertDialog,
-      openEditorForDraft,
       activeSection,
     ]
   );

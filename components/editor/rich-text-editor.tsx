@@ -6,6 +6,13 @@ import { useEffect, useRef } from 'react';
 import { RichTextToolbar } from './rich-text-toolbar';
 import type { EditorAiToolsMenuProps } from './editor-ai-tools-menu';
 import { archiveTiptapExtensions } from '@/lib/editor-archive-tiptap';
+import { registerActiveEditorTarget } from '@/lib/editor/active-editor-selection';
+import {
+  echoChangeHighlight,
+  echoHighlightKey,
+  decorationsForDraft,
+  ECHO_CHANGE_HIGHLIGHT_MS,
+} from './echo-change-highlight';
 import {
   archiveMarkdownToHtml,
   htmlToArchiveMarkdown,
@@ -21,6 +28,10 @@ interface RichTextEditorProps {
   onEditorFontSizeChange?: (size: number) => void;
   isPublished?: boolean;
   aiTools?: Omit<EditorAiToolsMenuProps, 'className' | 'buttonClassName'>;
+  aiUsageRefresh?: number;
+  /** Newly added or replaced text, shown in bold for a few seconds. */
+  highlightChange?: { id: number; text: string } | null;
+  undoLastChange?: { label: string; hint: string; onUndo: () => void };
 }
 
 export function RichTextEditor({
@@ -32,14 +43,19 @@ export function RichTextEditor({
   onEditorFontSizeChange,
   isPublished = false,
   aiTools,
+  aiUsageRefresh,
+  highlightChange,
+  undoLastChange,
 }: RichTextEditorProps) {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const lastExternalContentRef = useRef(content);
+  const highlightTextRef = useRef(highlightChange?.text);
+  highlightTextRef.current = highlightChange?.text;
 
   const editor = useEditor({
     immediatelyRender: false,
     editable: !isPublished,
-    extensions: [...archiveTiptapExtensions(placeholder), CharacterCount],
+    extensions: [...archiveTiptapExtensions(placeholder), CharacterCount, echoChangeHighlight],
     content: archiveMarkdownToHtml(storedToArchiveMarkdown(content || '')),
     editorProps: {
       attributes: {
@@ -61,7 +77,7 @@ export function RichTextEditor({
 
       const grew = content.length > lastExternalContentRef.current.length;
       lastExternalContentRef.current = content;
-      if (grew) {
+      if (grew && !highlightTextRef.current) {
         requestAnimationFrame(() => {
           const el = scrollContainerRef.current;
           if (el) el.scrollTop = el.scrollHeight;
@@ -71,6 +87,32 @@ export function RichTextEditor({
       lastExternalContentRef.current = content;
     }
   }, [content, editor]);
+
+  useEffect(() => {
+    if (!editor || editor.isDestroyed || !highlightChange?.text) return;
+    const mark = decorationsForDraft(editor.state.doc, highlightChange.text);
+    if (mark) {
+      editor.view.dispatch(editor.state.tr.setMeta(echoHighlightKey, mark.set));
+      const dom = editor.view.domAtPos(mark.from);
+      const el = dom.node instanceof HTMLElement ? dom.node : dom.node.parentElement;
+      el?.scrollIntoView({ block: 'center', behavior: 'smooth' });
+    }
+    const timer = window.setTimeout(() => {
+      if (editor.isDestroyed) return;
+      editor.view.dispatch(editor.state.tr.setMeta(echoHighlightKey, 'clear'));
+    }, ECHO_CHANGE_HIGHLIGHT_MS);
+    return () => window.clearTimeout(timer);
+  }, [editor, highlightChange?.id, highlightChange?.text]);
+
+  useEffect(() => {
+    if (!editor) return;
+    return registerActiveEditorTarget(() => {
+      const { from, to, $from } = editor.state.selection;
+      const selectedText = from === to ? '' : editor.state.doc.textBetween(from, to, '\n');
+      const blockText = $from.parent.isTextblock ? $from.parent.textContent : '';
+      return { selectedText, blockText };
+    });
+  }, [editor]);
 
   useEffect(() => {
     if (editor) {
@@ -89,15 +131,16 @@ export function RichTextEditor({
 
   return (
     <div className="flex flex-col flex-1 min-h-0 h-full overflow-hidden">
-      {!isPublished && (
-        <RichTextToolbar
-          editor={editor}
-          biographyId={biographyId}
-          editorFontSize={editorFontSize}
-          onEditorFontSizeChange={onEditorFontSizeChange}
-          aiTools={aiTools}
-        />
-      )}
+      <RichTextToolbar
+        editor={editor}
+        biographyId={biographyId}
+        editorFontSize={editorFontSize}
+        onEditorFontSizeChange={onEditorFontSizeChange}
+        aiTools={aiTools}
+        aiUsageRefresh={aiUsageRefresh}
+        countsOnly={isPublished}
+        undoLastChange={undoLastChange}
+      />
       <div
         ref={scrollContainerRef}
         className={`flex-1 min-h-0 overflow-y-auto${isPublished ? ' opacity-70 cursor-not-allowed select-none' : ''}`}

@@ -28,7 +28,7 @@ const it: EchoGuideCopy & { pools: EchoIcebreakerPoolsByContext } = {
 **Cosa puoi chiedermi**
 - **Scrivere** — idee, domande per tirare fuori ricordi, bozze di testo (le inserisci tu dopo averle lette)
 - **Capitoli** — quali hai completato, segnare o riaprire un capitolo, leggere cosa hai già scritto
-- **Strumenti dell'app** — import ed export, foto, struttura del libro, note, modalità sezioni o testo libero
+- **Strumenti dell'app** — import ed export, foto, struttura del libro, note
 - **Pubblicazione** — revisione finale, bozze PDF, stato della tua biografia
 - **Orientamento** — come funziona l'app, cosa fare dopo, riassunto di quello che abbiamo detto
 
@@ -38,7 +38,7 @@ const it: EchoGuideCopy & { pools: EchoIcebreakerPoolsByContext } = {
 - Chiedi una cosa alla volta; per i testi lunghi chiedi una **bozza** — poi usa **Inserisci nell'editor** sotto il messaggio (o rispondi «sì»). Solo allora il testo pulito entra nel capitolo, senza la chat
 - Le conversazioni vecchie restano: apri «Conversazioni precedenti» se vuoi rileggerle. All’apertura non scorro tutta la chat
 - Microfono e voce sono le icone a sinistra del campo
-- Titolo e autore sono nel menu a sinistra, sopra Sezioni e Testo libero. Esporta è sempre visibile in basso. Visibilità e gli altri strumenti sono sotto **Strumenti**. Su telefono il menu è l’icona a sinistra nell’intestazione del sito
+- Titolo e autore sono nel menu a sinistra. Esporta è sempre visibile in basso. Visibilità e gli altri strumenti sono sotto **Strumenti**. Su telefono il menu è l’icona a sinistra nell’intestazione del sito
 - I suggerimenti sotto la chat sono esempi cliccabili — provaci
 
 **Memoria della conversazione**
@@ -49,7 +49,7 @@ const it: EchoGuideCopy & { pools: EchoIcebreakerPoolsByContext } = {
 **I miei paletti**
 - **Non invento fatti** sulla tua vita: lavoro solo su quello che mi racconti
 - Le **bozze** le preparo io, ma **tu decidi** se inserirle nell'editor
-- Per azioni importanti (es. cambiare modalità, segnare un capitolo completo) ti chiedo conferma
+- Per azioni importanti (es. segnare un titolo di capitolo) ti chiedo conferma
 - Se non so qualcosa sull'app, te lo dico — non indovino
 
 **Uso etico e privacy**
@@ -68,9 +68,9 @@ Chiedimi quello che ti serve — quando vuoi rivedere questa guida, clicca «Com
     hubOnboarding: {
       writing: [
         'Come inizio a scrivere la mia biografia?',
-        'Qual è la differenza tra percorso guidato e scrittura libera?',
+        'Come segno un titolo di capitolo?',
         'Ho già del testo scritto — da dove comincio?',
-        'Cosa mi conviene: capitoli guidati o testo libero?',
+        'Il foglio è vuoto: da dove comincio?',
         'Non so da quale periodo della vita partire — mi aiuti?',
       ],
       capabilities: [
@@ -97,7 +97,7 @@ Chiedimi quello che ti serve — quando vuoi rivedere questa guida, clicca «Com
         'In cosa puoi aiutarmi?',
         'Come funziona l\'app?',
         'Posso importare un documento Word?',
-        'Come passo da sezioni a scrittura libera?',
+        'Come segno un titolo di capitolo?',
         'Come esporto la biografia in PDF?',
         'Come funziona la revisione e la pubblicazione?',
         'Dove trovo le mie biografie in corso?',
@@ -123,7 +123,7 @@ Chiedimi quello che ti serve — quando vuoi rivedere questa guida, clicca «Com
         'Riapri «{section}» per modificarla',
         'Quali capitoli ho già completato?',
         'Leggi cosa ho scritto in un altro capitolo',
-        'Come passo da sezioni a scrittura libera?',
+        'Come segno un titolo di capitolo?',
         'Come importo un documento Word?',
         'Come esporto la biografia in PDF?',
         'Come aggiungo foto a un capitolo?',
@@ -148,9 +148,9 @@ Chiedimi quello che ti serve — quando vuoi rivedere questa guida, clicca «Com
         'Puoi proporti una bozza da inserire nel documento?',
       ],
       capabilities: [
-        'Cosa posso chiederti con il testo libero?',
-        'Converti la biografia in capitoli senza perdere il testo',
-        'Come passo da testo libero a sezioni guidate?',
+        'Cosa posso chiederti su questo testo?',
+        'Come aggiungo un capitolo senza spezzare il testo?',
+        'Come importo un testo già scritto?',
         'Come importo un documento Word?',
         'Come esporto in PDF?',
         'Come aggiungo foto?',
@@ -158,7 +158,7 @@ Chiedimi quello che ti serve — quando vuoi rivedere questa guida, clicca «Com
         'Come funzionano note e promemoria?',
         'Come funziona la revisione finale?',
         'Qual è lo stato della mia pubblicazione?',
-        'Quali capitoli avrei se convertissi in sezioni?',
+        'Puoi proporre un ordine nel tempo, senza inventare capitoli?',
         'Puoi riassumere quello che abbiamo discusso?',
       ],
     },
@@ -210,7 +210,7 @@ const en: EchoGuideCopy & { pools: EchoIcebreakerPoolsByContext } = {
 **What you can ask me**
 - **Writing** — ideas, questions to draw out memories, draft text (you insert it after reading)
 - **Chapters** — which you've completed, mark or reopen a chapter, read what you've already written
-- **App tools** — import and export, photos, book structure, notes, sections or free-flow mode
+- **App tools** — import and export, photos, book structure, notes
 - **Publication** — final review, PDF drafts, your biography's status
 - **Orientation** — how the app works, what to do next, a summary of our conversation
 
@@ -220,7 +220,7 @@ const en: EchoGuideCopy & { pools: EchoIcebreakerPoolsByContext } = {
 - Ask one thing at a time; for long text ask for a **draft** — then use **Insert in editor** under the message (or reply “yes”). Only then does the clean text go into the chapter, without the chat
 - Older conversations stay saved. Open “Earlier conversations” to read them. Opening the chat does not scroll through the whole history
 - Microphone and voice are the icons on the left of the writing field
-- Title and author are in the left menu, above Sections and Free Flow. Export is always visible at the bottom. Visibility and the other tools are under **Tools**. On a phone, the menu is the icon on the left of the site header
+- Title and author are in the left menu. Export is always visible at the bottom. Visibility and the other tools are under **Tools**. On a phone, the menu is the icon on the left of the site header
 - The suggestions under the chat are clickable examples — try them
 
 **Conversation memory**
@@ -231,7 +231,7 @@ const en: EchoGuideCopy & { pools: EchoIcebreakerPoolsByContext } = {
 **My boundaries**
 - I **don't invent facts** about your life: I work only from what you tell me
 - I prepare **drafts**, but **you decide** whether to insert them in the editor
-- For important actions (e.g. changing mode, marking a chapter complete) I ask for confirmation
+- For important actions (e.g. marking a chapter title) I ask for confirmation
 - If I don't know something about the app, I'll say so — I won't guess
 
 **Ethics and privacy**
@@ -250,9 +250,9 @@ Ask me what you need — to review this guide anytime, click «How to use this A
     hubOnboarding: {
       writing: [
         'How do I start writing my biography?',
-        'What is the difference between guided and free writing?',
+        'How do I mark a chapter title?',
         'I already have text written — where do I begin?',
-        'Which suits me better: guided chapters or free writing?',
+        'The page is empty: where do I start?',
         'I don\'t know which period of life to start with — can you help?',
       ],
       capabilities: [
@@ -279,7 +279,7 @@ Ask me what you need — to review this guide anytime, click «How to use this A
         'What can you help me with?',
         'How does the app work?',
         'Can I import a Word document?',
-        'How do I switch between sections and free writing?',
+        'How do I mark a chapter title?',
         'How do I export the biography to PDF?',
         'How do review and publication work?',
         'Where do I find my biographies in progress?',
@@ -305,7 +305,7 @@ Ask me what you need — to review this guide anytime, click «How to use this A
         'Reopen «{section}» so I can edit it',
         'Which chapters have I already completed?',
         'Read what I wrote in another chapter',
-        'How do I switch from sections to free writing?',
+        'How do I mark a chapter title?',
         'How do I import a Word document?',
         'How do I export the biography to PDF?',
         'How do I add photos to a chapter?',
@@ -330,9 +330,9 @@ Ask me what you need — to review this guide anytime, click «How to use this A
         'Can you suggest a draft to insert in the document?',
       ],
       capabilities: [
-        'What can I ask you in free-flow mode?',
-        'Convert the biography to chapters without losing text',
-        'How do I switch from free writing to guided sections?',
+        'What can I ask you about this text?',
+        'How do I add a chapter without splitting the text?',
+        'How do I import a text I already wrote?',
         'How do I import a Word document?',
         'How do I export to PDF?',
         'How do I add photos?',
@@ -340,7 +340,7 @@ Ask me what you need — to review this guide anytime, click «How to use this A
         'How do notes and reminders work?',
         'How does final review work?',
         'What is my publication status?',
-        'Which chapters would I have if I converted to sections?',
+        'Can you suggest a time order without inventing chapters?',
         'Can you summarize what we discussed?',
       ],
     },
@@ -392,7 +392,7 @@ const fr: EchoGuideCopy & { pools: EchoIcebreakerPoolsByContext } = {
 **Ce que vous pouvez me demander**
 - **Écrire** — idées, questions pour faire remonter les souvenirs, brouillons (vous les insérez après lecture)
 - **Chapitres** — lesquels sont terminés, marquer ou rouvrir un chapitre, lire ce que vous avez déjà écrit
-- **Outils de l'app** — import et export, photos, structure du livre, notes, mode sections ou texte libre
+- **Outils de l'app** — import et export, photos, structure du livre, notes
 - **Publication** — relecture finale, brouillons PDF, état de votre biographie
 - **Orientation** — fonctionnement de l'app, prochaines étapes, résumé de notre échange
 
@@ -402,7 +402,7 @@ const fr: EchoGuideCopy & { pools: EchoIcebreakerPoolsByContext } = {
 - Une question à la fois ; pour un long texte demandez un **brouillon** — puis utilisez **Insérer dans l'éditeur** sous le message (ou répondez « oui »). Alors seulement le texte propre entre dans le chapitre, sans la conversation
 - Les anciennes conversations restent. Ouvrez « Conversations précédentes » pour les relire. L’ouverture ne fait pas défiler tout l’historique
 - Microphone et voix sont les icônes à gauche du champ
-- Titre et auteur sont dans le menu de gauche, au-dessus de Sections et Texte libre. Exporter est toujours visible en bas. Visibilité et les autres outils sont sous **Outils**. Sur téléphone, le menu est l’icône à gauche dans l’en-tête du site
+- Titre et auteur sont dans le menu de gauche. Exporter est toujours visible en bas. Visibilité et les autres outils sont sous **Outils**. Sur téléphone, le menu est l’icône à gauche dans l’en-tête du site
 - Les suggestions sous le chat sont des exemples cliquables — essayez-les
 
 **Mémoire de la conversation**
@@ -413,7 +413,7 @@ const fr: EchoGuideCopy & { pools: EchoIcebreakerPoolsByContext } = {
 **Mes limites**
 - Je **n'invente pas de faits** sur votre vie : je travaille uniquement à partir de ce que vous me racontez
 - Je prépare des **brouillons**, mais **vous décidez** de les insérer dans l'éditeur
-- Pour les actions importantes (ex. changer de mode, marquer un chapitre terminé) je demande confirmation
+- Pour les actions importantes (ex. marquer un titre de chapitre) je demande confirmation
 - Si je ne sais pas quelque chose sur l'app, je le dis — je ne devine pas
 
 **Éthique et confidentialité**
@@ -432,9 +432,9 @@ Demandez-moi ce dont vous avez besoin — pour revoir ce guide, cliquez sur « C
     hubOnboarding: {
       writing: [
         'Comment commencer à écrire ma biographie ?',
-        'Quelle est la différence entre parcours guidé et écriture libre ?',
+        'Comment marquer un titre de chapitre ?',
         'J\'ai déjà du texte écrit — par où commencer ?',
-        'Que me convient le mieux : chapitres guidés ou texte libre ?',
+        'La page est vide : par où commencer ?',
         'Je ne sais pas par quelle période commencer — pouvez-vous m\'aider ?',
       ],
       capabilities: [
@@ -461,7 +461,7 @@ Demandez-moi ce dont vous avez besoin — pour revoir ce guide, cliquez sur « C
         'En quoi pouvez-vous m\'aider ?',
         'Comment fonctionne l\'application ?',
         'Puis-je importer un document Word ?',
-        'Comment passer des sections à l\'écriture libre ?',
+        'Comment marquer un titre de chapitre ?',
         'Comment exporter la biographie en PDF ?',
         'Comment fonctionnent la relecture et la publication ?',
         'Où trouver mes biographies en cours ?',
@@ -487,7 +487,7 @@ Demandez-moi ce dont vous avez besoin — pour revoir ce guide, cliquez sur « C
         'Rouvrir « {section} » pour la modifier',
         'Quels chapitres ai-je déjà terminés ?',
         'Lisez ce que j\'ai écrit dans un autre chapitre',
-        'Comment passer des sections à l\'écriture libre ?',
+        'Comment marquer un titre de chapitre ?',
         'Comment importer un document Word ?',
         'Comment exporter la biographie en PDF ?',
         'Comment ajouter des photos à un chapitre ?',
@@ -512,9 +512,9 @@ Demandez-moi ce dont vous avez besoin — pour revoir ce guide, cliquez sur « C
         'Pouvez-vous proposer un brouillon à insérer dans le document ?',
       ],
       capabilities: [
-        'Que puis-je vous demander en mode texte libre ?',
-        'Convertir la biographie en chapitres sans perdre le texte',
-        'Comment passer du texte libre aux sections guidées ?',
+        'Que puis-je vous demander sur ce texte ?',
+        'Comment ajouter un chapitre sans couper le texte ?',
+        'Comment importer un texte déjà écrit ?',
         'Comment importer un document Word ?',
         'Comment exporter en PDF ?',
         'Comment ajouter des photos ?',
@@ -522,7 +522,7 @@ Demandez-moi ce dont vous avez besoin — pour revoir ce guide, cliquez sur « C
         'Comment fonctionnent notes et rappels ?',
         'Comment fonctionne la relecture finale ?',
         'Quel est l\'état de ma publication ?',
-        'Quels chapitres aurais-je si je convertissais en sections ?',
+        'Pouvez-vous proposer un ordre dans le temps, sans inventer de chapitres ?',
         'Pouvez-vous résumer notre échange ?',
       ],
     },
@@ -574,7 +574,7 @@ const de: EchoGuideCopy & { pools: EchoIcebreakerPoolsByContext } = {
 **Was Sie mich fragen können**
 - **Schreiben** — Ideen, Fragen zum Erinnern, Textentwürfe (Sie fügen sie nach dem Lesen ein)
 - **Kapitel** — welche abgeschlossen sind, Kapitel markieren oder wieder öffnen, bereits Geschriebenes lesen
-- **App-Funktionen** — Import und Export, Fotos, Buchstruktur, Notizen, Abschnitte oder Freitext
+- **App-Funktionen** — Import und Export, Fotos, Buchstruktur, Notizen
 - **Veröffentlichung** — Endprüfung, PDF-Entwürfe, Status Ihrer Biografie
 - **Orientierung** — App-Funktion, nächste Schritte, Zusammenfassung unseres Gesprächs
 
@@ -584,7 +584,7 @@ const de: EchoGuideCopy & { pools: EchoIcebreakerPoolsByContext } = {
 - Eine Frage nach der anderen; bei langem Text einen **Entwurf** anfordern — dann **In den Editor einfügen** unter der Nachricht (oder «ja»). Erst dann kommt der bereinigte Text ins Kapitel, ohne den Chat
 - Ältere Gespräche bleiben gespeichert. «Frühere Gespräche» öffnet sie. Beim Öffnen wird nicht die ganze Historie durchgescrollt
 - Mikrofon und Stimme sind die Symbole links am Schreibfeld
-- Titel und Autor stehen im linken Menü, über Abschnitte und Freier Text. Exportieren ist unten immer sichtbar. Sichtbarkeit und die anderen Werkzeuge liegen unter **Werkzeuge**. Auf dem Telefon ist das Menü das Symbol links in der Kopfzeile
+- Titel und Autor stehen im linken Menü. Exportieren ist unten immer sichtbar. Sichtbarkeit und die anderen Werkzeuge liegen unter **Werkzeuge**. Auf dem Telefon ist das Menü das Symbol links in der Kopfzeile
 - Die Vorschläge unter dem Chat sind klickbare Beispiele — probieren Sie sie
 
 **Gesprächserinnerung**
@@ -595,7 +595,7 @@ const de: EchoGuideCopy & { pools: EchoIcebreakerPoolsByContext } = {
 **Meine Grenzen**
 - Ich **erfinde keine Fakten** über Ihr Leben: Ich arbeite nur mit dem, was Sie mir erzählen
 - Ich bereite **Entwürfe** vor, aber **Sie entscheiden**, ob Sie sie einfügen
-- Bei wichtigen Aktionen (z. B. Moduswechsel, Kapitel abschließen) bitte ich um Bestätigung
+- Bei wichtigen Aktionen (z. B. einen Kapiteltitel setzen) bitte ich um Bestätigung
 - Wenn ich etwas über die App nicht weiß, sage ich es — ich rate nicht
 
 **Ethik und Datenschutz**
@@ -614,9 +614,9 @@ Fragen Sie mich, was Sie brauchen — um diese Anleitung erneut zu lesen, klicke
     hubOnboarding: {
       writing: [
         'Wie beginne ich mit meiner Biografie?',
-        'Was ist der Unterschied zwischen geführtem Weg und freiem Schreiben?',
+        'Wie setze ich einen Kapiteltitel?',
         'Ich habe schon Text — wo fange ich an?',
-        'Was passt besser: geführte Kapitel oder Freitext?',
+        'Die Seite ist leer: wo fange ich an?',
         'Ich weiß nicht, mit welcher Lebensphase ich beginnen soll — können Sie helfen?',
       ],
       capabilities: [
@@ -643,7 +643,7 @@ Fragen Sie mich, was Sie brauchen — um diese Anleitung erneut zu lesen, klicke
         'Wobei können Sie mir helfen?',
         'Wie funktioniert die App?',
         'Kann ich ein Word-Dokument importieren?',
-        'Wie wechsle ich von Abschnitten zu freiem Schreiben?',
+        'Wie setze ich einen Kapiteltitel?',
         'Wie exportiere ich die Biografie als PDF?',
         'Wie funktionieren Prüfung und Veröffentlichung?',
         'Wo finde ich meine laufenden Biografien?',
@@ -669,7 +669,7 @@ Fragen Sie mich, was Sie brauchen — um diese Anleitung erneut zu lesen, klicke
         '«{section}» zur Bearbeitung wieder öffnen',
         'Welche Kapitel habe ich bereits abgeschlossen?',
         'Lesen Sie, was ich in einem anderen Kapitel geschrieben habe',
-        'Wie wechsle ich von Abschnitten zu freiem Schreiben?',
+        'Wie setze ich einen Kapiteltitel?',
         'Wie importiere ich ein Word-Dokument?',
         'Wie exportiere ich die Biografie als PDF?',
         'Wie füge ich Fotos zu einem Kapitel hinzu?',
@@ -694,9 +694,9 @@ Fragen Sie mich, was Sie brauchen — um diese Anleitung erneut zu lesen, klicke
         'Können Sie einen Entwurf zum Einfügen vorschlagen?',
       ],
       capabilities: [
-        'Was kann ich Sie im Freitext-Modus fragen?',
-        'Biografie in Kapitel umwandeln ohne Textverlust',
-        'Wie wechsle ich von Freitext zu geführten Abschnitten?',
+        'Was kann ich Sie zu diesem Text fragen?',
+        'Wie füge ich ein Kapitel hinzu, ohne den Text zu zerschneiden?',
+        'Wie importiere ich einen schon geschriebenen Text?',
         'Wie importiere ich ein Word-Dokument?',
         'Wie exportiere ich als PDF?',
         'Wie füge ich Fotos hinzu?',
@@ -704,7 +704,7 @@ Fragen Sie mich, was Sie brauchen — um diese Anleitung erneut zu lesen, klicke
         'Wie funktionieren Notizen und Erinnerungen?',
         'Wie funktioniert die Endprüfung?',
         'Wie ist mein Veröffentlichungsstatus?',
-        'Welche Kapitel hätte ich bei Umwandlung in Abschnitte?',
+        'Können Sie eine zeitliche Ordnung vorschlagen, ohne Kapitel zu erfinden?',
         'Können Sie unser Gespräch zusammenfassen?',
       ],
     },

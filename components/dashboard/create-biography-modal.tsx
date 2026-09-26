@@ -72,7 +72,7 @@ export function CreateBiographyModal({
     },
   ];
 
-  const handleDetailsNext = () => {
+  const handleDetailsNext = async () => {
     if (existingBiographiesCount > 0) {
       setError(t.dashboard.oneBiographyLimit);
       return;
@@ -82,7 +82,7 @@ export function CreateBiographyModal({
       return;
     }
     setError('');
-    setStep('mode');
+    await handleSubmit('freeflow');
   };
 
   const runSubmit = async (

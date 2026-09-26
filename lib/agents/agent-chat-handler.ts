@@ -361,7 +361,7 @@ export async function prepareAgentTurn(
         `${writerLabel} is currently on chapter: "${title}" (sectionKey: ${activeSection}).\n` +
         `They selected this chapter in the sidebar — do NOT ask which chapter to work on.\n` +
         `All coaching, questions, and drafts must focus on "${title}" unless they explicitly request another section.\n` +
-        `When using propose_draft, use sectionKey: ${activeSection}.\n` +
+        `When using propose_draft, use sectionKey "freeflow". To change existing words, set replaceText to the exact passage and draftText to the new wording. Set replaceAll true to change every occurrence, such as every long dash. If you omit replaceText, the text is only added at the end.\n` +
         `=== END ACTIVE SECTION ===`;
     }
 

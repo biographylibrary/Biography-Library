@@ -22,9 +22,11 @@ import {
   RemoveFormatting,
   ChevronDown,
   Type,
+  Undo2,
 } from 'lucide-react';
 import { EditorFontSizeControl } from './editor-font-size-control';
 import { EditorAiToolsMenu, type EditorAiToolsMenuProps } from './editor-ai-tools-menu';
+import { AiUsageIndicator } from './ai-usage-indicator';
 import { cn } from '@/lib/utils';
 import { IconHint } from '@/components/ui/icon-hint';
 
@@ -34,6 +36,9 @@ interface RichTextToolbarProps {
   editorFontSize?: number;
   onEditorFontSizeChange?: (size: number) => void;
   aiTools?: Omit<EditorAiToolsMenuProps, 'className' | 'buttonClassName'>;
+  aiUsageRefresh?: number;
+  countsOnly?: boolean;
+  undoLastChange?: { label: string; hint: string; onUndo: () => void };
 }
 
 export function RichTextToolbar({
@@ -42,11 +47,34 @@ export function RichTextToolbar({
   editorFontSize = 16,
   onEditorFontSizeChange,
   aiTools,
+  aiUsageRefresh,
+  countsOnly = false,
+  undoLastChange,
 }: RichTextToolbarProps) {
   const { t } = useTranslation();
 
   if (!editor) {
     return null;
+  }
+
+  const usageAndCount = (
+    <div
+      data-tour-id={aiTools?.aiEnabled ? 'ai-credits' : undefined}
+      className="ml-auto flex h-8 flex-col items-end justify-center gap-px shrink-0 pl-2"
+    >
+      {aiTools?.aiEnabled && <AiUsageIndicator refreshTrigger={aiUsageRefresh} />}
+      <span className="text-[10px] leading-none text-muted-foreground tabular-nums whitespace-nowrap">
+        {editor.storage.characterCount?.characters() || 0} {t.editor.chars}
+      </span>
+    </div>
+  );
+
+  if (countsOnly) {
+    return (
+      <div className="flex h-8 items-center border-b border-border/30 bg-muted/30 px-3">
+        {usageAndCount}
+      </div>
+    );
   }
 
   const ToolbarButton = ({
@@ -78,8 +106,21 @@ export function RichTextToolbar({
   );
 
   return (
-    <div className="flex flex-nowrap sm:flex-wrap items-center gap-1 px-3 py-2 border-b border-border/30 bg-muted/30 overflow-x-auto sm:overflow-visible">
-      <div className="hidden md:flex items-center gap-0.5 flex-wrap">
+    <div className="flex flex-nowrap items-center gap-1 px-3 py-1 border-b border-border/30 bg-muted/30 overflow-x-auto">
+      {undoLastChange && (
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          className="h-8 px-2 shrink-0 gap-1"
+          onClick={undoLastChange.onUndo}
+          title={undoLastChange.hint}
+        >
+          <Undo2 className="h-4 w-4" />
+          <span className="text-xs">{undoLastChange.label}</span>
+        </Button>
+      )}
+      <div className="hidden md:flex items-center gap-0.5 flex-nowrap">
         <ToolbarButton
           onClick={() => editor.chain().focus().toggleBold().run()}
           isActive={editor.isActive('bold')}
@@ -94,6 +135,21 @@ export function RichTextToolbar({
         />
 
         <Separator orientation="vertical" className="h-6 mx-1" />
+
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          className={cn(
+            'h-8 px-2 text-xs font-serif bg-transparent',
+            editor.isActive('heading', { level: 1 }) && 'border-foreground'
+          )}
+          data-tour-id="chapter-title-btn"
+          title={t.formatting.chapterTitle}
+          onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}
+        >
+          {t.formatting.chapterTitle}
+        </Button>
 
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
@@ -126,7 +182,7 @@ export function RichTextToolbar({
               )}
             >
               <Heading1 className="h-4 w-4" />
-              {t.formatting.heading1}
+              {t.formatting.chapterTitle}
             </DropdownMenuItem>
             <DropdownMenuItem
               onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
@@ -188,9 +244,9 @@ export function RichTextToolbar({
       <div className="md:hidden">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="outline" size="sm" className="h-8">
+            <Button variant="outline" size="sm" className="h-8" data-tour-id="formatting-menu-btn">
               <Type className="h-4 w-4 mr-1" />
-              Formatting
+              {t.formatting.menu}
               <ChevronDown className="h-3 w-3 ml-1" />
             </Button>
           </DropdownMenuTrigger>
@@ -205,7 +261,7 @@ export function RichTextToolbar({
             </DropdownMenuItem>
             <DropdownMenuItem onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}>
               <Heading1 className="h-4 w-4 mr-2" />
-              {t.formatting.heading1}
+              {t.formatting.chapterTitle}
             </DropdownMenuItem>
             <DropdownMenuItem onClick={() => editor.chain().focus().toggleBulletList().run()}>
               <List className="h-4 w-4 mr-2" />
@@ -241,9 +297,7 @@ export function RichTextToolbar({
         </>
       )}
 
-      <div className="ml-auto text-xs text-muted-foreground text-right shrink-0 whitespace-nowrap pl-2">
-        {editor.storage.characterCount?.characters() || 0} {t.editor.chars}
-      </div>
+      {usageAndCount}
     </div>
   );
 }

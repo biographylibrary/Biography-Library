@@ -12,7 +12,10 @@ interface EchoShellProps {
   sectionKey?: string;
   biographyMode?: 'sections' | 'freeflow';
   showBubble?: boolean;
-  onDraftApplied?: (sectionKey: string) => void;
+  onDraftApplied?: (
+    sectionKey: string,
+    change?: { text: string }
+  ) => void | Promise<void>;
   onDraftApplying?: () => void;
   onDraftApplyFinished?: () => void;
   onFlushEditorSave?: () => Promise<void>;
