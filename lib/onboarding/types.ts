@@ -10,7 +10,6 @@ export const WIZARD_STEP_ORDER: WizardStep[] = [
   'biography_type',
   'legal',
   'details',
-  'path',
 ];
 
 export const LEGAL_DECLARATION_VERSION = '2026-06';

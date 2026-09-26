@@ -22,8 +22,15 @@ import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Check, X, Edit3, Loader2, Star, AlertCircle } from 'lucide-react';
 import { BIOGRAPHY_SECTIONS } from '@/lib/editor-constants';
-import type { SectionSuggestion } from '@/lib/import/section-matcher';
 import { useTranslation } from '@/lib/i18n/i18n-context';
+
+interface SectionSuggestion {
+  section: string;
+  excerpt: string;
+  confidence: 'high' | 'medium' | 'low';
+  reason: string;
+  fullText: string;
+}
 
 interface SectionAssignmentWizardProps {
   open: boolean;

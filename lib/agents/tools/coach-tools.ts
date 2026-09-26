@@ -30,7 +30,7 @@ export const COACH_TOOL_DEFINITIONS: ToolDefinition[] = [
         properties: {
           sectionKey: {
             type: 'string',
-            description: 'Section key, e.g. childhood, family, career',
+            description: 'Use "freeflow" to read the whole document the author is editing.',
           },
         },
         required: ['sectionKey'],
@@ -42,13 +42,32 @@ export const COACH_TOOL_DEFINITIONS: ToolDefinition[] = [
     function: {
       name: 'propose_draft',
       description:
-        'Prepare narrative draft text for the user to review and optionally insert into the editor. ' +
-        'Call when you produce prose the user may want in their biography. Insertion happens only after user confirms in the UI.',
+        'Change the biography document the author is looking at. ' +
+        'To add new prose, set only draftText. ' +
+        'To replace a passage, set replaceText to the exact current words and draftText to the new words. ' +
+        'To change every occurrence, including a punctuation mark such as a long dash — or –, set replaceAll true. ' +
+        'If replaceText is omitted, the text is added at the end. Never do that when the author asked to change existing text. ' +
+        'Do not tell them to open the editor.',
       parameters: {
         type: 'object',
         properties: {
-          sectionKey: { type: 'string', description: 'Target section key' },
-          draftText: { type: 'string', description: 'Prose to append to the section' },
+          sectionKey: {
+            type: 'string',
+            description: 'Always "freeflow". The biography is one document.',
+          },
+          draftText: {
+            type: 'string',
+            description: 'The new wording, or the text to add. For a long dash becoming a comma, this is ", ".',
+          },
+          replaceText: {
+            type: 'string',
+            description:
+              'The exact current passage to replace, copied from the document. Can be one character, such as —.',
+          },
+          replaceAll: {
+            type: 'boolean',
+            description: 'True to replace every occurrence of replaceText, not only the first.',
+          },
         },
         required: ['sectionKey', 'draftText'],
       },
@@ -99,6 +118,8 @@ export type CoachToolResultEvent = {
   sectionKey?: string;
   contentLength?: number;
   draftText?: string;
+  replaceText?: string;
+  replaceAll?: boolean;
   preview?: boolean;
   wordCount?: number;
 };
@@ -150,8 +171,30 @@ export async function executeCoachTool(
 
     case 'read_section': {
       const sectionKey = String(args.sectionKey ?? '');
-      if (!isValidSectionKey(sectionKey)) {
+      const readingSheet = sectionKey === 'freeflow';
+      if (!readingSheet && !isValidSectionKey(sectionKey)) {
         return { content: JSON.stringify({ error: 'Invalid sectionKey' }) };
+      }
+
+      if (readingSheet) {
+        const { data: bio } = await serviceClient
+          .from('biographies')
+          .select('content_freeflow')
+          .eq('id', biographyId)
+          .maybeSingle();
+        const full = storedToArchiveMarkdown(
+          String((bio as { content_freeflow?: string } | null)?.content_freeflow ?? '')
+        );
+        const limit = 24_000;
+        const text = full.length > limit ? full.slice(0, limit) : full;
+        return {
+          content: JSON.stringify({
+            sectionKey: 'freeflow',
+            text,
+            truncated: full.length > limit,
+            wordCount: countWords(text),
+          }),
+        };
       }
 
       const { data: bio } = await serviceClient
@@ -190,12 +233,18 @@ export async function executeCoachTool(
 
     case 'propose_draft': {
       const sectionKey = String(args.sectionKey ?? '');
-      const draftText = String(args.draftText ?? '').trim();
+      const replaceText = typeof args.replaceText === 'string' ? args.replaceText : '';
+      const replaceAll = args.replaceAll === true;
+      const rawDraft = typeof args.draftText === 'string' ? args.draftText : '';
+      const draftText = replaceText.trim() ? rawDraft : rawDraft.trim();
       if (!isValidDraftSectionKey(sectionKey)) {
         return { content: JSON.stringify({ error: 'Invalid sectionKey' }) };
       }
-      if (!draftText) {
+      if (!draftText.trim()) {
         return { content: JSON.stringify({ error: 'draftText is required' }) };
+      }
+      if (replaceAll && !replaceText.trim()) {
+        return { content: JSON.stringify({ error: 'replaceText is required when replaceAll is true' }) };
       }
       const words = countWords(draftText);
       if (words > MAX_DRAFT_WORDS) {
@@ -213,12 +262,16 @@ export async function executeCoachTool(
             preview: true,
             sectionKey,
             draftText,
+            ...(replaceText.trim() ? { replaceText } : {}),
+            ...(replaceAll ? { replaceAll: true } : {}),
             wordCount: words,
           }),
           event: {
             tool: 'propose_draft',
             sectionKey,
             draftText,
+            ...(replaceText.trim() ? { replaceText } : {}),
+            ...(replaceAll ? { replaceAll: true } : {}),
             preview: true,
             wordCount: words,
           },
@@ -230,7 +283,11 @@ export async function executeCoachTool(
         userId,
         biographyId,
         sectionKey,
-        draftText
+        draftText,
+        {
+          ...(replaceText.trim() ? { replaceText } : {}),
+          ...(replaceAll ? { replaceAll: true } : {}),
+        }
       );
       if (!applied.ok) {
         return { content: JSON.stringify({ error: applied.error }) };

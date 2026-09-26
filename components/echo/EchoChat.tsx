@@ -18,9 +18,27 @@ import {
 } from './EchoSpeechControls';
 import { EchoIcebreakers } from './EchoIcebreakers';
 import { EchoDraftInsertPrompt } from './EchoDraftInsertPrompt';
-import { EchoDraftInsertedDialog } from './EchoDraftInsertedDialog';
 import { useEchoActivityStatus } from '@/lib/echo/use-echo-activity-status';
 import { BIOGRAPHY_SECTIONS } from '@/lib/editor-constants';
+import { classifyEditIntent } from '@/lib/echo/apply-draft';
+
+function clipDraftMark(value: string): string {
+  const clean = value.replace(/\s+/g, ' ').trim();
+  if (clean.length <= 40) return clean || value.trim();
+  return `${clean.slice(0, 39)}…`;
+}
+
+function instructionBeforeDraft(
+  messages: { id: string; role: string; content: string }[],
+  messageId: string
+): string {
+  const index = messages.findIndex((message) => message.id === messageId);
+  const start = index < 0 ? messages.length - 1 : index - 1;
+  for (let i = start; i >= 0; i--) {
+    if (messages[i].role === 'user' && messages[i].content.trim()) return messages[i].content.trim();
+  }
+  return '';
+}
 
 export type { EchoChatMessage } from '@/lib/echo/echo-chat-context';
 
@@ -81,9 +99,6 @@ export function EchoChat({
     confirmInsertDraft,
     deferInsertDraft,
     expandInsertDraft,
-    insertDialog,
-    dismissInsertDialog,
-    openEditorForDraft,
     activeSection,
   } = useEchoChat();
 
@@ -110,10 +125,6 @@ export function EchoChat({
   const visibleMessages =
     pastOpen || messages.length <= recentCount ? messages : messages.slice(-recentCount);
   const hasHiddenPast = messages.length > visibleMessages.length;
-
-  const insertDialogSectionTitle = insertDialog
-    ? sectionTitleFor(insertDialog.sectionKey)
-    : '';
 
   const scrollToBottom = useCallback(() => {
     const el = scrollContainerRef.current;
@@ -312,7 +323,11 @@ export function EchoChat({
             {icebreakersBlock}
           </div>
         )}
-        {visibleMessages.map((m) => (
+        {visibleMessages.map((m) => {
+          if (m.streaming && m.role === 'assistant' && !m.content?.trim() && !m.pendingDraft) {
+            return null;
+          }
+          return (
           <div
             key={m.id}
             id={`echo-message-${m.id}`}
@@ -332,18 +347,52 @@ export function EchoChat({
             {m.role === 'assistant' ? (
               <>
                 <EchoMessageContent content={m.content} />
-                {canInsertInEditor && m.pendingDraft && (
+                {canInsertInEditor && m.pendingDraft && (() => {
+                  const intent = classifyEditIntent(instructionBeforeDraft(messages, m.id));
+                  const replaceAll =
+                    Boolean(m.pendingDraft.replaceAll && m.pendingDraft.replaceText) ||
+                    intent === 'dashes_to_commas';
+                  const replaceOne =
+                    !replaceAll && (Boolean(m.pendingDraft.replaceText) || intent === 'replace');
+                  return (
                   <EchoDraftInsertPrompt
                     sectionTitle={sectionTitleFor(m.pendingDraft.sectionKey)}
-                    cardTitle={t.echo.insertDraftCardTitle}
-                    cardSubtitle={t.echo.insertDraftCardSubtitle}
-                    confirmLabel={t.echo.insertDraftConfirm}
+                    cardTitle={
+                      replaceAll
+                        ? t.echo.insertDraftReplaceAllCardTitle.replace(
+                            '{from}',
+                            clipDraftMark(m.pendingDraft.replaceText || '—')
+                          )
+                        : replaceOne
+                          ? t.echo.insertDraftReplaceCardTitle
+                          : t.echo.insertDraftCardTitle.replace(
+                              '{section}',
+                              sectionTitleFor(m.pendingDraft.sectionKey)
+                            )
+                    }
+                    cardSubtitle={
+                      replaceAll
+                        ? t.echo.insertDraftReplaceAllCardSubtitle
+                            .replace('{from}', clipDraftMark(m.pendingDraft.replaceText || '—'))
+                            .replace('{to}', clipDraftMark(m.pendingDraft.draftText || ','))
+                        : replaceOne
+                          ? t.echo.insertDraftReplaceCardSubtitle
+                          : t.echo.insertDraftCardSubtitle
+                    }
+                    confirmLabel={
+                      replaceAll
+                        ? t.echo.insertDraftReplaceAllConfirm
+                        : replaceOne
+                          ? t.echo.insertDraftReplaceConfirm
+                          : t.echo.insertDraftConfirm
+                    }
                     laterLabel={t.echo.insertDraftLater}
                     showPreviewLabel={t.echo.insertDraftShowPreview}
                     hidePreviewLabel={t.echo.insertDraftHidePreview}
                     readyLabel={t.echo.insertDraftReady}
                     sectionMismatchWarning={
                       activeSection &&
+                      activeSection !== 'freeflow' &&
                       m.pendingDraft.sectionKey !== 'freeflow' &&
                       m.pendingDraft.sectionKey !== activeSection
                         ? t.echo.insertDraftSectionMismatch.replace(
@@ -352,9 +401,6 @@ export function EchoChat({
                           )
                         : undefined
                     }
-                    successTitle={t.echo.insertDraftSuccessTitle}
-                    successBody={t.echo.insertDraftSuccessBody}
-                    openEditorLabel={t.echo.insertDraftOpenEditor}
                     preview={m.pendingDraft.draftText}
                     deferred={m.draftDeferred}
                     applying={m.applyingDraft}
@@ -363,25 +409,36 @@ export function EchoChat({
                     onConfirm={() => void confirmInsertDraft(m.id)}
                     onDefer={() => deferInsertDraft(m.id)}
                     onExpand={() => expandInsertDraft(m.id)}
-                    onOpenEditor={
-                      m.insertedSectionKey
-                        ? () => openEditorForDraft(m.insertedSectionKey!)
-                        : undefined
-                    }
                   />
-                )}
+                  );
+                })()}
               </>
             ) : (
               <span className="whitespace-pre-wrap">{m.content}</span>
             )}
-            {m.streaming && <Loader className="inline h-3 w-3 ml-1 animate-spin" />}
+            {m.streaming && m.content?.trim() ? (
+              <Loader className="inline h-3 w-3 ml-1 animate-spin" />
+            ) : null}
           </div>
-        ))}
+          );
+        })}
         {error && <p className="text-sm text-destructive text-center">{error}</p>}
         {!historyLoading && !loading && icebreakersVisible && messages.length > 0 && !compact && (
           <div className="px-1">{icebreakersBlock}</div>
         )}
       </div>}
+
+      {loading && !streamingMessage?.content?.trim() && (
+        <div
+          className={cn(
+            'flex items-center gap-2 shrink-0 py-1.5 text-sm text-muted-foreground',
+            flushChrome ? 'px-3' : 'px-2'
+          )}
+        >
+          <Loader className="h-3.5 w-3.5 animate-spin shrink-0" />
+          <span>{activityStatus}</span>
+        </div>
+      )}
 
       {orbState === 'speaking' && !compact && (
         <div className={cn('shrink-0', flushChrome && 'px-3')}>
@@ -443,11 +500,7 @@ export function EchoChat({
             disabled={loading || !input.trim()}
             onClick={() => void sendMessage(input)}
           >
-            {loading ? (
-              <Loader className={flushChrome ? 'h-3.5 w-3.5 animate-spin' : 'h-4 w-4 animate-spin'} />
-            ) : (
-              <Send className={flushChrome ? 'h-3.5 w-3.5' : 'h-4 w-4'} />
-            )}
+            <Send className={flushChrome ? 'h-3.5 w-3.5' : 'h-4 w-4'} />
           </Button>
           </IconHint>
         </div>
@@ -472,22 +525,6 @@ export function EchoChat({
           disabled={loading}
         />
       </div>
-
-      <EchoDraftInsertedDialog
-        open={insertDialog !== null}
-        title={t.echo.insertDraftDialogTitle}
-        description={t.echo.insertDraftDialogDescription}
-        openEditorLabel={t.echo.insertDraftOpenEditor}
-        continueLabel={t.echo.insertDraftContinueChat}
-        sectionTitle={insertDialogSectionTitle}
-        onOpenEditor={() => {
-          if (insertDialog) {
-            openEditorForDraft(insertDialog.sectionKey);
-          }
-          dismissInsertDialog();
-        }}
-        onContinue={dismissInsertDialog}
-      />
     </div>
   );
 }

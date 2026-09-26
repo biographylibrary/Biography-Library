@@ -9,7 +9,6 @@ import { useTranslation } from '@/lib/i18n/i18n-context';
 import { BIOGRAPHY_SECTIONS } from '@/lib/editor-constants';
 import { Button } from '@/components/ui/button';
 import { CircleCheck as CheckCircle2, RotateCcw } from 'lucide-react';
-import { AiUsageIndicator } from '@/components/editor/ai-usage-indicator';
 import { cn } from '@/lib/utils';
 import { IconHint } from '@/components/ui/icon-hint';
 
@@ -29,6 +28,10 @@ interface GuidedSectionWorkspaceProps {
   onApertusReview?: () => void;
   onMarkComplete?: () => void;
   isCompleted?: boolean;
+  /** One sheet: no preset section title above the text. */
+  documentMode?: boolean;
+  highlightChange?: { id: number; text: string } | null;
+  undoLastChange?: { label: string; hint: string; onUndo: () => void };
 }
 
 export function GuidedSectionWorkspace({
@@ -47,6 +50,9 @@ export function GuidedSectionWorkspace({
   onApertusReview,
   onMarkComplete,
   isCompleted = false,
+  documentMode = false,
+  highlightChange,
+  undoLastChange,
 }: GuidedSectionWorkspaceProps) {
   const { t } = useTranslation();
   const [echoOpen, setEchoOpen] = useState(true);
@@ -76,6 +82,7 @@ export function GuidedSectionWorkspace({
 
   return (
     <div className="flex flex-col h-full min-h-0">
+      {!documentMode && (
       <div className="flex items-center justify-between px-3 h-12 border-b border-border/50 shrink-0 gap-2">
         <h2
           className="truncate flex-1 min-w-0 text-primary"
@@ -89,13 +96,7 @@ export function GuidedSectionWorkspace({
         >
           {sectionTitle}
         </h2>
-        <div className="flex items-center gap-1 sm:gap-2 shrink-0">
-          {aiEnabled && (
-            <div data-tour-id="ai-credits" className="shrink-0">
-              <AiUsageIndicator refreshTrigger={aiUsageRefresh} />
-            </div>
-          )}
-          {!isPublished && onMarkComplete && (
+        {!isPublished && onMarkComplete && (
             <IconHint
               label={isCompleted ? t.status.markIncomplete : t.status.markComplete}
               maxWidth={639}
@@ -126,8 +127,8 @@ export function GuidedSectionWorkspace({
             </Button>
             </IconHint>
           )}
-        </div>
       </div>
+      )}
 
       <div
         data-tour-id="edit-section-btn"
@@ -145,6 +146,9 @@ export function GuidedSectionWorkspace({
           onGrammarCheck={onGrammarCheck}
           onReviewWithAi={onReviewWithAi}
           onApertusReview={onApertusReview}
+          aiUsageRefresh={aiUsageRefresh}
+          highlightChange={highlightChange}
+          undoLastChange={undoLastChange}
         />
       </div>
 
@@ -152,7 +156,7 @@ export function GuidedSectionWorkspace({
         data-tour-id="echo-panel"
         className={cn(
           'shrink-0 flex flex-col',
-          echoOpen && 'h-[min(42vh,340px)] min-h-[220px]'
+          echoOpen && 'h-[min(42vh,340px)] min-h-[220px] lg:h-[min(52vh,640px)] lg:min-h-[360px]'
         )}
       >
         {echoBar}

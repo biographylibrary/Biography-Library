@@ -100,7 +100,6 @@ export function AdvancedExportDialog({
   const [includeNotesAndTodos, setIncludeNotesAndTodos] = useState(false);
   const [separateFiles, setSeparateFiles] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
-  const [noChaptersWarningDismissed, setNoChaptersWarningDismissed] = useState(false);
   const [readinessStatus, setReadinessStatus] = useState<ReadinessStatus>('checking');
   const [readinessIssues, setReadinessIssues] = useState<PdfReadinessIssue[]>([]);
   const [exportError, setExportError] = useState<string | null>(null);
@@ -525,8 +524,8 @@ export function AdvancedExportDialog({
 
   const allFormats: { value: ExportFormat; label: string; description?: string; pdfOnly?: boolean }[] = [
     { value: 'pdf-b5-standard', label: t.exportDialog.pdfB5Standard, pdfOnly: true },
-    { value: 'txt', label: 'Plain Text (.txt)', description: 'Plain text, no formatting preserved' },
-    { value: 'docx', label: 'Word Document (.docx)', description: 'Text with bold and italic preserved. Compatible with Word, Pages, Google Docs.' },
+    { value: 'txt', label: t.exportDialog.txtFormat },
+    { value: 'docx', label: t.exportDialog.docxFormat },
   ];
 
   const visibleFormats = allFormats;
@@ -560,29 +559,10 @@ export function AdvancedExportDialog({
         {reviewLocked && (
           <div className="flex items-start gap-3 rounded-lg bg-brand-mustardLight/45 border border-brand-mustardDark/40 dark:bg-brand-mustardDark/20 dark:border-brand-mustardDark/50 px-4 py-3 text-sm text-brand-ink dark:text-brand-beigeLight">
             <Info className="h-4 w-4 shrink-0 mt-0.5" />
-            <p>
-              Export is disabled while your biography is under review. You can download again after
-              moderation finishes.
-            </p>
+            <p>{t.exportDialog.exportReviewLocked}</p>
           </div>
         )}
 
-        {biography.biography_mode === 'freeflow' && !noChaptersWarningDismissed && (
-          <div className="flex items-start gap-3 rounded-lg bg-brand-mustardLight/45 border border-brand-mustardDark/40 dark:bg-brand-mustardDark/20 dark:border-brand-mustardDark/50 px-4 py-3">
-            <AlertTriangle className="h-4 w-4 mt-0.5 shrink-0 text-brand-mustardDark dark:text-brand-mustardLight" />
-            <p className="text-sm text-brand-ink dark:text-brand-beigeLight leading-relaxed flex-1">
-              {t.editor.noChaptersWarning}
-            </p>
-            <button
-              type="button"
-              onClick={() => setNoChaptersWarningDismissed(true)}
-              className="shrink-0 text-brand-mustardDark dark:text-brand-mustardLight hover:text-brand-ink dark:hover:text-brand-beigeLight transition-colors"
-              aria-label={t.common.close}
-            >
-              <X className="h-4 w-4" />
-            </button>
-          </div>
-        )}
 
         {isPdfFormat && readinessStatus === 'not-ready' && readinessIssues.length > 0 && (
           <div className="flex items-start gap-3 rounded-lg bg-brand-mustardLight/45 border border-brand-mustardDark/40 dark:bg-brand-mustardDark/20 dark:border-brand-mustardDark/50 px-4 py-3">
@@ -737,6 +717,8 @@ export function AdvancedExportDialog({
               </RadioGroup>
             </div>
 
+            {biography.biography_mode !== 'freeflow' && (
+            <>
             <Separator />
 
             <div className="space-y-3">
@@ -796,13 +778,15 @@ export function AdvancedExportDialog({
                 </div>
               )}
             </div>
+            </>
+            )}
 
             <Separator />
 
             <div className="space-y-3">
               <Label className="text-base font-semibold">{t.exportDialog.additionalOptions}</Label>
 
-              {!isPdfFormat && (
+              {biography.biography_mode !== 'freeflow' && !isPdfFormat && (
                 <div className="flex items-center space-x-2">
                   <Checkbox
                     id="separate-files"
@@ -842,12 +826,12 @@ export function AdvancedExportDialog({
         {previewUrl && (
           <div className="border border-border rounded-lg overflow-hidden flex flex-col" style={{ height: '420px' }}>
             <div className="flex items-center justify-between px-3 py-2 bg-muted/50 border-b border-border shrink-0">
-              <span className="text-xs font-medium text-muted-foreground">PDF Preview</span>
+              <span className="text-xs font-medium text-muted-foreground">{t.exportDialog.pdfPreview}</span>
               <button
                 type="button"
                 onClick={() => setPreviewUrl(null)}
                 className="text-muted-foreground hover:text-foreground transition-colors"
-                aria-label="Close preview"
+                aria-label={t.common.close}
               >
                 <X className="h-3.5 w-3.5" />
               </button>
@@ -859,14 +843,6 @@ export function AdvancedExportDialog({
             />
           </div>
         )}
-
-        <div className="px-1 pb-2">
-          <p className="text-xs text-muted-foreground leading-relaxed">
-            {biography.biography_mode === 'freeflow'
-              ? t.editor.exportModeFreeFlow
-              : t.editor.exportModeSections}
-          </p>
-        </div>
 
         <DialogFooter className="gap-2 flex-col sm:flex-row items-end sm:items-center">
           {aiUnavailable && (

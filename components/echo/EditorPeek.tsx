@@ -16,6 +16,9 @@ interface EditorPeekProps {
   onGrammarCheck?: () => void;
   onReviewWithAi?: () => void;
   onApertusReview?: () => void;
+  aiUsageRefresh?: number;
+  highlightChange?: { id: number; text: string } | null;
+  undoLastChange?: { label: string; hint: string; onUndo: () => void };
   className?: string;
 }
 
@@ -35,6 +38,9 @@ export function EditorPeek({
   onGrammarCheck,
   onReviewWithAi,
   onApertusReview,
+  aiUsageRefresh,
+  highlightChange,
+  undoLastChange,
   className,
 }: EditorPeekProps) {
   const aiTools: Omit<EditorAiToolsMenuProps, 'className' | 'buttonClassName'> | undefined =
@@ -59,6 +65,9 @@ export function EditorPeek({
         onEditorFontSizeChange={onEditorFontSizeChange}
         isPublished={isPublished}
         aiTools={aiTools}
+        aiUsageRefresh={aiUsageRefresh}
+        highlightChange={highlightChange}
+        undoLastChange={undoLastChange}
       />
     </div>
   );

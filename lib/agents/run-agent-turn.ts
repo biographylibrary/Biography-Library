@@ -46,10 +46,71 @@ function draftAck(locale?: string): string {
   return DRAFT_ACK[lang] ?? DRAFT_ACK.en;
 }
 
+function asToolCalls(value: unknown): ToolCall[] {
+  if (!Array.isArray(value)) return [];
+  return value.filter((item): item is ToolCall => {
+    if (!item || typeof item !== 'object') return false;
+    const call = item as ToolCall;
+    return typeof call.id === 'string' && call.id.length > 0;
+  });
+}
+
+/** Drops tool calls that have no matching answer, which makes the model reject the whole turn. */
+export function normalizeToolMessages(messages: ChatMessage[]): ChatMessage[] {
+  const out: ChatMessage[] = [];
+  for (let i = 0; i < messages.length; i += 1) {
+    const message = messages[i];
+    if (message.role === 'tool') continue;
+    if (message.role !== 'assistant' || !message.tool_calls) {
+      out.push(message);
+      continue;
+    }
+
+    const calls = asToolCalls(message.tool_calls);
+    const responses: ChatMessage[] = [];
+    let next = i + 1;
+    while (next < messages.length && messages[next].role === 'tool') {
+      responses.push(messages[next]);
+      next += 1;
+    }
+    const answered = new Set(responses.map((row) => row.tool_call_id).filter(Boolean));
+    const paired =
+      calls.length > 0 &&
+      calls.length === responses.length &&
+      calls.every((call) => answered.has(call.id));
+
+    if (paired) {
+      out.push({ ...message, tool_calls: calls });
+      for (const call of calls) {
+        const response = responses.find((row) => row.tool_call_id === call.id);
+        if (response) out.push(response);
+      }
+    } else if (message.content.trim()) {
+      out.push({ role: 'assistant', content: message.content });
+    }
+    i = next - 1;
+  }
+  return out;
+}
+
+export function messagesWithoutToolProtocol(messages: ChatMessage[]): ChatMessage[] {
+  const out: ChatMessage[] = [];
+  for (const message of messages) {
+    if (message.role === 'tool') continue;
+    if (message.role === 'assistant') {
+      if (!message.content.trim()) continue;
+      out.push({ role: 'assistant', content: message.content });
+      continue;
+    }
+    out.push(message);
+  }
+  return out;
+}
+
 export function historyToChatMessages(
   rows: { role: string; content: string; tool_calls?: unknown }[]
 ): ChatMessage[] {
-  return rows
+  const mapped = rows
     .filter((r) => ['user', 'assistant', 'tool'].includes(r.role))
     .map((r) => {
       if (r.role === 'tool') {
@@ -72,6 +133,7 @@ export function historyToChatMessages(
         content: r.content,
       };
     });
+  return normalizeToolMessages(mapped);
 }
 
 type SendFn = (event: string, data: unknown) => void;
@@ -126,12 +188,22 @@ async function streamOrFetchText(
   }
 
   if (!fullContent.trim()) {
-    const result = await chat({
-      role: prepared.role,
-      messages,
-      stream: false,
-    });
-    fullContent = extractTextContent(result.content);
+    try {
+      const result = await chat({
+        role: prepared.role,
+        messages,
+        stream: false,
+      });
+      fullContent = extractTextContent(result.content);
+    } catch (textErr) {
+      console.warn('[agents] text pass failed, retrying without tool history:', textErr);
+      const result = await chat({
+        role: prepared.role,
+        messages: messagesWithoutToolProtocol(messages),
+        stream: false,
+      });
+      fullContent = extractTextContent(result.content);
+    }
     if (fullContent.trim()) {
       send('token', { content: fullContent });
     }
@@ -169,11 +241,11 @@ export async function runStreamingAgentTurn(
   serviceClient: SupabaseClient,
   send: (event: string, data: unknown) => void
 ): Promise<void> {
-  const messages: ChatMessage[] = [
+  const messages: ChatMessage[] = normalizeToolMessages([
     { role: 'system', content: prepared.systemPrompt },
     ...prepared.history,
     { role: 'user', content: prepared.userMessage },
-  ];
+  ]);
 
   const finishTurn = () => {
     send('done', { threadId: prepared.threadId });

@@ -30,11 +30,13 @@ export function filterToolNoise(
     }
   }
 
-  return rows.filter((row, index) => {
-    if (index >= cutoffIndex) return true;
-    if (row.role === 'tool') return false;
-    if (row.role === 'assistant' && row.tool_calls && !row.content.trim()) return false;
-    return row.role === 'user' || row.role === 'assistant';
+  return rows.flatMap((row, index) => {
+    if (index >= cutoffIndex) return [row];
+    if (row.role === 'tool') return [];
+    if (row.role === 'assistant' && row.tool_calls && !row.content.trim()) return [];
+    if (row.role === 'assistant' && row.tool_calls) return [{ ...row, tool_calls: null }];
+    if (row.role === 'user' || row.role === 'assistant') return [row];
+    return [];
   });
 }
 

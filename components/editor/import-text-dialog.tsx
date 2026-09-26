@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useRef, useCallback, useEffect } from 'react';
+import { useState, useRef, useCallback } from 'react';
+import { createPortal } from 'react-dom';
 import { Upload, CircleAlert as AlertCircle, Loader as Loader2 } from 'lucide-react';
 import {
   Dialog,
@@ -14,16 +15,8 @@ import {
   editorSidebarDialogContentStyle,
 } from '@/components/editor/EditorSidebarDialog';
 import { Button } from '@/components/ui/button';
-import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import {
   parseTextFiles,
   parsePastedText,
@@ -32,9 +25,23 @@ import {
   type ParsedText,
 } from '@/lib/text-import-parser';
 import { appendHtml } from '@/lib/import/html-blocks';
-import { ImportSectionMappingWizard } from '@/components/import/ImportSectionMappingWizard';
+import { htmlHasText, sectionsToDocumentHtml } from '@/lib/editor/single-document';
+import { saveOriginalCoverJpeg } from '@/lib/editor/save-original-cover';
+import { supabase } from '@/lib/supabase';
+import { useAuth } from '@/lib/auth-context';
 import { useTranslation } from '@/lib/i18n/i18n-context';
-import { BIOGRAPHY_SECTIONS, type BiographyContent, getSectionData } from '@/lib/editor-constants';
+import { type BiographyContent } from '@/lib/editor-constants';
+
+const MAX_PDF_BYTES = 30 * 1024 * 1024;
+
+interface PdfOffer {
+  fileName: string;
+  previewUrl: string;
+  coverJpegBase64: string;
+  htmlAll: string;
+  htmlAfterCover: string;
+  bodyHasText: boolean;
+}
 
 interface ImportTextDialogProps {
   open: boolean;
@@ -58,16 +65,11 @@ export function ImportTextDialog({
   open,
   onOpenChange,
   biographyId,
-  currentSectionKey,
-  currentSectionContent,
   currentFreeflowContent,
-  sectionContents,
-  onImportedToSection,
   onImportedToFreeflow,
-  onImportMultipleSections,
-  biographyMode = 'sections',
 }: ImportTextDialogProps) {
   const { t, language } = useTranslation();
+  const { user } = useAuth();
   const [dragActive, setDragActive] = useState(false);
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -75,30 +77,17 @@ export function ImportTextDialog({
   const [pastedText, setPastedText] = useState('');
   const [parsedContent, setParsedContent] = useState<ParsedText | null>(null);
   const [queuedFiles, setQueuedFiles] = useState<string[]>([]);
-  const [destination, setDestination] = useState<string>(currentSectionKey);
   const [inputMode, setInputMode] = useState<'input' | 'preview'>('input');
-  const [importMode, setImportMode] = useState<ConflictAction>('append');
-  const [showMappingWizard, setShowMappingWizard] = useState(false);
+  const [pdfOffer, setPdfOffer] = useState<PdfOffer | null>(null);
+  const [askConflict, setAskConflict] = useState(false);
+  const [keepCover, setKeepCover] = useState<boolean | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const pasteRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    if (open) setDestination(currentSectionKey);
-  }, [open, currentSectionKey]);
-
-  const getDestinationContent = useCallback(
-    (dest: string) => {
-      if (biographyMode === 'freeflow') return currentFreeflowContent;
-      if (sectionContents) return getSectionData(sectionContents, dest).text;
-      if (dest === currentSectionKey) return currentSectionContent;
-      return '';
-    },
-    [biographyMode, sectionContents, currentSectionKey, currentSectionContent, currentFreeflowContent]
+  const sheetHasContent = useCallback(
+    () => htmlHasText(currentFreeflowContent),
+    [currentFreeflowContent]
   );
-
-  const destinationHasContent = useCallback(() => {
-    const content = getDestinationContent(destination);
-    return Boolean(content && content.trim().length > 0);
-  }, [destination, getDestinationContent]);
 
   const resetDialog = useCallback(() => {
     setError(null);
@@ -109,9 +98,66 @@ export function ImportTextDialog({
     setLoading(false);
     setDragActive(false);
     setSaving(false);
-    setImportMode('append');
-    setShowMappingWizard(false);
+    setAskConflict(false);
+    setPdfOffer(null);
+    setKeepCover(null);
+    if (pasteRef.current) pasteRef.current.innerHTML = '';
   }, []);
+
+  const readPdf = useCallback(
+    async (file: File) => {
+      if (file.size > MAX_PDF_BYTES) {
+        setError(t.importDialog.pdfTooLarge);
+        return;
+      }
+      const { data } = await supabase.auth.getSession();
+      const token = data.session?.access_token;
+      if (!token) {
+        setError(t.importDialog.fileReadError);
+        return;
+      }
+      const form = new FormData();
+      form.set('biographyId', biographyId);
+      form.set('file', file);
+      const response = await fetch('/api/import/pdf', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}` },
+        body: form,
+      });
+      const body = (await response.json().catch(() => null)) as
+        | {
+            kind?: string;
+            error?: string;
+            bodyHasText?: boolean;
+            htmlAll?: string;
+            htmlAfterCover?: string;
+            previewJpegBase64?: string;
+            coverJpegBase64?: string;
+          }
+        | null;
+      if (body?.kind === 'scanned') {
+        setError(t.importDialog.pdfPhoto);
+        return;
+      }
+      if (!response.ok || body?.kind !== 'text' || !body.previewJpegBase64 || !body.coverJpegBase64) {
+        setError(body?.error === 'too_large' ? t.importDialog.pdfTooLarge : t.importDialog.fileReadError);
+        return;
+      }
+      setPdfOffer({
+        fileName: file.name,
+        previewUrl: `data:image/jpeg;base64,${body.previewJpegBase64}`,
+        coverJpegBase64: body.coverJpegBase64,
+        htmlAll: body.htmlAll ?? '',
+        htmlAfterCover: body.htmlAfterCover ?? '',
+        bodyHasText: Boolean(body.bodyHasText),
+      });
+      setKeepCover(null);
+      setParsedContent(null);
+      setQueuedFiles([file.name]);
+      setInputMode('preview');
+    },
+    [biographyId, t]
+  );
 
   const processFiles = useCallback(
     async (files: FileList | File[]) => {
@@ -119,15 +165,23 @@ export function ImportTextDialog({
       setLoading(true);
       try {
         const list = Array.from(files);
+        const pdfs = list.filter(
+          (file) => file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf')
+        );
+        if (pdfs.length > 0) {
+          if (list.length > 1) {
+            setError(t.importDialog.pdfOneAtATime);
+            return;
+          }
+          await readPdf(pdfs[0]);
+          return;
+        }
         const parsed = await parseTextFiles(list, language);
+        setPdfOffer(null);
+        setKeepCover(null);
         setParsedContent(parsed);
         setQueuedFiles(parsed.fileNames ?? list.map((f) => f.name));
         setInputMode('preview');
-        if (!destinationHasContent() && biographyMode === 'sections') {
-          setImportMode('replace');
-        } else {
-          setImportMode('append');
-        }
       } catch (err) {
         if (err instanceof TextImportError) {
           setError(getImportErrorMessage(err.message, t));
@@ -138,7 +192,7 @@ export function ImportTextDialog({
         setLoading(false);
       }
     },
-    [language, destinationHasContent, biographyMode, t]
+    [language, t, readPdf]
   );
 
   const handleDrag = useCallback((e: React.DragEvent) => {
@@ -184,113 +238,89 @@ export function ImportTextDialog({
       setParsedContent(parsed);
       setQueuedFiles([]);
       setInputMode('preview');
-      setImportMode(destinationHasContent() ? 'append' : 'replace');
     } catch {
       setError(t.importDialog.textAnalysisError);
     } finally {
       setLoading(false);
     }
-  }, [pastedText, t, language, destinationHasContent]);
+  }, [pastedText, t, language]);
+
+  const incomingHtml = useCallback(() => {
+    if (!parsedContent) return '';
+    return parsedContent.hasSections && parsedContent.sections?.length
+      ? sectionsToDocumentHtml(parsedContent.sections)
+      : parsedContent.content;
+  }, [parsedContent]);
 
   const applySingleImport = useCallback(
     (action: ConflictAction) => {
-      if (!parsedContent) return;
-      const incomingText = parsedContent.content;
-
-      if (biographyMode === 'freeflow') {
-        const newValue =
-          action === 'replace'
-            ? incomingText
-            : appendHtml(currentFreeflowContent, incomingText);
-        onImportedToFreeflow(newValue);
-      } else {
-        const existing = getDestinationContent(destination);
-        const newValue =
-          action === 'replace' ? incomingText : appendHtml(existing, incomingText);
-        onImportedToSection(destination, newValue);
+      const incomingText = incomingHtml();
+      if (!htmlHasText(incomingText)) {
+        resetDialog();
+        onOpenChange(false);
+        return;
       }
+      const newValue =
+        action === 'replace' || !htmlHasText(currentFreeflowContent)
+          ? incomingText
+          : appendHtml(currentFreeflowContent, incomingText);
+      onImportedToFreeflow(newValue);
       resetDialog();
       onOpenChange(false);
     },
-    [
-      parsedContent,
-      biographyMode,
-      currentFreeflowContent,
-      getDestinationContent,
-      destination,
-      onImportedToFreeflow,
-      onImportedToSection,
-      resetDialog,
-      onOpenChange,
-    ]
+    [incomingHtml, currentFreeflowContent, onImportedToFreeflow, resetDialog, onOpenChange]
   );
 
-  const handleMappingConfirm = useCallback(
-    (assignments: Array<{ sectionKey: string; content: string; append: boolean }>) => {
-      if (!onImportMultipleSections) return;
-      const grouped = new Map<string, string>();
-      for (const a of assignments) {
-        const prev = grouped.get(a.sectionKey) ?? getDestinationContent(a.sectionKey);
-        grouped.set(
-          a.sectionKey,
-          a.append ? appendHtml(prev, a.content) : a.content
-        );
+  const chooseCover = useCallback(
+    (keep: boolean) => {
+      if (!pdfOffer) return;
+      setKeepCover(keep);
+      const html = keep ? pdfOffer.htmlAfterCover : pdfOffer.htmlAll;
+      if (!htmlHasText(html)) {
+        setParsedContent({ content: '', hasSections: false });
+        return;
       }
-      const sections = Array.from(grouped.entries()).map(([sectionKey, content]) => {
-        const meta = BIOGRAPHY_SECTIONS.find((s) => s.key === sectionKey);
-        return {
-          title: sectionKey,
-          content,
-          sectionKey,
-        };
-      });
-      onImportMultipleSections(sections);
-      setShowMappingWizard(false);
-      resetDialog();
-      onOpenChange(false);
+      setParsedContent(parsePastedText(html, language));
     },
-    [onImportMultipleSections, getDestinationContent, resetDialog, onOpenChange]
+    [pdfOffer, language]
+  );
+
+  const finishImport = useCallback(
+    async (action: ConflictAction) => {
+      if (!parsedContent) return;
+      setAskConflict(false);
+      setSaving(true);
+      setError(null);
+      try {
+        if (keepCover && pdfOffer) {
+          if (!user?.id) {
+            setError(t.importDialog.fileReadError);
+            return;
+          }
+          await saveOriginalCoverJpeg({
+            biographyId,
+            userId: user.id,
+            jpegBase64: pdfOffer.coverJpegBase64,
+          });
+        }
+        applySingleImport(action);
+      } catch {
+        setError(t.photos.uploadError);
+      } finally {
+        setSaving(false);
+      }
+    },
+    [parsedContent, keepCover, pdfOffer, user?.id, biographyId, t, applySingleImport]
   );
 
   const handleImportConfirm = useCallback(() => {
     if (!parsedContent) return;
-
-    const multiBlocks =
-      parsedContent.hasSections &&
-      parsedContent.sections &&
-      parsedContent.sections.filter((s) => s.title).length > 1;
-
-    if (multiBlocks && biographyMode === 'sections' && onImportMultipleSections) {
-      setShowMappingWizard(true);
+    if (sheetHasContent() && htmlHasText(incomingHtml())) {
+      setAskConflict(true);
       return;
     }
-
-    if (parsedContent.hasSections && parsedContent.sections?.length && onImportMultipleSections) {
-      onImportMultipleSections(
-        parsedContent.sections.map((s) => ({
-          title: s.title,
-          content: s.content,
-          sectionKey: s.sectionKey ?? undefined,
-        }))
-      );
-      resetDialog();
-      onOpenChange(false);
-      return;
-    }
-
-    const action =
-      importMode === 'append' || destinationHasContent() ? importMode : 'replace';
-    applySingleImport(action);
-  }, [
-    parsedContent,
-    biographyMode,
-    onImportMultipleSections,
-    importMode,
-    destinationHasContent,
-    applySingleImport,
-    resetDialog,
-    onOpenChange,
-  ]);
+    void finishImport('replace');
+  }, [parsedContent, sheetHasContent, incomingHtml, finishImport]);
 
   const handleOpenChange = useCallback(
     (newOpen: boolean) => {
@@ -301,38 +331,9 @@ export function ImportTextDialog({
   );
 
   const previewHtml =
-    parsedContent?.content ||
-    (parsedContent?.sections?.map((s) => `<h2>${s.title}</h2>${s.content}`).join('') ?? '');
-
-  const importModeRadios = (
-    <div className="space-y-2">
-      <Label>{t.editor.importSaveTo}</Label>
-      <div className="flex flex-col gap-2">
-        <label className="flex items-center gap-3 cursor-pointer group">
-          <input
-            type="radio"
-            name="import-mode"
-            value="replace"
-            checked={importMode === 'replace'}
-            onChange={() => setImportMode('replace')}
-            className="accent-foreground h-4 w-4 shrink-0"
-          />
-          <span className="text-sm">{t.editor.importFreeFlowReplace}</span>
-        </label>
-        <label className="flex items-center gap-3 cursor-pointer group">
-          <input
-            type="radio"
-            name="import-mode"
-            value="append"
-            checked={importMode === 'append'}
-            onChange={() => setImportMode('append')}
-            className="accent-foreground h-4 w-4 shrink-0"
-          />
-          <span className="text-sm">{t.editor.importFreeFlowAppend}</span>
-        </label>
-      </div>
-    </div>
-  );
+    parsedContent?.hasSections && parsedContent.sections?.length
+      ? sectionsToDocumentHtml(parsedContent.sections)
+      : parsedContent?.content || '';
 
   return (
     <>
@@ -351,29 +352,9 @@ export function ImportTextDialog({
           <div className="flex-1 overflow-y-auto px-6 py-4 space-y-5">
             <div className="rounded-md px-4 py-3.5" style={{ backgroundColor: '#C4DAEB' }}>
               <p className="text-sm leading-snug text-foreground">
-                {biographyMode === 'freeflow'
-                  ? t.editor.importNoticeFreeflowMode
-                  : t.editor.importNoticeSectionsMode}
+                {t.editor.importNoticeFreeflowMode}
               </p>
             </div>
-
-            {biographyMode === 'sections' && (
-              <div className="space-y-1.5">
-                <Label>{t.editor.importSaveTo}</Label>
-                <Select value={destination} onValueChange={setDestination}>
-                  <SelectTrigger className="w-full">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {BIOGRAPHY_SECTIONS.map((s) => (
-                      <SelectItem key={s.key} value={s.key}>
-                        {t.sectionTitles[s.key as keyof typeof t.sectionTitles] || s.title}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            )}
 
             {inputMode === 'input' && (
               <div className="space-y-4">
@@ -392,7 +373,7 @@ export function ImportTextDialog({
                   <input
                     ref={fileInputRef}
                     type="file"
-                    accept=".txt,.docx,.rtf"
+                    accept=".txt,.docx,.rtf,.pdf,application/pdf"
                     multiple
                     onChange={handleFileInputChange}
                     className="hidden"
@@ -421,22 +402,27 @@ export function ImportTextDialog({
 
                 <div className="space-y-2">
                   <Label htmlFor="paste-text">{t.importDialog.pasteLabel}</Label>
-                  <Textarea
+                  <div
                     id="paste-text"
-                    placeholder={t.importDialog.pastePlaceholder}
-                    value={pastedText}
-                    onChange={(e) => setPastedText(e.target.value)}
-                    className="min-h-[120px] font-mono text-sm"
+                    ref={pasteRef}
+                    role="textbox"
+                    aria-multiline="true"
+                    contentEditable
+                    suppressContentEditableWarning
+                    data-placeholder={t.importDialog.pastePlaceholder}
+                    onInput={(e) => {
+                      const el = e.currentTarget;
+                      const text = el.innerText.replace(/\u00a0/g, ' ').trim();
+                      setPastedText(text ? el.innerHTML : '');
+                    }}
+                    className="min-h-[120px] rounded-md border border-input bg-background px-3 py-2 text-sm leading-relaxed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring empty:before:text-muted-foreground empty:before:content-[attr(data-placeholder)]"
                   />
                 </div>
 
-                {(biographyMode === 'freeflow' || biographyMode === 'sections') &&
-                  (pastedText.trim() || parsedContent) &&
-                  importModeRadios}
               </div>
             )}
 
-            {inputMode === 'preview' && parsedContent && (
+            {inputMode === 'preview' && (parsedContent || pdfOffer) && (
               <div className="space-y-3">
                 {queuedFiles.length > 0 && (
                   <div className="flex flex-wrap gap-1.5">
@@ -450,17 +436,48 @@ export function ImportTextDialog({
                     ))}
                   </div>
                 )}
-                <div className="rounded-md border border-border/60 bg-muted/30 p-4 max-h-[240px] overflow-y-auto import-preview">
-                  <p className="text-xs text-muted-foreground mb-2 font-medium">
-                    {t.importDialog.preview}
-                  </p>
-                  <div
-                    className="prose prose-sm max-w-none text-sm [&_h1]:text-xl [&_h1]:font-serif [&_h2]:text-lg [&_h2]:font-serif [&_h3]:text-base [&_h3]:font-semibold"
-                    dangerouslySetInnerHTML={{ __html: previewHtml }}
-                  />
-                </div>
-
-                {importModeRadios}
+                {pdfOffer && (
+                  <div className="space-y-3">
+                    <img
+                      src={pdfOffer.previewUrl}
+                      alt=""
+                      className="mx-auto max-h-64 rounded-md border border-border/60 bg-[#ECE9E4] object-contain"
+                    />
+                    <p className="text-sm font-medium">{t.importDialog.keepCoverQuestion}</p>
+                    <div className="flex flex-wrap gap-2">
+                      <Button
+                        type="button"
+                        variant={keepCover === true ? 'default' : 'outline'}
+                        size="sm"
+                        onClick={() => chooseCover(true)}
+                      >
+                        {t.importDialog.keepCoverYes}
+                      </Button>
+                      <Button
+                        type="button"
+                        variant={keepCover === false ? 'default' : 'outline'}
+                        size="sm"
+                        onClick={() => chooseCover(false)}
+                      >
+                        {t.importDialog.keepCoverNo}
+                      </Button>
+                    </div>
+                    {keepCover === true && !pdfOffer.bodyHasText && (
+                      <p className="text-sm text-muted-foreground">{t.importDialog.pdfInsidePhoto}</p>
+                    )}
+                  </div>
+                )}
+                {parsedContent && htmlHasText(previewHtml) && (
+                  <div className="rounded-md border border-border/60 bg-muted/30 p-4 max-h-[240px] overflow-y-auto import-preview">
+                    <p className="text-xs text-muted-foreground mb-2 font-medium">
+                      {t.importDialog.preview}
+                    </p>
+                    <div
+                      className="prose prose-sm max-w-none text-sm [&_h1]:text-xl [&_h1]:font-serif [&_h2]:text-lg [&_h2]:font-serif [&_h3]:text-base [&_h3]:font-semibold"
+                      dangerouslySetInnerHTML={{ __html: previewHtml }}
+                    />
+                  </div>
+                )}
 
                 <Button
                   type="button"
@@ -469,6 +486,8 @@ export function ImportTextDialog({
                   onClick={() => {
                     setParsedContent(null);
                     setQueuedFiles([]);
+                    setPdfOffer(null);
+                    setKeepCover(null);
                     setInputMode('input');
                   }}
                 >
@@ -504,17 +523,30 @@ export function ImportTextDialog({
           </DialogFooter>
         </DialogContent>
       </Dialog>
-
-      {parsedContent?.sections && (
-        <ImportSectionMappingWizard
-          open={showMappingWizard}
-          onOpenChange={setShowMappingWizard}
-          blocks={parsedContent.sections}
-          fallbackSectionKey={destination}
-          onConfirm={handleMappingConfirm}
-          onCancel={() => setShowMappingWizard(false)}
-        />
-      )}
+      {askConflict &&
+        createPortal(
+          <div
+            className="fixed inset-0 z-[80] flex items-center justify-center bg-black/60 p-4"
+            role="dialog"
+            aria-modal="true"
+          >
+            <div className="w-full max-w-md rounded-lg border bg-background p-6 space-y-4">
+              <p className="text-base leading-snug">{t.editor.importConflictQuestion}</p>
+              <div className="flex flex-col gap-2">
+                <Button type="button" variant="outline" disabled={saving} onClick={() => void finishImport('replace')}>
+                  {t.editor.importFreeFlowReplace}
+                </Button>
+                <Button type="button" variant="outline" disabled={saving} onClick={() => void finishImport('append')}>
+                  {t.editor.importFreeFlowAppend}
+                </Button>
+                <Button type="button" variant="ghost" disabled={saving} onClick={() => setAskConflict(false)}>
+                  {t.common.cancel}
+                </Button>
+              </div>
+            </div>
+          </div>,
+          document.body
+        )}
     </>
   );
 }

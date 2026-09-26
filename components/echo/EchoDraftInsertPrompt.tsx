@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { CheckCircle2, FileText, Loader2, AlertTriangle } from 'lucide-react';
+import { FileText, Loader2, AlertTriangle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
@@ -15,9 +15,6 @@ export interface EchoDraftInsertPromptProps {
   hidePreviewLabel: string;
   readyLabel: string;
   sectionMismatchWarning?: string;
-  successTitle: string;
-  successBody: string;
-  openEditorLabel: string;
   preview: string;
   deferred?: boolean;
   applying?: boolean;
@@ -26,7 +23,6 @@ export interface EchoDraftInsertPromptProps {
   onConfirm: () => void;
   onDefer: () => void;
   onExpand?: () => void;
-  onOpenEditor?: () => void;
 }
 
 const PREVIEW_COLLAPSED_MAX_H = 'max-h-52';
@@ -42,9 +38,6 @@ export function EchoDraftInsertPrompt({
   hidePreviewLabel,
   readyLabel,
   sectionMismatchWarning,
-  successTitle,
-  successBody,
-  openEditorLabel,
   preview,
   deferred = false,
   applying = false,
@@ -53,32 +46,10 @@ export function EchoDraftInsertPrompt({
   onConfirm,
   onDefer,
   onExpand,
-  onOpenEditor,
 }: EchoDraftInsertPromptProps) {
   const [previewExpanded, setPreviewExpanded] = useState(false);
 
-  if (inserted) {
-    return (
-      <div
-        role="region"
-        aria-label={successTitle}
-        className="mt-3 rounded-lg border border-brand-green/40 bg-brand-greenLight/30 dark:bg-brand-greenLight/10 p-3 space-y-2"
-      >
-        <div className="flex items-start gap-2">
-          <CheckCircle2 className="h-4 w-4 text-brand-green shrink-0 mt-0.5" />
-          <div className="min-w-0 space-y-1">
-            <p className="text-sm font-medium text-foreground">{successTitle}</p>
-            <p className="text-xs text-muted-foreground">{successBody}</p>
-          </div>
-        </div>
-        {onOpenEditor && (
-          <Button type="button" size="sm" variant="default" className="w-full sm:w-auto" onClick={onOpenEditor}>
-            {openEditorLabel}
-          </Button>
-        )}
-      </div>
-    );
-  }
+  if (inserted) return null;
 
   if (deferred) {
     return (

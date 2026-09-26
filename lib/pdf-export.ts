@@ -196,7 +196,7 @@ const PDF_DRAW_SECTION_RUNNING_HEADER = false;
 
 /** Section-mode chapter title start Y (large heading); clears top margin */
 const SECTION_HEADING_TOP_MM = MARGIN_TOP + 12;
-const CHAPTER_HEADING_BODY_GAP_MM = 2;
+const CHAPTER_HEADING_BODY_GAP_MM = 8;
 
 const PT_BODY = 11;
 const PT_CHAPTER = 22;

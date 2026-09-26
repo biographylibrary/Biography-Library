@@ -14,6 +14,7 @@ export interface EchoActivityStatusCopy {
   statusPreparingReply: string;
   statusReadingMessage: string;
   statusWriting: string;
+  statusWaitingLines: string[];
   statusStillWorking: string;
   statusSlowApology: string;
   statusLoadingHistory: string;
@@ -32,11 +33,7 @@ interface UseEchoActivityStatusParams {
   copy: EchoActivityStatusCopy;
 }
 
-const PHASE_MS = {
-  preparing: 4_000,
-  reading: 8_000,
-  stillWorking: 14_000,
-} as const;
+const WAIT_STEP_MS = 3_500;
 
 export function useEchoActivityStatus({
   orbState,
@@ -82,11 +79,10 @@ export function useEchoActivityStatus({
     if (orbState === 'speaking') return copy.statusSpeaking;
     if (hasStreamContent && isStreaming) return copy.statusWriting;
     if (isAwaitingReply) {
-      if (elapsedMs >= PHASE_MS.stillWorking) return copy.statusSlowApology;
-      if (elapsedMs >= PHASE_MS.reading) return copy.statusStillWorking;
-      if (elapsedMs >= PHASE_MS.preparing) return copy.statusReadingMessage;
-      if (elapsedMs >= 1_500) return copy.statusPreparingReply;
-      return copy.statusFormulatingReply;
+      const lines = copy.statusWaitingLines;
+      if (!lines.length) return copy.statusWriting;
+      const index = Math.min(lines.length - 1, Math.floor(elapsedMs / WAIT_STEP_MS));
+      return lines[index];
     }
     if (!voiceOutputEnabled) return copy.statusVoiceMuted;
     if (!hasUserMessages) return copy.statusWelcome;

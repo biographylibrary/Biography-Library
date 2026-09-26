@@ -273,6 +273,11 @@ async function parseDocxFile(file: File): Promise<ParsedText> {
 }
 
 export function parsePastedText(text: string, language: Language = 'en'): ParsedText {
+  const trimmed = text.trim();
+  if (/<[a-z!/]/i.test(trimmed)) {
+    return finalizeParsed(sanitizeHtml(trimmed), language);
+  }
+
   const sections = detectTextSections(text);
 
   if (sections) {

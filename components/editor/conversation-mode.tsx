@@ -4,11 +4,10 @@ import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Card } from '@/components/ui/card';
-import { User, Send, Mic, Loader as Loader2, ArrowLeft, CircleCheck as CheckCircle2 } from 'lucide-react';
+import { User, Send, Loader as Loader2, ArrowLeft, CircleCheck as CheckCircle2 } from 'lucide-react';
 import { useTranslation } from '@/lib/i18n/i18n-context';
 import { getFallbackPrompts } from '@/lib/ai-constants';
 import { BIOGRAPHY_SECTIONS } from '@/lib/editor-constants';
-import { VoiceRecorder } from './voice-recorder';
 import { cn } from '@/lib/utils';
 import { analyzeAndRespond, type ConversationHistory } from '@/lib/ai/smart-followup';
 import { useAuth } from '@/lib/auth-context';
@@ -59,8 +58,6 @@ export function ConversationMode({
 
   const [messages, setMessages] = useState<Message[]>([]);
   const [currentAnswer, setCurrentAnswer] = useState('');
-  const [audioTranscript, setAudioTranscript] = useState('');
-  const [showVoice, setShowVoice] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
@@ -129,16 +126,6 @@ export function ConversationMode({
       scrollRef.current.scrollIntoView({ behavior: 'smooth', block: 'end' });
     }
   }, [messages]);
-
-  useEffect(() => {
-    if (audioTranscript) {
-      setCurrentAnswer((prev) => {
-        const separator = prev && !prev.endsWith(' ') ? ' ' : '';
-        return prev + separator + audioTranscript;
-      });
-      setAudioTranscript('');
-    }
-  }, [audioTranscript]);
 
   const saveCurrentCheckpoint = useCallback(async () => {
     if (!session?.user?.id || !biographyId || messages.length === 0) return;
@@ -708,15 +695,6 @@ export function ConversationMode({
             <div className="flex sm:flex-col gap-2 justify-end sm:justify-center">
               <Button
                 size="icon"
-                variant="ghost"
-                onClick={() => setShowVoice(!showVoice)}
-                disabled={isGenerating || isAnalyzing}
-                className="h-10 w-10 rounded-full bg-[#A84B2F] hover:bg-[#6B2F1F] hover:text-[#FDFBF7] text-[#FDFBF7]"
-              >
-                <Mic className="h-4 w-4" />
-              </Button>
-              <Button
-                size="icon"
                 onClick={handleSendAnswer}
                 disabled={!currentAnswer.trim() || isGenerating || isAnalyzing || currentQuestionIndex >= prompts.length}
                 className="h-10 w-10"
@@ -740,14 +718,6 @@ export function ConversationMode({
               )}
             </div>
           </div>
-
-          {showVoice && (
-            <VoiceRecorder
-              onTranscript={setAudioTranscript}
-              onClearTranscript={() => setAudioTranscript('')}
-              audioTranscript={audioTranscript}
-            />
-          )}
         </div>
       </div>
 

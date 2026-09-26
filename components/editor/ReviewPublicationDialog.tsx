@@ -11,7 +11,6 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import {
   Check,
-  Circle,
   FileText,
   Loader as Loader2,
   Send,
@@ -21,7 +20,7 @@ import {
   TriangleAlert as AlertTriangle,
 } from 'lucide-react';
 import { useTranslation } from '@/lib/i18n/i18n-context';
-import { BIOGRAPHY_SECTIONS } from '@/lib/editor-constants';
+import { htmlHasText } from '@/lib/editor/single-document';
 import type { BiographyPublicationStatus } from '@/lib/biographies';
 import { isReviewOrScreeningLockStatus, isLockedPendingScreeningStatus } from '@/lib/publication-state';
 import { cn } from '@/lib/utils';
@@ -54,7 +53,6 @@ export function ReviewPublicationDialog({
   open,
   onOpenChange,
   biographyMode,
-  completedSections,
   contentFreeflow,
   biographyStatus,
   isPreflightChecking = false,
@@ -76,14 +74,7 @@ export function ReviewPublicationDialog({
   const { t } = useTranslation();
   const rp = t.editor.reviewPublication;
 
-  const allSectionKeys = BIOGRAPHY_SECTIONS.map((s) => s.key);
-  const incompleteSections =
-    biographyMode === 'sections'
-      ? allSectionKeys.filter((key) => !completedSections.includes(key))
-      : [];
-  const freeflowReady = contentFreeflow.trim().length > 0;
-  const writingReady =
-    biographyMode === 'sections' ? incompleteSections.length === 0 : freeflowReady;
+  const writingReady = htmlHasText(contentFreeflow);
 
   const underReviewLock = isReviewOrScreeningLockStatus(biographyStatus);
   const lockedPendingScreening = isLockedPendingScreeningStatus(biographyStatus);
@@ -143,22 +134,6 @@ export function ReviewPublicationDialog({
         ) : !writingReady ? (
           <div className="space-y-4 pt-2">
             <p className="text-sm text-muted-foreground leading-relaxed">{rp.incompleteMessage}</p>
-            {biographyMode === 'sections' && incompleteSections.length > 0 && (
-              <ul className="space-y-1.5 rounded-lg border border-border/60 bg-muted/30 p-3">
-                {incompleteSections.map((key) => (
-                  <li key={key} className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <Circle className="h-3.5 w-3.5 shrink-0" />
-                    <span>
-                      {t.sectionTitles[key as keyof typeof t.sectionTitles] ||
-                        BIOGRAPHY_SECTIONS.find((s) => s.key === key)?.title}
-                    </span>
-                  </li>
-                ))}
-              </ul>
-            )}
-            {biographyMode === 'freeflow' && !freeflowReady && (
-              <p className="text-sm text-muted-foreground">{rp.freeflowEmptyHint}</p>
-            )}
           </div>
         ) : (
           <ol className="space-y-4 pt-2">

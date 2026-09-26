@@ -2,7 +2,6 @@ import type { ToolDefinition } from '@/lib/agents/infomaniak-client';
 import { SupabaseClient } from '@supabase/supabase-js';
 import { COACH_TOOL_DEFINITIONS, executeCoachTool } from '@/lib/agents/tools/coach-tools';
 import { REVIEWER_CHAT_TOOL_DEFINITIONS, executeReviewerTool } from '@/lib/agents/tools/reviewer-tools';
-import { convertBiographyMode } from '@/lib/echo/biography-mode-convert';
 
 export const ECHO_ONBOARDING_TOOL_DEFINITIONS: ToolDefinition[] = [
   {
@@ -40,23 +39,7 @@ export const ECHO_ONBOARDING_TOOL_DEFINITIONS: ToolDefinition[] = [
   },
 ];
 
-export const ECHO_PATH_TOOL_DEFINITIONS: ToolDefinition[] = [
-  {
-    type: 'function',
-    function: {
-      name: 'convert_biography_mode',
-      description:
-        'Convert biography between sections and freeflow without deleting content. Requires user confirmation.',
-      parameters: {
-        type: 'object',
-        properties: {
-          toMode: { type: 'string', enum: ['sections', 'freeflow'] },
-        },
-        required: ['toMode'],
-      },
-    },
-  },
-];
+export const ECHO_PATH_TOOL_DEFINITIONS: ToolDefinition[] = [];
 
 export const ECHO_TOOL_DEFINITIONS: ToolDefinition[] = [
   ...ECHO_ONBOARDING_TOOL_DEFINITIONS,
@@ -154,15 +137,11 @@ export async function executeEchoTool(
   }
 
   if (name === 'convert_biography_mode') {
-    if (!ctx.biographyId) {
-      return { content: JSON.stringify({ error: 'No biography in context' }) };
-    }
-    const toMode = args.toMode as 'sections' | 'freeflow';
-    const fromMode = ctx.biographyMode ?? 'sections';
-    const result = await convertBiographyMode(ctx.serviceClient, ctx.biographyId, fromMode, toMode);
     return {
-      content: JSON.stringify(result),
-      event: result.ok ? { tool: name, modeConverted: toMode } : undefined,
+      content: JSON.stringify({
+        ok: false,
+        error: 'The biography is one document. Chapters are headings in the text, not a separate mode.',
+      }),
     };
   }
 
