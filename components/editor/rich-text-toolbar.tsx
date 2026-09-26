@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Editor } from '@tiptap/react';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
@@ -23,12 +24,45 @@ import {
   ChevronDown,
   Type,
   Undo2,
+  SwatchBook,
 } from 'lucide-react';
 import { EditorFontSizeControl } from './editor-font-size-control';
 import { EditorAiToolsMenu, type EditorAiToolsMenuProps } from './editor-ai-tools-menu';
 import { AiUsageIndicator } from './ai-usage-indicator';
 import { cn } from '@/lib/utils';
 import { IconHint } from '@/components/ui/icon-hint';
+
+type MobileStyleKey = 'bold' | 'italic' | 'title' | 'bullet' | 'number' | 'quote';
+
+const MOBILE_STYLE_ORDER: MobileStyleKey[] = [
+  'title',
+  'bullet',
+  'number',
+  'quote',
+  'bold',
+  'italic',
+];
+
+function isMobileStyleActive(editor: Editor, key: MobileStyleKey): boolean {
+  switch (key) {
+    case 'bold':
+      return editor.isActive('bold');
+    case 'italic':
+      return editor.isActive('italic');
+    case 'title':
+      return editor.isActive('heading', { level: 1 });
+    case 'bullet':
+      return editor.isActive('bulletList');
+    case 'number':
+      return editor.isActive('orderedList');
+    case 'quote':
+      return editor.isActive('blockquote');
+  }
+}
+
+function activeMobileStyles(editor: Editor): MobileStyleKey[] {
+  return MOBILE_STYLE_ORDER.filter((key) => isMobileStyleActive(editor, key));
+}
 
 interface RichTextToolbarProps {
   editor: Editor | null;
@@ -52,18 +86,57 @@ export function RichTextToolbar({
   undoLastChange,
 }: RichTextToolbarProps) {
   const { t } = useTranslation();
+  const savedSelectionRef = useRef<{ from: number; to: number } | null>(null);
+  const [styleEpoch, setStyleEpoch] = useState(0);
+
+  useEffect(() => {
+    if (!editor) return;
+    const refresh = () => setStyleEpoch((n) => n + 1);
+    editor.on('transaction', refresh);
+    return () => {
+      editor.off('transaction', refresh);
+    };
+  }, [editor]);
+
+  const activeStyles = useMemo(
+    () => (editor ? activeMobileStyles(editor) : []),
+    [editor, styleEpoch],
+  );
 
   if (!editor) {
     return null;
   }
 
+  const mobileStyleLabel: Record<MobileStyleKey, string> = {
+    bold: t.formatting.styleBold,
+    italic: t.formatting.styleItalic,
+    title: t.formatting.styleTitle,
+    bullet: t.formatting.styleBullet,
+    number: t.formatting.styleNumber,
+    quote: t.formatting.styleQuote,
+  };
+
+  const applyMobileStyle = (key: MobileStyleKey) => {
+    const saved = savedSelectionRef.current;
+    const chain = editor.chain();
+    if (saved) chain.setTextSelection(saved);
+    chain.focus();
+    if (key === 'bold') chain.toggleBold();
+    else if (key === 'italic') chain.toggleItalic();
+    else if (key === 'title') chain.toggleHeading({ level: 1 });
+    else if (key === 'bullet') chain.toggleBulletList();
+    else if (key === 'number') chain.toggleOrderedList();
+    else chain.toggleBlockquote();
+    chain.run();
+  };
+
   const usageAndCount = (
     <div
       data-tour-id={aiTools?.aiEnabled ? 'ai-credits' : undefined}
-      className="ml-auto flex h-8 flex-col items-end justify-center gap-px shrink-0 pl-2"
+      className="ml-auto flex h-8 flex-col items-end justify-center gap-px shrink-0 pl-1"
     >
       {aiTools?.aiEnabled && <AiUsageIndicator refreshTrigger={aiUsageRefresh} />}
-      <span className="text-[10px] leading-none text-muted-foreground tabular-nums whitespace-nowrap">
+      <span className="text-[9px] md:text-[10px] leading-none text-muted-foreground tabular-nums whitespace-nowrap">
         {editor.storage.characterCount?.characters() || 0} {t.editor.chars}
       </span>
     </div>
@@ -106,18 +179,18 @@ export function RichTextToolbar({
   );
 
   return (
-    <div className="flex flex-nowrap items-center gap-1 px-3 py-1 border-b border-border/30 bg-muted/30 overflow-x-auto">
+    <div className="flex flex-nowrap items-center gap-0.5 md:gap-1 px-1.5 md:px-3 py-1 border-b border-border/30 bg-muted/30 overflow-x-auto scrollbar-none">
       {undoLastChange && (
         <Button
           type="button"
           variant="ghost"
           size="sm"
-          className="h-8 px-2 shrink-0 gap-1"
+          className="h-8 px-1 md:px-2 shrink-0 gap-0.5"
           onClick={undoLastChange.onUndo}
           title={undoLastChange.hint}
         >
-          <Undo2 className="h-4 w-4" />
-          <span className="text-xs">{undoLastChange.label}</span>
+          <Undo2 className="h-3.5 w-3.5 md:h-4 md:w-4" />
+          <span className="text-[11px] md:text-xs">{undoLastChange.label}</span>
         </Button>
       )}
       <div className="hidden md:flex items-center gap-0.5 flex-nowrap">
@@ -241,40 +314,57 @@ export function RichTextToolbar({
         />
       </div>
 
-      <div className="md:hidden">
-        <DropdownMenu>
+      <div className="flex shrink-0 items-center gap-1.5 md:contents">
+      <div className="md:hidden shrink-0">
+        <DropdownMenu
+          onOpenChange={(open) => {
+            if (!open) return;
+            const { from, to } = editor.state.selection;
+            savedSelectionRef.current = { from, to };
+          }}
+        >
           <DropdownMenuTrigger asChild>
-            <Button variant="outline" size="sm" className="h-8" data-tour-id="formatting-menu-btn">
-              <Type className="h-4 w-4 mr-1" />
-              {t.formatting.menu}
-              <ChevronDown className="h-3 w-3 ml-1" />
+            <Button
+              variant="outline"
+              size="sm"
+              className="h-8 min-w-[6.75rem] justify-between px-1.5 gap-1 text-[11px] leading-none"
+              data-tour-id="formatting-menu-btn"
+            >
+              <SwatchBook className="h-3.5 w-3.5 shrink-0" />
+              <span className="whitespace-nowrap">
+                {activeStyles.length
+                  ? activeStyles.map((key) => mobileStyleLabel[key]).join(' + ')
+                  : t.formatting.menu}
+              </span>
+              <ChevronDown className="h-3 w-3 shrink-0" />
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="start" className="w-56">
-            <DropdownMenuItem onClick={() => editor.chain().focus().toggleBold().run()}>
-              <Bold className="h-4 w-4 mr-2" />
-              {t.formatting.bold}
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => editor.chain().focus().toggleItalic().run()}>
-              <Italic className="h-4 w-4 mr-2" />
-              {t.formatting.italic}
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}>
-              <Heading1 className="h-4 w-4 mr-2" />
-              {t.formatting.chapterTitle}
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => editor.chain().focus().toggleBulletList().run()}>
-              <List className="h-4 w-4 mr-2" />
-              {t.formatting.bulletList}
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => editor.chain().focus().toggleOrderedList().run()}>
-              <ListOrdered className="h-4 w-4 mr-2" />
-              {t.formatting.numberedList}
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => editor.chain().focus().toggleBlockquote().run()}>
-              <Quote className="h-4 w-4 mr-2" />
-              {t.formatting.quote}
-            </DropdownMenuItem>
+          <DropdownMenuContent
+            align="start"
+            className="w-[var(--radix-dropdown-menu-trigger-width)] min-w-[var(--radix-dropdown-menu-trigger-width)]"
+          >
+            {(
+              [
+                ['bold', Bold],
+                ['italic', Italic],
+                ['title', Heading1],
+                ['bullet', List],
+                ['number', ListOrdered],
+                ['quote', Quote],
+              ] as const
+            ).map(([key, Icon]) => (
+              <DropdownMenuItem
+                key={key}
+                onSelect={(event) => {
+                  event.preventDefault();
+                  applyMobileStyle(key);
+                }}
+                className={cn(isMobileStyleActive(editor, key) && 'bg-accent')}
+              >
+                <Icon className="h-4 w-4 mr-2" />
+                {mobileStyleLabel[key]}
+              </DropdownMenuItem>
+            ))}
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
@@ -292,10 +382,11 @@ export function RichTextToolbar({
 
       {aiTools?.aiEnabled && (
         <>
-          <Separator orientation="vertical" className="h-6 mx-1" />
+          <Separator orientation="vertical" className="h-6 mx-1 hidden md:block" />
           <EditorAiToolsMenu {...aiTools} />
         </>
       )}
+      </div>
 
       {usageAndCount}
     </div>

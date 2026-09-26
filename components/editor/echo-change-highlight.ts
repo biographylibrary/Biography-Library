@@ -91,7 +91,7 @@ export function decorationsForDraft(
       const from = Math.max(pos, range.from);
       const to = Math.min(pos + node.nodeSize, range.to);
       if (from < to) {
-        decos.push(Decoration.inline(from, to, { style: 'font-weight: 700' }));
+        decos.push(Decoration.inline(from, to, { class: 'echo-just-changed' }));
       }
     });
     if (!decos.length) continue;

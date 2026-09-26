@@ -8,8 +8,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Type } from 'lucide-react';
-import { useTranslation } from '@/lib/i18n/i18n-context';
 import { supabase } from '@/lib/supabase';
 
 interface EditorFontSizeControlProps {
@@ -25,7 +23,6 @@ export function EditorFontSizeControl({
   currentSize,
   onSizeChange,
 }: EditorFontSizeControlProps) {
-  const { t } = useTranslation();
   const [isUpdating, setIsUpdating] = useState(false);
 
   const handleSizeChange = async (sizeStr: string) => {
@@ -45,19 +42,28 @@ export function EditorFontSizeControl({
   };
 
   return (
-    <div className="flex items-center gap-1.5">
-      <Type className="h-3.5 w-3.5 text-muted-foreground flex-shrink-0" />
+    <div className="flex items-center shrink-0">
       <Select
         value={currentSize.toString()}
         onValueChange={handleSizeChange}
         disabled={isUpdating}
       >
-        <SelectTrigger className="w-[70px] h-8 text-xs">
+        <SelectTrigger
+          className="h-8 w-auto shrink-0 gap-1 px-2 text-[11px] md:text-xs [&>span]:line-clamp-none [&>span]:overflow-visible [&>span]:shrink-0 [&>span]:whitespace-nowrap [&>svg]:h-3 [&>svg]:w-3 [&>svg]:shrink-0"
+          aria-label={`${currentSize}px`}
+        >
           <SelectValue />
         </SelectTrigger>
-        <SelectContent>
+        <SelectContent
+          align="start"
+          className="w-[var(--radix-select-trigger-width)] min-w-[var(--radix-select-trigger-width)]"
+        >
           {fontSizes.map((size) => (
-            <SelectItem key={size} value={size.toString()}>
+            <SelectItem
+              key={size}
+              value={size.toString()}
+              className="justify-center px-2 py-1 text-[11px] md:text-xs data-[state=checked]:bg-accent [&>span:first-child]:hidden"
+            >
               {size}px
             </SelectItem>
           ))}
