@@ -13,7 +13,7 @@ Usare come elenco da spuntare in team. Ordine consigliato: **merge → migrazion
 
 ## 1. Merge e qualità codice
 
-- [ ] Branch di lavoro integrato in `main` — PR [#16](https://github.com/biographylibrary/Biography-Library/pull/16) (`main-sync` → `main`)
+- [ ] Branch di lavoro integrato in `main` (la PR #16 è già chiusa; non è più il punto di partenza)
 - [x] `npm run typecheck` e `npm run build` eseguiti su commit di `main-sync` (localmente)
 - [x] Workflow CI (`.github/workflows/ci.yml`) — typecheck, lint, build su PR e push `main`
 - [x] (Opzionale ma consigliato) `npm run lint` — PASS
@@ -53,8 +53,8 @@ Controllare che sul **processo che esegue Next** siano impostate (non committate
 
 - [ ] `INFOMANIAK_AI_TOKEN`, `INFOMANIAK_AI_ENDPOINT` — coerenti con host Next
 - [x] `INFOMANIAK_AI_MODEL_PRIMARY` = `google/gemma-4-31B-it`, `INFOMANIAK_AI_MODEL_FALLBACK` = `mistralai/Mistral-Small-4-119B-2603` (ai-assistant)
-- [x] `INFOMANIAK_AI_MODEL_HELP_PRIMARY` = `nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B-FP8`, `INFOMANIAK_AI_MODEL_HELP_FALLBACK` = `mistralai/Ministral-3-14B-Instruct-2512` (help-assistant)
-- [x] Edge Functions `ai-assistant` (v89) e `help-assistant` (v19) deployate con nuovi modelli
+- [x] `INFOMANIAK_AI_MODEL_GRAMMAR` = `swiss-ai/Apertus-v1.5-70B` (se non risponde, la funzione ripiega su Gemma e poi su Mistral Small 4)
+- [ ] Edge Function `ai-assistant` ridistribuita se il codice in `supabase/functions/ai-assistant/` è più nuovo di quello in produzione. Non esiste più una funzione `help-assistant`.
 
 ---
 

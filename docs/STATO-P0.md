@@ -3,8 +3,9 @@
 > **Aggiornamento del 21 settembre 2026 (sera, poi pomeriggio).** Lo smoke
 > sul risolutore è verde. Le query `frozen_reason` in produzione sono vuote.
 > La lista d’attesa beta è su `main` ([#60](https://github.com/BiographyLibrary/Biography-Library/pull/60),
-> `f5f0ddf`). Restano Markdown d’archivio, segnalazioni a tre corsie e
-> documentazione di prodotto fuori da questo file.
+> `f5f0ddf`). Markdown d’archivio, segnalazioni a tre corsie e pacchetto
+> sono poi entrati nel codice. Restano lo smoke su una scheda nuova e la
+> conversione HTML ancora in prova.
 >
 > | Prova | Esito |
 > | ----- | ----- |
@@ -149,23 +150,27 @@ La sezione che spiegava come togliere il commit duplicato di #52 dal ramo
 
 ---
 
-## 6. Cosa resta aperto, in ordine
+## 6. Chiuso dopo il 21 settembre 2026
+
+Questi punti erano aperti in questa sezione. Il codice li ha poi portati su `main`.
+
+- **Markdown d’archivio e pacchetto** (settembre 2026): l’originale conservato è Markdown UTF-8; il pacchetto sta in `archive/{UM}/v{N}/`; `erasePriorContent` copre i cinque posti previsti, solo per `data_protection`. Le versioni già depositate non si riscrivono.
+- **Segnalazioni a tre corsie** (settembre 2026): non esiste lo stato `provisional`. I 30 giorni del memorial sono la colonna `provisional_until`. La segnalazione resta possibile dopo la scadenza, per sempre. Il congelamento è solo `death` o `admin_action`.
+
+## 7. Cosa resta aperto
 
 1. Smoke «creazione scheda nuova → UM visibile» alla prossima biografia creata
    (non è stata creata una scheda nuova il 21 settembre).
-2. Markdown d’archivio (modulo, conversione in prova, pacchetto, `erasePriorContent`).
-3. Segnalazioni a tre corsie, colonna `provisional_until` (non uno stato
-   `provisional`), rimozione del percorso `frozen_reason: 'moderation_report'`.
-4. I 30 giorni memorial restano; la segnalazione resta possibile dopo la
-   scadenza, per sempre. Testi in [PROGETTO.md](../PROGETTO.md), [SPEC.md](../SPEC.md)
-   e KB.
+2. La conversione dell’HTML già salvato gira ancora in prova:
+   `npm run markdown:legacy` senza `--apply`. Non sovrascrive le schede.
+   Quelle pubblicate con una perdita restano per la revisione a mano.
 
 Manuale operativo e testi legali non si toccano: vivono fuori dal repository.
 `lib/i18n/terms-translations.ts` non è il testo legale vigente.
 
 ---
 
-## 7. PROGETTO.md e SPEC.md
+## 8. PROGETTO.md e SPEC.md
 
 Allineati in questo stesso passaggio di documentazione: GitHub (`main` =
 `f5f0ddf`), `UM_ID_BASE_URL`, Dockerfile su `main`, lista d’attesa, stati di

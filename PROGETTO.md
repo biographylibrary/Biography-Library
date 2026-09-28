@@ -8,15 +8,15 @@
 
 ## Cos'è Biography Library
 
-Piattaforma web che aiuta le persone a scrivere la propria biografia (o quella di un defunto) in modo guidato, con supporto AI. L'utente scrive in sezioni, riceve aiuto da un agente conversazionale (coach), può pubblicare la biografia come PDF e condividerla nel catalogo pubblico.
+Piattaforma web che aiuta le persone a scrivere la propria biografia (o quella di un defunto) in modo guidato, con supporto AI. L'utente scrive in un documento unico, riceve aiuto da un agente conversazionale (Echo), può pubblicare la biografia come PDF e condividerla nel catalogo pubblico.
 
 Fondatore unico, non sviluppatore: costruisce con Claude Code e Cursor. Non ci sono altri collaboratori tecnici. Le scelte architetturali privilegiano servizi gestiti (Supabase, Infomaniak, Jelastic) e piani completabili in autonomia.
 
-**Stack attuale**: Next.js 14 App Router · Supabase (Postgres, Auth, Storage, pgvector) · Jelastic (hosting) · Infomaniak AI Services (inferenza LLM) · Mistral La Plateforme (TTS voce)
+**Stack attuale**: Next.js 13.5 App Router · Supabase (Postgres, Auth, Storage, pgvector) · Jelastic (hosting) · Infomaniak AI Services (inferenza LLM) · Mistral La Plateforme (TTS voce)
 
 ---
 
-## Stato dell'implementazione (21 settembre 2026)
+## Stato dell'implementazione (28 settembre 2026)
 
 ### Funzionalità utente completate
 
@@ -28,9 +28,11 @@ Fondatore unico, non sviluppatore: costruisce con Claude Code e Cursor. Non ci s
 - Impostazioni profilo e notifiche
 
 **Creazione e scrittura biografia**
-- Due modalità: autobiografia (soggetto vivo, narratore = soggetto) e biografia di defunto (memorial)
-- Modalità sezioni: 9 sezioni tematiche strutturate, con stato di completamento per ciascuna
-- Importazione testo (incolla testo grezzo → parser distribuisce nelle sezioni)
+- Due tipi: autobiografia (soggetto vivo, narratore = soggetto) e biografia di defunto (memorial)
+- Editor a foglio unico, come un programma di scrittura. I capitoli sono i titoli che l’autore segna nel testo; non ci sono nove sezioni di vita né una modalità testo libero da scegliere
+- Importazione che conserva grassetto, corsivo e titoli. Accetta testo incollato, Word, txt, rtf, e un PDF digitale il cui testo si può selezionare. Se c’è già del testo, si chiede se sostituirlo o aggiungerlo in fondo. Un PDF solo fotografato o scansionato non viene letto
+- Echo può sostituire un passaggio, o ogni occorrenza di un segno (per esempio un trattino lungo), dentro il foglio. L’ultima modifica di Echo si può annullare. Il pezzo cambiato resta in grassetto per pochi secondi, senza essere salvato così
+- I file dell’editor che servivano alle nove sezioni fisse sono stati rimossi
 - Galleria foto fino a 30 immagini per biografia
 - Struttura libro: dedica, prefazione, copyright, nota dell'autore
 - Cooldown tra capitoli pubblicati (per utenti free, bypassato per staff)
@@ -55,15 +57,15 @@ Fondatore unico, non sviluppatore: costruisce con Claude Code e Cursor. Non ci s
 - Chat testuale con streaming SSE, storia dei thread persistente
 - Voce push-to-talk: STT via Whisper su Infomaniak Edge Function (Svizzera), TTS via Mistral Voxtral API
 - Coaching biografico per modalità sezioni e memoria soggetto (memorial)
-- Tool `propose_draft`: Echo propone un testo per la sezione corrente e lo mostra come card nell'editor senza ricaricare la pagina
+- Tool `propose_draft`: Echo propone un testo per il foglio unico. Se c’è un passaggio da cambiare, lo sostituisce; altrimenti lo aggiunge in fondo. La card chiede conferma prima di scrivere
 - Muting voce, stato orb (idle / listening / thinking / speaking)
 - Hub Echo dedicato (`/echo`) separato dall'editor
 
 **Coach narrativo**
-- Agente separato da Echo, accessibile dalla barra strumenti dell'editor
-- Proposta di bozze per le 9 sezioni, max 1500 parole per proposta
-- Tool calling: `propose_draft`, `read_section`, `list_sections`, `update_memory`
-- Memoria a lungo termine (agent_memory_facts), cancellata alla pubblicazione
+- Echo è l’assistente nella barra sotto il foglio. Non propone più una bozza per ciascuna delle nove sezioni
+- Una proposta resta entro 1500 parole
+- Strumenti ancora presenti: `get_progress`, `read_section` (con `freeflow` legge tutto il foglio), `propose_draft` (scrive nel foglio, anche in sostituzione), `complete_section` e `reopen_section` (segni di completamento rimasti nel codice, non la struttura visibile dell’editor)
+- `list_sections` e `update_memory` non esistono più come strumenti. La memoria di conversazione resta in `agent_memory_facts` ed è cancellata alla pubblicazione
 - RAG sulla biografia dell'utente (biography_chunks, embeddings su Infomaniak)
 
 **Onboarding e guida piattaforma**
@@ -73,7 +75,7 @@ Fondatore unico, non sviluppatore: costruisce con Claude Code e Cursor. Non ci s
 
 **Pubblicazione**
 - Flusso approvazione PDF a tre fasi: `draft` → `draft_ai_feedback` → `published`
-- Revisione AI con Apertus-70B (screening testo per qualità e moderazione)
+- Revisione AI di pubblicazione con Gemma 4 31B. Il controllo grammaticale chiede prima Apertus 1.5 e, se non risponde, ripiega su Gemma
 - Revisione manuale moderatori per casi segnalati
 - Export PDF avanzato (multi-pagina, con galleria, struttura libro) + intestazione/colophon permanenza
 - Export testo semplice UTF-8 (intestazione invariante bilingue)
@@ -84,6 +86,13 @@ Fondatore unico, non sviluppatore: costruisce con Claude Code e Cursor. Non ci s
 - Segnalazioni lettori con flusso revisione moderatore
 - Decisioni di moderazione via API server (non client)
 - Accesso staff alle biografie utente per supporto
+
+**Interfaccia, dal 22 al 27 settembre 2026**
+- Pagine legali servite dall’applicazione (`/terms-of-service`, `/privacy-policy`, `/cookie-policy`). I testi legali vigenti restano fuori dal repository
+- Etichetta BETA accanto al logo; avviso beta una volta dopo ogni accesso
+- Menu dell’account completo. Nell’editor gli strumenti stanno sotto una voce sola; Importa testo ed Esporta restano sempre visibili; il collegamento di condivisione si apre da lì
+- Badge Pioniere sulle prime 10.000 biografie in ordine di creazione, in catalogo e sopra il titolo
+- Rilettura sovrana e controllo grammaticale chiedono Apertus 1.5; la grammatica, se Apertus non risponde, tiene Gemma
 
 **Email e comunicazioni**
 - Pipeline Resend per email di benvenuto, conferma, reset password
@@ -109,20 +118,20 @@ Fondatore unico, non sviluppatore: costruisce con Claude Code e Cursor. Non ci s
 
 ## Modelli AI in uso
 
-| Funzione | Modello | Provider | Posizione dati |
+| Funzione | Modello | Ripiego | Dove stanno i dati |
 |---|---|---|---|
-| Coach narrativo | Mistral Small 4 (o equivalente slug Infomaniak) | Infomaniak AI Services | Svizzera |
-| Reviewer / screening | Mistral Small 4 | Infomaniak AI Services | Svizzera |
-| Onboarding / Platform Guide | `nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B-FP8` | Infomaniak AI Services | Svizzera |
-| Rilettura sovrana (opzionale) | `swiss-ai/Apertus-70B-Instruct-2509` | Infomaniak AI Services | Svizzera |
-| Echo LLM (chat + tool) | Mistral (via Infomaniak) | Infomaniak AI Services | Svizzera |
-| STT voce Echo | Whisper | Infomaniak Edge Function | Svizzera |
-| TTS voce Echo | Voxtral TTS (`voxtral-tts-minimax`) | Mistral La Plateforme | Francia/EU |
-| Embeddings RAG | `bge_multilingual_gemma2` (3584 dim, halfvec) | Infomaniak AI Services | Svizzera |
+| Coach | `google/gemma-4-31B-it` | `mistralai/Mistral-Small-4-119B-2603` | Svizzera, Infomaniak |
+| Revisore di pubblicazione | `google/gemma-4-31B-it` | `mistralai/Mistral-Small-4-119B-2603` | Svizzera, Infomaniak |
+| Echo e guida | `google/gemma-4-31B-it` | `mistralai/Ministral-3-14B-Instruct-2512` | Svizzera, Infomaniak |
+| Rilettura sovrana | `swiss-ai/Apertus-v1.5-70B` | `mistralai/Mistral-Small-4-119B-2603` | Svizzera, Infomaniak |
+| Grammatica | `swiss-ai/Apertus-v1.5-70B` | Gemma 4 31B, poi Mistral Small 4 | Svizzera, Infomaniak |
+| STT voce Echo | Whisper | — | Svizzera, Edge Function Infomaniak |
+| TTS voce Echo | Voxtral TTS | — | Francia/UE, Mistral |
+| Embeddings RAG | `bge_multilingual_gemma2` (3584 dim) | lo stesso | Svizzera, Infomaniak |
 
 **Nota voce**: solo la sintesi vocale (TTS) è su Mistral Francia. STT e LLM restano in Svizzera. I voice ID per le lingue vanno in `.env` come `ECHO_TTS_VOICE_IT/EN/FR/DE`. I preset Voxtral sono solo EN-US, EN-GB e FR; per IT e DE si usano voci clonate da Mistral Studio.
 
-**Nota Gemma**: rimossa a giugno 2026 — il coach era originalmente previsto su `google/gemma-4-31B-it`, poi consolidato su Mistral per uniformità e per eliminare dipendenze da Google.
+**Nota Gemma**: resta in uso per lo screening della pubblicazione e come ripiego della grammatica. I pesi sono aperti e l’inferenza è su infrastruttura svizzera (Infomaniak), non su un servizio Google.
 
 **Licenza**: i pesi Voxtral sono CC-BY-NC. "Gratis per gli utenti" non equivale a "non commerciale" — si usano le API a pagamento, non si auto-ospitano i pesi.
 
@@ -162,7 +171,7 @@ Unito in `main` con #51 (immagine standalone + prune). Non è più un ramo da me
 
 ### Piano Markdown d’archivio e segnalazioni a tre corsie
 
-Aperto. Originale conservato = Markdown UTF-8; tre corsie di segnalazione; `provisional_until` per memorial. La conversione dell’HTML già salvato è in prova: colonna `content_html_legacy` e `npm run markdown:legacy -- --dry-run` (nessuna sovrascrittura; le schede pubblicate con perdita restano per la revisione a mano). Tour di onboarding: voce «I miei dati» o «Chi era questa persona» sul pulsante in basso. Nella finestra il salvataggio resta visibile e l’elenco luoghi non viene tagliato. Non toccare termini e manuale operativo (vivono fuori repo). Dettaglio: piano Cursor `archivio_md_e_segnalazioni`.
+**Chiuso nel codice** (settembre 2026): originale Markdown UTF-8, tre corsie di segnalazione, `provisional_until` per il memorial, pacchetto d’archivio. Resta in prova solo la conversione dell’HTML già salvato: `npm run markdown:legacy` senza scrivere. Le schede pubblicate con una perdita restano per la revisione a mano. Non toccare termini e manuale operativo (vivono fuori repo).
 
 ### Fase 2 — migrazione Infomaniak Public Cloud (rinviata)
 
@@ -176,14 +185,15 @@ Non ancora iniziata. Richiede aiuto professionale. Includerà: PostgreSQL con pg
 - **Supabase resta in Fase 1**: database, auth, storage rimangono su Supabase per la beta. Nessuna migrazione fino alla Fase 2.
 - **Streaming SSE via Node.js**: le route agenti girano su runtime Node (non Edge) per il supporto streaming. La scelta è verificata nel `next.config.js`.
 - **Memoria agenti cancellata alla pubblicazione**: `agent_threads`, `agent_messages`, `agent_memory_facts` e `biography_chunks` vengono purgati quando la biografia passa a `published` (`purgeAgentMemoryOnPublished`).
-- **Coach solo su `biography_mode = sections`**: la modalità freeflow è esclusa dalla beta. Se l'utente tenta, l'agente lo reindirizza.
+- **Documento unico**: la biografia è un solo foglio. L’editor non offre più le nove sezioni né il testo libero come scelta. Echo e il coach lavorano su quel documento. Il campo `biography_mode` resta nel database per le schede già scritte con il valore `sections`: l’interfaccia, aprendole, le tratta come foglio unico e non lo toglie con una migrazione.
 - **Full-duplex voce rinviato**: Pipecat / LiveKit e barge-in sono Fase 2. La beta usa push-to-talk.
 - **Identificativo permanente UM**: emesso da Biography Library, specifica pubblica vincolante; non ARK; mai riciclato; mai 404 su ID emesso.
 - **Licenza contenuto pubblica**: scelta dell'autore (BY-NC-SA default / BY-SA); metadati sempre CC0; upgrade solo unidirezionale in UI.
 - **Anno UM**: solo eventi di archivio (pubblicazione, crediti, colophon); cambio anno in UTC; mai sulle date di vita.
 - **PDF attuale**: non aggiungere famiglie Noto a jsPDF; scritture non latine richiedono un motore diverso (subsetting).
 - **Memorial, 30 giorni**: restano (Manifesto e condizioni, fuori repo). In codice: colonna `provisional_until` quando esisterà, non uno stato `provisional`. La segnalazione resta possibile dopo la scadenza, per sempre.
-- **Originale d’archivio**: pacchetto `archive/{UM}/v{N}/` nel bucket privato `archive`. Autobiografia: v1 alla pubblicazione. Memorial: v1 solo dopo `provisional_until` (30 giorni), via `POST /api/cron/archive-packages`. Il manifesto non contiene la propria impronta. `erasePriorContent` toglie la versione precedente da storage, HTML legacy, cronologia, PDF esportati e chunk; dice al segnalante che le copie già scaricate non si ritirano.
+- **Formato di riferimento**: l’originale conservato della biografia è Markdown CommonMark in UTF-8. Il PDF è una resa generata, non l’originale. Si conservano la sorgente, i dati di contorno e il motore che li impagina, non gli impaginati già fatti. Da qui dipendono le copie di sicurezza, le esportazioni e la conservazione su un supporto fisico.
+- **Originale d’archivio**: pacchetto `archive/{UM}/v{N}/` nel bucket privato `archive`. Autobiografia: v1 alla pubblicazione. Memorial: v1 solo dopo `provisional_until` (30 giorni), via `POST /api/cron/archive-packages`. Il manifesto non contiene la propria impronta. `erasePriorContent` toglie la versione precedente da storage, HTML legacy, cronologia, PDF esportati e chunk; dice al segnalante che le copie già scaricate non si ritirano. Le versioni già depositate non si riscrivono.
 
 ---
 
@@ -229,7 +239,7 @@ app/
     admin/          # moderazione, gestione utenti
     biography/      # API biography (galleria, traduzione, modalità, create+mint UM)
     places/         # ricerca località (GeoNames/Nominatim)
-  biography/[id]/   # editor con sidebar sezioni + pannello permanenza
+  biography/[id]/   # editor a foglio unico + pannello permanenza
   id/[umId]/        # risolutore identificativo UM
   credits/          # Anno UM + nota CC0 metadati
   echo/             # hub Echo
@@ -259,4 +269,4 @@ components/
 
 ---
 
-*Ultimo aggiornamento: 21 settembre 2026*
+*Ultimo aggiornamento: 28 settembre 2026*

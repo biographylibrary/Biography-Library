@@ -6,17 +6,14 @@
 
 import { saveAs } from 'file-saver';
 import { nfc } from '@/lib/nfc';
-import { normalizeWikidataQid } from '@/lib/places';
+import { formatPlaceExportValue } from '@/lib/place-export-line';
+import { buildRecordCard } from '@/lib/record-schema';
+
+export { formatPlaceExportValue };
 import { formatUmYear, formatDateWithUmYear, toJDN, umYearFromDate } from '@/lib/um';
 import { toCanonical } from '@/lib/um-id';
 import { stripHtmlTags } from '@/lib/export-utils';
-import {
-  ASSERTED_BY_LABELS,
-  EVENT_LABELS,
-  type AssertedByCode,
-  type LifeEventType,
-  type UiLang,
-} from '@/lib/person-events';
+import { type UiLang } from '@/lib/person-events';
 
 const UNKNOWN: Record<UiLang, string> = {
   en: 'UNKNOWN',
@@ -176,59 +173,6 @@ function resolverLines(
   return out;
 }
 
-function fmtCoord(n: number | string | null | undefined): string | null {
-  if (n === null || n === undefined || n === '') return null;
-  const num = typeof n === 'number' ? n : Number(n);
-  if (!Number.isFinite(num)) return null;
-  return num.toFixed(6);
-}
-
-function geonamesToken(raw: number | string | null | undefined): string {
-  if (raw === null || raw === undefined || raw === '') return 'UNKNOWN';
-  const n = typeof raw === 'number' ? raw : Number(raw);
-  if (!Number.isInteger(n) || n <= 0) return 'UNKNOWN';
-  return String(n);
-}
-
-/**
- * Fixed place pattern for the invariant header and, later, metadata.json:
- * name | lat | lon | WGS 84 | geonames {id|UNKNOWN} | wikidata {Qid|UNKNOWN}
- * Missing numbers stay UNKNOWN; the datum slot is always WGS 84.
- */
-export function formatPlaceExportValue(
-  ev: Pick<
-    PermanenceExportEvent,
-    | 'place_name_as_given'
-    | 'place_lat'
-    | 'place_lon'
-    | 'place_geonames_id'
-    | 'place_wikidata_qid'
-  > | null | undefined,
-  unk: string
-): string {
-  const placeName = ev?.place_name_as_given?.trim();
-  if (!placeName) return unk;
-  const lat = fmtCoord(ev?.place_lat) ?? 'UNKNOWN';
-  const lon = fmtCoord(ev?.place_lon) ?? 'UNKNOWN';
-  const geonames = geonamesToken(ev?.place_geonames_id);
-  const wikidata = normalizeWikidataQid(ev?.place_wikidata_qid) ?? 'UNKNOWN';
-  return `${placeName} | ${lat} | ${lon} | WGS 84 | geonames ${geonames} | wikidata ${wikidata}`;
-}
-
-function eventEnglish(type: string): string {
-  if (type === 'birth' || type === 'death' || type === 'residence') {
-    return EVENT_LABELS[type].en;
-  }
-  return type;
-}
-
-function assertedEnglish(code: string | null): string {
-  if (code && code in ASSERTED_BY_LABELS) {
-    return ASSERTED_BY_LABELS[code as AssertedByCode].en;
-  }
-  return 'unknown';
-}
-
 function buildBodyText(bio: PermanenceExportBiography, sectionBodies?: string[]): string {
   if (bio.final_version?.trim()) {
     return stripHtmlTags(bio.final_version);
@@ -257,148 +201,9 @@ export function buildPermanenceHeaderLines(
   relations: PermanenceExportRelation[] = [],
   umIdBaseUrl?: string | null
 ): string[] {
-  const lang = uiLangFromTag(bio.record_language_tag);
-  const dir = bio.record_direction ?? 'ltr';
-  const unk = unknownWord(lang);
-  const lines: string[] = [];
-
-  lines.push(nfc('BIOGRAPHY LIBRARY'));
-
-  let umDisplay = unk;
-  if (bio.um_id?.trim()) {
-    try {
-      umDisplay = toCanonical(bio.um_id);
-    } catch {
-      umDisplay = nfc(bio.um_id.trim().toUpperCase());
-    }
-  }
-  lines.push(writeValue(dir, bil(lang, 'identifier'), umDisplay));
-
-  // Forma neutra rispetto alla lingua: ISO piu' anno UM, come il resto dell'intestazione.
-  const publishedForResolver =
-    bio.published_at_iso?.trim() && bio.published_um_year != null
-      ? `${bio.published_at_iso.trim()} · ${formatUmYear(bio.published_um_year, 'padded')}`
-      : null;
-  lines.push(
-    ...resolverLines(lang, dir, umIdBaseUrl, canonicalUmId(bio.um_id), publishedForResolver)
-  );
-
-  lines.push(
-    writeValue(dir, bil(lang, 'schemaVersion'), String(bio.schema_version ?? 2))
-  );
-
-  const endonym = bio.record_language_endonym?.trim() || unk.split(' | ')[0];
-  const tag = bio.record_language_tag?.trim() || 'und';
-  const script = bio.record_script?.trim() || 'Zyyy';
-  const direction = bio.record_direction?.trim() || 'ltr';
-  lines.push(
-    writeValue(dir, bil(lang, 'language'), `${endonym} (${tag}, ${script}, ${direction})`)
-  );
-
-  const name =
-    bio.name_as_written?.trim() ||
-    (bio.biography_type === 'memorial' ? bio.subject_name : null)?.trim() ||
-    bio.title?.trim() ||
-    unk;
-  lines.push(writeValue(dir, bil(lang, 'name'), name));
-
-  const romanized = bio.name_romanized?.trim() || unk;
-  lines.push(writeValue(dir, bil(lang, 'romanized'), romanized));
-
-  const orderedEvents = [...events].sort((a, b) => {
-    const order = (t: string) => (t === 'birth' ? 0 : t === 'death' ? 1 : 2);
-    return order(a.event_type) - order(b.event_type);
-  });
-
-  const ensureTypes: LifeEventType[] = ['birth', 'death'];
-  for (const type of ensureTypes) {
-    const ev = orderedEvents.find((e) => e.event_type === type);
-    const labelLocal = ev?.event_label?.trim() || EVENT_LABELS[type][lang];
-    lines.push(
-      writeValue(dir, bil(lang, 'event'), `${labelLocal} | ${eventEnglish(type)}`)
-    );
-
-    const dateVal = ev?.date_edtf?.trim() ? `${ev.date_edtf.trim()} (EDTF)` : unk;
-    lines.push(`  ${writeValue(dir, bil(lang, 'date'), dateVal)}`);
-
-    if (ev?.date_as_given?.trim()) {
-      const cal = ev.calendar_label?.trim() ? ` (${ev.calendar_label.trim()})` : '';
-      lines.push(
-        `  ${writeValue(dir, bil(lang, 'asGiven'), `${ev.date_as_given.trim()}${cal}`)}`
-      );
-    }
-
-    let jdn = ev?.date_start_jdn ?? null;
-    if (jdn == null && ev?.date_start_iso) {
-      const [y, m, d] = ev.date_start_iso.split('-').map(Number);
-      if (y && m && d) jdn = toJDN(y, m, d);
-    }
-    lines.push(
-      `  ${writeValue(dir, bil(lang, 'julianDay'), jdn != null ? String(jdn) : unk)}`
-    );
-
-    lines.push(
-      `  ${writeValue(dir, bil(lang, 'place'), formatPlaceExportValue(ev, unk))}`
-    );
-
-    const srcLabel = ev?.asserted_by_label?.trim() || UNKNOWN[lang];
-    const srcEn = assertedEnglish(ev?.asserted_by ?? null);
-    const conf = ev?.confidence?.trim() || 'unknown';
-    lines.push(
-      `  ${writeValue(dir, bil(lang, 'source'), `${srcLabel} | ${srcEn} (${conf})`)}`
-    );
-  }
-
-  for (const ev of orderedEvents.filter(
-    (e) => e.event_type === 'residence' && e.place_name_as_given?.trim()
-  )) {
-    const labelLocal = ev.event_label?.trim() || EVENT_LABELS.residence[lang];
-    lines.push(writeValue(dir, bil(lang, 'event'), `${labelLocal} | ${eventEnglish('residence')}`));
-    lines.push(
-      `  ${writeValue(dir, bil(lang, 'place'), formatPlaceExportValue(ev, unk))}`
-    );
-  }
-
-  for (const rel of relations) {
-    const code = rel.relation_code?.trim() || 'related';
-    const who = rel.related_name_as_written?.trim() || unk;
-    lines.push(
-      writeValue(
-        dir,
-        bil(lang, 'relation'),
-        `${rel.relation_label.trim()} | ${code}: ${who}`
-      )
-    );
-  }
-
-  if (bio.published_at_iso?.trim()) {
-    const iso = bio.published_at_iso.trim();
-    const [y, m, d] = iso.split('-').map(Number);
-    const jdn = y && m && d ? toJDN(y, m, d) : null;
-    const um =
-      bio.published_um_year != null
-        ? formatUmYear(bio.published_um_year, 'padded')
-        : formatUmYear(umYearFromDate(new Date(`${iso}T00:00:00Z`)), 'padded');
-    const pub =
-      jdn != null
-        ? `${iso} | ${bil(lang, 'julianDay')}: ${jdn} | ${um}`
-        : `${iso} | ${um}`;
-    lines.push(writeValue(dir, bil(lang, 'published'), pub));
-  } else {
-    lines.push(writeValue(dir, bil(lang, 'published'), unk));
-  }
-
-  lines.push(
-    writeValue(dir, bil(lang, 'rights'), bio.rights_statement_uri?.trim() || unk)
-  );
-
-  return lines.map((l) => nfc(l));
+  return buildRecordCard(bio, events, relations, umIdBaseUrl).lines;
 }
 
-/**
- * Colophon breve: pubblicazione in doppia notazione + identificativo UM.
- * `yearWord` = Anno / Year / An / Jahr (da i18n, non hardcodato qui).
- */
 export function buildColophonLines(
   bio: PermanenceExportBiography,
   yearWord: string,
