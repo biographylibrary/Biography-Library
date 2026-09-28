@@ -8,15 +8,15 @@
 
 ## Cos'è Biography Library
 
-Piattaforma web che aiuta le persone a scrivere la propria biografia (o quella di un defunto) in modo guidato, con supporto AI. L'utente scrive in sezioni, riceve aiuto da un agente conversazionale (coach), può pubblicare la biografia come PDF e condividerla nel catalogo pubblico.
+Piattaforma web che aiuta le persone a scrivere la propria biografia (o quella di un defunto) in modo guidato, con supporto AI. L'utente scrive in un documento unico, riceve aiuto da un agente conversazionale (Echo), può pubblicare la biografia come PDF e condividerla nel catalogo pubblico.
 
 Fondatore unico, non sviluppatore: costruisce con Claude Code e Cursor. Non ci sono altri collaboratori tecnici. Le scelte architetturali privilegiano servizi gestiti (Supabase, Infomaniak, Jelastic) e piani completabili in autonomia.
 
-**Stack attuale**: Next.js 14 App Router · Supabase (Postgres, Auth, Storage, pgvector) · Jelastic (hosting) · Infomaniak AI Services (inferenza LLM) · Mistral La Plateforme (TTS voce)
+**Stack attuale**: Next.js 13.5 App Router · Supabase (Postgres, Auth, Storage, pgvector) · Jelastic (hosting) · Infomaniak AI Services (inferenza LLM) · Mistral La Plateforme (TTS voce)
 
 ---
 
-## Stato dell'implementazione (21 settembre 2026)
+## Stato dell'implementazione (28 settembre 2026)
 
 ### Funzionalità utente completate
 
@@ -28,9 +28,11 @@ Fondatore unico, non sviluppatore: costruisce con Claude Code e Cursor. Non ci s
 - Impostazioni profilo e notifiche
 
 **Creazione e scrittura biografia**
-- Due modalità: autobiografia (soggetto vivo, narratore = soggetto) e biografia di defunto (memorial)
-- Modalità sezioni: 9 sezioni tematiche strutturate, con stato di completamento per ciascuna
-- Importazione testo (incolla testo grezzo → parser distribuisce nelle sezioni)
+- Due tipi: autobiografia (soggetto vivo, narratore = soggetto) e biografia di defunto (memorial)
+- Editor a foglio unico, come un programma di scrittura. I capitoli sono i titoli che l’autore segna nel testo; non ci sono nove sezioni di vita né una modalità testo libero da scegliere
+- Importazione che conserva grassetto, corsivo e titoli. Accetta testo incollato, Word, txt, rtf, e un PDF digitale il cui testo si può selezionare. Se c’è già del testo, si chiede se sostituirlo o aggiungerlo in fondo. Un PDF solo fotografato o scansionato non viene letto
+- Echo può sostituire un passaggio, o ogni occorrenza di un segno (per esempio un trattino lungo), dentro il foglio. L’ultima modifica di Echo si può annullare. Il pezzo cambiato resta in grassetto per pochi secondi, senza essere salvato così
+- I file dell’editor che servivano alle nove sezioni fisse sono stati rimossi
 - Galleria foto fino a 30 immagini per biografia
 - Struttura libro: dedica, prefazione, copyright, nota dell'autore
 - Cooldown tra capitoli pubblicati (per utenti free, bypassato per staff)
@@ -55,15 +57,15 @@ Fondatore unico, non sviluppatore: costruisce con Claude Code e Cursor. Non ci s
 - Chat testuale con streaming SSE, storia dei thread persistente
 - Voce push-to-talk: STT via Whisper su Infomaniak Edge Function (Svizzera), TTS via Mistral Voxtral API
 - Coaching biografico per modalità sezioni e memoria soggetto (memorial)
-- Tool `propose_draft`: Echo propone un testo per la sezione corrente e lo mostra come card nell'editor senza ricaricare la pagina
+- Tool `propose_draft`: Echo propone un testo per il foglio unico. Se c’è un passaggio da cambiare, lo sostituisce; altrimenti lo aggiunge in fondo. La card chiede conferma prima di scrivere
 - Muting voce, stato orb (idle / listening / thinking / speaking)
 - Hub Echo dedicato (`/echo`) separato dall'editor
 
 **Coach narrativo**
-- Agente separato da Echo, accessibile dalla barra strumenti dell'editor
-- Proposta di bozze per le 9 sezioni, max 1500 parole per proposta
-- Tool calling: `propose_draft`, `read_section`, `list_sections`, `update_memory`
-- Memoria a lungo termine (agent_memory_facts), cancellata alla pubblicazione
+- Echo è l’assistente nella barra sotto il foglio. Non propone più una bozza per ciascuna delle nove sezioni
+- Una proposta resta entro 1500 parole
+- Strumenti ancora presenti: `get_progress`, `read_section` (con `freeflow` legge tutto il foglio), `propose_draft` (scrive nel foglio, anche in sostituzione), `complete_section` e `reopen_section` (segni di completamento rimasti nel codice, non la struttura visibile dell’editor)
+- `list_sections` e `update_memory` non esistono più come strumenti. La memoria di conversazione resta in `agent_memory_facts` ed è cancellata alla pubblicazione
 - RAG sulla biografia dell'utente (biography_chunks, embeddings su Infomaniak)
 
 **Onboarding e guida piattaforma**
@@ -84,6 +86,13 @@ Fondatore unico, non sviluppatore: costruisce con Claude Code e Cursor. Non ci s
 - Segnalazioni lettori con flusso revisione moderatore
 - Decisioni di moderazione via API server (non client)
 - Accesso staff alle biografie utente per supporto
+
+**Interfaccia, dal 22 al 27 settembre 2026**
+- Pagine legali servite dall’applicazione (`/terms-of-service`, `/privacy-policy`, `/cookie-policy`). I testi legali vigenti restano fuori dal repository
+- Etichetta BETA accanto al logo; avviso beta una volta dopo ogni accesso
+- Menu dell’account completo. Nell’editor gli strumenti stanno sotto una voce sola; Importa testo ed Esporta restano sempre visibili; il collegamento di condivisione si apre da lì
+- Badge Pioniere sulle prime 10.000 biografie in ordine di creazione, in catalogo e sopra il titolo
+- Rilettura sovrana e controllo grammaticale chiedono Apertus 1.5; la grammatica, se Apertus non risponde, tiene Gemma
 
 **Email e comunicazioni**
 - Pipeline Resend per email di benvenuto, conferma, reset password
@@ -229,7 +238,7 @@ app/
     admin/          # moderazione, gestione utenti
     biography/      # API biography (galleria, traduzione, modalità, create+mint UM)
     places/         # ricerca località (GeoNames/Nominatim)
-  biography/[id]/   # editor con sidebar sezioni + pannello permanenza
+  biography/[id]/   # editor a foglio unico + pannello permanenza
   id/[umId]/        # risolutore identificativo UM
   credits/          # Anno UM + nota CC0 metadati
   echo/             # hub Echo
@@ -259,4 +268,4 @@ components/
 
 ---
 
-*Ultimo aggiornamento: 21 settembre 2026*
+*Ultimo aggiornamento: 28 settembre 2026*
