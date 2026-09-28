@@ -100,7 +100,7 @@ export default function RootLayout({
           </>
         )}
         <Providers>
-          <div className="flex flex-col h-screen overflow-hidden">
+          <div className="fixed inset-0 flex flex-col overflow-hidden">
             <ConditionalHeader />
             <main className="flex-1 overflow-auto min-h-0">
               {children}

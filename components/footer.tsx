@@ -10,7 +10,7 @@ export function Footer() {
   const umLabel = `${t.umId.yearWord} ${formatUmYear(umYearFromDate(new Date()), 'short')}`;
 
   return (
-    <footer className="border-t border-border/50 bg-[#ECE9E4] dark:bg-[#1F2121] mt-auto py-2 flex items-center">
+    <footer className="shrink-0 border-t border-border/50 bg-[#ECE9E4] dark:bg-[#1F2121] mt-auto py-2 flex items-center">
       <div className="w-full px-2 sm:px-4">
         <div className="flex flex-col items-center gap-1">
           <div className="flex items-center gap-1.5">
