@@ -13,7 +13,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "version",
-        "text": "Versione 1.0 – 25 settembre 2026"
+        "text": "Versione 1.1 – 28 settembre 2026"
       },
       {
         "kind": "heading",
@@ -61,11 +61,11 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "item",
-        "text": "IA Etica e Locale – L'elaborazione dell'IA avviene sul territorio svizzero, mai inviata a terzi"
+        "text": "IA Etica e Locale – La scrittura avviene in Svizzera, su Infomaniak. Durante la beta la voce può essere generata temporaneamente nell’Unione europea"
       },
       {
         "kind": "item",
-        "text": "Hosting Svizzero – Tutti i dati risiedono esclusivamente in Svizzera"
+        "text": "Hosting Svizzero – Il sito è in Svizzera. Durante la beta, database, accesso, foto ed email possono stare temporaneamente fuori. Alla pubblicazione al pubblico della versione 1 finale, tutto sarà in Svizzera"
       },
       {
         "kind": "item",
@@ -193,7 +193,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "paragraph",
-        "text": "Elaborazione IA: esclusivamente in Svizzera tramite i sistemi IA di Infomaniak, basati su modelli open source."
+        "text": "Elaborazione della scrittura: in Svizzera, tramite i sistemi IA di Infomaniak, basati su modelli open source. Durante la beta, la voce parlata può essere generata temporaneamente nell’Unione europea."
       },
       {
         "kind": "heading",
@@ -369,7 +369,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "paragraph",
-        "text": "⚠️ I dati non lasciano mai la giurisdizione svizzera. Nessun trasferimento verso paesi privi di standard adeguati di protezione dei dati."
+        "text": "⚠️ Durante la beta, database, accesso e foto stanno su Supabase, le email passano da Resend e, se usi la voce, la risposta parlata è generata nell’Unione europea (Francia). La scrittura dell’assistente resta in Svizzera, su Infomaniak. Questi passaggi fuori dalla Svizzera sono temporanei e finiscono con la pubblicazione al pubblico della versione 1 finale, quando tutto sarà in Svizzera."
       },
       {
         "kind": "paragraph",
@@ -405,7 +405,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "paragraph",
-        "text": "Residenza dei dati – 100% Svizzera: tutti i server, i backup e l'elaborazione dell'IA operano esclusivamente sull'infrastruttura Infomaniak con data center in Svizzera."
+        "text": "Residenza dei dati – Il sito è ospitato in Svizzera, su Infomaniak. Durante la beta, database, accesso e foto stanno su Supabase, le email passano da Resend e, se usi la voce, la risposta parlata è generata nell’Unione europea (Francia). La scrittura dell’assistente resta in Svizzera. Questi passaggi fuori dalla Svizzera sono temporanei e finiscono con la pubblicazione al pubblico della versione 1 finale, quando tutto sarà in Svizzera."
       },
       {
         "kind": "paragraph",
@@ -629,7 +629,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "paragraph",
-        "text": "La scrittura dell’assistente avviene in Svizzera tramite i sistemi di IA di Infomaniak. Se usi la voce, la risposta parlata è generata da un servizio nell’Unione europea (Francia). Puoi non usare la voce."
+        "text": "La scrittura dell’assistente avviene in Svizzera tramite i sistemi di IA di Infomaniak. Se usi la voce, la risposta parlata è generata da un servizio nell’Unione europea (Francia). Puoi non usare la voce. Questo passaggio è temporaneo e finisce con la pubblicazione al pubblico della versione 1 finale."
       },
       {
         "kind": "heading",
@@ -653,7 +653,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "paragraph",
-        "text": "Cookie tecnici necessari (nessun consenso richiesto): token di sessione, preferenze di lingua, protezione CSRF, impostazioni sulla privacy."
+        "text": "Cookie tecnici necessari (nessun consenso richiesto): token di sessione, protezione CSRF, impostazioni sulla privacy. La lingua scelta è salvata nella memoria del browser, non in un cookie."
       },
       {
         "kind": "paragraph",
@@ -793,7 +793,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "paragraph",
-        "text": "Cronologia delle versioni: v1.0 — 25 settembre 2026 — Aggiornamento: piattaforma in linea, primi 30 giorni, cookie dell’app"
+        "text": "Cronologia delle versioni: v1.1 — 28 settembre 2026 — Durante la beta alcuni pezzi stanno ancora fuori dalla Svizzera, in modo temporaneo, e tornano in Svizzera con la pubblicazione al pubblico della versione 1 finale. v1.0 — 25 settembre 2026 — piattaforma in linea, primi 30 giorni, cookie dell’app"
       },
       {
         "kind": "heading",
@@ -873,7 +873,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "paragraph",
-        "text": "Versione: 1.0 | 25 settembre 2026 | Licenza del documento: CC BY-SA 4.0"
+        "text": "Versione: 1.1 | 28 settembre 2026 | Licenza del documento: CC BY-SA 4.0"
       },
       {
         "kind": "paragraph",
@@ -899,7 +899,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "version",
-        "text": "Version 1.0 – 25 September 2026"
+        "text": "Version 1.1 – 28 September 2026"
       },
       {
         "kind": "heading",
@@ -947,11 +947,11 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "item",
-        "text": "Ethical and Local AI – AI processing takes place on Swiss territory, never sent to third parties"
+        "text": "Ethical and Local AI – Writing takes place in Switzerland, on Infomaniak. During the beta the voice may be generated temporarily in the European Union"
       },
       {
         "kind": "item",
-        "text": "Swiss Hosting – All data resides exclusively in Switzerland"
+        "text": "Swiss Hosting – The site is in Switzerland. During the beta, the database, sign-in, photos and email may sit outside for a time. When version 1 is published to the public, everything will be in Switzerland"
       },
       {
         "kind": "item",
@@ -1079,7 +1079,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "paragraph",
-        "text": "AI processing: exclusively in Switzerland via Infomaniak’s AI systems, based on open source models."
+        "text": "Writing is processed in Switzerland via Infomaniak’s AI systems, based on open source models. During the beta, the spoken voice may be generated temporarily in the European Union."
       },
       {
         "kind": "heading",
@@ -1255,7 +1255,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "paragraph",
-        "text": "⚠️ Data never leaves Swiss jurisdiction. No transfers to countries lacking adequate data protection standards."
+        "text": "⚠️ During the beta, the database, sign-in and photos are on Supabase, email goes through Resend, and if you use the voice the spoken reply is generated in the European Union (France). The assistant’s writing stays in Switzerland, on Infomaniak. These steps outside Switzerland are temporary. They end when version 1 is published to the public, when everything will be in Switzerland."
       },
       {
         "kind": "paragraph",
@@ -1291,7 +1291,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "paragraph",
-        "text": "Data Residency – 100% Switzerland: all servers, backups and AI processing operate exclusively on Infomaniak infrastructure with data centres in Switzerland."
+        "text": "Data residency – The site is hosted in Switzerland, on Infomaniak. During the beta, the database, sign-in and photos are on Supabase, email goes through Resend, and if you use the voice the spoken reply is generated in the European Union (France). The assistant’s writing stays in Switzerland. These steps outside Switzerland are temporary. They end when version 1 is published to the public, when everything will be in Switzerland."
       },
       {
         "kind": "paragraph",
@@ -1515,7 +1515,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "paragraph",
-        "text": "The assistant’s writing runs in Switzerland through Infomaniak’s AI systems. If you use the voice, the spoken reply is generated by a service in the European Union (France). You can leave the voice off."
+        "text": "The assistant’s writing runs in Switzerland through Infomaniak’s AI systems. If you use the voice, the spoken reply is generated by a service in the European Union (France). You can leave the voice off. This step is temporary and ends when version 1 is published to the public."
       },
       {
         "kind": "heading",
@@ -1539,7 +1539,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "paragraph",
-        "text": "Necessary technical cookies (no consent required): session token, language preferences, CSRF protection, privacy settings."
+        "text": "Necessary technical cookies (no consent required): session token, CSRF protection, privacy settings. The chosen language is saved in the browser’s storage, not in a cookie."
       },
       {
         "kind": "paragraph",
@@ -1631,7 +1631,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "paragraph",
-        "text": "We do not transfer personal data outside of Switzerland."
+        "text": "During the beta, the database, sign-in and photos are on Supabase, email goes through Resend, and if you use the voice the spoken reply is generated in the European Union (France). The assistant’s writing stays in Switzerland, on Infomaniak. These steps outside Switzerland are temporary. They end when version 1 is published to the public, when everything will be in Switzerland."
       },
       {
         "kind": "paragraph",
@@ -1679,7 +1679,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "paragraph",
-        "text": "Version history: v1.0 — 25 September 2026 — Update: platform online, first 30 days, app cookies"
+        "text": "Version history: v1.1 — 28 September 2026 — During the beta some parts are still outside Switzerland, temporarily, and move to Switzerland when version 1 is published to the public. v1.0 — 25 September 2026 — platform online, first 30 days, app cookies"
       },
       {
         "kind": "heading",
@@ -1759,7 +1759,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "paragraph",
-        "text": "Version: 1.0 | 25 September 2026 | Document licence: CC BY-SA 4.0"
+        "text": "Version: 1.1 | 28 September 2026 | Document licence: CC BY-SA 4.0"
       },
       {
         "kind": "paragraph",
@@ -1785,7 +1785,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "version",
-        "text": "Version 1.0 – 25 septembre 2026"
+        "text": "Version 1.1 – 28 septembre 2026"
       },
       {
         "kind": "heading",
@@ -1833,11 +1833,11 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "item",
-        "text": "IA éthique et locale – Le traitement par l'IA a lieu sur le territoire suisse, jamais envoyé à des tiers"
+        "text": "IA éthique et locale – L’écriture se fait en Suisse, chez Infomaniak. Pendant la bêta, la voix peut être produite temporairement dans l’Union européenne"
       },
       {
         "kind": "item",
-        "text": "Hébergement suisse – Toutes les données résident exclusivement en Suisse"
+        "text": "Hébergement suisse – Le site est en Suisse. Pendant la bêta, la base de données, l’accès, les photos et les e-mails peuvent rester temporairement dehors. À la publication au public de la version 1 finale, tout sera en Suisse"
       },
       {
         "kind": "item",
@@ -1965,7 +1965,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "paragraph",
-        "text": "Traitement par l'IA : exclusivement en Suisse via les systèmes d'IA d'Infomaniak, basés sur des modèles open source."
+        "text": "Écriture : en Suisse, via les systèmes d’IA d’Infomaniak, sur des modèles open source. Pendant la bêta, la voix parlée peut être produite temporairement dans l’Union européenne."
       },
       {
         "kind": "heading",
@@ -2141,7 +2141,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "paragraph",
-        "text": "⚠️ Les données ne quittent jamais la juridiction suisse. Aucun transfert vers des pays dépourvus de normes adéquates en matière de protection des données."
+        "text": "⚠️ Pendant la bêta, la base de données, l’accès et les photos sont sur Supabase, les e-mails passent par Resend et, si vous utilisez la voix, la réponse parlée est produite dans l’Union européenne (France). L’écriture de l’assistant reste en Suisse, chez Infomaniak. Ces passages hors de Suisse sont temporaires. Ils prennent fin à la publication au public de la version 1 finale, quand tout sera en Suisse."
       },
       {
         "kind": "paragraph",
@@ -2177,7 +2177,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "paragraph",
-        "text": "Résidence des données – 100% Suisse : tous les serveurs, sauvegardes et traitements d'IA fonctionnent exclusivement sur l'infrastructure d'Infomaniak avec des centres de données en Suisse."
+        "text": "Résidence des données – Le site est hébergé en Suisse, chez Infomaniak. Pendant la bêta, la base de données, l’accès et les photos sont sur Supabase, les e-mails passent par Resend et, si vous utilisez la voix, la réponse parlée est produite dans l’Union européenne (France). L’écriture de l’assistant reste en Suisse. Ces passages hors de Suisse sont temporaires. Ils prennent fin à la publication au public de la version 1 finale, quand tout sera en Suisse."
       },
       {
         "kind": "paragraph",
@@ -2401,7 +2401,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "paragraph",
-        "text": "L’écriture de l’assistant se fait en Suisse via les systèmes d’IA d’Infomaniak. Si vous utilisez la voix, la réponse parlée est produite par un service dans l’Union européenne (France). Vous pouvez ne pas utiliser la voix."
+        "text": "L’écriture de l’assistant se fait en Suisse via les systèmes d’IA d’Infomaniak. Si vous utilisez la voix, la réponse parlée est produite par un service dans l’Union européenne (France). Vous pouvez ne pas utiliser la voix. Ce passage est temporaire et prend fin à la publication au public de la version 1 finale."
       },
       {
         "kind": "heading",
@@ -2425,7 +2425,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "paragraph",
-        "text": "Cookies techniques nécessaires (aucun consentement requis) : jeton de session, préférences linguistiques, protection CSRF, paramètres de confidentialité."
+        "text": "Cookies techniques nécessaires (aucun consentement requis) : jeton de session, protection CSRF, paramètres de confidentialité. La langue choisie est enregistrée dans la mémoire du navigateur, pas dans un cookie."
       },
       {
         "kind": "paragraph",
@@ -2517,7 +2517,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "paragraph",
-        "text": "Nous ne transférons pas de données personnelles en dehors de la Suisse."
+        "text": "Pendant la bêta, la base de données, l’accès et les photos sont sur Supabase, les e-mails passent par Resend et, si vous utilisez la voix, la réponse parlée est produite dans l’Union européenne (France). L’écriture de l’assistant reste en Suisse, chez Infomaniak. Ces passages hors de Suisse sont temporaires. Ils prennent fin à la publication au public de la version 1 finale, quand tout sera en Suisse."
       },
       {
         "kind": "paragraph",
@@ -2565,7 +2565,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "paragraph",
-        "text": "Historique des versions : v1.0 — 25 septembre 2026 — Mise à jour : plateforme en ligne, 30 premiers jours, cookies de l’app"
+        "text": "Historique des versions : v1.1 — 28 septembre 2026 — Pendant la bêta, certaines parties sont encore hors de Suisse, de façon temporaire, et reviennent en Suisse à la publication au public de la version 1 finale. v1.0 — 25 septembre 2026 — plateforme en ligne, 30 premiers jours, cookies de l’app"
       },
       {
         "kind": "heading",
@@ -2645,7 +2645,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "paragraph",
-        "text": "Version : 1.0 | 25 septembre 2026 | Licence du document : CC BY-SA 4.0"
+        "text": "Version : 1.1 | 28 septembre 2026 | Licence du document : CC BY-SA 4.0"
       },
       {
         "kind": "paragraph",
@@ -2671,7 +2671,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "version",
-        "text": "Version 1.0 – 25. September 2026"
+        "text": "Version 1.1 – 28. September 2026"
       },
       {
         "kind": "heading",
@@ -2719,11 +2719,11 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "item",
-        "text": "Ethische und lokale KI – Die KI-Verarbeitung findet auf Schweizer Boden statt und wird niemals an Dritte weitergegeben"
+        "text": "Ethische und lokale KI – Das Schreiben erfolgt in der Schweiz, bei Infomaniak. Während der Beta kann die Stimme vorübergehend in der Europäischen Union erzeugt werden"
       },
       {
         "kind": "item",
-        "text": "Schweizer Hosting – Alle Daten verbleiben ausschließlich in der Schweiz"
+        "text": "Schweizer Hosting – Die Website liegt in der Schweiz. Während der Beta können Datenbank, Anmeldung, Fotos und E-Mails vorübergehend draussen liegen. Mit der Veröffentlichung der finalen Version 1 für die Öffentlichkeit wird alles in der Schweiz sein"
       },
       {
         "kind": "item",
@@ -2851,7 +2851,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "paragraph",
-        "text": "KI-Verarbeitung: ausschließlich in der Schweiz über die KI-Systeme von Infomaniak, basierend auf Open-Source-Modellen."
+        "text": "Schreiben: in der Schweiz, über die KI-Systeme von Infomaniak, auf Open-Source-Modellen. Während der Beta kann die gesprochene Stimme vorübergehend in der Europäischen Union erzeugt werden."
       },
       {
         "kind": "heading",
@@ -3027,7 +3027,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "paragraph",
-        "text": "⚠️ Daten verlassen niemals die Schweizer Gerichtsbarkeit. Keine Übermittlungen in Länder ohne angemessene Datenschutzstandards."
+        "text": "⚠️ Während der Beta liegen Datenbank, Anmeldung und Fotos bei Supabase, E-Mails laufen über Resend, und wenn Sie die Stimme nutzen, wird die gesprochene Antwort in der Europäischen Union (Frankreich) erzeugt. Das Schreiben des Assistenten bleibt in der Schweiz, bei Infomaniak. Diese Wege ausserhalb der Schweiz sind vorübergehend. Sie enden mit der Veröffentlichung der finalen Version 1 für die Öffentlichkeit, wenn alles in der Schweiz sein wird."
       },
       {
         "kind": "paragraph",
@@ -3063,7 +3063,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "paragraph",
-        "text": "Datenresidenz – 100% Schweiz: Alle Server, Backups und die KI-Verarbeitung werden ausschließlich auf der Infrastruktur von Infomaniak mit Rechenzentren in der Schweiz betrieben."
+        "text": "Datenresidenz – Die Website wird in der Schweiz gehostet, bei Infomaniak. Während der Beta liegen Datenbank, Anmeldung und Fotos bei Supabase, E-Mails laufen über Resend, und wenn Sie die Stimme nutzen, wird die gesprochene Antwort in der Europäischen Union (Frankreich) erzeugt. Das Schreiben des Assistenten bleibt in der Schweiz. Diese Wege ausserhalb der Schweiz sind vorübergehend. Sie enden mit der Veröffentlichung der finalen Version 1 für die Öffentlichkeit, wenn alles in der Schweiz sein wird."
       },
       {
         "kind": "paragraph",
@@ -3287,7 +3287,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "paragraph",
-        "text": "Das Schreiben des Assistenten läuft in der Schweiz über die KI-Systeme von Infomaniak. Wenn Sie die Stimme nutzen, wird die gesprochene Antwort von einem Dienst in der Europäischen Union (Frankreich) erzeugt. Sie können die Stimme auslassen."
+        "text": "Das Schreiben des Assistenten läuft in der Schweiz über die KI-Systeme von Infomaniak. Wenn Sie die Stimme nutzen, wird die gesprochene Antwort von einem Dienst in der Europäischen Union (Frankreich) erzeugt. Sie können die Stimme auslassen. Dieser Weg ist vorübergehend und endet mit der Veröffentlichung der finalen Version 1 für die Öffentlichkeit."
       },
       {
         "kind": "heading",
@@ -3311,7 +3311,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "paragraph",
-        "text": "Notwendige technische Cookies (keine Zustimmung erforderlich): Sitzungs-Token, Spracheinstellungen, CSRF-Schutz, Datenschutzeinstellungen."
+        "text": "Notwendige technische Cookies (keine Zustimmung erforderlich): Sitzungs-Token, CSRF-Schutz, Datenschutzeinstellungen. Die gewählte Sprache liegt im Speicher des Browsers, nicht in einem Cookie."
       },
       {
         "kind": "paragraph",
@@ -3403,7 +3403,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "paragraph",
-        "text": "Wir übermitteln keine personenbezogenen Daten ausserhalb der Schweiz."
+        "text": "Während der Beta liegen Datenbank, Anmeldung und Fotos bei Supabase, E-Mails laufen über Resend, und wenn Sie die Stimme nutzen, wird die gesprochene Antwort in der Europäischen Union (Frankreich) erzeugt. Das Schreiben des Assistenten bleibt in der Schweiz, bei Infomaniak. Diese Wege ausserhalb der Schweiz sind vorübergehend. Sie enden mit der Veröffentlichung der finalen Version 1 für die Öffentlichkeit, wenn alles in der Schweiz sein wird."
       },
       {
         "kind": "paragraph",
@@ -3451,7 +3451,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "paragraph",
-        "text": "Versionsverlauf: v1.0 — 25. September 2026 — Aktualisierung: Plattform online, erste 30 Tage, Cookies der App"
+        "text": "Versionsverlauf: v1.1 — 28. September 2026 — Während der Beta liegen einige Teile noch ausserhalb der Schweiz, vorübergehend, und kommen mit der Veröffentlichung der finalen Version 1 für die Öffentlichkeit in die Schweiz. v1.0 — 25. September 2026 — Plattform online, erste 30 Tage, Cookies der App"
       },
       {
         "kind": "heading",
@@ -3531,7 +3531,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "paragraph",
-        "text": "Version: 1.0 | 25. September 2026 | Dokumentenlizenz: CC BY-SA 4.0"
+        "text": "Version: 1.1 | 28. September 2026 | Dokumentenlizenz: CC BY-SA 4.0"
       },
       {
         "kind": "paragraph",
@@ -3559,26 +3559,26 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "version",
-        "text": "Versione 1.0 – 25 settembre 2026"
+        "text": "Versione 1.1 – 28 settembre 2026"
       },
       {
-        "kind": "heading",
+        "kind": "paragraph",
         "text": "Utilizzando Biography Library, accetti questi Termini di Servizio. Ti preghiamo di leggerli attentamente."
       },
       {
-        "kind": "paragraph",
+        "kind": "heading",
         "text": "1. Chi può utilizzare Biography Library"
       },
       {
-        "kind": "heading",
+        "kind": "paragraph",
         "text": "Devi avere almeno 18 anni per utilizzare Biography Library."
       },
       {
-        "kind": "heading",
+        "kind": "paragraph",
         "text": "Creando un account, confermi che tutte le informazioni fornite sono accurate e veritiere, che rispetterai questi Termini e tutte le leggi applicabili, e che rispetterai i diritti di tutte le altre persone."
       },
       {
-        "kind": "paragraph",
+        "kind": "heading",
         "text": "2. Cosa puoi pubblicare"
       },
       {
@@ -3586,7 +3586,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
         "text": "Biography Library consente solo due tipi di biografie."
       },
       {
-        "kind": "paragraph",
+        "kind": "heading",
         "text": "La tua autobiografia"
       },
       {
@@ -3594,15 +3594,15 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
         "text": "Puoi scrivere e pubblicare la storia della tua vita in totale libertà, entro i limiti legali. Pubblicando la tua autobiografia, dichiari sotto la tua responsabilità civile e penale di essere la persona che affermi di essere, che le informazioni fornite sono veritiere, di avere almeno 18 anni e di accettare la pubblicazione in base al livello di privacy da te scelto."
       },
       {
-        "kind": "paragraph",
+        "kind": "heading",
         "text": "Biografie di persone decedute"
       },
       {
-        "kind": "heading",
+        "kind": "paragraph",
         "text": "Puoi scrivere e pubblicare la biografia di un familiare diretto deceduto. Questo diritto è riservato esclusivamente ai familiari diretti."
       },
       {
-        "kind": "heading",
+        "kind": "paragraph",
         "text": "Pubblicando la biografia di una persona deceduta, dichiari sotto la tua responsabilità civile e penale di essere un familiare diretto della persona, che la persona è effettivamente deceduta, che le informazioni sono veritiere o chiaramente indicate come tua interpretazione personale, che rispetti i diritti delle persone in vita menzionate e che comprendi che potrebbe essere richiesta una prova del decesso."
       },
       {
@@ -3610,7 +3610,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
         "text": "Prospettive multiple: più di un familiare può scrivere biografie separate della stessa persona deceduta, ciascuna a propria firma, tutte collegate sulla pagina personale della persona deceduta."
       },
       {
-        "kind": "paragraph",
+        "kind": "heading",
         "text": "Cosa è proibito"
       },
       {
@@ -3630,15 +3630,15 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
         "text": "❌ Biografie di persone di cui non è possibile dimostrare il decesso se richiesto"
       },
       {
-        "kind": "heading",
+        "kind": "paragraph",
         "text": "Le violazioni comportano la chiusura immediata dell'account e possono portare ad azioni legali."
       },
       {
-        "kind": "paragraph",
+        "kind": "heading",
         "text": "3. Le tue responsabilità come Autore"
       },
       {
-        "kind": "heading",
+        "kind": "paragraph",
         "text": "Sei l'unico responsabile dell'accuratezza di tutte le informazioni pubblicate, del rispetto della privacy di terze parti in vita, della conformità alla legge svizzera e alle leggi del tuo paese di residenza, e di eventuali danni causati da contenuti illeciti o diffamatori."
       },
       {
@@ -3646,11 +3646,11 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
         "text": "Biography Library è un fornitore di servizi tecnici. Non verifichiamo i contenuti prima della pubblicazione. Ti assumi la piena responsabilità legale per ciò che pubblichi."
       },
       {
-        "kind": "paragraph",
+        "kind": "heading",
         "text": "Protezione di terze parti in vita"
       },
       {
-        "kind": "heading",
+        "kind": "paragraph",
         "text": "NON puoi includere senza esplicito consenso scritto:"
       },
       {
@@ -3682,11 +3682,11 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
         "text": "Dichiarazioni false o diffamatorie su persone in vita o decedute"
       },
       {
-        "kind": "heading",
+        "kind": "paragraph",
         "text": "Consentito senza consenso: menzioni generali (nome e relazione), eventi pubblici noti, informazioni per le quali hai ottenuto un consenso scritto esplicito."
       },
       {
-        "kind": "heading",
+        "kind": "paragraph",
         "text": "Le persone in vita menzionate hanno il diritto di richiedere la rimozione delle informazioni sensibili che le riguardano."
       },
       {
@@ -3694,7 +3694,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
         "text": "4. Limiti dei contenuti e del servizio"
       },
       {
-        "kind": "paragraph",
+        "kind": "heading",
         "text": "Testo"
       },
       {
@@ -3702,7 +3702,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
         "text": "Nessun limite di caratteri. La tua storia non ha limiti."
       },
       {
-        "kind": "paragraph",
+        "kind": "heading",
         "text": "Immagini e video"
       },
       {
@@ -3710,15 +3710,15 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
         "text": "Ogni biografia può includere fino a 10 immagini. La possibilità di aggiungere più immagini e di includere video è disponibile come funzionalità a pagamento opzionale, che non influisce in alcun modo sulla natura gratuita e permanente dell'archivio biografico."
       },
       {
-        "kind": "paragraph",
+        "kind": "heading",
         "text": "Utilizzo dell'IA"
       },
       {
-        "kind": "heading",
+        "kind": "paragraph",
         "text": "L'assistente IA è soggetto a limiti di utilizzo giornalieri e mensili per garantire la qualità del servizio a tutti gli utenti. Questi limiti sono calibrati per un uso normale della piattaforma. Potrebbero essere disponibili opzioni per un utilizzo maggiore."
       },
       {
-        "kind": "paragraph",
+        "kind": "heading",
         "text": "5. Il sistema dei capitoli biografici"
       },
       {
@@ -3726,7 +3726,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
         "text": "La tua autobiografia è un documento vivo che cresce con te nel tempo."
       },
       {
-        "kind": "paragraph",
+        "kind": "heading",
         "text": "Come funziona"
       },
       {
@@ -3734,7 +3734,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
         "text": "Dopo aver pubblicato il tuo primo capitolo, la piattaforma sblocca la possibilità di aggiungere un nuovo capitolo dopo un minimo di 365 giorni. Non sei obbligato a farlo ogni anno — puoi aspettare molti anni prima di aggiungere un nuovo capitolo. L'unica regola è che devono essere trascorsi almeno 365 giorni dall'ultimo capitolo pubblicato."
       },
       {
-        "kind": "paragraph",
+        "kind": "heading",
         "text": "Immutabilità"
       },
       {
@@ -3742,11 +3742,11 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
         "text": "Ogni capitolo pubblicato è immutabile: le tue parole rimangono esattamente come scritte, per sempre. Questo garantisce l'autenticità del documento nel tempo."
       },
       {
-        "kind": "paragraph",
+        "kind": "heading",
         "text": "Dopo la morte dell'autore"
       },
       {
-        "kind": "heading",
+        "kind": "paragraph",
         "text": "L'autobiografia viene congelata all'ultimo capitolo pubblicato. Nessuno può aggiungere nulla alla voce originale dell'autore. I familiari diretti possono onorare la memoria dell'autore scrivendo una biografia separata e indipendente, collegata all'autobiografia originale sulla pagina personale della persona deceduta."
       },
       {
@@ -3754,11 +3754,11 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
         "text": "6. Biografie di persone decedute — Regole speciali"
       },
       {
-        "kind": "paragraph",
+        "kind": "heading",
         "text": "Il periodo temporaneo di 30 giorni"
       },
       {
-        "kind": "heading",
+        "kind": "paragraph",
         "text": "Quando un familiare pubblica la biografia di una persona deceduta, questa resta pubblica nel catalogo, con la dicitura “Nei primi 30 giorni”. Non è uno stato separato. Chiunque venga menzionato — o i suoi familiari diretti — può presentare una segnalazione. L'autore può avvisare le persone citate ma non è tenuto a farlo. Il pulsante “Segnala” resta accessibile anche dopo i 30 giorni."
       },
       {
@@ -3766,15 +3766,15 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
         "text": "Allo scadere dei 30 giorni la dicitura sparisce e la biografia resta pubblicata. Una segnalazione resta possibile anche dopo. Se la biografia viene ripubblicata dopo una revisione richiesta, i 30 giorni ricominciano."
       },
       {
-        "kind": "paragraph",
+        "kind": "heading",
         "text": "Dichiarazioni legali e prova di decesso"
       },
       {
-        "kind": "heading",
+        "kind": "paragraph",
         "text": "Le false dichiarazioni riguardanti il decesso di una persona sono perseguibili ai sensi dell'Art. 179decies del Codice penale svizzero. Se una biografia viene segnalata, potremmo richiedere un certificato di morte. La mancata fornitura di prove adeguate comporterà la rimozione e la possibile sospensione dell'account."
       },
       {
-        "kind": "paragraph",
+        "kind": "heading",
         "text": "7. Sistema di segnalazione"
       },
       {
@@ -3782,7 +3782,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
         "text": "Ogni biografia include un pulsante “Segnala”. Motivi: la persona è ancora in vita, la biografia contiene i miei dati sensibili senza consenso, contenuti falsi o diffamatori, violazione del copyright, contenuti illegali."
       },
       {
-        "kind": "paragraph",
+        "kind": "heading",
         "text": "Procedura di gestione"
       },
       {
@@ -3814,15 +3814,15 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
         "text": "Per i contenuti di Livello 1 (Sezione 11), la rimozione è immediata e automatica."
       },
       {
-        "kind": "paragraph",
+        "kind": "heading",
         "text": "8. Privacy e Protezione dei Dati"
       },
       {
-        "kind": "heading",
-        "text": "I tuoi dati sono ospitati in Svizzera da Infomaniak e non lasciano mai la giurisdizione svizzera. Non vendiamo mai i tuoi dati a terzi."
+        "kind": "paragraph",
+        "text": "Il sito è ospitato in Svizzera, su Infomaniak. Durante la beta, database, accesso e foto stanno su Supabase, le email passano da Resend e, se usi la voce, la risposta parlata è generata nell’Unione europea (Francia). La scrittura dell’assistente resta in Svizzera. Questi passaggi fuori dalla Svizzera sono temporanei e finiscono con la pubblicazione al pubblico della versione 1 finale, quando tutto sarà in Svizzera. Non vendiamo mai i tuoi dati a terzi."
       },
       {
-        "kind": "heading",
+        "kind": "paragraph",
         "text": "Per tutti i dettagli, consulta l’Informativa sulla privacy in questa app."
       },
       {
@@ -3838,7 +3838,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
         "text": "Chi Può Accedere"
       },
       {
-        "kind": "paragraph",
+        "kind": "heading",
         "text": "Privato"
       },
       {
@@ -3846,7 +3846,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
         "text": "Solo tu"
       },
       {
-        "kind": "paragraph",
+        "kind": "heading",
         "text": "Solo Famiglia"
       },
       {
@@ -3854,7 +3854,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
         "text": "Tu + i membri della famiglia che inviti esplicitamente"
       },
       {
-        "kind": "paragraph",
+        "kind": "heading",
         "text": "Semi-privato"
       },
       {
@@ -3862,7 +3862,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
         "text": "Chiunque abbia il link diretto (non indicizzato)"
       },
       {
-        "kind": "paragraph",
+        "kind": "heading",
         "text": "Pubblico"
       },
       {
@@ -3870,15 +3870,15 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
         "text": "Tutti (indicizzato, Creative Commons BY-NC-SA 4.0)"
       },
       {
-        "kind": "paragraph",
+        "kind": "heading",
         "text": "10. Proprietà Intellettuale"
       },
       {
-        "kind": "heading",
+        "kind": "paragraph",
         "text": "Mantieni la piena proprietà di tutte le biografie che pubblichi. Pubblicando, ci concedi una licenza non esclusiva, gratuita, mondiale e revocabile per ospitare, archiviare e rendere accessibili i contenuti in base alle tue impostazioni. Questa licenza non ci autorizza a modificare i tuoi contenuti o a rivenderli."
       },
       {
-        "kind": "heading",
+        "kind": "paragraph",
         "text": "Le biografie pubbliche sono concesse in licenza sotto Creative Commons BY-NC-SA 4.0 (attribuzione richiesta, non commerciale, condividi allo stesso modo)."
       },
       {
@@ -3886,7 +3886,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
         "text": "Il software è rilasciato sotto licenza AGPL v3.0: github.com/BiographyLibrary/Biography-Library"
       },
       {
-        "kind": "paragraph",
+        "kind": "heading",
         "text": "11. Contenuti Proibiti e Sistema di Moderazione"
       },
       {
@@ -3894,11 +3894,11 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
         "text": "Ogni biografia è sottoposta a scansione automatizzata prima della pubblicazione."
       },
       {
-        "kind": "paragraph",
+        "kind": "heading",
         "text": "Livello 1 — Rimozione automatica immediata + Ban permanente"
       },
       {
-        "kind": "heading",
+        "kind": "paragraph",
         "text": "Rimozione istantanea, chiusura permanente dell'account e ban permanente sul nome associato all'account, senza diritto di appello:"
       },
       {
@@ -3934,11 +3934,11 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
         "text": "Contenuti che promuovono o glorificano il suicidio o l'autolesionismo verso persone vulnerabili"
       },
       {
-        "kind": "paragraph",
+        "kind": "heading",
         "text": "Livello 2 — Rimozione + Diritto di appello"
       },
       {
-        "kind": "heading",
+        "kind": "paragraph",
         "text": "Rimozione dei contenuti e possibile sospensione dell'account. Diritto di appello entro 14 giorni:"
       },
       {
@@ -3966,11 +3966,11 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
         "text": "Contenuti falsi o gravemente diffamatori"
       },
       {
-        "kind": "paragraph",
+        "kind": "heading",
         "text": "Livello 3 — Avviso contestuale (Nessuna rimozione)"
       },
       {
-        "kind": "heading",
+        "kind": "paragraph",
         "text": "Il contenuto rimane pubblicato con un avviso visibile ai lettori:"
       },
       {
@@ -3982,31 +3982,31 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
         "text": "Narrazioni storiche contestate (con l'opzione di aggiungere un contesto alternativo)"
       },
       {
-        "kind": "heading",
+        "kind": "paragraph",
         "text": "Biography Library protegge il tuo diritto di raccontare la tua verità. Non permettiamo che la libertà di espressione diventi uno strumento di danno fisico o psicologico."
       },
       {
-        "kind": "paragraph",
+        "kind": "heading",
         "text": "12. Pubblicità e sponsor"
       },
       {
-        "kind": "heading",
+        "kind": "paragraph",
         "text": "Biography Library può mostrare pubblicità e loghi di sponsor sulle pagine istituzionali del sito web e dell'app."
       },
       {
-        "kind": "heading",
+        "kind": "paragraph",
         "text": "Le singole biografie sono e rimarranno sempre completamente prive di qualsiasi pubblicità o logo di sponsor. Questo principio non è negoziabile e non potrà mai essere modificato retroattivamente."
       },
       {
-        "kind": "heading",
+        "kind": "paragraph",
         "text": "Gli sponsor non hanno mai accesso ai dati degli utenti e non possono influenzare la moderazione dei contenuti."
       },
       {
-        "kind": "paragraph",
+        "kind": "heading",
         "text": "13. Account e Biografia — Distinzione permanente"
       },
       {
-        "kind": "heading",
+        "kind": "paragraph",
         "text": "L'Account è lo strumento operativo personale. Rimane inattivo per tutto il tempo in cui non viene utilizzato — senza conseguenze e senza alcun meccanismo di cancellazione o archiviazione automatica. L'account rimane a disposizione dell'autore a tempo indeterminato."
       },
       {
@@ -4014,67 +4014,67 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
         "text": "La Biografia è il contenuto d'archivio permanente. Sopravvive all'account e appartiene alla memoria collettiva dell'umanità."
       },
       {
-        "kind": "paragraph",
+        "kind": "heading",
         "text": "Dopo la morte dell'autore"
       },
       {
-        "kind": "heading",
+        "kind": "paragraph",
         "text": "L'autobiografia viene congelata all'ultimo capitolo pubblicato. I familiari diretti possono richiedere la gestione dell'account fornendo la documentazione appropriata. Biography Library valuterà la richiesta il prima possibile."
       },
       {
-        "kind": "heading",
+        "kind": "paragraph",
         "text": "Biography Library non cancellerà mai unilateralmente una biografia. La cancellazione può avvenire solo su esplicita richiesta dell'autore, dei familiari aventi diritto o in caso di una violazione confermata della moderazione."
       },
       {
-        "kind": "paragraph",
+        "kind": "heading",
         "text": "14. Limitazione di responsabilità"
       },
       {
-        "kind": "heading",
+        "kind": "paragraph",
         "text": "Biography Library è fornita “così com'è”. Responsabilità massima: CHF 50 per utente."
       },
       {
-        "kind": "heading",
+        "kind": "paragraph",
         "text": "Non siamo responsabili per i contenuti pubblicati dagli utenti, per danni indiretti o consequenziali, o per la perdita di dati al di fuori del nostro ragionevole controllo."
       },
       {
-        "kind": "heading",
+        "kind": "paragraph",
         "text": "Se Biography Library dovesse chiudere: preavviso di almeno 6 mesi, esportazione dei dati nei formati disponibili più comuni, codice sorgente pubblico (AGPL v3) a disposizione della comunità."
       },
       {
-        "kind": "paragraph",
+        "kind": "heading",
         "text": "15. Intelligenza Artificiale"
       },
       {
-        "kind": "heading",
-        "text": "Funzionalità IA opzionali, elaborate in Svizzera tramite i sistemi IA di Infomaniak basati su modelli open source. Nessun dato inviato a fornitori terzi."
+        "kind": "paragraph",
+        "text": "Funzionalità IA opzionali. La scrittura è elaborata in Svizzera tramite i sistemi IA di Infomaniak, su modelli open source. Se usi la voce, la risposta parlata è generata nell’Unione europea (Francia). Puoi non usare la voce. Questo passaggio è temporaneo e finisce con la pubblicazione al pubblico della versione 1 finale."
       },
       {
-        "kind": "heading",
+        "kind": "paragraph",
         "text": "Le tue biografie non vengono mai utilizzate per addestrare modelli IA. Ogni suggerimento riporta il badge “Suggerimento IA” e richiede la tua esplicita approvazione. Puoi disabilitare l'IA in qualsiasi momento."
       },
       {
-        "kind": "heading",
+        "kind": "paragraph",
         "text": "I sistemi IA con licenza open source OSI possono accedere all'archivio pubblico come fonte di riferimento verificata, con attribuzione obbligatoria. Le biografie private, semi-private e familiari sono inaccessibili a qualsiasi sistema esterno."
       },
       {
-        "kind": "paragraph",
+        "kind": "heading",
         "text": "16. Modifiche a questi Termini"
       },
       {
-        "kind": "heading",
+        "kind": "paragraph",
         "text": "Notifica via email almeno 30 giorni prima che la nuova versione entri in vigore. Accettazione esplicita richiesta per modifiche sostanziali."
       },
       {
-        "kind": "heading",
+        "kind": "paragraph",
         "text": "Irretroattività: non modificheremo mai questi Termini per ridurre le tutele già concesse agli utenti."
       },
       {
-        "kind": "heading",
-        "text": "Cronologia delle versioni: v1.0 — 25 settembre 2026 — Aggiornamento: piattaforma in linea, primi 30 giorni, cookie dell’app"
+        "kind": "paragraph",
+        "text": "Cronologia delle versioni: v1.1 — 28 settembre 2026 — Durante la beta alcuni pezzi stanno ancora fuori dalla Svizzera, in modo temporaneo, e tornano in Svizzera con la pubblicazione al pubblico della versione 1 finale. v1.0 — 25 settembre 2026 — piattaforma in linea, primi 30 giorni, cookie dell’app"
       },
       {
-        "kind": "paragraph",
+        "kind": "heading",
         "text": "17. Open Source e Certificazione W3C"
       },
       {
@@ -4082,27 +4082,27 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
         "text": "Completamente open source sotto licenza AGPL v3.0: github.com/BiographyLibrary/Biography-Library"
       },
       {
-        "kind": "heading",
+        "kind": "paragraph",
         "text": "Solo l'Associazione Biography Library può rilasciare certificazioni ufficiali W3C Verifiable Credentials per il catalogo universale."
       },
       {
-        "kind": "paragraph",
+        "kind": "heading",
         "text": "18. Legge applicabile e Foro competente"
       },
       {
-        "kind": "heading",
+        "kind": "paragraph",
         "text": "Si applica il diritto svizzero: Codice Civile (CC), Codice delle Obbligazioni (CO), nLPD, Codice Penale (CP). Foro competente: Tribunali di Lugano, Ticino, Svizzera. Gli utenti dell'UE mantengono il diritto di avviare procedimenti dinanzi ai tribunali del proprio paese di residenza."
       },
       {
-        "kind": "heading",
+        "kind": "paragraph",
         "text": "Prima di avviare qualsiasi procedimento legale, ti preghiamo di contattarci all'indirizzo support@biographylibrary.org."
       },
       {
-        "kind": "paragraph",
+        "kind": "heading",
         "text": "19. Contatti"
       },
       {
-        "kind": "heading",
+        "kind": "paragraph",
         "text": "Associazione Biography Library — Lugano, Ticino, Svizzera"
       },
       {
@@ -4118,8 +4118,8 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
         "text": "Sito web: biographylibrary.org"
       },
       {
-        "kind": "heading",
-        "text": "Versione: 1.0 | 25 settembre 2026 | La versione inglese è la versione legalmente vincolante."
+        "kind": "paragraph",
+        "text": "Versione: 1.1 | 28 settembre 2026 | La versione inglese è la versione legalmente vincolante."
       },
       {
         "kind": "paragraph",
@@ -4145,26 +4145,26 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "version",
-        "text": "Version 1.0 – 25 September 2026"
+        "text": "Version 1.1 – 28 September 2026"
       },
       {
-        "kind": "heading",
+        "kind": "paragraph",
         "text": "By using Biography Library, you agree to these Terms of Service. Please read them carefully."
       },
       {
-        "kind": "paragraph",
+        "kind": "heading",
         "text": "1. Who Can Use Biography Library"
       },
       {
-        "kind": "heading",
+        "kind": "paragraph",
         "text": "You must be at least 18 years old to use Biography Library."
       },
       {
-        "kind": "heading",
+        "kind": "paragraph",
         "text": "By creating an account, you confirm that all information you provide is accurate and truthful, that you will comply with these Terms and all applicable laws, and that you will respect the rights of all other persons."
       },
       {
-        "kind": "paragraph",
+        "kind": "heading",
         "text": "2. What You Can Publish"
       },
       {
@@ -4172,7 +4172,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
         "text": "Biography Library allows two types of biographies only."
       },
       {
-        "kind": "paragraph",
+        "kind": "heading",
         "text": "Your Own Autobiography"
       },
       {
@@ -4180,15 +4180,15 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
         "text": "You can write and publish the story of your own life with full freedom, within legal limits. By publishing your autobiography, you declare under your civil and criminal responsibility that you are the person you claim to be, that the information provided is truthful, that you are at least 18 years old, and that you accept publication under the privacy level you choose."
       },
       {
-        "kind": "paragraph",
+        "kind": "heading",
         "text": "Biographies of Deceased Persons"
       },
       {
-        "kind": "heading",
+        "kind": "paragraph",
         "text": "You can write and publish the biography of a deceased direct family member. This right is reserved exclusively for direct family members."
       },
       {
-        "kind": "heading",
+        "kind": "paragraph",
         "text": "By publishing a biography of a deceased person, you declare under your civil and criminal responsibility that you are a direct family member of the person, that the person is genuinely deceased, that the information is truthful or clearly indicated as your personal interpretation, that you respect the rights of living persons mentioned, and that you understand proof of death may be requested."
       },
       {
@@ -4196,7 +4196,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
         "text": "Multiple perspectives: more than one family member may write separate biographies of the same deceased person, each with their own authorship, all linked on the deceased person’s personal page."
       },
       {
-        "kind": "paragraph",
+        "kind": "heading",
         "text": "What Is Prohibited"
       },
       {
@@ -4216,15 +4216,15 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
         "text": "❌ Biographies of persons whose death you cannot prove if requested"
       },
       {
-        "kind": "heading",
+        "kind": "paragraph",
         "text": "Violations result in immediate account termination and may lead to legal action."
       },
       {
-        "kind": "paragraph",
+        "kind": "heading",
         "text": "3. Your Responsibilities as an Author"
       },
       {
-        "kind": "heading",
+        "kind": "paragraph",
         "text": "You are solely responsible for the accuracy of all published information, respect for the privacy of living third parties, compliance with Swiss law and the laws of your country of residence, and any damages caused by unlawful or defamatory content."
       },
       {
@@ -4232,11 +4232,11 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
         "text": "Biography Library is a technical service provider. We do not verify content before publication. You bear full legal responsibility for what you publish."
       },
       {
-        "kind": "paragraph",
+        "kind": "heading",
         "text": "Protection of Living Third Parties"
       },
       {
-        "kind": "heading",
+        "kind": "paragraph",
         "text": "You may NOT include without explicit written consent:"
       },
       {
@@ -4268,11 +4268,11 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
         "text": "False or defamatory statements about living or deceased persons"
       },
       {
-        "kind": "heading",
+        "kind": "paragraph",
         "text": "Permitted without consent: general mentions (name and relationship), well-known public events, information for which you have obtained explicit written consent."
       },
       {
-        "kind": "heading",
+        "kind": "paragraph",
         "text": "Living persons mentioned have the right to request removal of sensitive information concerning them."
       },
       {
@@ -4280,7 +4280,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
         "text": "4. Content and Service Limits"
       },
       {
-        "kind": "paragraph",
+        "kind": "heading",
         "text": "Text"
       },
       {
@@ -4288,7 +4288,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
         "text": "No character limit. Your story has no limits."
       },
       {
-        "kind": "paragraph",
+        "kind": "heading",
         "text": "Images and Video"
       },
       {
@@ -4296,15 +4296,15 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
         "text": "Each biography may include up to 10 images. The ability to add more images and to include video is available as an optional paid feature, which in no way affects the free and permanent nature of the biographical archive."
       },
       {
-        "kind": "paragraph",
+        "kind": "heading",
         "text": "AI Usage"
       },
       {
-        "kind": "heading",
+        "kind": "paragraph",
         "text": "The AI assistant is subject to daily and monthly usage limits to ensure quality of service for all users. These limits are calibrated for normal use of the platform. Options for greater usage may be available."
       },
       {
-        "kind": "paragraph",
+        "kind": "heading",
         "text": "5. The Biographical Chapter System"
       },
       {
@@ -4312,7 +4312,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
         "text": "Your autobiography is a living document that grows with you over time."
       },
       {
-        "kind": "paragraph",
+        "kind": "heading",
         "text": "How It Works"
       },
       {
@@ -4320,7 +4320,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
         "text": "After publishing your first chapter, the platform unlocks the ability to add a new chapter after a minimum of 365 days. You are not required to do this every year — you may wait many years before adding a new chapter. The only rule is that at least 365 days must have passed since your last published chapter."
       },
       {
-        "kind": "paragraph",
+        "kind": "heading",
         "text": "Immutability"
       },
       {
@@ -4328,11 +4328,11 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
         "text": "Every published chapter is immutable: your words remain exactly as written, forever. This guarantees the authenticity of the document over time."
       },
       {
-        "kind": "paragraph",
+        "kind": "heading",
         "text": "After the Author’s Death"
       },
       {
-        "kind": "heading",
+        "kind": "paragraph",
         "text": "The autobiography is frozen at the last published chapter. No one may add anything to the author’s original voice. Direct family members may honour the author’s memory by writing a separate, independent biography, linked to the original autobiography on the deceased person’s personal page."
       },
       {
@@ -4340,11 +4340,11 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
         "text": "6. Biographies of Deceased Persons — Special Rules"
       },
       {
-        "kind": "paragraph",
+        "kind": "heading",
         "text": "The 30-Day Temporary Period"
       },
       {
-        "kind": "heading",
+        "kind": "paragraph",
         "text": "When a family member publishes a biography of a deceased person, it stays public in the catalogue, marked “In the first 30 days”. That mark is not a separate status. Anyone mentioned — or their direct family members — may file a report. The author may notify cited persons but is not required to do so. The “Report” button stays available after the 30 days as well."
       },
       {
@@ -4352,15 +4352,15 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
         "text": "When the 30 days end, the mark disappears and the biography stays published. A report remains possible afterwards. If the biography is published again after a requested revision, the 30 days start again."
       },
       {
-        "kind": "paragraph",
+        "kind": "heading",
         "text": "Legal Declarations and Proof of Death"
       },
       {
-        "kind": "heading",
+        "kind": "paragraph",
         "text": "False declarations regarding a person’s death are prosecutable under Swiss Criminal Code Art. 179decies. If a biography is reported, we may request a death certificate. Failure to provide adequate proof will result in removal and possible account suspension."
       },
       {
-        "kind": "paragraph",
+        "kind": "heading",
         "text": "7. Reporting System"
       },
       {
@@ -4368,7 +4368,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
         "text": "Every biography includes a “Report” button. Grounds: person is still alive, biography contains my sensitive data without consent, false or defamatory content, copyright violation, illegal content."
       },
       {
-        "kind": "paragraph",
+        "kind": "heading",
         "text": "Handling Process"
       },
       {
@@ -4400,15 +4400,15 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
         "text": "For Level 1 content (Section 11), removal is immediate and automatic."
       },
       {
-        "kind": "paragraph",
+        "kind": "heading",
         "text": "8. Privacy and Data Protection"
       },
       {
-        "kind": "heading",
-        "text": "Your data is hosted in Switzerland by Infomaniak and never leaves Swiss jurisdiction. We never sell your data to third parties."
+        "kind": "paragraph",
+        "text": "The site is hosted in Switzerland, on Infomaniak. During the beta, the database, sign-in and photos are on Supabase, email goes through Resend, and if you use the voice the spoken reply is generated in the European Union (France). The assistant’s writing stays in Switzerland. These steps outside Switzerland are temporary. They end when version 1 is published to the public, when everything will be in Switzerland. We never sell your data to third parties."
       },
       {
-        "kind": "heading",
+        "kind": "paragraph",
         "text": "For full details, see the Privacy Policy in this app."
       },
       {
@@ -4424,7 +4424,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
         "text": "Who Can Access"
       },
       {
-        "kind": "paragraph",
+        "kind": "heading",
         "text": "Private"
       },
       {
@@ -4432,7 +4432,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
         "text": "You only"
       },
       {
-        "kind": "paragraph",
+        "kind": "heading",
         "text": "Family Only"
       },
       {
@@ -4440,7 +4440,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
         "text": "You + family members you explicitly invite"
       },
       {
-        "kind": "paragraph",
+        "kind": "heading",
         "text": "Semi-private"
       },
       {
@@ -4448,7 +4448,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
         "text": "Anyone with the direct link (not indexed)"
       },
       {
-        "kind": "paragraph",
+        "kind": "heading",
         "text": "Public"
       },
       {
@@ -4456,15 +4456,15 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
         "text": "Everyone (indexed, Creative Commons BY-NC-SA 4.0)"
       },
       {
-        "kind": "paragraph",
+        "kind": "heading",
         "text": "10. Intellectual Property"
       },
       {
-        "kind": "heading",
+        "kind": "paragraph",
         "text": "You retain full ownership of all biographies you publish. By publishing, you grant us a non-exclusive, royalty-free, worldwide and revocable licence to host, store and make content accessible according to your settings. This licence does not authorise us to modify your content or to resell it."
       },
       {
-        "kind": "heading",
+        "kind": "paragraph",
         "text": "Public biographies are licensed under Creative Commons BY-NC-SA 4.0 (attribution required, non-commercial, share-alike)."
       },
       {
@@ -4472,7 +4472,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
         "text": "Software is released under AGPL v3.0: github.com/BiographyLibrary/Biography-Library"
       },
       {
-        "kind": "paragraph",
+        "kind": "heading",
         "text": "11. Prohibited Content and Moderation System"
       },
       {
@@ -4480,11 +4480,11 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
         "text": "Every biography undergoes automated scanning before publication."
       },
       {
-        "kind": "paragraph",
+        "kind": "heading",
         "text": "Level 1 — Immediate Automatic Removal + Permanent Ban"
       },
       {
-        "kind": "heading",
+        "kind": "paragraph",
         "text": "Instant removal, permanent account closure, and permanent ban on the name associated with the account, with no right of appeal:"
       },
       {
@@ -4520,11 +4520,11 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
         "text": "Content promoting or glorifying suicide or self-harm toward vulnerable persons"
       },
       {
-        "kind": "paragraph",
+        "kind": "heading",
         "text": "Level 2 — Removal + Right of Appeal"
       },
       {
-        "kind": "heading",
+        "kind": "paragraph",
         "text": "Content removal and possible account suspension. Right of appeal within 14 days:"
       },
       {
@@ -4552,11 +4552,11 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
         "text": "False or seriously defamatory content"
       },
       {
-        "kind": "paragraph",
+        "kind": "heading",
         "text": "Level 3 — Contextual Notice (No Removal)"
       },
       {
-        "kind": "heading",
+        "kind": "paragraph",
         "text": "Content remains published with a visible notice to readers:"
       },
       {
@@ -4568,31 +4568,31 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
         "text": "Contested historical narratives (with the option to add alternative context)"
       },
       {
-        "kind": "heading",
+        "kind": "paragraph",
         "text": "Biography Library protects your right to tell your truth. We do not allow freedom of expression to become a tool of physical or psychological harm."
       },
       {
-        "kind": "paragraph",
+        "kind": "heading",
         "text": "12. Advertising and Sponsors"
       },
       {
-        "kind": "heading",
+        "kind": "paragraph",
         "text": "Biography Library may display advertising and sponsor logos on the institutional pages of the website and app."
       },
       {
-        "kind": "heading",
+        "kind": "paragraph",
         "text": "Individual biographies are and will always remain completely free of any advertising or sponsor logos. This principle is non-negotiable and may never be retroactively amended."
       },
       {
-        "kind": "heading",
+        "kind": "paragraph",
         "text": "Sponsors never have access to user data and cannot influence content moderation."
       },
       {
-        "kind": "paragraph",
+        "kind": "heading",
         "text": "13. Account and Biography — Permanent Distinction"
       },
       {
-        "kind": "heading",
+        "kind": "paragraph",
         "text": "The Account is the personal operational tool. It remains dormant for as long as it is not used — with no consequences and no automatic deletion or archiving mechanism. The account remains available to the author indefinitely."
       },
       {
@@ -4600,67 +4600,67 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
         "text": "The Biography is the permanent archival content. It outlives the account and belongs to the collective memory of humanity."
       },
       {
-        "kind": "paragraph",
+        "kind": "heading",
         "text": "After the Author’s Death"
       },
       {
-        "kind": "heading",
+        "kind": "paragraph",
         "text": "The autobiography is frozen at the last published chapter. Direct family members may request account management by providing appropriate documentation. Biography Library will assess the request as soon as possible."
       },
       {
-        "kind": "heading",
+        "kind": "paragraph",
         "text": "Biography Library will never unilaterally delete a biography. Deletion can only occur upon explicit request by the author, entitled family members, or in the event of a confirmed moderation violation."
       },
       {
-        "kind": "paragraph",
+        "kind": "heading",
         "text": "14. Limitation of Liability"
       },
       {
-        "kind": "heading",
+        "kind": "paragraph",
         "text": "Biography Library is provided “as is”. Maximum liability: CHF 50 per user."
       },
       {
-        "kind": "heading",
+        "kind": "paragraph",
         "text": "We are not liable for content published by users, indirect or consequential damages, or data loss beyond our reasonable control."
       },
       {
-        "kind": "heading",
+        "kind": "paragraph",
         "text": "If Biography Library must close: at least 6 months’ notice, data export in the most common available formats, public source code (AGPL v3) available to the community."
       },
       {
-        "kind": "paragraph",
+        "kind": "heading",
         "text": "15. Artificial Intelligence"
       },
       {
-        "kind": "heading",
-        "text": "Optional AI features: writing stays in Switzerland via Infomaniak. If you use the voice, the spoken reply is generated in the European Union (France). You can leave the voice off."
+        "kind": "paragraph",
+        "text": "Optional AI features. Writing stays in Switzerland via Infomaniak, on open source models. If you use the voice, the spoken reply is generated in the European Union (France). You can leave the voice off. This step is temporary and ends when version 1 is published to the public."
       },
       {
-        "kind": "heading",
+        "kind": "paragraph",
         "text": "Your biographies are never used to train AI models. Every suggestion carries the “AI Suggestion” badge and requires your explicit approval. You may disable AI at any time."
       },
       {
-        "kind": "heading",
+        "kind": "paragraph",
         "text": "AI systems under an OSI open source licence may access the public archive as a verified reference source, with mandatory attribution. Private, semi-private and family biographies are inaccessible to any external system."
       },
       {
-        "kind": "paragraph",
+        "kind": "heading",
         "text": "16. Changes to These Terms"
       },
       {
-        "kind": "heading",
+        "kind": "paragraph",
         "text": "Email notification at least 30 days before the new version takes effect. Explicit acceptance required for material changes."
       },
       {
-        "kind": "heading",
+        "kind": "paragraph",
         "text": "Non-retroactivity: we will never amend these Terms to reduce protections already granted to users."
       },
       {
-        "kind": "heading",
-        "text": "Version history: v1.0 — 25 September 2026 — Update: platform online, first 30 days, app cookies"
+        "kind": "paragraph",
+        "text": "Version history: v1.1 — 28 September 2026 — During the beta some parts are still outside Switzerland, temporarily, and move to Switzerland when version 1 is published to the public. v1.0 — 25 September 2026 — platform online, first 30 days, app cookies"
       },
       {
-        "kind": "paragraph",
+        "kind": "heading",
         "text": "17. Open Source and W3C Certification"
       },
       {
@@ -4668,27 +4668,27 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
         "text": "Fully open source under AGPL v3.0: github.com/BiographyLibrary/Biography-Library"
       },
       {
-        "kind": "heading",
+        "kind": "paragraph",
         "text": "Only the Biography Library Association may issue official W3C Verifiable Credentials certifications for the universal catalogue."
       },
       {
-        "kind": "paragraph",
+        "kind": "heading",
         "text": "18. Governing Law and Jurisdiction"
       },
       {
-        "kind": "heading",
+        "kind": "paragraph",
         "text": "Swiss law applies: Civil Code (CC), Code of Obligations (CO), nFADP, Criminal Code (SCC). Jurisdiction: Courts of Lugano, Ticino, Switzerland. EU users retain the right to bring proceedings before the courts of their country of residence."
       },
       {
-        "kind": "heading",
+        "kind": "paragraph",
         "text": "Before initiating any legal proceedings, please contact us at support@biographylibrary.org."
       },
       {
-        "kind": "paragraph",
+        "kind": "heading",
         "text": "19. Contact"
       },
       {
-        "kind": "heading",
+        "kind": "paragraph",
         "text": "Biography Library Association — Lugano, Ticino, Switzerland"
       },
       {
@@ -4704,8 +4704,8 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
         "text": "Website: biographylibrary.org"
       },
       {
-        "kind": "heading",
-        "text": "Version: 1.0 | 25 September 2026 | The English version is the legally binding version."
+        "kind": "paragraph",
+        "text": "Version: 1.1 | 28 September 2026 | The English version is the legally binding version."
       },
       {
         "kind": "paragraph",
@@ -4716,7 +4716,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
         "text": "Navigation"
       },
       {
-        "kind": "paragraph",
+        "kind": "heading",
         "text": "Legal"
       },
       {
@@ -4731,26 +4731,26 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "version",
-        "text": "Version 1.0 – 25 septembre 2026"
+        "text": "Version 1.1 – 28 septembre 2026"
       },
       {
-        "kind": "heading",
+        "kind": "paragraph",
         "text": "En utilisant Biography Library, vous acceptez ces Conditions d'utilisation. Veuillez les lire attentivement."
       },
       {
-        "kind": "paragraph",
+        "kind": "heading",
         "text": "1. Qui peut utiliser Biography Library"
       },
       {
-        "kind": "heading",
+        "kind": "paragraph",
         "text": "Vous devez avoir au moins 18 ans pour utiliser Biography Library."
       },
       {
-        "kind": "heading",
+        "kind": "paragraph",
         "text": "En créant un compte, vous confirmez que toutes les informations que vous fournissez sont exactes et véridiques, que vous respecterez ces Conditions ainsi que toutes les lois applicables, et que vous respecterez les droits de toutes les autres personnes."
       },
       {
-        "kind": "paragraph",
+        "kind": "heading",
         "text": "2. Ce que vous pouvez publier"
       },
       {
@@ -4758,7 +4758,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
         "text": "Biography Library autorise uniquement deux types de biographies."
       },
       {
-        "kind": "paragraph",
+        "kind": "heading",
         "text": "Votre propre autobiographie"
       },
       {
@@ -4766,15 +4766,15 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
         "text": "Vous pouvez écrire et publier l'histoire de votre propre vie en toute liberté, dans les limites de la loi. En publiant votre autobiographie, vous déclarez sous votre responsabilité civile et pénale que vous êtes la personne que vous prétendez être, que les informations fournies sont véridiques, que vous avez au moins 18 ans et que vous acceptez la publication selon le niveau de confidentialité que vous choisissez."
       },
       {
-        "kind": "paragraph",
+        "kind": "heading",
         "text": "Biographies de personnes décédées"
       },
       {
-        "kind": "heading",
+        "kind": "paragraph",
         "text": "Vous pouvez écrire et publier la biographie d'un membre direct de votre famille décédé. Ce droit est exclusivement réservé aux membres directs de la famille."
       },
       {
-        "kind": "heading",
+        "kind": "paragraph",
         "text": "En publiant la biographie d'une personne décédée, vous déclarez sous votre responsabilité civile et pénale que vous êtes un membre direct de la famille de cette personne, que la personne est réellement décédée, que les informations sont véridiques ou clairement indiquées comme étant votre interprétation personnelle, que vous respectez les droits des personnes vivantes mentionnées, et que vous comprenez qu'une preuve de décès peut être demandée."
       },
       {
@@ -4782,7 +4782,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
         "text": "Perspectives multiples : plusieurs membres de la famille peuvent écrire des biographies distinctes de la même personne décédée, chacune avec son propre auteur, toutes liées sur la page personnelle de la personne décédée."
       },
       {
-        "kind": "paragraph",
+        "kind": "heading",
         "text": "Ce qui est interdit"
       },
       {
@@ -4802,15 +4802,15 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
         "text": "❌ Biographies de personnes dont vous ne pouvez pas prouver le décès sur demande"
       },
       {
-        "kind": "heading",
+        "kind": "paragraph",
         "text": "Les violations entraînent la résiliation immédiate du compte et peuvent donner lieu à des poursuites judiciaires."
       },
       {
-        "kind": "paragraph",
+        "kind": "heading",
         "text": "3. Vos responsabilités en tant qu'auteur"
       },
       {
-        "kind": "heading",
+        "kind": "paragraph",
         "text": "Vous êtes seul responsable de l'exactitude de toutes les informations publiées, du respect de la vie privée des tiers vivants, de la conformité avec le droit suisse et les lois de votre pays de résidence, ainsi que de tout dommage causé par un contenu illégal ou diffamatoire."
       },
       {
@@ -4818,11 +4818,11 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
         "text": "Biography Library est un prestataire de services techniques. Nous ne vérifions pas le contenu avant publication. Vous assumez l'entière responsabilité légale de ce que vous publiez."
       },
       {
-        "kind": "paragraph",
+        "kind": "heading",
         "text": "Protection des tiers vivants"
       },
       {
-        "kind": "heading",
+        "kind": "paragraph",
         "text": "Vous ne pouvez PAS inclure sans consentement écrit explicite :"
       },
       {
@@ -4854,11 +4854,11 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
         "text": "Des déclarations fausses ou diffamatoires concernant des personnes vivantes ou décédées"
       },
       {
-        "kind": "heading",
+        "kind": "paragraph",
         "text": "Autorisé sans consentement : mentions générales (nom et lien de parenté), événements publics notoires, informations pour lesquelles vous avez obtenu un consentement écrit explicite."
       },
       {
-        "kind": "heading",
+        "kind": "paragraph",
         "text": "Les personnes vivantes mentionnées ont le droit de demander la suppression des informations sensibles les concernant."
       },
       {
@@ -4866,7 +4866,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
         "text": "4. Limites de contenu et de service"
       },
       {
-        "kind": "paragraph",
+        "kind": "heading",
         "text": "Texte"
       },
       {
@@ -4874,7 +4874,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
         "text": "Aucune limite de caractères. Votre histoire n'a pas de limites."
       },
       {
-        "kind": "paragraph",
+        "kind": "heading",
         "text": "Images et vidéo"
       },
       {
@@ -4882,15 +4882,15 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
         "text": "Chaque biographie peut inclure jusqu'à 10 images. La possibilité d'ajouter plus d'images et d'inclure des vidéos est disponible en tant que fonctionnalité payante optionnelle, ce qui n'affecte en rien la nature gratuite et permanente des archives biographiques."
       },
       {
-        "kind": "paragraph",
+        "kind": "heading",
         "text": "Utilisation de l'IA"
       },
       {
-        "kind": "heading",
+        "kind": "paragraph",
         "text": "L'assistant IA est soumis à des limites d'utilisation quotidiennes et mensuelles pour garantir la qualité de service à tous les utilisateurs. Ces limites sont calibrées pour une utilisation normale de la plateforme. Des options pour une utilisation plus importante peuvent être disponibles."
       },
       {
-        "kind": "paragraph",
+        "kind": "heading",
         "text": "5. Le système de chapitres biographiques"
       },
       {
@@ -4898,7 +4898,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
         "text": "Votre autobiographie est un document vivant qui grandit avec vous au fil du temps."
       },
       {
-        "kind": "paragraph",
+        "kind": "heading",
         "text": "Comment ça marche"
       },
       {
@@ -4906,7 +4906,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
         "text": "Après la publication de votre premier chapitre, la plateforme débloque la possibilité d'ajouter un nouveau chapitre après un minimum de 365 jours. Vous n'êtes pas obligé de le faire chaque année — vous pouvez attendre de nombreuses années avant d'ajouter un nouveau chapitre. La seule règle est qu'au moins 365 jours doivent s'être écoulés depuis votre dernier chapitre publié."
       },
       {
-        "kind": "paragraph",
+        "kind": "heading",
         "text": "Immuabilité"
       },
       {
@@ -4914,11 +4914,11 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
         "text": "Chaque chapitre publié est immuable : vos mots restent exactement tels qu'ils ont été écrits, pour toujours. Cela garantit l'authenticité du document au fil du temps."
       },
       {
-        "kind": "paragraph",
+        "kind": "heading",
         "text": "Après le décès de l'auteur"
       },
       {
-        "kind": "heading",
+        "kind": "paragraph",
         "text": "L'autobiographie est figée au dernier chapitre publié. Personne ne peut rien ajouter à la voix originale de l'auteur. Les membres directs de la famille peuvent honorer la mémoire de l'auteur en écrivant une biographie séparée et indépendante, liée à l'autobiographie originale sur la page personnelle de la personne décédée."
       },
       {
@@ -4926,11 +4926,11 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
         "text": "6. Biographies de personnes décédées — Règles spéciales"
       },
       {
-        "kind": "paragraph",
+        "kind": "heading",
         "text": "La période temporaire de 30 jours"
       },
       {
-        "kind": "heading",
+        "kind": "paragraph",
         "text": "Lorsqu'un membre de la famille publie la biographie d'une personne décédée, elle reste publique dans le catalogue, avec la mention « Dans les 30 premiers jours ». Ce n'est pas un statut à part. Toute personne mentionnée — ou les membres directs de sa famille — peut déposer un signalement. L'auteur peut informer les personnes citées mais n'est pas tenu de le faire. Le bouton « Signaler » reste accessible aussi après les 30 jours."
       },
       {
@@ -4938,15 +4938,15 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
         "text": "À la fin des 30 jours, la mention disparaît et la biographie reste publiée. Un signalement reste possible ensuite. Si la biographie est publiée de nouveau après une révision demandée, les 30 jours recommencent."
       },
       {
-        "kind": "paragraph",
+        "kind": "heading",
         "text": "Déclarations légales et preuve de décès"
       },
       {
-        "kind": "heading",
+        "kind": "paragraph",
         "text": "Les fausses déclarations concernant le décès d'une personne sont passibles de poursuites en vertu de l'art. 179decies du Code pénal suisse. Si une biographie est signalée, nous pouvons demander un certificat de décès. Le défaut de fournir une preuve adéquate entraînera la suppression et une éventuelle suspension du compte."
       },
       {
-        "kind": "paragraph",
+        "kind": "heading",
         "text": "7. Système de signalement"
       },
       {
@@ -4954,7 +4954,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
         "text": "Chaque biographie comprend un bouton “ Signaler ”. Motifs : la personne est toujours en vie, la biographie contient mes données sensibles sans consentement, contenu faux ou diffamatoire, violation des droits d'auteur, contenu illégal."
       },
       {
-        "kind": "paragraph",
+        "kind": "heading",
         "text": "Processus de traitement"
       },
       {
@@ -4986,15 +4986,15 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
         "text": "Pour le contenu de Niveau 1 (Section 11), la suppression est immédiate et automatique."
       },
       {
-        "kind": "paragraph",
+        "kind": "heading",
         "text": "8. Confidentialité et protection des données"
       },
       {
-        "kind": "heading",
-        "text": "Vos données sont hébergées en Suisse par Infomaniak et ne quittent jamais la juridiction suisse. Nous ne vendons jamais vos données à des tiers."
+        "kind": "paragraph",
+        "text": "Le site est hébergé en Suisse, chez Infomaniak. Pendant la bêta, la base de données, l’accès et les photos sont sur Supabase, les e-mails passent par Resend et, si vous utilisez la voix, la réponse parlée est produite dans l’Union européenne (France). L’écriture de l’assistant reste en Suisse. Ces passages hors de Suisse sont temporaires. Ils prennent fin à la publication au public de la version 1 finale, quand tout sera en Suisse. Nous ne vendons jamais vos données à des tiers."
       },
       {
-        "kind": "heading",
+        "kind": "paragraph",
         "text": "Pour plus de détails, consultez la Politique de confidentialité dans cette app."
       },
       {
@@ -5010,7 +5010,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
         "text": "Qui peut y accéder"
       },
       {
-        "kind": "paragraph",
+        "kind": "heading",
         "text": "Privé"
       },
       {
@@ -5018,7 +5018,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
         "text": "Vous uniquement"
       },
       {
-        "kind": "paragraph",
+        "kind": "heading",
         "text": "Famille uniquement"
       },
       {
@@ -5026,7 +5026,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
         "text": "Vous + les membres de la famille que vous invitez explicitement"
       },
       {
-        "kind": "paragraph",
+        "kind": "heading",
         "text": "Semi-privé"
       },
       {
@@ -5034,7 +5034,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
         "text": "Toute personne disposant du lien direct (non indexé)"
       },
       {
-        "kind": "paragraph",
+        "kind": "heading",
         "text": "Public"
       },
       {
@@ -5042,15 +5042,15 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
         "text": "Tout le monde (indexé, Creative Commons BY-NC-SA 4.0)"
       },
       {
-        "kind": "paragraph",
+        "kind": "heading",
         "text": "10. Propriété intellectuelle"
       },
       {
-        "kind": "heading",
+        "kind": "paragraph",
         "text": "Vous conservez l'entière propriété de toutes les biographies que vous publiez. En publiant, vous nous accordez une licence non exclusive, libre de droits, mondiale et révocable pour héberger, stocker et rendre le contenu accessible selon vos paramètres. Cette licence ne nous autorise pas à modifier votre contenu ni à le revendre."
       },
       {
-        "kind": "heading",
+        "kind": "paragraph",
         "text": "Les biographies publiques sont sous licence Creative Commons BY-NC-SA 4.0 (attribution requise, pas d'utilisation commerciale, partage dans les mêmes conditions)."
       },
       {
@@ -5058,7 +5058,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
         "text": "Le logiciel est publié sous AGPL v3.0 : github.com/BiographyLibrary/Biography-Library"
       },
       {
-        "kind": "paragraph",
+        "kind": "heading",
         "text": "11. Contenu interdit et système de modération"
       },
       {
@@ -5066,11 +5066,11 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
         "text": "Chaque biographie est soumise à une analyse automatisée avant publication."
       },
       {
-        "kind": "paragraph",
+        "kind": "heading",
         "text": "Niveau 1 — Suppression automatique immédiate + Bannissement permanent"
       },
       {
-        "kind": "heading",
+        "kind": "paragraph",
         "text": "Suppression instantanée, fermeture définitive du compte et bannissement permanent du nom associé au compte, sans droit d'appel :"
       },
       {
@@ -5106,11 +5106,11 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
         "text": "Contenu promouvant ou glorifiant le suicide ou l'automutilation auprès de personnes vulnérables"
       },
       {
-        "kind": "paragraph",
+        "kind": "heading",
         "text": "Niveau 2 — Suppression + Droit d'appel"
       },
       {
-        "kind": "heading",
+        "kind": "paragraph",
         "text": "Suppression du contenu et suspension possible du compte. Droit d'appel dans un délai de 14 jours :"
       },
       {
@@ -5138,11 +5138,11 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
         "text": "Contenu faux ou gravement diffamatoire"
       },
       {
-        "kind": "paragraph",
+        "kind": "heading",
         "text": "Niveau 3 — Avis contextuel (Aucun retrait)"
       },
       {
-        "kind": "heading",
+        "kind": "paragraph",
         "text": "Le contenu reste publié avec un avis visible pour les lecteurs :"
       },
       {
@@ -5154,31 +5154,31 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
         "text": "Récits historiques contestés (avec la possibilité d'ajouter un contexte alternatif)"
       },
       {
-        "kind": "heading",
+        "kind": "paragraph",
         "text": "Biography Library protège votre droit de dire votre vérité. Nous ne permettons pas que la liberté d'expression devienne un outil de préjudice physique ou psychologique."
       },
       {
-        "kind": "paragraph",
+        "kind": "heading",
         "text": "12. Publicité et sponsors"
       },
       {
-        "kind": "heading",
+        "kind": "paragraph",
         "text": "Biography Library peut afficher des publicités et des logos de sponsors sur les pages institutionnelles du site web et de l'application."
       },
       {
-        "kind": "heading",
+        "kind": "paragraph",
         "text": "Les biographies individuelles sont et resteront toujours totalement exemptes de toute publicité ou logo de sponsor. Ce principe est non négociable et ne pourra jamais être modifié rétroactivement."
       },
       {
-        "kind": "heading",
+        "kind": "paragraph",
         "text": "Les sponsors n'ont jamais accès aux données des utilisateurs et ne peuvent pas influencer la modération du contenu."
       },
       {
-        "kind": "paragraph",
+        "kind": "heading",
         "text": "13. Compte et biographie — Distinction permanente"
       },
       {
-        "kind": "heading",
+        "kind": "paragraph",
         "text": "Le compte est l'outil opérationnel personnel. Il reste inactif tant qu'il n'est pas utilisé — sans aucune conséquence et sans mécanisme de suppression ou d'archivage automatique. Le compte reste à la disposition de l'auteur indéfiniment."
       },
       {
@@ -5186,67 +5186,67 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
         "text": "La biographie est le contenu d'archivage permanent. Elle survit au compte et appartient à la mémoire collective de l'humanité."
       },
       {
-        "kind": "paragraph",
+        "kind": "heading",
         "text": "Après le décès de l'auteur"
       },
       {
-        "kind": "heading",
+        "kind": "paragraph",
         "text": "L'autobiographie est figée au dernier chapitre publié. Les membres directs de la famille peuvent demander la gestion du compte en fournissant les documents appropriés. Biography Library évaluera la demande dans les plus brefs délais."
       },
       {
-        "kind": "heading",
+        "kind": "paragraph",
         "text": "Biography Library ne supprimera jamais unilatéralement une biographie. La suppression ne peut avoir lieu que sur demande explicite de l'auteur, des membres de la famille y ayant droit, ou en cas de violation confirmée de la modération."
       },
       {
-        "kind": "paragraph",
+        "kind": "heading",
         "text": "14. Limitation de responsabilité"
       },
       {
-        "kind": "heading",
+        "kind": "paragraph",
         "text": "Biography Library est fourni “ en l'état ”. Responsabilité maximale : 50 CHF par utilisateur."
       },
       {
-        "kind": "heading",
+        "kind": "paragraph",
         "text": "Nous ne sommes pas responsables du contenu publié par les utilisateurs, des dommages indirects ou consécutifs, ou de la perte de données échappant à notre contrôle raisonnable."
       },
       {
-        "kind": "heading",
+        "kind": "paragraph",
         "text": "Si Biography Library doit fermer : préavis d'au moins 6 mois, exportation des données dans les formats disponibles les plus courants, code source public (AGPL v3) mis à la disposition de la communauté."
       },
       {
-        "kind": "paragraph",
+        "kind": "heading",
         "text": "15. Intelligence artificielle"
       },
       {
-        "kind": "heading",
-        "text": "Fonctions d’IA facultatives : l’écriture reste en Suisse via Infomaniak. Si vous utilisez la voix, la réponse parlée est produite dans l’Union européenne (France). Vous pouvez ne pas utiliser la voix."
+        "kind": "paragraph",
+        "text": "Fonctions d’IA facultatives. L’écriture reste en Suisse via Infomaniak, sur des modèles open source. Si vous utilisez la voix, la réponse parlée est produite dans l’Union européenne (France). Vous pouvez ne pas utiliser la voix. Ce passage est temporaire et prend fin à la publication au public de la version 1 finale."
       },
       {
-        "kind": "heading",
+        "kind": "paragraph",
         "text": "Vos biographies ne sont jamais utilisées pour entraîner des modèles d'IA. Chaque suggestion porte le badge “ Suggestion de l'IA ” et nécessite votre approbation explicite. Vous pouvez désactiver l'IA à tout moment."
       },
       {
-        "kind": "heading",
+        "kind": "paragraph",
         "text": "Les systèmes d'IA sous licence open source OSI peuvent accéder aux archives publiques en tant que source de référence vérifiée, avec attribution obligatoire. Les biographies privées, semi-privées et familiales sont inaccessibles à tout système externe."
       },
       {
-        "kind": "paragraph",
+        "kind": "heading",
         "text": "16. Modifications de ces Conditions"
       },
       {
-        "kind": "heading",
+        "kind": "paragraph",
         "text": "Notification par e-mail au moins 30 jours avant l'entrée en vigueur de la nouvelle version. Acceptation explicite requise pour les modifications substantielles."
       },
       {
-        "kind": "heading",
+        "kind": "paragraph",
         "text": "Non-rétroactivité : nous ne modifierons jamais ces Conditions pour réduire les protections déjà accordées aux utilisateurs."
       },
       {
-        "kind": "heading",
-        "text": "Historique des versions : v1.0 — 25 septembre 2026 — Mise à jour : plateforme en ligne, 30 premiers jours, cookies de l’app"
+        "kind": "paragraph",
+        "text": "Historique des versions : v1.1 — 28 septembre 2026 — Pendant la bêta, certaines parties sont encore hors de Suisse, de façon temporaire, et reviennent en Suisse à la publication au public de la version 1 finale. v1.0 — 25 septembre 2026 — plateforme en ligne, 30 premiers jours, cookies de l’app"
       },
       {
-        "kind": "paragraph",
+        "kind": "heading",
         "text": "17. Open Source et certification W3C"
       },
       {
@@ -5254,27 +5254,27 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
         "text": "Entièrement open source sous AGPL v3.0 : github.com/BiographyLibrary/Biography-Library"
       },
       {
-        "kind": "heading",
+        "kind": "paragraph",
         "text": "Seule l'Association Biography Library peut émettre des certifications officielles W3C Verifiable Credentials pour le catalogue universel."
       },
       {
-        "kind": "paragraph",
+        "kind": "heading",
         "text": "18. Droit applicable et juridiction compétente"
       },
       {
-        "kind": "heading",
+        "kind": "paragraph",
         "text": "Le droit suisse s'applique : Code civil (CC), Code des obligations (CO), nLPD, Code pénal (CP). Juridiction : Tribunaux de Lugano, Tessin, Suisse. Les utilisateurs de l'UE conservent le droit d'engager des poursuites devant les tribunaux de leur pays de résidence."
       },
       {
-        "kind": "heading",
+        "kind": "paragraph",
         "text": "Avant d'engager toute procédure légale, veuillez nous contacter à support@biographylibrary.org."
       },
       {
-        "kind": "paragraph",
+        "kind": "heading",
         "text": "19. Contact"
       },
       {
-        "kind": "heading",
+        "kind": "paragraph",
         "text": "Association Biography Library — Lugano, Tessin, Suisse"
       },
       {
@@ -5290,8 +5290,8 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
         "text": "Site web: biographylibrary.org"
       },
       {
-        "kind": "heading",
-        "text": "Version: 1.0 | 25 septembre 2026 | La version anglaise est la version juridiquement contraignante."
+        "kind": "paragraph",
+        "text": "Version: 1.1 | 28 septembre 2026 | La version anglaise est la version juridiquement contraignante."
       },
       {
         "kind": "paragraph",
@@ -5317,26 +5317,26 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "version",
-        "text": "Version 1.0 – 25. September 2026"
+        "text": "Version 1.1 – 28. September 2026"
       },
       {
-        "kind": "heading",
+        "kind": "paragraph",
         "text": "Durch die Nutzung der Biography Library stimmen Sie diesen Nutzungsbedingungen zu. Bitte lesen Sie diese sorgfältig durch."
       },
       {
-        "kind": "paragraph",
+        "kind": "heading",
         "text": "1. Wer Biography Library nutzen darf"
       },
       {
-        "kind": "heading",
+        "kind": "paragraph",
         "text": "Sie müssen mindestens 18 Jahre alt sein, um Biography Library zu nutzen."
       },
       {
-        "kind": "heading",
+        "kind": "paragraph",
         "text": "Durch die Erstellung eines Kontos bestätigen Sie, dass alle von Ihnen angegebenen Informationen korrekt und wahrheitsgemäß sind, dass Sie diese Bedingungen und alle geltenden Gesetze einhalten werden und dass Sie die Rechte aller anderen Personen respektieren werden."
       },
       {
-        "kind": "paragraph",
+        "kind": "heading",
         "text": "2. Was Sie veröffentlichen dürfen"
       },
       {
@@ -5344,7 +5344,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
         "text": "Biography Library erlaubt nur zwei Arten von Biografien."
       },
       {
-        "kind": "paragraph",
+        "kind": "heading",
         "text": "Ihre eigene Autobiografie"
       },
       {
@@ -5352,15 +5352,15 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
         "text": "Sie können die Geschichte Ihres eigenen Lebens in voller Freiheit und im Rahmen der gesetzlichen Grenzen schreiben und veröffentlichen. Durch die Veröffentlichung Ihrer Autobiografie erklären Sie unter Ihrer zivil- und strafrechtlichen Verantwortung, dass Sie die Person sind, die Sie vorgeben zu sein, dass die bereitgestellten Informationen wahrheitsgemäß sind, dass Sie mindestens 18 Jahre alt sind und dass Sie die Veröffentlichung unter der von Ihnen gewählten Datenschutzstufe akzeptieren."
       },
       {
-        "kind": "paragraph",
+        "kind": "heading",
         "text": "Biografien von verstorbenen Personen"
       },
       {
-        "kind": "heading",
+        "kind": "paragraph",
         "text": "Sie können die Biografie eines verstorbenen direkten Familienmitglieds schreiben und veröffentlichen. Dieses Recht ist ausschließlich direkten Familienmitgliedern vorbehalten."
       },
       {
-        "kind": "heading",
+        "kind": "paragraph",
         "text": "Durch die Veröffentlichung einer Biografie einer verstorbenen Person erklären Sie unter Ihrer zivil- und strafrechtlichen Verantwortung, dass Sie ein direktes Familienmitglied der Person sind, dass die Person tatsächlich verstorben ist, dass die Informationen wahrheitsgemäß sind oder eindeutig als Ihre persönliche Interpretation gekennzeichnet sind, dass Sie die Rechte der erwähnten lebenden Personen respektieren und dass Sie verstehen, dass ein Sterbenachweis angefordert werden kann."
       },
       {
@@ -5368,7 +5368,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
         "text": "Mehrere Perspektiven: Mehr als ein Familienmitglied kann separate Biografien derselben verstorbenen Person schreiben, jeweils mit eigener Urheberschaft, die alle auf der persönlichen Seite der verstorbenen Person verlinkt sind."
       },
       {
-        "kind": "paragraph",
+        "kind": "heading",
         "text": "Was verboten ist"
       },
       {
@@ -5388,15 +5388,15 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
         "text": "❌ Biografien von Personen, deren Tod Sie auf Anfrage nicht nachweisen können"
       },
       {
-        "kind": "heading",
+        "kind": "paragraph",
         "text": "Verstöße führen zur sofortigen Kündigung des Kontos und können rechtliche Schritte nach sich ziehen."
       },
       {
-        "kind": "paragraph",
+        "kind": "heading",
         "text": "3. Ihre Verantwortlichkeiten als Autor"
       },
       {
-        "kind": "heading",
+        "kind": "paragraph",
         "text": "Sie sind allein verantwortlich für die Richtigkeit aller veröffentlichten Informationen, die Wahrung der Privatsphäre lebender Dritter, die Einhaltung des Schweizer Rechts und der Gesetze Ihres Wohnsitzlandes sowie für alle Schäden, die durch rechtswidrige oder diffamierende Inhalte entstehen."
       },
       {
@@ -5404,11 +5404,11 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
         "text": "Biography Library ist ein technischer Dienstleister. Wir überprüfen Inhalte nicht vor der Veröffentlichung. Sie tragen die volle rechtliche Verantwortung für das, was Sie veröffentlichen."
       },
       {
-        "kind": "paragraph",
+        "kind": "heading",
         "text": "Schutz lebender Dritter"
       },
       {
-        "kind": "heading",
+        "kind": "paragraph",
         "text": "Sie dürfen Folgendes NICHT ohne ausdrückliche schriftliche Zustimmung einbeziehen:"
       },
       {
@@ -5440,11 +5440,11 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
         "text": "Falsche oder diffamierende Aussagen über lebende oder verstorbene Personen"
       },
       {
-        "kind": "heading",
+        "kind": "paragraph",
         "text": "Ohne Zustimmung zulässig: allgemeine Erwähnungen (Name und Beziehung), bekannte öffentliche Ereignisse, Informationen, für die Sie eine ausdrückliche schriftliche Zustimmung eingeholt haben."
       },
       {
-        "kind": "heading",
+        "kind": "paragraph",
         "text": "Erwähnte lebende Personen haben das Recht, die Entfernung sensibler Informationen, die sie betreffen, zu verlangen."
       },
       {
@@ -5452,7 +5452,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
         "text": "4. Inhalts- und Servicebeschränkungen"
       },
       {
-        "kind": "paragraph",
+        "kind": "heading",
         "text": "Text"
       },
       {
@@ -5460,7 +5460,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
         "text": "Keine Zeichenbeschränkung. Ihre Geschichte hat keine Grenzen."
       },
       {
-        "kind": "paragraph",
+        "kind": "heading",
         "text": "Bilder und Videos"
       },
       {
@@ -5468,15 +5468,15 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
         "text": "Jede Biografie kann bis zu 10 Bilder enthalten. Die Möglichkeit, weitere Bilder hinzuzufügen und Videos einzubinden, ist als optionale kostenpflichtige Funktion verfügbar, was die kostenlose und dauerhafte Natur des biografischen Archivs in keiner Weise beeinträchtigt."
       },
       {
-        "kind": "paragraph",
+        "kind": "heading",
         "text": "KI-Nutzung"
       },
       {
-        "kind": "heading",
+        "kind": "paragraph",
         "text": "Der KI-Assistent unterliegt täglichen und monatlichen Nutzungslimits, um die Servicequalität für alle Nutzer sicherzustellen. Diese Limits sind für die normale Nutzung der Plattform kalibriert. Optionen für eine intensivere Nutzung können verfügbar sein."
       },
       {
-        "kind": "paragraph",
+        "kind": "heading",
         "text": "5. Das biografische Kapitelsystem"
       },
       {
@@ -5484,7 +5484,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
         "text": "Ihre Autobiografie ist ein lebendiges Dokument, das im Laufe der Zeit mit Ihnen wächst."
       },
       {
-        "kind": "paragraph",
+        "kind": "heading",
         "text": "Wie es funktioniert"
       },
       {
@@ -5492,7 +5492,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
         "text": "Nach der Veröffentlichung Ihres ersten Kapitels schaltet die Plattform die Möglichkeit frei, nach mindestens 365 Tagen ein neues Kapitel hinzuzufügen. Sie sind nicht verpflichtet, dies jedes Jahr zu tun — Sie können viele Jahre warten, bevor Sie ein neues Kapitel hinzufügen. Die einzige Regel ist, dass seit Ihrem letzten veröffentlichten Kapitel mindestens 365 Tage vergangen sein müssen."
       },
       {
-        "kind": "paragraph",
+        "kind": "heading",
         "text": "Unveränderlichkeit"
       },
       {
@@ -5500,11 +5500,11 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
         "text": "Jedes veröffentlichte Kapitel ist unveränderlich: Ihre Worte bleiben für immer genau so, wie sie geschrieben wurden. Dies garantiert die Authentizität des Dokuments im Laufe der Zeit."
       },
       {
-        "kind": "paragraph",
+        "kind": "heading",
         "text": "Nach dem Tod des Autors"
       },
       {
-        "kind": "heading",
+        "kind": "paragraph",
         "text": "Die Autobiografie wird mit dem letzten veröffentlichten Kapitel eingefroren. Niemand darf der ursprünglichen Stimme des Autors etwas hinzufügen. Direkte Familienmitglieder können das Andenken des Autors ehren, indem sie eine separate, unabhängige Biografie schreiben, die mit der ursprünglichen Autobiografie auf der persönlichen Seite der verstorbenen Person verlinkt ist."
       },
       {
@@ -5512,11 +5512,11 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
         "text": "6. Biografien von verstorbenen Personen — Besondere Regeln"
       },
       {
-        "kind": "paragraph",
+        "kind": "heading",
         "text": "Die 30-tägige temporäre Phase"
       },
       {
-        "kind": "heading",
+        "kind": "paragraph",
         "text": "Wenn ein Familienmitglied eine Biografie einer verstorbenen Person veröffentlicht, bleibt sie im Katalog öffentlich, mit dem Hinweis „In den ersten 30 Tagen“. Das ist kein eigener Status. Jede erwähnte Person — oder deren direkte Familienangehörige — kann eine Meldung einreichen. Der Autor kann zitierte Personen benachrichtigen, ist dazu jedoch nicht verpflichtet. Die Schaltfläche „Melden“ bleibt auch nach den 30 Tagen zugänglich."
       },
       {
@@ -5524,15 +5524,15 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
         "text": "Nach Ablauf der 30 Tage verschwindet der Hinweis und die Biografie bleibt veröffentlicht. Eine Meldung bleibt danach möglich. Wird die Biografie nach einer verlangten Überarbeitung erneut veröffentlicht, beginnen die 30 Tage von neuem."
       },
       {
-        "kind": "paragraph",
+        "kind": "heading",
         "text": "Rechtliche Erklärungen und Sterbenachweis"
       },
       {
-        "kind": "heading",
+        "kind": "paragraph",
         "text": "Falsche Erklärungen über den Tod einer Person sind nach Art. 179decies des Schweizerischen Strafgesetzbuches strafbar. Wenn eine Biografie gemeldet wird, können wir eine Sterbeurkunde anfordern. Die Nichtvorlage eines angemessenen Nachweises führt zur Entfernung und möglichen Sperrung des Kontos."
       },
       {
-        "kind": "paragraph",
+        "kind": "heading",
         "text": "7. Meldesystem"
       },
       {
@@ -5540,7 +5540,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
         "text": "Jede Biografie enthält eine Schaltfläche “Melden”. Gründe: Person ist noch am Leben, Biografie enthält meine sensiblen Daten ohne Zustimmung, falsche oder diffamierende Inhalte, Urheberrechtsverletzung, illegale Inhalte."
       },
       {
-        "kind": "paragraph",
+        "kind": "heading",
         "text": "Bearbeitungsprozess"
       },
       {
@@ -5572,15 +5572,15 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
         "text": "Bei Inhalten der Stufe 1 (Abschnitt 11) erfolgt die Entfernung sofort und automatisch."
       },
       {
-        "kind": "paragraph",
+        "kind": "heading",
         "text": "8. Privatsphäre und Datenschutz"
       },
       {
-        "kind": "heading",
-        "text": "Ihre Daten werden in der Schweiz von Infomaniak gehostet und verlassen niemals die Schweizer Gerichtsbarkeit. Wir verkaufen Ihre Daten niemals an Dritte."
+        "kind": "paragraph",
+        "text": "Die Website wird in der Schweiz gehostet, bei Infomaniak. Während der Beta liegen Datenbank, Anmeldung und Fotos bei Supabase, E-Mails laufen über Resend, und wenn Sie die Stimme nutzen, wird die gesprochene Antwort in der Europäischen Union (Frankreich) erzeugt. Das Schreiben des Assistenten bleibt in der Schweiz. Diese Wege ausserhalb der Schweiz sind vorübergehend. Sie enden mit der Veröffentlichung der finalen Version 1 für die Öffentlichkeit, wenn alles in der Schweiz sein wird. Wir verkaufen Ihre Daten niemals an Dritte."
       },
       {
-        "kind": "heading",
+        "kind": "paragraph",
         "text": "Ausführliche Informationen finden Sie in der Datenschutzerklärung in dieser App."
       },
       {
@@ -5596,7 +5596,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
         "text": "Wer zugreifen kann"
       },
       {
-        "kind": "paragraph",
+        "kind": "heading",
         "text": "Privat"
       },
       {
@@ -5604,7 +5604,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
         "text": "Nur Sie"
       },
       {
-        "kind": "paragraph",
+        "kind": "heading",
         "text": "Nur Familie"
       },
       {
@@ -5612,7 +5612,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
         "text": "Sie + Familienmitglieder, die Sie ausdrücklich einladen"
       },
       {
-        "kind": "paragraph",
+        "kind": "heading",
         "text": "Halbprivat"
       },
       {
@@ -5620,7 +5620,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
         "text": "Jeder mit dem direkten Link (nicht indexiert)"
       },
       {
-        "kind": "paragraph",
+        "kind": "heading",
         "text": "Öffentlich"
       },
       {
@@ -5628,15 +5628,15 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
         "text": "Jeder (indexiert, Creative Commons BY-NC-SA 4.0)"
       },
       {
-        "kind": "paragraph",
+        "kind": "heading",
         "text": "10. Geistiges Eigentum"
       },
       {
-        "kind": "heading",
+        "kind": "paragraph",
         "text": "Sie behalten das volle Eigentum an allen Biografien, die Sie veröffentlichen. Durch die Veröffentlichung gewähren Sie uns eine nicht-exklusive, gebührenfreie, weltweite und widerrufliche Lizenz, die Inhalte gemäß Ihren Einstellungen zu hosten, zu speichern und zugänglich zu machen. Diese Lizenz berechtigt uns nicht, Ihre Inhalte zu ändern oder weiterzuverkaufen."
       },
       {
-        "kind": "heading",
+        "kind": "paragraph",
         "text": "Öffentliche Biografien sind unter Creative Commons BY-NC-SA 4.0 lizenziert (Namensnennung erforderlich, nicht kommerziell, Weitergabe unter gleichen Bedingungen)."
       },
       {
@@ -5644,7 +5644,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
         "text": "Die Software wird unter der AGPL v3.0 veröffentlicht: github.com/BiographyLibrary/Biography-Library"
       },
       {
-        "kind": "paragraph",
+        "kind": "heading",
         "text": "11. Verbotene Inhalte und Moderationssystem"
       },
       {
@@ -5652,11 +5652,11 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
         "text": "Jede Biografie wird vor der Veröffentlichung einer automatisierten Überprüfung unterzogen."
       },
       {
-        "kind": "paragraph",
+        "kind": "heading",
         "text": "Stufe 1 — Sofortige automatische Entfernung + Dauerhafte Sperre"
       },
       {
-        "kind": "heading",
+        "kind": "paragraph",
         "text": "Sofortige Entfernung, dauerhafte Kontoschließung und dauerhafte Sperre für den mit dem Konto verbundenen Namen, ohne Recht auf Einspruch:"
       },
       {
@@ -5692,11 +5692,11 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
         "text": "Inhalte, die Suizid oder Selbstverletzung bei gefährdeten Personen fördern oder verherrlichen"
       },
       {
-        "kind": "paragraph",
+        "kind": "heading",
         "text": "Stufe 2 — Entfernung + Einspruchsrecht"
       },
       {
-        "kind": "heading",
+        "kind": "paragraph",
         "text": "Entfernung von Inhalten und mögliche Kontosperrung. Einspruchsrecht innerhalb von 14 Tagen:"
       },
       {
@@ -5724,11 +5724,11 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
         "text": "Falsche oder schwerwiegend diffamierende Inhalte"
       },
       {
-        "kind": "paragraph",
+        "kind": "heading",
         "text": "Stufe 3 — Kontextbezogener Hinweis (Keine Entfernung)"
       },
       {
-        "kind": "heading",
+        "kind": "paragraph",
         "text": "Der Inhalt bleibt mit einem für die Leser sichtbaren Hinweis veröffentlicht:"
       },
       {
@@ -5740,31 +5740,31 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
         "text": "Umstrittene historische Darstellungen (mit der Möglichkeit, alternativen Kontext hinzuzufügen)"
       },
       {
-        "kind": "heading",
+        "kind": "paragraph",
         "text": "Biography Library schützt Ihr Recht, Ihre Wahrheit zu erzählen. Wir lassen nicht zu, dass die Meinungsfreiheit zu einem Instrument für physischen oder psychischen Schaden wird."
       },
       {
-        "kind": "paragraph",
+        "kind": "heading",
         "text": "12. Werbung und Sponsoren"
       },
       {
-        "kind": "heading",
+        "kind": "paragraph",
         "text": "Biography Library kann Werbung und Sponsorenlogos auf den institutionellen Seiten der Website und App anzeigen."
       },
       {
-        "kind": "heading",
+        "kind": "paragraph",
         "text": "Individuelle Biografien sind und bleiben immer völlig frei von Werbung oder Sponsorenlogos. Dieses Prinzip ist nicht verhandelbar und darf niemals rückwirkend geändert werden."
       },
       {
-        "kind": "heading",
+        "kind": "paragraph",
         "text": "Sponsoren haben niemals Zugriff auf Benutzerdaten und können die Inhaltsmoderation nicht beeinflussen."
       },
       {
-        "kind": "paragraph",
+        "kind": "heading",
         "text": "13. Konto und Biografie — Dauerhafte Unterscheidung"
       },
       {
-        "kind": "heading",
+        "kind": "paragraph",
         "text": "Das Konto ist das persönliche operative Werkzeug. Es ruht, solange es nicht genutzt wird — ohne Konsequenzen und ohne automatischen Lösch- oder Archivierungsmechanismus. Das Konto bleibt dem Autor auf unbestimmte Zeit erhalten."
       },
       {
@@ -5772,67 +5772,67 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
         "text": "Die Biografie ist der dauerhafte Archivinhalt. Sie überdauert das Konto und gehört zum kollektiven Gedächtnis der Menschheit."
       },
       {
-        "kind": "paragraph",
+        "kind": "heading",
         "text": "Nach dem Tod des Autors"
       },
       {
-        "kind": "heading",
+        "kind": "paragraph",
         "text": "Die Autobiografie wird beim zuletzt veröffentlichten Kapitel eingefroren. Direkte Familienangehörige können unter Vorlage entsprechender Dokumente die Kontoverwaltung beantragen. Biography Library wird die Anfrage so schnell wie möglich prüfen."
       },
       {
-        "kind": "heading",
+        "kind": "paragraph",
         "text": "Biography Library wird niemals einseitig eine Biografie löschen. Eine Löschung kann nur auf ausdrücklichen Wunsch des Autors, berechtigter Familienangehöriger oder im Falle eines bestätigten Moderationsverstoßes erfolgen."
       },
       {
-        "kind": "paragraph",
+        "kind": "heading",
         "text": "14. Haftungsbeschränkung"
       },
       {
-        "kind": "heading",
+        "kind": "paragraph",
         "text": "Biography Library wird “wie besehen” bereitgestellt. Maximale Haftung: CHF 50 pro Benutzer."
       },
       {
-        "kind": "heading",
+        "kind": "paragraph",
         "text": "Wir haften nicht für von Nutzern veröffentlichte Inhalte, indirekte Schäden oder Folgeschäden oder Datenverluste, die außerhalb unserer angemessenen Kontrolle liegen."
       },
       {
-        "kind": "heading",
+        "kind": "paragraph",
         "text": "Falls die Biography Library schließen muss: mindestens 6 Monate Vorankündigung, Datenexport in den gängigsten verfügbaren Formaten, öffentlicher Quellcode (AGPL v3) für die Community verfügbar."
       },
       {
-        "kind": "paragraph",
+        "kind": "heading",
         "text": "15. Künstliche Intelligenz"
       },
       {
-        "kind": "heading",
-        "text": "Optionale KI-Funktionen: das Schreiben bleibt in der Schweiz über Infomaniak. Wenn Sie die Stimme nutzen, wird die gesprochene Antwort in der Europäischen Union (Frankreich) erzeugt. Sie können die Stimme auslassen."
+        "kind": "paragraph",
+        "text": "Optionale KI-Funktionen. Das Schreiben bleibt in der Schweiz über Infomaniak, auf Open-Source-Modellen. Wenn Sie die Stimme nutzen, wird die gesprochene Antwort in der Europäischen Union (Frankreich) erzeugt. Sie können die Stimme auslassen. Dieser Weg ist vorübergehend und endet mit der Veröffentlichung der finalen Version 1 für die Öffentlichkeit."
       },
       {
-        "kind": "heading",
+        "kind": "paragraph",
         "text": "Ihre Biografien werden niemals zum Trainieren von KI-Modellen verwendet. Jeder Vorschlag trägt das Kennzeichen “KI-Vorschlag” und erfordert Ihre ausdrückliche Zustimmung. Sie können die KI jederzeit deaktivieren."
       },
       {
-        "kind": "heading",
+        "kind": "paragraph",
         "text": "KI-Systeme unter einer OSI-Open-Source-Lizenz können auf das öffentliche Archiv als verifizierte Referenzquelle zugreifen, wobei eine Namensnennung obligatorisch ist. Private, halbprivate und Familienbiografien sind für externe Systeme unzugänglich."
       },
       {
-        "kind": "paragraph",
+        "kind": "heading",
         "text": "16. Änderungen dieser Bedingungen"
       },
       {
-        "kind": "heading",
+        "kind": "paragraph",
         "text": "E-Mail-Benachrichtigung mindestens 30 Tage, bevor die neue Version in Kraft tritt. Ausdrückliche Zustimmung bei wesentlichen Änderungen erforderlich."
       },
       {
-        "kind": "heading",
+        "kind": "paragraph",
         "text": "Rückwirkungsverbot: Wir werden diese Bedingungen niemals ändern, um den Nutzern bereits gewährte Schutzrechte zu verringern."
       },
       {
-        "kind": "heading",
-        "text": "Versionsverlauf: v1.0 — 25. September 2026 — Aktualisierung: Plattform online, erste 30 Tage, Cookies der App"
+        "kind": "paragraph",
+        "text": "Versionsverlauf: v1.1 — 28. September 2026 — Während der Beta liegen einige Teile noch ausserhalb der Schweiz, vorübergehend, und kommen mit der Veröffentlichung der finalen Version 1 für die Öffentlichkeit in die Schweiz. v1.0 — 25. September 2026 — Plattform online, erste 30 Tage, Cookies der App"
       },
       {
-        "kind": "paragraph",
+        "kind": "heading",
         "text": "17. Open Source und W3C-Zertifizierung"
       },
       {
@@ -5840,27 +5840,27 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
         "text": "Vollständig Open Source unter AGPL v3.0: github.com/BiographyLibrary/Biography-Library"
       },
       {
-        "kind": "heading",
+        "kind": "paragraph",
         "text": "Nur die Biography Library Association darf offizielle W3C Verifiable Credentials-Zertifizierungen für den universellen Katalog ausstellen."
       },
       {
-        "kind": "paragraph",
+        "kind": "heading",
         "text": "18. Geltendes Recht und Gerichtsstand"
       },
       {
-        "kind": "heading",
+        "kind": "paragraph",
         "text": "Es gilt Schweizer Recht: Zivilgesetzbuch (ZGB), Obligationenrecht (OR), nDSG, Strafgesetzbuch (StGB). Gerichtsstand: Gerichte von Lugano, Tessin, Schweiz. EU-Nutzer behalten das Recht, Verfahren vor den Gerichten ihres Wohnsitzlandes einzuleiten."
       },
       {
-        "kind": "heading",
+        "kind": "paragraph",
         "text": "Bevor Sie rechtliche Schritte einleiten, kontaktieren Sie uns bitte unter support@biographylibrary.org."
       },
       {
-        "kind": "paragraph",
+        "kind": "heading",
         "text": "19. Kontakt"
       },
       {
-        "kind": "heading",
+        "kind": "paragraph",
         "text": "Biography Library Association — Lugano, Tessin, Schweiz"
       },
       {
@@ -5876,8 +5876,8 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
         "text": "Website: biographylibrary.org"
       },
       {
-        "kind": "heading",
-        "text": "Version: 1.0 | 25. September 2026 | Die englische Version ist die rechtlich bindende Version."
+        "kind": "paragraph",
+        "text": "Version: 1.1 | 28. September 2026 | Die englische Version ist die rechtlich bindende Version."
       },
       {
         "kind": "paragraph",
@@ -5905,7 +5905,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "version",
-        "text": "Versione 1.0 – 25 settembre 2026"
+        "text": "Versione 1.1 – 28 settembre 2026"
       },
       {
         "kind": "heading",
@@ -5957,7 +5957,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "paragraph",
-        "text": "La lingua scelta, italiano, inglese, francese o tedesco, è salvata nel browser. Non è un cookie di tracciamento."
+        "text": "La lingua scelta, italiano, inglese, francese o tedesco, è salvata nella memoria del browser. Non è un cookie."
       },
       {
         "kind": "heading",
@@ -5965,7 +5965,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "paragraph",
-        "text": "Se usi la voce, la risposta parlata è generata da un servizio nell’Unione europea (Francia). La scrittura dell’assistente resta in Svizzera. Non è un cookie."
+        "text": "Se usi la voce, la risposta parlata è generata da un servizio nell’Unione europea (Francia). La scrittura dell’assistente resta in Svizzera. Non è un cookie. È temporaneo, fino alla pubblicazione al pubblico della versione 1 finale."
       },
       {
         "kind": "heading",
@@ -6041,7 +6041,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "paragraph",
-        "text": "Nota: disabilitando il cookie delle preferenze di lingua, la scelta della lingua andrà persa a ogni visita."
+        "text": "Nota: se cancelli la memoria del browser, la scelta della lingua si perde a ogni visita. Non è un cookie."
       },
       {
         "kind": "heading",
@@ -6105,7 +6105,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "paragraph",
-        "text": "Versione: 1.0 | 25 settembre 2026 | Licenza del documento: CC BY-SA 4.0 La versione inglese è quella legalmente vincolante."
+        "text": "Versione: 1.1 | 28 settembre 2026 | Licenza del documento: CC BY-SA 4.0 La versione inglese è quella legalmente vincolante."
       },
       {
         "kind": "paragraph",
@@ -6131,7 +6131,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "version",
-        "text": "Version 1.0 – 25 September 2026"
+        "text": "Version 1.1 – 28 September 2026"
       },
       {
         "kind": "heading",
@@ -6183,7 +6183,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "paragraph",
-        "text": "The chosen language, Italian, English, French, or German, is saved in the browser. It is not a tracking cookie."
+        "text": "The chosen language, Italian, English, French, or German, is saved in the browser’s storage. It is not a cookie."
       },
       {
         "kind": "heading",
@@ -6191,7 +6191,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "paragraph",
-        "text": "If you use the voice, the spoken reply is generated by a service in the European Union (France). The assistant’s writing stays in Switzerland. This is not a cookie."
+        "text": "If you use the voice, the spoken reply is generated by a service in the European Union (France). The assistant’s writing stays in Switzerland. This is not a cookie. It is temporary, until version 1 is published to the public."
       },
       {
         "kind": "heading",
@@ -6267,7 +6267,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "paragraph",
-        "text": "Note: disabling the language preference cookie will result in your language choice being lost on each visit."
+        "text": "Note: if you clear the browser’s storage, the language choice is lost on each visit. It is not a cookie."
       },
       {
         "kind": "heading",
@@ -6331,7 +6331,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "paragraph",
-        "text": "Version: 1.0 | 25 September 2026 | Document licence: CC BY-SA 4.0 The English version is the legally binding version."
+        "text": "Version: 1.1 | 28 September 2026 | Document licence: CC BY-SA 4.0 The English version is the legally binding version."
       },
       {
         "kind": "paragraph",
@@ -6357,7 +6357,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "version",
-        "text": "Version 1.0 – 25 septembre 2026"
+        "text": "Version 1.1 – 28 septembre 2026"
       },
       {
         "kind": "heading",
@@ -6409,7 +6409,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "paragraph",
-        "text": "La langue choisie, italien, anglais, français ou allemand, est enregistrée dans le navigateur. Ce n’est pas un cookie de suivi."
+        "text": "La langue choisie, italien, anglais, français ou allemand, est enregistrée dans la mémoire du navigateur. Ce n’est pas un cookie."
       },
       {
         "kind": "heading",
@@ -6417,7 +6417,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "paragraph",
-        "text": "Si vous utilisez la voix, la réponse parlée est produite par un service dans l’Union européenne (France). L’écriture de l’assistant reste en Suisse. Ce n’est pas un cookie."
+        "text": "Si vous utilisez la voix, la réponse parlée est produite par un service dans l’Union européenne (France). L’écriture de l’assistant reste en Suisse. Ce n’est pas un cookie. C’est temporaire, jusqu’à la publication au public de la version 1 finale."
       },
       {
         "kind": "heading",
@@ -6493,7 +6493,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "paragraph",
-        "text": "Remarque : la désactivation du cookie de préférence de langue entraînera la perte de votre choix de langue à chaque visite."
+        "text": "Remarque : si vous effacez la mémoire du navigateur, le choix de langue se perd à chaque visite. Ce n’est pas un cookie."
       },
       {
         "kind": "heading",
@@ -6557,7 +6557,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "paragraph",
-        "text": "Version : 1.0 | 25 septembre 2026 | Licence du document : CC BY-SA 4.0 La version anglaise est la version juridiquement contraignante."
+        "text": "Version : 1.1 | 28 septembre 2026 | Licence du document : CC BY-SA 4.0 La version anglaise est la version juridiquement contraignante."
       },
       {
         "kind": "paragraph",
@@ -6583,7 +6583,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "version",
-        "text": "Version 1.0 – 25. September 2026"
+        "text": "Version 1.1 – 28. September 2026"
       },
       {
         "kind": "heading",
@@ -6635,7 +6635,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "paragraph",
-        "text": "Die gewählte Sprache, Italienisch, Englisch, Französisch oder Deutsch, wird im Browser gespeichert. Das ist kein Tracking-Cookie."
+        "text": "Die gewählte Sprache, Italienisch, Englisch, Französisch oder Deutsch, wird im Speicher des Browsers gespeichert. Das ist kein Cookie."
       },
       {
         "kind": "heading",
@@ -6643,7 +6643,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "paragraph",
-        "text": "Wenn Sie die Stimme nutzen, wird die gesprochene Antwort von einem Dienst in der Europäischen Union (Frankreich) erzeugt. Das Schreiben des Assistenten bleibt in der Schweiz. Das ist kein Cookie."
+        "text": "Wenn Sie die Stimme nutzen, wird die gesprochene Antwort von einem Dienst in der Europäischen Union (Frankreich) erzeugt. Das Schreiben des Assistenten bleibt in der Schweiz. Das ist kein Cookie. Es ist vorübergehend, bis die finale Version 1 für die Öffentlichkeit veröffentlicht wird."
       },
       {
         "kind": "heading",
@@ -6719,7 +6719,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "paragraph",
-        "text": "Hinweis: Das Deaktivieren des Sprachpräferenz-Cookies führt dazu, dass Ihre Sprachauswahl bei jedem Besuch verloren geht."
+        "text": "Hinweis: Wenn Sie den Speicher des Browsers löschen, geht die Sprachwahl bei jedem Besuch verloren. Das ist kein Cookie."
       },
       {
         "kind": "heading",
@@ -6783,7 +6783,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "paragraph",
-        "text": "Version: 1.0 | 25. September 2026 | Dokumentenlizenz: CC BY-SA 4.0 Die englische Version ist die rechtlich bindende Version."
+        "text": "Version: 1.1 | 28. September 2026 | Dokumentenlizenz: CC BY-SA 4.0 Die englische Version ist die rechtlich bindende Version."
       },
       {
         "kind": "paragraph",

@@ -32,7 +32,8 @@ describe('site legal pages', () => {
         expect(blocks.some((block) => block.text === 'Unisciti')).toBe(false);
       }
     }
-    expect(siteLegal.privacy.it.some((block) => block.text.includes('25 settembre 2026'))).toBe(true);
+    expect(siteLegal.privacy.it.some((block) => block.text.includes('28 settembre 2026'))).toBe(true);
+    expect(siteLegal.terms.it.some((block) => block.text.includes('versione 1 finale'))).toBe(true);
     expect(siteLegal.cookies.it.some((block) => block.text.includes('app.biographylibrary.org'))).toBe(true);
     expect(siteLegal.privacy.it.some((block) => block.text.includes('Nei primi 30 giorni'))).toBe(true);
     expect(JSON.stringify(siteLegal.cookies)).not.toContain('wordpress_logged_in');
