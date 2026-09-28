@@ -12,7 +12,7 @@ export default function UmIdentifierPage() {
   const copy = umIdentifierPageCopy(language);
 
   return (
-    <main className="max-w-3xl mx-auto px-4 py-12 sm:py-16 space-y-8">
+    <article className="max-w-3xl mx-auto px-4 py-12 sm:py-16 space-y-8">
       <header className="space-y-2">
         <h1 className="text-3xl font-serif font-semibold tracking-tight">{copy.title}</h1>
         <p className="text-lg text-muted-foreground">{copy.version}</p>
@@ -63,6 +63,6 @@ export default function UmIdentifierPage() {
           {t.footer.credits}
         </Link>
       </p>
-    </main>
+    </article>
   );
 }
