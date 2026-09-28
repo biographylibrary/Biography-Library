@@ -2,6 +2,8 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 import {
   archiveFolder,
   buildBiographyMarkdown,
+  buildRecordArchiveFiles,
+  RECORD_SCHEMA_VERSION,
   buildIndexJson,
   buildManifestText,
   decideArchiveDeposit,
@@ -133,8 +135,15 @@ export async function syncArchivePackage(
     provisional_until: provisionalUntil,
     captions: media.captions,
   };
+  const recordFiles = buildRecordArchiveFiles({
+    bio: bundle.bio,
+    events: bundle.events,
+    relations: bundle.relations,
+    umIdBaseUrl: umIdBaseUrl(),
+  });
   const files: ArchiveFile[] = [
     { path: 'biography.md', bytes: Buffer.from(biographyMd, 'utf8') },
+    ...recordFiles,
     { path: 'metadata.json', bytes: Buffer.from(`${JSON.stringify(metadata, null, 2)}\n`, 'utf8') },
     ...media.files,
   ];
@@ -151,7 +160,9 @@ export async function syncArchivePackage(
         ? 'application/json'
         : file.path.endsWith('.md')
           ? 'text/markdown; charset=utf-8'
-          : 'application/octet-stream',
+          : file.path.endsWith('.txt')
+            ? 'text/plain; charset=utf-8'
+            : 'application/octet-stream',
       upsert: false,
     });
     if (upErr) throw new Error(upErr.message);
@@ -169,6 +180,8 @@ export async function syncArchivePackage(
     manifest_sha256: manifestHash,
     reason,
     status: 'stored',
+    record_schema_version: RECORD_SCHEMA_VERSION,
+    um_spec_version: '1.0',
   };
   const previous: ArchiveVersionEntry[] = existing.map((row) => ({
     version: row.version_number,

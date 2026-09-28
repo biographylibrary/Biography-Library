@@ -251,16 +251,15 @@ describe('indirizzo di risoluzione (spec §9)', () => {
     expect(text).not.toContain('org//UM-');
   });
 
-  it('emits nothing without a base URL: a working copy carries the identifier alone', () => {
+  it('keeps the address row when there is no base URL, without inventing a link', () => {
     const text = buildPermanencePlainText({ ...PUBLISHED_BIO }, []);
     expect(text).toContain('UM-0000-K3NQ-7FX2-MVP4');
-    expect(text).not.toContain('RESOLUTION ADDRESS');
+    expect(text).toContain('RESOLUTION ADDRESS');
+    expect(text).toContain('sconosciuto | UNKNOWN');
     expect(text).not.toContain('https://id.biographylibrary.org/UM-');
   });
 
-  it('emits nothing when the record has no publication date', () => {
-    // Un indirizzo scritto al presente e non datato afferma l'opposto di quanto
-    // serve, cioè che sia permanente quanto l'identificativo.
+  it('does not print a live address when the record has no publication date', () => {
     const text = buildPermanencePlainText(
       { ...PUBLISHED_BIO, published_at_iso: null, published_um_year: null },
       [],
@@ -268,6 +267,7 @@ describe('indirizzo di risoluzione (spec §9)', () => {
       undefined,
       'https://id.biographylibrary.org'
     );
-    expect(text).not.toContain('RESOLUTION ADDRESS');
+    expect(text).toContain('RESOLUTION ADDRESS');
+    expect(text).not.toContain('https://id.biographylibrary.org/UM-');
   });
 });

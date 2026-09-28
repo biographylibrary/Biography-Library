@@ -12,6 +12,9 @@ import {
   type PermanenceExportEvent,
   type PermanenceExportRelation,
 } from '@/lib/permanence-text-export';
+import { assertRecordComplete, buildRecordCard, RECORD_SCHEMA_VERSION } from '@/lib/record-schema';
+
+export { RECORD_SCHEMA_VERSION };
 
 export const UM_SPEC_VERSION = '1.0';
 
@@ -24,6 +27,8 @@ export type ArchiveVersionEntry = {
   manifest_sha256: string;
   reason: ArchiveReason;
   status: ArchiveVersionStatus;
+  record_schema_version?: number;
+  um_spec_version?: string;
 };
 
 export type ArchiveFile = {
@@ -62,6 +67,22 @@ export function buildBiographyMarkdown(input: {
   );
   const body = nfc(input.bodyMarkdown.trim());
   return body ? `${header}${body}\n` : header;
+}
+
+export function buildRecordArchiveFiles(input: {
+  bio: PermanenceExportBiography;
+  events: PermanenceExportEvent[];
+  relations: PermanenceExportRelation[];
+  umIdBaseUrl?: string | null;
+}): ArchiveFile[] {
+  const card = buildRecordCard(input.bio, input.events, input.relations, input.umIdBaseUrl);
+  assertRecordComplete(card.rows);
+  const text = `${card.lines.join('\n')}\n`;
+  const json = `${JSON.stringify({ record_schema_version: RECORD_SCHEMA_VERSION, fields: card.data }, null, 2)}\n`;
+  return [
+    { path: 'record.txt', bytes: Buffer.from(text, 'utf8') },
+    { path: 'record.json', bytes: Buffer.from(json, 'utf8') },
+  ];
 }
 
 export function buildManifestText(input: {
