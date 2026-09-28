@@ -23,16 +23,20 @@ function geonamesToken(raw: number | string | null | undefined): string {
   return String(n);
 }
 
+/** Six fields, always. A missing name does not collapse the line to one word. */
+const UNKNOWN_PLACE_LINE =
+  'UNKNOWN | UNKNOWN | UNKNOWN | WGS 84 | geonames UNKNOWN | wikidata UNKNOWN';
+
 /**
  * name | lat | lon | WGS 84 | geonames {id|UNKNOWN} | wikidata {Qid|UNKNOWN}
- * A missing name is the unknown token. Missing numbers stay UNKNOWN.
+ * A missing name keeps all six fields as UNKNOWN. Missing numbers stay UNKNOWN.
  */
 export function formatPlaceExportValue(
   ev: PlaceBits | null | undefined,
-  unk: string
+  _unk?: string
 ): string {
   const placeName = ev?.place_name_as_given?.trim();
-  if (!placeName) return unk;
+  if (!placeName) return UNKNOWN_PLACE_LINE;
   const lat = fmtCoord(ev?.place_lat) ?? 'UNKNOWN';
   const lon = fmtCoord(ev?.place_lon) ?? 'UNKNOWN';
   const geonames = geonamesToken(ev?.place_geonames_id);

@@ -171,7 +171,7 @@ describe('buildPermanencePlainText', () => {
 
     expect(
       formatPlaceExportValue({ place_name_as_given: null, place_lat: null, place_lon: null }, 'sconosciuto | UNKNOWN')
-    ).toBe('sconosciuto | UNKNOWN');
+    ).toBe('UNKNOWN | UNKNOWN | UNKNOWN | WGS 84 | geonames UNKNOWN | wikidata UNKNOWN');
   });
 
   it('puts RTL values on the next indented line', () => {
