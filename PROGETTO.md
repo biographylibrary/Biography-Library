@@ -75,7 +75,7 @@ Fondatore unico, non sviluppatore: costruisce con Claude Code e Cursor. Non ci s
 
 **Pubblicazione**
 - Flusso approvazione PDF a tre fasi: `draft` → `draft_ai_feedback` → `published`
-- Revisione AI con Apertus-70B (screening testo per qualità e moderazione)
+- Revisione AI di pubblicazione con Gemma 4 31B. Il controllo grammaticale chiede prima Apertus 1.5 e, se non risponde, ripiega su Gemma
 - Revisione manuale moderatori per casi segnalati
 - Export PDF avanzato (multi-pagina, con galleria, struttura libro) + intestazione/colophon permanenza
 - Export testo semplice UTF-8 (intestazione invariante bilingue)
@@ -118,20 +118,20 @@ Fondatore unico, non sviluppatore: costruisce con Claude Code e Cursor. Non ci s
 
 ## Modelli AI in uso
 
-| Funzione | Modello | Provider | Posizione dati |
+| Funzione | Modello | Ripiego | Dove stanno i dati |
 |---|---|---|---|
-| Coach narrativo | Mistral Small 4 (o equivalente slug Infomaniak) | Infomaniak AI Services | Svizzera |
-| Reviewer / screening | Mistral Small 4 | Infomaniak AI Services | Svizzera |
-| Onboarding / Platform Guide | `nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B-FP8` | Infomaniak AI Services | Svizzera |
-| Rilettura sovrana (opzionale) | `swiss-ai/Apertus-70B-Instruct-2509` | Infomaniak AI Services | Svizzera |
-| Echo LLM (chat + tool) | Mistral (via Infomaniak) | Infomaniak AI Services | Svizzera |
-| STT voce Echo | Whisper | Infomaniak Edge Function | Svizzera |
-| TTS voce Echo | Voxtral TTS (`voxtral-tts-minimax`) | Mistral La Plateforme | Francia/EU |
-| Embeddings RAG | `bge_multilingual_gemma2` (3584 dim, halfvec) | Infomaniak AI Services | Svizzera |
+| Coach | `google/gemma-4-31B-it` | `mistralai/Mistral-Small-4-119B-2603` | Svizzera, Infomaniak |
+| Revisore di pubblicazione | `google/gemma-4-31B-it` | `mistralai/Mistral-Small-4-119B-2603` | Svizzera, Infomaniak |
+| Echo e guida | `google/gemma-4-31B-it` | `mistralai/Ministral-3-14B-Instruct-2512` | Svizzera, Infomaniak |
+| Rilettura sovrana | `swiss-ai/Apertus-v1.5-70B` | `mistralai/Mistral-Small-4-119B-2603` | Svizzera, Infomaniak |
+| Grammatica | `swiss-ai/Apertus-v1.5-70B` | Gemma 4 31B, poi Mistral Small 4 | Svizzera, Infomaniak |
+| STT voce Echo | Whisper | — | Svizzera, Edge Function Infomaniak |
+| TTS voce Echo | Voxtral TTS | — | Francia/UE, Mistral |
+| Embeddings RAG | `bge_multilingual_gemma2` (3584 dim) | lo stesso | Svizzera, Infomaniak |
 
 **Nota voce**: solo la sintesi vocale (TTS) è su Mistral Francia. STT e LLM restano in Svizzera. I voice ID per le lingue vanno in `.env` come `ECHO_TTS_VOICE_IT/EN/FR/DE`. I preset Voxtral sono solo EN-US, EN-GB e FR; per IT e DE si usano voci clonate da Mistral Studio.
 
-**Nota Gemma**: rimossa a giugno 2026 — il coach era originalmente previsto su `google/gemma-4-31B-it`, poi consolidato su Mistral per uniformità e per eliminare dipendenze da Google.
+**Nota Gemma**: resta in uso per lo screening della pubblicazione e come ripiego della grammatica. I pesi sono aperti e l’inferenza è su infrastruttura svizzera (Infomaniak), non su un servizio Google.
 
 **Licenza**: i pesi Voxtral sono CC-BY-NC. "Gratis per gli utenti" non equivale a "non commerciale" — si usano le API a pagamento, non si auto-ospitano i pesi.
 
