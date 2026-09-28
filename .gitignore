@@ -36,6 +36,11 @@ yarn-error.log*
 next-env.d.ts
 
 .cursor/mcp.json
+.cursor/plans/
+.claude/
+
+# Controllo manuale locale, non fa parte del prodotto.
+scripts/controllo-esteso.ts
 
 # Supabase CLI local cache (not committed; safe to delete)
 supabase/.temp/
