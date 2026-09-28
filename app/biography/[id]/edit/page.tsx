@@ -68,6 +68,7 @@ import { useTranslation } from '@/lib/i18n/i18n-context';
 import { LICENSE_BY_NC_SA_4, type ContentLicenseUri } from '@/lib/rights';
 import { nfcBiographyWriteFields } from '@/lib/nfc-biography';
 import { storedToArchiveMarkdown } from '@/lib/archive-markdown';
+import { stripHtmlTags } from '@/lib/export-utils';
 import { Loader as Loader2, Sparkles, Snowflake as SnowflakeIcon, Send as SendIcon, TriangleAlert, Lock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -808,8 +809,11 @@ const [isPublishing, setIsPublishing] = useState(false);
   }, [biography]);
 
   const handleReviewWithAi = useCallback(() => {
-    const sectionData = getSectionData(contentRef.current, activeSection);
-    if (!sectionData.text.trim()) return;
+    const plain =
+      biographyModeRef.current === 'freeflow'
+        ? stripHtmlTags(contentFreeflowRef.current).trim()
+        : getSectionData(contentRef.current, activeSection).text.trim();
+    if (!plain) return;
     setShowReviewDialog(true);
   }, [activeSection]);
 
@@ -932,7 +936,21 @@ const [isPublishing, setIsPublishing] = useState(false);
   );
 
   const handleApplyReviewChanges = useCallback(
-    (newContent: string, changeType: 'improvements' | 'rewrite') => {
+    (newContent: string, _changeType: 'improvements' | 'rewrite') => {
+      if (biographyModeRef.current === 'freeflow') {
+        const html = /<\/?[a-z][\s\S]*>/i.test(newContent.trim())
+          ? newContent
+          : newContent
+              .trim()
+              .split(/\n{2,}/)
+              .filter(Boolean)
+              .map((block) => `<p>${block.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\n/g, '<br>')}</p>`)
+              .join('');
+        contentFreeflowRef.current = html;
+        setContentFreeflow(html);
+        markDirty();
+        return;
+      }
       setContent((prev) => ({
         ...prev,
         [activeSection]: {
@@ -973,9 +991,15 @@ const [isPublishing, setIsPublishing] = useState(false);
   );
 
   const handleGrammarCheck = useCallback(async () => {
-    const sectionData = getSectionData(contentRef.current, activeSection);
+    const onSheet = biographyModeRef.current === 'freeflow';
+    const plain = onSheet
+      ? stripHtmlTags(contentFreeflowRef.current).trim()
+      : getSectionData(contentRef.current, activeSection).text.trim();
     const section = BIOGRAPHY_SECTIONS.find((s) => s.key === activeSection);
-    if (!sectionData.text.trim() || !section) return;
+    const sectionTitle = onSheet
+      ? titleRef.current.trim() || t.biography.untitled
+      : section?.title;
+    if (!plain || !sectionTitle) return;
 
     if (!session) {
       setAiState({
@@ -1000,8 +1024,8 @@ const [isPublishing, setIsPublishing] = useState(false);
 
     try {
       const suggestions = await checkGrammar(
-        section.title,
-        sectionData.text,
+        sectionTitle,
+        plain,
         language
       );
       setAiUsageRefresh((n) => n + 1);
@@ -1146,21 +1170,32 @@ const [isPublishing, setIsPublishing] = useState(false);
         });
         const accepted = prev.suggestions.find((s) => s.id === suggestionId);
         if (accepted && accepted.original) {
-          setContent((prevContent) => {
-            const current = getSectionData(prevContent, activeSection);
-            const newText = current.text.replace(
-              accepted.original,
-              accepted.suggestion
-            );
-            if (newText !== current.text) {
-              markDirty();
-              return {
-                ...prevContent,
-                [activeSection]: { ...current, text: newText },
-              };
-            }
-            return prevContent;
-          });
+          if (biographyModeRef.current === 'freeflow') {
+            setContentFreeflow((prevSheet) => {
+              const next = prevSheet.replace(accepted.original, accepted.suggestion);
+              if (next !== prevSheet) {
+                contentFreeflowRef.current = next;
+                markDirty();
+              }
+              return next;
+            });
+          } else {
+            setContent((prevContent) => {
+              const current = getSectionData(prevContent, activeSection);
+              const newText = current.text.replace(
+                accepted.original,
+                accepted.suggestion
+              );
+              if (newText !== current.text) {
+                markDirty();
+                return {
+                  ...prevContent,
+                  [activeSection]: { ...current, text: newText },
+                };
+              }
+              return prevContent;
+            });
+          }
         }
         return { ...prev, suggestions: updated };
       });
@@ -2512,13 +2547,19 @@ const [isPublishing, setIsPublishing] = useState(false);
         open={showReviewDialog}
         onOpenChange={setShowReviewDialog}
         biographyId={id}
-        sectionKey={activeSection}
+        sectionKey={biographyMode === 'freeflow' ? 'freeflow' : activeSection}
         sectionTitle={
-          t.sectionTitles[activeSection as keyof typeof t.sectionTitles] ||
-          BIOGRAPHY_SECTIONS.find((s) => s.key === activeSection)?.title ||
-          ''
+          biographyMode === 'freeflow'
+            ? title || t.biography.untitled
+            : t.sectionTitles[activeSection as keyof typeof t.sectionTitles] ||
+              BIOGRAPHY_SECTIONS.find((s) => s.key === activeSection)?.title ||
+              ''
         }
-        content={activeSectionData.text}
+        content={
+          biographyMode === 'freeflow'
+            ? stripHtmlTags(contentFreeflow)
+            : activeSectionData.text
+        }
         language={language}
         onApplyChanges={handleApplyReviewChanges}
       />
