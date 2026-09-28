@@ -185,14 +185,15 @@ Non ancora iniziata. Richiede aiuto professionale. Includerà: PostgreSQL con pg
 - **Supabase resta in Fase 1**: database, auth, storage rimangono su Supabase per la beta. Nessuna migrazione fino alla Fase 2.
 - **Streaming SSE via Node.js**: le route agenti girano su runtime Node (non Edge) per il supporto streaming. La scelta è verificata nel `next.config.js`.
 - **Memoria agenti cancellata alla pubblicazione**: `agent_threads`, `agent_messages`, `agent_memory_facts` e `biography_chunks` vengono purgati quando la biografia passa a `published` (`purgeAgentMemoryOnPublished`).
-- **Coach solo su `biography_mode = sections`**: la modalità freeflow è esclusa dalla beta. Se l'utente tenta, l'agente lo reindirizza.
+- **Documento unico**: la biografia è un solo foglio. L’editor non offre più le nove sezioni né il testo libero come scelta. Echo e il coach lavorano su quel documento. Il campo `biography_mode` resta nel database per le schede già scritte con il valore `sections`: l’interfaccia, aprendole, le tratta come foglio unico e non lo toglie con una migrazione.
 - **Full-duplex voce rinviato**: Pipecat / LiveKit e barge-in sono Fase 2. La beta usa push-to-talk.
 - **Identificativo permanente UM**: emesso da Biography Library, specifica pubblica vincolante; non ARK; mai riciclato; mai 404 su ID emesso.
 - **Licenza contenuto pubblica**: scelta dell'autore (BY-NC-SA default / BY-SA); metadati sempre CC0; upgrade solo unidirezionale in UI.
 - **Anno UM**: solo eventi di archivio (pubblicazione, crediti, colophon); cambio anno in UTC; mai sulle date di vita.
 - **PDF attuale**: non aggiungere famiglie Noto a jsPDF; scritture non latine richiedono un motore diverso (subsetting).
 - **Memorial, 30 giorni**: restano (Manifesto e condizioni, fuori repo). In codice: colonna `provisional_until` quando esisterà, non uno stato `provisional`. La segnalazione resta possibile dopo la scadenza, per sempre.
-- **Originale d’archivio**: pacchetto `archive/{UM}/v{N}/` nel bucket privato `archive`. Autobiografia: v1 alla pubblicazione. Memorial: v1 solo dopo `provisional_until` (30 giorni), via `POST /api/cron/archive-packages`. Il manifesto non contiene la propria impronta. `erasePriorContent` toglie la versione precedente da storage, HTML legacy, cronologia, PDF esportati e chunk; dice al segnalante che le copie già scaricate non si ritirano.
+- **Formato di riferimento**: l’originale conservato della biografia è Markdown CommonMark in UTF-8. Il PDF è una resa generata, non l’originale. Si conservano la sorgente, i dati di contorno e il motore che li impagina, non gli impaginati già fatti. Da qui dipendono le copie di sicurezza, le esportazioni e la conservazione su un supporto fisico.
+- **Originale d’archivio**: pacchetto `archive/{UM}/v{N}/` nel bucket privato `archive`. Autobiografia: v1 alla pubblicazione. Memorial: v1 solo dopo `provisional_until` (30 giorni), via `POST /api/cron/archive-packages`. Il manifesto non contiene la propria impronta. `erasePriorContent` toglie la versione precedente da storage, HTML legacy, cronologia, PDF esportati e chunk; dice al segnalante che le copie già scaricate non si ritirano. Le versioni già depositate non si riscrivono.
 
 ---
 
