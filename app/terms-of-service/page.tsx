@@ -11,8 +11,8 @@ export default function TermsOfServicePage() {
   const { t } = useTranslation();
 
   return (
-    <div className="px-4 py-8 md:py-12">
-        <div className="max-w-4xl mx-auto">
+    <div className="px-4 py-8 md:py-12 bg-background">
+        <div className="max-w-3xl mx-auto">
           <div className="mb-6">
             <Button
               variant="ghost"
