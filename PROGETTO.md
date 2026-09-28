@@ -133,6 +133,8 @@ Fondatore unico, non sviluppatore: costruisce con Claude Code e Cursor. Non ci s
 
 **Nota Gemma**: resta in uso per lo screening della pubblicazione e come ripiego della grammatica. I pesi sono aperti e l’inferenza è su infrastruttura svizzera (Infomaniak), non su un servizio Google.
 
+Se Apertus non risponde, la grammatica passa a Gemma e poi a Mistral senza un messaggio a chi scrive. Il passaggio resta solo nei registri. Il nome chiamato è `swiss-ai/Apertus-v1.5-70B`.
+
 **Licenza**: i pesi Voxtral sono CC-BY-NC. "Gratis per gli utenti" non equivale a "non commerciale" — si usano le API a pagamento, non si auto-ospitano i pesi.
 
 ---

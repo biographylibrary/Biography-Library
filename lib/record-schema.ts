@@ -252,7 +252,7 @@ export function buildRecordCard(
   if (residences.length === 0) {
     const labelLocal = EVENT_LABELS.residence[lang];
     push(rows, data, 'residence', writeValue(dir, bil(lang, 'event'), `${labelLocal} | ${eventEnglish('residence')}`));
-    push(rows, data, 'residencePlace', `  ${writeValue(dir, bil(lang, 'place'), unk)}`);
+    push(rows, data, 'residencePlace', `  ${writeValue(dir, bil(lang, 'place'), formatPlaceExportValue(null))}`);
   } else {
     residences.forEach((ev, index) => {
       const suffix = index === 0 ? '' : String(index + 1);

@@ -11,11 +11,11 @@ Le versioni successive possono aggiungere righe in fondo. Non possono cambiare l
 
 Ogni riga ha un nome e un valore. Se un fatto non si conosce, il valore è `UNKNOWN` (o, nella lingua della scheda, la parola locale seguita da `UNKNOWN`). La riga non si toglie. Una scheda con molti valori ignoti è valida. Una scheda a cui manca una riga non lo è.
 
-Il luogo, quando c’è un nome, è sempre di sei parti, separate da una barra verticale:
+Il luogo è sempre di sei parti, separate da una barra verticale, anche quando non si conosce:
 
 nome | latitudine | longitudine | WGS 84 | geonames | wikidata
 
-Se un numero manca, al suo posto c’è `UNKNOWN`. Il datum è sempre WGS 84.
+Se il nome o un numero manca, al suo posto c’è `UNKNOWN`. Il datum è sempre WGS 84. Non si scrive una sola parola al posto di tutta la riga.
 
 ## Ordine delle righe
 
