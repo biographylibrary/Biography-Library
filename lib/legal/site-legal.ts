@@ -13,7 +13,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "version",
-        "text": "Versione 1.0 – 25 settembre 2026"
+        "text": "Versione 1.1 – 28 settembre 2026"
       },
       {
         "kind": "heading",
@@ -61,11 +61,11 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "item",
-        "text": "IA Etica e Locale – L'elaborazione dell'IA avviene sul territorio svizzero, mai inviata a terzi"
+        "text": "IA Etica e Locale – La scrittura avviene in Svizzera, su Infomaniak. Durante la beta la voce può essere generata temporaneamente nell’Unione europea"
       },
       {
         "kind": "item",
-        "text": "Hosting Svizzero – Tutti i dati risiedono esclusivamente in Svizzera"
+        "text": "Hosting Svizzero – Il sito è in Svizzera. Durante la beta, database, accesso, foto ed email possono stare temporaneamente fuori. Alla pubblicazione al pubblico della versione 1 finale, tutto sarà in Svizzera"
       },
       {
         "kind": "item",
@@ -193,7 +193,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "paragraph",
-        "text": "Elaborazione IA: esclusivamente in Svizzera tramite i sistemi IA di Infomaniak, basati su modelli open source."
+        "text": "Elaborazione della scrittura: in Svizzera, tramite i sistemi IA di Infomaniak, basati su modelli open source. Durante la beta, la voce parlata può essere generata temporaneamente nell’Unione europea."
       },
       {
         "kind": "heading",
@@ -369,7 +369,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "paragraph",
-        "text": "⚠️ I dati non lasciano mai la giurisdizione svizzera. Nessun trasferimento verso paesi privi di standard adeguati di protezione dei dati."
+        "text": "⚠️ Durante la beta, database, accesso e foto stanno su Supabase, le email passano da Resend e, se usi la voce, la risposta parlata è generata nell’Unione europea (Francia). La scrittura dell’assistente resta in Svizzera, su Infomaniak. Questi passaggi fuori dalla Svizzera sono temporanei e finiscono con la pubblicazione al pubblico della versione 1 finale, quando tutto sarà in Svizzera."
       },
       {
         "kind": "paragraph",
@@ -405,7 +405,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "paragraph",
-        "text": "Residenza dei dati – 100% Svizzera: tutti i server, i backup e l'elaborazione dell'IA operano esclusivamente sull'infrastruttura Infomaniak con data center in Svizzera."
+        "text": "Residenza dei dati – Il sito è ospitato in Svizzera, su Infomaniak. Durante la beta, database, accesso e foto stanno su Supabase, le email passano da Resend e, se usi la voce, la risposta parlata è generata nell’Unione europea (Francia). La scrittura dell’assistente resta in Svizzera. Questi passaggi fuori dalla Svizzera sono temporanei e finiscono con la pubblicazione al pubblico della versione 1 finale, quando tutto sarà in Svizzera."
       },
       {
         "kind": "paragraph",
@@ -629,7 +629,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "paragraph",
-        "text": "La scrittura dell’assistente avviene in Svizzera tramite i sistemi di IA di Infomaniak. Se usi la voce, la risposta parlata è generata da un servizio nell’Unione europea (Francia). Puoi non usare la voce."
+        "text": "La scrittura dell’assistente avviene in Svizzera tramite i sistemi di IA di Infomaniak. Se usi la voce, la risposta parlata è generata da un servizio nell’Unione europea (Francia). Puoi non usare la voce. Questo passaggio è temporaneo e finisce con la pubblicazione al pubblico della versione 1 finale."
       },
       {
         "kind": "heading",
@@ -653,7 +653,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "paragraph",
-        "text": "Cookie tecnici necessari (nessun consenso richiesto): token di sessione, preferenze di lingua, protezione CSRF, impostazioni sulla privacy."
+        "text": "Cookie tecnici necessari (nessun consenso richiesto): token di sessione, protezione CSRF, impostazioni sulla privacy. La lingua scelta è salvata nella memoria del browser, non in un cookie."
       },
       {
         "kind": "paragraph",
@@ -793,7 +793,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "paragraph",
-        "text": "Cronologia delle versioni: v1.0 — 25 settembre 2026 — Aggiornamento: piattaforma in linea, primi 30 giorni, cookie dell’app"
+        "text": "Cronologia delle versioni: v1.1 — 28 settembre 2026 — Durante la beta alcuni pezzi stanno ancora fuori dalla Svizzera, in modo temporaneo, e tornano in Svizzera con la pubblicazione al pubblico della versione 1 finale. v1.0 — 25 settembre 2026 — piattaforma in linea, primi 30 giorni, cookie dell’app"
       },
       {
         "kind": "heading",
@@ -873,7 +873,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "paragraph",
-        "text": "Versione: 1.0 | 25 settembre 2026 | Licenza del documento: CC BY-SA 4.0"
+        "text": "Versione: 1.1 | 28 settembre 2026 | Licenza del documento: CC BY-SA 4.0"
       },
       {
         "kind": "paragraph",
@@ -899,7 +899,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "version",
-        "text": "Version 1.0 – 25 September 2026"
+        "text": "Version 1.1 – 28 September 2026"
       },
       {
         "kind": "heading",
@@ -947,11 +947,11 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "item",
-        "text": "Ethical and Local AI – AI processing takes place on Swiss territory, never sent to third parties"
+        "text": "Ethical and Local AI – Writing takes place in Switzerland, on Infomaniak. During the beta the voice may be generated temporarily in the European Union"
       },
       {
         "kind": "item",
-        "text": "Swiss Hosting – All data resides exclusively in Switzerland"
+        "text": "Swiss Hosting – The site is in Switzerland. During the beta, the database, sign-in, photos and email may sit outside for a time. When version 1 is published to the public, everything will be in Switzerland"
       },
       {
         "kind": "item",
@@ -1079,7 +1079,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "paragraph",
-        "text": "AI processing: exclusively in Switzerland via Infomaniak’s AI systems, based on open source models."
+        "text": "Writing is processed in Switzerland via Infomaniak’s AI systems, based on open source models. During the beta, the spoken voice may be generated temporarily in the European Union."
       },
       {
         "kind": "heading",
@@ -1255,7 +1255,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "paragraph",
-        "text": "⚠️ Data never leaves Swiss jurisdiction. No transfers to countries lacking adequate data protection standards."
+        "text": "⚠️ During the beta, the database, sign-in and photos are on Supabase, email goes through Resend, and if you use the voice the spoken reply is generated in the European Union (France). The assistant’s writing stays in Switzerland, on Infomaniak. These steps outside Switzerland are temporary. They end when version 1 is published to the public, when everything will be in Switzerland."
       },
       {
         "kind": "paragraph",
@@ -1291,7 +1291,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "paragraph",
-        "text": "Data Residency – 100% Switzerland: all servers, backups and AI processing operate exclusively on Infomaniak infrastructure with data centres in Switzerland."
+        "text": "Data residency – The site is hosted in Switzerland, on Infomaniak. During the beta, the database, sign-in and photos are on Supabase, email goes through Resend, and if you use the voice the spoken reply is generated in the European Union (France). The assistant’s writing stays in Switzerland. These steps outside Switzerland are temporary. They end when version 1 is published to the public, when everything will be in Switzerland."
       },
       {
         "kind": "paragraph",
@@ -1515,7 +1515,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "paragraph",
-        "text": "The assistant’s writing runs in Switzerland through Infomaniak’s AI systems. If you use the voice, the spoken reply is generated by a service in the European Union (France). You can leave the voice off."
+        "text": "The assistant’s writing runs in Switzerland through Infomaniak’s AI systems. If you use the voice, the spoken reply is generated by a service in the European Union (France). You can leave the voice off. This step is temporary and ends when version 1 is published to the public."
       },
       {
         "kind": "heading",
@@ -1539,7 +1539,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "paragraph",
-        "text": "Necessary technical cookies (no consent required): session token, language preferences, CSRF protection, privacy settings."
+        "text": "Necessary technical cookies (no consent required): session token, CSRF protection, privacy settings. The chosen language is saved in the browser’s storage, not in a cookie."
       },
       {
         "kind": "paragraph",
@@ -1631,7 +1631,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "paragraph",
-        "text": "We do not transfer personal data outside of Switzerland."
+        "text": "During the beta, the database, sign-in and photos are on Supabase, email goes through Resend, and if you use the voice the spoken reply is generated in the European Union (France). The assistant’s writing stays in Switzerland, on Infomaniak. These steps outside Switzerland are temporary. They end when version 1 is published to the public, when everything will be in Switzerland."
       },
       {
         "kind": "paragraph",
@@ -1679,7 +1679,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "paragraph",
-        "text": "Version history: v1.0 — 25 September 2026 — Update: platform online, first 30 days, app cookies"
+        "text": "Version history: v1.1 — 28 September 2026 — During the beta some parts are still outside Switzerland, temporarily, and move to Switzerland when version 1 is published to the public. v1.0 — 25 September 2026 — platform online, first 30 days, app cookies"
       },
       {
         "kind": "heading",
@@ -1759,7 +1759,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "paragraph",
-        "text": "Version: 1.0 | 25 September 2026 | Document licence: CC BY-SA 4.0"
+        "text": "Version: 1.1 | 28 September 2026 | Document licence: CC BY-SA 4.0"
       },
       {
         "kind": "paragraph",
@@ -1785,7 +1785,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "version",
-        "text": "Version 1.0 – 25 septembre 2026"
+        "text": "Version 1.1 – 28 septembre 2026"
       },
       {
         "kind": "heading",
@@ -1833,11 +1833,11 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "item",
-        "text": "IA éthique et locale – Le traitement par l'IA a lieu sur le territoire suisse, jamais envoyé à des tiers"
+        "text": "IA éthique et locale – L’écriture se fait en Suisse, chez Infomaniak. Pendant la bêta, la voix peut être produite temporairement dans l’Union européenne"
       },
       {
         "kind": "item",
-        "text": "Hébergement suisse – Toutes les données résident exclusivement en Suisse"
+        "text": "Hébergement suisse – Le site est en Suisse. Pendant la bêta, la base de données, l’accès, les photos et les e-mails peuvent rester temporairement dehors. À la publication au public de la version 1 finale, tout sera en Suisse"
       },
       {
         "kind": "item",
@@ -1965,7 +1965,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "paragraph",
-        "text": "Traitement par l'IA : exclusivement en Suisse via les systèmes d'IA d'Infomaniak, basés sur des modèles open source."
+        "text": "Écriture : en Suisse, via les systèmes d’IA d’Infomaniak, sur des modèles open source. Pendant la bêta, la voix parlée peut être produite temporairement dans l’Union européenne."
       },
       {
         "kind": "heading",
@@ -2141,7 +2141,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "paragraph",
-        "text": "⚠️ Les données ne quittent jamais la juridiction suisse. Aucun transfert vers des pays dépourvus de normes adéquates en matière de protection des données."
+        "text": "⚠️ Pendant la bêta, la base de données, l’accès et les photos sont sur Supabase, les e-mails passent par Resend et, si vous utilisez la voix, la réponse parlée est produite dans l’Union européenne (France). L’écriture de l’assistant reste en Suisse, chez Infomaniak. Ces passages hors de Suisse sont temporaires. Ils prennent fin à la publication au public de la version 1 finale, quand tout sera en Suisse."
       },
       {
         "kind": "paragraph",
@@ -2177,7 +2177,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "paragraph",
-        "text": "Résidence des données – 100% Suisse : tous les serveurs, sauvegardes et traitements d'IA fonctionnent exclusivement sur l'infrastructure d'Infomaniak avec des centres de données en Suisse."
+        "text": "Résidence des données – Le site est hébergé en Suisse, chez Infomaniak. Pendant la bêta, la base de données, l’accès et les photos sont sur Supabase, les e-mails passent par Resend et, si vous utilisez la voix, la réponse parlée est produite dans l’Union européenne (France). L’écriture de l’assistant reste en Suisse. Ces passages hors de Suisse sont temporaires. Ils prennent fin à la publication au public de la version 1 finale, quand tout sera en Suisse."
       },
       {
         "kind": "paragraph",
@@ -2401,7 +2401,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "paragraph",
-        "text": "L’écriture de l’assistant se fait en Suisse via les systèmes d’IA d’Infomaniak. Si vous utilisez la voix, la réponse parlée est produite par un service dans l’Union européenne (France). Vous pouvez ne pas utiliser la voix."
+        "text": "L’écriture de l’assistant se fait en Suisse via les systèmes d’IA d’Infomaniak. Si vous utilisez la voix, la réponse parlée est produite par un service dans l’Union européenne (France). Vous pouvez ne pas utiliser la voix. Ce passage est temporaire et prend fin à la publication au public de la version 1 finale."
       },
       {
         "kind": "heading",
@@ -2425,7 +2425,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "paragraph",
-        "text": "Cookies techniques nécessaires (aucun consentement requis) : jeton de session, préférences linguistiques, protection CSRF, paramètres de confidentialité."
+        "text": "Cookies techniques nécessaires (aucun consentement requis) : jeton de session, protection CSRF, paramètres de confidentialité. La langue choisie est enregistrée dans la mémoire du navigateur, pas dans un cookie."
       },
       {
         "kind": "paragraph",
@@ -2517,7 +2517,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "paragraph",
-        "text": "Nous ne transférons pas de données personnelles en dehors de la Suisse."
+        "text": "Pendant la bêta, la base de données, l’accès et les photos sont sur Supabase, les e-mails passent par Resend et, si vous utilisez la voix, la réponse parlée est produite dans l’Union européenne (France). L’écriture de l’assistant reste en Suisse, chez Infomaniak. Ces passages hors de Suisse sont temporaires. Ils prennent fin à la publication au public de la version 1 finale, quand tout sera en Suisse."
       },
       {
         "kind": "paragraph",
@@ -2565,7 +2565,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "paragraph",
-        "text": "Historique des versions : v1.0 — 25 septembre 2026 — Mise à jour : plateforme en ligne, 30 premiers jours, cookies de l’app"
+        "text": "Historique des versions : v1.1 — 28 septembre 2026 — Pendant la bêta, certaines parties sont encore hors de Suisse, de façon temporaire, et reviennent en Suisse à la publication au public de la version 1 finale. v1.0 — 25 septembre 2026 — plateforme en ligne, 30 premiers jours, cookies de l’app"
       },
       {
         "kind": "heading",
@@ -2645,7 +2645,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "paragraph",
-        "text": "Version : 1.0 | 25 septembre 2026 | Licence du document : CC BY-SA 4.0"
+        "text": "Version : 1.1 | 28 septembre 2026 | Licence du document : CC BY-SA 4.0"
       },
       {
         "kind": "paragraph",
@@ -2671,7 +2671,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "version",
-        "text": "Version 1.0 – 25. September 2026"
+        "text": "Version 1.1 – 28. September 2026"
       },
       {
         "kind": "heading",
@@ -2719,11 +2719,11 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "item",
-        "text": "Ethische und lokale KI – Die KI-Verarbeitung findet auf Schweizer Boden statt und wird niemals an Dritte weitergegeben"
+        "text": "Ethische und lokale KI – Das Schreiben erfolgt in der Schweiz, bei Infomaniak. Während der Beta kann die Stimme vorübergehend in der Europäischen Union erzeugt werden"
       },
       {
         "kind": "item",
-        "text": "Schweizer Hosting – Alle Daten verbleiben ausschließlich in der Schweiz"
+        "text": "Schweizer Hosting – Die Website liegt in der Schweiz. Während der Beta können Datenbank, Anmeldung, Fotos und E-Mails vorübergehend draussen liegen. Mit der Veröffentlichung der finalen Version 1 für die Öffentlichkeit wird alles in der Schweiz sein"
       },
       {
         "kind": "item",
@@ -2851,7 +2851,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "paragraph",
-        "text": "KI-Verarbeitung: ausschließlich in der Schweiz über die KI-Systeme von Infomaniak, basierend auf Open-Source-Modellen."
+        "text": "Schreiben: in der Schweiz, über die KI-Systeme von Infomaniak, auf Open-Source-Modellen. Während der Beta kann die gesprochene Stimme vorübergehend in der Europäischen Union erzeugt werden."
       },
       {
         "kind": "heading",
@@ -3027,7 +3027,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "paragraph",
-        "text": "⚠️ Daten verlassen niemals die Schweizer Gerichtsbarkeit. Keine Übermittlungen in Länder ohne angemessene Datenschutzstandards."
+        "text": "⚠️ Während der Beta liegen Datenbank, Anmeldung und Fotos bei Supabase, E-Mails laufen über Resend, und wenn Sie die Stimme nutzen, wird die gesprochene Antwort in der Europäischen Union (Frankreich) erzeugt. Das Schreiben des Assistenten bleibt in der Schweiz, bei Infomaniak. Diese Wege ausserhalb der Schweiz sind vorübergehend. Sie enden mit der Veröffentlichung der finalen Version 1 für die Öffentlichkeit, wenn alles in der Schweiz sein wird."
       },
       {
         "kind": "paragraph",
@@ -3063,7 +3063,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "paragraph",
-        "text": "Datenresidenz – 100% Schweiz: Alle Server, Backups und die KI-Verarbeitung werden ausschließlich auf der Infrastruktur von Infomaniak mit Rechenzentren in der Schweiz betrieben."
+        "text": "Datenresidenz – Die Website wird in der Schweiz gehostet, bei Infomaniak. Während der Beta liegen Datenbank, Anmeldung und Fotos bei Supabase, E-Mails laufen über Resend, und wenn Sie die Stimme nutzen, wird die gesprochene Antwort in der Europäischen Union (Frankreich) erzeugt. Das Schreiben des Assistenten bleibt in der Schweiz. Diese Wege ausserhalb der Schweiz sind vorübergehend. Sie enden mit der Veröffentlichung der finalen Version 1 für die Öffentlichkeit, wenn alles in der Schweiz sein wird."
       },
       {
         "kind": "paragraph",
@@ -3287,7 +3287,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "paragraph",
-        "text": "Das Schreiben des Assistenten läuft in der Schweiz über die KI-Systeme von Infomaniak. Wenn Sie die Stimme nutzen, wird die gesprochene Antwort von einem Dienst in der Europäischen Union (Frankreich) erzeugt. Sie können die Stimme auslassen."
+        "text": "Das Schreiben des Assistenten läuft in der Schweiz über die KI-Systeme von Infomaniak. Wenn Sie die Stimme nutzen, wird die gesprochene Antwort von einem Dienst in der Europäischen Union (Frankreich) erzeugt. Sie können die Stimme auslassen. Dieser Weg ist vorübergehend und endet mit der Veröffentlichung der finalen Version 1 für die Öffentlichkeit."
       },
       {
         "kind": "heading",
@@ -3311,7 +3311,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "paragraph",
-        "text": "Notwendige technische Cookies (keine Zustimmung erforderlich): Sitzungs-Token, Spracheinstellungen, CSRF-Schutz, Datenschutzeinstellungen."
+        "text": "Notwendige technische Cookies (keine Zustimmung erforderlich): Sitzungs-Token, CSRF-Schutz, Datenschutzeinstellungen. Die gewählte Sprache liegt im Speicher des Browsers, nicht in einem Cookie."
       },
       {
         "kind": "paragraph",
@@ -3403,7 +3403,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "paragraph",
-        "text": "Wir übermitteln keine personenbezogenen Daten ausserhalb der Schweiz."
+        "text": "Während der Beta liegen Datenbank, Anmeldung und Fotos bei Supabase, E-Mails laufen über Resend, und wenn Sie die Stimme nutzen, wird die gesprochene Antwort in der Europäischen Union (Frankreich) erzeugt. Das Schreiben des Assistenten bleibt in der Schweiz, bei Infomaniak. Diese Wege ausserhalb der Schweiz sind vorübergehend. Sie enden mit der Veröffentlichung der finalen Version 1 für die Öffentlichkeit, wenn alles in der Schweiz sein wird."
       },
       {
         "kind": "paragraph",
@@ -3451,7 +3451,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "paragraph",
-        "text": "Versionsverlauf: v1.0 — 25. September 2026 — Aktualisierung: Plattform online, erste 30 Tage, Cookies der App"
+        "text": "Versionsverlauf: v1.1 — 28. September 2026 — Während der Beta liegen einige Teile noch ausserhalb der Schweiz, vorübergehend, und kommen mit der Veröffentlichung der finalen Version 1 für die Öffentlichkeit in die Schweiz. v1.0 — 25. September 2026 — Plattform online, erste 30 Tage, Cookies der App"
       },
       {
         "kind": "heading",
@@ -3531,7 +3531,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "paragraph",
-        "text": "Version: 1.0 | 25. September 2026 | Dokumentenlizenz: CC BY-SA 4.0"
+        "text": "Version: 1.1 | 28. September 2026 | Dokumentenlizenz: CC BY-SA 4.0"
       },
       {
         "kind": "paragraph",
@@ -3559,7 +3559,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "version",
-        "text": "Versione 1.0 – 25 settembre 2026"
+        "text": "Versione 1.1 – 28 settembre 2026"
       },
       {
         "kind": "heading",
@@ -3819,7 +3819,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "heading",
-        "text": "I tuoi dati sono ospitati in Svizzera da Infomaniak e non lasciano mai la giurisdizione svizzera. Non vendiamo mai i tuoi dati a terzi."
+        "text": "Il sito è ospitato in Svizzera, su Infomaniak. Durante la beta, database, accesso e foto stanno su Supabase, le email passano da Resend e, se usi la voce, la risposta parlata è generata nell’Unione europea (Francia). La scrittura dell’assistente resta in Svizzera. Questi passaggi fuori dalla Svizzera sono temporanei e finiscono con la pubblicazione al pubblico della versione 1 finale, quando tutto sarà in Svizzera. Non vendiamo mai i tuoi dati a terzi."
       },
       {
         "kind": "heading",
@@ -4047,7 +4047,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "heading",
-        "text": "Funzionalità IA opzionali, elaborate in Svizzera tramite i sistemi IA di Infomaniak basati su modelli open source. Nessun dato inviato a fornitori terzi."
+        "text": "Funzionalità IA opzionali. La scrittura è elaborata in Svizzera tramite i sistemi IA di Infomaniak, su modelli open source. Se usi la voce, la risposta parlata è generata nell’Unione europea (Francia). Puoi non usare la voce. Questo passaggio è temporaneo e finisce con la pubblicazione al pubblico della versione 1 finale."
       },
       {
         "kind": "heading",
@@ -4071,7 +4071,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "heading",
-        "text": "Cronologia delle versioni: v1.0 — 25 settembre 2026 — Aggiornamento: piattaforma in linea, primi 30 giorni, cookie dell’app"
+        "text": "Cronologia delle versioni: v1.1 — 28 settembre 2026 — Durante la beta alcuni pezzi stanno ancora fuori dalla Svizzera, in modo temporaneo, e tornano in Svizzera con la pubblicazione al pubblico della versione 1 finale. v1.0 — 25 settembre 2026 — piattaforma in linea, primi 30 giorni, cookie dell’app"
       },
       {
         "kind": "paragraph",
@@ -4119,7 +4119,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "heading",
-        "text": "Versione: 1.0 | 25 settembre 2026 | La versione inglese è la versione legalmente vincolante."
+        "text": "Versione: 1.1 | 28 settembre 2026 | La versione inglese è la versione legalmente vincolante."
       },
       {
         "kind": "paragraph",
@@ -4145,7 +4145,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "version",
-        "text": "Version 1.0 – 25 September 2026"
+        "text": "Version 1.1 – 28 September 2026"
       },
       {
         "kind": "heading",
@@ -4405,7 +4405,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "heading",
-        "text": "Your data is hosted in Switzerland by Infomaniak and never leaves Swiss jurisdiction. We never sell your data to third parties."
+        "text": "The site is hosted in Switzerland, on Infomaniak. During the beta, the database, sign-in and photos are on Supabase, email goes through Resend, and if you use the voice the spoken reply is generated in the European Union (France). The assistant’s writing stays in Switzerland. These steps outside Switzerland are temporary. They end when version 1 is published to the public, when everything will be in Switzerland. We never sell your data to third parties."
       },
       {
         "kind": "heading",
@@ -4633,7 +4633,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "heading",
-        "text": "Optional AI features: writing stays in Switzerland via Infomaniak. If you use the voice, the spoken reply is generated in the European Union (France). You can leave the voice off."
+        "text": "Optional AI features. Writing stays in Switzerland via Infomaniak, on open source models. If you use the voice, the spoken reply is generated in the European Union (France). You can leave the voice off. This step is temporary and ends when version 1 is published to the public."
       },
       {
         "kind": "heading",
@@ -4657,7 +4657,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "heading",
-        "text": "Version history: v1.0 — 25 September 2026 — Update: platform online, first 30 days, app cookies"
+        "text": "Version history: v1.1 — 28 September 2026 — During the beta some parts are still outside Switzerland, temporarily, and move to Switzerland when version 1 is published to the public. v1.0 — 25 September 2026 — platform online, first 30 days, app cookies"
       },
       {
         "kind": "paragraph",
@@ -4705,7 +4705,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "heading",
-        "text": "Version: 1.0 | 25 September 2026 | The English version is the legally binding version."
+        "text": "Version: 1.1 | 28 September 2026 | The English version is the legally binding version."
       },
       {
         "kind": "paragraph",
@@ -4731,7 +4731,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "version",
-        "text": "Version 1.0 – 25 septembre 2026"
+        "text": "Version 1.1 – 28 septembre 2026"
       },
       {
         "kind": "heading",
@@ -4991,7 +4991,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "heading",
-        "text": "Vos données sont hébergées en Suisse par Infomaniak et ne quittent jamais la juridiction suisse. Nous ne vendons jamais vos données à des tiers."
+        "text": "Le site est hébergé en Suisse, chez Infomaniak. Pendant la bêta, la base de données, l’accès et les photos sont sur Supabase, les e-mails passent par Resend et, si vous utilisez la voix, la réponse parlée est produite dans l’Union européenne (France). L’écriture de l’assistant reste en Suisse. Ces passages hors de Suisse sont temporaires. Ils prennent fin à la publication au public de la version 1 finale, quand tout sera en Suisse. Nous ne vendons jamais vos données à des tiers."
       },
       {
         "kind": "heading",
@@ -5219,7 +5219,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "heading",
-        "text": "Fonctions d’IA facultatives : l’écriture reste en Suisse via Infomaniak. Si vous utilisez la voix, la réponse parlée est produite dans l’Union européenne (France). Vous pouvez ne pas utiliser la voix."
+        "text": "Fonctions d’IA facultatives. L’écriture reste en Suisse via Infomaniak, sur des modèles open source. Si vous utilisez la voix, la réponse parlée est produite dans l’Union européenne (France). Vous pouvez ne pas utiliser la voix. Ce passage est temporaire et prend fin à la publication au public de la version 1 finale."
       },
       {
         "kind": "heading",
@@ -5243,7 +5243,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "heading",
-        "text": "Historique des versions : v1.0 — 25 septembre 2026 — Mise à jour : plateforme en ligne, 30 premiers jours, cookies de l’app"
+        "text": "Historique des versions : v1.1 — 28 septembre 2026 — Pendant la bêta, certaines parties sont encore hors de Suisse, de façon temporaire, et reviennent en Suisse à la publication au public de la version 1 finale. v1.0 — 25 septembre 2026 — plateforme en ligne, 30 premiers jours, cookies de l’app"
       },
       {
         "kind": "paragraph",
@@ -5291,7 +5291,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "heading",
-        "text": "Version: 1.0 | 25 septembre 2026 | La version anglaise est la version juridiquement contraignante."
+        "text": "Version: 1.1 | 28 septembre 2026 | La version anglaise est la version juridiquement contraignante."
       },
       {
         "kind": "paragraph",
@@ -5317,7 +5317,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "version",
-        "text": "Version 1.0 – 25. September 2026"
+        "text": "Version 1.1 – 28. September 2026"
       },
       {
         "kind": "heading",
@@ -5577,7 +5577,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "heading",
-        "text": "Ihre Daten werden in der Schweiz von Infomaniak gehostet und verlassen niemals die Schweizer Gerichtsbarkeit. Wir verkaufen Ihre Daten niemals an Dritte."
+        "text": "Die Website wird in der Schweiz gehostet, bei Infomaniak. Während der Beta liegen Datenbank, Anmeldung und Fotos bei Supabase, E-Mails laufen über Resend, und wenn Sie die Stimme nutzen, wird die gesprochene Antwort in der Europäischen Union (Frankreich) erzeugt. Das Schreiben des Assistenten bleibt in der Schweiz. Diese Wege ausserhalb der Schweiz sind vorübergehend. Sie enden mit der Veröffentlichung der finalen Version 1 für die Öffentlichkeit, wenn alles in der Schweiz sein wird. Wir verkaufen Ihre Daten niemals an Dritte."
       },
       {
         "kind": "heading",
@@ -5805,7 +5805,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "heading",
-        "text": "Optionale KI-Funktionen: das Schreiben bleibt in der Schweiz über Infomaniak. Wenn Sie die Stimme nutzen, wird die gesprochene Antwort in der Europäischen Union (Frankreich) erzeugt. Sie können die Stimme auslassen."
+        "text": "Optionale KI-Funktionen. Das Schreiben bleibt in der Schweiz über Infomaniak, auf Open-Source-Modellen. Wenn Sie die Stimme nutzen, wird die gesprochene Antwort in der Europäischen Union (Frankreich) erzeugt. Sie können die Stimme auslassen. Dieser Weg ist vorübergehend und endet mit der Veröffentlichung der finalen Version 1 für die Öffentlichkeit."
       },
       {
         "kind": "heading",
@@ -5829,7 +5829,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "heading",
-        "text": "Versionsverlauf: v1.0 — 25. September 2026 — Aktualisierung: Plattform online, erste 30 Tage, Cookies der App"
+        "text": "Versionsverlauf: v1.1 — 28. September 2026 — Während der Beta liegen einige Teile noch ausserhalb der Schweiz, vorübergehend, und kommen mit der Veröffentlichung der finalen Version 1 für die Öffentlichkeit in die Schweiz. v1.0 — 25. September 2026 — Plattform online, erste 30 Tage, Cookies der App"
       },
       {
         "kind": "paragraph",
@@ -5877,7 +5877,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "heading",
-        "text": "Version: 1.0 | 25. September 2026 | Die englische Version ist die rechtlich bindende Version."
+        "text": "Version: 1.1 | 28. September 2026 | Die englische Version ist die rechtlich bindende Version."
       },
       {
         "kind": "paragraph",
@@ -5905,7 +5905,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "version",
-        "text": "Versione 1.0 – 25 settembre 2026"
+        "text": "Versione 1.1 – 28 settembre 2026"
       },
       {
         "kind": "heading",
@@ -5957,7 +5957,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "paragraph",
-        "text": "La lingua scelta, italiano, inglese, francese o tedesco, è salvata nel browser. Non è un cookie di tracciamento."
+        "text": "La lingua scelta, italiano, inglese, francese o tedesco, è salvata nella memoria del browser. Non è un cookie."
       },
       {
         "kind": "heading",
@@ -5965,7 +5965,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "paragraph",
-        "text": "Se usi la voce, la risposta parlata è generata da un servizio nell’Unione europea (Francia). La scrittura dell’assistente resta in Svizzera. Non è un cookie."
+        "text": "Se usi la voce, la risposta parlata è generata da un servizio nell’Unione europea (Francia). La scrittura dell’assistente resta in Svizzera. Non è un cookie. È temporaneo, fino alla pubblicazione al pubblico della versione 1 finale."
       },
       {
         "kind": "heading",
@@ -6041,7 +6041,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "paragraph",
-        "text": "Nota: disabilitando il cookie delle preferenze di lingua, la scelta della lingua andrà persa a ogni visita."
+        "text": "Nota: se cancelli la memoria del browser, la scelta della lingua si perde a ogni visita. Non è un cookie."
       },
       {
         "kind": "heading",
@@ -6105,7 +6105,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "paragraph",
-        "text": "Versione: 1.0 | 25 settembre 2026 | Licenza del documento: CC BY-SA 4.0 La versione inglese è quella legalmente vincolante."
+        "text": "Versione: 1.1 | 28 settembre 2026 | Licenza del documento: CC BY-SA 4.0 La versione inglese è quella legalmente vincolante."
       },
       {
         "kind": "paragraph",
@@ -6131,7 +6131,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "version",
-        "text": "Version 1.0 – 25 September 2026"
+        "text": "Version 1.1 – 28 September 2026"
       },
       {
         "kind": "heading",
@@ -6183,7 +6183,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "paragraph",
-        "text": "The chosen language, Italian, English, French, or German, is saved in the browser. It is not a tracking cookie."
+        "text": "The chosen language, Italian, English, French, or German, is saved in the browser’s storage. It is not a cookie."
       },
       {
         "kind": "heading",
@@ -6191,7 +6191,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "paragraph",
-        "text": "If you use the voice, the spoken reply is generated by a service in the European Union (France). The assistant’s writing stays in Switzerland. This is not a cookie."
+        "text": "If you use the voice, the spoken reply is generated by a service in the European Union (France). The assistant’s writing stays in Switzerland. This is not a cookie. It is temporary, until version 1 is published to the public."
       },
       {
         "kind": "heading",
@@ -6267,7 +6267,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "paragraph",
-        "text": "Note: disabling the language preference cookie will result in your language choice being lost on each visit."
+        "text": "Note: if you clear the browser’s storage, the language choice is lost on each visit. It is not a cookie."
       },
       {
         "kind": "heading",
@@ -6331,7 +6331,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "paragraph",
-        "text": "Version: 1.0 | 25 September 2026 | Document licence: CC BY-SA 4.0 The English version is the legally binding version."
+        "text": "Version: 1.1 | 28 September 2026 | Document licence: CC BY-SA 4.0 The English version is the legally binding version."
       },
       {
         "kind": "paragraph",
@@ -6357,7 +6357,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "version",
-        "text": "Version 1.0 – 25 septembre 2026"
+        "text": "Version 1.1 – 28 septembre 2026"
       },
       {
         "kind": "heading",
@@ -6409,7 +6409,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "paragraph",
-        "text": "La langue choisie, italien, anglais, français ou allemand, est enregistrée dans le navigateur. Ce n’est pas un cookie de suivi."
+        "text": "La langue choisie, italien, anglais, français ou allemand, est enregistrée dans la mémoire du navigateur. Ce n’est pas un cookie."
       },
       {
         "kind": "heading",
@@ -6417,7 +6417,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "paragraph",
-        "text": "Si vous utilisez la voix, la réponse parlée est produite par un service dans l’Union européenne (France). L’écriture de l’assistant reste en Suisse. Ce n’est pas un cookie."
+        "text": "Si vous utilisez la voix, la réponse parlée est produite par un service dans l’Union européenne (France). L’écriture de l’assistant reste en Suisse. Ce n’est pas un cookie. C’est temporaire, jusqu’à la publication au public de la version 1 finale."
       },
       {
         "kind": "heading",
@@ -6493,7 +6493,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "paragraph",
-        "text": "Remarque : la désactivation du cookie de préférence de langue entraînera la perte de votre choix de langue à chaque visite."
+        "text": "Remarque : si vous effacez la mémoire du navigateur, le choix de langue se perd à chaque visite. Ce n’est pas un cookie."
       },
       {
         "kind": "heading",
@@ -6557,7 +6557,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "paragraph",
-        "text": "Version : 1.0 | 25 septembre 2026 | Licence du document : CC BY-SA 4.0 La version anglaise est la version juridiquement contraignante."
+        "text": "Version : 1.1 | 28 septembre 2026 | Licence du document : CC BY-SA 4.0 La version anglaise est la version juridiquement contraignante."
       },
       {
         "kind": "paragraph",
@@ -6583,7 +6583,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "version",
-        "text": "Version 1.0 – 25. September 2026"
+        "text": "Version 1.1 – 28. September 2026"
       },
       {
         "kind": "heading",
@@ -6635,7 +6635,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "paragraph",
-        "text": "Die gewählte Sprache, Italienisch, Englisch, Französisch oder Deutsch, wird im Browser gespeichert. Das ist kein Tracking-Cookie."
+        "text": "Die gewählte Sprache, Italienisch, Englisch, Französisch oder Deutsch, wird im Speicher des Browsers gespeichert. Das ist kein Cookie."
       },
       {
         "kind": "heading",
@@ -6643,7 +6643,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "paragraph",
-        "text": "Wenn Sie die Stimme nutzen, wird die gesprochene Antwort von einem Dienst in der Europäischen Union (Frankreich) erzeugt. Das Schreiben des Assistenten bleibt in der Schweiz. Das ist kein Cookie."
+        "text": "Wenn Sie die Stimme nutzen, wird die gesprochene Antwort von einem Dienst in der Europäischen Union (Frankreich) erzeugt. Das Schreiben des Assistenten bleibt in der Schweiz. Das ist kein Cookie. Es ist vorübergehend, bis die finale Version 1 für die Öffentlichkeit veröffentlicht wird."
       },
       {
         "kind": "heading",
@@ -6719,7 +6719,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "paragraph",
-        "text": "Hinweis: Das Deaktivieren des Sprachpräferenz-Cookies führt dazu, dass Ihre Sprachauswahl bei jedem Besuch verloren geht."
+        "text": "Hinweis: Wenn Sie den Speicher des Browsers löschen, geht die Sprachwahl bei jedem Besuch verloren. Das ist kein Cookie."
       },
       {
         "kind": "heading",
@@ -6783,7 +6783,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "paragraph",
-        "text": "Version: 1.0 | 25. September 2026 | Dokumentenlizenz: CC BY-SA 4.0 Die englische Version ist die rechtlich bindende Version."
+        "text": "Version: 1.1 | 28. September 2026 | Dokumentenlizenz: CC BY-SA 4.0 Die englische Version ist die rechtlich bindende Version."
       },
       {
         "kind": "paragraph",
