@@ -33,9 +33,9 @@ const it: EchoGuideCopy & { pools: EchoIcebreakerPoolsByContext } = {
 - **Orientamento** — come funziona l'app, cosa fare dopo, riassunto di quello che abbiamo detto
 
 **Come usarci al meglio**
-- Il capitolo aperto è già quello su cui lavori: il testo è sopra, sempre modificabile. Non serve dirmi quale, a meno che tu non voglia un altro
+- Il foglio è già quello su cui lavori: il testo è sopra, sempre modificabile. Non ci sono sezioni fisse da scegliere
 - La striscia nera «Echo - il tuo assistente alla scrittura» apre e chiude la chat. Se la chiudi, spariscono anche il campo e le icone
-- Chiedi una cosa alla volta; per i testi lunghi chiedi una **bozza** — poi usa **Inserisci nell'editor** sotto il messaggio (o rispondi «sì»). Solo allora il testo pulito entra nel capitolo, senza la chat
+- Chiedi una cosa alla volta; per i testi lunghi chiedi una **bozza** — poi usa **Inserisci nell'editor** sotto il messaggio (o rispondi «sì»). Solo allora il testo pulito entra nel foglio, senza la chat
 - Le conversazioni vecchie restano: apri «Conversazioni precedenti» se vuoi rileggerle. All’apertura non scorro tutta la chat
 - Microfono e voce sono le icone a sinistra del campo
 - Titolo e autore sono nel menu a sinistra. Esporta è sempre visibile in basso. Visibilità e gli altri strumenti sono sotto **Strumenti**. Su telefono il menu è l’icona a sinistra nell’intestazione del sito
@@ -43,7 +43,7 @@ const it: EchoGuideCopy & { pools: EchoIcebreakerPoolsByContext } = {
 
 **Memoria della conversazione**
 - Conservo un **riassunto interno** della nostra chat, così posso seguirti anche dopo molti messaggi
-- Il testo che inserisci nei **capitoli resta sempre nell'editor** — non dipende dalla chat
+- Il testo che metti nel **foglio resta sempre nell'editor** — non dipende dalla chat
 - Chiedimi un **riassunto** di cosa abbiamo detto quando vuoi un recap veloce
 
 **I miei paletti**
@@ -215,9 +215,9 @@ const en: EchoGuideCopy & { pools: EchoIcebreakerPoolsByContext } = {
 - **Orientation** — how the app works, what to do next, a summary of our conversation
 
 **How to get the most from me**
-- The open chapter is the one you are writing: the text stays above and is always editable. No need to tell me which, unless you want another
+- The page is what you are writing: the text stays above and is always editable. There are no fixed sections to choose
 - The black bar “Echo — your writing assistant” opens and closes the chat. Closing it also hides the writing field and the icons
-- Ask one thing at a time; for long text ask for a **draft** — then use **Insert in editor** under the message (or reply “yes”). Only then does the clean text go into the chapter, without the chat
+- Ask one thing at a time; for long text ask for a **draft** — then use **Insert in editor** under the message (or reply “yes”). Only then does the clean text go onto the page, without the chat
 - Older conversations stay saved. Open “Earlier conversations” to read them. Opening the chat does not scroll through the whole history
 - Microphone and voice are the icons on the left of the writing field
 - Title and author are in the left menu. Export is always visible at the bottom. Visibility and the other tools are under **Tools**. On a phone, the menu is the icon on the left of the site header
@@ -225,7 +225,7 @@ const en: EchoGuideCopy & { pools: EchoIcebreakerPoolsByContext } = {
 
 **Conversation memory**
 - I keep an **internal summary** of our chat so I can follow you even after many messages
-- Text you insert in **chapters always stays in the editor** — it does not depend on the chat
+- Text you put on the **page always stays in the editor** — it does not depend on the chat
 - Ask me to **summarize** what we discussed anytime for a quick recap
 
 **My boundaries**
@@ -397,9 +397,9 @@ const fr: EchoGuideCopy & { pools: EchoIcebreakerPoolsByContext } = {
 - **Orientation** — fonctionnement de l'app, prochaines étapes, résumé de notre échange
 
 **Comment bien m'utiliser**
-- Le chapitre ouvert est celui sur lequel vous travaillez : le texte reste au-dessus et se modifie toujours. Inutile de me dire lequel, sauf si vous en voulez un autre
+- La page est celle sur laquelle vous travaillez : le texte reste au-dessus et se modifie toujours. Il n’y a pas de sections fixes à choisir
 - La bande noire « Echo — votre assistant à l’écriture » ouvre et ferme la conversation. La fermer cache aussi le champ et les icônes
-- Une question à la fois ; pour un long texte demandez un **brouillon** — puis utilisez **Insérer dans l'éditeur** sous le message (ou répondez « oui »). Alors seulement le texte propre entre dans le chapitre, sans la conversation
+- Une question à la fois ; pour un long texte demandez un **brouillon** — puis utilisez **Insérer dans l'éditeur** sous le message (ou répondez « oui »). Alors seulement le texte propre entre dans la page, sans la conversation
 - Les anciennes conversations restent. Ouvrez « Conversations précédentes » pour les relire. L’ouverture ne fait pas défiler tout l’historique
 - Microphone et voix sont les icônes à gauche du champ
 - Titre et auteur sont dans le menu de gauche. Exporter est toujours visible en bas. Visibilité et les autres outils sont sous **Outils**. Sur téléphone, le menu est l’icône à gauche dans l’en-tête du site
@@ -407,7 +407,7 @@ const fr: EchoGuideCopy & { pools: EchoIcebreakerPoolsByContext } = {
 
 **Mémoire de la conversation**
 - Je conserve un **résumé interne** de notre échange pour vous suivre même après de nombreux messages
-- Le texte inséré dans les **chapitres reste toujours dans l'éditeur** — il ne dépend pas du chat
+- Le texte que vous mettez sur la **page reste toujours dans l'éditeur** — il ne dépend pas du chat
 - Demandez-moi un **résumé** de ce que nous avons dit pour un rappel rapide
 
 **Mes limites**
@@ -579,9 +579,9 @@ const de: EchoGuideCopy & { pools: EchoIcebreakerPoolsByContext } = {
 - **Orientierung** — App-Funktion, nächste Schritte, Zusammenfassung unseres Gesprächs
 
 **So nutzen Sie mich am besten**
-- Das offene Kapitel ist das, an dem Sie schreiben: der Text bleibt darüber und ist immer bearbeitbar. Sie müssen es nicht nennen, außer Sie möchten ein anderes
+- Die Seite ist das, woran Sie schreiben: der Text bleibt darüber und ist immer bearbeitbar. Es gibt keine festen Abschnitte zur Auswahl
 - Der schwarze Streifen «Echo — dein Schreibassistent» öffnet und schließt den Chat. Schließen blendet auch das Feld und die Symbole aus
-- Eine Frage nach der anderen; bei langem Text einen **Entwurf** anfordern — dann **In den Editor einfügen** unter der Nachricht (oder «ja»). Erst dann kommt der bereinigte Text ins Kapitel, ohne den Chat
+- Eine Frage nach der anderen; bei langem Text einen **Entwurf** anfordern — dann **In den Editor einfügen** unter der Nachricht (oder «ja»). Erst dann kommt der bereinigte Text auf die Seite, ohne den Chat
 - Ältere Gespräche bleiben gespeichert. «Frühere Gespräche» öffnet sie. Beim Öffnen wird nicht die ganze Historie durchgescrollt
 - Mikrofon und Stimme sind die Symbole links am Schreibfeld
 - Titel und Autor stehen im linken Menü. Exportieren ist unten immer sichtbar. Sichtbarkeit und die anderen Werkzeuge liegen unter **Werkzeuge**. Auf dem Telefon ist das Menü das Symbol links in der Kopfzeile
@@ -589,7 +589,7 @@ const de: EchoGuideCopy & { pools: EchoIcebreakerPoolsByContext } = {
 
 **Gesprächserinnerung**
 - Ich führe eine **interne Zusammenfassung** unseres Chats, um Sie auch nach vielen Nachrichten zu begleiten
-- Text in **Kapiteln bleibt immer im Editor** — er hängt nicht vom Chat ab
+- Text auf der **Seite bleibt immer im Editor** — er hängt nicht vom Chat ab
 - Bitten Sie mich jederzeit um eine **Zusammenfassung** unseres Gesprächs
 
 **Meine Grenzen**
