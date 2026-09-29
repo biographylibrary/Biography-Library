@@ -13,7 +13,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "version",
-        "text": "Versione 1.1 – 28 settembre 2026"
+        "text": "Versione 1.2 – 29 settembre 2026"
       },
       {
         "kind": "heading",
@@ -205,7 +205,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "paragraph",
-        "text": "Scrivi la storia della tua vita. La tua autobiografia è un documento vivente strutturato in capitoli: dopo aver pubblicato il tuo primo capitolo, puoi aggiungerne uno nuovo dopo un minimo di 365 giorni. Non sei obbligato a farlo ogni anno — puoi aspettare molti anni prima di aggiungere un nuovo capitolo. Ogni capitolo è immutabile una volta pubblicato: le tue parole rimangono esattamente come scritte, per sempre."
+        "text": "Scrivi la storia della tua vita su un foglio unico. I capitoli sono i titoli che segni nel testo. Dopo la prima pubblicazione, un nuovo capitolo si può aggiungere dopo almeno 365 giorni. Un capitolo pubblicato non si riscrive, salvo la modifica chiesta da un revisore a tutela di una persona citata."
       },
       {
         "kind": "paragraph",
@@ -369,7 +369,39 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "paragraph",
-        "text": "⚠️ Durante la beta, database, accesso e foto stanno su Supabase, le email passano da Resend e, se usi la voce, la risposta parlata è generata nell’Unione europea (Francia). La scrittura dell’assistente resta in Svizzera, su Infomaniak. Questi passaggi fuori dalla Svizzera sono temporanei e finiscono con la pubblicazione al pubblico della versione 1 finale, quando tutto sarà in Svizzera."
+        "text": "Supabase Inc."
+      },
+      {
+        "kind": "paragraph",
+        "text": "Unione Europea (temporaneo, fase beta)"
+      },
+      {
+        "kind": "paragraph",
+        "text": "Database, autenticazione, archiviazione delle foto"
+      },
+      {
+        "kind": "paragraph",
+        "text": "Conforme al GDPR; trasferimento temporaneo, termina con la versione 1 finale in Svizzera"
+      },
+      {
+        "kind": "paragraph",
+        "text": "Resend"
+      },
+      {
+        "kind": "paragraph",
+        "text": "Unione Europea (temporaneo, fase beta)"
+      },
+      {
+        "kind": "paragraph",
+        "text": "Invio delle email transazionali"
+      },
+      {
+        "kind": "paragraph",
+        "text": "Conforme al GDPR; trasferimento temporaneo, termina con la versione 1 finale in Svizzera"
+      },
+      {
+        "kind": "paragraph",
+        "text": "⚠️ Se usi la voce, la risposta parlata è generata nell’Unione europea (Francia); puoi non usarla. La scrittura dell’assistente resta in Svizzera, su Infomaniak. I trasferimenti verso l’Unione europea elencati sopra sono temporanei: finiscono con la pubblicazione al pubblico della versione 1 finale, quando tutto sarà in Svizzera."
       },
       {
         "kind": "paragraph",
@@ -493,7 +525,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "paragraph",
-        "text": "Tutti (indicizzato, Creative Commons BY-NC-SA 4.0)"
+        "text": "Tutti (indicizzato; licenza a scelta dell'autore: Creative Commons BY-NC-SA 4.0 o BY-SA 4.0)"
       },
       {
         "kind": "heading",
@@ -537,7 +569,15 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "paragraph",
-        "text": "Autobiografie: cancellazione completa su richiesta. Dati cancellati entro 90 giorni. I capitoli pubblicati sono immutabili ma possono essere eliminati insieme all'intera autobiografia."
+        "text": "Autobiografie: cancellazione completa su richiesta. Dati cancellati entro 90 giorni. Un capitolo pubblicato non si riscrive, salvo la modifica chiesta da un revisore a tutela di una persona citata. L’intera autobiografia può comunque essere cancellata."
+      },
+      {
+        "kind": "paragraph",
+        "text": "Quando una biografia o un capitolo viene cancellato, la piattaforma elimina la versione precedente da archiviazione, dal contenuto sorgente, dalla cronologia delle versioni, dai documenti esportati e dai frammenti usati per la ricerca. Le copie già scaricate da altri, prima della cancellazione, non possono essere ritirate."
+      },
+      {
+        "kind": "paragraph",
+        "text": "L’identificativo permanente UM della biografia non viene eliminato: continua a rispondere dichiarando che l’identificativo esiste ed è stato emesso, anche quando il contenuto non è più consultabile al pubblico."
       },
       {
         "kind": "paragraph",
@@ -593,7 +633,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "item",
-        "text": "Aiuta a strutturare e organizzare i capitoli biografici"
+        "text": "Propone testo e, su richiesta, sostituisce un passaggio del documento — ogni proposta richiede la tua conferma esplicita prima di essere applicata"
       },
       {
         "kind": "item",
@@ -732,6 +772,14 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
         "text": "30 giorni, poi eliminazione permanente"
       },
       {
+        "kind": "paragraph",
+        "text": "Pacchetto d'archivio versionato"
+      },
+      {
+        "kind": "paragraph",
+        "text": "Conservato per ogni versione pubblicata, insieme al contenuto biografico"
+      },
+      {
         "kind": "heading",
         "text": "17. Protezione dei minori"
       },
@@ -793,7 +841,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "paragraph",
-        "text": "Cronologia delle versioni: v1.1 — 28 settembre 2026 — Durante la beta alcuni pezzi stanno ancora fuori dalla Svizzera, in modo temporaneo, e tornano in Svizzera con la pubblicazione al pubblico della versione 1 finale. v1.0 — 25 settembre 2026 — piattaforma in linea, primi 30 giorni, cookie dell’app"
+        "text": "Cronologia delle versioni: v1.2 — 29 settembre 2026 — Foto, controllo automatico, identificativo UM, licenze, corsie di segnalazione, fornitori e cookie allineati al prodotto. v1.1 — 28 settembre 2026 — Durante la beta alcuni pezzi stanno ancora fuori dalla Svizzera, in modo temporaneo, e tornano in Svizzera con la pubblicazione al pubblico della versione 1 finale. v1.0 — 25 settembre 2026 — piattaforma in linea, primi 30 giorni, cookie dell’app"
       },
       {
         "kind": "heading",
@@ -825,7 +873,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "paragraph",
-        "text": "Solo la Biography Library Association può emettere certificazioni ufficiali W3C Verifiable Credentials per le biografie pubblicate sulla piattaforma."
+        "text": "L'identificativo permanente UM di ogni biografia pubblicata è rilasciato esclusivamente dall'Associazione Biography Library, secondo la specifica pubblica descritta alla Sezione 10 dei Termini di Servizio; nessun altro soggetto è autorizzato a emetterlo."
       },
       {
         "kind": "heading",
@@ -853,7 +901,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "paragraph",
-        "text": "Disponibile in: inglese, italiano, francese, tedesco. La versione inglese è quella legalmente vincolante."
+        "text": "Disponibile in: inglese, italiano, francese, tedesco. La versione italiana è quella legalmente vincolante."
       },
       {
         "kind": "paragraph",
@@ -873,7 +921,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "paragraph",
-        "text": "Versione: 1.1 | 28 settembre 2026 | Licenza del documento: CC BY-SA 4.0"
+        "text": "Versione: 1.2 | 29 settembre 2026 | Licenza del documento: CC BY-SA 4.0"
       },
       {
         "kind": "paragraph",
@@ -899,7 +947,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "version",
-        "text": "Version 1.1 – 28 September 2026"
+        "text": "Version 1.2 – 29 September 2026"
       },
       {
         "kind": "heading",
@@ -1091,7 +1139,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "paragraph",
-        "text": "You write the story of your own life. Your autobiography is a living document structured in chapters: after publishing your first chapter, you may add a new one after a minimum of 365 days. You are not required to do this every year — you may wait many years before adding a new chapter. Each chapter is immutable once published: your words remain exactly as written, forever."
+        "text": "You write the story of your life on one sheet. Chapters are the titles you mark in the text. After the first publication, a new chapter may be added after at least 365 days. A published chapter is not rewritten, except for a change requested by a reviewer to protect a person who is named."
       },
       {
         "kind": "paragraph",
@@ -1255,7 +1303,39 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "paragraph",
-        "text": "⚠️ During the beta, the database, sign-in and photos are on Supabase, email goes through Resend, and if you use the voice the spoken reply is generated in the European Union (France). The assistant’s writing stays in Switzerland, on Infomaniak. These steps outside Switzerland are temporary. They end when version 1 is published to the public, when everything will be in Switzerland."
+        "text": "Supabase Inc."
+      },
+      {
+        "kind": "paragraph",
+        "text": "European Union (temporary, beta phase)"
+      },
+      {
+        "kind": "paragraph",
+        "text": "Database, authentication, photo storage"
+      },
+      {
+        "kind": "paragraph",
+        "text": "GDPR compliant; temporary transfer, ends with version 1 in Switzerland"
+      },
+      {
+        "kind": "paragraph",
+        "text": "Resend"
+      },
+      {
+        "kind": "paragraph",
+        "text": "European Union (temporary, beta phase)"
+      },
+      {
+        "kind": "paragraph",
+        "text": "Sending transactional emails"
+      },
+      {
+        "kind": "paragraph",
+        "text": "GDPR compliant; temporary transfer, ends with version 1 in Switzerland"
+      },
+      {
+        "kind": "paragraph",
+        "text": "⚠️ If you use the voice, the spoken reply is generated in the European Union (France); you may choose not to use it. The assistant’s writing stays in Switzerland, on Infomaniak. The transfers to the European Union listed above are temporary: they end when version 1 is published to the public, when everything will be in Switzerland."
       },
       {
         "kind": "paragraph",
@@ -1379,7 +1459,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "paragraph",
-        "text": "Everyone (indexed, Creative Commons BY-NC-SA 4.0)"
+        "text": "Everyone (indexed; licence chosen by the author: Creative Commons BY-NC-SA 4.0 or BY-SA 4.0)"
       },
       {
         "kind": "heading",
@@ -1423,7 +1503,15 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "paragraph",
-        "text": "Autobiographies: complete deletion on request. Data erased within 90 days. Published chapters are immutable but may be deleted together with the entire autobiography."
+        "text": "Autobiographies: complete deletion on request. Data erased within 90 days. A published chapter is not rewritten, except for a change requested by a reviewer to protect a person who is named. The whole autobiography may still be deleted."
+      },
+      {
+        "kind": "paragraph",
+        "text": "When a biography or a chapter is deleted, the platform removes the prior version from archival storage, from the source content, from the version history, from exported documents, and from the fragments used for search. Copies already downloaded by others before deletion cannot be recalled."
+      },
+      {
+        "kind": "paragraph",
+        "text": "The biography's permanent UM identifier is not deleted: it keeps responding to state that the identifier exists and was issued, even when the content is no longer publicly viewable."
       },
       {
         "kind": "paragraph",
@@ -1479,7 +1567,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "item",
-        "text": "Helps structure and organise biographical chapters"
+        "text": "Proposes text and, on request, replaces a passage in the document — every proposal requires your explicit confirmation before it is applied"
       },
       {
         "kind": "item",
@@ -1618,6 +1706,14 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
         "text": "30 days, then permanent deletion"
       },
       {
+        "kind": "paragraph",
+        "text": "Versioned archive package"
+      },
+      {
+        "kind": "paragraph",
+        "text": "Kept for every published version, alongside the biographical content"
+      },
+      {
         "kind": "heading",
         "text": "17. Protection of Minors"
       },
@@ -1679,7 +1775,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "paragraph",
-        "text": "Version history: v1.1 — 28 September 2026 — During the beta some parts are still outside Switzerland, temporarily, and move to Switzerland when version 1 is published to the public. v1.0 — 25 September 2026 — platform online, first 30 days, app cookies"
+        "text": "Version history: v1.2 — 29 September 2026 — Photos, automatic check, UM identifier, licences, report lanes, providers and cookies aligned with the product. v1.1 — 28 September 2026 — During the beta some parts are still outside Switzerland, temporarily, and move to Switzerland when version 1 is published to the public. v1.0 — 25 September 2026 — platform online, first 30 days, app cookies"
       },
       {
         "kind": "heading",
@@ -1711,7 +1807,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "paragraph",
-        "text": "Only the Biography Library Association may issue official W3C Verifiable Credentials certifications for biographies published on the platform."
+        "text": "The permanent UM identifier for every published biography is issued exclusively by the Biography Library Association, under the public specification described in Section 10 of the Terms of Service; no other party is authorised to issue it."
       },
       {
         "kind": "heading",
@@ -1739,7 +1835,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "paragraph",
-        "text": "Available in: English, Italian, French, German. The English version is the legally binding version."
+        "text": "Available in: English, Italian, French, German. The Italian version is the legally binding version."
       },
       {
         "kind": "paragraph",
@@ -1759,7 +1855,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "paragraph",
-        "text": "Version: 1.1 | 28 September 2026 | Document licence: CC BY-SA 4.0"
+        "text": "Version: 1.2 | 29 September 2026 | Document licence: CC BY-SA 4.0"
       },
       {
         "kind": "paragraph",
@@ -1785,7 +1881,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "version",
-        "text": "Version 1.1 – 28 septembre 2026"
+        "text": "Version 1.2 – 29 septembre 2026"
       },
       {
         "kind": "heading",
@@ -1977,7 +2073,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "paragraph",
-        "text": "Vous écrivez l'histoire de votre propre vie. Votre autobiographie est un document vivant structuré en chapitres : après la publication de votre premier chapitre, vous pouvez en ajouter un nouveau après un minimum de 365 jours. Vous n'êtes pas tenu de le faire chaque année — vous pouvez attendre de nombreuses années avant d'ajouter un nouveau chapitre. Chaque chapitre est immuable une fois publié : vos mots restent exactement tels qu'ils ont été écrits, pour toujours."
+        "text": "Vous écrivez l’histoire de votre vie sur une seule page. Les chapitres sont les titres que vous marquez dans le texte. Après la première publication, un nouveau chapitre peut être ajouté après au moins 365 jours. Un chapitre publié ne se réécrit pas, sauf la modification demandée par un relecteur pour protéger une personne citée."
       },
       {
         "kind": "paragraph",
@@ -2141,7 +2237,39 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "paragraph",
-        "text": "⚠️ Pendant la bêta, la base de données, l’accès et les photos sont sur Supabase, les e-mails passent par Resend et, si vous utilisez la voix, la réponse parlée est produite dans l’Union européenne (France). L’écriture de l’assistant reste en Suisse, chez Infomaniak. Ces passages hors de Suisse sont temporaires. Ils prennent fin à la publication au public de la version 1 finale, quand tout sera en Suisse."
+        "text": "Supabase Inc."
+      },
+      {
+        "kind": "paragraph",
+        "text": "Union européenne (temporaire, phase bêta)"
+      },
+      {
+        "kind": "paragraph",
+        "text": "Base de données, authentification, stockage des photos"
+      },
+      {
+        "kind": "paragraph",
+        "text": "Conforme au RGPD ; transfert temporaire, prend fin avec la version 1 en Suisse"
+      },
+      {
+        "kind": "paragraph",
+        "text": "Resend"
+      },
+      {
+        "kind": "paragraph",
+        "text": "Union européenne (temporaire, phase bêta)"
+      },
+      {
+        "kind": "paragraph",
+        "text": "Envoi des e-mails transactionnels"
+      },
+      {
+        "kind": "paragraph",
+        "text": "Conforme au RGPD ; transfert temporaire, prend fin avec la version 1 en Suisse"
+      },
+      {
+        "kind": "paragraph",
+        "text": "⚠️ Si vous utilisez la voix, la réponse parlée est produite dans l’Union européenne (France) ; vous pouvez choisir de ne pas l’utiliser. L’écriture de l’assistant reste en Suisse, chez Infomaniak. Les transferts vers l’Union européenne listés ci-dessus sont temporaires : ils prennent fin à la publication au public de la version 1 finale, quand tout sera en Suisse."
       },
       {
         "kind": "paragraph",
@@ -2265,7 +2393,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "paragraph",
-        "text": "Tout le monde (indexé, Creative Commons BY-NC-SA 4.0)"
+        "text": "Tout le monde (indexé ; licence au choix de l'auteur : Creative Commons BY-NC-SA 4.0 ou BY-SA 4.0)"
       },
       {
         "kind": "heading",
@@ -2309,7 +2437,15 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "paragraph",
-        "text": "Autobiographies : suppression complète sur demande. Données effacées dans un délai de 90 jours. Les chapitres publiés sont immuables mais peuvent être supprimés en même temps que l'autobiographie entière."
+        "text": "Autobiographies : suppression complète sur demande. Données effacées dans un délai de 90 jours. Un chapitre publié ne se réécrit pas, sauf la modification demandée par un relecteur pour protéger une personne citée. L’autobiographie entière peut tout de même être supprimée."
+      },
+      {
+        "kind": "paragraph",
+        "text": "Lorsqu'une biographie ou un chapitre est supprimé, la plateforme efface la version précédente de l'archivage, du contenu source, de l'historique des versions, des documents exportés et des fragments utilisés pour la recherche. Les copies déjà téléchargées par d'autres avant la suppression ne peuvent pas être retirées."
+      },
+      {
+        "kind": "paragraph",
+        "text": "L'identifiant permanent UM de la biographie n'est pas supprimé : il continue de répondre en indiquant que l'identifiant existe et a été délivré, même lorsque le contenu n'est plus consultable par le public."
       },
       {
         "kind": "paragraph",
@@ -2365,7 +2501,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "item",
-        "text": "Aide à structurer et organiser les chapitres biographiques"
+        "text": "Propose du texte et, sur demande, remplace un passage du document — chaque proposition nécessite votre confirmation explicite avant d'être appliquée"
       },
       {
         "kind": "item",
@@ -2504,6 +2640,14 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
         "text": "30 jours, puis suppression définitive"
       },
       {
+        "kind": "paragraph",
+        "text": "Pack d'archive versionné"
+      },
+      {
+        "kind": "paragraph",
+        "text": "Conservé pour chaque version publiée, avec le contenu biographique"
+      },
+      {
         "kind": "heading",
         "text": "17. Protection des mineurs"
       },
@@ -2565,7 +2709,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "paragraph",
-        "text": "Historique des versions : v1.1 — 28 septembre 2026 — Pendant la bêta, certaines parties sont encore hors de Suisse, de façon temporaire, et reviennent en Suisse à la publication au public de la version 1 finale. v1.0 — 25 septembre 2026 — plateforme en ligne, 30 premiers jours, cookies de l’app"
+        "text": "Historique des versions : v1.2 — 29 septembre 2026 — Photos, contrôle automatique, identifiant UM, licences, voies de signalement, prestataires et cookies alignés sur le produit. v1.1 — 28 septembre 2026 — Pendant la bêta, certaines parties sont encore hors de Suisse, de façon temporaire, et reviennent en Suisse à la publication au public de la version 1 finale. v1.0 — 25 septembre 2026 — plateforme en ligne, 30 premiers jours, cookies de l’app"
       },
       {
         "kind": "heading",
@@ -2597,7 +2741,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "paragraph",
-        "text": "Seule la Biography Library Association peut émettre des certifications officielles W3C Verifiable Credentials pour les biographies publiées sur la plateforme."
+        "text": "L'identifiant permanent UM de chaque biographie publiée est délivré exclusivement par l'Association Biography Library, selon la spécification publique décrite à la Section 10 des Conditions de service ; aucune autre entité n'est autorisée à l'émettre."
       },
       {
         "kind": "heading",
@@ -2625,7 +2769,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "paragraph",
-        "text": "Disponible en : anglais, italien, français, allemand. La version anglaise est la version juridiquement contraignante."
+        "text": "Disponible en : anglais, italien, français, allemand. La version italienne est la version juridiquement contraignante."
       },
       {
         "kind": "paragraph",
@@ -2645,7 +2789,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "paragraph",
-        "text": "Version : 1.1 | 28 septembre 2026 | Licence du document : CC BY-SA 4.0"
+        "text": "Version : 1.2 | 29 septembre 2026 | Licence du document : CC BY-SA 4.0"
       },
       {
         "kind": "paragraph",
@@ -2671,7 +2815,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "version",
-        "text": "Version 1.1 – 28. September 2026"
+        "text": "Version 1.2 – 29. September 2026"
       },
       {
         "kind": "heading",
@@ -2863,7 +3007,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "paragraph",
-        "text": "Sie schreiben die Geschichte Ihres eigenen Lebens. Ihre Autobiografie ist ein lebendiges Dokument, das in Kapitel gegliedert ist: Nach der Veröffentlichung Ihres ersten Kapitels können Sie nach mindestens 365 Tagen ein neues hinzufügen. Sie sind nicht verpflichtet, dies jedes Jahr zu tun — Sie können viele Jahre warten, bevor Sie ein neues Kapitel hinzufügen. Jedes Kapitel ist nach der Veröffentlichung unveränderlich: Ihre Worte bleiben für immer genau so, wie sie geschrieben wurden."
+        "text": "Sie schreiben die Geschichte Ihres Lebens auf einer einzigen Seite. Kapitel sind die Titel, die Sie im Text setzen. Nach der ersten Veröffentlichung kann ein neues Kapitel nach mindestens 365 Tagen hinzugefügt werden. Ein veröffentlichtes Kapitel wird nicht umgeschrieben, ausser bei einer Änderung, die eine prüfende Person zum Schutz einer genannten Person verlangt."
       },
       {
         "kind": "paragraph",
@@ -3027,7 +3171,39 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "paragraph",
-        "text": "⚠️ Während der Beta liegen Datenbank, Anmeldung und Fotos bei Supabase, E-Mails laufen über Resend, und wenn Sie die Stimme nutzen, wird die gesprochene Antwort in der Europäischen Union (Frankreich) erzeugt. Das Schreiben des Assistenten bleibt in der Schweiz, bei Infomaniak. Diese Wege ausserhalb der Schweiz sind vorübergehend. Sie enden mit der Veröffentlichung der finalen Version 1 für die Öffentlichkeit, wenn alles in der Schweiz sein wird."
+        "text": "Supabase Inc."
+      },
+      {
+        "kind": "paragraph",
+        "text": "Europäische Union (vorübergehend, Betaphase)"
+      },
+      {
+        "kind": "paragraph",
+        "text": "Datenbank, Authentifizierung, Foto-Speicherung"
+      },
+      {
+        "kind": "paragraph",
+        "text": "DSGVO-konform; vorübergehende Übermittlung, endet mit Version 1 in der Schweiz"
+      },
+      {
+        "kind": "paragraph",
+        "text": "Resend"
+      },
+      {
+        "kind": "paragraph",
+        "text": "Europäische Union (vorübergehend, Betaphase)"
+      },
+      {
+        "kind": "paragraph",
+        "text": "Versand von Transaktions-E-Mails"
+      },
+      {
+        "kind": "paragraph",
+        "text": "DSGVO-konform; vorübergehende Übermittlung, endet mit Version 1 in der Schweiz"
+      },
+      {
+        "kind": "paragraph",
+        "text": "⚠️ Wenn Sie die Stimme nutzen, wird die gesprochene Antwort in der Europäischen Union (Frankreich) erzeugt; Sie können darauf verzichten. Das Schreiben des Assistenten bleibt in der Schweiz, bei Infomaniak. Die oben aufgeführten Übermittlungen in die Europäische Union sind vorübergehend: sie enden mit der Veröffentlichung der finalen Version 1 für die Öffentlichkeit, wenn alles in der Schweiz sein wird."
       },
       {
         "kind": "paragraph",
@@ -3151,7 +3327,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "paragraph",
-        "text": "Jeder (indexiert, Creative Commons BY-NC-SA 4.0)"
+        "text": "Jeder (indexiert; Lizenz nach Wahl des Autors: Creative Commons BY-NC-SA 4.0 oder BY-SA 4.0)"
       },
       {
         "kind": "heading",
@@ -3195,7 +3371,15 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "paragraph",
-        "text": "Autobiografien: vollständige Löschung auf Anfrage. Daten werden innerhalb von 90 Tagen gelöscht. Veröffentlichte Kapitel sind unveränderlich, können aber zusammen mit der gesamten Autobiografie gelöscht werden."
+        "text": "Autobiografien: vollständige Löschung auf Anfrage. Daten werden innerhalb von 90 Tagen gelöscht. Ein veröffentlichtes Kapitel wird nicht umgeschrieben, ausser bei einer Änderung, die eine prüfende Person zum Schutz einer genannten Person verlangt. Die ganze Autobiografie kann trotzdem gelöscht werden."
+      },
+      {
+        "kind": "paragraph",
+        "text": "Wenn eine Biografie oder ein Kapitel gelöscht wird, entfernt die Plattform die vorherige Version aus der Archivierung, aus dem Quellinhalt, aus dem Versionsverlauf, aus exportierten Dokumenten und aus den für die Suche verwendeten Fragmenten. Bereits von anderen heruntergeladene Kopien können nach ihrer Verbreitung nicht zurückgeholt werden."
+      },
+      {
+        "kind": "paragraph",
+        "text": "Die dauerhafte UM-Kennung der Biografie wird nicht gelöscht: sie antwortet weiterhin mit der Angabe, dass die Kennung existiert und ausgestellt wurde, auch wenn der Inhalt öffentlich nicht mehr einsehbar ist."
       },
       {
         "kind": "paragraph",
@@ -3251,7 +3435,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "item",
-        "text": "Hilft bei der Strukturierung und Organisation biografischer Kapitel"
+        "text": "Schlägt Text vor und ersetzt auf Wunsch eine Textstelle im Dokument — jeder Vorschlag erfordert Ihre ausdrückliche Bestätigung, bevor er angewendet wird"
       },
       {
         "kind": "item",
@@ -3390,6 +3574,14 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
         "text": "30 Tage, danach dauerhafte Löschung"
       },
       {
+        "kind": "paragraph",
+        "text": "Versioniertes Archivpaket"
+      },
+      {
+        "kind": "paragraph",
+        "text": "Für jede veröffentlichte Version aufbewahrt, zusammen mit dem biografischen Inhalt"
+      },
+      {
         "kind": "heading",
         "text": "17. Schutz von Minderjährigen"
       },
@@ -3451,7 +3643,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "paragraph",
-        "text": "Versionsverlauf: v1.1 — 28. September 2026 — Während der Beta liegen einige Teile noch ausserhalb der Schweiz, vorübergehend, und kommen mit der Veröffentlichung der finalen Version 1 für die Öffentlichkeit in die Schweiz. v1.0 — 25. September 2026 — Plattform online, erste 30 Tage, Cookies der App"
+        "text": "Versionsverlauf: v1.2 — 29. September 2026 — Fotos, automatische Prüfung, UM-Kennung, Lizenzen, Meldespuren, Anbieter und Cookies an das Produkt angepasst. v1.1 — 28. September 2026 — Während der Beta liegen einige Teile noch ausserhalb der Schweiz, vorübergehend, und kommen mit der Veröffentlichung der finalen Version 1 für die Öffentlichkeit in die Schweiz. v1.0 — 25. September 2026 — Plattform online, erste 30 Tage, Cookies der App"
       },
       {
         "kind": "heading",
@@ -3483,7 +3675,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "paragraph",
-        "text": "Nur die Biography Library Association darf offizielle W3C Verifiable Credentials-Zertifizierungen für auf der Plattform veröffentlichte Biografien ausstellen."
+        "text": "Die dauerhafte UM-Kennung jeder veröffentlichten Biografie wird ausschliesslich vom Verein Biography Library ausgestellt, gemäss der in Abschnitt 10 der Nutzungsbedingungen beschriebenen öffentlichen Spezifikation; keine andere Stelle ist zu ihrer Ausstellung berechtigt."
       },
       {
         "kind": "heading",
@@ -3511,7 +3703,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "paragraph",
-        "text": "Verfügbar auf: Englisch, Italienisch, Französisch, Deutsch. Die englische Version ist die rechtlich bindende Version."
+        "text": "Verfügbar auf: Englisch, Italienisch, Französisch, Deutsch. Die italienische Version ist die rechtlich bindende Version."
       },
       {
         "kind": "paragraph",
@@ -3531,7 +3723,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "paragraph",
-        "text": "Version: 1.1 | 28. September 2026 | Dokumentenlizenz: CC BY-SA 4.0"
+        "text": "Version: 1.2 | 29. September 2026 | Dokumentenlizenz: CC BY-SA 4.0"
       },
       {
         "kind": "paragraph",
@@ -3559,7 +3751,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "version",
-        "text": "Versione 1.1 – 28 settembre 2026"
+        "text": "Versione 1.2 – 29 settembre 2026"
       },
       {
         "kind": "paragraph",
@@ -3576,6 +3768,10 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       {
         "kind": "paragraph",
         "text": "Creando un account, confermi che tutte le informazioni fornite sono accurate e veritiere, che rispetterai questi Termini e tutte le leggi applicabili, e che rispetterai i diritti di tutte le altre persone."
+      },
+      {
+        "kind": "paragraph",
+        "text": "L'iscrizione mette il tuo account in lista d'attesa: l'accesso per scrivere la tua biografia viene concesso dall'Associazione."
       },
       {
         "kind": "heading",
@@ -3643,7 +3839,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "paragraph",
-        "text": "Biography Library è un fornitore di servizi tecnici. Non verifichiamo i contenuti prima della pubblicazione. Ti assumi la piena responsabilità legale per ciò che pubblichi."
+        "text": "Biography Library è un fornitore di servizi tecnici. Prima della pubblicazione ogni biografia passa un controllo automatico. Quel controllo non sostituisce la tua responsabilità: resti responsabile di ciò che pubblichi."
       },
       {
         "kind": "heading",
@@ -3703,11 +3899,11 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "heading",
-        "text": "Immagini e video"
+        "text": "Immagini"
       },
       {
         "kind": "paragraph",
-        "text": "Ogni biografia può includere fino a 10 immagini. La possibilità di aggiungere più immagini e di includere video è disponibile come funzionalità a pagamento opzionale, che non influisce in alcun modo sulla natura gratuita e permanente dell'archivio biografico."
+        "text": "Ogni biografia può includere fino a 30 immagini. Ogni file non supera i 5 megabyte. Non si caricano video. Non esiste un piano a pagamento: l’archivio resta gratuito."
       },
       {
         "kind": "heading",
@@ -3715,15 +3911,15 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "paragraph",
-        "text": "L'assistente IA è soggetto a limiti di utilizzo giornalieri e mensili per garantire la qualità del servizio a tutti gli utenti. Questi limiti sono calibrati per un uso normale della piattaforma. Potrebbero essere disponibili opzioni per un utilizzo maggiore."
+        "text": "L’assistente è soggetto a limiti di utilizzo giornalieri e mensili, per garantire il servizio a tutti. I limiti sono tarati su un uso normale. Non esiste un piano a pagamento per usarne di più."
       },
       {
         "kind": "heading",
-        "text": "5. Il sistema dei capitoli biografici"
+        "text": "5. Il foglio unico e i capitoli"
       },
       {
         "kind": "paragraph",
-        "text": "La tua autobiografia è un documento vivo che cresce con te nel tempo."
+        "text": "Scrivi su un foglio unico. I capitoli non sono sezioni fisse: sono i titoli che segni tu nel testo."
       },
       {
         "kind": "heading",
@@ -3731,7 +3927,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "paragraph",
-        "text": "Dopo aver pubblicato il tuo primo capitolo, la piattaforma sblocca la possibilità di aggiungere un nuovo capitolo dopo un minimo di 365 giorni. Non sei obbligato a farlo ogni anno — puoi aspettare molti anni prima di aggiungere un nuovo capitolo. L'unica regola è che devono essere trascorsi almeno 365 giorni dall'ultimo capitolo pubblicato."
+        "text": "Dopo la prima pubblicazione, un nuovo capitolo si può aggiungere dopo almeno 365 giorni. Non sei obbligato a farlo ogni anno. L’unica regola è che siano passati almeno 365 giorni dall’ultimo capitolo pubblicato."
       },
       {
         "kind": "heading",
@@ -3739,7 +3935,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "paragraph",
-        "text": "Ogni capitolo pubblicato è immutabile: le tue parole rimangono esattamente come scritte, per sempre. Questo garantisce l'autenticità del documento nel tempo."
+        "text": "Un capitolo pubblicato non si riscrive. L’unica eccezione è la modifica chiesta da un revisore, a tutela di una persona citata. In quel caso la piattaforma ti chiede di correggere il passaggio."
       },
       {
         "kind": "heading",
@@ -3779,7 +3975,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "paragraph",
-        "text": "Ogni biografia include un pulsante “Segnala”. Motivi: la persona è ancora in vita, la biografia contiene i miei dati sensibili senza consenso, contenuti falsi o diffamatori, violazione del copyright, contenuti illegali."
+        "text": "Ogni biografia include un pulsante “Segnala”. Motivi: la persona è ancora in vita, richiesta di oblio, la biografia contiene i miei dati sensibili senza consenso, contenuti falsi o diffamatori, violazione del copyright, contenuti illegali, altro."
       },
       {
         "kind": "heading",
@@ -3787,27 +3983,27 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "item",
-        "text": "Segnalazione ricevuta — autore avvisato"
+        "text": "Segnalazione ricevuta: l'autore viene avvisato."
       },
       {
         "kind": "item",
-        "text": "Biografia temporaneamente nascosta se la segnalazione è grave"
+        "text": "Corsia immediata — persona ancora in vita o contenuti illegali: la scheda esce subito dal pubblico; l'autore ha 14 giorni per inviare il certificato di morte o un documento equivalente."
       },
       {
         "kind": "item",
-        "text": "L'autore può fornire chiarimenti o prove"
+        "text": "Corsia ordinaria — oblio, dati sensibili, diffamazione, copyright o altro: la scheda resta pubblica finché il revisore non decide."
       },
       {
         "kind": "item",
-        "text": "Revisione completata il prima possibile e in ogni caso entro 30 giorni"
+        "text": "Il revisore riceve promemoria a 7, 21 e 28 giorni e decide entro 30 giorni dalla segnalazione."
       },
       {
         "kind": "item",
-        "text": "Decisione finale: biografia confermata, parzialmente rimossa, completamente rimossa o account sospeso"
+        "text": "Decisione finale: biografia confermata, modifica richiesta all'autore, biografia rimossa o account sospeso. Se viene richiesta una modifica, l'autore ha 30 giorni per correggerla; oltre questo termine la segnalazione risulta in ritardo."
       },
       {
         "kind": "item",
-        "text": "L'autore ha il diritto di presentare ricorso entro 14 giorni dalla decisione"
+        "text": "L'autore ha il diritto di presentare ricorso entro 14 giorni dalla decisione, una sola volta."
       },
       {
         "kind": "paragraph",
@@ -3867,7 +4063,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "paragraph",
-        "text": "Tutti (indicizzato, Creative Commons BY-NC-SA 4.0)"
+        "text": "Tutti (indicizzato; licenza a scelta dell'autore: Creative Commons BY-NC-SA 4.0 o BY-SA 4.0)"
       },
       {
         "kind": "heading",
@@ -3879,11 +4075,15 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "paragraph",
-        "text": "Le biografie pubbliche sono concesse in licenza sotto Creative Commons BY-NC-SA 4.0 (attribuzione richiesta, non commerciale, condividi allo stesso modo)."
+        "text": "Le biografie pubbliche sono concesse in licenza a scelta dell'autore: Creative Commons BY-NC-SA 4.0 (attribuzione richiesta, non commerciale, condividi allo stesso modo) — la licenza predefinita — oppure Creative Commons BY-SA 4.0 (attribuzione richiesta, condividi allo stesso modo, anche per usi commerciali). Si può passare da BY-NC-SA a BY-SA in qualsiasi momento; il passaggio inverso non è possibile. I metadati della scheda, non il testo, sono rilasciati separatamente in Creative Commons CC0, per policy di esportazione dell'archivio."
       },
       {
         "kind": "paragraph",
         "text": "Il software è rilasciato sotto licenza AGPL v3.0: github.com/BiographyLibrary/Biography-Library"
+      },
+      {
+        "kind": "paragraph",
+        "text": "Ogni biografia pubblicata riceve un identificativo permanente UM, rilasciato dall'Associazione secondo la Specifica dell'identificativo UM. L'identificativo non contiene informazioni sulla persona, non viene mai riassegnato a un'altra scheda, e continua a rispondere anche quando il contenuto non è più consultabile al pubblico."
       },
       {
         "kind": "heading",
@@ -4071,11 +4271,11 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "paragraph",
-        "text": "Cronologia delle versioni: v1.1 — 28 settembre 2026 — Durante la beta alcuni pezzi stanno ancora fuori dalla Svizzera, in modo temporaneo, e tornano in Svizzera con la pubblicazione al pubblico della versione 1 finale. v1.0 — 25 settembre 2026 — piattaforma in linea, primi 30 giorni, cookie dell’app"
+        "text": "Cronologia delle versioni: v1.2 — 29 settembre 2026 — Foto, controllo automatico, identificativo UM, licenze, corsie di segnalazione, fornitori e cookie allineati al prodotto. v1.1 — 28 settembre 2026 — Durante la beta alcuni pezzi stanno ancora fuori dalla Svizzera, in modo temporaneo, e tornano in Svizzera con la pubblicazione al pubblico della versione 1 finale. v1.0 — 25 settembre 2026 — piattaforma in linea, primi 30 giorni, cookie dell’app"
       },
       {
         "kind": "heading",
-        "text": "17. Open Source e Certificazione W3C"
+        "text": "17. Open Source e Identificativo permanente"
       },
       {
         "kind": "paragraph",
@@ -4083,7 +4283,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "paragraph",
-        "text": "Solo l'Associazione Biography Library può rilasciare certificazioni ufficiali W3C Verifiable Credentials per il catalogo universale."
+        "text": "L'identificativo permanente UM è rilasciato esclusivamente dall'Associazione Biography Library, secondo la specifica pubblica descritta alla Sezione 10; nessun altro soggetto è autorizzato a emetterlo."
       },
       {
         "kind": "heading",
@@ -4119,7 +4319,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "paragraph",
-        "text": "Versione: 1.1 | 28 settembre 2026 | La versione inglese è la versione legalmente vincolante."
+        "text": "Versione: 1.2 | 29 settembre 2026 | La versione italiana è la versione legalmente vincolante."
       },
       {
         "kind": "paragraph",
@@ -4145,7 +4345,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "version",
-        "text": "Version 1.1 – 28 September 2026"
+        "text": "Version 1.2 – 29 September 2026"
       },
       {
         "kind": "paragraph",
@@ -4162,6 +4362,10 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       {
         "kind": "paragraph",
         "text": "By creating an account, you confirm that all information you provide is accurate and truthful, that you will comply with these Terms and all applicable laws, and that you will respect the rights of all other persons."
+      },
+      {
+        "kind": "paragraph",
+        "text": "Signing up places your account on a waiting list: access to write your biography is granted by the Association."
       },
       {
         "kind": "heading",
@@ -4229,7 +4433,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "paragraph",
-        "text": "Biography Library is a technical service provider. We do not verify content before publication. You bear full legal responsibility for what you publish."
+        "text": "Biography Library is a technical service provider. Before publication every biography goes through an automatic check. That check does not replace your responsibility: you remain responsible for what you publish."
       },
       {
         "kind": "heading",
@@ -4289,11 +4493,11 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "heading",
-        "text": "Images and Video"
+        "text": "Images"
       },
       {
         "kind": "paragraph",
-        "text": "Each biography may include up to 10 images. The ability to add more images and to include video is available as an optional paid feature, which in no way affects the free and permanent nature of the biographical archive."
+        "text": "Each biography may include up to 30 images. Each file is at most 5 megabytes. Video is not accepted. There is no paid plan: the archive stays free."
       },
       {
         "kind": "heading",
@@ -4301,15 +4505,15 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "paragraph",
-        "text": "The AI assistant is subject to daily and monthly usage limits to ensure quality of service for all users. These limits are calibrated for normal use of the platform. Options for greater usage may be available."
+        "text": "The assistant has daily and monthly use limits, so the service stays available for everyone. The limits match ordinary use. There is no paid plan for using more."
       },
       {
         "kind": "heading",
-        "text": "5. The Biographical Chapter System"
+        "text": "5. The single sheet and the chapters"
       },
       {
         "kind": "paragraph",
-        "text": "Your autobiography is a living document that grows with you over time."
+        "text": "You write on one sheet. Chapters are not fixed sections: they are the titles you mark in the text."
       },
       {
         "kind": "heading",
@@ -4317,7 +4521,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "paragraph",
-        "text": "After publishing your first chapter, the platform unlocks the ability to add a new chapter after a minimum of 365 days. You are not required to do this every year — you may wait many years before adding a new chapter. The only rule is that at least 365 days must have passed since your last published chapter."
+        "text": "After the first publication, a new chapter may be added after at least 365 days. You are not required to do this every year. The only rule is that at least 365 days have passed since the last published chapter."
       },
       {
         "kind": "heading",
@@ -4325,7 +4529,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "paragraph",
-        "text": "Every published chapter is immutable: your words remain exactly as written, forever. This guarantees the authenticity of the document over time."
+        "text": "A published chapter is not rewritten. The only exception is a change requested by a reviewer, to protect a person who is named. In that case the platform asks you to correct the passage."
       },
       {
         "kind": "heading",
@@ -4365,7 +4569,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "paragraph",
-        "text": "Every biography includes a “Report” button. Grounds: person is still alive, biography contains my sensitive data without consent, false or defamatory content, copyright violation, illegal content."
+        "text": "Every biography includes a “Report” button. Grounds: person is still alive, right to be forgotten, biography contains my sensitive data without consent, false or defamatory content, copyright violation, illegal content, other."
       },
       {
         "kind": "heading",
@@ -4373,27 +4577,27 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "item",
-        "text": "Report received — author notified"
+        "text": "Report received: the author is notified."
       },
       {
         "kind": "item",
-        "text": "Biography temporarily hidden if the report is serious"
+        "text": "Immediate lane — person still alive or illegal content: the entry comes off the public catalogue right away; the author has 14 days to submit a death certificate or an equivalent document."
       },
       {
         "kind": "item",
-        "text": "Author may provide clarification or evidence"
+        "text": "Ordinary lane — right to be forgotten, sensitive data, defamation, copyright, or other grounds: the entry stays public until the reviewer decides."
       },
       {
         "kind": "item",
-        "text": "Review completed as soon as possible and in any case within 30 days"
+        "text": "The reviewer receives reminders at 7, 21 and 28 days and decides within 30 days of the report."
       },
       {
         "kind": "item",
-        "text": "Final decision: biography confirmed, partially removed, fully removed, or account suspended"
+        "text": "Final decision: biography confirmed, a change requested from the author, biography removed, or account suspended. If a change is requested, the author has 30 days to correct it; after that the report is overdue."
       },
       {
         "kind": "item",
-        "text": "Author has the right to appeal within 14 days of the decision"
+        "text": "The author has the right to appeal within 14 days of the decision, once only."
       },
       {
         "kind": "paragraph",
@@ -4453,7 +4657,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "paragraph",
-        "text": "Everyone (indexed, Creative Commons BY-NC-SA 4.0)"
+        "text": "Everyone (indexed; licence chosen by the author: Creative Commons BY-NC-SA 4.0 or BY-SA 4.0)"
       },
       {
         "kind": "heading",
@@ -4465,11 +4669,15 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "paragraph",
-        "text": "Public biographies are licensed under Creative Commons BY-NC-SA 4.0 (attribution required, non-commercial, share-alike)."
+        "text": "Public biographies are licensed at the author's choice: Creative Commons BY-NC-SA 4.0 (attribution required, non-commercial, share-alike) — the default licence — or Creative Commons BY-SA 4.0 (attribution required, share-alike, commercial use allowed). Switching from BY-NC-SA to BY-SA is possible at any time; the reverse switch is not. The entry's metadata, not the text, is released separately under Creative Commons CC0, under the archive's export policy."
       },
       {
         "kind": "paragraph",
         "text": "Software is released under AGPL v3.0: github.com/BiographyLibrary/Biography-Library"
+      },
+      {
+        "kind": "paragraph",
+        "text": "Every published biography receives a permanent UM identifier, issued by the Association under the UM Identifier Specification. The identifier contains no information about the person, is never reassigned to another entry, and keeps responding even when the content is no longer publicly viewable."
       },
       {
         "kind": "heading",
@@ -4657,11 +4865,11 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "paragraph",
-        "text": "Version history: v1.1 — 28 September 2026 — During the beta some parts are still outside Switzerland, temporarily, and move to Switzerland when version 1 is published to the public. v1.0 — 25 September 2026 — platform online, first 30 days, app cookies"
+        "text": "Version history: v1.2 — 29 September 2026 — Photos, automatic check, UM identifier, licences, report lanes, providers and cookies aligned with the product. v1.1 — 28 September 2026 — During the beta some parts are still outside Switzerland, temporarily, and move to Switzerland when version 1 is published to the public. v1.0 — 25 September 2026 — platform online, first 30 days, app cookies"
       },
       {
         "kind": "heading",
-        "text": "17. Open Source and W3C Certification"
+        "text": "17. Open Source and Permanent Identifier"
       },
       {
         "kind": "paragraph",
@@ -4669,7 +4877,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "paragraph",
-        "text": "Only the Biography Library Association may issue official W3C Verifiable Credentials certifications for the universal catalogue."
+        "text": "The permanent UM identifier is issued exclusively by the Biography Library Association, under the public specification described in Section 10; no other party is authorised to issue it."
       },
       {
         "kind": "heading",
@@ -4705,7 +4913,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "paragraph",
-        "text": "Version: 1.1 | 28 September 2026 | The English version is the legally binding version."
+        "text": "Version: 1.2 | 29 September 2026 | The Italian version is the legally binding version."
       },
       {
         "kind": "paragraph",
@@ -4731,7 +4939,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "version",
-        "text": "Version 1.1 – 28 septembre 2026"
+        "text": "Version 1.2 – 29 septembre 2026"
       },
       {
         "kind": "paragraph",
@@ -4748,6 +4956,10 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       {
         "kind": "paragraph",
         "text": "En créant un compte, vous confirmez que toutes les informations que vous fournissez sont exactes et véridiques, que vous respecterez ces Conditions ainsi que toutes les lois applicables, et que vous respecterez les droits de toutes les autres personnes."
+      },
+      {
+        "kind": "paragraph",
+        "text": "L'inscription place votre compte sur liste d'attente : l'accès pour écrire votre biographie est accordé par l'Association."
       },
       {
         "kind": "heading",
@@ -4815,7 +5027,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "paragraph",
-        "text": "Biography Library est un prestataire de services techniques. Nous ne vérifions pas le contenu avant publication. Vous assumez l'entière responsabilité légale de ce que vous publiez."
+        "text": "Biography Library est un prestataire de services techniques. Avant la publication, chaque biographie passe un contrôle automatique. Ce contrôle ne remplace pas votre responsabilité : vous restez responsable de ce que vous publiez."
       },
       {
         "kind": "heading",
@@ -4875,11 +5087,11 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "heading",
-        "text": "Images et vidéo"
+        "text": "Images"
       },
       {
         "kind": "paragraph",
-        "text": "Chaque biographie peut inclure jusqu'à 10 images. La possibilité d'ajouter plus d'images et d'inclure des vidéos est disponible en tant que fonctionnalité payante optionnelle, ce qui n'affecte en rien la nature gratuite et permanente des archives biographiques."
+        "text": "Chaque biographie peut inclure jusqu’à 30 images. Chaque fichier ne dépasse pas 5 mégaoctets. La vidéo n’est pas acceptée. Il n’existe pas d’offre payante : l’archive reste gratuite."
       },
       {
         "kind": "heading",
@@ -4887,15 +5099,15 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "paragraph",
-        "text": "L'assistant IA est soumis à des limites d'utilisation quotidiennes et mensuelles pour garantir la qualité de service à tous les utilisateurs. Ces limites sont calibrées pour une utilisation normale de la plateforme. Des options pour une utilisation plus importante peuvent être disponibles."
+        "text": "L’assistant a des limites d’usage quotidiennes et mensuelles, pour que le service reste disponible pour tous. Les limites correspondent à un usage ordinaire. Il n’existe pas d’offre payante pour en utiliser davantage."
       },
       {
         "kind": "heading",
-        "text": "5. Le système de chapitres biographiques"
+        "text": "5. La page unique et les chapitres"
       },
       {
         "kind": "paragraph",
-        "text": "Votre autobiographie est un document vivant qui grandit avec vous au fil du temps."
+        "text": "Vous écrivez sur une seule page. Les chapitres ne sont pas des sections fixes : ce sont les titres que vous marquez dans le texte."
       },
       {
         "kind": "heading",
@@ -4903,7 +5115,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "paragraph",
-        "text": "Après la publication de votre premier chapitre, la plateforme débloque la possibilité d'ajouter un nouveau chapitre après un minimum de 365 jours. Vous n'êtes pas obligé de le faire chaque année — vous pouvez attendre de nombreuses années avant d'ajouter un nouveau chapitre. La seule règle est qu'au moins 365 jours doivent s'être écoulés depuis votre dernier chapitre publié."
+        "text": "Après la première publication, un nouveau chapitre peut être ajouté après au moins 365 jours. Vous n’êtes pas obligé de le faire chaque année. La seule règle est qu’au moins 365 jours se soient écoulés depuis le dernier chapitre publié."
       },
       {
         "kind": "heading",
@@ -4911,7 +5123,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "paragraph",
-        "text": "Chaque chapitre publié est immuable : vos mots restent exactement tels qu'ils ont été écrits, pour toujours. Cela garantit l'authenticité du document au fil du temps."
+        "text": "Un chapitre publié ne se réécrit pas. La seule exception est la modification demandée par un relecteur, pour protéger une personne citée. Dans ce cas la plateforme vous demande de corriger le passage."
       },
       {
         "kind": "heading",
@@ -4951,7 +5163,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "paragraph",
-        "text": "Chaque biographie comprend un bouton “ Signaler ”. Motifs : la personne est toujours en vie, la biographie contient mes données sensibles sans consentement, contenu faux ou diffamatoire, violation des droits d'auteur, contenu illégal."
+        "text": "Chaque biographie comprend un bouton “ Signaler ”. Motifs : la personne est toujours en vie, droit à l'oubli, la biographie contient mes données sensibles sans consentement, contenu faux ou diffamatoire, violation des droits d'auteur, contenu illégal, autre."
       },
       {
         "kind": "heading",
@@ -4959,27 +5171,27 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "item",
-        "text": "Signalement reçu — auteur notifié"
+        "text": "Signalement reçu : l'auteur est averti."
       },
       {
         "kind": "item",
-        "text": "Biographie temporairement masquée si le signalement est grave"
+        "text": "Voie immédiate — personne toujours en vie ou contenu illégal : la fiche sort aussitôt du catalogue public ; l'auteur dispose de 14 jours pour envoyer un certificat de décès ou un document équivalent."
       },
       {
         "kind": "item",
-        "text": "L'auteur peut fournir des éclaircissements ou des preuves"
+        "text": "Voie ordinaire — droit à l'oubli, données sensibles, diffamation, droits d'auteur ou autre motif : la fiche reste publique jusqu'à la décision du relecteur."
       },
       {
         "kind": "item",
-        "text": "Examen terminé dans les plus brefs délais et en tout cas dans les 30 jours"
+        "text": "Le relecteur reçoit des rappels à 7, 21 et 28 jours et décide dans un délai de 30 jours après le signalement."
       },
       {
         "kind": "item",
-        "text": "Décision finale : biographie confirmée, partiellement supprimée, totalement supprimée ou compte suspendu"
+        "text": "Décision finale : biographie confirmée, modification demandée à l'auteur, biographie supprimée ou compte suspendu. Si une modification est demandée, l'auteur dispose de 30 jours pour la corriger ; passé ce délai, le signalement est en retard."
       },
       {
         "kind": "item",
-        "text": "L'auteur a le droit de faire appel dans les 14 jours suivant la décision"
+        "text": "L'auteur a le droit de faire appel dans les 14 jours suivant la décision, une seule fois."
       },
       {
         "kind": "paragraph",
@@ -5039,7 +5251,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "paragraph",
-        "text": "Tout le monde (indexé, Creative Commons BY-NC-SA 4.0)"
+        "text": "Tout le monde (indexé ; licence au choix de l'auteur : Creative Commons BY-NC-SA 4.0 ou BY-SA 4.0)"
       },
       {
         "kind": "heading",
@@ -5051,11 +5263,15 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "paragraph",
-        "text": "Les biographies publiques sont sous licence Creative Commons BY-NC-SA 4.0 (attribution requise, pas d'utilisation commerciale, partage dans les mêmes conditions)."
+        "text": "Les biographies publiques sont sous licence au choix de l'auteur : Creative Commons BY-NC-SA 4.0 (attribution requise, pas d'utilisation commerciale, partage dans les mêmes conditions) — la licence par défaut — ou Creative Commons BY-SA 4.0 (attribution requise, partage dans les mêmes conditions, utilisation commerciale autorisée). Le passage de BY-NC-SA à BY-SA est possible à tout moment ; l'inverse ne l'est pas. Les métadonnées de la fiche, et non le texte, sont publiées séparément sous Creative Commons CC0, selon la politique d'exportation de l'archive."
       },
       {
         "kind": "paragraph",
         "text": "Le logiciel est publié sous AGPL v3.0 : github.com/BiographyLibrary/Biography-Library"
+      },
+      {
+        "kind": "paragraph",
+        "text": "Chaque biographie publiée reçoit un identifiant permanent UM, délivré par l'Association selon la Spécification de l'identifiant UM. L'identifiant ne contient aucune information sur la personne, n'est jamais réattribué à une autre fiche, et continue de répondre même lorsque le contenu n'est plus consultable par le public."
       },
       {
         "kind": "heading",
@@ -5243,11 +5459,11 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "paragraph",
-        "text": "Historique des versions : v1.1 — 28 septembre 2026 — Pendant la bêta, certaines parties sont encore hors de Suisse, de façon temporaire, et reviennent en Suisse à la publication au public de la version 1 finale. v1.0 — 25 septembre 2026 — plateforme en ligne, 30 premiers jours, cookies de l’app"
+        "text": "Historique des versions : v1.2 — 29 septembre 2026 — Photos, contrôle automatique, identifiant UM, licences, voies de signalement, prestataires et cookies alignés sur le produit. v1.1 — 28 septembre 2026 — Pendant la bêta, certaines parties sont encore hors de Suisse, de façon temporaire, et reviennent en Suisse à la publication au public de la version 1 finale. v1.0 — 25 septembre 2026 — plateforme en ligne, 30 premiers jours, cookies de l’app"
       },
       {
         "kind": "heading",
-        "text": "17. Open Source et certification W3C"
+        "text": "17. Open source et identifiant permanent"
       },
       {
         "kind": "paragraph",
@@ -5255,7 +5471,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "paragraph",
-        "text": "Seule l'Association Biography Library peut émettre des certifications officielles W3C Verifiable Credentials pour le catalogue universel."
+        "text": "L'identifiant permanent UM est délivré exclusivement par l'Association Biography Library, selon la spécification publique décrite à la Section 10 ; aucune autre entité n'est autorisée à l'émettre."
       },
       {
         "kind": "heading",
@@ -5291,7 +5507,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "paragraph",
-        "text": "Version: 1.1 | 28 septembre 2026 | La version anglaise est la version juridiquement contraignante."
+        "text": "Version: 1.2 | 29 septembre 2026 | La version italienne est la version juridiquement contraignante."
       },
       {
         "kind": "paragraph",
@@ -5317,7 +5533,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "version",
-        "text": "Version 1.1 – 28. September 2026"
+        "text": "Version 1.2 – 29. September 2026"
       },
       {
         "kind": "paragraph",
@@ -5334,6 +5550,10 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       {
         "kind": "paragraph",
         "text": "Durch die Erstellung eines Kontos bestätigen Sie, dass alle von Ihnen angegebenen Informationen korrekt und wahrheitsgemäß sind, dass Sie diese Bedingungen und alle geltenden Gesetze einhalten werden und dass Sie die Rechte aller anderen Personen respektieren werden."
+      },
+      {
+        "kind": "paragraph",
+        "text": "Die Anmeldung setzt Ihr Konto auf eine Warteliste: der Zugang zum Schreiben Ihrer Biografie wird vom Verein gewährt."
       },
       {
         "kind": "heading",
@@ -5401,7 +5621,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "paragraph",
-        "text": "Biography Library ist ein technischer Dienstleister. Wir überprüfen Inhalte nicht vor der Veröffentlichung. Sie tragen die volle rechtliche Verantwortung für das, was Sie veröffentlichen."
+        "text": "Biography Library ist ein technischer Dienstleister. Vor der Veröffentlichung durchläuft jede Biografie eine automatische Prüfung. Diese Prüfung ersetzt nicht Ihre Verantwortung: Sie bleiben verantwortlich für das, was Sie veröffentlichen."
       },
       {
         "kind": "heading",
@@ -5461,11 +5681,11 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "heading",
-        "text": "Bilder und Videos"
+        "text": "Bilder"
       },
       {
         "kind": "paragraph",
-        "text": "Jede Biografie kann bis zu 10 Bilder enthalten. Die Möglichkeit, weitere Bilder hinzuzufügen und Videos einzubinden, ist als optionale kostenpflichtige Funktion verfügbar, was die kostenlose und dauerhafte Natur des biografischen Archivs in keiner Weise beeinträchtigt."
+        "text": "Jede Biografie kann bis zu 30 Bilder enthalten. Jede Datei ist höchstens 5 Megabyte gross. Video wird nicht angenommen. Es gibt kein kostenpflichtiges Angebot: das Archiv bleibt kostenlos."
       },
       {
         "kind": "heading",
@@ -5473,15 +5693,15 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "paragraph",
-        "text": "Der KI-Assistent unterliegt täglichen und monatlichen Nutzungslimits, um die Servicequalität für alle Nutzer sicherzustellen. Diese Limits sind für die normale Nutzung der Plattform kalibriert. Optionen für eine intensivere Nutzung können verfügbar sein."
+        "text": "Der Assistent hat tägliche und monatliche Nutzungsgrenzen, damit der Dienst für alle verfügbar bleibt. Die Grenzen entsprechen der gewöhnlichen Nutzung. Es gibt kein kostenpflichtiges Angebot für mehr Nutzung."
       },
       {
         "kind": "heading",
-        "text": "5. Das biografische Kapitelsystem"
+        "text": "5. Die eine Seite und die Kapitel"
       },
       {
         "kind": "paragraph",
-        "text": "Ihre Autobiografie ist ein lebendiges Dokument, das im Laufe der Zeit mit Ihnen wächst."
+        "text": "Sie schreiben auf einer einzigen Seite. Kapitel sind keine festen Abschnitte: es sind die Titel, die Sie im Text setzen."
       },
       {
         "kind": "heading",
@@ -5489,7 +5709,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "paragraph",
-        "text": "Nach der Veröffentlichung Ihres ersten Kapitels schaltet die Plattform die Möglichkeit frei, nach mindestens 365 Tagen ein neues Kapitel hinzuzufügen. Sie sind nicht verpflichtet, dies jedes Jahr zu tun — Sie können viele Jahre warten, bevor Sie ein neues Kapitel hinzufügen. Die einzige Regel ist, dass seit Ihrem letzten veröffentlichten Kapitel mindestens 365 Tage vergangen sein müssen."
+        "text": "Nach der ersten Veröffentlichung kann ein neues Kapitel nach mindestens 365 Tagen hinzugefügt werden. Sie sind nicht verpflichtet, das jedes Jahr zu tun. Die einzige Regel ist, dass seit dem letzten veröffentlichten Kapitel mindestens 365 Tage vergangen sind."
       },
       {
         "kind": "heading",
@@ -5497,7 +5717,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "paragraph",
-        "text": "Jedes veröffentlichte Kapitel ist unveränderlich: Ihre Worte bleiben für immer genau so, wie sie geschrieben wurden. Dies garantiert die Authentizität des Dokuments im Laufe der Zeit."
+        "text": "Ein veröffentlichtes Kapitel wird nicht umgeschrieben. Die einzige Ausnahme ist eine Änderung, die eine prüfende Person zum Schutz einer genannten Person verlangt. In diesem Fall bittet Sie die Plattform, die Stelle zu korrigieren."
       },
       {
         "kind": "heading",
@@ -5537,7 +5757,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "paragraph",
-        "text": "Jede Biografie enthält eine Schaltfläche “Melden”. Gründe: Person ist noch am Leben, Biografie enthält meine sensiblen Daten ohne Zustimmung, falsche oder diffamierende Inhalte, Urheberrechtsverletzung, illegale Inhalte."
+        "text": "Jede Biografie enthält eine Schaltfläche “Melden”. Gründe: Person ist noch am Leben, Recht auf Vergessenwerden, Biografie enthält meine sensiblen Daten ohne Zustimmung, falsche oder diffamierende Inhalte, Urheberrechtsverletzung, illegale Inhalte, Sonstiges."
       },
       {
         "kind": "heading",
@@ -5545,27 +5765,27 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "item",
-        "text": "Meldung erhalten — Autor benachrichtigt"
+        "text": "Meldung erhalten: der Autor wird benachrichtigt."
       },
       {
         "kind": "item",
-        "text": "Biografie vorübergehend verborgen, wenn die Meldung schwerwiegend ist"
+        "text": "Sofortige Spur — Person noch am Leben oder illegale Inhalte: der Eintrag verschwindet sofort aus dem öffentlichen Katalog; der Autor hat 14 Tage Zeit, eine Sterbeurkunde oder ein gleichwertiges Dokument einzureichen."
       },
       {
         "kind": "item",
-        "text": "Autor kann Klarstellungen oder Beweise vorlegen"
+        "text": "Ordentliche Spur — Recht auf Vergessenwerden, sensible Daten, Verleumdung, Urheberrecht oder Sonstiges: der Eintrag bleibt öffentlich, bis die prüfende Person entscheidet."
       },
       {
         "kind": "item",
-        "text": "Überprüfung so schnell wie möglich abgeschlossen und in jedem Fall innerhalb von 30 Tagen"
+        "text": "Die prüfende Person erhält Erinnerungen nach 7, 21 und 28 Tagen und entscheidet innerhalb von 30 Tagen nach der Meldung."
       },
       {
         "kind": "item",
-        "text": "Endgültige Entscheidung: Biografie bestätigt, teilweise entfernt, vollständig entfernt oder Konto gesperrt"
+        "text": "Endgültige Entscheidung: Biografie bestätigt, Änderung vom Autor verlangt, Biografie entfernt oder Konto gesperrt. Wird eine Änderung verlangt, hat der Autor 30 Tage Zeit zur Korrektur; danach gilt die Meldung als überfällig."
       },
       {
         "kind": "item",
-        "text": "Autor hat das Recht auf Einspruch innerhalb von 14 Tagen der Entscheidung"
+        "text": "Der Autor hat das Recht, innerhalb von 14 Tagen nach der Entscheidung einmalig Einspruch einzulegen."
       },
       {
         "kind": "paragraph",
@@ -5625,7 +5845,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "paragraph",
-        "text": "Jeder (indexiert, Creative Commons BY-NC-SA 4.0)"
+        "text": "Jeder (indexiert; Lizenz nach Wahl des Autors: Creative Commons BY-NC-SA 4.0 oder BY-SA 4.0)"
       },
       {
         "kind": "heading",
@@ -5637,11 +5857,15 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "paragraph",
-        "text": "Öffentliche Biografien sind unter Creative Commons BY-NC-SA 4.0 lizenziert (Namensnennung erforderlich, nicht kommerziell, Weitergabe unter gleichen Bedingungen)."
+        "text": "Öffentliche Biografien sind nach Wahl des Autors lizenziert: Creative Commons BY-NC-SA 4.0 (Namensnennung erforderlich, nicht kommerziell, Weitergabe unter gleichen Bedingungen) — die Standardlizenz — oder Creative Commons BY-SA 4.0 (Namensnennung erforderlich, Weitergabe unter gleichen Bedingungen, kommerzielle Nutzung erlaubt). Der Wechsel von BY-NC-SA zu BY-SA ist jederzeit möglich; der umgekehrte Wechsel nicht. Die Metadaten des Eintrags, nicht der Text, werden gemäss der Exportrichtlinie des Archivs separat unter Creative Commons CC0 veröffentlicht."
       },
       {
         "kind": "paragraph",
         "text": "Die Software wird unter der AGPL v3.0 veröffentlicht: github.com/BiographyLibrary/Biography-Library"
+      },
+      {
+        "kind": "paragraph",
+        "text": "Jede veröffentlichte Biografie erhält eine dauerhafte UM-Kennung, ausgestellt vom Verein gemäss der UM-Kennungsspezifikation. Die Kennung enthält keine Informationen über die Person, wird nie einem anderen Eintrag neu zugewiesen und antwortet weiterhin, auch wenn der Inhalt öffentlich nicht mehr einsehbar ist."
       },
       {
         "kind": "heading",
@@ -5829,11 +6053,11 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "paragraph",
-        "text": "Versionsverlauf: v1.1 — 28. September 2026 — Während der Beta liegen einige Teile noch ausserhalb der Schweiz, vorübergehend, und kommen mit der Veröffentlichung der finalen Version 1 für die Öffentlichkeit in die Schweiz. v1.0 — 25. September 2026 — Plattform online, erste 30 Tage, Cookies der App"
+        "text": "Versionsverlauf: v1.2 — 29. September 2026 — Fotos, automatische Prüfung, UM-Kennung, Lizenzen, Meldespuren, Anbieter und Cookies an das Produkt angepasst. v1.1 — 28. September 2026 — Während der Beta liegen einige Teile noch ausserhalb der Schweiz, vorübergehend, und kommen mit der Veröffentlichung der finalen Version 1 für die Öffentlichkeit in die Schweiz. v1.0 — 25. September 2026 — Plattform online, erste 30 Tage, Cookies der App"
       },
       {
         "kind": "heading",
-        "text": "17. Open Source und W3C-Zertifizierung"
+        "text": "17. Open Source und dauerhafte Kennung"
       },
       {
         "kind": "paragraph",
@@ -5841,7 +6065,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "paragraph",
-        "text": "Nur die Biography Library Association darf offizielle W3C Verifiable Credentials-Zertifizierungen für den universellen Katalog ausstellen."
+        "text": "Die dauerhafte UM-Kennung wird ausschliesslich vom Verein Biography Library ausgestellt, gemäss der in Abschnitt 10 beschriebenen öffentlichen Spezifikation; keine andere Stelle ist zu ihrer Ausstellung berechtigt."
       },
       {
         "kind": "heading",
@@ -5877,7 +6101,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "paragraph",
-        "text": "Version: 1.1 | 28. September 2026 | Die englische Version ist die rechtlich bindende Version."
+        "text": "Version: 1.2 | 29. September 2026 | Die italienische Version ist die rechtlich bindende Version."
       },
       {
         "kind": "paragraph",
@@ -5905,7 +6129,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "version",
-        "text": "Versione 1.1 – 28 settembre 2026"
+        "text": "Versione 1.2 – 29 settembre 2026"
       },
       {
         "kind": "heading",
@@ -5949,7 +6173,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "paragraph",
-        "text": "L’accesso all’account è ricordato nel browser, solo per riconoscerti. Non serve a pubblicità né a profilazione."
+        "text": "L’accesso all’account è ricordato tramite il cookie sb-<riferimento del progetto>-auth-token, impostato da Supabase per riconoscerti; non serve a pubblicità né a profilazione. Per i cookie tecnici come questo il consenso non serve, solo la trasparenza: resta attivo finché non esegui il logout o la sessione scade automaticamente."
       },
       {
         "kind": "heading",
@@ -5957,7 +6181,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "paragraph",
-        "text": "La lingua scelta, italiano, inglese, francese o tedesco, è salvata nella memoria del browser. Non è un cookie."
+        "text": "La lingua scelta, italiano, inglese, francese o tedesco, è salvata nella memoria del browser, insieme ad altre preferenze locali: l'interruttore dell'assistente, l'ultima modalità dell'editor, l'introduzione già vista, lo stato dell'onboarding e la preferenza sulla voce. Restano sul tuo dispositivo. Non sono cookie."
       },
       {
         "kind": "heading",
@@ -6045,27 +6269,27 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "heading",
-        "text": "7. Aggiornamenti futuri — Piattaforma Biography Library"
+        "text": "7. Aggiornamenti futuri"
       },
       {
         "kind": "paragraph",
-        "text": "Quando la piattaforma Biography Library andrà online, questa informativa verrà aggiornata per includere:"
+        "text": "I cookie e le preferenze locali già in uso sono descritti alla Sezione 3. Restiamo impegnati a non introdurre mai cookie di profilazione o di tracciamento di terze parti."
       },
       {
         "kind": "item",
-        "text": "Cookie tecnici di sessione per la piattaforma autenticata"
+        "text": "Ogni nuovo cookie tecnico verrà aggiunto qui, con nome, finalità e durata, prima di essere utilizzato"
       },
       {
         "kind": "item",
-        "text": "Cookie di sicurezza (protezione CSRF, ecc.)"
+        "text": "Qualunque cambiamento sostanziale sarà segnalato tramite la cronologia delle versioni, in fondo a questa informativa"
       },
       {
         "kind": "item",
-        "text": "Cookie di preferenza dell'utente"
+        "text": "Non introdurremo mai cookie pubblicitari, di remarketing o di profilazione comportamentale"
       },
       {
         "kind": "item",
-        "text": "Eventuali ulteriori dettagli tecnici relativi all'archivio biografico"
+        "text": "Un eventuale strumento di analisi del traffico resterebbe self-hosted in Svizzera, come già indicato alla Sezione 4"
       },
       {
         "kind": "paragraph",
@@ -6105,7 +6329,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "paragraph",
-        "text": "Versione: 1.1 | 28 settembre 2026 | Licenza del documento: CC BY-SA 4.0 La versione inglese è quella legalmente vincolante."
+        "text": "Versione: 1.2 | 29 settembre 2026 | Licenza del documento: CC BY-SA 4.0 La versione italiana è quella legalmente vincolante."
       },
       {
         "kind": "paragraph",
@@ -6131,7 +6355,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "version",
-        "text": "Version 1.1 – 28 September 2026"
+        "text": "Version 1.2 – 29 September 2026"
       },
       {
         "kind": "heading",
@@ -6175,7 +6399,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "paragraph",
-        "text": "The account sign-in is remembered in the browser, only to recognise you. It is not used for advertising or profiling."
+        "text": "Account sign-in is remembered through the cookie sb-<project-reference>-auth-token, set by Supabase to recognise you; it is not used for advertising or profiling. Technical cookies like this one do not require consent, only transparency: it stays active until you sign out or the session expires automatically."
       },
       {
         "kind": "heading",
@@ -6183,7 +6407,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "paragraph",
-        "text": "The chosen language, Italian, English, French, or German, is saved in the browser’s storage. It is not a cookie."
+        "text": "The chosen language, Italian, English, French, or German, is saved in the browser’s storage, together with other local preferences: the assistant on/off switch, the last editor mode used, whether the introduction has already been seen, onboarding status, and the voice preference. They stay on your device. They are not cookies."
       },
       {
         "kind": "heading",
@@ -6271,27 +6495,27 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "heading",
-        "text": "7. Future Updates — Biography Library Platform"
+        "text": "7. Future Updates"
       },
       {
         "kind": "paragraph",
-        "text": "When the Biography Library platform goes online, this policy will be updated to include:"
+        "text": "The cookies and local preferences already in use are described in Section 3. We remain committed to never introducing profiling or third-party tracking cookies."
       },
       {
         "kind": "item",
-        "text": "Technical session cookies for the authenticated platform"
+        "text": "Any new technical cookie will be added here, with its name, purpose and duration, before it is used"
       },
       {
         "kind": "item",
-        "text": "Security cookies (CSRF protection, etc.)"
+        "text": "Any substantial change will be flagged in the version history at the bottom of this policy"
       },
       {
         "kind": "item",
-        "text": "User preference cookies"
+        "text": "We will never introduce advertising, remarketing, or behavioural profiling cookies"
       },
       {
         "kind": "item",
-        "text": "Any further technical details related to the biographical archive"
+        "text": "Any future traffic-analytics tool would remain self-hosted in Switzerland, as already stated in Section 4"
       },
       {
         "kind": "paragraph",
@@ -6331,7 +6555,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "paragraph",
-        "text": "Version: 1.1 | 28 September 2026 | Document licence: CC BY-SA 4.0 The English version is the legally binding version."
+        "text": "Version: 1.2 | 29 September 2026 | Document licence: CC BY-SA 4.0 The Italian version is the legally binding version."
       },
       {
         "kind": "paragraph",
@@ -6357,7 +6581,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "version",
-        "text": "Version 1.1 – 28 septembre 2026"
+        "text": "Version 1.2 – 29 septembre 2026"
       },
       {
         "kind": "heading",
@@ -6401,7 +6625,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "paragraph",
-        "text": "La connexion au compte est mémorisée dans le navigateur, seulement pour vous reconnaître. Elle ne sert ni à la publicité ni au profilage."
+        "text": "La connexion au compte est mémorisée grâce au cookie sb-<référence-du-projet>-auth-token, défini par Supabase pour vous reconnaître ; il ne sert ni à la publicité ni au profilage. Les cookies techniques comme celui-ci ne nécessitent pas de consentement, seulement de la transparence : il reste actif jusqu'à votre déconnexion ou l'expiration automatique de la session."
       },
       {
         "kind": "heading",
@@ -6409,7 +6633,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "paragraph",
-        "text": "La langue choisie, italien, anglais, français ou allemand, est enregistrée dans la mémoire du navigateur. Ce n’est pas un cookie."
+        "text": "La langue choisie, italien, anglais, français ou allemand, est enregistrée dans la mémoire du navigateur, avec d'autres préférences locales : l'interrupteur de l'assistant, le dernier mode d'édition utilisé, le fait que l'introduction a déjà été vue, l'état de l'onboarding et la préférence de voix. Elles restent sur votre appareil. Ce ne sont pas des cookies."
       },
       {
         "kind": "heading",
@@ -6497,27 +6721,27 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "heading",
-        "text": "7. Mises à jour futures — Plateforme Biography Library"
+        "text": "7. Mises à jour futures"
       },
       {
         "kind": "paragraph",
-        "text": "Lorsque la plateforme Biography Library sera mise en ligne, cette politique sera mise à jour pour inclure :"
+        "text": "Les cookies et préférences locales déjà utilisés sont décrits à la Section 3. Nous restons engagés à ne jamais introduire de cookies de profilage ou de suivi tiers."
       },
       {
         "kind": "item",
-        "text": "Cookies de session techniques pour la plateforme authentifiée"
+        "text": "Tout nouveau cookie technique sera ajouté ici, avec son nom, sa finalité et sa durée, avant d'être utilisé"
       },
       {
         "kind": "item",
-        "text": "Cookies de sécurité (protection CSRF, etc.)"
+        "text": "Tout changement substantiel sera signalé dans l'historique des versions, en bas de cette politique"
       },
       {
         "kind": "item",
-        "text": "Cookies de préférences utilisateur"
+        "text": "Nous n'introduirons jamais de cookies publicitaires, de remarketing ou de profilage comportemental"
       },
       {
         "kind": "item",
-        "text": "Tout autre détail technique lié à l'archive biographique"
+        "text": "Un éventuel outil d'analyse du trafic resterait auto-hébergé en Suisse, comme déjà indiqué à la Section 4"
       },
       {
         "kind": "paragraph",
@@ -6557,7 +6781,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "paragraph",
-        "text": "Version : 1.1 | 28 septembre 2026 | Licence du document : CC BY-SA 4.0 La version anglaise est la version juridiquement contraignante."
+        "text": "Version : 1.2 | 29 septembre 2026 | Licence du document : CC BY-SA 4.0 La version italienne est la version juridiquement contraignante."
       },
       {
         "kind": "paragraph",
@@ -6583,7 +6807,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "version",
-        "text": "Version 1.1 – 28. September 2026"
+        "text": "Version 1.2 – 29. September 2026"
       },
       {
         "kind": "heading",
@@ -6627,7 +6851,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "paragraph",
-        "text": "Die Anmeldung am Konto wird im Browser gespeichert, nur um Sie wiederzuerkennen. Sie dient nicht der Werbung oder der Profilbildung."
+        "text": "Die Anmeldung am Konto wird über das Cookie sb-<Projektreferenz>-auth-token gespeichert, das von Supabase gesetzt wird, um Sie wiederzuerkennen; es dient nicht der Werbung oder der Profilbildung. Technische Cookies wie dieses erfordern keine Einwilligung, nur Transparenz: es bleibt aktiv, bis Sie sich abmelden oder die Sitzung automatisch abläuft."
       },
       {
         "kind": "heading",
@@ -6635,7 +6859,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "paragraph",
-        "text": "Die gewählte Sprache, Italienisch, Englisch, Französisch oder Deutsch, wird im Speicher des Browsers gespeichert. Das ist kein Cookie."
+        "text": "Die gewählte Sprache, Italienisch, Englisch, Französisch oder Deutsch, wird im Speicher des Browsers gespeichert, zusammen mit weiteren lokalen Einstellungen: dem Assistenten-Schalter, dem zuletzt verwendeten Editor-Modus, ob die Einführung bereits gesehen wurde, dem Onboarding-Status und der Sprachausgabe-Präferenz. Sie bleiben auf Ihrem Gerät. Das sind keine Cookies."
       },
       {
         "kind": "heading",
@@ -6723,27 +6947,27 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "heading",
-        "text": "7. Zukünftige Aktualisierungen — Biography Library Plattform"
+        "text": "7. Zukünftige Aktualisierungen"
       },
       {
         "kind": "paragraph",
-        "text": "Wenn die Biography Library Plattform online geht, wird diese Richtlinie aktualisiert, um Folgendes aufzunehmen:"
+        "text": "Die bereits verwendeten Cookies und lokalen Einstellungen sind in Abschnitt 3 beschrieben. Wir verpflichten uns weiterhin, niemals Profiling- oder Drittanbieter-Tracking-Cookies einzuführen."
       },
       {
         "kind": "item",
-        "text": "Technische Sitzungs-Cookies für die authentifizierte Plattform"
+        "text": "Jedes neue technische Cookie wird hier mit Name, Zweck und Dauer ergänzt, bevor es verwendet wird"
       },
       {
         "kind": "item",
-        "text": "Sicherheits-Cookies (CSRF-Schutz usw.)"
+        "text": "Jede wesentliche Änderung wird im Versionsverlauf am Ende dieser Richtlinie vermerkt"
       },
       {
         "kind": "item",
-        "text": "Cookies für Benutzereinstellungen"
+        "text": "Wir werden niemals Werbe-, Remarketing- oder Verhaltensprofiling-Cookies einführen"
       },
       {
         "kind": "item",
-        "text": "Alle weiteren technischen Details im Zusammenhang mit dem biografischen Archiv"
+        "text": "Ein künftiges Analyse-Tool für den Datenverkehr würde weiterhin selbst gehostet in der Schweiz betrieben, wie bereits in Abschnitt 4 angegeben"
       },
       {
         "kind": "paragraph",
@@ -6783,7 +7007,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "paragraph",
-        "text": "Version: 1.1 | 28. September 2026 | Dokumentenlizenz: CC BY-SA 4.0 Die englische Version ist die rechtlich bindende Version."
+        "text": "Version: 1.2 | 29. September 2026 | Dokumentenlizenz: CC BY-SA 4.0 Die italienische Version ist die rechtlich bindende Version."
       },
       {
         "kind": "paragraph",
