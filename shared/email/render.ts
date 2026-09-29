@@ -258,7 +258,7 @@ function getTemplateInner(
           paragraphs: [
             'Hello,',
             'Welcome to Biography Library — a free, permanent, non-profit digital archive hosted in Switzerland where you can preserve your own story or that of a family member.',
-            'HTML:<strong>Getting started</strong><br>1. Open the dashboard and create your biography.<br>2. Choose your writing mode (sections or free text).<br>3. Write with the editor or talk to <strong>Echo</strong>, your AI guide (voice or text), who walks you through every step.',
+            'HTML:<strong>Getting started</strong><br>1. Open the dashboard and create your biography.<br>2. Write on your single page — chapters are simply the titles you mark in the text — or talk to <strong>Echo</strong>, your AI guide (voice or text), who walks you through every step.',
             'HTML:<strong>Privacy</strong><br>You choose visibility: public, link-only, family, or private.',
             'HTML:<strong>Publishing</strong><br>When your text is ready, complete the final review by downloading the PDF draft → submit for approval → AI and human review → publication.',
             'HTML:<strong>Autobiography rules</strong><br>One biography per account. After the first published chapter, the next unlocks after 365 days.',
@@ -270,7 +270,7 @@ function getTemplateInner(
           paragraphs: [
             'Ciao,',
             'Benvenuto in Biography Library — un archivio digitale gratuito permanente e non profit, ospitato in Svizzera, dove puoi preservare la tua storia o quella di un familiare.',
-            'HTML:<strong>Primi passi</strong><br>1. Apri la dashboard e crea la tua biografia.<br>2. Scegli la modalità di scrittura (sezioni o testo libero).<br>3. Scrivi con l\'editor o parla con <strong>Echo</strong>, la tua guida AI (voce o testo) che ti guida e aiuta passo passo.',
+            'HTML:<strong>Primi passi</strong><br>1. Apri la dashboard e crea la tua biografia.<br>2. Scrivi sul tuo foglio unico — i capitoli sono semplicemente i titoli che segni nel testo — oppure parla con <strong>Echo</strong>, la tua guida AI (voce o testo) che ti guida e aiuta passo passo.',
             'HTML:<strong>Privacy</strong><br>Scegli tu la visibilità: pubblica, solo link, famiglia o privata.',
             'HTML:<strong>Pubblicazione</strong><br>Quando il testo è pronto fai la revisione finale scaricando la bozza in PDF → manda in approvazione → controllo con AI e umani → pubblicazione.',
             'HTML:<strong>Regole autobiografia</strong><br>Una biografia per account. Dopo il primo capitolo pubblicato, il successivo si sblocca dopo 365 giorni.',
@@ -282,7 +282,7 @@ function getTemplateInner(
           paragraphs: [
             'Bonjour,',
             'Bienvenue sur Biography Library — une archive numérique gratuite, permanente et à but non lucratif, hébergée en Suisse, où vous pouvez préserver votre histoire ou celle d\'un proche.',
-            'HTML:<strong>Premiers pas</strong><br>1. Ouvrez le tableau de bord et créez votre biographie.<br>2. Choisissez le mode d\'écriture (sections ou texte libre).<br>3. Écrivez avec l\'éditeur ou parlez à <strong>Echo</strong>, votre guide IA (voix ou texte), qui vous accompagne pas à pas.',
+            'HTML:<strong>Premiers pas</strong><br>1. Ouvrez le tableau de bord et créez votre biographie.<br>2. Écrivez sur votre page unique — les chapitres sont simplement les titres que vous marquez dans le texte — ou parlez à <strong>Echo</strong>, votre guide IA (voix ou texte), qui vous accompagne pas à pas.',
             'HTML:<strong>Confidentialité</strong><br>Vous choisissez la visibilité : publique, lien uniquement, famille ou privée.',
             'HTML:<strong>Publication</strong><br>Quand le texte est prêt, effectuez la révision finale en téléchargeant le brouillon PDF → soumettez pour approbation → contrôle IA et humain → publication.',
             'HTML:<strong>Règles autobiographie</strong><br>Une biographie par compte. Après le premier chapitre publié, le suivant se débloque après 365 jours.',
@@ -294,7 +294,7 @@ function getTemplateInner(
           paragraphs: [
             'Hallo,',
             'Willkommen bei Biography Library — einem kostenlosen, dauerhaften, gemeinnützigen digitalen Archiv in der Schweiz, in dem Sie Ihre Geschichte oder die eines Familienmitglieds bewahren können.',
-            'HTML:<strong>Erste Schritte</strong><br>1. Öffnen Sie das Dashboard und erstellen Sie Ihre Biografie.<br>2. Wählen Sie den Schreibmodus (Abschnitte oder Freitext).<br>3. Schreiben Sie im Editor oder sprechen Sie mit <strong>Echo</strong>, Ihrem KI-Guide (Sprache oder Text), der Sie Schritt für Schritt begleitet.',
+            'HTML:<strong>Erste Schritte</strong><br>1. Öffnen Sie das Dashboard und erstellen Sie Ihre Biografie.<br>2. Schreiben Sie auf Ihrer einzigen Seite — Kapitel sind einfach die Titel, die Sie im Text setzen — oder sprechen Sie mit <strong>Echo</strong>, Ihrem KI-Guide (Sprache oder Text), der Sie Schritt für Schritt begleitet.',
             'HTML:<strong>Datenschutz</strong><br>Sie wählen die Sichtbarkeit: öffentlich, nur Link, Familie oder privat.',
             'HTML:<strong>Veröffentlichung</strong><br>Wenn der Text bereit ist: Abschlussprüfung mit PDF-Entwurf → zur Freigabe einreichen → KI- und menschliche Prüfung → Veröffentlichung.',
             'HTML:<strong>Autobiografie-Regeln</strong><br>Eine Biografie pro Konto. Nach dem ersten veröffentlichten Kapitel wird das nächste nach 365 Tagen freigeschaltet.',
