@@ -54,6 +54,25 @@ describe('runDraftAiReview', () => {
     expect(body.model).not.toContain('Apertus');
   });
 
+  it('registra la chiamata con scopo preprint_check e non ha un secondo modello di ripiego', async () => {
+    const rows: Array<{ purpose: string; userId?: string | null; biographyId?: string | null; ok?: boolean }> = [];
+    const { setUsageSink } = await import('@/lib/ai/usage-recorder');
+    setUsageSink(async (r) => {
+      rows.push(r);
+    });
+    fetchMock.mockResolvedValue({ ok: false, status: 500, text: async () => 'boom', json: async () => ({}) });
+
+    const { runDraftAiReview } = await import('@/lib/server/review-submit-pipeline');
+    const feedback = await runDraftAiReview('text', 1, 'it', { userId: 'author-1', biographyId: 'bio-1' });
+    setUsageSink(null);
+
+    expect(feedback.aiError).toBe(true);
+    expect(fetchMock).toHaveBeenCalledTimes(1); // nessun tentativo nascosto sul ripiego
+    expect(rows).toEqual([
+      expect.objectContaining({ purpose: 'preprint_check', userId: 'author-1', biographyId: 'bio-1', ok: false }),
+    ]);
+  });
+
   it('returns aiError fallback when Infomaniak is not configured', async () => {
     delete process.env.INFOMANIAK_AI_TOKEN;
     vi.resetModules();

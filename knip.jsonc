@@ -16,7 +16,6 @@
     // verificati e rimossi o collegati, uno alla volta. Togliere una riga da
     // questo elenco quando il file è stato sistemato.
     // ─────────────────────────────────────────────────────────────────────
-    "components/agents/AgentChat.tsx",
     "components/dashboard/ai-coach-card.tsx",
     "components/dashboard/biography-card.tsx",
     "components/dashboard/pending-todos-card.tsx",
@@ -24,19 +23,13 @@
     "components/dashboard/stats-cards.tsx",
     "components/echo/BiographyPicker.tsx",
     "components/echo/EchoHeader.tsx",
-    "components/editor/coach-conversation-mode.tsx",
-    "components/editor/conversation-mode.tsx",
     "components/editor/ModeSwitchWarningDialog.tsx",
     "components/editor/SectionNotes.tsx",
-    "components/import/SectionAssignmentWizard.tsx",
     "components/language-selector.tsx",
     "components/legal/terms-of-service-modal.tsx",
     "components/onboarding/LanguageGateModal.tsx",
-    "components/publication/PublicationReviewerChat.tsx",
     "components/welcome-language-modal.tsx",
     "hooks/use-require-auth.ts",
-    "lib/agents/agent-edge-fallback.ts",
-    "lib/ai/smart-followup.ts",
     "lib/checkpoint-service.ts",
     "lib/echo/onboarding.ts",
     "lib/help/help-kb.ts",

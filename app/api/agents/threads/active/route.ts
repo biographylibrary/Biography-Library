@@ -34,12 +34,8 @@ export async function GET(req: NextRequest) {
   const biographyId = url.searchParams.get('biographyId');
   const locale = resolveLocale(url.searchParams.get('locale'));
 
-  if (!agentType || !['platform_guide', 'biography_coach', 'publication_reviewer', 'echo'].includes(agentType)) {
+  if (agentType !== 'echo') {
     return NextResponse.json({ error: 'Invalid agentType' }, { status: 400 });
-  }
-
-  if ((agentType === 'biography_coach' || agentType === 'publication_reviewer') && !biographyId) {
-    return NextResponse.json({ error: 'biographyId is required' }, { status: 400 });
   }
 
   const serviceClient = buildServiceClient();
@@ -51,20 +47,13 @@ export async function GET(req: NextRequest) {
     }
   }
 
-  let thread =
-    agentType === 'echo'
-      ? await getActiveThread(serviceClient, {
-          userId: auth.userId,
-          agentType,
-          biographyId: biographyId ?? null,
-        })
-      : await getActiveThread(serviceClient, {
-          userId: auth.userId,
-          agentType,
-          biographyId: biographyId ?? null,
-        });
+  let thread = await getActiveThread(serviceClient, {
+    userId: auth.userId,
+    agentType,
+    biographyId: biographyId ?? null,
+  });
 
-  if (agentType === 'echo' && !thread) {
+  if (!thread) {
     thread = await getOrCreateThread(serviceClient, {
       userId: auth.userId,
       agentType: 'echo',

@@ -8,7 +8,7 @@ import { useAuth } from '@/lib/auth-context';
 import { supabase } from '@/lib/supabase';
 import { createNotification } from '@/lib/notifications-service';
 import { sendAuthorEmailFromClient } from '@/lib/client/send-author-email';
-import { provisionalUntilOnFirstPublish } from '@/lib/provisional-window';
+import { runAdminBiographyAction } from '@/lib/admin/biography-actions-client';
 import type { EmailTemplateId } from '@/lib/server/email';
 import { useToast } from '@/hooks/use-toast';
 import {
@@ -166,16 +166,7 @@ export function BiographyDetailPanel({ biography, onClose, onRefresh }: Biograph
     try {
       if (action === 'freeze' || action === 'unfreeze') {
         const isFreezing = action === 'freeze';
-        const updateData: Record<string, unknown> = {
-          is_frozen: isFreezing,
-          frozen_at: isFreezing ? new Date().toISOString() : null,
-          frozen_reason: isFreezing ? 'admin_action' : null,
-        };
-        const { error } = await supabase
-          .from('biographies')
-          .update(updateData)
-          .eq('id', biography.id);
-        if (error) throw error;
+        await runAdminBiographyAction(biography.id, isFreezing ? 'freeze' : 'unfreeze');
         const notifyMsg = isFreezing ? t.admin.bioNotifyFrozen : t.admin.bioNotifyUnfrozen;
         await createNotification(biography.author_id, notifyMsg);
         void sendAuthorEmailFromClient({
@@ -213,20 +204,7 @@ export function BiographyDetailPanel({ biography, onClose, onRefresh }: Biograph
           break;
       }
 
-      const updateData: Record<string, unknown> = { status: newStatus };
-      if (action === 'force_publish' && !biography.published_at) {
-        const publishedAt = new Date().toISOString();
-        updateData.published_at = publishedAt;
-        const until = provisionalUntilOnFirstPublish(biography.type, publishedAt);
-        if (until) updateData.provisional_until = until;
-      }
-
-      const { error } = await supabase
-        .from('biographies')
-        .update(updateData)
-        .eq('id', biography.id);
-
-      if (error) throw error;
+      await runAdminBiographyAction(biography.id, action);
 
       await createNotification(biography.author_id, notifyMsg);
 

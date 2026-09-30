@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useParams, useSearchParams, useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 import { type BiographyContent } from '@/lib/editor-constants';
@@ -12,14 +12,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Logo } from '@/components/logo';
 import { ThemeToggle } from '@/components/theme-toggle';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import { FileDown, Loader as Loader2, Lock, Archive, Flag, Languages } from 'lucide-react';
+import { FileDown, Loader as Loader2, Lock, Archive, Flag } from 'lucide-react';
 import { useTranslation } from '@/lib/i18n/i18n-context';
 import { translations, type Language, type Translations } from '@/lib/i18n/translations';
 import { ReportBiographyModal } from '@/components/editor/ReportBiographyModal';
@@ -128,10 +121,6 @@ export default function BiographyViewPage() {
   const [pdfReady, setPdfReady] = useState<boolean | null>(null);
   const [coverImageUrl, setCoverImageUrl] = useState<string | null>(null);
   const [resolvedBiographyId, setResolvedBiographyId] = useState<string | null>(null);
-  const [availableTargets, setAvailableTargets] = useState<ViewLanguage[]>([]);
-  const [readingLanguage, setReadingLanguage] = useState<'original' | ViewLanguage>('original');
-  const [translatedSections, setTranslatedSections] = useState<Record<string, Record<string, string>>>({});
-  const [translationLoading, setTranslationLoading] = useState(false);
 
   const resolvedContentLang = resolveRecordLanguageTag(biography);
   const contentLanguage = isViewLanguage(resolvedContentLang)
@@ -146,69 +135,7 @@ export default function BiographyViewPage() {
     biography?.status === 'published' && !!biography.final_pdf_url?.trim();
 
   const sectionTitlePack =
-    readingLanguage === 'original'
-      ? translations[contentLanguage as Language]?.sectionTitles ?? t.sectionTitles
-      : translations[readingLanguage]?.sectionTitles ?? t.sectionTitles;
-
-  const fetchAvailableLanguages = useCallback(
-    async (bioId: string, shareToken: string | null) => {
-      const qs = shareToken ? `?shareToken=${encodeURIComponent(shareToken)}` : '';
-      try {
-        const res = await fetch(`/api/biography/${bioId}/available-languages${qs}`);
-        if (!res.ok) return;
-        const data = await res.json();
-        const targets = (data.availableTargets ?? []).filter(isViewLanguage) as ViewLanguage[];
-        setAvailableTargets(targets);
-      } catch {
-        /* optional */
-      }
-    },
-    []
-  );
-
-  const loadTranslation = useCallback(
-    async (bioId: string, targetLang: ViewLanguage, shareToken: string | null) => {
-      if (translatedSections[targetLang]) {
-        setReadingLanguage(targetLang);
-        return;
-      }
-
-      setTranslationLoading(true);
-      try {
-        const headers: Record<string, string> = { 'Content-Type': 'application/json' };
-        const { data: sessionData } = await supabase.auth.getSession();
-        const accessToken = sessionData.session?.access_token;
-        if (accessToken) headers.Authorization = `Bearer ${accessToken}`;
-
-        const res = await fetch(`/api/biography/${bioId}/translate-view`, {
-          method: 'POST',
-          headers,
-          body: JSON.stringify({
-            targetLanguage: targetLang,
-            shareToken: shareToken ?? undefined,
-          }),
-        });
-
-        if (!res.ok) {
-          toast({ title: t.view.translationFailed, variant: 'destructive' });
-          return;
-        }
-
-        const data = await res.json();
-        const sections = data.sections as Record<string, string>;
-        setTranslatedSections((prev) => ({ ...prev, [targetLang]: sections }));
-        setAvailableTargets((prev) =>
-          prev.includes(targetLang) ? prev : [...prev, targetLang].sort()
-        );
-        setReadingLanguage(targetLang);
-      } catch {
-        toast({ title: t.view.translationFailed, variant: 'destructive' });
-      } finally {
-        setTranslationLoading(false);
-      }
-    },
-    [t.view.translationFailed, toast, translatedSections]
-  );
+    translations[contentLanguage as Language]?.sectionTitles ?? t.sectionTitles;
 
   useEffect(() => {
     const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -226,9 +153,6 @@ export default function BiographyViewPage() {
     const load = async () => {
       setIsLoading(true);
       setLoadedViaShareToken(false);
-      setReadingLanguage('original');
-      setTranslatedSections({});
-      setAvailableTargets([]);
 
       const resolvedId = await resolveId();
       if (!resolvedId) {
@@ -383,11 +307,10 @@ export default function BiographyViewPage() {
 
       setOrderedSections(sections);
       setIsLoading(false);
-      void fetchAvailableLanguages(resolvedId, token);
     };
 
     load();
-  }, [id, token, fetchAvailableLanguages]);
+  }, [id, token]);
 
   function hasServerPdfFor(bio: BiographyViewData): boolean {
     return bio.status === 'published' && !!bio.final_pdf_url?.trim();
@@ -488,22 +411,6 @@ export default function BiographyViewPage() {
     }
   };
 
-  const handleReadingLanguageChange = (value: string) => {
-    if (!resolvedBiographyId) return;
-    if (value === 'original') {
-      setReadingLanguage('original');
-      return;
-    }
-    if (!isViewLanguage(value)) return;
-    void loadTranslation(resolvedBiographyId, value, token);
-  };
-
-  const suggestUiTranslation =
-    isViewLanguage(uiLanguage) &&
-    uiLanguage !== contentLanguage &&
-    !availableTargets.includes(uiLanguage) &&
-    readingLanguage === 'original';
-
   if (isLoading) {
     return (
       <div className="h-full flex items-center justify-center">
@@ -526,9 +433,6 @@ export default function BiographyViewPage() {
       </div>
     );
   }
-
-  const activeTranslated =
-    readingLanguage !== 'original' ? translatedSections[readingLanguage] : null;
 
   return (
     <div className="min-h-full bg-background">
@@ -669,7 +573,6 @@ export default function BiographyViewPage() {
             <div className="mt-3 not-prose">
               <BiographyLanguageBadges
                 originalLanguage={contentLanguage}
-                translationLanguages={availableTargets}
                 size="md"
               />
             </div>
@@ -679,56 +582,6 @@ export default function BiographyViewPage() {
                   language: languageLabel(contentLanguage, t),
                 })}
               </p>
-            )}
-
-            {(availableTargets.length > 0 ||
-              contentLanguage !== uiLanguage ||
-              suggestUiTranslation) && (
-              <div className="mt-4 flex flex-wrap items-center gap-3 not-prose">
-                <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <Languages className="h-4 w-4 shrink-0" />
-                  <span>{t.view.languageSwitcher}</span>
-                </div>
-                <Select
-                  value={readingLanguage}
-                  onValueChange={handleReadingLanguageChange}
-                  disabled={translationLoading}
-                >
-                  <SelectTrigger className="w-[200px] h-9">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="original">
-                      {t.view.showOriginal} ({languageLabel(contentLanguage, t)})
-                    </SelectItem>
-                    {availableTargets.map((lang) => (
-                      <SelectItem key={lang} value={lang}>
-                        {languageLabel(lang, t)}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                {translationLoading && (
-                  <span className="text-sm text-muted-foreground flex items-center gap-1.5">
-                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                    {t.view.translating}
-                  </span>
-                )}
-                {suggestUiTranslation && !translationLoading && (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() =>
-                      resolvedBiographyId &&
-                      loadTranslation(resolvedBiographyId, uiLanguage, token)
-                    }
-                  >
-                    {interpolate(t.view.readInLanguage, {
-                      language: languageLabel(uiLanguage, t),
-                    })}
-                  </Button>
-                )}
-              </div>
             )}
 
             {resolvedBiographyId && (
@@ -750,8 +603,7 @@ export default function BiographyViewPage() {
           {orderedSections.map((section) => {
             const sectionTitle =
               sectionTitlePack[section.key as keyof typeof sectionTitlePack] || section.key;
-            const sectionText =
-              activeTranslated?.[section.key] ?? section.text;
+            const sectionText = section.text;
 
             return (
               <section key={section.key} className="mb-12">

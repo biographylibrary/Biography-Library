@@ -52,16 +52,16 @@ Controllare che sul **processo che esegue Next** siano impostate (non committate
 **Edge Functions** (secrets nel progetto Supabase):
 
 - [ ] `INFOMANIAK_AI_TOKEN`, `INFOMANIAK_AI_ENDPOINT` — coerenti con host Next
-- [x] `INFOMANIAK_AI_MODEL_PRIMARY` = `google/gemma-4-31B-it`, `INFOMANIAK_AI_MODEL_FALLBACK` = `mistralai/Mistral-Small-4-119B-2603` (ai-assistant)
+- [x] `INFOMANIAK_AI_MODEL_PRIMARY` = `google/gemma-4-31B-it`, `INFOMANIAK_AI_MODEL_FALLBACK` = `mistralai/Mistral-Small-4-119B-2603` (letti ora dall'app Next.js, non più dalla funzione `ai-assistant`: copiarli in `/opt/bl-app/.env` se erano impostati come segreti Supabase)
 - [x] `INFOMANIAK_AI_MODEL_GRAMMAR` = `swiss-ai/Apertus-v1.5-70B` (se non risponde, la funzione ripiega su Gemma e poi su Mistral Small 4)
-- [ ] Edge Function `ai-assistant` ridistribuita se il codice in `supabase/functions/ai-assistant/` è più nuovo di quello in produzione. Non esiste più una funzione `help-assistant`.
+- [ ] La funzione `ai-assistant` è stata eliminata dal repository (30 settembre 2026): rimuoverla anche dal progetto Supabase dopo il deploy del blocco 1. Non esiste più una funzione `help-assistant`.
 
 ---
 
 ## 4. Deploy applicazione
 
 - [ ] Se modificato `docs/PLATFORM_KB.md`: `npm run kb:sync` + `npm run kb:sync:check` + `POST /api/agents/admin/seed-kb` (admin) per re-indicizzare RAG Echo
-- [ ] Edge Functions deployate se ci sono modifiche in `supabase/functions/` (incluso `ai-assistant` per limiti staff)
+- [ ] Edge Functions deployate se ci sono modifiche in `supabase/functions/` (`audio-transcription` ora scrive anche in `ai_token_usage`)
 - [ ] Deploy Next: push su `main` che attiva il workflow, **oppure** procedura manuale documentata (git pull, build, restart container).
 - [ ] Risposta HTTP 200 sulla homepage e su una route API leggera se disponibile.
 

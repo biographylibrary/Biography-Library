@@ -5,6 +5,7 @@ const authenticateAgentRequest = vi.fn();
 const checkAgentRateLimit = vi.fn();
 const isEchoTtsConfigured = vi.fn();
 const synthesizeVoxtralSpeech = vi.fn();
+const recordAiUsage = vi.fn();
 /**
  * Finto client di servizio. La rotta legge `profiles.role` per decidere se
  * saltare il limite di frequenza allo staff: senza `.from` il mock esplode
@@ -32,9 +33,15 @@ vi.mock('@/lib/agents/thread-service', () => ({
 
 vi.mock('@/lib/echo/voice-config', () => ({
   isEchoTtsConfigured: () => isEchoTtsConfigured(),
+  echoTtsModel: () => 'voxtral-test',
+}));
+
+vi.mock('@/lib/ai/usage-recorder', () => ({
+  recordAiUsage: (r: unknown) => recordAiUsage(r),
 }));
 
 vi.mock('@/lib/echo/voxtral-tts', () => ({
+  MAX_INPUT_CHARS: 4096,
   synthesizeVoxtralSpeech: (text: string, language: string) =>
     synthesizeVoxtralSpeech(text, language),
 }));
@@ -76,6 +83,30 @@ describe('echo/tts route', () => {
     expect(res.status).toBe(200);
     expect(res.headers.get('Content-Type')).toBe('audio/mpeg');
     expect(synthesizeVoxtralSpeech).toHaveBeenCalledWith('Ciao', 'it');
+    // Sintesi su Mistral: si registrano i caratteri inviati, non token.
+    expect(recordAiUsage).toHaveBeenCalledWith({
+      purpose: 'tts',
+      userId: 'user-1',
+      model: 'voxtral-test',
+      usageUnit: 'characters',
+      usageUnits: 4,
+      ok: true,
+    });
+  });
+
+  it('POST registra anche la sintesi fallita, con i caratteri inviati', async () => {
+    authenticateAgentRequest.mockResolvedValue({ ok: true, userId: 'user-1', jwt: 'jwt' });
+    synthesizeVoxtralSpeech.mockResolvedValue(null);
+    const { POST } = await import('@/app/api/agents/echo/tts/route');
+    const res = await POST(
+      new NextRequest('http://localhost/api/agents/echo/tts', {
+        method: 'POST',
+        headers: { authorization: 'Bearer jwt' },
+        body: JSON.stringify({ text: 'Ciao', language: 'it' }),
+      })
+    );
+    expect(res.status).toBe(502);
+    expect(recordAiUsage).toHaveBeenCalledWith(expect.objectContaining({ purpose: 'tts', usageUnits: 4, ok: false }));
   });
 
   it('POST without auth returns 401', async () => {

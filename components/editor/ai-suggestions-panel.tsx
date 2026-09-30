@@ -1,16 +1,8 @@
 'use client';
 
 import { Button } from '@/components/ui/button';
-import {
-  Check,
-  XCircle,
-  Loader2,
-  Sparkles,
-  MessageSquareText,
-  FileText,
-  AlertTriangle,
-} from 'lucide-react';
-import type { AiPanelState, AiSuggestion, AiPrompt } from '@/lib/ai-constants';
+import { Check, XCircle, Loader2, Sparkles, AlertTriangle } from 'lucide-react';
+import type { AiPanelState, AiSuggestion } from '@/lib/ai-constants';
 import { cn } from '@/lib/utils';
 import { useTranslation } from '@/lib/i18n/i18n-context';
 import { EditorSidebarDialog } from './EditorSidebarDialog';
@@ -21,7 +13,6 @@ interface AiSuggestionsDialogProps {
   state: AiPanelState;
   onAcceptSuggestion: (id: string) => void;
   onRejectSuggestion: (id: string) => void;
-  onInsertPrompt: (starter: string) => void;
 }
 
 function SuggestionCard({
@@ -102,52 +93,18 @@ function SuggestionCard({
   );
 }
 
-function PromptCard({
-  prompt,
-  onInsert,
-}: {
-  prompt: AiPrompt;
-  onInsert: () => void;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onInsert}
-      className="w-full text-left rounded-lg border border-border bg-card p-3 hover:border-primary/40 hover:bg-primary/5 transition-colors group"
-    >
-      <p className="text-sm font-medium text-foreground group-hover:text-primary transition-colors">
-        {prompt.prompt}
-      </p>
-      <p className="text-xs text-muted-foreground mt-1 italic">
-        &quot;{prompt.starter}&quot;
-      </p>
-    </button>
-  );
-}
-
 export function AiSuggestionsDialog({
   open,
   onOpenChange,
   state,
   onAcceptSuggestion,
   onRejectSuggestion,
-  onInsertPrompt,
 }: AiSuggestionsDialogProps) {
   const { t } = useTranslation();
 
-  const panelTitle =
-    state.type === 'grammar'
-      ? t.editor.grammarStyle
-      : state.type === 'prompts'
-        ? t.editor.writingPrompts
-        : t.editor.sectionSummary;
+  const panelTitle = t.editor.grammarStyle;
 
-  const PanelIcon =
-    state.type === 'grammar'
-      ? Sparkles
-      : state.type === 'prompts'
-        ? MessageSquareText
-        : FileText;
+  const PanelIcon = Sparkles;
 
   return (
     <EditorSidebarDialog
@@ -177,17 +134,6 @@ export function AiSuggestionsDialog({
             <AlertTriangle className="h-4 w-4 shrink-0 mt-0.5" />
             <div className="flex-1">
               <p className="font-medium">{state.error}</p>
-              {state.error.includes('not configured') && (
-                <div className="mt-2 text-xs text-destructive/80 space-y-1">
-                  <p>To enable AI features:</p>
-                  <ol className="list-decimal list-inside space-y-0.5 ml-2">
-                    <li>Get an API token from Infomaniak AI Tools</li>
-                    <li>Go to your Supabase project settings</li>
-                    <li>Navigate to Edge Functions &rarr; Secrets</li>
-                    <li>Add secret: INFOMANIAK_AI_TOKEN</li>
-                  </ol>
-                </div>
-              )}
             </div>
           </div>
         </div>
@@ -221,39 +167,6 @@ export function AiSuggestionsDialog({
         </>
       )}
 
-      {!state.loading && !state.error && state.type === 'prompts' && (
-        <>
-          <p className="text-xs text-muted-foreground">
-            {t.editor.clickPromptToInsert}
-          </p>
-          {state.prompts.map((p, i) => (
-            <PromptCard
-              key={i}
-              prompt={p}
-              onInsert={() => onInsertPrompt(p.starter)}
-            />
-          ))}
-        </>
-      )}
-
-      {!state.loading && !state.error && state.type === 'summary' && (
-        <>
-          {state.summary ? (
-            <div className="rounded-lg border border-border bg-card p-4">
-              <p className="text-sm leading-relaxed text-foreground">
-                {state.summary}
-              </p>
-            </div>
-          ) : (
-            <p className="text-sm text-muted-foreground text-center py-8">
-              {t.editor.noSummary}
-            </p>
-          )}
-        </>
-      )}
     </EditorSidebarDialog>
   );
 }
-
-/** @deprecated Use AiSuggestionsDialog */
-export const AiSuggestionsPanel = AiSuggestionsDialog;

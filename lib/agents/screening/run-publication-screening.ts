@@ -33,9 +33,15 @@ export function normalizeScreeningVerdict(input: unknown): ScreeningResult | nul
   return { passages, overall_severity: overall, summary };
 }
 
+export interface ScreeningUsageOwner {
+  userId?: string | null;
+  biographyId?: string | null;
+}
+
 async function runLegacyScreening(
   biographyText: string,
-  focusSectionKeys?: string[]
+  focusSectionKeys: string[] | undefined,
+  owner: ScreeningUsageOwner
 ): Promise<ScreeningResult> {
   const errorResult: ScreeningResult = { passages: [], overall_severity: 0, aiError: true };
   const parseErrorResult: ScreeningResult = {
@@ -88,6 +94,7 @@ async function runLegacyScreening(
       temperature: 0.2,
       max_tokens: 2048,
       timeoutMs: AI_TIMEOUT_MS,
+      usage: { purpose: 'screening', ...owner },
     });
 
     const rawText = result.content ?? '';
@@ -110,7 +117,8 @@ async function runLegacyScreening(
  */
 export async function runPublicationScreening(
   biographyText: string,
-  focusSectionKeys?: string[]
+  focusSectionKeys?: string[],
+  owner: ScreeningUsageOwner = {}
 ): Promise<ScreeningResult> {
   const errorResult: ScreeningResult = { passages: [], overall_severity: 0, aiError: true };
 
@@ -134,6 +142,7 @@ export async function runPublicationScreening(
       temperature: 0.2,
       max_tokens: 2048,
       timeoutMs: AI_TIMEOUT_MS,
+      usage: { purpose: 'screening', ...owner },
     });
 
     const toolCall = result.tool_calls?.[0];
@@ -155,5 +164,5 @@ export async function runPublicationScreening(
     console.warn('[publication-screening] agent screening failed:', err);
   }
 
-  return runLegacyScreening(biographyText, focusSectionKeys);
+  return runLegacyScreening(biographyText, focusSectionKeys, owner);
 }

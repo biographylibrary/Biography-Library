@@ -20,6 +20,44 @@ function extractProductId(endpoint: string): string | null {
   return match ? match[1] : null;
 }
 
+/**
+ * Registra la chiamata in ai_token_usage con il ruolo di servizio. Per la
+ * trascrizione si registra l'unità che il fornitore restituisce, senza
+ * convertire in token: i secondi, se mai li restituisse; oggi (verificato il
+ * 30 settembre 2026) Infomaniak Whisper restituisce solo `file_size`, i byte del
+ * file. Un guasto del registro non rompe la risposta.
+ */
+type TranscriptionUnits = { unit: "seconds" | "bytes"; units: number } | null;
+
+async function recordTranscriptionUsage(
+  supabase: ReturnType<typeof createClient>,
+  userId: string,
+  ok: boolean,
+  measured: TranscriptionUnits
+) {
+  try {
+    const { error } = await supabase.from("ai_token_usage").insert({
+      user_id: userId,
+      purpose: "transcription",
+      model: "whisper",
+      usage_unit: measured?.unit ?? null,
+      usage_units: measured?.units ?? null,
+      ok,
+    });
+    if (error) console.error("ai_token_usage insert failed:", error.message);
+  } catch (err) {
+    console.error("ai_token_usage insert threw:", err);
+  }
+}
+
+function readSeconds(...candidates: unknown[]): number | null {
+  for (const value of candidates) {
+    const n = typeof value === "string" ? Number(value) : value;
+    if (typeof n === "number" && Number.isFinite(n) && n >= 0) return n;
+  }
+  return null;
+}
+
 Deno.serve(async (req: Request) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { status: 200, headers: corsHeaders });
@@ -125,6 +163,7 @@ Deno.serve(async (req: Request) => {
       });
     } catch (fetchErr: any) {
       console.error("Transcription start fetch error:", fetchErr);
+      await recordTranscriptionUsage(supabase, user.id, false, null);
       return errorResponse(
         "Failed to reach transcription service. Please try again.",
         502
@@ -136,6 +175,7 @@ Deno.serve(async (req: Request) => {
     console.log("Infomaniak transcription start body:", startText);
 
     if (!startRes.ok) {
+      await recordTranscriptionUsage(supabase, user.id, false, null);
       return errorResponse(
         `Transcription service returned error ${startRes.status}: ${startText}`,
         502
@@ -202,6 +242,24 @@ Deno.serve(async (req: Request) => {
       if (status === "complete" || status === "completed" || status === "success") {
         const dataObj = typeof pollJson.data === "string" ? JSON.parse(pollJson.data) : pollJson.data;
         const transcribedText = dataObj?.text ?? pollJson.text ?? pollJson.result?.text ?? "";
+        const seconds = readSeconds(
+          dataObj?.duration,
+          dataObj?.usage?.seconds,
+          dataObj?.usage?.duration,
+          (pollJson as any).duration,
+          (pollJson as any).usage?.seconds
+        );
+        const bytes = readSeconds((pollJson as any).file_size);
+        await recordTranscriptionUsage(
+          supabase,
+          user.id,
+          true,
+          seconds != null
+            ? { unit: "seconds", units: seconds }
+            : bytes != null
+              ? { unit: "bytes", units: bytes }
+              : null
+        );
         console.log("Transcription complete. Text length:", transcribedText.length);
         return new Response(JSON.stringify({ text: transcribedText }), {
           headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -209,12 +267,14 @@ Deno.serve(async (req: Request) => {
       }
 
       if (status === "failed" || status === "error") {
+        await recordTranscriptionUsage(supabase, user.id, false, null);
         return errorResponse("Transcription job failed on server", 502);
       }
 
       console.log("Poll status:", status, "— continuing to wait...");
     }
 
+    await recordTranscriptionUsage(supabase, user.id, false, null);
     return errorResponse("Transcription timed out after 60 seconds", 504);
   } catch (e) {
     console.error("audio-transcription edge function error:", e);

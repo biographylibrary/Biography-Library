@@ -1,7 +1,7 @@
 import { Mistral } from '@mistralai/mistralai';
 import { echoTtsModel, echoVoiceIdForLanguage } from '@/lib/echo/voice-config';
 
-const MAX_INPUT_CHARS = 4096;
+export const MAX_INPUT_CHARS = 4096;
 const FALLBACK_VOICE = 'en_paul_neutral';
 
 function mistralErrorMessage(err: unknown): string {

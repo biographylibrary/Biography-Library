@@ -53,16 +53,6 @@ vi.mock('@/lib/agents/tools/echo-tools', () => ({
   executeEchoTool: vi.fn(),
 }));
 
-vi.mock('@/lib/agents/tools/coach-tools', () => ({
-  COACH_TOOL_DEFINITIONS: [],
-  executeCoachTool: vi.fn(),
-}));
-
-vi.mock('@/lib/agents/tools/reviewer-tools', () => ({
-  REVIEWER_CHAT_TOOL_DEFINITIONS: [],
-  executeReviewerTool: vi.fn(),
-}));
-
 import { prepareAgentTurn } from '@/lib/agents/agent-chat-handler';
 
 describe('prepareAgentTurn memorial context', () => {
@@ -105,33 +95,5 @@ describe('prepareAgentTurn memorial context', () => {
     expect(result.systemPrompt).toContain('BIOGRAFIA MEMORIAL');
     expect(result.systemPrompt).toContain('documenting Francesco');
     expect(result.systemPrompt).toContain('ACTIVE SECTION');
-  });
-
-  it('injects memorial block into coach system prompt', async () => {
-    verifyBiographyOwnership.mockResolvedValue({
-      ok: true,
-      biography_mode: 'sections',
-      status: 'draft',
-      narrative: {
-        biographyType: 'memorial',
-        subjectName: 'Francesco',
-        writerName: 'Maria',
-      },
-    });
-
-    const result = await prepareAgentTurn('user-1', {
-      agentType: 'biography_coach',
-      message: 'Start coaching',
-      biographyId: 'bio-1',
-      language: 'en',
-      activeSection: 'childhood',
-    });
-
-    expect(result.ok).toBe(true);
-    if (!result.ok) return;
-
-    expect(result.systemPrompt).toContain('Francesco');
-    expect(result.systemPrompt).toContain('MEMORIAL BIOGRAPHY');
-    expect(result.systemPrompt).toContain('memories and facts about Francesco');
   });
 });

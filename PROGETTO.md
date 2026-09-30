@@ -16,7 +16,15 @@ Fondatore unico, non sviluppatore: costruisce con Claude Code e Cursor. Non ci s
 
 ---
 
-## Stato dell'implementazione (28 settembre 2026)
+## Stato dell'implementazione (30 settembre 2026)
+
+### Blocco 1: strumenti di intelligenza artificiale (30 settembre 2026, ramo `blocco-1-strumenti-ai`)
+
+**Tolto**: traduzione automatica per i lettori (rotte `translate-view` e `available-languages`, `lib/biography-view-translate.ts`, selettore della lingua di lettura, tabella `biography_view_translations`); l'Edge Function `ai-assistant` per intero e le sue azioni `prompts`, `summary`, `rewrite`, `analyze-answer`, `recommend-next-section`, `analyze-themes`, `propose-structures`, `detect-section`, `coach-chat`, `pre-publication-check`; revisione di sezione con IA e revisione Apertus; domande guidate e riassunto; modalità conversazione; coach biografico e revisore di pubblicazione come agenti (restano gli strumenti di Echo); `platform_guide` come tipo di agente. Il selettore delle edizioni per le traduzioni dell'autore verrà in un blocco successivo.
+
+**Cambiato**: il controllo grammaticale è una rotta Next.js (`/api/biography/[id]/grammar`, runtime Node) che verifica sessione, account attivo, proprietà o staff, biografia non congelata (le regole delle policy RLS di UPDATE su `biographies`); un solo client verso Infomaniak con registrazione del consumo; tetti in token pronti e disattivati. `FinalReviewDialog` è rimasto come passaggio **senza IA** ("Prepara la versione finale"): porta la modalità a sezioni allo stato `final_version`, senza il quale la bozza PDF non parte.
+
+**Sicurezza (migrazione `20260930120000_server_only_columns_and_reports.sql`, non ancora applicata alla produzione)**: verificato in produzione che il ruolo `authenticated` poteva scrivere ogni colonna di `biographies` e `profiles`. Trigger `BEFORE INSERT OR UPDATE` su entrambe riservano al server (ruolo di sessione diverso da `authenticated` e `anon`) stato di pubblicazione, esito dello screening, congelamento, date, ruolo, stato dell'account e le altre colonne di stato; l'autore cambia `status` solo fra `draft`, `sections_complete` e `final_version`. Le policy di INSERT diretto su `moderation_reports` sono tolte: le segnalazioni passano solo da `/api/moderation/report`. Le scritture dello staff sulle colonne riservate passano da `POST /api/admin/biographies/action`; `/api/review/submit` scrive da sé lo stato `under_review` e rifiuta le schede non in uno stato d'autore.
 
 ### Funzionalità utente completate
 
@@ -36,7 +44,7 @@ Fondatore unico, non sviluppatore: costruisce con Claude Code e Cursor. Non ci s
 - Galleria foto fino a 30 immagini per biografia
 - Struttura libro: dedica, prefazione, copyright, nota dell'autore
 - Cooldown tra capitoli pubblicati (per utenti free, bypassato per staff)
-- Cronologia revisioni
+- Cronologia revisioni delle sezioni: il servizio (`lib/revision-history-service.ts`) era usato solo dalla revisione di sezione con IA, tolta il 30 settembre 2026; la colonna `biography_sections.revision_history` resta nel database
 
 **Permanenza e identificativo UM** (su `main`: #52–#58, finestra dati #64)
 - Ogni scheda riceve alla creazione un **identificativo UM** immutabile (`lib/um-id.ts`, registro `um_identifiers`, mint server-side). Gli ID emessi non si rigenerano.
@@ -56,12 +64,12 @@ Fondatore unico, non sviluppatore: costruisce con Claude Code e Cursor. Non ci s
 **Echo — agente conversazionale principale**
 - Chat testuale con streaming SSE, storia dei thread persistente
 - Voce push-to-talk: STT via Whisper su Infomaniak Edge Function (Svizzera), TTS via Mistral Voxtral API
-- Coaching biografico per modalità sezioni e memoria soggetto (memorial)
+- Suggerimenti su struttura e modifiche dentro il testo, con memoria del soggetto per le biografie di defunto (memorial)
 - Tool `propose_draft`: Echo propone un testo per il foglio unico. Se c’è un passaggio da cambiare, lo sostituisce; altrimenti lo aggiunge in fondo. La card chiede conferma prima di scrivere
 - Muting voce, stato orb (idle / listening / thinking / speaking)
 - Hub Echo dedicato (`/echo`) separato dall'editor
 
-**Coach narrativo**
+**Echo dentro il foglio**
 - Echo è l’assistente nella barra sotto il foglio. Non propone più una bozza per ciascuna delle nove sezioni
 - Una proposta resta entro 1500 parole
 - Strumenti ancora presenti: `get_progress`, `read_section` (con `freeflow` legge tutto il foglio), `propose_draft` (scrive nel foglio, anche in sostituzione), `complete_section` e `reopen_section` (segni di completamento rimasti nel codice, non la struttura visibile dell’editor)
@@ -69,17 +77,17 @@ Fondatore unico, non sviluppatore: costruisce con Claude Code e Cursor. Non ci s
 - RAG sulla biografia dell'utente (biography_chunks, embeddings su Infomaniak)
 
 **Onboarding e guida piattaforma**
-- Agente Platform Guide (sostituisce il vecchio HelpChatbot) su Nemotron
-- Knowledge base della piattaforma in Markdown con sincronizzazione automatica verso kb_chunks
-- RAG sulla KB per rispondere a domande d'uso
+- La guida alla piattaforma non è un agente a sé: è Echo, che risponde alle domande d'uso con la base di conoscenza come contesto. I suoi turni si registrano come `echo` e contano nel tetto dell'autore
+- Base di conoscenza della piattaforma in Markdown con sincronizzazione automatica verso `kb_chunks` (indicizzazione con embedding)
+- RAG sulla base di conoscenza per rispondere a domande d'uso
 
 **Pubblicazione**
 - Flusso approvazione PDF a tre fasi: `draft` → `draft_ai_feedback` → `published`
-- Revisione AI di pubblicazione con Gemma 4 31B. Il controllo grammaticale chiede prima Apertus 1.5 e, se non risponde, ripiega su Gemma
+- Controllo finale prima della stampa (`runDraftAiReview`) e screening di conformità (`runPublicationScreening`) con Gemma 4 31B; il controllo di conformità dal browser è stato tolto, lo screening gira solo sul server (`/api/review/submit`, `/api/publication/approve-final-pdf`)
 - Revisione manuale moderatori per casi segnalati
 - Export PDF avanzato (multi-pagina, con galleria, struttura libro) + intestazione/colophon permanenza
 - Export testo semplice UTF-8 (intestazione invariante bilingue)
-- Catalogo pubblico con paginazione, traduzione on-demand, contatori visualizzazioni admin
+- Catalogo pubblico con paginazione, filtro per lingua dell'originale, contatori visualizzazioni admin. La traduzione automatica per i lettori è stata tolta: le traduzioni le farà l'autore, in un blocco successivo
 
 **Moderazione e admin**
 - Pannello admin: gestione utenti, sospensione, reinstate, assegnazione ruoli
@@ -92,7 +100,7 @@ Fondatore unico, non sviluppatore: costruisce con Claude Code e Cursor. Non ci s
 - Etichetta BETA accanto al logo; avviso beta una volta dopo ogni accesso
 - Menu dell’account completo. Nell’editor gli strumenti stanno sotto una voce sola; Importa testo ed Esporta restano sempre visibili; il collegamento di condivisione si apre da lì
 - Badge Pioniere sulle prime 10.000 biografie in ordine di creazione, in catalogo e sopra il titolo
-- Rilettura sovrana e controllo grammaticale chiedono Apertus 1.5; la grammatica, se Apertus non risponde, tiene Gemma
+- Il controllo grammaticale chiede prima Apertus 1.5 e, se non risponde, ripiega su Gemma
 
 **Email e comunicazioni**
 - Pipeline Resend per email di benvenuto, conferma, reset password
@@ -107,9 +115,9 @@ Fondatore unico, non sviluppatore: costruisce con Claude Code e Cursor. Non ci s
 
 **Supabase**
 - Migrazioni applicate incluso blocco permanenza settembre 2026 (`um_identifiers`, colonne B1, `person_events`, `person_relations`, `biography_flat`, backfill licenze)
-- Tabelle agenti: `agent_threads`, `agent_messages`, `agent_memory_facts`, `biography_chunks`, `kb_chunks`, `agent_usage`
+- Tabelle agenti: `agent_threads`, `agent_messages`, `agent_memory_facts`, `biography_chunks`, `kb_chunks`, `agent_usage`; consumo dei modelli: `ai_token_usage`, `ai_author_token_limits` (migrazione pronta, da applicare)
 - RLS attiva su tutte le tabelle utente
-- 6 Edge Functions: `audio-transcription`, `ai-assistant`, `auth-send-email`, `log-error`, `send-engagement-emails`, `user-email-confirmed`
+- 5 Edge Functions: `audio-transcription`, `auth-send-email`, `log-error`, `send-engagement-emails`, `user-email-confirmed` (la funzione `ai-assistant` è stata eliminata il 30 settembre 2026)
 
 **Test**
 - Vitest in CI: identificativo UM (otto vettori), agenti, pubblicazione, TTS, export permanenza, luoghi, lista d’attesa
@@ -118,22 +126,30 @@ Fondatore unico, non sviluppatore: costruisce con Claude Code e Cursor. Non ci s
 
 ## Modelli AI in uso
 
-| Funzione | Modello | Ripiego | Dove stanno i dati |
-|---|---|---|---|
-| Coach | `google/gemma-4-31B-it` | `mistralai/Mistral-Small-4-119B-2603` | Svizzera, Infomaniak |
-| Revisore di pubblicazione | `google/gemma-4-31B-it` | `mistralai/Mistral-Small-4-119B-2603` | Svizzera, Infomaniak |
-| Echo e guida | `google/gemma-4-31B-it` | `mistralai/Ministral-3-14B-Instruct-2512` | Svizzera, Infomaniak |
-| Rilettura sovrana | `swiss-ai/Apertus-v1.5-70B` | `mistralai/Mistral-Small-4-119B-2603` | Svizzera, Infomaniak |
-| Grammatica | `swiss-ai/Apertus-v1.5-70B` | Gemma 4 31B, poi Mistral Small 4 | Svizzera, Infomaniak |
-| STT voce Echo | Whisper | — | Svizzera, Edge Function Infomaniak |
-| TTS voce Echo | Voxtral TTS | — | Francia/UE, Mistral |
-| Embeddings RAG | `bge_multilingual_gemma2` (3584 dim) | lo stesso | Svizzera, Infomaniak |
+L'intelligenza artificiale lavora sul testo di un autore in quattro casi soltanto: Echo (struttura e modifiche dentro il testo, guida alla piattaforma compresa), il controllo grammaticale su richiesta, il controllo finale prima della stampa e lo screening di conformità prima della pubblicazione (moderazione, non uno strumento dell'autore). Tutto il resto è stato tolto il 30 settembre 2026.
+
+| Funzione | Scopo in `ai_token_usage` | Modello | Ripiego | Dove stanno i dati |
+|---|---|---|---|---|
+| Echo (testo, strumenti, guida) | `echo` | `google/gemma-4-31B-it` | `mistralai/Ministral-3-14B-Instruct-2512` (pagine di testo: `mistralai/Mistral-Small-4-119B-2603`) | Svizzera, Infomaniak |
+| Compressione della memoria dei thread | `memory_compression` | come Echo | come Echo | Svizzera, Infomaniak |
+| Controllo grammaticale | `grammar` | `swiss-ai/Apertus-v1.5-70B` | Gemma 4 31B, poi Mistral Small 4 | Svizzera, Infomaniak |
+| Controllo finale prima della stampa | `preprint_check` | `google/gemma-4-31B-it` | nessuno (un solo modello) | Svizzera, Infomaniak |
+| Screening di conformità | `screening` | `google/gemma-4-31B-it` | `mistralai/Mistral-Small-4-119B-2603` | Svizzera, Infomaniak |
+| Indicizzazione e recupero (RAG) | `embedding` | `bge_multilingual_gemma2` (3584 dim) | lo stesso | Svizzera, Infomaniak |
+| STT voce Echo | `transcription` (byte del file) | Whisper | — | Svizzera, Edge Function Infomaniak |
+| TTS voce Echo | `tts` (caratteri) | Voxtral TTS | — | Francia/UE, Mistral |
+
+**Un solo client**: ogni chiamata a un modello passa da `lib/agents/infomaniak-client.ts` (chat, streaming, embedding) e lascia una riga in `ai_token_usage` (utente, biografia, scopo, modello, `prompt_tokens`, `completion_tokens`, `total_tokens`, indicatore di stima, esito, data). Se l'interfaccia non restituisce `usage` (o rifiuta `stream_options`), il valore è la stima caratteri diviso quattro, marcata come stimata. **Eccezioni, scelte il 30 settembre 2026:** la trascrizione resta una funzione Deno (`audio-transcription`, con il suo flusso asincrono) e scrive da sé la propria riga con il ruolo di servizio. Infomaniak Whisper non restituisce la durata ma solo `file_size` (verificato il 30 settembre 2026): la riga registra quindi i byte del file, senza conversioni in secondi o token; la porterà su Node chi farà la migrazione da Supabase gestito. La sintesi vocale resta su Mistral, non passa da Infomaniak: registra i caratteri inviati, fuori dal tetto in token perché non sono token, e ha il limite di frequenza di prima.
+
+**Misure di consumo per fissare i tetti** (sviluppo, 30 settembre 2026, chiamate vere a Infomaniak con i prompt del codice; token = `total_tokens`): grammatica, dieci testi da 600 a 22.000 caratteri, media 2.187, mediana 1.700, massimo 6.284 (Apertus; i testi tipici di un capitolo, 1.500 a 4.400 caratteri, stanno fra 841 e 1.700). Echo, dieci turni di una conversazione sul foglio libero (prompt di sistema, estratti della biografia e della base di conoscenza, storia che cresce), media 4.428, mediana 3.337, massimo 12.498; un turno senza strumenti costa 2.200 a 3.500 token, quasi tutti di prompt (circa 2.000 sono il prompt di sistema); un turno con chiamate a strumenti costa 5.500 a 12.500 perché ogni giro rilegge tutto il prompt. Le misure dei turni con strumenti sono un minimo: nella prova il database era finto e gli strumenti restituivano risposte brevi. Script: `scripts/misura-consumo-ai.ts`.
+
+**Tetti in token** (meccanismo pronto, numeri da fissare): tabella `ai_author_token_limits` con tre valori per l'autore (giorno, settimana, mese), nulli = disattivati. Il conteggio segue i periodi di calendario nel fuso Europe/Zurich (settimana da lunedì). Contano solo `echo` e `grammar`; non contano mai `screening`, `preprint_check`, `embedding`, `memory_compression`. Superato il tetto la rotta risponde 429 con un messaggio nelle quattro lingue che dice quando si riapre. Lo staff è esente ma registrato. I limiti di frequenza esistenti non sono cambiati (Echo: `AGENT_DAILY_LIMIT` e `AGENT_BURST_LIMIT`; grammatica: 5 al minuto, 40 al giorno, 200 alla settimana).
 
 **Nota voce**: solo la sintesi vocale (TTS) è su Mistral Francia. STT e LLM restano in Svizzera. I voice ID per le lingue vanno in `.env` come `ECHO_TTS_VOICE_IT/EN/FR/DE`. I preset Voxtral sono solo EN-US, EN-GB e FR; per IT e DE si usano voci clonate da Mistral Studio.
 
-**Nota Gemma**: resta in uso per lo screening della pubblicazione e come ripiego della grammatica. I pesi sono aperti e l’inferenza è su infrastruttura svizzera (Infomaniak), non su un servizio Google.
+**Nota Gemma**: resta in uso per Echo, per lo screening, per il controllo finale e come ripiego della grammatica. I pesi sono aperti e l’inferenza è su infrastruttura svizzera (Infomaniak), non su un servizio Google.
 
-Se Apertus non risponde, la grammatica passa a Gemma e poi a Mistral senza un messaggio a chi scrive. Il passaggio resta solo nei registri. Il nome chiamato è `swiss-ai/Apertus-v1.5-70B`.
+Se Apertus non risponde, la grammatica passa a Gemma e poi a Mistral senza un messaggio a chi scrive. Il passaggio resta nei registri e nelle righe di `ai_token_usage` (una per tentativo). Il nome chiamato è `swiss-ai/Apertus-v1.5-70B`. La grammatica gira ora in `POST /api/biography/[id]/grammar` (Node): stessi modelli, ordine e parametri di prima (temperatura 0,7, 2048 token di risposta, 45 secondi, tre tentativi); il testo non si tronca più in silenzio, sopra 30.000 caratteri la rotta rifiuta con un messaggio nelle quattro lingue.
 
 **Licenza**: i pesi Voxtral sono CC-BY-NC. "Gratis per gli utenti" non equivale a "non commerciale" — si usano le API a pagamento, non si auto-ospitano i pesi.
 
@@ -186,8 +202,8 @@ Non ancora iniziata. Richiede aiuto professionale. Includerà: PostgreSQL con pg
 - **Nessun self-hosting GPU**: l'inferenza AI resta sempre su API Infomaniak gestita. Il self-hosting su GPU è un'opzione futura (Fase 2+) se si supera la soglia del rate limit condiviso.
 - **Supabase resta in Fase 1**: database, auth, storage rimangono su Supabase per la beta. Nessuna migrazione fino alla Fase 2.
 - **Streaming SSE via Node.js**: le route agenti girano su runtime Node (non Edge) per il supporto streaming. La scelta è verificata nel `next.config.js`.
-- **Memoria agenti cancellata alla pubblicazione**: `agent_threads`, `agent_messages`, `agent_memory_facts` e `biography_chunks` vengono purgati quando la biografia passa a `published` (`purgeAgentMemoryOnPublished`).
-- **Documento unico**: la biografia è un solo foglio. L’editor non offre più le nove sezioni né il testo libero come scelta. Echo e il coach lavorano su quel documento. Il campo `biography_mode` resta nel database per le schede già scritte con il valore `sections`: l’interfaccia, aprendole, le tratta come foglio unico e non lo toglie con una migrazione.
+- **Memoria agenti alla pubblicazione**: `purgeAgentMemoryForBiography` cancella `biography_chunks` quando la biografia passa a `published`. Attenzione: il codice non ha mai cancellato i thread di Echo (`agent_threads`, `agent_messages`, `agent_memory_facts`); cancellava solo quelli dei tipi di agente ora tolti. Questa riga diceva altro fino al 30 settembre 2026: vedi le questioni aperte del blocco 1.
+- **Documento unico**: la biografia è un solo foglio. L’editor non offre più le nove sezioni né il testo libero come scelta. Echo lavora su quel documento. Il campo `biography_mode` resta nel database per le schede già scritte con il valore `sections`: l’interfaccia, aprendole, le tratta come foglio unico e non lo toglie con una migrazione.
 - **Full-duplex voce rinviato**: Pipecat / LiveKit e barge-in sono Fase 2. La beta usa push-to-talk.
 - **Identificativo permanente UM**: emesso da Biography Library, specifica pubblica vincolante; non ARK; mai riciclato; mai 404 su ID emesso.
 - **Licenza contenuto pubblica**: scelta dell'autore (BY-NC-SA default / BY-SA); metadati sempre CC0; upgrade solo unidirezionale in UI.
@@ -206,6 +222,9 @@ Non ancora iniziata. Richiede aiuto professionale. Includerà: PostgreSQL con pg
 INFOMANIAK_AI_ENDPOINT=...      # completions endpoint (legacy, punta a /chat/completions)
 INFOMANIAK_AI_BASE_URL=...      # root URL per derivare /models, /embeddings
 INFOMANIAK_PRODUCT_ID=...
+
+# Grammatica (prima Edge Function, ora Next.js: stessi nomi e valori di prima)
+# INFOMANIAK_AI_MODEL_GRAMMAR / _PRIMARY / _FALLBACK, AI_RATE_LIMIT, AI_DAILY_LIMIT, AI_WEEKLY_LIMIT
 
 # Mistral (solo TTS voce)
 MISTRAL_API_KEY=...
@@ -239,7 +258,7 @@ app/
     agents/         # route SSE per chat, Echo TTS, apply-draft
     publication/    # flusso approvazione PDF
     admin/          # moderazione, gestione utenti
-    biography/      # API biography (galleria, traduzione, modalità, create+mint UM)
+    biography/      # API biography (galleria, grammatica, modalità, create+mint UM)
     places/         # ricerca località (GeoNames/Nominatim)
   biography/[id]/   # editor a foglio unico + pannello permanenza
   id/[umId]/        # risolutore identificativo UM
@@ -253,22 +272,22 @@ lib/
   um.ts / um-id.ts / edtf.ts / rights.ts / nfc.ts / record-language.ts
   permanence-text-export.ts   # export testo + linee header/colophon PDF
   person-events.ts / person-relations.ts
-  agents/                     # coach, Echo, RAG, screening
+  agents/                     # Echo, RAG, screening, client unico verso Infomaniak
+  ai/                         # grammatica, limiti, registro del consumo, tetti in token
   echo/                       # STT Whisper, TTS Voxtral
   server/um-id-registry.ts    # mint UM
 
 supabase/
   migrations/        # include blocco 20260904* permanenza
-  functions/         # 6 Edge Functions
+  functions/         # 5 Edge Functions
 
 components/
   editor/permanence/   # finestra dati: date EDTF, luoghi di vita, provenienza solo memoriale
   editor/LicenseChoiceDialog.tsx / AuthorLicensePanel.tsx
-  agents/AgentChat.tsx
   echo/
   export/
 ```
 
 ---
 
-*Ultimo aggiornamento: 28 settembre 2026*
+*Ultimo aggiornamento: 30 settembre 2026 (blocco 1, strumenti di intelligenza artificiale)*

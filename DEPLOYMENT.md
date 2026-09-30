@@ -49,10 +49,11 @@ cp .env.example .env.local
 
 # 5. Deploy Edge Functions
 # Use the Supabase MCP deploy_edge_function tool for each function:
-#   ai-assistant, audio-transcription, log-error
+#   audio-transcription, log-error
 # Then set Edge Function secrets in the Supabase dashboard:
-#   INFOMANIAK_AI_TOKEN, INFOMANIAK_AI_ENDPOINT,
-#   INFOMANIAK_AI_MODEL_PRIMARY, INFOMANIAK_AI_MODEL_FALLBACK (ai-assistant)
+#   INFOMANIAK_AI_TOKEN, INFOMANIAK_AI_ENDPOINT (audio-transcription)
+# (the grammar check now runs in Next.js: INFOMANIAK_AI_MODEL_* and AI_*_LIMIT
+#  are read from the app's .env, not from Supabase secrets)
 
 # 6. Start the dev server
 npm run dev
@@ -194,12 +195,11 @@ Never use `DROP TABLE`, `DROP COLUMN`, or `TRUNCATE` in a migration without expl
 
 ## Supabase Edge Functions
 
-Four functions are deployed:
+Three functions are deployed for AI and error reporting (the `ai-assistant` function was deleted on 30 September 2026; the grammar check is `POST /api/biography/[id]/grammar`):
 
 
 | Slug                  | Purpose                                                                 |
 | --------------------- | ----------------------------------------------------------------------- |
-| `ai-assistant`        | All writing AI actions (grammar, prompts, rewrite, follow-up, analysis) |
 | `audio-transcription` | Audio blob → transcript via Infomaniak Whisper endpoint                 |
 | `log-error`           | Receives client-side error reports and writes to `error_logs` table     |
 
@@ -216,7 +216,7 @@ Per una **sequenza operativa** (merge → migrazioni prod → env → deploy →
 
 - Supabase project created; URL and anon key copied to host env vars
 - All migrations applied in order
-- Edge Functions deployed (ai-assistant, audio-transcription, log-error)
+- Edge Functions deployed (audio-transcription, log-error)
 - Edge Function secrets set: `INFOMANIAK_AI_TOKEN`, `INFOMANIAK_AI_ENDPOINT`, model secrets per `DEPLOYMENT.md` (or unset secrets to use code defaults)
 - Host environment variables set on Jelastic: `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, `INFOMANIAK_AI_ENDPOINT`, `INFOMANIAK_AI_TOKEN`, `AGENT_MODEL_*` / `INFOMANIAK_AI_MODEL_PRIMARY` as in `.env.example` (there is no `INFOMANIAK_AI_MODEL`), `UM_ID_BASE_URL`, `NEXT_PUBLIC_APP_URL`
 - `npm run build` passes without errors on the container

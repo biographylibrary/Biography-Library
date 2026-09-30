@@ -2,7 +2,6 @@
 
 import { cn } from '@/lib/utils';
 import { useTranslation } from '@/lib/i18n/i18n-context';
-import type { CatalogLanguage } from '@/lib/biography-translation-locales';
 
 const LANGUAGE_CODES: Record<string, string> = {
   en: 'EN',
@@ -17,22 +16,16 @@ function languageCode(lang: string): string {
 
 interface BiographyLanguageBadgesProps {
   originalLanguage: string;
-  translationLanguages?: string[];
   className?: string;
   size?: 'sm' | 'md';
 }
 
 export function BiographyLanguageBadges({
   originalLanguage,
-  translationLanguages = [],
   className,
   size = 'sm',
 }: BiographyLanguageBadgesProps) {
   const { t } = useTranslation();
-  const translations = translationLanguages.filter(
-    (lang) => lang !== originalLanguage && LANGUAGE_CODES[lang]
-  ) as CatalogLanguage[];
-
   const pillClass =
     size === 'sm'
       ? 'text-xs font-medium px-2 py-0.5 rounded-full'
@@ -50,19 +43,6 @@ export function BiographyLanguageBadges({
         {languageCode(originalLanguage)}
         <span className="sr-only"> ({t.publicBiographies.langOriginal})</span>
       </span>
-      {translations.map((lang) => (
-        <span
-          key={lang}
-          className={cn(
-            pillClass,
-            'bg-muted/60 text-muted-foreground border border-border'
-          )}
-          title={t.publicBiographies.langTranslation}
-        >
-          {languageCode(lang)}
-          <span className="sr-only"> ({t.publicBiographies.langTranslation})</span>
-        </span>
-      ))}
     </div>
   );
 }

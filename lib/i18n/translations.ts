@@ -176,7 +176,6 @@ export interface Translations {
     nextChapterAvailableNow: string;
     nextChapterAvailableOn: string;
     nextChapterCooldownDays: string;
-    chapterCooldownBlocked: string;
   };
   biography: {
     newBiography: string;
@@ -333,7 +332,6 @@ export interface Translations {
     achievements: string;
     challenges: string;
     hobbies: string;
-    wisdom: string;
     legacy: string;
     noContent: string;
     noContentHint: string;
@@ -358,14 +356,10 @@ export interface Translations {
     startWritingAbout: string;
     markAsTodo: string;
     grammarStyle: string;
-    writingPrompts: string;
-    sectionSummary: string;
     analyzingWithAi: string;
     lookingGood: string;
     noGrammarIssues: string;
     suggestionsFound: string;
-    clickPromptToInsert: string;
-    noSummary: string;
     original: string;
     suggestion: string;
     accept: string;
@@ -377,7 +371,6 @@ export interface Translations {
     todoItems: string;
     signInForAi: string;
     failedGrammar: string;
-    failedSummary: string;
     editorMode: string;
     conversationMode: string;
     publishedChapterNotice: string;
@@ -464,9 +457,9 @@ export interface Translations {
       lockedPendingScreeningHint: string;
       screeningPendingHint: string;
       revisionFlaggedHint: string;
-      stepAiReviewTitle: string;
-      stepAiReviewDesc: string;
-      stepAiReviewButton: string;
+      stepChapterOrderTitle: string;
+      stepChapterOrderDesc: string;
+      stepChapterOrderButton: string;
       stepFreeflowPrepareTitle: string;
       stepFreeflowPrepareDesc: string;
       stepFreeflowPrepareButton: string;
@@ -523,16 +516,10 @@ export interface Translations {
     styleQuote: string;
   };
   conversation: {
-    questionOf: string;
-    skipQuestion: string;
     finishSection: string;
-    backToEditor: string;
-    typeYourAnswer: string;
     send: string;
-    generatingDraft: string;
     draftGenerated: string;
     switchToEditorToRefine: string;
-    answerMinimum: string;
   };
   status: {
     biographyCompleted: string;
@@ -622,11 +609,6 @@ export interface Translations {
     contentRightsNoticeParagraph2: string;
     pdfOriginalLanguage: string;
     downloadsUnavailable: string;
-    languageSwitcher: string;
-    showOriginal: string;
-    readInLanguage: string;
-    translating: string;
-    translationFailed: string;
     languageNameEn: string;
     languageNameIt: string;
     languageNameFr: string;
@@ -788,9 +770,6 @@ export interface Translations {
     pdfExported: string;
     linkCopied: string;
     error: string;
-    checkingContent: string;
-    publishBlocked: string;
-    publishUnderReview: string;
     tooManyRequests: string;
     requestFailed: string;
   };
@@ -924,7 +903,6 @@ export interface Translations {
     replaceExisting: string;
     aiDetectPrompt: string;
     detectSections: string;
-    analyzing: string;
     back: string;
     import: string;
     fileReadError: string;
@@ -1008,15 +986,6 @@ export interface Translations {
   };
   aiReview: {
     title: string;
-    reviewButton: string;
-    suggestionsTab: string;
-    rewriteTab: string;
-    rewriteDesc: string;
-    rewriteVersionLabel: string;
-    statisticsTab: string;
-    analyzingContent: string;
-    looksGreat: string;
-    noImprovementsNeeded: string;
     original: string;
     suggestion: string;
     selected: string;
@@ -1029,50 +998,13 @@ export interface Translations {
     intimateLabel: string;
     intimateDesc: string;
     generating: string;
-    regenerate: string;
     generate: string;
-    originalVersion: string;
-    rewrittenVersion: string;
     applying: string;
-    replaceWithVersion: string;
-    keepOriginal: string;
-    contentMetrics: string;
-    contentMetricsDesc: string;
     wordCount: string;
     characterCount: string;
     sentences: string;
     paragraphs: string;
-    readability: string;
-    readabilityDesc: string;
-    readabilityScore: string;
-    avgWordsPerSentence: string;
-    excellent: string;
-    good: string;
-    fair: string;
-    challenging: string;
-    shortSentences: string;
-    moderateSentences: string;
-    longSentences: string;
-    improvementSummary: string;
-    basedOnAi: string;
-    improvementsFound: string;
-    highPriority: string;
-    mediumPriority: string;
-    lowPriority: string;
     close: string;
-    applySelected: string;
-    failedToLoad: string;
-    failedToGenerate: string;
-    noImprovementsSelected: string;
-    appliedImprovements: string;
-    failedToApply: string;
-    appliedRewrite: string;
-    apertusButton: string;
-    apertusTitle: string;
-    apertusSubtitle: string;
-    apertusLoading: string;
-    apertusError: string;
-    apertusModelNote: string;
   };
   deleteDialog: {
     deleteBiographyLink: string;
@@ -1529,7 +1461,6 @@ export interface Translations {
     startBiography: string;
     viewsCount: string;
     langOriginal: string;
-    langTranslation: string;
   };
   pwa: {
     installBannerText: string;
@@ -1931,7 +1862,6 @@ export const translations: Record<Language, Translations> = {
       nextChapterAvailableNow: 'You can add a new chapter to your biography now.',
       nextChapterAvailableOn: 'Next chapter available on {date}.',
       nextChapterCooldownDays: '{days} days until you can add a new chapter.',
-      chapterCooldownBlocked: 'You can publish a new chapter one year after your last publication.',
     },
     biography: {
       newBiography: 'New Biography',
@@ -2091,7 +2021,6 @@ export const translations: Record<Language, Translations> = {
       achievements: 'Achievements',
       challenges: 'Challenges',
       hobbies: 'Hobbies & Interests',
-      wisdom: 'Wisdom & Advice',
       legacy: 'Legacy',
       noContent: 'This section is empty',
       noContentHint: 'Start writing or use AI suggestions to help you get started',
@@ -2116,14 +2045,10 @@ export const translations: Record<Language, Translations> = {
       startWritingAbout: 'Start writing about',
       markAsTodo: 'Mark as TODO',
       grammarStyle: 'Grammar & Style',
-      writingPrompts: 'Writing Prompts',
-      sectionSummary: 'Section Summary',
       analyzingWithAi: 'Analyzing with AI...',
       lookingGood: 'Looking good!',
       noGrammarIssues: 'No grammar or style issues found.',
       suggestionsFound: 'suggestion(s) found',
-      clickPromptToInsert: 'Click a prompt to insert it as a writing starter.',
-      noSummary: 'No summary available.',
       original: 'Original',
       suggestion: 'Suggestion',
       accept: 'Accept',
@@ -2135,7 +2060,6 @@ export const translations: Record<Language, Translations> = {
       todoItems: 'TODO Items',
       signInForAi: 'You must be signed in to use AI features. Please refresh the page.',
       failedGrammar: 'Failed to check grammar',
-      failedSummary: 'Failed to generate summary',
       editorMode: 'Editor Mode',
       conversationMode: 'Conversation Mode',
       publishedChapterNotice: 'This chapter is published and cannot be edited.',
@@ -2227,10 +2151,10 @@ export const translations: Record<Language, Translations> = {
         screeningPendingHint: 'Automatic text screening is running…',
         revisionFlaggedHint:
           'Some passages were flagged. Edit the highlighted sections in the editor, then resubmit for screening when ready.',
-        stepAiReviewTitle: 'Optional: AI narrative review',
-        stepAiReviewDesc:
-          'Explore alternative chapter orders and narrative structures suggested by AI before submitting.',
-        stepAiReviewButton: 'Open AI final review',
+        stepChapterOrderTitle: 'Prepare the final version',
+        stepChapterOrderDesc:
+          'Combine your chapters in chronological order into the final version you will review as a PDF.',
+        stepChapterOrderButton: 'Prepare the final version',
         stepFreeflowPrepareTitle: 'Prepare final text for PDF',
         stepFreeflowPrepareDesc:
           'Save the text on the page as the final version so you can start watermarked PDF drafts.',
@@ -2294,16 +2218,10 @@ export const translations: Record<Language, Translations> = {
       styleQuote: 'Quote',
     },
     conversation: {
-      questionOf: 'Question {current} of {total} for {section}',
-      skipQuestion: 'Skip this question',
       finishSection: 'Finish this section',
-      backToEditor: 'Back to editor',
-      typeYourAnswer: 'Type your answer here...',
       send: 'Send',
-      generatingDraft: 'Generating draft from your answers...',
       draftGenerated: 'Draft generated successfully!',
       switchToEditorToRefine: 'Switch to Editor Mode to refine your text.',
-      answerMinimum: 'Please answer at least 3 questions before finishing.',
     },
     status: {
       biographyCompleted: 'Biography Completed',
@@ -2396,11 +2314,6 @@ export const translations: Record<Language, Translations> = {
       pdfOriginalLanguage: 'PDF, TXT and DOCX available only in the original language ({language})',
       downloadsUnavailable:
         'Word and plain-text downloads are not available for this biography. You can still use the PDF button above.',
-      languageSwitcher: 'Reading language',
-      showOriginal: 'Original',
-      readInLanguage: 'Read in {language}',
-      translating: 'Translating…',
-      translationFailed: 'Translation failed. Please try again.',
       languageNameEn: 'English',
       languageNameIt: 'Italian',
       languageNameFr: 'French',
@@ -2573,9 +2486,6 @@ export const translations: Record<Language, Translations> = {
       pdfExported: 'PDF exported successfully',
       linkCopied: 'Link copied to clipboard',
       error: 'An error occurred',
-      checkingContent: 'Checking content guidelines...',
-      publishBlocked: 'Publication blocked. This biography contains content that violates our guidelines.',
-      publishUnderReview: 'Your biography has been sent for review. You will be notified of the outcome.',
       tooManyRequests: 'Too many attempts. Please wait a minute and try again.',
       requestFailed: 'Something went wrong. Please try again.',
     },
@@ -2710,7 +2620,6 @@ export const translations: Record<Language, Translations> = {
       replaceExisting: 'Replace existing content',
       aiDetectPrompt: 'Let AI analyze the text and automatically suggest appropriate sections',
       detectSections: 'Detect Sections',
-      analyzing: 'Analyzing...',
       back: 'Back',
       import: 'Import',
       fileReadError: 'Error reading file',
@@ -2794,15 +2703,6 @@ export const translations: Record<Language, Translations> = {
     },
     aiReview: {
       title: 'AI Section Review',
-      reviewButton: 'Review',
-      suggestionsTab: 'Suggestions',
-      rewriteTab: 'Full Rewrite',
-      rewriteDesc: 'A revision that improves flow between passages while keeping all facts and your voice.',
-      rewriteVersionLabel: 'Version {n}',
-      statisticsTab: 'Statistics',
-      analyzingContent: 'Analyzing content...',
-      looksGreat: 'Looks Great!',
-      noImprovementsNeeded: 'No improvements needed. Your content is well-written.',
       original: 'Original:',
       suggestion: 'Suggestion:',
       selected: 'Selected',
@@ -2815,50 +2715,13 @@ export const translations: Record<Language, Translations> = {
       intimateLabel: 'Intimate',
       intimateDesc: 'Warm and personal, like a letter',
       generating: 'Generating...',
-      regenerate: 'Regenerate',
       generate: 'Generate',
-      originalVersion: 'Original Version',
-      rewrittenVersion: 'Rewritten Version',
       applying: 'Applying...',
-      replaceWithVersion: 'Replace with this version',
-      keepOriginal: 'Keep original',
-      contentMetrics: 'Content Metrics',
-      contentMetricsDesc: 'Basic statistics about your writing',
       wordCount: 'Word Count',
       characterCount: 'Character Count',
       sentences: 'Sentences',
       paragraphs: 'Paragraphs',
-      readability: 'Readability',
-      readabilityDesc: 'How easy is your content to read?',
-      readabilityScore: 'Readability Score',
-      avgWordsPerSentence: 'Average Words per Sentence',
-      excellent: 'Excellent - Very easy to read',
-      good: 'Good - Easy to read',
-      fair: 'Fair - Moderately easy',
-      challenging: 'Challenging - Consider simplifying',
-      shortSentences: 'Short sentences - Easy to follow',
-      moderateSentences: 'Moderate length - Well balanced',
-      longSentences: 'Long sentences - Consider breaking them up',
-      improvementSummary: 'Improvement Summary',
-      basedOnAi: 'Based on AI analysis',
-      improvementsFound: 'Improvements Found',
-      highPriority: 'High Priority',
-      mediumPriority: 'Medium Priority',
-      lowPriority: 'Low Priority',
       close: 'Close',
-      applySelected: 'Apply Selected',
-      failedToLoad: 'Failed to load AI suggestions',
-      failedToGenerate: 'Failed to generate',
-      noImprovementsSelected: 'No improvements selected',
-      appliedImprovements: 'Applied {count} improvements',
-      failedToApply: 'Failed to apply improvements',
-      appliedRewrite: 'Revision applied to the section',
-      apertusButton: 'Swiss AI review',
-      apertusTitle: 'Review with Swiss AI',
-      apertusSubtitle: 'Editorial feedback on «{section}» via Apertus (Swiss open-source AI)',
-      apertusLoading: 'Apertus is reading your section…',
-      apertusError: 'Swiss AI review is unavailable. Please try again later.',
-      apertusModelNote: 'Model: {model}',
     },
     deleteDialog: {
       deleteBiographyLink: 'Delete biography',
@@ -3320,7 +3183,6 @@ export const translations: Record<Language, Translations> = {
       startBiography: 'Start your biography',
       viewsCount: 'views',
       langOriginal: 'Original language',
-      langTranslation: 'Available translation',
     },
     pwa: {
       installBannerText: 'Add Biography Library to your home screen',
@@ -3745,7 +3607,6 @@ export const translations: Record<Language, Translations> = {
       nextChapterAvailableNow: 'Puoi aggiungere un nuovo capitolo alla tua biografia.',
       nextChapterAvailableOn: 'Prossimo capitolo disponibile il {date}.',
       nextChapterCooldownDays: 'Mancano {days} giorni al prossimo capitolo.',
-      chapterCooldownBlocked: 'Puoi pubblicare un nuovo capitolo un anno dopo l\'ultima pubblicazione.',
     },
     biography: {
       newBiography: 'Nuova Biografia',
@@ -3905,7 +3766,6 @@ export const translations: Record<Language, Translations> = {
       achievements: 'Traguardi',
       challenges: 'Sfide',
       hobbies: 'Hobby e Interessi',
-      wisdom: 'Saggezza e Consigli',
       legacy: 'Eredit\u00e0',
       noContent: 'Questa sezione \u00e8 vuota',
       noContentHint: 'Inizia a scrivere o usa i suggerimenti AI per aiutarti',
@@ -3930,14 +3790,10 @@ export const translations: Record<Language, Translations> = {
       startWritingAbout: 'Inizia a scrivere su',
       markAsTodo: 'Segna come da fare',
       grammarStyle: 'Grammatica e Stile',
-      writingPrompts: 'Spunti di Scrittura',
-      sectionSummary: 'Riassunto Sezione',
       analyzingWithAi: 'Analisi con AI...',
       lookingGood: 'Tutto bene!',
       noGrammarIssues: 'Nessun problema di grammatica o stile trovato.',
       suggestionsFound: 'suggerimento/i trovato/i',
-      clickPromptToInsert: 'Clicca su uno spunto per inserirlo come inizio di scrittura.',
-      noSummary: 'Nessun riassunto disponibile.',
       original: 'Originale',
       suggestion: 'Suggerimento',
       accept: 'Accetta',
@@ -3949,7 +3805,6 @@ export const translations: Record<Language, Translations> = {
       todoItems: 'Cose da Fare',
       signInForAi: 'Devi aver effettuato l\'accesso per usare le funzionalit\u00e0 AI. Ricarica la pagina.',
       failedGrammar: 'Impossibile controllare la grammatica',
-      failedSummary: 'Impossibile generare il riassunto',
       editorMode: 'Modalità Editor',
       conversationMode: 'Modalità Conversazione',
       publishedChapterNotice: 'Questo capitolo è pubblicato e non può essere modificato.',
@@ -4043,10 +3898,10 @@ export const translations: Record<Language, Translations> = {
         screeningPendingHint: 'Analisi automatica del testo in corso…',
         revisionFlaggedHint:
           'Alcuni passaggi sono stati segnalati. Modifica le sezioni evidenziate nell\'editor, poi reinvia per lo screening quando sei pronto.',
-        stepAiReviewTitle: 'Facoltativo: revisione narrativa con IA',
-        stepAiReviewDesc:
-          'Esplora ordini alternativi dei capitoli e strutture narrative suggerite dall\'IA prima dell\'invio.',
-        stepAiReviewButton: 'Apri revisione finale IA',
+        stepChapterOrderTitle: 'Prepara la versione finale',
+        stepChapterOrderDesc:
+          'Riunisci i capitoli in ordine cronologico nella versione finale che rivedrai in PDF.',
+        stepChapterOrderButton: 'Prepara la versione finale',
         stepFreeflowPrepareTitle: 'Prepara il testo finale per il PDF',
         stepFreeflowPrepareDesc:
           'Salva il testo del foglio come versione finale, così puoi avviare le bozze PDF con filigrana.',
@@ -4110,16 +3965,10 @@ export const translations: Record<Language, Translations> = {
       styleQuote: 'Citazione',
     },
     conversation: {
-      questionOf: 'Domanda {current} di {total} per {section}',
-      skipQuestion: 'Salta questa domanda',
       finishSection: 'Ho finito con questa sezione',
-      backToEditor: 'Torna all\'editor',
-      typeYourAnswer: 'Scrivi la tua risposta qui...',
       send: 'Invia',
-      generatingDraft: 'Generazione bozza dalle tue risposte...',
       draftGenerated: 'Bozza generata con successo!',
       switchToEditorToRefine: 'Passa alla Modalità Editor per perfezionare il testo.',
-      answerMinimum: 'Per favore rispondi ad almeno 3 domande prima di finire.',
     },
     status: {
       biographyCompleted: 'Biografia Completata',
@@ -4212,11 +4061,6 @@ export const translations: Record<Language, Translations> = {
       pdfOriginalLanguage: 'PDF, TXT e DOCX disponibili solo nella lingua originale ({language})',
       downloadsUnavailable:
         'I download Word e testo semplice non sono disponibili per questa biografia. Puoi comunque usare il pulsante PDF sopra.',
-      languageSwitcher: 'Lingua di lettura',
-      showOriginal: 'Originale',
-      readInLanguage: 'Leggi in {language}',
-      translating: 'Traduzione in corso…',
-      translationFailed: 'Traduzione non riuscita. Riprova.',
       languageNameEn: 'inglese',
       languageNameIt: 'italiano',
       languageNameFr: 'francese',
@@ -4389,9 +4233,6 @@ export const translations: Record<Language, Translations> = {
       pdfExported: 'PDF esportato con successo',
       linkCopied: 'Link copiato negli appunti',
       error: 'Si \u00e8 verificato un errore',
-      checkingContent: 'Verifica delle linee guida sui contenuti...',
-      publishBlocked: 'Pubblicazione bloccata. Questa biografia contiene contenuti che violano le nostre linee guida.',
-      publishUnderReview: 'La tua biografia \u00e8 stata inviata per la revisione. Sarai informato dell\'esito.',
       tooManyRequests: 'Troppi tentativi. Attendi un minuto e riprova.',
       requestFailed: 'Qualcosa \u00e8 andato storto. Riprova.',
     },
@@ -4526,7 +4367,6 @@ export const translations: Record<Language, Translations> = {
       replaceExisting: 'Sostituisci contenuto esistente',
       aiDetectPrompt: 'Lascia che l\'AI analizzi il testo e suggerisca automaticamente le sezioni appropriate',
       detectSections: 'Rileva Sezioni',
-      analyzing: 'Analisi...',
       back: 'Indietro',
       import: 'Importa',
       fileReadError: 'Errore nella lettura del file',
@@ -4610,15 +4450,6 @@ export const translations: Record<Language, Translations> = {
     },
     aiReview: {
       title: 'Revisione IA della Sezione',
-      reviewButton: 'Revisiona',
-      suggestionsTab: 'Suggerimenti',
-      rewriteTab: 'Riscrittura Completa',
-      rewriteDesc: 'Una revisione che migliora il collegamento tra i passaggi, mantenendo tutti i fatti e la tua voce.',
-      rewriteVersionLabel: 'Versione {n}',
-      statisticsTab: 'Statistiche',
-      analyzingContent: 'Analisi del contenuto...',
-      looksGreat: 'Ottimo!',
-      noImprovementsNeeded: 'Nessun miglioramento necessario. Il tuo contenuto è ben scritto.',
       original: 'Originale:',
       suggestion: 'Suggerimento:',
       selected: 'Selezionato',
@@ -4631,50 +4462,13 @@ export const translations: Record<Language, Translations> = {
       intimateLabel: 'Intimo',
       intimateDesc: 'Caldo e personale, come una lettera',
       generating: 'Generazione...',
-      regenerate: 'Rigenera',
       generate: 'Genera',
-      originalVersion: 'Versione Originale',
-      rewrittenVersion: 'Versione Riscritta',
       applying: 'Applicazione...',
-      replaceWithVersion: 'Sostituisci con questa versione',
-      keepOriginal: 'Mantieni originale',
-      contentMetrics: 'Metriche del Contenuto',
-      contentMetricsDesc: 'Statistiche di base sulla tua scrittura',
       wordCount: 'Conteggio Parole',
       characterCount: 'Conteggio Caratteri',
       sentences: 'Frasi',
       paragraphs: 'Paragrafi',
-      readability: 'Leggibilità',
-      readabilityDesc: 'Quanto è facile leggere il tuo contenuto?',
-      readabilityScore: 'Punteggio di Leggibilità',
-      avgWordsPerSentence: 'Media Parole per Frase',
-      excellent: 'Eccellente - Molto facile da leggere',
-      good: 'Buono - Facile da leggere',
-      fair: 'Discreto - Moderatamente facile',
-      challenging: 'Impegnativo - Considera di semplificare',
-      shortSentences: 'Frasi brevi - Facili da seguire',
-      moderateSentences: 'Lunghezza moderata - Ben bilanciato',
-      longSentences: 'Frasi lunghe - Considera di spezzarle',
-      improvementSummary: 'Riepilogo Miglioramenti',
-      basedOnAi: 'Basato sull\'analisi IA',
-      improvementsFound: 'Miglioramenti Trovati',
-      highPriority: 'Alta Priorità',
-      mediumPriority: 'Media Priorità',
-      lowPriority: 'Bassa Priorità',
       close: 'Chiudi',
-      applySelected: 'Applica Selezionati',
-      failedToLoad: 'Impossibile caricare i suggerimenti IA',
-      failedToGenerate: 'Impossibile generare',
-      noImprovementsSelected: 'Nessun miglioramento selezionato',
-      appliedImprovements: 'Applicati {count} miglioramenti',
-      failedToApply: 'Impossibile applicare i miglioramenti',
-      appliedRewrite: 'Revisione applicata alla sezione',
-      apertusButton: 'Rilettura con AI svizzera',
-      apertusTitle: 'Rilettura con AI svizzera',
-      apertusSubtitle: 'Feedback editoriale su «{section}» tramite Apertus (IA open source svizzera)',
-      apertusLoading: 'Apertus sta leggendo la sezione…',
-      apertusError: 'Rilettura con AI svizzera non disponibile. Riprova più tardi.',
-      apertusModelNote: 'Modello: {model}',
     },
     deleteDialog: {
       deleteBiographyLink: 'Elimina biografia',
@@ -5136,7 +4930,6 @@ export const translations: Record<Language, Translations> = {
       startBiography: 'Inizia la tua biografia',
       viewsCount: 'visualizzazioni',
       langOriginal: 'Lingua originale',
-      langTranslation: 'Traduzione disponibile',
     },
     pwa: {
       installBannerText: 'Aggiungi Biography Library alla schermata principale',
@@ -5561,7 +5354,6 @@ export const translations: Record<Language, Translations> = {
       nextChapterAvailableNow: 'Vous pouvez ajouter un nouveau chapitre à votre biographie.',
       nextChapterAvailableOn: 'Prochain chapitre disponible le {date}.',
       nextChapterCooldownDays: 'Encore {days} jours avant le prochain chapitre.',
-      chapterCooldownBlocked: 'Vous pouvez publier un nouveau chapitre un an après votre dernière publication.',
     },
     biography: {
       newBiography: 'Nouvelle Biographie',
@@ -5721,7 +5513,6 @@ export const translations: Record<Language, Translations> = {
       achievements: 'R\u00e9alisations',
       challenges: 'D\u00e9fis',
       hobbies: 'Loisirs et Int\u00e9r\u00eats',
-      wisdom: 'Sagesse et Conseils',
       legacy: 'H\u00e9ritage',
       noContent: 'Cette section est vide',
       noContentHint: 'Commencez \u00e0 \u00e9crire ou utilisez les suggestions IA pour vous aider',
@@ -5746,14 +5537,10 @@ export const translations: Record<Language, Translations> = {
       startWritingAbout: '\u00c9crivez \u00e0 propos de',
       markAsTodo: 'Marquer comme \u00e0 faire',
       grammarStyle: 'Grammaire et Style',
-      writingPrompts: 'Suggestions d\'\u00c9criture',
-      sectionSummary: 'R\u00e9sum\u00e9 de la Section',
       analyzingWithAi: 'Analyse avec l\'IA...',
       lookingGood: 'Tout va bien !',
       noGrammarIssues: 'Aucun probl\u00e8me de grammaire ou de style trouv\u00e9.',
       suggestionsFound: 'suggestion(s) trouv\u00e9e(s)',
-      clickPromptToInsert: 'Cliquez sur une suggestion pour l\'ins\u00e9rer comme d\u00e9but d\'\u00e9criture.',
-      noSummary: 'Aucun r\u00e9sum\u00e9 disponible.',
       original: 'Original',
       suggestion: 'Suggestion',
       accept: 'Accepter',
@@ -5765,7 +5552,6 @@ export const translations: Record<Language, Translations> = {
       todoItems: '\u00c0 Faire',
       signInForAi: 'Vous devez \u00eatre connect\u00e9 pour utiliser les fonctionnalit\u00e9s IA. Veuillez rafra\u00eechir la page.',
       failedGrammar: 'Impossible de v\u00e9rifier la grammaire',
-      failedSummary: 'Impossible de g\u00e9n\u00e9rer le r\u00e9sum\u00e9',
       editorMode: 'Mode Éditeur',
       conversationMode: 'Mode Conversation',
       publishedChapterNotice: 'Ce chapitre est publié et ne peut pas être modifié.',
@@ -5859,10 +5645,10 @@ export const translations: Record<Language, Translations> = {
         screeningPendingHint: 'Analyse automatique du texte en cours…',
         revisionFlaggedHint:
           'Certains passages ont été signalés. Modifiez les sections concernées dans l’éditeur, puis renvoyez pour le filtrage lorsque vous êtes prêt.',
-        stepAiReviewTitle: 'Facultatif : révision narrative IA',
-        stepAiReviewDesc:
-          'Explorez des ordres de chapitres alternatifs et des structures narratives suggérées par l’IA avant l’envoi.',
-        stepAiReviewButton: 'Ouvrir la révision finale IA',
+        stepChapterOrderTitle: 'Préparer la version finale',
+        stepChapterOrderDesc:
+          'Réunissez vos chapitres dans l’ordre chronologique dans la version finale que vous relirez en PDF.',
+        stepChapterOrderButton: 'Préparer la version finale',
         stepFreeflowPrepareTitle: 'Préparer le texte final pour le PDF',
         stepFreeflowPrepareDesc:
           'Enregistrez le texte de la page comme version finale pour lancer les brouillons PDF avec filigrane.',
@@ -5926,16 +5712,10 @@ export const translations: Record<Language, Translations> = {
       styleQuote: 'Citation',
     },
     conversation: {
-      questionOf: 'Question {current} sur {total} pour {section}',
-      skipQuestion: 'Passer cette question',
       finishSection: 'Terminer cette section',
-      backToEditor: 'Retour à l\'éditeur',
-      typeYourAnswer: 'Écrivez votre réponse ici...',
       send: 'Envoyer',
-      generatingDraft: 'Génération du brouillon à partir de vos réponses...',
       draftGenerated: 'Brouillon généré avec succès !',
       switchToEditorToRefine: 'Passez en Mode Éditeur pour affiner votre texte.',
-      answerMinimum: 'Veuillez répondre à au moins 3 questions avant de terminer.',
     },
     status: {
       biographyCompleted: 'Biographie Termin\u00e9e',
@@ -6028,11 +5808,6 @@ export const translations: Record<Language, Translations> = {
       pdfOriginalLanguage: 'PDF, TXT et DOCX disponibles uniquement dans la langue originale ({language})',
       downloadsUnavailable:
         'Les téléchargements Word et texte brut ne sont pas disponibles pour cette biographie. Vous pouvez toujours utiliser le bouton PDF ci-dessus.',
-      languageSwitcher: 'Langue de lecture',
-      showOriginal: 'Original',
-      readInLanguage: 'Lire en {language}',
-      translating: 'Traduction en cours…',
-      translationFailed: 'Échec de la traduction. Veuillez réessayer.',
       languageNameEn: 'anglais',
       languageNameIt: 'italien',
       languageNameFr: 'français',
@@ -6205,9 +5980,6 @@ export const translations: Record<Language, Translations> = {
       pdfExported: 'PDF export\u00e9 avec succ\u00e8s',
       linkCopied: 'Lien copi\u00e9 dans le presse-papiers',
       error: 'Une erreur s\'est produite',
-      checkingContent: 'V\u00e9rification des r\u00e8gles de contenu...',
-      publishBlocked: 'Publication bloqu\u00e9e. Cette biographie contient du contenu qui enfreint nos r\u00e8gles.',
-      publishUnderReview: 'Votre biographie a \u00e9t\u00e9 envoy\u00e9e pour examen. Vous serez inform\u00e9 du r\u00e9sultat.',
       tooManyRequests: 'Trop de tentatives. Attendez une minute et r\u00e9essayez.',
       requestFailed: 'Une erreur s\'est produite. Veuillez r\u00e9essayer.',
     },
@@ -6342,7 +6114,6 @@ export const translations: Record<Language, Translations> = {
       replaceExisting: 'Remplacer le contenu existant',
       aiDetectPrompt: 'Laissez l\'IA analyser le texte et suggérer automatiquement les sections appropriées',
       detectSections: 'Détecter les Sections',
-      analyzing: 'Analyse...',
       back: 'Retour',
       import: 'Importer',
       fileReadError: 'Erreur lors de la lecture du fichier',
@@ -6426,15 +6197,6 @@ export const translations: Record<Language, Translations> = {
     },
     aiReview: {
       title: 'Révision IA de la Section',
-      reviewButton: 'Réviser',
-      suggestionsTab: 'Suggestions',
-      rewriteTab: 'Réécriture Complète',
-      rewriteDesc: 'Une révision qui améliore la fluidité entre les passages, en conservant tous les faits et votre voix.',
-      rewriteVersionLabel: 'Version {n}',
-      statisticsTab: 'Statistiques',
-      analyzingContent: 'Analyse du contenu...',
-      looksGreat: 'Excellent !',
-      noImprovementsNeeded: 'Aucune amélioration nécessaire. Votre contenu est bien écrit.',
       original: 'Original :',
       suggestion: 'Suggestion :',
       selected: 'Sélectionné',
@@ -6447,50 +6209,13 @@ export const translations: Record<Language, Translations> = {
       intimateLabel: 'Intime',
       intimateDesc: 'Chaleureux et personnel, comme une lettre',
       generating: 'Génération...',
-      regenerate: 'Régénérer',
       generate: 'Générer',
-      originalVersion: 'Version Originale',
-      rewrittenVersion: 'Version Réécrite',
       applying: 'Application...',
-      replaceWithVersion: 'Remplacer par cette version',
-      keepOriginal: 'Garder l\'original',
-      contentMetrics: 'Métriques du Contenu',
-      contentMetricsDesc: 'Statistiques de base sur votre écriture',
       wordCount: 'Nombre de Mots',
       characterCount: 'Nombre de Caractères',
       sentences: 'Phrases',
       paragraphs: 'Paragraphes',
-      readability: 'Lisibilité',
-      readabilityDesc: 'Votre contenu est-il facile à lire ?',
-      readabilityScore: 'Score de Lisibilité',
-      avgWordsPerSentence: 'Moyenne de Mots par Phrase',
-      excellent: 'Excellent - Très facile à lire',
-      good: 'Bon - Facile à lire',
-      fair: 'Correct - Modérément facile',
-      challenging: 'Difficile - Envisagez de simplifier',
-      shortSentences: 'Phrases courtes - Faciles à suivre',
-      moderateSentences: 'Longueur modérée - Bien équilibré',
-      longSentences: 'Phrases longues - Envisagez de les diviser',
-      improvementSummary: 'Résumé des Améliorations',
-      basedOnAi: 'Basé sur l\'analyse IA',
-      improvementsFound: 'Améliorations Trouvées',
-      highPriority: 'Haute Priorité',
-      mediumPriority: 'Priorité Moyenne',
-      lowPriority: 'Basse Priorité',
       close: 'Fermer',
-      applySelected: 'Appliquer la Sélection',
-      failedToLoad: 'Échec du chargement des suggestions IA',
-      failedToGenerate: 'Échec de la génération',
-      noImprovementsSelected: 'Aucune amélioration sélectionnée',
-      appliedImprovements: '{count} améliorations appliquées',
-      failedToApply: 'Échec de l\'application des améliorations',
-      appliedRewrite: 'Révision appliquée à la section',
-      apertusButton: 'Relecture avec IA suisse',
-      apertusTitle: 'Relecture avec IA suisse',
-      apertusSubtitle: 'Retour éditorial sur « {section} » via Apertus (IA open source suisse)',
-      apertusLoading: 'Apertus lit votre section…',
-      apertusError: 'Relecture avec IA suisse indisponible. Réessayez plus tard.',
-      apertusModelNote: 'Modèle : {model}',
     },
     deleteDialog: {
       deleteBiographyLink: 'Supprimer la biographie',
@@ -6952,7 +6677,6 @@ export const translations: Record<Language, Translations> = {
       startBiography: 'Commencer votre biographie',
       viewsCount: 'vues',
       langOriginal: 'Langue originale',
-      langTranslation: 'Traduction disponible',
     },
     pwa: {
       installBannerText: 'Ajouter Biography Library à votre écran d\'accueil',
@@ -7377,7 +7101,6 @@ export const translations: Record<Language, Translations> = {
       nextChapterAvailableNow: 'Sie können jetzt ein neues Kapitel zu Ihrer Biografie hinzufügen.',
       nextChapterAvailableOn: 'Nächstes Kapitel verfügbar am {date}.',
       nextChapterCooldownDays: 'Noch {days} Tage bis zum nächsten Kapitel.',
-      chapterCooldownBlocked: 'Sie können ein neues Kapitel ein Jahr nach Ihrer letzten Veröffentlichung veröffentlichen.',
     },
     biography: {
       newBiography: 'Neue Biografie',
@@ -7537,7 +7260,6 @@ export const translations: Record<Language, Translations> = {
       achievements: 'Erfolge',
       challenges: 'Herausforderungen',
       hobbies: 'Hobbys & Interessen',
-      wisdom: 'Weisheit & Ratschl\u00e4ge',
       legacy: 'Verm\u00e4chtnis',
       noContent: 'Dieser Abschnitt ist leer',
       noContentHint: 'Beginnen Sie zu schreiben oder verwenden Sie KI-Vorschl\u00e4ge zur Unterst\u00fctzung',
@@ -7562,14 +7284,10 @@ export const translations: Record<Language, Translations> = {
       startWritingAbout: 'Schreiben Sie \u00fcber',
       markAsTodo: 'Als Aufgabe markieren',
       grammarStyle: 'Grammatik und Stil',
-      writingPrompts: 'Schreibvorschl\u00e4ge',
-      sectionSummary: 'Abschnittszusammenfassung',
       analyzingWithAi: 'Analyse mit KI...',
       lookingGood: 'Sieht gut aus!',
       noGrammarIssues: 'Keine Grammatik- oder Stilprobleme gefunden.',
       suggestionsFound: 'Vorschlag/Vorschl\u00e4ge gefunden',
-      clickPromptToInsert: 'Klicken Sie auf einen Vorschlag, um ihn als Schreibanfang einzuf\u00fcgen.',
-      noSummary: 'Keine Zusammenfassung verf\u00fcgbar.',
       original: 'Original',
       suggestion: 'Vorschlag',
       accept: 'Annehmen',
@@ -7581,7 +7299,6 @@ export const translations: Record<Language, Translations> = {
       todoItems: 'Aufgaben',
       signInForAi: 'Sie m\u00fcssen angemeldet sein, um KI-Funktionen zu nutzen. Bitte laden Sie die Seite neu.',
       failedGrammar: 'Grammatikpr\u00fcfung fehlgeschlagen',
-      failedSummary: 'Zusammenfassung konnte nicht erstellt werden',
       editorMode: 'Editor-Modus',
       conversationMode: 'Konversationsmodus',
       publishedChapterNotice: 'Dieses Kapitel ist veröffentlicht und kann nicht bearbeitet werden.',
@@ -7675,10 +7392,10 @@ export const translations: Record<Language, Translations> = {
         screeningPendingHint: 'Automatische Textanalyse läuft…',
         revisionFlaggedHint:
           'Einige Passagen wurden markiert. Bearbeiten Sie die hervorgehobenen Abschnitte im Editor und senden Sie erneut zum Screening, wenn Sie bereit sind.',
-        stepAiReviewTitle: 'Optional: narrative KI-Überprüfung',
-        stepAiReviewDesc:
-          'Erkunden Sie alternative Kapitelreihenfolgen und Erzählstrukturen, die von der KI vorgeschlagen werden, bevor Sie einreichen.',
-        stepAiReviewButton: 'KI-Abschlussüberprüfung öffnen',
+        stepChapterOrderTitle: 'Endfassung vorbereiten',
+        stepChapterOrderDesc:
+          'Fassen Sie Ihre Kapitel in chronologischer Reihenfolge zur Endfassung zusammen, die Sie als PDF prüfen.',
+        stepChapterOrderButton: 'Endfassung vorbereiten',
         stepFreeflowPrepareTitle: 'Endtext für PDF vorbereiten',
         stepFreeflowPrepareDesc:
           'Speichern Sie den Text auf der Seite als Endfassung, um PDF-Entwürfe mit Wasserzeichen zu starten.',
@@ -7742,16 +7459,10 @@ export const translations: Record<Language, Translations> = {
       styleQuote: 'Zitat',
     },
     conversation: {
-      questionOf: 'Frage {current} von {total} für {section}',
-      skipQuestion: 'Diese Frage überspringen',
       finishSection: 'Diesen Abschnitt beenden',
-      backToEditor: 'Zurück zum Editor',
-      typeYourAnswer: 'Geben Sie Ihre Antwort hier ein...',
       send: 'Senden',
-      generatingDraft: 'Entwurf wird aus Ihren Antworten generiert...',
       draftGenerated: 'Entwurf erfolgreich generiert!',
       switchToEditorToRefine: 'Wechseln Sie in den Editor-Modus, um Ihren Text zu verfeinern.',
-      answerMinimum: 'Bitte beantworten Sie mindestens 3 Fragen, bevor Sie fertig sind.',
     },
     status: {
       biographyCompleted: 'Biografie Abgeschlossen',
@@ -7844,11 +7555,6 @@ export const translations: Record<Language, Translations> = {
       pdfOriginalLanguage: 'PDF, TXT und DOCX nur in der Originalsprache verfügbar ({language})',
       downloadsUnavailable:
         'Word- und Text-Downloads sind für diese Biografie nicht verfügbar. Sie können weiterhin die PDF-Schaltfläche oben verwenden.',
-      languageSwitcher: 'Lesesprache',
-      showOriginal: 'Original',
-      readInLanguage: 'Auf {language} lesen',
-      translating: 'Übersetzung läuft…',
-      translationFailed: 'Übersetzung fehlgeschlagen. Bitte erneut versuchen.',
       languageNameEn: 'Englisch',
       languageNameIt: 'Italienisch',
       languageNameFr: 'Französisch',
@@ -8021,9 +7727,6 @@ export const translations: Record<Language, Translations> = {
       pdfExported: 'PDF erfolgreich exportiert',
       linkCopied: 'Link in die Zwischenablage kopiert',
       error: 'Ein Fehler ist aufgetreten',
-      checkingContent: 'Inhaltsrichtlinien werden \u00fcberpr\u00fcft...',
-      publishBlocked: 'Ver\u00f6ffentlichung blockiert. Diese Biografie enth\u00e4lt Inhalte, die gegen unsere Richtlinien versto\u00dfen.',
-      publishUnderReview: 'Ihre Biografie wurde zur \u00dcberpr\u00fcfung eingereicht. Sie werden \u00fcber das Ergebnis informiert.',
       tooManyRequests: 'Zu viele Versuche. Bitte eine Minute warten und erneut versuchen.',
       requestFailed: 'Etwas ist schiefgelaufen. Bitte erneut versuchen.',
     },
@@ -8158,7 +7861,6 @@ export const translations: Record<Language, Translations> = {
       replaceExisting: 'Vorhandenen Inhalt ersetzen',
       aiDetectPrompt: 'Lassen Sie die KI den Text analysieren und automatisch geeignete Abschnitte vorschlagen',
       detectSections: 'Abschnitte Erkennen',
-      analyzing: 'Analyse...',
       back: 'Zurück',
       import: 'Importieren',
       fileReadError: 'Fehler beim Lesen der Datei',
@@ -8242,15 +7944,6 @@ export const translations: Record<Language, Translations> = {
     },
     aiReview: {
       title: 'KI-Abschnittsüberprüfung',
-      reviewButton: 'Überprüfen',
-      suggestionsTab: 'Vorschläge',
-      rewriteTab: 'Vollständige Umschreibung',
-      rewriteDesc: 'Eine Überarbeitung, die den Fluss zwischen den Abschnitten verbessert und alle Fakten sowie Ihre Stimme bewahrt.',
-      rewriteVersionLabel: 'Version {n}',
-      statisticsTab: 'Statistiken',
-      analyzingContent: 'Inhalt wird analysiert...',
-      looksGreat: 'Sieht gut aus!',
-      noImprovementsNeeded: 'Keine Verbesserungen nötig. Ihr Inhalt ist gut geschrieben.',
       original: 'Original:',
       suggestion: 'Vorschlag:',
       selected: 'Ausgewählt',
@@ -8263,50 +7956,13 @@ export const translations: Record<Language, Translations> = {
       intimateLabel: 'Intim',
       intimateDesc: 'Warm und persönlich, wie ein Brief',
       generating: 'Generierung...',
-      regenerate: 'Neu generieren',
       generate: 'Generieren',
-      originalVersion: 'Originalversion',
-      rewrittenVersion: 'Umgeschriebene Version',
       applying: 'Anwenden...',
-      replaceWithVersion: 'Mit dieser Version ersetzen',
-      keepOriginal: 'Original behalten',
-      contentMetrics: 'Inhaltsmetriken',
-      contentMetricsDesc: 'Grundlegende Statistiken über Ihr Schreiben',
       wordCount: 'Wortanzahl',
       characterCount: 'Zeichenanzahl',
       sentences: 'Sätze',
       paragraphs: 'Absätze',
-      readability: 'Lesbarkeit',
-      readabilityDesc: 'Wie leicht ist Ihr Inhalt zu lesen?',
-      readabilityScore: 'Lesbarkeitswert',
-      avgWordsPerSentence: 'Durchschnitt Wörter pro Satz',
-      excellent: 'Ausgezeichnet - Sehr leicht zu lesen',
-      good: 'Gut - Leicht zu lesen',
-      fair: 'Befriedigend - Mäßig leicht',
-      challenging: 'Anspruchsvoll - Vereinfachung empfohlen',
-      shortSentences: 'Kurze Sätze - Leicht zu folgen',
-      moderateSentences: 'Moderate Länge - Gut ausbalanciert',
-      longSentences: 'Lange Sätze - Aufteilen empfohlen',
-      improvementSummary: 'Verbesserungsübersicht',
-      basedOnAi: 'Basierend auf KI-Analyse',
-      improvementsFound: 'Verbesserungen gefunden',
-      highPriority: 'Hohe Priorität',
-      mediumPriority: 'Mittlere Priorität',
-      lowPriority: 'Niedrige Priorität',
       close: 'Schließen',
-      applySelected: 'Auswahl anwenden',
-      failedToLoad: 'KI-Vorschläge konnten nicht geladen werden',
-      failedToGenerate: 'Generierung fehlgeschlagen',
-      noImprovementsSelected: 'Keine Verbesserungen ausgewählt',
-      appliedImprovements: '{count} Verbesserungen angewendet',
-      failedToApply: 'Verbesserungen konnten nicht angewendet werden',
-      appliedRewrite: 'Überarbeitung auf den Abschnitt angewendet',
-      apertusButton: 'Lektüre mit Schweizer KI',
-      apertusTitle: 'Lektüre mit Schweizer KI',
-      apertusSubtitle: 'Redaktionelles Feedback zu «{section}» via Apertus (Schweizer Open-Source-KI)',
-      apertusLoading: 'Apertus liest Ihren Abschnitt…',
-      apertusError: 'Lektüre mit Schweizer KI nicht verfügbar. Bitte später erneut versuchen.',
-      apertusModelNote: 'Modell: {model}',
     },
     deleteDialog: {
       deleteBiographyLink: 'Biografie löschen',
@@ -8768,7 +8424,6 @@ export const translations: Record<Language, Translations> = {
       startBiography: 'Biografie starten',
       viewsCount: 'Aufrufe',
       langOriginal: 'Originalsprache',
-      langTranslation: 'Verfügbare Übersetzung',
     },
     pwa: {
       installBannerText: 'Biography Library zum Startbildschirm hinzufügen',

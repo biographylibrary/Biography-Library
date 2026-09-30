@@ -53,5 +53,6 @@ Before shipping any new table or API route:
 
 1. Enable RLS immediately: `ALTER TABLE t ENABLE ROW LEVEL SECURITY;`
 2. Write the minimum necessary policies — no catch-all `USING (true)`.
-3. If the route calls the Infomaniak AI API, ensure it goes through the `ai-assistant` Edge Function (which enforces rate limits) rather than calling the API directly from client code.
+3. If the route calls the Infomaniak AI API, it must go through `lib/agents/infomaniak-client.ts` (the only client: it records every call in `ai_token_usage`) and pass the rate limits and token cap of its purpose. Never call the API directly from client code.
+3b. Columns that only the server may write (publication status, screening result, freeze, dates, role, account status) are protected by `BEFORE INSERT OR UPDATE` triggers that check `current_user`, not the JWT. Do not make those trigger functions `SECURITY DEFINER`, and write those columns only with the service role (see migration `20260930120000_server_only_columns_and_reports.sql`).
 4. Never log request bodies that may contain biography text or auth tokens.

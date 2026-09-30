@@ -27,7 +27,6 @@ lib/
   auth-context.tsx          Auth provider + useAuth hook
   pdf-export.ts             jsPDF B5 document builder
   checkpoint-service.ts     Conversation state persistence
-  revision-history-service  Per-section version tracking
   section-status-service    Draft version state machine
   section-completion-service Mark sections done/undone
   biographies.ts            Biography CRUD helpers
@@ -118,13 +117,13 @@ Each section has its own row in `biography_sections` with an independent status 
 in_progress → draft_1 → draft_2 → draft_3 → approved → locked
 ```
 
-Draft increments happen when the user saves a revised version. `section_status-service.ts` owns these transitions. `revision-history-service.ts` stores snapshots so previous versions can be restored.
+Draft increments happen when the user saves a revised version. `section_status-service.ts` owns these transitions.
 
-The editor UI renders a `SectionSidebar` for navigation and a `SectionEditor` (Tiptap rich text) for the active section. An AI conversation mode (`ConversationMode`) guides the user through prompts before they write, storing the dialogue in `conversation_checkpoints`.
+The editor UI renders a `SectionSidebar` for navigation and a `SectionEditor` (Tiptap rich text) for the active section.
 
 ### Freeflow mode
 
-A single continuous rich-text field (`content_freeflow` on the `biographies` row). No section sidebar, no per-section status tracking. Suitable for users who want to write without structure. The same Tiptap editor is used; the AI assistant still works but without section-specific context.
+A single continuous rich-text field (`content_freeflow` on the `biographies` row). No section sidebar, no per-section status tracking. Suitable for users who want to write without structure. The same Tiptap editor is used; Echo and the grammar check work on the whole text.
 
 ### Book structure (both modes)
 
@@ -134,53 +133,38 @@ A single continuous rich-text field (`content_freeflow` on the `biographies` row
 
 ## 5. AI Pipeline
 
-### Infrastructure
+*Updated 30 September 2026 (block 1, AI tools).*
 
-All AI calls from the browser go through **Supabase Edge Functions** (Deno). The browser never holds an AI API key. Two functions handle AI workloads:
+AI works on an author's text in four cases only: **Echo** (suggests structure and edits inside the text, and also answers platform questions using the knowledge base), the **grammar check** on request, the **final check before print** (`runDraftAiReview`), and the **compliance screening** before publication (`runPublicationScreening`, moderation, not an author tool). Everything else was removed: reader-side automatic translation, guided prompts, summaries, rewriting, section review with AI, Apertus review, follow-up questions, structure proposals, the biography coach and publication reviewer agents.
 
-| Function | Role |
-|---|---|
-| `ai-assistant` | All text AI actions (grammar, prompts, rewrite, follow-up, analysis) |
-| `audio-transcription` | Audio file → transcript via Infomaniak Whisper endpoint |
-| `help-assistant` | In-app help chatbot; searches a local knowledge base before calling AI |
+### One client, one ledger
 
-The AI provider is **Infomaniak AI Services** (OpenAI-compatible endpoint, CH). Agent models are selected with `AGENT_MODEL_*` (see `lib/agents/models.ts`). Edge Function `ai-assistant` uses `INFOMANIAK_AI_MODEL_PRIMARY` / `INFOMANIAK_AI_MODEL_FALLBACK`. There is no app variable named `INFOMANIAK_AI_MODEL`. Credentials are never in the client bundle.
+Every call to a model goes through **`lib/agents/infomaniak-client.ts`** (chat, streaming, embeddings; Infomaniak AI Services, OpenAI-compatible, Switzerland). Each call, including failed attempts and fallback-model attempts, writes one row to **`ai_token_usage`** via `lib/ai/usage-recorder.ts` (service role only): user, biography, purpose (`echo`, `grammar`, `preprint_check`, `screening`, `embedding`, `memory_compression`, `transcription`, `tts`), model, `prompt_tokens`, `completion_tokens`, `total_tokens`, an `estimated` flag and the outcome. `usage` is read from the provider response; for streams the client asks for it with `stream_options.include_usage` and, if the provider omits or rejects it, estimates characters / 4 and marks the row as estimated. A `usage` context is a required option of `chat`, `chatStream` and `embed`, so an unrecorded call does not compile.
 
-### Client call flow (`lib/ai/ai-client.ts`)
+Two documented exceptions: **transcription** (Whisper) still runs in the Deno Edge Function `audio-transcription` and writes its own row (provider seconds, when returned); **text-to-speech** runs on Mistral Voxtral, not Infomaniak, and records the characters sent.
+
+Models are chosen with `AGENT_MODEL_*` (see `lib/agents/models.ts`); the grammar chain uses `INFOMANIAK_AI_MODEL_GRAMMAR`, then `_PRIMARY`, then `_FALLBACK`. Credentials are never in the client bundle.
+
+### Grammar check (`POST /api/biography/[id]/grammar`, Node runtime)
 
 ```
-Component calls aiService.*(...)
-  → lib/ai/ai-provider.ts builds payload
-  → lib/ai/ai-client.ts callAI(action, payload)
-      → refresh JWT if < 300s remaining
-      → POST /functions/v1/ai-assistant  {action, ...payload}
-      → handle 401 (retry once after refresh)
-      → handle 429 → throw AiLimitError (shows usage indicator)
-      → parse JSON response
+Browser (lib/grammar-service.ts, fetchWithAgentAuth)
+  → auth (Bearer JWT) → load profile + biography (service role)
+  → same rule as the RLS UPDATE policy on biographies:
+      owner + active account + not frozen, or staff
+  → text in the body (authors check unsaved text); > 30,000 characters after stripping
+      HTML → 413 with a message in four languages (no silent truncation)
+  → per-minute limit (ai_rate_limits), token cap, daily/weekly counters (ai_usage_tracking)
+  → chat() with models [Apertus 1.5, Gemma, Mistral], temperature 0.7, 2048 tokens,
+      45 s, 3 attempts per model on 429/503/504
+  → JSON array of suggestions, identical-pair suggestions dropped
 ```
 
-Timeout: 35 seconds. All AI calls are fire-and-respond; there is no streaming.
+Limits kept from the old Edge Function, unchanged: 5 per minute, 40 per UTC day, 200 per UTC week per user (staff exempt), same environment variable names.
 
-### AI actions
+### Token caps
 
-| Action | Service function | Returns |
-|---|---|---|
-| `grammar` | `checkGrammar()` | Array of `{original, suggestion, type, priority}` |
-| `prompts` | `getGuidedPrompts()` | Array of guided writing prompts for the section |
-| `summary` | `getSummary()` | Short text summary |
-| `rewrite` | `rewriteSection()` | Rewritten text in chosen tone |
-| `followup` | `analyzeAndRespond()` | Next question + acknowledgement for conversation mode |
-| `analyze-themes` | `analyzeThemes()` | Thematic analysis across completed sections |
-| `propose-structures` | `proposeNarrativeStructures()` | Alternative chapter orderings |
-| `recommend-next-section` | `recommendNextSection()` | Suggested next section key + reason |
-
-### Rate limiting
-
-Tracked in `ai_rate_limits`. Limits: 5 requests per minute, 40 per day, 200 per week per user. The Edge Function checks and increments the counter atomically. The `AiUsageIndicator` component shows remaining quota. Old records are cleaned up automatically (30-day retention via a scheduled policy).
-
-### Conversation mode
-
-`ConversationMode` runs a multi-turn guided interview before the user writes a section. State is saved to `conversation_checkpoints` after each exchange so sessions survive page reloads. The service tracks `questions_completed`, `is_follow_up`, and `has_had_follow_up` to avoid repetitive questions. If the AI call fails, a pre-written fallback acknowledgement (in all four supported languages) is shown so the UX never blocks.
+`ai_author_token_limits` holds three nullable values (day, week, month; `null` = off). Usage is summed from `ai_token_usage` over **calendar periods in Europe/Zurich** by `ai_author_token_usage()` (week starts Monday). Only `echo` and `grammar` count; `screening`, `preprint_check`, `embedding` and `memory_compression` never do, so an author who exhausted the cap can still publish. Over the cap, Echo and grammar answer 429 with `error: token_cap_exceeded`, a message in the author's language and the time the period reopens. Staff are exempt but recorded. The check fails open if the ledger cannot be read.
 
 ### Audio transcription
 

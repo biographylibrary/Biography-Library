@@ -8,12 +8,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { useTranslation } from '@/lib/i18n/i18n-context';
-import {
-  Landmark,
-  MoreVertical,
-  SpellCheck,
-  Wand2,
-} from 'lucide-react';
+import { MoreVertical, SpellCheck } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { IconHint } from '@/components/ui/icon-hint';
 
@@ -22,8 +17,6 @@ export interface EditorAiToolsMenuProps {
   aiLoading?: boolean;
   hasText?: boolean;
   onGrammarCheck?: () => void;
-  onReviewWithAi?: () => void;
-  onApertusReview?: () => void;
   className?: string;
   buttonClassName?: string;
 }
@@ -33,8 +26,6 @@ export function EditorAiToolsMenu({
   aiLoading = false,
   hasText = false,
   onGrammarCheck,
-  onReviewWithAi,
-  onApertusReview,
   className,
   buttonClassName,
 }: EditorAiToolsMenuProps) {
@@ -68,24 +59,6 @@ export function EditorAiToolsMenu({
           >
             <SpellCheck className="h-3.5 w-3.5 mr-2" />
             {t.editor.checkGrammar}
-          </DropdownMenuItem>
-        )}
-        {onReviewWithAi && (
-          <DropdownMenuItem
-            disabled={aiLoading || !hasText}
-            onClick={onReviewWithAi}
-          >
-            <Wand2 className="h-3.5 w-3.5 mr-2" />
-            {t.aiReview.reviewButton}
-          </DropdownMenuItem>
-        )}
-        {onApertusReview && (
-          <DropdownMenuItem
-            disabled={aiLoading || !hasText}
-            onClick={onApertusReview}
-          >
-            <Landmark className="h-3.5 w-3.5 mr-2" />
-            {t.aiReview.apertusButton}
           </DropdownMenuItem>
         )}
       </DropdownMenuContent>

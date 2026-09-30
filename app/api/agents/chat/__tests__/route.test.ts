@@ -32,7 +32,7 @@ describe('agents/chat route', () => {
     vi.clearAllMocks();
     authenticateAgentRequest.mockResolvedValue({ ok: true, userId: 'user-1', jwt: 'jwt' });
     parseAgentChatBody.mockResolvedValue({
-      agentType: 'publication_reviewer',
+      agentType: 'echo',
       message: 'Is this ready?',
       biographyId: 'bio-1',
     });
@@ -41,9 +41,9 @@ describe('agents/chat route', () => {
       threadId: 'thread-1',
       history: [],
       userMessage: 'Is this ready?',
-      systemPrompt: 'Reviewer prompt',
-      role: 'reviewer',
-      agentType: 'publication_reviewer',
+      systemPrompt: 'Echo prompt',
+      role: 'coach',
+      agentType: 'echo',
       userId: 'user-1',
     });
     chat.mockResolvedValue({
@@ -53,14 +53,14 @@ describe('agents/chat route', () => {
     appendMessage.mockResolvedValue({ id: 'msg-1' });
   });
 
-  it('uses reviewer role (Gemma) for publication_reviewer chat', async () => {
+  it('answers as Echo and records the call with purpose echo', async () => {
     const { POST } = await import('@/app/api/agents/chat/route');
     const res = await POST(
       new NextRequest('http://localhost/api/agents/chat', {
         method: 'POST',
         headers: { authorization: 'Bearer jwt' },
         body: JSON.stringify({
-          agentType: 'publication_reviewer',
+          agentType: 'echo',
           message: 'Is this ready?',
           biographyId: 'bio-1',
         }),
@@ -71,9 +71,10 @@ describe('agents/chat route', () => {
     const body = await res.json();
     expect(body.modelUsed).toBe('google/gemma-4-31B-it');
     expect(chat).toHaveBeenCalledWith(
-      expect.objectContaining({ role: 'reviewer' })
+      expect.objectContaining({
+        usage: { purpose: 'echo', userId: 'user-1', biographyId: null },
+      })
     );
-    expect(chat.mock.calls[0][0].role).not.toBe('apertus');
   });
 
   it('returns 401 when unauthenticated', async () => {

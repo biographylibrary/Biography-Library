@@ -24,8 +24,6 @@ interface GuidedSectionWorkspaceProps {
   aiUsageRefresh?: number;
   aiLoading?: boolean;
   onGrammarCheck?: () => void;
-  onReviewWithAi?: () => void;
-  onApertusReview?: () => void;
   onMarkComplete?: () => void;
   isCompleted?: boolean;
   /** One sheet: no preset section title above the text. */
@@ -46,8 +44,6 @@ export function GuidedSectionWorkspace({
   aiUsageRefresh,
   aiLoading,
   onGrammarCheck,
-  onReviewWithAi,
-  onApertusReview,
   onMarkComplete,
   isCompleted = false,
   documentMode = false,
@@ -144,8 +140,6 @@ export function GuidedSectionWorkspace({
           aiEnabled={aiEnabled}
           aiLoading={aiLoading}
           onGrammarCheck={onGrammarCheck}
-          onReviewWithAi={onReviewWithAi}
-          onApertusReview={onApertusReview}
           aiUsageRefresh={aiUsageRefresh}
           highlightChange={highlightChange}
           undoLastChange={undoLastChange}

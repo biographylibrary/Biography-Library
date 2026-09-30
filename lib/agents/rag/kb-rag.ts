@@ -75,7 +75,8 @@ export async function pruneStaleKbChunks(serviceClient: SupabaseClient): Promise
 
 export async function seedHelpKb(
   serviceClient: SupabaseClient,
-  locales: KbLocale[] = [...KB_LOCALES]
+  locales: KbLocale[] = [...KB_LOCALES],
+  userId: string | null = null
 ): Promise<SeedHelpKbResult> {
   type Pending = {
     locale: KbLocale;
@@ -117,7 +118,10 @@ export async function seedHelpKb(
     return { indexed: 0, skipped, locales };
   }
 
-  const vectors = await embed(pending.map((p) => p.content));
+  const vectors = await embed(
+    pending.map((p) => p.content),
+    { purpose: 'embedding', userId }
+  );
 
   for (let i = 0; i < pending.length; i++) {
     const p = pending[i];
@@ -140,7 +144,8 @@ export async function seedHelpKb(
 
 export async function ensureHelpKbIndexed(
   serviceClient: SupabaseClient,
-  locale = 'en'
+  locale = 'en',
+  userId: string | null = null
 ): Promise<void> {
   const loc = (locale.slice(0, 2) as KbLocale) || 'en';
   const targetLocale = KB_LOCALES.includes(loc as KbLocale) ? (loc as KbLocale) : 'en';
@@ -155,7 +160,7 @@ export async function ensureHelpKbIndexed(
     return;
   }
   if ((count ?? 0) === 0) {
-    await seedHelpKb(serviceClient, [targetLocale]);
+    await seedHelpKb(serviceClient, [targetLocale], userId);
   }
 }
 
@@ -181,7 +186,8 @@ export async function retrieveKbContext(
   serviceClient: SupabaseClient,
   query: string,
   locale: string,
-  k = 4
+  k = 4,
+  userId: string | null = null
 ): Promise<{ context: string; sources: string[] }> {
   const loc = (locale.slice(0, 2) as KbLocale) || 'en';
   const localesToTry: KbLocale[] = KB_LOCALES.includes(loc as KbLocale)
@@ -194,7 +200,7 @@ export async function retrieveKbContext(
 
   let queryVec: number[];
   try {
-    [queryVec] = await embed([query]);
+    [queryVec] = await embed([query], { purpose: 'embedding', userId });
   } catch {
     return { context: '', sources: [] };
   }

@@ -97,7 +97,7 @@ Required for local dev:
 
 Server-only routes (e.g. `/api/review/submit`) may also need `SUPABASE_SERVICE_ROLE_KEY` — see `.env.example` and `DEPLOYMENT.md`.
 
-> **Edge Function secrets** (`INFOMANIAK_AI_TOKEN` etc.) must also be set in the Supabase dashboard so `ai-assistant`, `audio-transcription`, and related functions can reach the AI endpoint.
+> **Edge Function secrets** (`INFOMANIAK_AI_TOKEN` etc.) must also be set in the Supabase dashboard so `audio-transcription` and related functions can reach the AI endpoint.
 
 ---
 
@@ -113,12 +113,12 @@ components/
   admin/                # Moderation UI
   dashboard/            # Dashboard cards
 lib/
-  ai/                   # AI client, narrative service, smart follow-up
+  ai/                   # Grammar check, rate limits, token ledger and caps
   i18n/                 # Translation strings and context
   moderation/           # Moderation actions and types
   pdf-export.ts         # PDF generation
 supabase/
-  functions/            # Edge Functions (ai-assistant, audio-transcription, help-assistant)
+  functions/            # Edge Functions (audio-transcription, log-error, email)
   migrations/           # Ordered SQL migrations
 ```
 

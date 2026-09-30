@@ -15,7 +15,7 @@ Before testing AI features, ensure:
    - `INFOMANIAK_AI_TOKEN` is set in Supabase Dashboard:
      - Go to: Project Settings > Edge Functions > Manage secrets
      - Add secret: `INFOMANIAK_AI_TOKEN` with your Infomaniak API token
-   - Edge function `ai-assistant` is deployed and accessible
+   - Grammar check: `POST /api/biography/[id]/grammar` (Next.js); the `audio-transcription` Edge Function is deployed for voice
 
 3. **Test Account**
    - Create a test user account

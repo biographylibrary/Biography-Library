@@ -10,6 +10,8 @@ import {
 
 type AnyClient = SupabaseClient<any, any, any>;
 
+const AUTHOR_SUBMIT_STATUSES = new Set(['draft', 'sections_complete', 'final_version']);
+
 function buildAnonClient(jwt: string): AnyClient {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL!;
   const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
@@ -62,21 +64,32 @@ export async function POST(req: NextRequest) {
     const callerRole: string = (callerProfile as any)?.role ?? 'user';
     const isStaff = STAFF_ROLES.has(callerRole);
 
+    const { data: bio } = await serviceClient
+      .from('biographies')
+      .select('user_id, status')
+      .eq('id', biographyId)
+      .maybeSingle();
+
+    if (!bio) {
+      console.warn('[review/submit] 404 — biography not found', { timestamp, biographyId });
+      return NextResponse.json({ error: 'Biography not found' }, { status: 404 });
+    }
+
     if (!isStaff) {
-      const { data: bio } = await serviceClient
-        .from('biographies')
-        .select('user_id')
-        .eq('id', biographyId)
-        .maybeSingle();
-
-      if (!bio) {
-        console.warn('[review/submit] 404 — biography not found', { timestamp, biographyId });
-        return NextResponse.json({ error: 'Biography not found' }, { status: 404 });
-      }
-
       if ((bio as any).user_id !== callerId) {
         console.warn('[review/submit] 403 — not owner', { timestamp, biographyId, callerId });
         return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+      }
+
+      // Da uno stato non d'autore (in revisione, sospesa, rimossa, pubblicata...)
+      // l'autore non può rimettere la scheda in coda di pubblicazione.
+      if (!AUTHOR_SUBMIT_STATUSES.has((bio as any).status)) {
+        console.warn('[review/submit] 409 — status not submittable', {
+          timestamp,
+          biographyId,
+          status: (bio as any).status,
+        });
+        return NextResponse.json({ error: 'invalid_status' }, { status: 409 });
       }
     }
 
@@ -98,6 +111,16 @@ export async function POST(req: NextRequest) {
         { error: 'missing_cover', message: 'Cover photo required before submission' },
         { status: 400 }
       );
+    }
+
+    // Lo stato di revisione lo scrive il server: l'autore non può scrivere queste colonne.
+    const { error: statusError } = await serviceClient
+      .from('biographies')
+      .update({ status: 'under_review', ai_screening_status: 'pending' })
+      .eq('id', biographyId);
+    if (statusError) {
+      console.error('[review/submit] status update failed:', statusError);
+      return NextResponse.json({ error: 'Update failed' }, { status: 500 });
     }
 
     generateAndStoreExports(serviceClient, biographyId).catch((err) =>

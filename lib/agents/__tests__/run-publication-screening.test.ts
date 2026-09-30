@@ -78,6 +78,30 @@ describe('runPublicationScreening', () => {
     expect(chat.mock.calls[0][0].role).not.toBe('apertus');
   });
 
+  it('registra la chiamata con scopo screening, con l\'autore e la biografia', async () => {
+    chat.mockResolvedValue({
+      tool_calls: [
+        {
+          id: 'tc-1',
+          type: 'function',
+          function: { name: 'submit_screening_verdict', arguments: JSON.stringify({ passages: [], overall_severity: 0 }) },
+        },
+      ],
+      content: '',
+      modelUsed: 'google/gemma-4-31B-it',
+    });
+    await runPublicationScreening('Biography body text', undefined, { userId: 'author-1', biographyId: 'bio-1' });
+    expect(chat.mock.calls[0][0].usage).toEqual({ purpose: 'screening', userId: 'author-1', biographyId: 'bio-1' });
+  });
+
+  it('anche il percorso di ripiego resta uno screening', async () => {
+    chat
+      .mockResolvedValueOnce({ content: 'nessun verdetto', modelUsed: 'm' })
+      .mockResolvedValueOnce({ content: '{"passages":[],"overall_severity":0}', modelUsed: 'm' });
+    await runPublicationScreening('text', undefined, { userId: 'author-1' });
+    expect(chat.mock.calls.map((c) => c[0].usage.purpose)).toEqual(['screening', 'screening']);
+  });
+
   it('returns aiError when Infomaniak env is missing', async () => {
     delete process.env.INFOMANIAK_AI_TOKEN;
     const result = await runPublicationScreening('text');

@@ -1,7 +1,7 @@
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { purgeAgentMemoryForBiography } from '@/lib/agents/purge-agent-memory';
 import { runPublicationScreening } from '@/lib/agents/screening/run-publication-screening';
-import { getModelForRole } from '@/lib/agents/models';
+import { chat } from '@/lib/agents/infomaniak-client';
 import { storedToArchiveMarkdown } from '@/lib/archive-markdown';
 import { BIOGRAPHY_SECTIONS } from '@/lib/editor-constants';
 import {
@@ -10,8 +10,6 @@ import {
 } from '@/lib/server/email/publication-helpers';
 import { resolveRecordLanguageTag } from '@/lib/record-language';
 
-const INFOMANIAK_ENDPOINT = process.env.INFOMANIAK_AI_ENDPOINT ?? '';
-const INFOMANIAK_TOKEN = process.env.INFOMANIAK_AI_TOKEN ?? '';
 
 const MAX_CONTENT_CHARS = 6000;
 const AI_TIMEOUT_MS = 30_000;
@@ -42,13 +40,8 @@ const UNDER_REVIEW_MESSAGES: Record<string, string> = {
   de: 'Ihre Biografie wurde zur manuellen Prüfung eingereicht.',
 };
 
-export type AnyClient = SupabaseClient<any, any, any>;
-
-export function buildServiceClient(): AnyClient {
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
-  return createClient(url, serviceKey, { auth: { persistSession: false } }) as AnyClient;
-}
+export { buildServiceClient, type AnyClient } from '@/lib/server/service-client';
+import type { AnyClient } from '@/lib/server/service-client';
 
 export async function checkPerUserThrottle(supabase: AnyClient, userId: string): Promise<boolean> {
   const { data, error } = await supabase.rpc('check_and_record_submit_attempt', {
@@ -370,7 +363,8 @@ function draftReviewFocusBlock(iteration: number): string {
 export async function runDraftAiReview(
   biographyText: string,
   iteration: number,
-  contentLanguage: string = 'en'
+  contentLanguage: string = 'en',
+  usageOwner: { userId?: string | null; biographyId?: string | null } = {}
 ): Promise<DraftAiFeedback> {
   const errorResult: DraftAiFeedback = {
     overall_quality: 0,
@@ -381,7 +375,7 @@ export async function runDraftAiReview(
     aiError: true,
   };
 
-  if (!INFOMANIAK_TOKEN || !INFOMANIAK_ENDPOINT) {
+  if (!process.env.INFOMANIAK_AI_TOKEN || !process.env.INFOMANIAK_AI_ENDPOINT) {
     console.warn('[review-submit-pipeline] Infomaniak AI not configured — draft review fallback');
     return errorResult;
   }
@@ -427,33 +421,21 @@ export async function runDraftAiReview(
     iterationFocusBlock;
 
   try {
-    const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), AI_TIMEOUT_MS);
-    const res = await fetch(INFOMANIAK_ENDPOINT, {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${INFOMANIAK_TOKEN}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        model: getModelForRole('reviewer').primary,
-        max_tokens: 2048,
-        temperature: 0.2,
-        messages: [
-          { role: 'system', content: systemPrompt },
-          { role: 'user', content: userPrompt },
-        ],
-      }),
-      signal: controller.signal,
-    }).finally(() => clearTimeout(timer));
+    const result = await chat({
+      role: 'reviewer',
+      messages: [
+        { role: 'system', content: systemPrompt },
+        { role: 'user', content: userPrompt },
+      ],
+      max_tokens: 2048,
+      temperature: 0.2,
+      timeoutMs: AI_TIMEOUT_MS,
+      // Solo il modello primario del revisore, come prima: nessun ripiego nascosto.
+      allowFallback: false,
+      usage: { purpose: 'preprint_check', ...usageOwner },
+    });
 
-    if (!res.ok) {
-      console.error('[review-submit-pipeline] Draft AI HTTP error:', res.status);
-      return errorResult;
-    }
-
-    const aiJson = await res.json();
-    const rawText: string = aiJson?.choices?.[0]?.message?.content ?? '';
+    const rawText: string = result.content ?? '';
     const match = rawText.match(/\{[\s\S]*\}/);
     if (!match) {
       console.error('[review-submit-pipeline] Draft AI response has no JSON object');
@@ -620,7 +602,10 @@ export async function runReviewSubmitScreening(
     previousReviewerId = (prevReport as { assigned_to?: string } | null)?.assigned_to ?? null;
   }
 
-  const screening = await runPublicationScreening(text, targetSectionKeys);
+  const screening = await runPublicationScreening(text, targetSectionKeys, {
+    userId: authorId,
+    biographyId,
+  });
 
   const priorStatus = await fetchBiographyStatus(serviceClient, biographyId);
 
