@@ -3,7 +3,7 @@
 
   Da usare SOLO se, dopo aver applicato in produzione le migrazioni
     20260930120000_server_only_columns_and_reports.sql
-    20260930120100_author_text_whitelist.sql
+    20260930120150_author_text_whitelist.sql
   qualcosa si rompe (per esempio un percorso dell'app rifiuta scritture che
   dovrebbero passare). Riporta i trigger e le policy com'erano in produzione il
   30 settembre 2026, prima di quelle due migrazioni.
@@ -25,7 +25,7 @@
   ## Che cosa NON tocca
   - 20260930115900_align_biographies_profiles_triggers.sql: ricrea a parità le funzioni
     e i trigger che in produzione già esistono, non c'è nulla da disfare;
-  - 20260930120200_publication_records.sql: il registro delle impronte resta (è una
+  - 20260930120250_publication_records.sql: il registro delle impronte resta (è una
     tabella nuova, scritta solo dal server; lasciarla non cambia nulla). Per
     eliminarla, in un secondo momento: DROP TABLE public.publication_records;
   - 20260930120300_ai_token_usage.sql: non è di sicurezza.
@@ -40,7 +40,7 @@
 BEGIN;
 
 -- ─────────────────────────────────────────────────────────────────────────────
--- Blocco del testo per stato (20260930120100)
+-- Blocco del testo per stato (20260930120150)
 -- ─────────────────────────────────────────────────────────────────────────────
 DROP TRIGGER IF EXISTS a01_biography_sections_guard_parent_status ON public.biography_sections;
 DROP TRIGGER IF EXISTS a01_biography_book_structure_guard_parent_status ON public.biography_book_structure;

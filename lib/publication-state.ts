@@ -27,7 +27,7 @@ export function isBiographyPublicationStatus(s: string): s is BiographyPublicati
 /**
  * Elenco CHIUSO degli stati in cui l'autore scrive il testo della scheda.
  * È lo stesso elenco della funzione SQL `author_text_writable_statuses()`
- * (supabase/migrations/20260930120100_author_text_whitelist.sql): un test li confronta.
+ * (supabase/migrations/20260930120150_author_text_whitelist.sql): un test li confronta.
  * Uno stato nuovo nasce bloccato finché non lo si aggiunge qui e in SQL di proposito.
  *
  * Fuori elenco, tra gli altri: `locked_pending_screening`, `under_review`,

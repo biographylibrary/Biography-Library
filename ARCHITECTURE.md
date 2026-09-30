@@ -212,7 +212,7 @@ All decisions are written to `admin_action_log`. The user receives a `user_notif
 
 ### Re-submission
 
-On re-submission after `returned`, the AI re-screens only the previously flagged sections (not the full biography). The old report is closed when the new decision is made.
+On re-submission after `returned`, the AI screens the **whole text** again (since 30 September 2026 there are no targeted re-screenings: a guarantee about the published text cannot rest on part of it). The old report is closed by the new screening.
 
 ### Frozen biographies
 
@@ -241,7 +241,7 @@ This subsection records **agreed behaviour** for the PDF-first workflow and lega
 
 Helpers: `lib/publication-state.ts` (`AUTHOR_TEXT_WRITABLE_STATUSES`, `canAuthorWriteText`, `isAuthorTextEditableStatus`, `isReviewOrScreeningLockStatus`, etc.).
 
-**Where the author may write text (closed list).** Text is writable only in `draft`, `sections_complete`, `final_version`, `pdf_draft` (correction rounds after the pre-print check) and `revision_requested`. In every other state, including `under_review` and `locked_pending_screening`, text is locked. The rule lives in two places that a test keeps equal: the SQL function `author_text_writable_statuses()` (triggers `a01_*` on `biographies` and on `biography_sections`, `biography_book_structure`, `person_events`, `person_relations`, `biography_media`, which follow the parent biography's status; migration `20260930120100_author_text_whitelist.sql`) and the TypeScript constant `AUTHOR_TEXT_WRITABLE_STATUSES`. The triggers stop sessions running as `authenticated` or `anon`; server routes that write text with the service role (Echo `apply-draft`, `convert-mode`) check the status in code. A new status is locked until it is added deliberately to both lists.
+**Where the author may write text (closed list).** Text is writable only in `draft`, `sections_complete`, `final_version`, `pdf_draft` (correction rounds after the pre-print check) and `revision_requested`. In every other state, including `under_review` and `locked_pending_screening`, text is locked. The rule lives in two places that a test keeps equal: the SQL function `author_text_writable_statuses()` (triggers `a01_*` on `biographies` and on `biography_sections`, `biography_book_structure`, `person_events`, `person_relations`, `biography_media`, which follow the parent biography's status; migration `20260930120150_author_text_whitelist.sql`) and the TypeScript constant `AUTHOR_TEXT_WRITABLE_STATUSES`. The triggers stop sessions running as `authenticated` or `anon`; server routes that write text with the service role (Echo `apply-draft`, `convert-mode`) check the status in code. A new status is locked until it is added deliberately to both lists.
 
 **API (phase 2 — implemented)**
 
@@ -290,18 +290,20 @@ Watermarked PDF downloads are blocked while `status === 'final_version'` until t
 
 ### 6b. Publication fingerprint gate
 
-Guarantee: **the text that goes online is exactly the text the screening examined.** Implemented in `lib/server/publication-fingerprint.ts`, table `publication_records` (service role only; migration `20260930120200_publication_records.sql`).
+Guarantee: **the text that goes online is exactly the text the screening examined.** Implemented in `lib/server/publication-fingerprint.ts`, table `publication_records` (service role only; migration `20260930120250_publication_records.sql`).
 
 - **Fingerprint**: SHA-256 of a canonical JSON of everything the public can read: title and names, `content` (what the public page shows), free-flow text, `final_version` (what the PDF, exports and archive use), `biography_sections`, the enabled parts of the book structure, photo captions, `person_events`, `person_relations`. Text is normalised to archive Markdown and NFC, so a harmless re-serialisation does not change it. `content` and `final_version` are still two separate fields (in the 11 published biographies the text of `content` is contained in `final_version`, which adds the section headings; they are not byte-identical), so both enter the fingerprint. Merging them is deferred to the Markdown block.
-- **Screening record**: every time the screening examines a biography it writes a `kind = 'screening'` row with the fingerprint, the verdict (`passed`, `flagged`, `ai_error`, `parse_error`, `text_changed`), the scope (`full` or `targeted`), `examined_chars` (what the model received) and `source_chars` (the whole source text). **Known limit, recorded but not fixed here:** the model receives at most the first 6000 characters (`MAX_CONTENT_CHARS` in `review-submit-pipeline.ts`); `examined_chars < source_chars` shows when that happened.
+- **Screening record**: every time the screening examines a biography it writes a `kind = 'screening'` row with the fingerprint, the verdict (`passed`, `flagged`, `ai_error`, `parse_error`, `text_changed`), the scope (always `full`), `examined_chars` (what the model received) and `source_chars` (the whole source text). The model receives at most the first 6000 characters (`MAX_CONTENT_CHARS` in `review-submit-pipeline.ts`). **Provisional rule until the chunked-screening block:** if `examined_chars < source_chars` the biography is never published automatically; it goes to the human queue with the reason written in the report (`screeningDetail: 'too_long'`). A biography of 6000 characters or fewer is read in full and can still publish on its own.
 - **Publication**: every server path that sets `status = 'published'` goes through `gatedPublish`. It recomputes the fingerprint, compares it according to the mode, writes a `kind = 'publication'` row (mode, actor, the screening fingerprint it refers to) *before* the status update, then records the outcome. If the comparison fails, nothing is published and the caller answers with an explicit message; if the row cannot be written, nothing is published.
 
 | Mode | Used by | Rule |
 |---|---|---|
 | `auto` | `runReviewSubmitScreening` (`/api/review/submit`, `/api/publication/approve-final-pdf`) | the fingerprint taken before the model call must equal the current one; checked **before** the UM identifier is minted. On mismatch the biography goes back to the queue (`under_review`, report "Text changed during screening", response `screeningDetail: 'text_changed'`) |
-| `human_approval` | admin `approve`, moderation `decide` with `status: 'published'` | a screening record of exactly this text must exist (otherwise: re-run the screening, or force) |
+| `human_approval` | admin `approve`, moderation `decide` with `status: 'published'` | a screening record of exactly this text must exist (otherwise: re-run the screening, or force). After a reviewer-requested correction the record is created when the author sends it (see below) |
 | `restore` | admin appeal upheld that returns to `published` | the text must equal the last publication (no earlier record: start from the current text) |
 | `forced` | admin `force_publish` | no comparison; fingerprint and actor are always recorded |
+
+**Correction requested by a reviewer.** When the author sends the correction (`POST /api/moderation/resubmit`, `revision_requested` to `revision_pending_review`) the server runs a screening of the corrected text **without publishing** (`screenRevisionAndAttach`, `lib/server/revision-screening.ts`). The result is attached to the open report (`ai_analysis.summary`, `flagged_passages`, `revision_screening`; the earlier analysis is kept in `previous_analysis`) and an internal message; the fingerprint goes in `publication_records`. The reviewer approves seeing it, and `gatedPublish` publishes only if the text is still exactly the one that was screened. If the screening cannot run, the author's submission still succeeds and the reviewer finds it written that it must be re-run (or use the forced publication, which leaves a trace).
 
 `lib/__tests__/publish-paths.test.ts` fails if a new server file writes `status: 'published'` without going through `gatedPublish`.
 

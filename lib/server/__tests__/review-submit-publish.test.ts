@@ -157,7 +157,7 @@ describe('impronta: il testo pubblicato è quello esaminato', () => {
     const db = makeDb({ finalVersion: 'a'.repeat(10_500) });
     await runReviewSubmitScreening(db.client, 'bio-1');
     const screening = db.tables.publication_records.find((r) => r.kind === 'screening');
-    expect(screening).toMatchObject({ examined_chars: 6000, source_chars: 10_500 });
+    expect(screening).toMatchObject({ examined_chars: 6000, source_chars: 10_500, scope: 'full' });
   });
 
   it('errore del modello: registra l\'esito, nessuna pubblicazione, revisione umana', async () => {
@@ -193,5 +193,73 @@ describe('impronta: il testo pubblicato è quello esaminato', () => {
     );
     await expect(runReviewSubmitScreening(db.client, 'bio-1')).rejects.toThrow('screening_record_failed');
     expect(log).not.toContain('publish-update');
+  });
+});
+
+describe('regola provvisoria: niente pubblicazione automatica se il modello non ha visto tutto il testo', () => {
+  it('testo oltre i 6000 caratteri: non pubblica, coda umana con il motivo scritto, nessun identificativo UM', async () => {
+    const db = makeDb({ finalVersion: 'a'.repeat(6_001) });
+    const result = await runReviewSubmitScreening(db.client, 'bio-1');
+
+    expect(result).toMatchObject({
+      result: 'under_review',
+      screeningDetail: 'too_long',
+      message: 'text_longer_than_screening_window',
+    });
+    expect(log).not.toContain('publish-update');
+    expect(ensureUm).not.toHaveBeenCalled();
+    expect(purge).not.toHaveBeenCalled();
+    expect(db.tables.biographies[0].status).toBe('under_review');
+    expect(db.tables.publication_records.some((r) => r.kind === 'publication')).toBe(false);
+
+    const report = db.tables.moderation_reports.find((r) => r.biography_id === 'bio-1')!;
+    expect(report.description).toContain('Text longer than the screening window');
+    expect((report.ai_analysis as { summary: string }).summary).toContain('6000 of 6001 characters');
+  });
+
+  it('testo di esattamente 6000 caratteri: il modello lo ha visto tutto, si pubblica', async () => {
+    const db = makeDb({ finalVersion: 'a'.repeat(6_000) });
+    const result = await runReviewSubmitScreening(db.client, 'bio-1');
+    expect(result.result).toBe('published');
+    expect(db.tables.publication_records.find((r) => r.kind === 'screening')).toMatchObject({
+      examined_chars: 6000,
+      source_chars: 6000,
+    });
+  });
+
+  it('testo lungo senza versione finale (sezioni e flusso libero): stessa regola', async () => {
+    const db = makeDb({ finalVersion: '' });
+    db.tables.biographies[0].content = { childhood: { text: 'b'.repeat(7_000) } };
+    const result = await runReviewSubmitScreening(db.client, 'bio-1');
+    expect(result).toMatchObject({ result: 'under_review', screeningDetail: 'too_long' });
+  });
+
+  it('la regola vale anche se il modello non segnala nulla nella parte che ha letto, e non nasconde i passaggi segnalati', async () => {
+    const db = makeDb({ finalVersion: 'a'.repeat(9_000) });
+    screen.mockImplementation(async () => ({
+      passages: [{ text: 'x', section_key: 'childhood', reason: 'r', severity: 2 }],
+      overall_severity: 2,
+    }));
+    const result = await runReviewSubmitScreening(db.client, 'bio-1');
+    expect(result).toMatchObject({ result: 'under_review', screeningDetail: 'flagged' });
+  });
+
+  it('lo screening legge sempre il testo intero, anche dopo un rifiuto dello staff', async () => {
+    const db = makeDb();
+    db.tables.moderation_reports = [
+      {
+        id: 'old',
+        biography_id: 'bio-1',
+        status: 'decided',
+        decision: 'request_edit',
+        decided_at: '2026-09-01T00:00:00Z',
+        moderator_notes: { rejectedPassages: [{ section_key: 'childhood', ai_reason: 'x' }] },
+      },
+    ];
+    const result = await runReviewSubmitScreening(db.client, 'bio-1');
+    expect(result.result).toBe('published');
+    expect(screen).toHaveBeenCalledWith(FINAL, undefined, expect.objectContaining({ biographyId: 'bio-1' }));
+    expect(db.tables.moderation_reports.find((r) => r.id === 'old')).toMatchObject({ decision: 'publish' });
+    expect(db.tables.publication_records.find((r) => r.kind === 'screening')?.scope).toBe('full');
   });
 });

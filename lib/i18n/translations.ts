@@ -428,6 +428,7 @@ export interface Translations {
     noChaptersWarning: string;
     revisionRequired: string;
     screeningTextChanged: string;
+    screeningTooLong: string;
     textLockedForStatus: string;
     reopenForNewChapter: string;
     reopenDialogTitle: string;
@@ -2122,6 +2123,7 @@ export const translations: Record<Language, Translations> = {
       noChaptersWarning: 'There are no chapter titles yet. The book stays one piece. You can mark a chapter title later.',
       revisionRequired: 'Revision required. The reviewer flagged the following:',
       screeningTextChanged: 'The text changed while it was being checked, so it was not published. The review team will look at it.',
+      screeningTooLong: 'Your text is longer than the automatic check can read in one go, so a person will review it before it is published.',
       textLockedForStatus: 'The text can\'t be changed while the biography is in this state.',
       reopenForNewChapter: 'Reopen to write a new chapter',
       reopenDialogTitle: 'Reopen your biography?',
@@ -3869,6 +3871,7 @@ export const translations: Record<Language, Translations> = {
       noChaptersWarning: 'Non ci sono ancora titoli di capitolo. Il libro resta un pezzo solo. Un titolo si può segnare dopo.',
       revisionRequired: 'Revisione richiesta. Il revisore ha segnalato quanto segue:',
       screeningTextChanged: 'Il testo è cambiato mentre veniva controllato, quindi non è stato pubblicato. Lo esaminerà il gruppo di revisione.',
+      screeningTooLong: 'Il testo è più lungo di quanto il controllo automatico riesca a leggere in una volta, quindi lo esaminerà una persona prima della pubblicazione.',
       textLockedForStatus: 'Il testo non si può modificare mentre la biografia è in questo stato.',
       reopenForNewChapter: 'Riapri per scrivere un nuovo capitolo',
       reopenDialogTitle: 'Riaprire la biografia?',
@@ -5618,6 +5621,7 @@ export const translations: Record<Language, Translations> = {
       noChaptersWarning: 'Il n’y a pas encore de titres de chapitre. Le livre reste d’un seul tenant. Un titre peut être marqué plus tard.',
       revisionRequired: 'Révision requise. Le réviseur a signalé ce qui suit :',
       screeningTextChanged: 'Le texte a changé pendant la vérification, il n\'a donc pas été publié. L\'équipe de révision va l\'examiner.',
+      screeningTooLong: 'Votre texte est plus long que ce que le contrôle automatique peut lire en une fois ; une personne l\'examinera avant la publication.',
       textLockedForStatus: 'Le texte ne peut pas être modifié tant que la biographie est dans cet état.',
       reopenForNewChapter: 'Rouvrir pour écrire un nouveau chapitre',
       reopenDialogTitle: 'Rouvrir votre biographie ?',
@@ -7367,6 +7371,7 @@ export const translations: Record<Language, Translations> = {
       noChaptersWarning: 'Es gibt noch keine Kapiteltitel. Das Buch bleibt ein Stück. Ein Titel kann später gesetzt werden.',
       revisionRequired: 'Überarbeitung erforderlich. Der Prüfer hat Folgendes markiert:',
       screeningTextChanged: 'Der Text hat sich während der Prüfung geändert und wurde deshalb nicht veröffentlicht. Das Prüfteam sieht ihn sich an.',
+      screeningTooLong: 'Ihr Text ist länger, als die automatische Prüfung auf einmal lesen kann; eine Person prüft ihn vor der Veröffentlichung.',
       textLockedForStatus: 'Der Text kann nicht geändert werden, solange sich die Biografie in diesem Zustand befindet.',
       reopenForNewChapter: 'Für ein neues Kapitel wieder öffnen',
       reopenDialogTitle: 'Biografie wieder öffnen?',

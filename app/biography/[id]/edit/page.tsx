@@ -1290,7 +1290,7 @@ export default function BiographyEditorPage() {
       let apiResult: {
         result?: string;
         error?: string;
-        screeningDetail?: 'flagged' | 'ai_error' | 'parse_error' | 'text_changed';
+        screeningDetail?: 'flagged' | 'ai_error' | 'parse_error' | 'text_changed' | 'too_long';
       } = {};
       try {
         const res = await fetch('/api/review/submit', {
@@ -1325,6 +1325,10 @@ export default function BiographyEditorPage() {
           // Il testo è cambiato mentre lo screening lo esaminava: non è stato pubblicato.
           setAiScreeningResult('pending');
           toast.error(t.editor.screeningTextChanged);
+        } else if (d === 'too_long') {
+          // Testo più lungo di quanto il modello legga: lo esamina una persona.
+          setAiScreeningResult('pending');
+          toast.info(t.editor.screeningTooLong);
         } else {
           setAiScreeningResult('flagged');
         }
@@ -1537,7 +1541,11 @@ export default function BiographyEditorPage() {
                 ...prev,
                 status: 'under_review',
                 ai_screening_status:
-                  d === 'ai_error' || d === 'parse_error' ? d : 'flagged',
+                  d === 'ai_error' || d === 'parse_error'
+                    ? d
+                    : d === 'text_changed' || d === 'too_long'
+                      ? 'pending'
+                      : 'flagged',
                 pdf_draft_iteration: null,
                 draft_ai_feedback: null,
                 final_pdf_url: finalPdfUrlFromApi ?? prev.final_pdf_url,
@@ -1546,6 +1554,10 @@ export default function BiographyEditorPage() {
         );
         if (d === 'ai_error' || d === 'parse_error') {
           setAiScreeningResult(d as 'ai_error' | 'parse_error');
+        } else if (d === 'text_changed' || d === 'too_long') {
+          setAiScreeningResult('pending');
+          if (d === 'text_changed') toast.error(t.editor.screeningTextChanged);
+          else toast.info(t.editor.screeningTooLong);
         } else {
           setAiScreeningResult('flagged');
           const { data: openReport } = await supabase

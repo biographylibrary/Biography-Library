@@ -105,8 +105,8 @@ describe('l\'elenco degli stati', () => {
 });
 
 describe('controllo negativo: senza la migrazione il banco se ne accorge', () => {
-  it('senza 20260930120100 l\'autore riscrive il testo di una scheda pubblicata', async () => {
-    const bare = await createTestDb({ skip: ['20260930120100_author_text_whitelist.sql'] });
+  it('senza 20260930120150 l\'autore riscrive il testo di una scheda pubblicata', async () => {
+    const bare = await createTestDb({ skip: ['20260930120150_author_text_whitelist.sql'] });
     try {
       const res = await as(bare, 'authenticated', U.author, `update biographies set final_version = 'riscritto' where id = $1 returning id`, [BIO.published]);
       expect(res).toHaveLength(1);

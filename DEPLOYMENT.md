@@ -191,7 +191,22 @@ To add a migration:
 
 Never use `DROP TABLE`, `DROP COLUMN`, or `TRUNCATE` in a migration without explicit confirmation, the platform stores real user biographical data.
 
-**Release of block 1 (AI tools and security).** Five new migrations; apply them only after explicit confirmation, in this order: first the additive ones (`20260930120200_publication_records.sql`, `20260930120300_ai_token_usage.sql`), then deploy the code, then the restrictive ones (`20260930115900_align_biographies_profiles_triggers.sql`, `20260930120000_server_only_columns_and_reports.sql`, `20260930120100_author_text_whitelist.sql`). The new code writes server-only columns with the service role, so it works both before and after the restrictive migrations; the old code does not work after them. Rollback of the restrictive ones: `supabase/rollback/20260930_security_rollback.sql` (never applied automatically). Full checklist: `docs/BETA_RELEASE_CHECKLIST.md`.
+**Release of block 1 (AI tools and security).** Seven new migrations. Apply them only after explicit confirmation, with `apply_migration` (one call per file, in this order; the migration history of production is kept by that tool, not by the file timestamps). The new code works both before and after the restrictive migrations (it writes server-only columns with the service role); the old code does not work after them, and the new code cannot publish without `publication_records`.
+
+| # | Migration | When | What it does | Why there |
+|---|---|---|---|---|
+| 1 | `20260930120250_publication_records.sql` | **before the deploy** | adds the fingerprint log (service role only) | new table, the old code ignores it; the new code needs it to publish |
+| 2 | `20260930120300_ai_token_usage.sql` | **before the deploy** | adds the usage ledger, the caps and their seed values | new tables and function; the new code writes to it, `audio-transcription` too |
+| | *merge to `main` (deploy)* | | | |
+| 3 | `20260930115900_align_biographies_profiles_triggers.sql` | **after the deploy** | recreates, identical, the triggers and functions production already has | no change in production (the dry run checks it byte for byte); it sits here because the next one relies on it |
+| 4 | `20260930120000_server_only_columns_and_reports.sql` | **after the deploy** | restricts: server-only columns on `biographies` and `profiles`; drops three direct INSERT policies | the old code writes those columns from the browser and would break |
+| 5 | `20260930120100_drop_biography_view_translations.sql` | **after the deploy** | deletes the reader-translation cache table (18 derived rows) | the old code still reads it; the new code does not |
+| 6 | `20260930120150_author_text_whitelist.sql` | **after the deploy** | restricts: text writable only in the closed list of states, on `biographies` and five child tables | the new editor already respects it; the old one does not |
+| 7 | `20260930120200_agent_threads_echo_only.sql` | **after the deploy** | deletes non-Echo threads (none in production) and restricts `agent_type` to `echo` | the old code can create other types |
+
+Before applying anything: the dry run, `node scripts/build-dry-run.mjs`, a single `DO` block that applies the seven migrations in this order, compares the catalogue, tries the forbidden writes as `authenticated` on existing biographies and always ends with an exception that cancels everything (no INSERT, so no sequence is consumed). It is rehearsed on the local bench (`lib/server/__tests__/db/dry-run.test.ts`). Run it in production only at an agreed time: it holds locks on `biographies`, `profiles` and `moderation_reports` for the duration of the block (well under a second of work; `lock_timeout` 3 s cancels it if it cannot get them).
+
+After the last migration: test account up to the PDF draft, stopping before publication (no UM identifier), then by hand in the Supabase dashboard: delete `ai-assistant` and `help-assistant`, unset `INFOMANIAK_AI_MODEL`, `INFOMANIAK_AI_MODEL_HELP_PRIMARY`, `INFOMANIAK_AI_MODEL_HELP_FALLBACK`; then redeploy `audio-transcription` and check that Echo, the grammar check and the voice answer and leave rows in `ai_token_usage`. Rollback of migrations 4 and 6: `supabase/rollback/20260930_security_rollback.sql` (never applied automatically). Full checklist: `docs/BETA_RELEASE_CHECKLIST.md`.
 
 ---
 
