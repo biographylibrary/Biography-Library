@@ -56,16 +56,19 @@ describe('biographies: l\'autore non salta lo screening', () => {
 
   it('non crea una biografia già pubblicata', async () => {
     const err = await errorOf(() =>
-      asAuthor(`insert into biographies (user_id, title, status) values ($1, 'x', 'published')`, [U.author])
+      as(db, 'authenticated', U.fresh, `insert into biographies (user_id, title, status) values ($1, 'x', 'published')`, [U.fresh])
     );
     expect(err).toContain('server_only_column');
   });
 
   it('non crea una biografia con colonne riservate diverse dal predefinito', async () => {
     const err = await errorOf(() =>
-      asAuthor(
+      as(
+        db,
+        'authenticated',
+        U.fresh,
         `insert into biographies (user_id, title, ai_screening_status, created_at) values ($1, 'x', 'passed', '2000-01-01')`,
-        [U.author]
+        [U.fresh]
       )
     );
     expect(err).toContain('ai_screening_status');
@@ -73,12 +76,15 @@ describe('biographies: l\'autore non salta lo screening', () => {
   });
 
   it('crea una bozza normale e ne modifica il testo', async () => {
-    const [created] = await asAuthor<{ id: string; status: string }>(
+    const [created] = await as<{ id: string; status: string }>(
+      db,
+      'authenticated',
+      U.fresh,
       `insert into biographies (user_id, title) values ($1, 'Nuova') returning id, status`,
-      [U.author]
+      [U.fresh]
     );
     expect(created.status).toBe('draft');
-    await asAuthor(`update biographies set title = 'Cambiata', content = '{"a":1}'::jsonb where id = $1`, [created.id]);
+    await as(db, 'authenticated', U.fresh, `update biographies set title = 'Cambiata', content = '{"a":1}'::jsonb where id = $1`, [created.id]);
   });
 
   it('percorre gli stati d\'autore e torna indietro', async () => {
@@ -134,7 +140,7 @@ describe('biographies: l\'autore non salta lo screening', () => {
     await asService(`update biographies set status = 'draft' where id = $1`, [BIO.removed]);
     await asService(
       `insert into biographies (user_id, title, status, ai_screening_status) values ($1, 'p', 'published', 'passed')`,
-      [U.author]
+      [U.fresh2]
     );
   });
 
@@ -162,17 +168,18 @@ describe('profiles: nessuno si assegna un ruolo o salta la lista d\'attesa', () 
     await as(db, 'authenticated', U.author, `update profiles set name = 'Anna', language = 'it', ui_font_size = 18, ai_features_enabled = true where id = $1`, [U.author]);
   });
 
-  it('non inserisce un profilo con ruolo diverso da user', async () => {
+  it('nessuno inserisce righe in profiles dal browser: la policy di INSERT non esiste più', async () => {
     const newId = '00000000-0000-0000-0000-00000000d001';
-    const err = await errorOf(() =>
-      as(db, 'authenticated', newId, `insert into profiles (id, email, role) values ($1, 'n@test', 'admin')`, [newId])
-    );
-    expect(err).toContain('server_only_column');
-  });
-
-  it('inserisce un profilo normale', async () => {
-    const newId = '00000000-0000-0000-0000-00000000d002';
-    await as(db, 'authenticated', newId, `insert into profiles (id, email) values ($1, 'n2@test')`, [newId]);
+    // Con ruolo diverso da user il guard rifiuta per primo; con ruolo user manca la policy.
+    const refusals: Record<string, string> = { admin: 'server_only_column', user: 'row-level security' };
+    for (const [role, expected] of Object.entries(refusals)) {
+      const err = await errorOf(() =>
+        as(db, 'authenticated', newId, `insert into profiles (id, email, role) values ($1, 'n@test', $2)`, [newId, role])
+      );
+      expect(err, role).toContain(expected);
+    }
+    const [pol] = await as<{ n: string }>(db, 'postgres', null, `select count(*)::text n from pg_policies where tablename = 'profiles' and cmd = 'INSERT'`);
+    expect(pol.n).toBe('0');
   });
 
   it('il ruolo di servizio può assegnare ruoli e attivare l\'account', async () => {

@@ -2,6 +2,7 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 import { buildServiceClient } from '@/lib/server/review-submit-pipeline';
 import type { ModerationDecision } from '@/lib/moderation/types';
 import type { BiographyDecisionPatch } from '@/lib/moderation/moderation-actions';
+import { purgeAgentMemoryForBiography } from '@/lib/agents/purge-agent-memory';
 import { notifyAuthorPublicationEmail } from '@/lib/server/email/publication-helpers';
 import { writeModerationMessage } from '@/lib/server/moderation-register';
 import { provisionalUntilOnFirstPublish, republicationClock } from '@/lib/provisional-window';
@@ -178,6 +179,14 @@ export async function serverSubmitDecision(params: {
     }
     const { error: bioError } = await service.from('biographies').update(patch).eq('id', biographyId);
     if (bioError) return { error: bioError.message, conflict: false };
+    if (patch.status === 'published') {
+      // Pubblicazione (o ripubblicazione) riuscita: si cancella la memoria di Echo.
+      try {
+        await purgeAgentMemoryForBiography(service, biographyId);
+      } catch (err) {
+        console.error('[moderation-decide] purgeAgentMemory failed (non-blocking)', err);
+      }
+    }
     if (republication) {
       try {
         const { syncArchivePackage } = await import('@/lib/server/archive-package-store');

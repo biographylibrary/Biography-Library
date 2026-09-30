@@ -1,5 +1,6 @@
 'use client';
 
+import { buildShareTokenPayload } from '@/lib/editor/write-payloads';
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -45,7 +46,7 @@ export function ShareLinkPanel({
       const token = crypto.randomUUID();
       const { error } = await supabase
         .from('biographies')
-        .update({ share_token: token })
+        .update(buildShareTokenPayload(token))
         .eq('id', biographyId);
 
       if (!error) {

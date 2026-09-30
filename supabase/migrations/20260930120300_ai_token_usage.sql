@@ -9,7 +9,7 @@
   verificato il 30 settembre 2026, restituisce solo file_size, non la durata).
 
   ai_author_token_limits: tre tetti per l'autore (giorno, settimana, mese),
-  nulli = disattivati. Il conteggio segue i periodi di calendario nel fuso
+  nulli = disattivati (valori iniziali: 400.000, 1.500.000, 4.000.000). Il conteggio segue i periodi di calendario nel fuso
   Europe/Zurich (settimana ISO, da lunedì). Contano nel tetto solo le chiamate
   che l'autore scatena lavorando (echo, grammar): mai screening, preprint_check,
   embedding, memory_compression.
@@ -64,7 +64,11 @@ CREATE TABLE IF NOT EXISTS public.ai_author_token_limits (
   updated_at timestamptz NOT NULL DEFAULT now()
 );
 
-INSERT INTO public.ai_author_token_limits (id) VALUES (true) ON CONFLICT DO NOTHING;
+-- Tetti iniziali fissati il 30 settembre 2026 (circa 90 turni di Echo al giorno, sui
+-- consumi misurati); si cambiano con un UPDATE di questa riga, come servizio.
+INSERT INTO public.ai_author_token_limits (id, daily_tokens, weekly_tokens, monthly_tokens)
+VALUES (true, 400000, 1500000, 4000000)
+ON CONFLICT (id) DO NOTHING;
 
 ALTER TABLE public.ai_author_token_limits ENABLE ROW LEVEL SECURITY;
 

@@ -24,6 +24,19 @@
 
   Non c'è esenzione per lo staff: la moderazione passa dalle rotte server.
 
+  Ordine dei trigger: PostgreSQL esegue i trigger BEFORE dello stesso evento in
+  ordine alfabetico di nome (byte per byte). I due guard si chiamano a00_... per
+  precedere ogni altro trigger di quelle tabelle, così vedono solo le modifiche
+  fatte dal client e non quelle che altri trigger (is_pioneer, chapters_count,
+  pdf_draft_reminder_sent_at, published_at_iso...) impostano dopo. Va applicata
+  dopo 20260930115900_align_biographies_profiles_triggers.sql.
+
+  Le funzioni SECURITY DEFINER eseguibili da authenticated o anon aggirano il
+  guard per costruzione, perché girano come il loro proprietario: vanno elencate e
+  messe in sicurezza in un passaggio a parte (increment_biography_chapters,
+  increment_view_count, delete_user_account, regenerate_share_token,
+  revoke_share_token sono quelle che scrivono su biographies o profiles).
+
   Il confronto fra vecchio e nuovo valore usa IS DISTINCT FROM (via jsonb): un
   UPDATE che rimanda una colonna riservata con lo stesso valore non viene rifiutato.
 
@@ -37,14 +50,15 @@
 -- biographies
 -- ─────────────────────────────────────────────────────────────────────────────
 
-CREATE OR REPLACE FUNCTION public.biographies_guard_server_columns()
-RETURNS trigger
-LANGUAGE plpgsql
-SET search_path = public
+-- Elenco e valori predefiniti in funzioni a sé: i test li confrontano con il
+-- catalogo e falliscono se un giorno una colonna riservata riceve un valore
+-- predefinito diverso (ogni creazione dal browser si romperebbe senza un perché).
+CREATE OR REPLACE FUNCTION public.biographies_server_owned_columns()
+RETURNS text[]
+LANGUAGE sql
+IMMUTABLE
 AS $$
-DECLARE
-  -- Colonne che scrive solo il server. `status` ha una regola a parte.
-  reserved constant text[] := ARRAY[
+  SELECT ARRAY[
     'id', 'user_id', 'created_at', 'schema_version',
     'ai_screening_status',
     'published_at', 'published_at_iso', 'published_um_year',
@@ -60,9 +74,17 @@ DECLARE
     'chapters_count', 'last_chapter_published_at', 'next_chapter_available_at',
     'chapter_available_email_sent_at',
     'is_pioneer', 'um_id'
-  ];
-  -- Valore atteso all'inserimento; le colonne assenti devono essere NULL.
-  defaults constant jsonb := jsonb_build_object(
+  ]::text[];
+$$;
+
+-- Valore atteso all'inserimento; le colonne assenti devono essere NULL.
+-- id, user_id, created_at e le due colonne derivate da published_at si trattano a parte.
+CREATE OR REPLACE FUNCTION public.biographies_insert_defaults()
+RETURNS jsonb
+LANGUAGE sql
+IMMUTABLE
+AS $$
+  SELECT jsonb_build_object(
     'schema_version', 2,
     'ai_screening_status', 'pending',
     'is_frozen', false,
@@ -71,6 +93,16 @@ DECLARE
     'chapters_count', 0,
     'is_pioneer', false
   );
+$$;
+
+CREATE OR REPLACE FUNCTION public.biographies_guard_server_columns()
+RETURNS trigger
+LANGUAGE plpgsql
+SET search_path = public
+AS $$
+DECLARE
+  reserved constant text[] := public.biographies_server_owned_columns();
+  defaults constant jsonb := public.biographies_insert_defaults();
   author_statuses constant text[] := ARRAY['draft', 'sections_complete', 'final_version'];
   new_json jsonb := to_jsonb(NEW);
   old_json jsonb;
@@ -119,9 +151,9 @@ BEGIN
 END;
 $$;
 
--- Prefisso 00: gira prima degli altri trigger BEFORE (ordine alfabetico).
-DROP TRIGGER IF EXISTS trg_00_biographies_guard_server_columns ON public.biographies;
-CREATE TRIGGER trg_00_biographies_guard_server_columns
+-- a00_: il primo in ordine alfabetico, prima di biographies_updated_at e dei trg_*.
+DROP TRIGGER IF EXISTS a00_biographies_guard_server_columns ON public.biographies;
+CREATE TRIGGER a00_biographies_guard_server_columns
   BEFORE INSERT OR UPDATE ON public.biographies
   FOR EACH ROW EXECUTE FUNCTION public.biographies_guard_server_columns();
 
@@ -129,22 +161,35 @@ CREATE TRIGGER trg_00_biographies_guard_server_columns
 -- profiles
 -- ─────────────────────────────────────────────────────────────────────────────
 
+CREATE OR REPLACE FUNCTION public.profiles_server_owned_columns()
+RETURNS text[]
+LANGUAGE sql
+IMMUTABLE
+AS $$
+  SELECT ARRAY[
+    'id', 'created_at',
+    'role', 'account_status', 'waitlist_granted_at',
+    'legal_declaration_accepted_at', 'legal_declaration_type', 'legal_declaration_version',
+    'welcome_email_sent_at'
+  ]::text[];
+$$;
+
+CREATE OR REPLACE FUNCTION public.profiles_insert_defaults()
+RETURNS jsonb
+LANGUAGE sql
+IMMUTABLE
+AS $$
+  SELECT jsonb_build_object('role', 'user', 'account_status', 'waitlist');
+$$;
+
 CREATE OR REPLACE FUNCTION public.profiles_guard_server_columns()
 RETURNS trigger
 LANGUAGE plpgsql
 SET search_path = public
 AS $$
 DECLARE
-  reserved constant text[] := ARRAY[
-    'id', 'created_at',
-    'role', 'account_status', 'waitlist_granted_at',
-    'legal_declaration_accepted_at', 'legal_declaration_type', 'legal_declaration_version',
-    'welcome_email_sent_at'
-  ];
-  defaults constant jsonb := jsonb_build_object(
-    'role', 'user',
-    'account_status', 'waitlist'
-  );
+  reserved constant text[] := public.profiles_server_owned_columns();
+  defaults constant jsonb := public.profiles_insert_defaults();
   new_json jsonb := to_jsonb(NEW);
   old_json jsonb;
   col text;
@@ -183,8 +228,9 @@ BEGIN
 END;
 $$;
 
-DROP TRIGGER IF EXISTS trg_00_profiles_guard_server_columns ON public.profiles;
-CREATE TRIGGER trg_00_profiles_guard_server_columns
+-- Su profiles oggi non ci sono altri trigger; il prefisso a00_ vale per quelli futuri.
+DROP TRIGGER IF EXISTS a00_profiles_guard_server_columns ON public.profiles;
+CREATE TRIGGER a00_profiles_guard_server_columns
   BEFORE INSERT OR UPDATE ON public.profiles
   FOR EACH ROW EXECUTE FUNCTION public.profiles_guard_server_columns();
 
@@ -198,3 +244,14 @@ CREATE TRIGGER trg_00_profiles_guard_server_columns
 
 DROP POLICY IF EXISTS "Any authenticated user can file a report" ON public.moderation_reports;
 DROP POLICY IF EXISTS "Anonymous users can file a report without reporter_id" ON public.moderation_reports;
+
+-- ─────────────────────────────────────────────────────────────────────────────
+-- profiles: nessun percorso legittimo inserisce righe dal browser
+-- La riga la crea handle_new_user (SECURITY DEFINER) alla registrazione, con
+-- nome, lingua e conferma della lingua dai metadati; l'upsert che il browser
+-- faceva dopo signUp era ridondante (e, con la conferma dell'email richiesta,
+-- senza sessione, quindi già rifiutato). Tolta la policy di INSERT invece di
+-- controllarla: chi non può inserire non può nemmeno provarci con valori falsi.
+-- ─────────────────────────────────────────────────────────────────────────────
+
+DROP POLICY IF EXISTS "Users can insert own profile" ON public.profiles;

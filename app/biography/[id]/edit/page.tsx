@@ -41,6 +41,13 @@ import {
 } from '@/lib/editor/single-document';
 import { INITIAL_AI_STATE, type AiPanelState } from '@/lib/ai-constants';
 import { checkGrammar, AiLimitError } from '@/lib/grammar-service';
+import {
+  REOPEN_SECTION_PAYLOAD,
+  buildEditorSavePayload,
+  buildFinalVersionPayload,
+  buildLicenseChoicePayload,
+  buildMarkCompletePayload,
+} from '@/lib/editor/write-payloads';
 import { toast } from 'sonner';
 import type { Biography, BiographyPublicationStatus } from '@/lib/biographies';
 import { isBiographyPublicationStatus, isReviewOrScreeningLockStatus } from '@/lib/publication-state';
@@ -51,7 +58,6 @@ import { AuthorLicensePanel } from '@/components/editor/AuthorLicensePanel';
 import { PermanenceDialog } from '@/components/editor/PermanenceDialog';
 import { useTranslation } from '@/lib/i18n/i18n-context';
 import { LICENSE_BY_NC_SA_4, type ContentLicenseUri } from '@/lib/rights';
-import { nfcBiographyWriteFields } from '@/lib/nfc-biography';
 import { storedToArchiveMarkdown } from '@/lib/archive-markdown';
 import { stripHtmlTags } from '@/lib/export-utils';
 import { Loader as Loader2, Sparkles, Snowflake as SnowflakeIcon, Send as SendIcon, TriangleAlert, Lock } from 'lucide-react';
@@ -446,22 +452,22 @@ export default function BiographyEditorPage() {
     dirtyRef.current = false;
     setSaveStatus('saving');
     const isMemorial = biographyTypeRef.current === 'memorial';
-    const nfcFields = nfcBiographyWriteFields({
-      title: titleRef.current,
-      subject_name: isMemorial ? titleRef.current : undefined,
-      author_name: authorNameRef.current,
-      content: contentRef.current,
-      content_freeflow: contentFreeflowRef.current,
-      name_as_written: titleRef.current,
+    const savePayload = buildEditorSavePayload({
+      fields: {
+        title: titleRef.current,
+        subject_name: isMemorial ? titleRef.current : undefined,
+        author_name: authorNameRef.current,
+        content: contentRef.current,
+        content_freeflow: contentFreeflowRef.current,
+        name_as_written: titleRef.current,
+      },
+      isMemorial,
+      visibility: privacyRef.current,
+      biographyMode: biographyModeRef.current,
     });
     const { error } = await supabase
       .from('biographies')
-      .update({
-        ...nfcFields,
-        ...(isMemorial ? {} : { subject_name: null }),
-        visibility: privacyRef.current,
-        biography_mode: biographyModeRef.current,
-      })
+      .update(savePayload)
       .eq('id', id);
     if (error) {
       setSaveStatus('error');
@@ -476,22 +482,22 @@ export default function BiographyEditorPage() {
     dirtyRef.current = false;
     setSaveStatus('saving');
     const isMemorial = biographyTypeRef.current === 'memorial';
-    const nfcFields = nfcBiographyWriteFields({
-      title: titleRef.current,
-      subject_name: isMemorial ? titleRef.current : undefined,
-      author_name: authorNameRef.current,
-      content: contentRef.current,
-      content_freeflow: contentFreeflowRef.current,
-      name_as_written: titleRef.current,
+    const savePayload = buildEditorSavePayload({
+      fields: {
+        title: titleRef.current,
+        subject_name: isMemorial ? titleRef.current : undefined,
+        author_name: authorNameRef.current,
+        content: contentRef.current,
+        content_freeflow: contentFreeflowRef.current,
+        name_as_written: titleRef.current,
+      },
+      isMemorial,
+      visibility: privacyRef.current,
+      biographyMode: biographyModeRef.current,
     });
     const { error } = await supabase
       .from('biographies')
-      .update({
-        ...nfcFields,
-        ...(isMemorial ? {} : { subject_name: null }),
-        visibility: privacyRef.current,
-        biography_mode: biographyModeRef.current,
-      })
+      .update(savePayload)
       .eq('id', id);
     if (error) {
       setSaveStatus('error');
@@ -605,14 +611,12 @@ export default function BiographyEditorPage() {
           return;
         }
 
-        const update: Record<string, unknown> = {
-          rights_statement_uri: licenseUri,
-          rights_chosen_at: now,
-          rights_holder: authorNameRef.current?.trim() || null,
-        };
-        if (!isUpgrade) {
-          update.visibility = 'public';
-        }
+        const update = buildLicenseChoicePayload({
+          licenseUri,
+          now,
+          authorName: authorNameRef.current,
+          isUpgrade,
+        });
 
         const { error } = await supabase
           .from('biographies')
@@ -790,14 +794,12 @@ export default function BiographyEditorPage() {
   }, [biography]);
 
   const handleMarkComplete = useCallback(async () => {
-    const newStatus = status === 'sections_complete' ? 'draft' : 'sections_complete';
+    const markPayload = buildMarkCompletePayload(status, new Date().toISOString());
+    const newStatus = markPayload.status;
     try {
       const { error } = await supabase
         .from('biographies')
-        .update({
-          status: newStatus,
-          completed_at: newStatus === 'sections_complete' ? new Date().toISOString() : null,
-        })
+        .update(markPayload)
         .eq('id', id);
 
       if (!error) {
@@ -821,7 +823,7 @@ export default function BiographyEditorPage() {
         if (status === 'sections_complete' && !BIOGRAPHY_SECTIONS.every((s) => nextCompleted.includes(s.key))) {
           const { error } = await supabase
             .from('biographies')
-            .update({ status: 'draft', completed_at: null })
+            .update(REOPEN_SECTION_PAYLOAD)
             .eq('id', id);
           if (!error) setStatus('draft');
         }
@@ -857,7 +859,7 @@ export default function BiographyEditorPage() {
         if (status === 'sections_complete' && !BIOGRAPHY_SECTIONS.every((s) => nextCompleted.includes(s.key))) {
           const { error } = await supabase
             .from('biographies')
-            .update({ status: 'draft', completed_at: null })
+            .update(REOPEN_SECTION_PAYLOAD)
             .eq('id', id);
           if (!error) setStatus('draft');
         }
@@ -885,7 +887,7 @@ export default function BiographyEditorPage() {
           if (status === 'sections_complete' && !BIOGRAPHY_SECTIONS.every((s) => nextCompleted.includes(s.key))) {
             const { error } = await supabase
               .from('biographies')
-              .update({ status: 'draft', completed_at: null })
+              .update(REOPEN_SECTION_PAYLOAD)
               .eq('id', id);
             if (!error) setStatus('draft');
           }
@@ -979,7 +981,7 @@ export default function BiographyEditorPage() {
         error: message,
       }));
     }
-  }, [activeSection, session, language, t]);
+  }, [id, activeSection, session, language, t]);
 
   const handleAcceptSuggestion = useCallback(
     (suggestionId: string) => {
@@ -1133,11 +1135,7 @@ export default function BiographyEditorPage() {
     try {
       const { error } = await supabase
         .from('biographies')
-        .update({
-          final_version: combinedText,
-          narrative_order: sectionOrder,
-          status: 'final_version',
-        })
+        .update(buildFinalVersionPayload(combinedText, sectionOrder))
         .eq('id', id);
 
       if (!error) {
@@ -1193,7 +1191,7 @@ export default function BiographyEditorPage() {
       }
       setAiState((prev) => ({ ...prev, loading: false, error: err.message || t.editor.failedGrammar }));
     }
-  }, [finalVersion, session, language, t]);
+  }, [id, finalVersion, session, language, t]);
 
   const handleRevertToDraft = useCallback(async () => {
     try {
@@ -1387,10 +1385,7 @@ export default function BiographyEditorPage() {
     try {
       const { error } = await supabase
         .from('biographies')
-        .update({
-          final_version: text,
-          status: 'final_version',
-        })
+        .update(buildFinalVersionPayload(text))
         .eq('id', id);
 
       if (error) {

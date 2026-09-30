@@ -15,6 +15,9 @@ export const U = {
   other: '00000000-0000-0000-0000-00000000a002',
   staff: '00000000-0000-0000-0000-00000000b001',
   waitlist: '00000000-0000-0000-0000-00000000c001',
+  /** Utenti attivi senza nessuna biografia (una sola per utente). */
+  fresh: '00000000-0000-0000-0000-00000000e001',
+  fresh2: '00000000-0000-0000-0000-00000000e002',
 } as const;
 
 export const BIO = {
@@ -40,13 +43,21 @@ grant usage on schema auth, public to authenticated, anon, service_role;
 alter default privileges in schema public grant all on tables to authenticated, anon, service_role;
 grant execute on function auth.uid() to public;
 
+create table auth.users (
+  id uuid primary key,
+  email text,
+  raw_user_meta_data jsonb
+);
+
 create table public.profiles (
   id uuid primary key,
   email text not null,
   name text,
   language text,
-  ui_font_size integer,
+  language_confirmed_at timestamptz,
+  ui_font_size text,
   created_at timestamptz default now(),
+  updated_at timestamptz default now(),
   ai_features_enabled boolean not null default false,
   role text not null default 'user',
   account_status text not null default 'waitlist',
@@ -54,7 +65,12 @@ create table public.profiles (
   legal_declaration_accepted_at timestamptz,
   legal_declaration_version text default '2026-06',
   welcome_email_sent_at timestamptz,
-  waitlist_granted_at timestamptz
+  waitlist_granted_at timestamptz,
+  onboarding_phase text,
+  onboarding_wizard_step text,
+  onboarding_writing_path text,
+  onboarding_skipped_at timestamptz,
+  onboarding_completed_at timestamptz
 );
 
 create function public.get_my_role() returns text language sql stable security definer set search_path = public as $$
@@ -64,6 +80,9 @@ create function public.get_my_account_status() returns text language sql stable 
   select account_status from public.profiles where id = auth.uid() limit 1
 $$;
 
+create sequence public.biography_host_seq;
+
+-- Colonne e valori predefiniti di public.biographies come in produzione (30 settembre 2026).
 create table public.biographies (
   id uuid primary key default gen_random_uuid(),
   user_id uuid not null references public.profiles(id),
@@ -76,6 +95,7 @@ create table public.biographies (
   share_token text,
   completed_at timestamptz,
   content_language text not null default 'en',
+  editor_font_size integer default 16,
   final_version text default '',
   narrative_order jsonb default '[]'::jsonb,
   published_at timestamptz,
@@ -111,8 +131,24 @@ create table public.biographies (
   subject_name text,
   um_id text,
   schema_version integer not null default 2,
+  record_language_tag text,
+  record_script text,
+  record_direction text,
+  record_language_endonym text,
+  name_as_written text,
+  name_given text,
+  name_family text,
+  name_order text,
+  name_romanized text,
+  romanization_system text,
   published_at_iso date,
   published_um_year integer,
+  rights_statement_uri text,
+  rights_chosen_at timestamptz,
+  rights_holder text,
+  consent_basis text,
+  consent_recorded_at timestamptz,
+  content_html_legacy jsonb,
   provisional_until timestamptz,
   revised_at timestamptz,
   is_pioneer boolean not null default false
@@ -132,9 +168,62 @@ create table public.moderation_reports (
   created_at timestamptz default now()
 );
 
+create table public.section_completions (
+  id uuid primary key default gen_random_uuid(),
+  biography_id uuid not null references public.biographies(id) on delete cascade,
+  user_id uuid not null,
+  section_key text not null,
+  completed_at timestamptz default now(),
+  created_at timestamptz default now(),
+  unique (biography_id, section_key)
+);
+
+create table public.biography_media (
+  id uuid primary key default gen_random_uuid(),
+  biography_id uuid not null references public.biographies(id) on delete cascade,
+  user_id uuid not null,
+  file_url text not null,
+  file_name text,
+  caption text default '',
+  layout text not null default 'full-page',
+  display_order integer not null default 0,
+  created_at timestamptz default now()
+);
+
+create function public.check_biography_media_limit() returns trigger language plpgsql set search_path to 'public' as $$
+begin
+  if new.layout in ('cover', 'cover_a5') then return new; end if;
+  if (select count(*) from public.biography_media where biography_id = new.biography_id and layout not in ('cover','cover_a5')) >= 30 then
+    raise exception 'A biography may have at most 30 gallery photos.';
+  end if;
+  return new;
+end; $$;
+create trigger enforce_biography_media_limit before insert on public.biography_media
+  for each row execute function public.check_biography_media_limit();
+
 alter table public.profiles enable row level security;
 alter table public.biographies enable row level security;
 alter table public.moderation_reports enable row level security;
+alter table public.section_completions enable row level security;
+alter table public.biography_media enable row level security;
+
+create policy "Users can read own section completions" on public.section_completions for select to authenticated
+  using ((select auth.uid()) = user_id);
+create policy "Users can insert own section completions" on public.section_completions for insert to authenticated
+  with check ((select auth.uid()) = user_id);
+create policy "Users can update own section completions" on public.section_completions for update to authenticated
+  using ((select auth.uid()) = user_id) with check ((select auth.uid()) = user_id);
+create policy "Users can delete own section completions" on public.section_completions for delete to authenticated
+  using ((select auth.uid()) = user_id);
+
+create policy "Users can read own media" on public.biography_media for select to authenticated
+  using ((select auth.uid()) = user_id);
+create policy "Users can insert own media" on public.biography_media for insert to authenticated
+  with check ((select auth.uid()) = user_id);
+create policy "Users can update own media" on public.biography_media for update to authenticated
+  using ((select auth.uid()) = user_id) with check ((select auth.uid()) = user_id);
+create policy "Users can delete own media" on public.biography_media for delete to authenticated
+  using ((select auth.uid()) = user_id);
 
 -- Policy come in produzione (30 settembre 2026), prima della migrazione.
 create policy "Users can insert own profile" on public.profiles for insert to authenticated
@@ -176,7 +265,9 @@ insert into public.profiles (id, email, role, account_status) values
   ('${U.author}', 'author@test', 'user', 'active'),
   ('${U.other}', 'other@test', 'user', 'active'),
   ('${U.staff}', 'staff@test', 'reviewer', 'active'),
-  ('${U.waitlist}', 'wait@test', 'user', 'waitlist');
+  ('${U.waitlist}', 'wait@test', 'user', 'waitlist'),
+  ('${U.fresh}', 'fresh@test', 'user', 'active'),
+  ('${U.fresh2}', 'fresh2@test', 'user', 'active');
 
 insert into public.biographies (id, user_id, status, title, published_at) values
   ('${BIO.draft}', '${U.author}', 'draft', 'Bozza', null),
@@ -187,12 +278,27 @@ insert into public.biographies (id, user_id, status, title, published_at) values
   ('${BIO.otherDraft}', '${U.other}', 'draft', 'Di un altro', null);
 `;
 
-/** Riporta i dati allo stato iniziale (come postgres: i trigger lasciano passare). */
+/**
+ * Riporta i dati allo stato iniziale. I dati di partenza sono inseriti con i
+ * trigger ordinari spenti (session_replication_role = replica): altrimenti il
+ * trigger "una biografia per utente" impedirebbe di preparare più schede in stati
+ * diversi per lo stesso autore.
+ */
 export async function reseed(db: PGlite): Promise<void> {
-  await db.exec(
-    'delete from public.ai_token_usage; delete from public.moderation_reports; delete from public.biographies; delete from public.profiles;'
-  );
+  await db.exec(`
+    set session_replication_role = replica;
+    delete from public.ai_token_usage;
+    delete from public.biography_media;
+    delete from public.section_completions;
+    delete from public.moderation_reports;
+    delete from public.biographies;
+    delete from public.profiles;
+    delete from auth.users;
+    set session_replication_role = origin;
+  `);
+  await db.exec(`set session_replication_role = replica;`);
   await db.exec(SEED);
+  await db.exec(`set session_replication_role = origin;`);
 }
 
 export type DbRole = 'authenticated' | 'anon' | 'service_role' | 'postgres';
@@ -200,9 +306,15 @@ export type DbRole = 'authenticated' | 'anon' | 'service_role' | 'postgres';
 export async function createTestDb(): Promise<PGlite> {
   const db = new PGlite();
   await db.exec(BOOTSTRAP);
-  await db.exec(readFileSync(join(MIGRATIONS, '20260930120000_server_only_columns_and_reports.sql'), 'utf8'));
-  await db.exec(readFileSync(join(MIGRATIONS, '20260930120300_ai_token_usage.sql'), 'utf8'));
-  await db.exec(SEED);
+  // Le migrazioni vere, nell'ordine in cui verranno applicate.
+  for (const file of [
+    '20260930115900_align_biographies_profiles_triggers.sql',
+    '20260930120000_server_only_columns_and_reports.sql',
+    '20260930120300_ai_token_usage.sql',
+  ]) {
+    await db.exec(readFileSync(join(MIGRATIONS, file), 'utf8'));
+  }
+  await reseed(db);
   return db;
 }
 

@@ -703,7 +703,16 @@ export async function runReviewSubmitScreening(
       if (until) publishPatch.provisional_until = until;
     }
 
-    await serviceClient.from('biographies').update(publishPatch).eq('id', biographyId);
+    const { error: publishError } = await serviceClient
+      .from('biographies')
+      .update(publishPatch)
+      .eq('id', biographyId);
+    if (publishError) {
+      // Pubblicazione non riuscita (per esempio attesa fra capitoli): niente notifiche,
+      // niente cancellazione della memoria di Echo, niente risposta "pubblicata".
+      console.error('[review-submit-pipeline] publish update failed:', publishError);
+      throw new Error(`publish_failed: ${publishError.message}`);
+    }
 
     try {
       const { syncArchivePackage } = await import('@/lib/server/archive-package-store');

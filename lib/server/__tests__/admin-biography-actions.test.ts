@@ -1,8 +1,16 @@
-import { describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+const purge = vi.fn();
+vi.mock('@/lib/agents/purge-agent-memory', () => ({
+  purgeAgentMemoryForBiography: (...a: unknown[]) => purge(...a),
+}));
+
 import { applyAdminBiographyAction } from '@/lib/server/admin-biography-actions';
 import type { AnyClient } from '@/lib/server/service-client';
 
-function fakeService(row: Record<string, unknown> | null = { published_at: null, biography_type: 'autobiography' }) {
+function fakeService(
+  row: Record<string, unknown> | null = { published_at: null, biography_type: 'autobiography' },
+  updateError: { message: string } | null = null
+) {
   const updates: Array<{ patch: Record<string, unknown>; id: string }> = [];
   const client = {
     from: () => ({
@@ -10,7 +18,7 @@ function fakeService(row: Record<string, unknown> | null = { published_at: null,
       update: (patch: Record<string, unknown>) => ({
         eq: async (_col: string, id: string) => {
           updates.push({ patch, id });
-          return { error: null };
+          return { error: updateError };
         },
       }),
     }),
@@ -19,6 +27,11 @@ function fakeService(row: Record<string, unknown> | null = { published_at: null,
 }
 
 const NOW = new Date('2026-09-30T12:00:00Z');
+
+beforeEach(() => {
+  purge.mockReset();
+  purge.mockResolvedValue(undefined);
+});
 
 describe('applyAdminBiographyAction', () => {
   it('approva: pubblica e libera la presa in carico', async () => {
@@ -72,5 +85,35 @@ describe('applyAdminBiographyAction', () => {
     await applyAdminBiographyAction(client, { biographyId: 'b1', action: 'remove', actorId: 's1' });
     await applyAdminBiographyAction(client, { biographyId: 'b1', action: 'restore', actorId: 's1' });
     expect(updates.map((u) => u.patch.status)).toEqual(['removed', 'draft']);
+  });
+
+  it.each(['approve', 'force_publish'] as const)('%s: dopo la pubblicazione riuscita cancella la memoria di Echo', async (action) => {
+    const { client } = fakeService();
+    await applyAdminBiographyAction(client, { biographyId: 'b1', action, actorId: 's1', now: NOW });
+    expect(purge).toHaveBeenCalledTimes(1);
+    expect(purge).toHaveBeenCalledWith(client, 'b1');
+  });
+
+  it.each(['approve', 'force_publish'] as const)('%s: se la scrittura dello stato fallisce la memoria resta', async (action) => {
+    const { client } = fakeService(undefined, { message: 'chapter_cooldown_active' });
+    const r = await applyAdminBiographyAction(client, { biographyId: 'b1', action, actorId: 's1', now: NOW });
+    expect(r.error).toBe('chapter_cooldown_active');
+    expect(purge).not.toHaveBeenCalled();
+  });
+
+  it.each(['reject', 'freeze', 'unfreeze', 'set_draft', 'remove', 'restore', 'claim_review'] as const)(
+    '%s: non è una pubblicazione, non cancella la memoria',
+    async (action) => {
+      const { client } = fakeService();
+      await applyAdminBiographyAction(client, { biographyId: 'b1', action, actorId: 's1', now: NOW });
+      expect(purge).not.toHaveBeenCalled();
+    }
+  );
+
+  it('se la cancellazione della memoria fallisce la pubblicazione resta riuscita', async () => {
+    purge.mockRejectedValue(new Error('boom'));
+    const { client } = fakeService();
+    const r = await applyAdminBiographyAction(client, { biographyId: 'b1', action: 'approve', actorId: 's1', now: NOW });
+    expect(r).toEqual({ error: null, status: 'published' });
   });
 });

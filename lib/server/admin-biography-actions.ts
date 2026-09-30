@@ -1,4 +1,5 @@
 import { provisionalUntilOnFirstPublish } from '@/lib/provisional-window';
+import { purgeAgentMemoryForBiography } from '@/lib/agents/purge-agent-memory';
 import type { AnyClient } from '@/lib/server/service-client';
 
 /**
@@ -88,5 +89,14 @@ export async function applyAdminBiographyAction(
 
   const { error } = await service.from('biographies').update(patch).eq('id', biographyId);
   if (error) return { error: error.message };
+
+  // Pubblicazione riuscita: si cancella la memoria di Echo di questa biografia.
+  if (patch.status === 'published') {
+    try {
+      await purgeAgentMemoryForBiography(service, biographyId);
+    } catch (err) {
+      console.error('[admin-biography-actions] purgeAgentMemory failed:', err);
+    }
+  }
   return { error: null, status: typeof patch.status === 'string' ? patch.status : undefined };
 }

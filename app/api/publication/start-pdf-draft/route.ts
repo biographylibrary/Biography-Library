@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { buildServiceClient } from '@/lib/server/service-client';
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 
 type AnyClient = SupabaseClient<any, any, any>;
@@ -35,7 +36,10 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'biographyId is required' }, { status: 400 });
     }
 
-    const dbClient = anonClient;
+    // Dopo la verifica della sessione, le scritture sulle colonne riservate
+    // (stato, pdf_draft_*) le fa il server con il ruolo di servizio: il trigger
+    // guard di biographies le rifiuta se arrivano con la sessione dell'utente.
+    const dbClient = buildServiceClient();
 
     const { data: bio } = await dbClient
       .from('biographies')
