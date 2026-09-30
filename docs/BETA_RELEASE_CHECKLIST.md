@@ -30,7 +30,7 @@ Usare come elenco da spuntare in team. Ordine consigliato: **merge → migrazion
 
 | # | Migrazione | Quando | Che cosa fa |
 |---|---|---|---|
-| 0 | prova a secco (`node scripts/build-dry-run.mjs`, un solo blocco che annulla tutto) | prima di tutto, a un orario concordato | applica le sette, confronta il catalogo, prova le scritture vietate; nessuna modifica resta |
+| 0 | prova a secco (`node scripts/build-dry-run.mjs`, un solo blocco che annulla tutto) | prima di tutto, a un orario concordato | applica le sette, confronta il catalogo, prova le scritture vietate; nessuna modifica resta. **Eseguita il 30 settembre 2026 su produzione: 41 prove su 41, nove pezzi di testo con md5 uguale ai file, 196 ms in tutto (da 33 a 196 ms con i blocchi presi), stato di produzione identico prima e dopo** |
 | 1 | `20260930115700_publication_records.sql` | **prima del deploy** | aggiunge il registro delle impronte |
 | 2 | `20260930115800_ai_token_usage.sql` | **prima del deploy** | aggiunge registro dei consumi e tetti |
 | | unione su `main` (deploy) | | |

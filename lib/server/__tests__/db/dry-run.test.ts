@@ -92,11 +92,25 @@ describe('prova a secco: prova generale sul banco', () => {
     expect(labels.filter((m: string) => m.includes('(dopo il deploy)'))).toHaveLength(5);
   });
 
-  it('il blocco controlla da sé il testo che esegue: gli md5 coincidono con quelli calcolati dai file', async () => {
+  it('il blocco controlla da sé il testo che esegue: gli md5 dei pezzi coincidono con quelli attesi dai file', async () => {
     const { report } = await runDry();
+    expect(report.md5_pezzi_controllati).toBe(9);
+    expect(report.md5_diversi_da_quelli_attesi).toEqual({});
     const expected = JSON.parse(execFileSync('node', ['scripts/build-dry-run.mjs', '--checksums'], { encoding: 'utf8' }));
-    expect(report.controllo_md5).toEqual(expected);
     expect(Object.keys(expected)).toHaveLength(9);
+  });
+
+  it('controllo negativo: se un pezzo viene alterato lo dice', async () => {
+    const altered = script.replace('DROP TABLE IF EXISTS public.biography_view_translations;', 'DROP TABLE IF EXISTS public.biography_view_translations; -- alterato');
+    expect(altered).not.toBe(script);
+    let message = '';
+    try {
+      await db.exec(altered);
+    } catch (err) {
+      message = err instanceof Error ? err.message : String(err);
+    }
+    const report = JSON.parse(message.slice(message.indexOf('DRYRUN_RESULT') + 13).trim());
+    expect(Object.keys(report.md5_diversi_da_quelli_attesi)).toEqual(['20260930120100_drop_biography_view_translations.sql']);
   });
 
   it('i tempi sono registrati: durata totale, primo blocco e fine di ogni migrazione', async () => {
@@ -128,19 +142,31 @@ describe('prova a secco: prova generale sul banco', () => {
 
   it('tutte le prove danno l\'esito atteso', async () => {
     const { report } = await runDry();
-    const failed = report.prove.filter((p: { ok: boolean }) => !p.ok);
-    expect(failed).toEqual([]);
+    const lines: string[] = report.prove;
+    expect(lines.filter((l) => l.startsWith('NO '))).toEqual([]);
     expect(report.prove_fallite).toBe(0);
+    expect(report.errore_prove).toBeNull();
     expect(report.prove_ok).toBeGreaterThanOrEqual(30);
+    expect(lines).toHaveLength(report.prove_ok);
+    for (const st of ['draft', 'pdf_draft', 'revision_requested', 'under_review', 'locked_pending_screening', 'revision_overdue', 'removed', 'published']) {
+      expect(lines.some((l) => l.startsWith(`OK testo in stato ${st} =>`))).toBe(true);
+    }
     // Con righe figlie presenti, le cinque tabelle vengono provate davvero (nessuna saltata).
-    expect(report.prove.filter((p: { saltata?: boolean }) => p.saltata)).toEqual([]);
-    const child = report.prove.filter((p: { prova: string }) => /^(biography_|person_)/.test(p.prova));
+    expect(lines.filter((l) => l.includes('non provata qui'))).toEqual([]);
+    const child = lines.filter((l) => /^OK (biography_|person_)/.test(l));
     expect(child).toHaveLength(10);
-    expect(child.filter((p: { ottenuto: string }) => p.ottenuto.includes('author_text_locked'))).toHaveLength(5);
-    expect(child.filter((p: { ottenuto: string }) => p.ottenuto.startsWith('ok rows='))).toHaveLength(5);
-    const names = report.prove.map((p: { prova: string }) => p.prova);
-    for (const st of ['draft', 'pdf_draft', 'revision_requested', 'under_review', 'locked_pending_screening', 'revision_overdue', 'removed']) {
-      expect(names).toContain(`testo in stato ${st}`);
+    expect(child.filter((l) => l.includes('author_text_locked'))).toHaveLength(5);
+    expect(child.filter((l) => l.includes('=> ok rows='))).toHaveLength(5);
+  });
+
+  it('usa come autori delle schede di prova utenti con ruolo user (non lo staff)', async () => {
+    // Nel banco lo staff ha l'identificativo U.staff: se la bozza di prova fosse sua, 'removed' e 'role' darebbero falsi esiti.
+    await db.exec(`set session_replication_role = replica; update public.biographies set user_id = '${U.staff}' where id = '${BIO.otherDraft}'; set session_replication_role = origin;`);
+    try {
+      const { report } = await runDry();
+      expect(report.prove_fallite).toBe(0);
+    } finally {
+      await db.exec(`set session_replication_role = replica; update public.biographies set user_id = '${U.other}' where id = '${BIO.otherDraft}'; set session_replication_role = origin;`);
     }
   });
 
@@ -154,7 +180,8 @@ describe('prova a secco: prova generale sul banco', () => {
   it('il delta del catalogo contiene quello che le migrazioni devono fare', async () => {
     const { report } = await runDry();
     const d = report.delta_catalogo;
-    expect(d.triggers.aggiunti.map((t: string) => t.split('#')[0])).toEqual(
+    const names = (list: string[]) => list.map((x) => x.split('#')[0]);
+    expect(names(d.triggers.aggiunti)).toEqual(
       expect.arrayContaining([
         'biographies.a00_biographies_guard_server_columns',
         'profiles.a00_profiles_guard_server_columns',
@@ -170,9 +197,18 @@ describe('prova a secco: prova generale sul banco', () => {
       expect.arrayContaining(['publication_records', 'ai_token_usage', 'ai_author_token_limits'])
     );
     expect(d.tables.tolti.map((t: string) => t.split('|')[0])).toEqual(['biography_view_translations']);
-    expect(d.constraints.aggiunti.join('\n')).toContain("agent_threads|agent_threads_agent_type_check|CHECK ((agent_type = 'echo'::text))");
-    // L'allineamento non cambia nulla: nessuna funzione "tolta" che non sia anche "aggiunta" con lo stesso nome.
+    // Il vincolo di agent_threads cambia definizione restando con lo stesso nome.
+    expect(d.constraints_modificati).toEqual(['agent_threads.agent_threads_agent_type_check']);
+    expect(Object.keys(d.constraints.aggiunti_per_tabella)).toEqual(
+      expect.arrayContaining(['publication_records', 'ai_token_usage', 'ai_author_token_limits'])
+    );
+    // Gli unici privilegi che spariscono sono quelli della tabella eliminata.
+    expect(Object.keys(d.privileges.tolti_per_tabella)).toEqual(['biography_view_translations']);
+    // L'allineamento non cambia nulla: nessuna funzione "tolta" (il sorgente delle funzioni è lo stesso byte per byte).
     expect(d.functions.tolti).toEqual([]);
+    // Il resoconto resta corto abbastanza da non essere troncato dal messaggio di errore.
+    // jsonb::text usa ": " e ", " (circa l'8% più lungo di JSON.stringify): si resta sotto 8000 compatti.
+    expect(JSON.stringify(report).length).toBeLessThan(8_000);
   });
 
   it('elimina i thread che non sono di Echo (ed è annullato)', async () => {

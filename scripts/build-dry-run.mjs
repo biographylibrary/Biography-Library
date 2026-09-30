@@ -48,7 +48,7 @@ select jsonb_build_object(
     where n.nspname = 'public' and not t.tgisinternal),
   'policies', (select coalesce(jsonb_agg(tablename || '|' || policyname || '|' || cmd || '|' || roles::text || '|' || coalesce(qual, '') || '|' || coalesce(with_check, '') order by tablename, policyname), '[]'::jsonb)
     from pg_policies where schemaname = 'public'),
-  'functions', (select coalesce(jsonb_agg(p.proname || '(' || pg_get_function_identity_arguments(p.oid) || ')#' || md5(p.prosrc || coalesce(p.proconfig::text, '') || p.prosecdef::text || coalesce(p.proacl::text, '')) order by p.proname, pg_get_function_identity_arguments(p.oid)), '[]'::jsonb)
+  'functions', (select coalesce(jsonb_agg(p.proname || '(' || pg_get_function_identity_arguments(p.oid) || ')#' || left(md5(p.prosrc || coalesce(p.proconfig::text, '') || p.prosecdef::text), 8) || '#acl' || left(md5(coalesce(p.proacl::text, '')), 4) order by p.proname, pg_get_function_identity_arguments(p.oid)), '[]'::jsonb)
     from pg_proc p join pg_namespace n on n.oid = p.pronamespace where n.nspname = 'public'),
   'tables', (select coalesce(jsonb_agg(c.relname || '|rls=' || c.relrowsecurity || '|force=' || c.relforcerowsecurity order by c.relname), '[]'::jsonb)
     from pg_class c join pg_namespace n on n.oid = c.relnamespace where n.nspname = 'public' and c.relkind = 'r'),
@@ -73,13 +73,14 @@ DECLARE
   st text; r text; expected text; cnt bigint; tbl text; col text; owner_id uuid; bio_id uuid; label text;
   writable constant text[] := ARRAY['draft','sections_complete','final_version','pdf_draft','revision_requested'];
 BEGIN
-  -- Schede di prova: una bozza e una pubblicata esistenti, con più righe figlie possibile.
-  SELECT b.id, b.user_id INTO d_id, d_owner FROM public.biographies b WHERE b.status = 'draft'
-    ORDER BY (SELECT count(*) FROM public.biography_media m WHERE m.biography_id = b.id)
+  -- Schede di prova: una bozza e una pubblicata esistenti, di un autore con ruolo user, con più righe figlie possibile.
+  SELECT b.id, b.user_id INTO d_id, d_owner FROM public.biographies b JOIN public.profiles o ON o.id = b.user_id WHERE b.status = 'draft'
+    ORDER BY (o.role = 'user') DESC,
+             (SELECT count(*) FROM public.biography_media m WHERE m.biography_id = b.id)
            + (SELECT count(*) FROM public.biography_sections s WHERE s.biography_id = b.id)
            + (SELECT count(*) FROM public.biography_book_structure s WHERE s.biography_id = b.id) DESC, b.created_at LIMIT 1;
-  SELECT b.id, b.user_id INTO p_id, p_owner FROM public.biographies b WHERE b.status = 'published'
-    ORDER BY (SELECT count(*) FROM public.biography_media m WHERE m.biography_id = b.id) DESC, b.created_at LIMIT 1;
+  SELECT b.id, b.user_id INTO p_id, p_owner FROM public.biographies b JOIN public.profiles o ON o.id = b.user_id WHERE b.status = 'published'
+    ORDER BY (o.role = 'user') DESC, (SELECT count(*) FROM public.biography_media m WHERE m.biography_id = b.id) DESC, b.created_at LIMIT 1;
   SELECT pr.id INTO other_user FROM public.profiles pr
     WHERE pr.id NOT IN (coalesce(d_owner, pr.id), coalesce(p_owner, pr.id)) AND pr.account_status = 'active' AND pr.role = 'user' LIMIT 1;
 
@@ -214,6 +215,7 @@ export function expectedChecksums() {
 
 export function buildDryRun() {
   const { migrations, catalog, tests } = pieces();
+  const EXPECTED_JSON = JSON.stringify(expectedChecksums());
 
   const declarations = migrations
     .map((m) => `  ${m.variable} constant text := $${m.tag}$${m.text}$${m.tag}$;`)
@@ -248,9 +250,11 @@ ${declarations}
   failed text;
   tests_error text;
   k text; delta jsonb := '{}'::jsonb; added jsonb; removed jsonb;
-  n_pass int; n_fail int;
+  n_pass int; n_fail int; lines jsonb;
   t_first_lock numeric;
   checks jsonb;
+  expected_md5 constant jsonb := '${EXPECTED_JSON}'::jsonb;
+  md5_diversi jsonb := '{}'::jsonb;
 BEGIN
   PERFORM set_config('lock_timeout', '3s', true);
   PERFORM set_config('statement_timeout', '60s', true);
@@ -258,6 +262,9 @@ BEGIN
   checks := jsonb_build_object(
       ${checksumEntries}
   );
+
+  SELECT coalesce(jsonb_object_agg(c.key, c.value), '{}'::jsonb) INTO md5_diversi
+    FROM jsonb_each_text(checks) c WHERE expected_md5 ->> c.key IS DISTINCT FROM c.value;
 
   EXECUTE cat_sql INTO before_cat;
   t_first_lock := round(extract(epoch FROM clock_timestamp() - t0) * 1000);
@@ -271,15 +278,40 @@ ${applyBlock}
   IF failed IS NULL THEN
     EXECUTE cat_sql INTO after_cat;
 
-    FOREACH k IN ARRAY ARRAY['triggers','policies','functions','tables','constraints','indexes','privileges'] LOOP
-      SELECT coalesce(jsonb_agg(v), '[]'::jsonb) INTO added
+    FOREACH k IN ARRAY ARRAY['triggers','policies','functions','tables','indexes'] LOOP
+      SELECT coalesce(jsonb_agg(DISTINCT CASE k
+                 WHEN 'triggers' THEN split_part(v, '#', 1) || '#' || left(split_part(v, '#', 2), 6)
+                 WHEN 'policies' THEN split_part(v, '|', 1) || '|' || split_part(v, '|', 2) || '|' || split_part(v, '|', 3) || '#' || left(md5(v), 6)
+                 ELSE v END), '[]'::jsonb) INTO added
         FROM jsonb_array_elements_text(after_cat -> k) v
         WHERE v NOT IN (SELECT jsonb_array_elements_text(before_cat -> k));
-      SELECT coalesce(jsonb_agg(v), '[]'::jsonb) INTO removed
+      SELECT coalesce(jsonb_agg(DISTINCT CASE k
+                 WHEN 'triggers' THEN split_part(v, '#', 1) || '#' || left(split_part(v, '#', 2), 6)
+                 WHEN 'policies' THEN split_part(v, '|', 1) || '|' || split_part(v, '|', 2) || '|' || split_part(v, '|', 3) || '#' || left(md5(v), 6)
+                 ELSE v END), '[]'::jsonb) INTO removed
         FROM jsonb_array_elements_text(before_cat -> k) v
         WHERE v NOT IN (SELECT jsonb_array_elements_text(after_cat -> k));
       delta := delta || jsonb_build_object(k, jsonb_build_object('aggiunti', added, 'tolti', removed));
     END LOOP;
+
+    -- Vincoli e privilegi: conteggi per tabella (l'elenco intero non entrerebbe nel messaggio).
+    FOREACH k IN ARRAY ARRAY['constraints','privileges'] LOOP
+      SELECT coalesce(jsonb_object_agg(t, c), '{}'::jsonb) INTO added FROM (
+        SELECT split_part(v, '|', CASE k WHEN 'constraints' THEN 1 ELSE 2 END) AS t, count(*) AS c
+          FROM jsonb_array_elements_text(after_cat -> k) v
+          WHERE v NOT IN (SELECT jsonb_array_elements_text(before_cat -> k)) GROUP BY 1) x;
+      SELECT coalesce(jsonb_object_agg(t, c), '{}'::jsonb) INTO removed FROM (
+        SELECT split_part(v, '|', CASE k WHEN 'constraints' THEN 1 ELSE 2 END) AS t, count(*) AS c
+          FROM jsonb_array_elements_text(before_cat -> k) v
+          WHERE v NOT IN (SELECT jsonb_array_elements_text(after_cat -> k)) GROUP BY 1) x;
+      delta := delta || jsonb_build_object(k, jsonb_build_object('aggiunti_per_tabella', added, 'tolti_per_tabella', removed));
+    END LOOP;
+    -- Vincoli che cambiano definizione restando con lo stesso nome.
+    SELECT coalesce(jsonb_agg(DISTINCT split_part(a, '|', 1) || '.' || split_part(a, '|', 2)), '[]'::jsonb) INTO added
+      FROM jsonb_array_elements_text(after_cat -> 'constraints') a
+      JOIN jsonb_array_elements_text(before_cat -> 'constraints') b
+        ON split_part(a, '|', 1) = split_part(b, '|', 1) AND split_part(a, '|', 2) = split_part(b, '|', 2) AND a <> b;
+    delta := delta || jsonb_build_object('constraints_modificati', added);
 
     BEGIN
       PERFORM set_config('dry.results', '', true);
@@ -293,16 +325,22 @@ ${applyBlock}
   SELECT count(*) FILTER (WHERE (e ->> 'ok')::boolean), count(*) FILTER (WHERE NOT (e ->> 'ok')::boolean)
     INTO n_pass, n_fail FROM jsonb_array_elements(results) e;
 
+  -- Resoconto compatto (il messaggio di errore ha un limite di lunghezza): una riga per prova.
+  SELECT coalesce(jsonb_agg(CASE WHEN (e ->> 'ok')::boolean THEN 'OK ' ELSE 'NO ' END || (e ->> 'prova') || ' => ' || left(e ->> 'ottenuto', 34)
+                            || CASE WHEN (e ->> 'ok')::boolean THEN '' ELSE ' (atteso ' || (e ->> 'atteso') || ')' END), '[]'::jsonb)
+    INTO lines FROM jsonb_array_elements(results) e;
+
   RAISE EXCEPTION 'DRYRUN_RESULT %', jsonb_build_object(
     'durata_ms', round(extract(epoch FROM clock_timestamp() - t0) * 1000),
     'primo_blocco_ms', t_first_lock,
-    'controllo_md5', checks,
     'migrazioni_applicate', applied,
     'errore_migrazione', failed,
     'errore_prove', tests_error,
     'prove_ok', n_pass,
     'prove_fallite', n_fail,
-    'prove', results,
+    'prove', lines,
+    'md5_pezzi_controllati', (SELECT count(*) FROM jsonb_object_keys(checks)),
+    'md5_diversi_da_quelli_attesi', md5_diversi,
     'delta_catalogo', delta
   )::text;
 END
