@@ -143,9 +143,9 @@ export function ReviewPublicationDialog({
                   1
                 </div>
                 <div className="flex-1 space-y-2 min-w-0">
-                  <p className="font-medium text-sm">{rp.stepAiReviewTitle}</p>
+                  <p className="font-medium text-sm">{rp.stepChapterOrderTitle}</p>
                   <p className="text-xs text-muted-foreground leading-relaxed">
-                    {rp.stepAiReviewDesc}
+                    {rp.stepChapterOrderDesc}
                   </p>
                   <Button
                     type="button"
@@ -155,7 +155,7 @@ export function ReviewPublicationDialog({
                     onClick={() => closeAndRun(onOpenFinalReview)}
                   >
                     <Sparkles className="h-4 w-4" />
-                    {rp.stepAiReviewButton}
+                    {rp.stepChapterOrderButton}
                   </Button>
                 </div>
               </li>

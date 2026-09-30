@@ -56,6 +56,8 @@ export async function POST(req: NextRequest) {
       JSON.stringify({
         error: turnResult.error,
         message: turnResult.message,
+        period: turnResult.period,
+        resetsAt: turnResult.resetsAt,
       }),
       { status: turnResult.status, headers: { 'Content-Type': 'application/json' } }
     );

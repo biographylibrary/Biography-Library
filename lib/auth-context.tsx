@@ -186,13 +186,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       },
     });
 
-    if (!error && data.user) {
-      const confirmedAt = new Date().toISOString();
-      await supabase.from('profiles').upsert(
-        { id: data.user.id, email, name, language, language_confirmed_at: confirmedAt },
-        { onConflict: 'id' }
-      );
-    }
+    // Il profilo lo crea il trigger handle_new_user dai metadati (name, language).
 
     const emailConfirmRequired = !error && data.user && !data.session;
     return { error: error?.message ?? null, emailConfirmRequired: emailConfirmRequired ?? false };

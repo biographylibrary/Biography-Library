@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { ClipboardList, ExternalLink, CircleCheck as CheckCircle, Circle as XCircle, Inbox, ChevronDown, ChevronRight, TriangleAlert as AlertTriangle } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { createNotification } from '@/lib/notifications-service';
+import { runAdminBiographyAction } from '@/lib/admin/biography-actions-client';
 import { useTranslation } from '@/lib/i18n/i18n-context';
 import { useAuth } from '@/lib/auth-context';
 import { Button } from '@/components/ui/button';
@@ -196,10 +197,12 @@ function ReviewQueueContent() {
 
   const claimReview = useCallback(async (bioId: string) => {
     if (!user?.id) return;
-    await supabase
-      .from('biographies')
-      .update({ reviewed_by: user.id, reviewed_at: new Date().toISOString() })
-      .eq('id', bioId);
+    try {
+      await runAdminBiographyAction(bioId, 'claim_review');
+    } catch (err) {
+      console.error('claim review failed:', err);
+      return;
+    }
     setItems((prev) =>
       prev.map((b) => (b.id === bioId ? { ...b, reviewed_by: user.id } : b))
     );
@@ -273,10 +276,12 @@ function ReviewQueueContent() {
   const executeApprove = async (bio: ReviewBiography, force = false) => {
     setActionLoading(bio.id);
 
-    const { error } = await supabase
-      .from('biographies')
-      .update({ status: 'published', published_at: new Date().toISOString(), reviewed_by: null, reviewed_at: null })
-      .eq('id', bio.id);
+    let error: unknown = null;
+    try {
+      await runAdminBiographyAction(bio.id, 'approve');
+    } catch (err) {
+      error = err;
+    }
 
     if (error) {
       setActionLoading(null);
@@ -310,10 +315,12 @@ function ReviewQueueContent() {
   ) => {
     setActionLoading(bio.id);
 
-    const { error } = await supabase
-      .from('biographies')
-      .update({ status: 'draft', reviewed_by: null, reviewed_at: null })
-      .eq('id', bio.id);
+    let error: unknown = null;
+    try {
+      await runAdminBiographyAction(bio.id, 'reject');
+    } catch (err) {
+      error = err;
+    }
 
     if (error) {
       setActionLoading(null);

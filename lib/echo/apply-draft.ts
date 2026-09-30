@@ -1,6 +1,7 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { looksLikeStoredHtml, storedToArchiveMarkdown } from '@/lib/archive-markdown';
 import { BIOGRAPHY_SECTIONS } from '@/lib/editor-constants';
+import { canAuthorWriteText } from '@/lib/publication-state';
 
 export const MAX_DRAFT_WORDS = 1500;
 const FREEFLOW_SECTION_KEY = 'freeflow';
@@ -302,7 +303,7 @@ export async function appendDraftToBiography(
   placement: DraftPlacement = {}
 ): Promise<
   | { ok: true; sectionKey: string; appendedWords: number; totalWords: number; mode: 'replaced' | 'appended' | 'dashes' }
-  | { ok: false; error: string; code?: 'replace_not_found' }
+  | { ok: false; error: string; code?: 'replace_not_found' | 'text_locked' }
 > {
   const trimmed = draftText.trim();
   if (!isValidDraftSectionKey(sectionKey)) {
@@ -322,13 +323,24 @@ export async function appendDraftToBiography(
 
   const { data: bio, error: fetchErr } = await serviceClient
     .from('biographies')
-    .select('content, content_freeflow')
+    .select('content, content_freeflow, status, is_frozen')
     .eq('id', biographyId)
     .eq('user_id', userId)
     .maybeSingle();
 
   if (fetchErr || !bio) {
     return { ok: false, error: 'Biography not found' };
+  }
+
+  // Questa scrittura usa la chiave di servizio: il trigger del database non la
+  // ferma, quindi lo stato si controlla qui (stesso elenco chiuso del trigger).
+  const { status, is_frozen } = bio as { status?: string | null; is_frozen?: boolean | null };
+  if (!canAuthorWriteText(status, is_frozen)) {
+    return {
+      ok: false,
+      error: 'The text of this biography is locked in its current state',
+      code: 'text_locked',
+    };
   }
 
   if (sectionKey === FREEFLOW_SECTION_KEY) {

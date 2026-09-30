@@ -26,6 +26,22 @@ Usare come elenco da spuntare in team. Ordine consigliato: **merge → migrazion
 - [x] Migrazione agenti: `agent_tables` (thread, messaggi, RAG, `agent_usage`) su progetto dev `gckmusbozgbclokvbnwx`
 - [ ] Stesse migrazioni applicate su Supabase **produzione** (se progetto separato da dev)
 
+**Blocco 1 (ramo `blocco-1-strumenti-ai`): sette migrazioni nuove. Non applicarle senza conferma esplicita.** Sequenza completa, nell'ordine (una chiamata `apply_migration` per file):
+
+| # | Migrazione | Quando | Che cosa fa |
+|---|---|---|---|
+| 0 | prova a secco (`node scripts/build-dry-run.mjs`, un solo blocco che annulla tutto) | prima di tutto, a un orario concordato | applica le sette, confronta il catalogo, prova le scritture vietate; nessuna modifica resta. **Eseguita il 30 settembre 2026 su produzione: 41 prove su 41, nove pezzi di testo con md5 uguale ai file, 196 ms in tutto (da 33 a 196 ms con i blocchi presi), stato di produzione identico prima e dopo** |
+| 1 | `20260930115700_publication_records.sql` | **prima del deploy** | aggiunge il registro delle impronte |
+| 2 | `20260930115800_ai_token_usage.sql` | **prima del deploy** | aggiunge registro dei consumi e tetti |
+| | unione su `main` (deploy) | | |
+| 3 | `20260930115900_align_biographies_profiles_triggers.sql` | **dopo il deploy** | a parità con la produzione, non cambia nulla |
+| 4 | `20260930120000_server_only_columns_and_reports.sql` | **dopo il deploy** | colonne riservate al server; toglie tre policy di INSERT |
+| 5 | `20260930120100_drop_biography_view_translations.sql` | **dopo il deploy** | elimina la tabella delle traduzioni per i lettori (il vecchio codice la legge ancora) |
+| 6 | `20260930120150_author_text_whitelist.sql` | **dopo il deploy** | testo scrivibile solo negli stati di lavoro |
+| 7 | `20260930120200_agent_threads_echo_only.sql` | **dopo il deploy** | solo thread di Echo |
+
+Poi: prova con un account di prova fino alla bozza PDF, **senza pubblicare** (nessun identificativo UM); dal pannello Supabase eliminare `ai-assistant` e `help-assistant` e togliere i tre segreti (sezione 3); ridistribuire `audio-transcription`; verificare che Echo, grammatica e voce rispondano e lascino righe in `ai_token_usage`. Chi ha la pagina dell'editor già aperta con il codice vecchio vedrà rifiutare alcune scritture finché non la ricarica. Se la produzione si rompe: `supabase/rollback/20260930_security_rollback.sql` (una transazione; toglie i blocchi delle migrazioni 4 e 6 e rimette le tre policy; il codice nuovo continua a funzionare perché scrive con il ruolo di servizio).
+
 ---
 
 ## 3. Variabili d’ambiente (host Next.js — es. Jelastic)
@@ -52,16 +68,19 @@ Controllare che sul **processo che esegue Next** siano impostate (non committate
 **Edge Functions** (secrets nel progetto Supabase):
 
 - [ ] `INFOMANIAK_AI_TOKEN`, `INFOMANIAK_AI_ENDPOINT` — coerenti con host Next
-- [x] `INFOMANIAK_AI_MODEL_PRIMARY` = `google/gemma-4-31B-it`, `INFOMANIAK_AI_MODEL_FALLBACK` = `mistralai/Mistral-Small-4-119B-2603` (ai-assistant)
-- [x] `INFOMANIAK_AI_MODEL_GRAMMAR` = `swiss-ai/Apertus-v1.5-70B` (se non risponde, la funzione ripiega su Gemma e poi su Mistral Small 4)
-- [ ] Edge Function `ai-assistant` ridistribuita se il codice in `supabase/functions/ai-assistant/` è più nuovo di quello in produzione. Non esiste più una funzione `help-assistant`.
+- [x] Confronto delle impronte dei segreti (30 settembre 2026): `INFOMANIAK_AI_MODEL_PRIMARY`, `_FALLBACK`, `AI_RATE_LIMIT`, `AI_DAILY_LIMIT` e `AI_WEEKLY_LIMIT` coincidono con i valori predefiniti del codice: su Jelastic non c'è niente da copiare.
+- [x] `INFOMANIAK_AI_MODEL_GRAMMAR` = `swiss-ai/Apertus-v1.5-70B` (se non risponde, la rotta ripiega su Gemma e poi su Mistral Small 4). Cambio di comportamento voluto: la funzione `ai-assistant` deployata (versione 108) usava Gemma e poi Mistral.
+- [ ] Eliminare dal progetto Supabase **`ai-assistant`** (versione 108) e **`help-assistant`** (versione 29, assente dal repository; sorgente conservato in `docs/legacy/help-assistant/`). Gli strumenti disponibili all'agente non possono eliminare funzioni: a mano, `supabase functions delete ai-assistant help-assistant --project-ref gckmusbozgbclokvbnwx`, o dalla dashboard.
+- [ ] Togliere i segreti che nessuna funzione rimasta legge: `INFOMANIAK_AI_MODEL` (vale `mistral3`; verificato che le funzioni `audio-transcription`, `auth-send-email`, `user-email-confirmed`, `send-engagement-emails` e `log-error` non lo leggono), `INFOMANIAK_AI_MODEL_HELP_PRIMARY`, `INFOMANIAK_AI_MODEL_HELP_FALLBACK`. Facoltativi, sempre inutilizzati dopo l'eliminazione: `INFOMANIAK_AI_MODEL_PRIMARY`, `INFOMANIAK_AI_MODEL_FALLBACK`, `AI_RATE_LIMIT`, `AI_DAILY_LIMIT`, `AI_WEEKLY_LIMIT`. Comando: `supabase secrets unset <nomi> --project-ref gckmusbozgbclokvbnwx`.
+- [ ] Ridistribuire `audio-transcription` **dopo** la migrazione `20260930115800_ai_token_usage.sql`: ora scrive anche in `ai_token_usage`.
+- Nota: la funzione `user-email-confirmed` deployata è più vecchia di quella nel repository; non è parte del blocco 1, ma va riallineata prima o poi.
 
 ---
 
 ## 4. Deploy applicazione
 
 - [ ] Se modificato `docs/PLATFORM_KB.md`: `npm run kb:sync` + `npm run kb:sync:check` + `POST /api/agents/admin/seed-kb` (admin) per re-indicizzare RAG Echo
-- [ ] Edge Functions deployate se ci sono modifiche in `supabase/functions/` (incluso `ai-assistant` per limiti staff)
+- [ ] Edge Functions deployate se ci sono modifiche in `supabase/functions/` (`audio-transcription` ora scrive anche in `ai_token_usage`)
 - [ ] Deploy Next: push su `main` che attiva il workflow, **oppure** procedura manuale documentata (git pull, build, restart container).
 - [ ] Risposta HTTP 200 sulla homepage e su una route API leggera se disponibile.
 

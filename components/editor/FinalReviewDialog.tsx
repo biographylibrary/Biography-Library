@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -10,19 +10,10 @@ import {
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { Loader as Loader2, Check, ArrowRight, RefreshCw } from 'lucide-react';
-import { useAuth } from '@/lib/auth-context';
-import {
-  analyzeThemes,
-  proposeAlternativeStructures,
-  type SectionThemeAnalysis,
-  type NarrativeStructureProposal,
-} from '@/lib/ai/narrative-structure-service';
-import { AiLimitError } from '@/lib/ai/ai-provider';
+import { Check, ArrowRight } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { BIOGRAPHY_SECTIONS } from '@/lib/editor-constants';
 import { useTranslation } from '@/lib/i18n/i18n-context';
-import { cn } from '@/lib/utils';
 
 const DEFAULT_BIOGRAPHY_SECTION_ORDER = BIOGRAPHY_SECTIONS.map((s) => s.key);
 
@@ -30,10 +21,53 @@ interface FinalReviewDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   biographyId: string;
+  /** Capitoli con testo: determinano quali titoli compaiono nell'ordine. */
   sections: { key: string; title: string; content: string }[];
   onApplyStructure: (sectionOrder: string[], structureType: string, rationale: string) => void;
 }
 
+const COPY = {
+  it: {
+    title: 'Prepara la versione finale',
+    description:
+      'I capitoli vengono riuniti in ordine cronologico nella versione finale, che rivedrai in PDF prima di pubblicare.',
+    cancel: 'Annulla',
+    apply: 'Prepara la versione finale',
+    error: 'Non è stato possibile salvare la struttura.',
+  },
+  fr: {
+    title: 'Préparer la version finale',
+    description:
+      "Les chapitres sont réunis dans l'ordre chronologique dans la version finale, que vous relirez en PDF avant de publier.",
+    cancel: 'Annuler',
+    apply: 'Préparer la version finale',
+    error: "La structure n'a pas pu être enregistrée.",
+  },
+  de: {
+    title: 'Endfassung vorbereiten',
+    description:
+      'Die Kapitel werden in chronologischer Reihenfolge zur Endfassung zusammengefasst, die Sie vor der Veröffentlichung als PDF prüfen.',
+    cancel: 'Abbrechen',
+    apply: 'Endfassung vorbereiten',
+    error: 'Die Struktur konnte nicht gespeichert werden.',
+  },
+  en: {
+    title: 'Prepare the final version',
+    description:
+      'Your chapters are combined in chronological order into the final version, which you will review as a PDF before publishing.',
+    cancel: 'Cancel',
+    apply: 'Prepare the final version',
+    error: 'The structure could not be saved.',
+  },
+} as const;
+
+/**
+ * Passaggio del percorso di pubblicazione in modalità a sezioni: fissa l'ordine
+ * dei capitoli (cronologico) e porta la biografia allo stato `final_version`.
+ * Non usa l'intelligenza artificiale: le strutture alternative proposte dal
+ * modello sono state tolte, il passaggio resta perché senza di esso la modalità
+ * a sezioni non arriva alla bozza PDF.
+ */
 export function FinalReviewDialog({
   open,
   onOpenChange,
@@ -41,293 +75,83 @@ export function FinalReviewDialog({
   sections,
   onApplyStructure,
 }: FinalReviewDialogProps) {
-  const { session } = useAuth();
   const { t, language } = useTranslation();
-  const [isAnalyzing, setIsAnalyzing] = useState(false);
-  const [themeAnalysis, setThemeAnalysis] = useState<SectionThemeAnalysis[]>([]);
-  const [proposals, setProposals] = useState<NarrativeStructureProposal[]>([]);
-  const [selectedProposal, setSelectedProposal] = useState<number | null>(null);
+  const copy = COPY[language as keyof typeof COPY] ?? COPY.en;
   const [error, setError] = useState<string | null>(null);
+  const [saving, setSaving] = useState(false);
 
-  const analyzeStructure = useCallback(async () => {
-    if (!session) return;
+  const titleFor = (key: string) =>
+    t.sectionTitles[key as keyof typeof t.sectionTitles] ||
+    BIOGRAPHY_SECTIONS.find((s) => s.key === key)?.title ||
+    key;
 
-    setIsAnalyzing(true);
+  const withText = new Set(sections.map((s) => s.key));
+  const order = DEFAULT_BIOGRAPHY_SECTION_ORDER.filter((key) => withText.has(key));
+
+  const handleApply = async () => {
+    setSaving(true);
     setError(null);
-
     try {
-      const themes = await analyzeThemes(
-        sections.filter(s => s.content.trim().length > 50),
-        language
-      );
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      if (!session?.user?.id) throw new Error('No valid session found');
 
-      setThemeAnalysis(themes);
-
-      const structureProposals = await proposeAlternativeStructures(
-        themes,
-        DEFAULT_BIOGRAPHY_SECTION_ORDER,
-        language
-      );
-
-      setProposals(structureProposals);
-    } catch (err: unknown) {
-      if (err instanceof AiLimitError) {
-        const msg = err.limitType === 'daily' ? t.aiUsage.dailyLimitReached : t.aiUsage.weeklyLimitReached;
-        const detail = err.limitType === 'daily' ? t.aiUsage.dailyLimitDetail : t.aiUsage.weeklyLimitDetail;
-        setError(`${msg}. ${detail}`);
-      } else if (err instanceof Error && err.message === 'AI_TIMEOUT') {
-        setError(t.biography.aiTimeout);
-      } else if (err instanceof Error && (err.message === 'SESSION_EXPIRED' || err.message === 'TOKEN_EXPIRED')) {
-        const { error: refreshError } = await supabase.auth.refreshSession();
-        if (!refreshError) {
-          setIsAnalyzing(false);
-          void analyzeStructure();
-          return;
-        }
-        setError('Session expired. Please sign in again.');
-      } else {
-        console.error('Error analyzing structure:', err);
-        setError(err instanceof Error ? err.message : 'Failed to analyze narrative structure');
-      }
-    } finally {
-      setIsAnalyzing(false);
-    }
-  }, [session, sections, language, t]);
-
-  useEffect(() => {
-    if (open && session && sections.length > 0) {
-      void analyzeStructure();
-    }
-  }, [open, session, sections, analyzeStructure]);
-
-  const handleApplyStructure = async () => {
-    if (selectedProposal === null) return;
-
-    const proposal = selectedProposal === -1
-      ? {
-          structureType: 'chronological',
-          sectionOrder: DEFAULT_BIOGRAPHY_SECTION_ORDER,
-          rationale: 'Original chronological order',
-        }
-      : proposals[selectedProposal];
-
-    if (!proposal) return;
-
-    try {
-      const { data: { session: freshSession } } = await supabase.auth.getSession();
-
-      if (!freshSession?.user?.id) {
-        throw new Error('No valid session found');
-      }
-
-      await supabase
-        .from('narrative_structures')
-        .upsert({
+      await supabase.from('narrative_structures').upsert(
+        {
           biography_id: biographyId,
-          user_id: freshSession.user.id,
+          user_id: session.user.id,
           original_order: DEFAULT_BIOGRAPHY_SECTION_ORDER,
-          selected_order: proposal.sectionOrder,
-          structure_type: proposal.structureType,
-          rationale: proposal.rationale,
+          selected_order: DEFAULT_BIOGRAPHY_SECTION_ORDER,
+          structure_type: 'chronological',
+          rationale: 'Original chronological order',
           updated_at: new Date().toISOString(),
-        }, {
-          onConflict: 'biography_id'
-        });
+        },
+        { onConflict: 'biography_id' }
+      );
 
-      onApplyStructure(proposal.sectionOrder, proposal.structureType, proposal.rationale);
+      onApplyStructure(DEFAULT_BIOGRAPHY_SECTION_ORDER, 'chronological', 'Original chronological order');
       onOpenChange(false);
     } catch (err) {
       console.error('Error saving structure:', err);
-      setError('Failed to save structure');
+      setError(copy.error);
+    } finally {
+      setSaving(false);
     }
-  };
-
-  const getSectionTitle = (key: string) => {
-    return t.sectionTitles[key as keyof typeof t.sectionTitles] ||
-           BIOGRAPHY_SECTIONS.find(s => s.key === key)?.title || key;
   };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="text-2xl">
-            {language === 'it' ? 'Revisione Finale della Struttura Narrativa' :
-             language === 'fr' ? 'Révision Finale de la Structure Narrative' :
-             language === 'de' ? 'Abschließende Überprüfung der Erzählstruktur' :
-             'Final Narrative Structure Review'}
-          </DialogTitle>
-          <DialogDescription>
-            {language === 'it' ? 'L\'IA ha analizzato tutte le sezioni completate e propone strutture narrative alternative. Puoi mantenere l\'ordine cronologico originale o esplorare nuovi modi di raccontare la tua storia.' :
-             language === 'fr' ? 'L\'IA a analysé toutes les sections complétées et propose des structures narratives alternatives. Vous pouvez conserver l\'ordre chronologique d\'origine ou explorer de nouvelles façons de raconter votre histoire.' :
-             language === 'de' ? 'Die KI hat alle abgeschlossenen Abschnitte analysiert und schlägt alternative Erzählstrukturen vor. Sie können die ursprüngliche chronologische Reihenfolge beibehalten oder neue Wege erkunden, Ihre Geschichte zu erzählen.' :
-             'AI has analyzed all completed sections and proposes alternative narrative structures. You can keep the original chronological order or explore new ways to tell your story.'}
-          </DialogDescription>
+          <DialogTitle className="text-2xl">{copy.title}</DialogTitle>
+          <DialogDescription>{copy.description}</DialogDescription>
         </DialogHeader>
 
-        {isAnalyzing ? (
-          <div className="flex items-center justify-center py-12">
-            <div className="text-center space-y-3">
-              <Loader2 className="h-8 w-8 animate-spin text-primary mx-auto" />
-              <p className="text-sm text-muted-foreground">
-                {language === 'it' ? 'Analisi delle sezioni in corso...' :
-                 language === 'fr' ? 'Analyse des sections en cours...' :
-                 language === 'de' ? 'Abschnitte werden analysiert...' :
-                 'Analyzing sections...'}
-              </p>
+        <Card className="p-5 border-2 border-primary bg-primary/5">
+          <div className="flex items-start gap-3">
+            <div className="h-6 w-6 rounded-full border-2 border-primary bg-primary flex items-center justify-center shrink-0 mt-0.5">
+              <Check className="h-4 w-4 text-primary-foreground" />
+            </div>
+            <div className="flex flex-wrap items-center gap-2">
+              {order.map((key, index) => (
+                <div key={key} className="flex items-center gap-1">
+                  <span className="text-xs bg-muted px-2 py-1 rounded">{titleFor(key)}</span>
+                  {index < order.length - 1 && <ArrowRight className="h-3 w-3 text-muted-foreground" />}
+                </div>
+              ))}
             </div>
           </div>
-        ) : error ? (
-          <div className="py-8">
-            <Card className="p-6 border-brand-wine/35 bg-brand-wine/8 dark:bg-brand-wine/15 dark:border-brand-wine/40">
-              <p className="text-brand-wineDark dark:text-brand-beigeLight text-sm">{error}</p>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={analyzeStructure}
-                className="mt-4"
-              >
-                <RefreshCw className="h-4 w-4 mr-2" />
-                {language === 'it' ? 'Riprova' :
-                 language === 'fr' ? 'Réessayer' :
-                 language === 'de' ? 'Erneut versuchen' :
-                 'Retry'}
-              </Button>
-            </Card>
-          </div>
-        ) : (
-          <div className="space-y-6 py-4">
-            <Card
-              className={cn(
-                'p-5 cursor-pointer transition-all border-2',
-                selectedProposal === -1
-                  ? 'border-primary bg-primary/5'
-                  : 'border-border hover:border-primary/50'
-              )}
-              onClick={() => setSelectedProposal(-1)}
-            >
-              <div className="flex items-start gap-3">
-                <div className={cn(
-                  'h-6 w-6 rounded-full border-2 flex items-center justify-center shrink-0 mt-0.5',
-                  selectedProposal === -1
-                    ? 'border-primary bg-primary'
-                    : 'border-border'
-                )}>
-                  {selectedProposal === -1 && <Check className="h-4 w-4 text-primary-foreground" />}
-                </div>
-                <div className="flex-1 space-y-2">
-                  <h3 className="font-semibold text-lg">
-                    {language === 'it' ? 'Ordine Cronologico Originale' :
-                     language === 'fr' ? 'Ordre Chronologique Original' :
-                     language === 'de' ? 'Original Chronologische Reihenfolge' :
-                     'Original Chronological Order'}
-                  </h3>
-                  <p className="text-sm text-muted-foreground">
-                    {language === 'it' ? 'Mantieni la struttura cronologica tradizionale della tua biografia.' :
-                     language === 'fr' ? 'Conservez la structure chronologique traditionnelle de votre biographie.' :
-                     language === 'de' ? 'Behalten Sie die traditionelle chronologische Struktur Ihrer Biografie bei.' :
-                     'Keep the traditional chronological structure of your biography.'}
-                  </p>
-                  <div className="flex flex-wrap items-center gap-2 pt-2">
-                    {DEFAULT_BIOGRAPHY_SECTION_ORDER.map((key, index) => (
-                      <div key={key} className="flex items-center gap-1">
-                        <span className="text-xs bg-muted px-2 py-1 rounded">
-                          {getSectionTitle(key)}
-                        </span>
-                        {index < DEFAULT_BIOGRAPHY_SECTION_ORDER.length - 1 && (
-                          <ArrowRight className="h-3 w-3 text-muted-foreground" />
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            </Card>
+        </Card>
 
-            {proposals.map((proposal, index) => (
-              <Card
-                key={index}
-                className={cn(
-                  'p-5 cursor-pointer transition-all border-2',
-                  selectedProposal === index
-                    ? 'border-primary bg-primary/5'
-                    : 'border-border hover:border-primary/50'
-                )}
-                onClick={() => setSelectedProposal(index)}
-              >
-                <div className="flex items-start gap-3">
-                  <div className={cn(
-                    'h-6 w-6 rounded-full border-2 flex items-center justify-center shrink-0 mt-0.5',
-                    selectedProposal === index
-                      ? 'border-primary bg-primary'
-                      : 'border-border'
-                  )}>
-                    {selectedProposal === index && <Check className="h-4 w-4 text-primary-foreground" />}
-                  </div>
-                  <div className="flex-1 space-y-3">
-                    <div>
-                      <h3 className="font-semibold text-lg">{proposal.structureType}</h3>
-                      <p className="text-sm text-muted-foreground mt-1">
-                        {language === 'it' ? 'Tema: ' :
-                         language === 'fr' ? 'Thème: ' :
-                         language === 'de' ? 'Thema: ' :
-                         'Theme: '}
-                        <span className="font-medium">{proposal.focusTheme}</span>
-                      </p>
-                    </div>
-                    <p className="text-sm leading-relaxed">{proposal.rationale}</p>
-                    <div className="flex flex-wrap items-center gap-2 pt-2">
-                      {proposal.sectionOrder.map((key, idx) => (
-                        <div key={key} className="flex items-center gap-1">
-                          <span className="text-xs bg-primary/10 px-2 py-1 rounded font-medium">
-                            {getSectionTitle(key)}
-                          </span>
-                          {idx < proposal.sectionOrder.length - 1 && (
-                            <ArrowRight className="h-3 w-3 text-primary" />
-                          )}
-                        </div>
-                      ))}
-                    </div>
-                    {proposal.transitionNotes && proposal.transitionNotes.length > 0 && (
-                      <div className="pt-2 border-t border-border/50">
-                        <p className="text-xs font-medium text-muted-foreground mb-2">
-                          {language === 'it' ? 'Note di Transizione:' :
-                           language === 'fr' ? 'Notes de Transition:' :
-                           language === 'de' ? 'Übergangshinweise:' :
-                           'Transition Notes:'}
-                        </p>
-                        <ul className="space-y-1">
-                          {proposal.transitionNotes.map((note, i) => (
-                            <li key={i} className="text-xs text-muted-foreground">• {note}</li>
-                          ))}
-                        </ul>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </Card>
-            ))}
-          </div>
-        )}
+        {error && <p className="text-sm text-destructive">{error}</p>}
 
         <div className="flex items-center justify-between pt-4 border-t">
-          <Button
-            variant="outline"
-            onClick={() => onOpenChange(false)}
-          >
-            {language === 'it' ? 'Annulla' :
-             language === 'fr' ? 'Annuler' :
-             language === 'de' ? 'Abbrechen' :
-             'Cancel'}
+          <Button variant="outline" onClick={() => onOpenChange(false)}>
+            {copy.cancel}
           </Button>
-          <Button
-            onClick={handleApplyStructure}
-            disabled={selectedProposal === null || isAnalyzing}
-          >
-            {language === 'it' ? 'Applica Struttura' :
-             language === 'fr' ? 'Appliquer la Structure' :
-             language === 'de' ? 'Struktur Anwenden' :
-             'Apply Structure'}
+          <Button onClick={handleApply} disabled={saving}>
+            {copy.apply}
           </Button>
         </div>
       </DialogContent>

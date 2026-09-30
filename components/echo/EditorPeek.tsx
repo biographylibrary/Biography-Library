@@ -14,8 +14,6 @@ interface EditorPeekProps {
   aiEnabled?: boolean;
   aiLoading?: boolean;
   onGrammarCheck?: () => void;
-  onReviewWithAi?: () => void;
-  onApertusReview?: () => void;
   aiUsageRefresh?: number;
   highlightChange?: { id: number; text: string } | null;
   undoLastChange?: { label: string; hint: string; onUndo: () => void };
@@ -36,8 +34,6 @@ export function EditorPeek({
   aiEnabled,
   aiLoading,
   onGrammarCheck,
-  onReviewWithAi,
-  onApertusReview,
   aiUsageRefresh,
   highlightChange,
   undoLastChange,
@@ -50,8 +46,6 @@ export function EditorPeek({
           aiLoading,
           hasText: hasTextContent(text),
           onGrammarCheck,
-          onReviewWithAi,
-          onApertusReview,
         }
       : undefined;
 

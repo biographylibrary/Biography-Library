@@ -8,10 +8,9 @@ import {
   type ToolDefinition,
 } from '@/lib/agents/infomaniak-client';
 import type { AgentRole, AgentType } from '@/lib/agents/models';
+import type { AiUsageContext } from '@/lib/ai/usage-recorder';
 import { appendMessage, updateAssistantMessageContent } from '@/lib/agents/thread-service';
 import { maybeCompressThreadMemory } from '@/lib/agents/thread-memory';
-import { executeCoachTool } from '@/lib/agents/tools/coach-tools';
-import { executeReviewerTool } from '@/lib/agents/tools/reviewer-tools';
 import {
   executeEchoTool,
   type EchoToolResultEvent,
@@ -138,27 +137,21 @@ export function historyToChatMessages(
 
 type SendFn = (event: string, data: unknown) => void;
 
+function echoUsage(prepared: PreparedAgentTurn): AiUsageContext {
+  return { purpose: 'echo', userId: prepared.userId, biographyId: prepared.biographyId ?? null };
+}
+
 async function executeToolCall(
   tc: ToolCall,
   prepared: PreparedAgentTurn,
   serviceClient: SupabaseClient
 ): Promise<{ content: string; event?: EchoToolResultEvent }> {
-  if (prepared.agentType === 'echo') {
-    return executeEchoTool(tc.function.name, tc.function.arguments, {
-      serviceClient,
-      userId: prepared.userId,
-      biographyId: prepared.biographyId,
-      echoPage: prepared.echoPage,
-      biographyMode: prepared.biographyMode,
-    });
-  }
-
-  const execTool =
-    prepared.agentType === 'publication_reviewer' ? executeReviewerTool : executeCoachTool;
-  return execTool(tc.function.name, tc.function.arguments, {
+  return executeEchoTool(tc.function.name, tc.function.arguments, {
     serviceClient,
     userId: prepared.userId,
-    biographyId: prepared.biographyId!,
+    biographyId: prepared.biographyId,
+    echoPage: prepared.echoPage,
+    biographyMode: prepared.biographyMode,
   });
 }
 
@@ -175,6 +168,7 @@ async function streamOrFetchText(
   try {
     for await (const chunk of chatStream({
       role: prepared.role,
+      usage: echoUsage(prepared),
       messages,
       stream: true,
     })) {
@@ -191,6 +185,7 @@ async function streamOrFetchText(
     try {
       const result = await chat({
         role: prepared.role,
+        usage: echoUsage(prepared),
         messages,
         stream: false,
       });
@@ -199,6 +194,7 @@ async function streamOrFetchText(
       console.warn('[agents] text pass failed, retrying without tool history:', textErr);
       const result = await chat({
         role: prepared.role,
+        usage: echoUsage(prepared),
         messages: messagesWithoutToolProtocol(messages),
         stream: false,
       });
@@ -268,6 +264,7 @@ export async function runStreamingAgentTurn(
       try {
         result = await chat({
           role: prepared.role,
+          usage: echoUsage(prepared),
           messages,
           tools: prepared.tools,
           tool_choice: 'auto',

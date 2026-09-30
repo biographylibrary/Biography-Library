@@ -1,6 +1,7 @@
 import { NextRequest } from 'next/server';
 import { getBearerJwt, buildUserClient } from '@/lib/server/admin-api-auth';
 import { buildServiceClient } from '@/lib/server/review-submit-pipeline';
+import { checkAuthorTokenCap, tokenCapResponseBody } from '@/lib/ai/token-caps';
 import { isPlatformStaffRole } from '@/lib/server/staff-roles';
 import type { UserRole } from '@/lib/auth-context';
 import type { AgentType, AgentRole } from '@/lib/agents/models';
@@ -10,12 +11,7 @@ import {
   verifyBiographyOwnership,
 } from '@/lib/agents/thread-service';
 import type { ChatMessage, ToolDefinition } from '@/lib/agents/infomaniak-client';
-import { COACH_TOOL_DEFINITIONS } from '@/lib/agents/tools/coach-tools';
-import { REVIEWER_CHAT_TOOL_DEFINITIONS } from '@/lib/agents/tools/reviewer-tools';
-import { buildCoachSystemPrompt } from '@/lib/agents/prompts/coach';
-import { buildPlatformGuideSystemPrompt } from '@/lib/agents/prompts/platform-guide';
 import { buildEchoSystemPrompt } from '@/lib/agents/prompts/echo';
-import { buildReviewerChatSystemPrompt } from '@/lib/agents/prompts/reviewer';
 import { getEchoToolsForContext } from '@/lib/agents/tools/echo-tools';
 import { indexBiography, retrieveBiographyContext } from '@/lib/agents/rag/biography-rag';
 import {
@@ -46,7 +42,16 @@ export type AuthResult =
   | { ok: true; userId: string; jwt: string };
 
 export type PreparedTurnResult =
-  | { ok: false; status: number; error: string; message?: string }
+  | {
+      ok: false;
+      status: number;
+      error: string;
+      message?: string;
+      period?: string;
+      resetsAt?: string;
+      limit?: number;
+      used?: number;
+    }
   | {
       ok: true;
       threadId: string;
@@ -82,7 +87,7 @@ export async function parseAgentChatBody(req: NextRequest): Promise<AgentChatReq
   const body = await req.json();
   const agentType = body?.agentType as AgentType | undefined;
   const message = typeof body?.message === 'string' ? body.message.trim() : '';
-  if (!agentType || !['platform_guide', 'biography_coach', 'publication_reviewer', 'echo'].includes(agentType)) {
+  if (agentType !== 'echo') {
     return { error: 'Invalid agentType' };
   }
   if (!message) return { error: 'message is required' };
@@ -97,20 +102,6 @@ export async function parseAgentChatBody(req: NextRequest): Promise<AgentChatReq
     onboardingIncomplete: body?.onboardingIncomplete === true,
   };
 }
-
-const COACH_SECTIONS_ONLY: Record<string, string> = {
-  en: 'The biography coach is only available in section mode. Please switch your biography to section mode to use the writing coach.',
-  it: 'Il coach biografico è disponibile solo in modalità a sezioni. Passa alla modalità a sezioni per usare il coach di scrittura.',
-  fr: 'Le coach biographique n’est disponible qu’en mode sections. Passez en mode sections pour utiliser le coach d’écriture.',
-  de: 'Der Biografie-Coach ist nur im Abschnittsmodus verfügbar. Wechseln Sie in den Abschnittsmodus, um den Schreib-Coach zu nutzen.',
-};
-
-const REVIEWER_UNAVAILABLE: Record<string, string> = {
-  en: 'The publication reviewer is not available for this biography.',
-  it: 'Il revisore di pubblicazione non è disponibile per questa biografia.',
-  fr: 'Le réviseur de publication n’est pas disponible pour cette biographie.',
-  de: 'Der Publikationsprüfer ist für diese Biografie nicht verfügbar.',
-};
 
 const SECTION_TITLE_FALLBACK: Record<string, Record<string, string>> = {
   en: Object.fromEntries(BIOGRAPHY_SECTIONS.map((s) => [s.key, s.title])),
@@ -162,119 +153,10 @@ export async function prepareAgentTurn(
     };
   }
 
-  if (agentType === 'biography_coach' || agentType === 'publication_reviewer') {
-    if (!biographyId) {
-      return { ok: false, status: 400, error: 'biographyId is required' };
-    }
-    const ownership = await verifyBiographyOwnership(serviceClient, biographyId, userId);
-    if (!ownership.ok) {
-      return { ok: false, status: 403, error: 'Forbidden' };
-    }
-    if (agentType === 'biography_coach' && ownership.biography_mode !== 'sections') {
-      return {
-        ok: false,
-        status: 400,
-        error: 'sections_mode_required',
-        message: COACH_SECTIONS_ONLY[locale] ?? COACH_SECTIONS_ONLY.en,
-      };
-    }
-    if (agentType === 'publication_reviewer' && ownership.biography_mode === 'freeflow') {
-      return {
-        ok: false,
-        status: 400,
-        error: 'reviewer_sections_only',
-        message: REVIEWER_UNAVAILABLE[locale] ?? REVIEWER_UNAVAILABLE.en,
-      };
-    }
-
-    const thread = await getOrCreateThread(serviceClient, {
-      userId,
-      agentType,
-      biographyId: biographyId ?? null,
-      locale,
-    });
-
-    const { history, memoryBlock } = await buildAgentContext(serviceClient, thread);
-
-    if (agentType === 'biography_coach') {
-      const sectionKey = activeSection ?? 'childhood';
-      if (!BIOGRAPHY_SECTIONS.some((s) => s.key === sectionKey)) {
-        return { ok: false, status: 400, error: 'Invalid activeSection' };
-      }
-
-      try {
-        await indexBiography(serviceClient, biographyId);
-      } catch (err) {
-        console.warn('[agents] indexBiography failed:', err);
-      }
-
-      let ragContext = '';
-      try {
-        ragContext = await retrieveBiographyContext(serviceClient, biographyId, message, 4);
-      } catch (err) {
-        console.warn('[agents] retrieveBiographyContext failed:', err);
-      }
-
-      const title = sectionTitleFor(locale, sectionKey);
-      let systemPrompt = buildCoachSystemPrompt(locale, sectionKey, title, ownership.narrative);
-      systemPrompt = appendMemorialBlock(systemPrompt, ownership.narrative, locale);
-      if (memoryBlock) {
-        systemPrompt += memoryBlock;
-      }
-      if (ragContext) {
-        systemPrompt += `\n\nRelevant excerpts from this biography (for context only):\n${ragContext}`;
-      }
-
-      return {
-        ok: true,
-        threadId: thread.id,
-        history,
-        userMessage: message,
-        locale,
-        systemPrompt,
-        role: 'coach',
-        agentType,
-        tools: COACH_TOOL_DEFINITIONS,
-        biographyId,
-        userId,
-      };
-    }
-
-    // publication_reviewer
-    try {
-      await indexBiography(serviceClient, biographyId);
-    } catch (err) {
-      console.warn('[agents] indexBiography failed:', err);
-    }
-
-    let ragContext = '';
-    try {
-      ragContext = await retrieveBiographyContext(serviceClient, biographyId, message, 4);
-    } catch (err) {
-      console.warn('[agents] retrieveBiographyContext failed:', err);
-    }
-
-    let systemPrompt = buildReviewerChatSystemPrompt(locale);
-    if (memoryBlock) {
-      systemPrompt += memoryBlock;
-    }
-    if (ragContext) {
-      systemPrompt += `\n\nRelevant excerpts from this biography:\n${ragContext}`;
-    }
-
-    return {
-      ok: true,
-      threadId: thread.id,
-      history,
-      userMessage: message,
-      locale,
-      systemPrompt,
-      role: 'reviewer',
-      agentType,
-      tools: REVIEWER_CHAT_TOOL_DEFINITIONS,
-      biographyId,
-      userId,
-    };
+  const cap = await checkAuthorTokenCap(serviceClient, userId, { isStaff: skipRateLimit });
+  if (!cap.allowed) {
+    const body = tokenCapResponseBody(cap, payload.language);
+    return { ok: false, status: 429, ...body };
   }
 
   const thread = await getOrCreateThread(serviceClient, {
@@ -286,139 +168,90 @@ export async function prepareAgentTurn(
 
   const { history, memoryBlock } = await buildAgentContext(serviceClient, thread);
 
-  if (agentType === 'echo') {
-    const echoPage = payload.echoPage ?? 'hub';
-    let biographyMode: 'sections' | 'freeflow' | undefined;
-    let publicationStatus: string | undefined;
-    let narrative: BiographyNarrativeContext | undefined;
+  const echoPage = payload.echoPage ?? 'hub';
+  let biographyMode: 'sections' | 'freeflow' | undefined;
+  let publicationStatus: string | undefined;
+  let narrative: BiographyNarrativeContext | undefined;
 
-    if (biographyId) {
-      const ownership = await verifyBiographyOwnership(serviceClient, biographyId, userId);
-      if (!ownership.ok) {
-        return { ok: false, status: 403, error: 'Forbidden' };
-      }
-      biographyMode = ownership.biography_mode as 'sections' | 'freeflow' | undefined;
-      publicationStatus = ownership.status;
-      narrative = ownership.narrative;
-
-      try {
-        await indexBiography(serviceClient, biographyId);
-      } catch (err) {
-        console.warn('[agents] indexBiography failed:', err);
-      }
+  if (biographyId) {
+    const ownership = await verifyBiographyOwnership(serviceClient, biographyId, userId);
+    if (!ownership.ok) {
+      return { ok: false, status: 403, error: 'Forbidden' };
     }
-
-    let ragContext = '';
-    let kbContext = '';
-    let kbSources: string[] = [];
-
-    if (biographyId && message) {
-      try {
-        ragContext = await retrieveBiographyContext(serviceClient, biographyId, message, 4);
-      } catch (err) {
-        console.warn('[agents] retrieveBiographyContext failed:', err);
-      }
-    }
+    biographyMode = ownership.biography_mode as 'sections' | 'freeflow' | undefined;
+    publicationStatus = ownership.status;
+    narrative = ownership.narrative;
 
     try {
-      await ensureHelpKbIndexed(serviceClient, locale);
-      const kb = await retrieveKbContext(serviceClient, message, locale, 4);
-      kbContext = kb.context;
-      kbSources = kb.sources;
+      await indexBiography(serviceClient, biographyId, userId);
     } catch (err) {
-      console.warn('[agents] kb retrieve failed:', err);
+      console.warn('[agents] indexBiography failed:', err);
     }
-
-    let systemPrompt = buildEchoSystemPrompt(locale, {
-      page: echoPage,
-      biographyMode,
-      publicationStatus,
-      onboardingIncomplete: payload.onboardingIncomplete,
-      narrative,
-    });
-
-    systemPrompt = appendMemorialBlock(systemPrompt, narrative, locale);
-
-    if (memoryBlock) {
-      systemPrompt += memoryBlock;
-    }
-
-    if (ragContext) {
-      systemPrompt += `\n\nRelevant biography excerpts:\n${ragContext}`;
-    }
-    if (kbContext) {
-      systemPrompt += `\n\nKnowledge base excerpts:\n${kbContext}`;
-    }
-
-    if (echoPage === 'editor_sections' && biographyId && activeSection) {
-      const title = sectionTitleFor(locale, activeSection);
-      const writerLabel =
-        narrative && isMemorialNarrative(narrative)
-          ? `The writer (${narrative.writerName || 'author'}) is documenting ${narrative.subjectName}`
-          : 'The author';
-      systemPrompt +=
-        `\n\n=== ACTIVE SECTION (mandatory) ===\n` +
-        `${writerLabel} is currently on chapter: "${title}" (sectionKey: ${activeSection}).\n` +
-        `They selected this chapter in the sidebar — do NOT ask which chapter to work on.\n` +
-        `All coaching, questions, and drafts must focus on "${title}" unless they explicitly request another section.\n` +
-        `When using propose_draft, use sectionKey "freeflow". To change existing words, set replaceText to the exact passage and draftText to the new wording. Set replaceAll true to change every occurrence, such as every long dash. If you omit replaceText, the text is only added at the end.\n` +
-        `=== END ACTIVE SECTION ===`;
-    }
-
-    const echoRole: AgentRole =
-      echoPage === 'editor_sections' ||
-      echoPage === 'editor_freeflow' ||
-      echoPage === 'publication'
-        ? 'coach'
-        : 'onboarding';
-
-    return {
-      ok: true,
-      threadId: thread.id,
-      history,
-      userMessage: message,
-      locale,
-      systemPrompt,
-      role: echoRole,
-      agentType,
-      tools: getEchoToolsForContext({
-        echoPage,
-        biographyId,
-        onboardingIncomplete: payload.onboardingIncomplete,
-      }),
-      biographyId,
-      userId,
-      kbSources,
-      echoPage,
-      biographyMode,
-    };
   }
 
-  const systemPrompt = buildPlatformGuideSystemPrompt(locale);
-
-  try {
-    await ensureHelpKbIndexed(serviceClient, locale);
-  } catch (err) {
-    console.warn('[agents] ensureHelpKbIndexed failed:', err);
-  }
-
+  let ragContext = '';
   let kbContext = '';
   let kbSources: string[] = [];
+
+  if (biographyId && message) {
+    try {
+      ragContext = await retrieveBiographyContext(serviceClient, biographyId, message, 4, userId);
+    } catch (err) {
+      console.warn('[agents] retrieveBiographyContext failed:', err);
+    }
+  }
+
   try {
-    const kb = await retrieveKbContext(serviceClient, message, locale, 4);
+    await ensureHelpKbIndexed(serviceClient, locale, userId);
+    const kb = await retrieveKbContext(serviceClient, message, locale, 4, userId);
     kbContext = kb.context;
     kbSources = kb.sources;
   } catch (err) {
-    console.warn('[agents] retrieveKbContext failed:', err);
+    console.warn('[agents] kb retrieve failed:', err);
   }
 
-  let fullSystemPrompt = systemPrompt;
+  let systemPrompt = buildEchoSystemPrompt(locale, {
+    page: echoPage,
+    biographyMode,
+    publicationStatus,
+    onboardingIncomplete: payload.onboardingIncomplete,
+    narrative,
+  });
+
+  systemPrompt = appendMemorialBlock(systemPrompt, narrative, locale);
+
   if (memoryBlock) {
-    fullSystemPrompt += memoryBlock;
+    systemPrompt += memoryBlock;
+  }
+
+  if (ragContext) {
+    systemPrompt += `\n\nRelevant biography excerpts:\n${ragContext}`;
   }
   if (kbContext) {
-    fullSystemPrompt += `\n\nRelevant knowledge base excerpts:\n${kbContext}`;
+    systemPrompt += `\n\nKnowledge base excerpts:\n${kbContext}`;
   }
+
+  if (echoPage === 'editor_sections' && biographyId && activeSection) {
+    const title = sectionTitleFor(locale, activeSection);
+    const writerLabel =
+      narrative && isMemorialNarrative(narrative)
+        ? `The writer (${narrative.writerName || 'author'}) is documenting ${narrative.subjectName}`
+        : 'The author';
+    systemPrompt +=
+      `\n\n=== ACTIVE SECTION (mandatory) ===\n` +
+      `${writerLabel} is currently on chapter: "${title}" (sectionKey: ${activeSection}).\n` +
+      `They selected this chapter in the sidebar — do NOT ask which chapter to work on.\n` +
+      `All coaching, questions, and drafts must focus on "${title}" unless they explicitly request another section.\n` +
+      `When using propose_draft, use sectionKey "freeflow". To change existing words, set replaceText to the exact passage and draftText to the new wording. Set replaceAll true to change every occurrence, such as every long dash. If you omit replaceText, the text is only added at the end.\n` +
+      `=== END ACTIVE SECTION ===`;
+  }
+
+  const echoRole: AgentRole =
+    echoPage === 'editor_sections' ||
+    echoPage === 'editor_freeflow' ||
+    echoPage === 'publication'
+      ? 'coach'
+      : 'onboarding';
 
   return {
     ok: true,
@@ -426,11 +259,19 @@ export async function prepareAgentTurn(
     history,
     userMessage: message,
     locale,
-    systemPrompt: fullSystemPrompt,
-    role: 'onboarding',
+    systemPrompt,
+    role: echoRole,
     agentType,
+    tools: getEchoToolsForContext({
+      echoPage,
+      biographyId,
+      onboardingIncomplete: payload.onboardingIncomplete,
+    }),
+    biographyId,
     userId,
     kbSources,
+    echoPage,
+    biographyMode,
   };
 }
 

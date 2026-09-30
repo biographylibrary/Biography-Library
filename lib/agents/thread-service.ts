@@ -4,8 +4,6 @@ import {
   buildBiographyNarrativeContext,
   type BiographyNarrativeContext,
 } from '@/lib/biography-narrative-context';
-import { threadAgentTypeForStorage } from './echo-thread-storage';
-import { resolveEchoActiveThread } from './echo-thread-resolve';
 import {
   AGENT_CONTEXT_MESSAGE_LIMIT,
   AGENT_UI_MESSAGE_LIMIT,
@@ -83,6 +81,33 @@ export async function checkAgentRateLimit(
   return { allowed: true };
 }
 
+export async function getActiveThread(
+  serviceClient: SupabaseClient,
+  params: {
+    userId: string;
+    agentType: AgentType;
+    biographyId?: string | null;
+  }
+): Promise<AgentThreadRow | null> {
+  const { userId, agentType, biographyId = null } = params;
+
+  let query = serviceClient
+    .from('agent_threads')
+    .select('*')
+    .eq('user_id', userId)
+    .eq('agent_type', agentType)
+    .eq('status', 'active');
+
+  if (biographyId) {
+    query = query.eq('biography_id', biographyId);
+  } else {
+    query = query.is('biography_id', null);
+  }
+
+  const { data } = await query.maybeSingle();
+  return (data as AgentThreadRow | null) ?? null;
+}
+
 export async function getOrCreateThread(
   serviceClient: SupabaseClient,
   params: {
@@ -94,63 +119,24 @@ export async function getOrCreateThread(
 ): Promise<AgentThreadRow> {
   const { userId, agentType, biographyId = null, locale = 'en' } = params;
 
-  if (agentType === 'echo') {
-    const resolved = await resolveEchoActiveThread(serviceClient, { userId, biographyId });
-    if (resolved) return resolved;
-  } else {
-    const storedAgentType = threadAgentTypeForStorage(agentType);
-
-    let query = serviceClient
-      .from('agent_threads')
-      .select('*')
-      .eq('user_id', userId)
-      .eq('agent_type', storedAgentType)
-      .eq('status', 'active');
-
-    if (biographyId) {
-      query = query.eq('biography_id', biographyId);
-    } else {
-      query = query.is('biography_id', null);
-    }
-
-    const { data: existing } = await query.maybeSingle();
-    if (existing) return existing as AgentThreadRow;
-  }
-
-  const storedAgentType = threadAgentTypeForStorage(agentType);
+  const existing = await getActiveThread(serviceClient, { userId, agentType, biographyId });
+  if (existing) return existing;
 
   const { data: created, error } = await serviceClient
     .from('agent_threads')
     .insert({
       user_id: userId,
       biography_id: biographyId,
-      agent_type: storedAgentType,
+      agent_type: agentType,
       locale,
     })
     .select('*')
     .single();
 
   if (error) {
-    if (agentType === 'echo') {
-      const resolved = await resolveEchoActiveThread(serviceClient, { userId, biographyId });
-      if (resolved) return resolved;
-    }
-
-    let retryQuery = serviceClient
-      .from('agent_threads')
-      .select('*')
-      .eq('user_id', userId)
-      .eq('agent_type', storedAgentType)
-      .eq('status', 'active');
-
-    if (biographyId) {
-      retryQuery = retryQuery.eq('biography_id', biographyId);
-    } else {
-      retryQuery = retryQuery.is('biography_id', null);
-    }
-
-    const { data: retry } = await retryQuery.maybeSingle();
-    if (retry) return retry as AgentThreadRow;
+    // Due richieste insieme: l'indice univoco ha fatto vincere l'altra.
+    const retry = await getActiveThread(serviceClient, { userId, agentType, biographyId });
+    if (retry) return retry;
     throw error;
   }
   return created as AgentThreadRow;
@@ -302,38 +288,6 @@ export async function verifyThreadOwnership(
   return (data as AgentThreadRow | null) ?? null;
 }
 
-export async function getActiveThread(
-  serviceClient: SupabaseClient,
-  params: {
-    userId: string;
-    agentType: AgentType;
-    biographyId?: string | null;
-  }
-): Promise<AgentThreadRow | null> {
-  const { userId, agentType, biographyId = null } = params;
-
-  if (agentType === 'echo') {
-    return resolveEchoActiveThread(serviceClient, { userId, biographyId });
-  }
-
-  const storedAgentType = threadAgentTypeForStorage(agentType);
-
-  let query = serviceClient
-    .from('agent_threads')
-    .select('*')
-    .eq('user_id', userId)
-    .eq('agent_type', storedAgentType)
-    .eq('status', 'active');
-
-  if (biographyId) {
-    query = query.eq('biography_id', biographyId);
-  } else {
-    query = query.is('biography_id', null);
-  }
-
-  const { data } = await query.maybeSingle();
-  return (data as AgentThreadRow | null) ?? null;
-}
 
 export async function verifyBiographyOwnership(
   serviceClient: SupabaseClient,

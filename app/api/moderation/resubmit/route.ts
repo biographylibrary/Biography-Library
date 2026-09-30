@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getAuthenticatedUser } from '@/lib/server/onboarding-api-auth';
 import { writeModerationMessage } from '@/lib/server/moderation-register';
+import { screenRevisionAndAttach } from '@/lib/server/revision-screening';
 import { buildServiceClient } from '@/lib/server/review-submit-pipeline';
 
 export const dynamic = 'force-dynamic';
@@ -39,13 +40,20 @@ export async function POST(req: NextRequest) {
     .order('created_at', { ascending: false })
     .limit(1)
     .maybeSingle();
-  if (report) {
+  const reportId = (report as { id: string } | null)?.id ?? null;
+  if (reportId) {
     await writeModerationMessage(svc, {
-      reportId: (report as { id: string }).id,
+      reportId,
       senderId: auth.user.id,
       message: 'The author sent the revision. The biography stays out of the catalog until a reviewer accepts it.',
     });
   }
+
+  // Screening del testo corretto, senza pubblicare: l'esito si allega al rapporto e
+  // lascia l'impronta nel registro. Il revisore approva vedendolo; la pubblicazione
+  // passa dal confronto dell'impronta. Se lo screening non gira, l'invio riesce
+  // comunque e il revisore trova scritto che va rilanciato.
+  await screenRevisionAndAttach(svc, { biographyId, reportId, authorId: auth.user.id });
 
   return NextResponse.json({ ok: true });
 }

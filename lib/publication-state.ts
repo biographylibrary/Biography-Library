@@ -24,15 +24,36 @@ export function isBiographyPublicationStatus(s: string): s is BiographyPublicati
   return (BIOGRAPHY_STATUS_VALUES as readonly string[]).includes(s);
 }
 
-/** Author may still change body text (not yet locked for definitive PDF / screening). */
+/**
+ * Elenco CHIUSO degli stati in cui l'autore scrive il testo della scheda.
+ * È lo stesso elenco della funzione SQL `author_text_writable_statuses()`
+ * (supabase/migrations/20260930120150_author_text_whitelist.sql): un test li confronta.
+ * Uno stato nuovo nasce bloccato finché non lo si aggiunge qui e in SQL di proposito.
+ *
+ * Fuori elenco, tra gli altri: `locked_pending_screening`, `under_review`,
+ * `revision_pending_review`, `published`, `revision_overdue` (nessun percorso per
+ * inviare la correzione), `removed`, `suspended_pending_verification`.
+ */
+export const AUTHOR_TEXT_WRITABLE_STATUSES = [
+  'draft',
+  'sections_complete',
+  'final_version',
+  'pdf_draft',
+  'revision_requested',
+] as const;
+
+/** Author may change body text in this state (not yet locked for screening, review or publication). */
 export function isAuthorTextEditableStatus(status: BiographyPublicationStatus): boolean {
-  return (
-    status === 'draft' ||
-    status === 'sections_complete' ||
-    status === 'final_version' ||
-    status === 'pdf_draft' ||
-    status === 'revision_requested'
-  );
+  return (AUTHOR_TEXT_WRITABLE_STATUSES as readonly string[]).includes(status);
+}
+
+/**
+ * Controllo per le rotte server che scrivono testo con la chiave di servizio
+ * (il trigger del database non le ferma). Una scheda congelata non si scrive mai.
+ */
+export function canAuthorWriteText(status: string | null | undefined, isFrozen?: boolean | null): boolean {
+  if (isFrozen) return false;
+  return typeof status === 'string' && (AUTHOR_TEXT_WRITABLE_STATUSES as readonly string[]).includes(status);
 }
 
 /**

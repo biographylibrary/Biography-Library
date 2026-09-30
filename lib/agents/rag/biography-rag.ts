@@ -29,7 +29,8 @@ function chunkText(text: string, sectionKey: string): { sectionKey: string; inde
 
 export async function indexBiography(
   serviceClient: SupabaseClient,
-  biographyId: string
+  biographyId: string,
+  userId: string | null = null
 ): Promise<{ indexed: number; skipped: boolean }> {
   const { data: bio, error } = await serviceClient
     .from('biographies')
@@ -81,7 +82,10 @@ export async function indexBiography(
     return { indexed: 0, skipped: false };
   }
 
-  const vectors = await embed(toEmbed.map((c) => c.content));
+  const vectors = await embed(
+    toEmbed.map((c) => c.content),
+    { purpose: 'embedding', userId, biographyId }
+  );
 
   for (let i = 0; i < toEmbed.length; i++) {
     const c = toEmbed[i];
@@ -105,7 +109,8 @@ export async function retrieveBiographyContext(
   serviceClient: SupabaseClient,
   biographyId: string,
   query: string,
-  k = 4
+  k = 4,
+  userId: string | null = null
 ): Promise<string> {
   const { data: chunks, error } = await serviceClient
     .from('biography_chunks')
@@ -116,7 +121,7 @@ export async function retrieveBiographyContext(
 
   let queryVec: number[];
   try {
-    [queryVec] = await embed([query]);
+    [queryVec] = await embed([query], { purpose: 'embedding', userId, biographyId });
   } catch {
     return '';
   }

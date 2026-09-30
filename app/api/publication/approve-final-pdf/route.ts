@@ -8,6 +8,7 @@ import {
 } from '@/lib/server/review-submit-pipeline';
 import { generateUploadFinalPdf } from '@/lib/server/final-pdf-artifacts';
 import { resolveRecordLanguageTag } from '@/lib/record-language';
+import { computePublicFingerprint, recordScreening } from '@/lib/server/publication-fingerprint';
 
 type AnyClient = SupabaseClient<any, any, any>;
 
@@ -185,6 +186,25 @@ export async function POST(req: NextRequest) {
           ai_screening_status: 'flagged',
         })
         .eq('id', biographyId);
+
+      // Il testo passa alla persona senza uno screening: si registra comunque l'impronta
+      // di quello che le viene consegnato (examined_chars = 0: il modello di screening
+      // non l'ha esaminato), così l'approvazione umana potrà confrontarla.
+      try {
+        const fingerprint = await computePublicFingerprint(serviceClient, biographyId);
+        if (fingerprint) {
+          await recordScreening(serviceClient, {
+            biographyId,
+            fingerprint,
+            verdict: 'flagged',
+            scope: 'full',
+            examinedChars: 0,
+            sourceChars: 0,
+          });
+        }
+      } catch (recordErr) {
+        console.error('[approve-final-pdf] screening record failed:', recordErr);
+      }
 
       return NextResponse.json({
         result: 'under_review',

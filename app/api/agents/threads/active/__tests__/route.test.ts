@@ -58,15 +58,15 @@ describe('threads/active route', () => {
     });
   });
 
-  it('GET returns null thread when none exists for non-echo agents', async () => {
-    getActiveThread.mockResolvedValue(null);
+  it('GET rejects agent types other than echo', async () => {
     const { GET } = await import('@/app/api/agents/threads/active/route');
-    const req = new NextRequest(
-      'http://localhost/api/agents/threads/active?agentType=biography_coach&biographyId=bio-1'
-    );
-    const res = await GET(req);
-    expect(res.status).toBe(200);
-    await expect(res.json()).resolves.toEqual({ thread: null, messages: [] });
+    for (const agentType of ['biography_coach', 'publication_reviewer', 'platform_guide']) {
+      const req = new NextRequest(
+        `http://localhost/api/agents/threads/active?agentType=${agentType}&biographyId=bio-1`
+      );
+      const res = await GET(req);
+      expect(res.status).toBe(400);
+    }
   });
 
   it('GET creates echo thread when missing', async () => {

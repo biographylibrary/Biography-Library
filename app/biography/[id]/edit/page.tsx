@@ -22,12 +22,9 @@ import { AiSuggestionsDialog } from '@/components/editor/ai-suggestions-panel';
 import { ShareLinkPanel } from '@/components/editor/share-link-panel';
 import { PhotoGalleryDialog } from '@/components/editor/PhotoGalleryDialog';
 import { ImportTextDialog } from '@/components/editor/import-text-dialog';
-import { AISectionReview } from '@/components/editor/AISectionReview';
-import { ApertusReviewDialog } from '@/components/editor/ApertusReviewDialog';
 import { FinalReviewDialog } from '@/components/editor/FinalReviewDialog';
 import { ReviewPublicationDialog } from '@/components/editor/ReviewPublicationDialog';
 import { FinalVersionEditor } from '@/components/editor/FinalVersionEditor';
-import { PublishConfirmationDialog } from '@/components/editor/PublishConfirmationDialog';
 import { SubmitForReviewDialog } from '@/components/editor/SubmitForReviewDialog';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import {
@@ -42,23 +39,18 @@ import {
   composeSingleDocument,
   listChapterAnchors,
 } from '@/lib/editor/single-document';
+import { INITIAL_AI_STATE, type AiPanelState } from '@/lib/ai-constants';
+import { checkGrammar, AiLimitError } from '@/lib/grammar-service';
 import {
-  INITIAL_AI_STATE,
-  getFallbackPrompts,
-  type AiPanelState,
-} from '@/lib/ai-constants';
-import {
-  checkGrammar,
-  getGuidedPrompts,
-  getSummary,
-  AiLimitError,
-  runPrePublicationCheck,
-} from '@/lib/ai-service';
+  REOPEN_SECTION_PAYLOAD,
+  buildEditorSavePayload,
+  buildFinalVersionPayload,
+  buildLicenseChoicePayload,
+  buildMarkCompletePayload,
+} from '@/lib/editor/write-payloads';
 import { toast } from 'sonner';
 import type { Biography, BiographyPublicationStatus } from '@/lib/biographies';
-import { canPublishNextChapter } from '@/lib/biography-chapter-cooldown';
-import { isBiographyPublicationStatus, isReviewOrScreeningLockStatus } from '@/lib/publication-state';
-import { provisionalUntilOnFirstPublish } from '@/lib/provisional-window';
+import { canAuthorWriteText, isBiographyPublicationStatus, isReviewOrScreeningLockStatus } from '@/lib/publication-state';
 import { generateBiographyPDF, checkBiographyPdfReadiness, checkPdfPreflight, getPdfReadinessMessage } from '@/lib/pdf-export';
 import { AdvancedExportDialog } from '@/components/export/AdvancedExportDialog';
 import { LicenseChoiceDialog } from '@/components/editor/LicenseChoiceDialog';
@@ -66,7 +58,6 @@ import { AuthorLicensePanel } from '@/components/editor/AuthorLicensePanel';
 import { PermanenceDialog } from '@/components/editor/PermanenceDialog';
 import { useTranslation } from '@/lib/i18n/i18n-context';
 import { LICENSE_BY_NC_SA_4, type ContentLicenseUri } from '@/lib/rights';
-import { nfcBiographyWriteFields } from '@/lib/nfc-biography';
 import { storedToArchiveMarkdown } from '@/lib/archive-markdown';
 import { stripHtmlTags } from '@/lib/export-utils';
 import { Loader as Loader2, Sparkles, Snowflake as SnowflakeIcon, Send as SendIcon, TriangleAlert, Lock } from 'lucide-react';
@@ -78,6 +69,18 @@ import {
   getCompletedSections,
 } from '@/lib/section-completion-service';
 import { buildBiographyNarrativeContext } from '@/lib/biography-narrative-context';
+import { ChapterCooldownBanner } from '@/components/dashboard/ChapterCooldownBanner';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
+import { getChapterCooldownState } from '@/lib/biography-chapter-cooldown';
 
 type SaveStatus = 'saved' | 'saving' | 'unsaved' | 'error';
 
@@ -136,6 +139,8 @@ export default function BiographyEditorPage() {
   }, [id, refreshOnboarding, router, searchParams]);
 
   const [biography, setBiography] = useState<Biography | null>(null);
+  const [showReopenDialog, setShowReopenDialog] = useState(false);
+  const [reopenLoading, setReopenLoading] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [title, setTitle] = useState('');
   const [privacy, setPrivacy] = useState<'private' | 'link-only' | 'public'>(
@@ -179,8 +184,6 @@ export default function BiographyEditorPage() {
   const [aiState, setAiState] = useState<AiPanelState>(INITIAL_AI_STATE);
 
   const [showExportDialog, setShowExportDialog] = useState(false);
-  const [showReviewDialog, setShowReviewDialog] = useState(false);
-  const [showApertusDialog, setShowApertusDialog] = useState(false);
   const [completedSections, setCompletedSections] = useState<string[]>([]);
   const [showFinalReview, setShowFinalReview] = useState(false);
   const [showReviewPublicationDialog, setShowReviewPublicationDialog] = useState(false);
@@ -197,10 +200,8 @@ export default function BiographyEditorPage() {
     'start' | 'approve' | 'prepare' | null
   >(null);
   const [publicationActionError, setPublicationActionError] = useState<string | null>(null);
-  const [showPublishDialog, setShowPublishDialog] = useState(false);
   const [showSubmitForReviewDialog, setShowSubmitForReviewDialog] = useState(false);
   const [isSubmittingForReview, setIsSubmittingForReview] = useState(false);
-  const [resubmitScreeningLoading, setResubmitScreeningLoading] = useState(false);
   const [submitReadinessError, setSubmitReadinessError] = useState<string | null>(null);
   const [submitPreflightError, setSubmitPreflightError] = useState<string | null>(null);
   const [isPreflightChecking, setIsPreflightChecking] = useState(false);
@@ -218,7 +219,6 @@ export default function BiographyEditorPage() {
   const [authorName, setAuthorName] = useState<string>('');
   const [biographyType, setBiographyType] = useState<'autobiography' | 'memorial'>('autobiography');
   const [slug, setSlug] = useState<string | null>(null);
-const [isPublishing, setIsPublishing] = useState(false);
   const [revisionPassages, setRevisionPassages] = useState<Array<{ section_key: string; ai_reason: string }>>([]);
   const [revisionNote, setRevisionNote] = useState<string | null>(null);
   const [revisionBannerDismissed, setRevisionBannerDismissed] = useState(false);
@@ -465,22 +465,22 @@ const [isPublishing, setIsPublishing] = useState(false);
     dirtyRef.current = false;
     setSaveStatus('saving');
     const isMemorial = biographyTypeRef.current === 'memorial';
-    const nfcFields = nfcBiographyWriteFields({
-      title: titleRef.current,
-      subject_name: isMemorial ? titleRef.current : undefined,
-      author_name: authorNameRef.current,
-      content: contentRef.current,
-      content_freeflow: contentFreeflowRef.current,
-      name_as_written: titleRef.current,
+    const savePayload = buildEditorSavePayload({
+      fields: {
+        title: titleRef.current,
+        subject_name: isMemorial ? titleRef.current : undefined,
+        author_name: authorNameRef.current,
+        content: contentRef.current,
+        content_freeflow: contentFreeflowRef.current,
+        name_as_written: titleRef.current,
+      },
+      isMemorial,
+      visibility: privacyRef.current,
+      biographyMode: biographyModeRef.current,
     });
     const { error } = await supabase
       .from('biographies')
-      .update({
-        ...nfcFields,
-        ...(isMemorial ? {} : { subject_name: null }),
-        visibility: privacyRef.current,
-        biography_mode: biographyModeRef.current,
-      })
+      .update(savePayload)
       .eq('id', id);
     if (error) {
       setSaveStatus('error');
@@ -495,22 +495,22 @@ const [isPublishing, setIsPublishing] = useState(false);
     dirtyRef.current = false;
     setSaveStatus('saving');
     const isMemorial = biographyTypeRef.current === 'memorial';
-    const nfcFields = nfcBiographyWriteFields({
-      title: titleRef.current,
-      subject_name: isMemorial ? titleRef.current : undefined,
-      author_name: authorNameRef.current,
-      content: contentRef.current,
-      content_freeflow: contentFreeflowRef.current,
-      name_as_written: titleRef.current,
+    const savePayload = buildEditorSavePayload({
+      fields: {
+        title: titleRef.current,
+        subject_name: isMemorial ? titleRef.current : undefined,
+        author_name: authorNameRef.current,
+        content: contentRef.current,
+        content_freeflow: contentFreeflowRef.current,
+        name_as_written: titleRef.current,
+      },
+      isMemorial,
+      visibility: privacyRef.current,
+      biographyMode: biographyModeRef.current,
     });
     const { error } = await supabase
       .from('biographies')
-      .update({
-        ...nfcFields,
-        ...(isMemorial ? {} : { subject_name: null }),
-        visibility: privacyRef.current,
-        biography_mode: biographyModeRef.current,
-      })
+      .update(savePayload)
       .eq('id', id);
     if (error) {
       setSaveStatus('error');
@@ -624,14 +624,12 @@ const [isPublishing, setIsPublishing] = useState(false);
           return;
         }
 
-        const update: Record<string, unknown> = {
-          rights_statement_uri: licenseUri,
-          rights_chosen_at: now,
-          rights_holder: authorNameRef.current?.trim() || null,
-        };
-        if (!isUpgrade) {
-          update.visibility = 'public';
-        }
+        const update = buildLicenseChoicePayload({
+          licenseUri,
+          now,
+          authorName: authorNameRef.current,
+          isUpgrade,
+        });
 
         const { error } = await supabase
           .from('biographies')
@@ -808,34 +806,13 @@ const [isPublishing, setIsPublishing] = useState(false);
     setShowExportDialog(true);
   }, [biography]);
 
-  const handleReviewWithAi = useCallback(() => {
-    const plain =
-      biographyModeRef.current === 'freeflow'
-        ? stripHtmlTags(contentFreeflowRef.current).trim()
-        : getSectionData(contentRef.current, activeSection).text.trim();
-    if (!plain) return;
-    setShowReviewDialog(true);
-  }, [activeSection]);
-
-  const handleApertusReview = useCallback(() => {
-    if (biographyMode === 'freeflow') {
-      if (!contentFreeflow.trim()) return;
-    } else {
-      const sectionData = getSectionData(contentRef.current, activeSection);
-      if (!sectionData.text.trim()) return;
-    }
-    setShowApertusDialog(true);
-  }, [activeSection, biographyMode, contentFreeflow]);
-
   const handleMarkComplete = useCallback(async () => {
-    const newStatus = status === 'sections_complete' ? 'draft' : 'sections_complete';
+    const markPayload = buildMarkCompletePayload(status, new Date().toISOString());
+    const newStatus = markPayload.status;
     try {
       const { error } = await supabase
         .from('biographies')
-        .update({
-          status: newStatus,
-          completed_at: newStatus === 'sections_complete' ? new Date().toISOString() : null,
-        })
+        .update(markPayload)
         .eq('id', id);
 
       if (!error) {
@@ -859,7 +836,7 @@ const [isPublishing, setIsPublishing] = useState(false);
         if (status === 'sections_complete' && !BIOGRAPHY_SECTIONS.every((s) => nextCompleted.includes(s.key))) {
           const { error } = await supabase
             .from('biographies')
-            .update({ status: 'draft', completed_at: null })
+            .update(REOPEN_SECTION_PAYLOAD)
             .eq('id', id);
           if (!error) setStatus('draft');
         }
@@ -895,7 +872,7 @@ const [isPublishing, setIsPublishing] = useState(false);
         if (status === 'sections_complete' && !BIOGRAPHY_SECTIONS.every((s) => nextCompleted.includes(s.key))) {
           const { error } = await supabase
             .from('biographies')
-            .update({ status: 'draft', completed_at: null })
+            .update(REOPEN_SECTION_PAYLOAD)
             .eq('id', id);
           if (!error) setStatus('draft');
         }
@@ -923,7 +900,7 @@ const [isPublishing, setIsPublishing] = useState(false);
           if (status === 'sections_complete' && !BIOGRAPHY_SECTIONS.every((s) => nextCompleted.includes(s.key))) {
             const { error } = await supabase
               .from('biographies')
-              .update({ status: 'draft', completed_at: null })
+              .update(REOPEN_SECTION_PAYLOAD)
               .eq('id', id);
             if (!error) setStatus('draft');
           }
@@ -933,34 +910,6 @@ const [isPublishing, setIsPublishing] = useState(false);
       }
     },
     [user, id, completedSections, status]
-  );
-
-  const handleApplyReviewChanges = useCallback(
-    (newContent: string, _changeType: 'improvements' | 'rewrite') => {
-      if (biographyModeRef.current === 'freeflow') {
-        const html = /<\/?[a-z][\s\S]*>/i.test(newContent.trim())
-          ? newContent
-          : newContent
-              .trim()
-              .split(/\n{2,}/)
-              .filter(Boolean)
-              .map((block) => `<p>${block.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\n/g, '<br>')}</p>`)
-              .join('');
-        contentFreeflowRef.current = html;
-        setContentFreeflow(html);
-        markDirty();
-        return;
-      }
-      setContent((prev) => ({
-        ...prev,
-        [activeSection]: {
-          ...getSectionData(prev, activeSection),
-          text: newContent,
-        },
-      }));
-      markDirty();
-    },
-    [activeSection, markDirty]
   );
 
   const handleImportMultipleSections = useCallback(
@@ -1006,8 +955,6 @@ const [isPublishing, setIsPublishing] = useState(false);
         type: 'grammar',
         loading: false,
         suggestions: [],
-        prompts: [],
-        summary: '',
         error: t.editor.signInForAi,
       });
       return;
@@ -1017,13 +964,12 @@ const [isPublishing, setIsPublishing] = useState(false);
       type: 'grammar',
       loading: true,
       suggestions: [],
-      prompts: [],
-      summary: '',
       error: null,
     });
 
     try {
       const suggestions = await checkGrammar(
+        id,
         sectionTitle,
         plain,
         language
@@ -1048,118 +994,7 @@ const [isPublishing, setIsPublishing] = useState(false);
         error: message,
       }));
     }
-  }, [activeSection, session, language, t]);
-
-  const handleGuidedPrompts = useCallback(async () => {
-    const section = BIOGRAPHY_SECTIONS.find((s) => s.key === activeSection);
-    if (!section) return;
-
-    const narrative = buildBiographyNarrativeContext({
-      biography_type: biographyType,
-      subject_name: biographyType === 'memorial' ? title : null,
-      title,
-      author_name: authorName,
-    });
-    const langPrompts = getFallbackPrompts(language, narrative);
-    const fallback = langPrompts[activeSection] || [];
-
-    setAiState({
-      type: 'prompts',
-      loading: true,
-      suggestions: [],
-      prompts: [],
-      summary: '',
-      error: null,
-    });
-
-    if (!session) {
-      setAiState((prev) => ({
-        ...prev,
-        loading: false,
-        prompts: fallback,
-      }));
-      return;
-    }
-
-    try {
-      const prompts = await getGuidedPrompts(
-        activeSection,
-        section.title,
-        language,
-        narrative
-      );
-      setAiUsageRefresh((n) => n + 1);
-      setAiState((prev) => ({
-        ...prev,
-        loading: false,
-        prompts: prompts.length > 0 ? prompts : fallback,
-      }));
-    } catch (err: any) {
-      if (err instanceof AiLimitError) {
-        setAiState(INITIAL_AI_STATE);
-        setAiLimitError(err);
-        return;
-      }
-      setAiState((prev) => ({
-        ...prev,
-        loading: false,
-        prompts: fallback,
-        error: null,
-      }));
-    }
-  }, [activeSection, session, language, biographyType, title, authorName]);
-
-  const handleSummarize = useCallback(async () => {
-    const sectionData = getSectionData(contentRef.current, activeSection);
-    const section = BIOGRAPHY_SECTIONS.find((s) => s.key === activeSection);
-    if (!sectionData.text.trim() || !section) return;
-
-    if (!session) {
-      setAiState({
-        type: 'summary',
-        loading: false,
-        suggestions: [],
-        prompts: [],
-        summary: '',
-        error: t.editor.signInForAi,
-      });
-      return;
-    }
-
-    setAiState({
-      type: 'summary',
-      loading: true,
-      suggestions: [],
-      prompts: [],
-      summary: '',
-      error: null,
-    });
-
-    try {
-      const summary = await getSummary(
-        section.title,
-        sectionData.text,
-        language
-      );
-      setAiUsageRefresh((n) => n + 1);
-      setAiState((prev) => ({
-        ...prev,
-        loading: false,
-        summary,
-      }));
-    } catch (err: any) {
-      if (err instanceof AiLimitError) {
-        setAiState(INITIAL_AI_STATE);
-        setAiLimitError(err);
-        return;
-      }
-      setAiState((prev) => ({
-        ...prev,
-        loading: false,
-        error: err.message || t.editor.failedSummary,
-      }));
-    }
-  }, [activeSection, session, language, t]);
+  }, [id, activeSection, session, language, t]);
 
   const handleAcceptSuggestion = useCallback(
     (suggestionId: string) => {
@@ -1211,25 +1046,6 @@ const [isPublishing, setIsPublishing] = useState(false);
       ),
     }));
   }, []);
-
-  const handleInsertPrompt = useCallback(
-    (starter: string) => {
-      setContent((prev) => {
-        const current = getSectionData(prev, activeSection);
-        const sep =
-          current.text && !current.text.endsWith('\n') ? '\n\n' : '';
-        markDirty();
-        return {
-          ...prev,
-          [activeSection]: {
-            ...current,
-            text: current.text + sep + starter,
-          },
-        };
-      });
-    },
-    [activeSection, markDirty]
-  );
 
   const handleCloseAiPanel = useCallback(() => {
     setAiState(INITIAL_AI_STATE);
@@ -1332,11 +1148,7 @@ const [isPublishing, setIsPublishing] = useState(false);
     try {
       const { error } = await supabase
         .from('biographies')
-        .update({
-          final_version: combinedText,
-          narrative_order: sectionOrder,
-          status: 'final_version',
-        })
+        .update(buildFinalVersionPayload(combinedText, sectionOrder))
         .eq('id', id);
 
       if (!error) {
@@ -1370,8 +1182,6 @@ const [isPublishing, setIsPublishing] = useState(false);
         type: 'grammar',
         loading: false,
         suggestions: [],
-        prompts: [],
-        summary: '',
         error: t.editor.signInForAi,
       });
       return;
@@ -1380,12 +1190,10 @@ const [isPublishing, setIsPublishing] = useState(false);
       type: 'grammar',
       loading: true,
       suggestions: [],
-      prompts: [],
-      summary: '',
       error: null,
     });
     try {
-      const suggestions = await checkGrammar('Final Biography', finalVersion, language);
+      const suggestions = await checkGrammar(id, 'Final Biography', finalVersion, language);
       setAiUsageRefresh((n) => n + 1);
       setAiState((prev) => ({ ...prev, loading: false, suggestions }));
     } catch (err: any) {
@@ -1396,47 +1204,49 @@ const [isPublishing, setIsPublishing] = useState(false);
       }
       setAiState((prev) => ({ ...prev, loading: false, error: err.message || t.editor.failedGrammar }));
     }
-  }, [finalVersion, session, language, t]);
+  }, [id, finalVersion, session, language, t]);
 
-  const handleFinalVersionGuidedPrompts = useCallback(async () => {
-    const narrative = buildBiographyNarrativeContext({
-      biography_type: biographyType,
-      subject_name: biographyType === 'memorial' ? title : null,
-      title,
-      author_name: authorName,
-    });
-    const langPrompts = getFallbackPrompts(language, narrative);
-    const fallback = langPrompts['general'] || [];
-    setAiState({
-      type: 'prompts',
-      loading: true,
-      suggestions: [],
-      prompts: [],
-      summary: '',
-      error: null,
-    });
-    if (!session) {
-      setAiState((prev) => ({ ...prev, loading: false, prompts: fallback }));
-      return;
-    }
+  /** Fuori dagli stati di lavoro il testo è in sola lettura: lo si dice invece di lasciar fallire il salvataggio. */
+  const notifyTextLocked = useCallback(() => {
+    toast.info(t.editor.textLockedForStatus);
+  }, [t]);
+
+  /**
+   * Da `published` a `draft` per scrivere un nuovo capitolo: lo stato lo scrive il server
+   * (POST /api/biography/reopen), che controlla anche i 365 giorni fra un capitolo e l'altro.
+   */
+  const handleReopenForNewChapter = useCallback(async () => {
+    if (!id) return;
+    setReopenLoading(true);
     try {
-      const prompts = await getGuidedPrompts(
-        'final_version',
-        language === 'it' ? 'Versione Finale' : 'Final Version',
-        language,
-        narrative
-      );
-      setAiUsageRefresh((n) => n + 1);
-      setAiState((prev) => ({ ...prev, loading: false, prompts: prompts.length > 0 ? prompts : fallback }));
-    } catch (err: any) {
-      if (err instanceof AiLimitError) {
-        setAiState(INITIAL_AI_STATE);
-        setAiLimitError(err);
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      const res = await fetch('/api/biography/reopen', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(session?.access_token ? { Authorization: `Bearer ${session.access_token}` } : {}),
+        },
+        body: JSON.stringify({ biographyId: id }),
+      });
+      if (!res.ok) {
+        const body = (await res.json().catch(() => ({}))) as { error?: string };
+        toast.error(body.error === 'chapter_cooldown_active' ? t.editor.reopenCooldownToast : t.toast.requestFailed);
         return;
       }
-      setAiState((prev) => ({ ...prev, loading: false, prompts: fallback, error: null }));
+      setBiographyStatus('draft');
+      setStatus('draft');
+      setBiography((prev) => (prev ? { ...prev, status: 'draft' } : prev));
+      setShowReopenDialog(false);
+      toast.success(t.editor.reopenDone);
+    } catch (err) {
+      console.error('Error reopening biography:', err);
+      toast.error(t.toast.requestFailed);
+    } finally {
+      setReopenLoading(false);
     }
-  }, [session, language, biographyType, title, authorName]);
+  }, [id, t]);
 
   const handleRevertToDraft = useCallback(async () => {
     try {
@@ -1451,103 +1261,6 @@ const [isPublishing, setIsPublishing] = useState(false);
       console.error('Error reverting to draft:', err);
     }
   }, [id]);
-
-  const handlePublish = useCallback(async () => {
-    if (!canPublishNextChapter(biography)) {
-      setShowPublishDialog(false);
-      toast.error(t.dashboard.chapterCooldownBlocked);
-      return;
-    }
-
-    setIsPublishing(true);
-
-    const biographyText = finalVersion ||
-      Object.values(content).filter(Boolean).join('\n\n');
-
-    let checkResult;
-    try {
-      checkResult = await runPrePublicationCheck(biographyText);
-    } catch (err) {
-      console.error('Pre-publication check failed:', err);
-      setIsPublishing(false);
-      return;
-    }
-
-    if (checkResult.violation_level === 1) {
-      await supabase.from('moderation_reports').insert({
-        biography_id: id,
-        reporter_id: null,
-        report_type: 'level1_content',
-        origin: 'screening',
-        status: 'unassigned',
-        ai_analysis: checkResult,
-        ai_violation_level: 1,
-      });
-      setIsPublishing(false);
-      setShowPublishDialog(false);
-      toast.error(t.toast.publishBlocked);
-      return;
-    }
-
-    if (checkResult.violation_level === 2) {
-      await supabase.from('biographies').update({ status: 'under_review' }).eq('id', id);
-      await supabase.from('moderation_reports').insert({
-        biography_id: id,
-        reporter_id: null,
-        report_type: 'level2_content',
-        origin: 'screening',
-        status: 'unassigned',
-        ai_analysis: checkResult,
-        ai_violation_level: 2,
-      });
-      setIsPublishing(false);
-      setShowPublishDialog(false);
-      setBiographyStatus('under_review');
-      toast.warning(t.toast.publishUnderReview);
-      return;
-    }
-
-    if (checkResult.violation_level === 3) {
-      await supabase.from('moderation_reports').insert({
-        biography_id: id,
-        reporter_id: null,
-        report_type: 'other',
-        origin: 'screening',
-        status: 'decided',
-        decision: 'publish',
-        ai_analysis: checkResult,
-        ai_violation_level: 3,
-      });
-    }
-
-    try {
-      const publishedAt = new Date().toISOString();
-      const publishPatch: { status: 'published'; published_at: string; provisional_until?: string } = {
-        status: 'published',
-        published_at: publishedAt,
-      };
-      const until = provisionalUntilOnFirstPublish(biography?.biography_type, publishedAt);
-      if (until) publishPatch.provisional_until = until;
-      const { error } = await supabase
-        .from('biographies')
-        .update(publishPatch)
-        .eq('id', id);
-
-      if (error) {
-        if (error.message.includes('chapter_cooldown_active')) {
-          toast.error(t.dashboard.chapterCooldownBlocked);
-        }
-        return;
-      }
-
-      setBiographyStatus('published');
-      setShowPublishDialog(false);
-    } catch (err) {
-      console.error('Error publishing biography:', err);
-    } finally {
-      setIsPublishing(false);
-    }
-  }, [id, finalVersion, content, t, biography]);
 
   const handleSubmitForReview = useCallback(async () => {
     if (!user?.id) return;
@@ -1565,16 +1278,7 @@ const [isPublishing, setIsPublishing] = useState(false);
         return;
       }
 
-      const { error: statusError } = await supabase
-        .from('biographies')
-        .update({ status: 'under_review', ai_screening_status: 'pending' })
-        .eq('id', id);
-
-      if (statusError) {
-        setSubmitReadinessError(t.toast.publishUnderReview);
-        return;
-      }
-
+      const previousStatus = biographyStatus;
       setBiographyStatus('under_review');
       setShowSubmitForReviewDialog(false);
       setRevisionPassages([]);
@@ -1586,7 +1290,7 @@ const [isPublishing, setIsPublishing] = useState(false);
       let apiResult: {
         result?: string;
         error?: string;
-        screeningDetail?: 'flagged' | 'ai_error' | 'parse_error';
+        screeningDetail?: 'flagged' | 'ai_error' | 'parse_error' | 'text_changed' | 'too_long';
       } = {};
       try {
         const res = await fetch('/api/review/submit', {
@@ -1598,6 +1302,13 @@ const [isPublishing, setIsPublishing] = useState(false);
           body: JSON.stringify({ biographyId: id }),
         });
         apiResult = await res.json();
+        if (!res.ok) {
+          // Il server ha rifiutato prima di cambiare lo stato: si torna com'era.
+          setBiographyStatus(previousStatus);
+          setAiScreeningResult(null);
+          setSubmitReadinessError(t.toast.requestFailed);
+          return;
+        }
       } catch (fetchErr) {
         console.error('AI review call failed:', fetchErr);
         apiResult = { result: 'under_review', screeningDetail: 'ai_error' };
@@ -1610,6 +1321,14 @@ const [isPublishing, setIsPublishing] = useState(false);
         const d = apiResult.screeningDetail;
         if (d === 'ai_error' || d === 'parse_error') {
           setAiScreeningResult(d);
+        } else if (d === 'text_changed') {
+          // Il testo è cambiato mentre lo screening lo esaminava: non è stato pubblicato.
+          setAiScreeningResult('pending');
+          toast.error(t.editor.screeningTextChanged);
+        } else if (d === 'too_long') {
+          // Testo più lungo di quanto il modello legga: lo esamina una persona.
+          setAiScreeningResult('pending');
+          toast.info(t.editor.screeningTooLong);
         } else {
           setAiScreeningResult('flagged');
         }
@@ -1619,87 +1338,7 @@ const [isPublishing, setIsPublishing] = useState(false);
     } finally {
       setIsSubmittingForReview(false);
     }
-  }, [id, user, t]);
-
-  const handleResubmitAiScreening = useCallback(async () => {
-    if (!user?.id || !id) return;
-    setResubmitScreeningLoading(true);
-    try {
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
-      const res = await fetch('/api/review/submit', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          ...(session?.access_token ? { Authorization: `Bearer ${session.access_token}` } : {}),
-        },
-        body: JSON.stringify({ biographyId: id }),
-      });
-      const apiResult = await res.json().catch(() => ({}));
-      if (res.status === 429) {
-        toast.error(t.toast.tooManyRequests);
-        return;
-      }
-      if (res.status === 400 && apiResult?.error === 'missing_cover') {
-        toast.error(t.exportDialog.noCoverPhotoWarning);
-        return;
-      }
-      if (!res.ok) {
-        toast.error(t.toast.requestFailed);
-        return;
-      }
-      if (apiResult.result === 'published') {
-        setBiographyStatus('published');
-        setAiScreeningResult('passed');
-        setRevisionPassages([]);
-        setRevisionBannerDismissed(false);
-        setBiography((prev) =>
-          prev
-            ? {
-                ...prev,
-                status: 'published',
-                published_at: new Date().toISOString(),
-                ai_screening_status: 'passed',
-              }
-            : prev
-        );
-        toast.success(t.editor.resubmitAiScreeningPublishedToast);
-        return;
-      }
-      const d = apiResult.screeningDetail as string | undefined;
-      if (d === 'ai_error' || d === 'parse_error') {
-        setAiScreeningResult(d as 'ai_error' | 'parse_error');
-        toast.warning(t.editor.resubmitAiScreeningErrorToast);
-        return;
-      }
-      setAiScreeningResult('flagged');
-      setBiography((prev) => (prev ? { ...prev, ai_screening_status: 'flagged' } : prev));
-      const { data: openReport } = await supabase
-        .from('moderation_reports')
-        .select('ai_analysis')
-        .eq('biography_id', id)
-        .in('status', ['unassigned', 'assigned'])
-        .order('created_at', { ascending: false })
-        .limit(1)
-        .maybeSingle();
-      const raw = (openReport?.ai_analysis as { flagged_passages?: unknown } | null)?.flagged_passages;
-      if (Array.isArray(raw) && raw.length > 0) {
-        setRevisionPassages(
-          raw.map((p: { section_key?: string; reason?: string }) => ({
-            section_key: typeof p.section_key === 'string' ? p.section_key : 'unknown',
-            ai_reason: typeof p.reason === 'string' ? p.reason : '',
-          }))
-        );
-      }
-      toast.warning(t.editor.resubmitAiScreeningStillFlaggedToast);
-    } catch (e) {
-      console.error(e);
-      toast.error(t.toast.requestFailed);
-    } finally {
-      setResubmitScreeningLoading(false);
-    }
-  }, [user, id, t]);
+  }, [id, user, t, biographyStatus]);
 
   const handleOpenSubmitDialog = useCallback(async () => {
     setSubmitPreflightError(null);
@@ -1729,10 +1368,7 @@ const [isPublishing, setIsPublishing] = useState(false);
     try {
       const { error } = await supabase
         .from('biographies')
-        .update({
-          final_version: text,
-          status: 'final_version',
-        })
+        .update(buildFinalVersionPayload(text))
         .eq('id', id);
 
       if (error) {
@@ -1905,7 +1541,11 @@ const [isPublishing, setIsPublishing] = useState(false);
                 ...prev,
                 status: 'under_review',
                 ai_screening_status:
-                  d === 'ai_error' || d === 'parse_error' ? d : 'flagged',
+                  d === 'ai_error' || d === 'parse_error'
+                    ? d
+                    : d === 'text_changed' || d === 'too_long'
+                      ? 'pending'
+                      : 'flagged',
                 pdf_draft_iteration: null,
                 draft_ai_feedback: null,
                 final_pdf_url: finalPdfUrlFromApi ?? prev.final_pdf_url,
@@ -1914,6 +1554,10 @@ const [isPublishing, setIsPublishing] = useState(false);
         );
         if (d === 'ai_error' || d === 'parse_error') {
           setAiScreeningResult(d as 'ai_error' | 'parse_error');
+        } else if (d === 'text_changed' || d === 'too_long') {
+          setAiScreeningResult('pending');
+          if (d === 'text_changed') toast.error(t.editor.screeningTextChanged);
+          else toast.info(t.editor.screeningTooLong);
         } else {
           setAiScreeningResult('flagged');
           const { data: openReport } = await supabase
@@ -1945,16 +1589,16 @@ const [isPublishing, setIsPublishing] = useState(false);
 
   const effectivelyLocked = isFrozen || biographyStatus === 'locked_pending_screening';
 
-  /** AI screening flagged passages: edit only listed sections (or freeflow) while under_review. */
-  const isUnderReviewAiFlagRevision =
-    biographyStatus === 'under_review' &&
-    (aiScreeningResult === 'flagged' || biography?.ai_screening_status === 'flagged') &&
-    revisionPassages.length > 0;
+  /**
+   * Il testo si scrive solo negli stati di lavoro (elenco chiuso, lo stesso del database:
+   * lib/publication-state.ts). Fuori elenco, anche in revisione o in attesa di screening,
+   * l'editor è in sola lettura: il database rifiuterebbe comunque la scrittura.
+   */
+  const statusLocksText = !canAuthorWriteText(biographyStatus, false);
 
+  /** Passaggi da correggere chiesti dal revisore: modifica limitata alle sezioni indicate (stato draft). */
   const isRevisionMode =
-    revisionPassages.length > 0 &&
-    !revisionBannerDismissed &&
-    (biographyStatus === 'draft' || isUnderReviewAiFlagRevision);
+    revisionPassages.length > 0 && !revisionBannerDismissed && biographyStatus === 'draft';
 
   const editableSectionKeys = new Set(revisionPassages.map((p) => p.section_key));
   const isActiveSectionRevisionLocked = isRevisionMode && !editableSectionKeys.has(activeSection);
@@ -1963,10 +1607,8 @@ const [isPublishing, setIsPublishing] = useState(false);
       ? isRevisionMode && !editableSectionKeys.has('freeflow')
       : isActiveSectionRevisionLocked;
 
-  /** Full editor lock from review queue, except partial edit when AI flagged specific sections. */
-  const reviewQueueLocksEditor =
-    isReviewOrScreeningLockStatus(biographyStatus) &&
-    !(biographyStatus === 'under_review' && isRevisionMode);
+  /** Blocco completo dell'editor per lo stato della scheda. */
+  const reviewQueueLocksEditor = statusLocksText;
   const draftHasSeverity3Flags = (draftAiFeedback?.red_flags ?? []).some((f) => f?.severity === 3);
   const aiUnavailable = draftAiFeedback?.ready_for_publication !== undefined && draftAiFeedback?.red_flags !== undefined
     ? (draftAiFeedback as { aiError?: boolean }).aiError === true
@@ -1985,13 +1627,6 @@ const [isPublishing, setIsPublishing] = useState(false);
     biographyStatus === 'pdf_draft' ||
     biographyStatus === 'locked_pending_screening' ||
     (biographyStatus === 'under_review' && (finalVersion?.trim().length ?? 0) >= 50);
-
-  const lockFinalVersionForScreeningErrors =
-    biographyStatus === 'under_review' &&
-    aiScreeningResult !== 'flagged' &&
-    (aiScreeningResult === 'ai_error' ||
-      aiScreeningResult === 'parse_error' ||
-      aiScreeningResult === 'pending');
 
   if (authLoading || !user || isLoading) {
     return (
@@ -2135,6 +1770,48 @@ const [isPublishing, setIsPublishing] = useState(false);
         </div>
       )}
 
+      {biographyStatus === 'published' && !isFrozen && biography && (
+        <div className="shrink-0 border-b border-border/50 bg-card px-4 py-3">
+          <div className="max-w-5xl mx-auto flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+            <div className="min-w-0 flex-1">
+              <ChapterCooldownBanner biography={biography} compact />
+            </div>
+            {getChapterCooldownState(biography)?.available && (
+              <Button
+                type="button"
+                size="sm"
+                className="shrink-0"
+                disabled={reopenLoading}
+                onClick={() => setShowReopenDialog(true)}
+              >
+                {t.editor.reopenForNewChapter}
+              </Button>
+            )}
+          </div>
+        </div>
+      )}
+
+      <AlertDialog open={showReopenDialog} onOpenChange={setShowReopenDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t.editor.reopenDialogTitle}</AlertDialogTitle>
+            <AlertDialogDescription>{t.editor.reopenDialogBody}</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={reopenLoading}>{t.editor.reopenCancel}</AlertDialogCancel>
+            <AlertDialogAction
+              disabled={reopenLoading}
+              onClick={(e) => {
+                e.preventDefault();
+                void handleReopenForNewChapter();
+              }}
+            >
+              {reopenLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : t.editor.reopenConfirm}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
       {aiScreeningResult === 'passed' && biographyStatus === 'published' && (
         <div className="shrink-0 bg-brand-greenLight/45 border-b border-brand-greenLight px-4 py-3 dark:bg-brand-greenLight/15 dark:border-brand-greenDark/40">
           <div className="max-w-5xl mx-auto flex items-start gap-3">
@@ -2186,11 +1863,6 @@ const [isPublishing, setIsPublishing] = useState(false);
                  language === 'de' ? 'Sie werden benachrichtigt, wenn die Überprüfung abgeschlossen ist.' :
                  'You will be notified when the review is complete.'}
               </p>
-              {biographyStatus === 'under_review' && revisionPassages.length > 0 && (
-                <p className="text-xs text-brand-ink/85 dark:text-brand-beigeLight/90 mt-2 border-t border-brand-mustardDark/25 pt-2">
-                  {t.editor.aiScreeningFlaggedEditHint}
-                </p>
-              )}
             </div>
           </div>
         </div>
@@ -2262,9 +1934,7 @@ const [isPublishing, setIsPublishing] = useState(false);
               <TriangleAlert className="h-4 w-4 text-brand-mustardDark dark:text-brand-mustardLight shrink-0 mt-0.5" />
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium text-brand-ink dark:text-brand-beigeLight mb-2">
-                  {isUnderReviewAiFlagRevision
-                    ? t.editor.revisionRequiredAiScreening
-                    : t.editor.revisionRequired}
+                  {t.editor.revisionRequired}
                 </p>
                 <ul className="space-y-1 mb-2">
                   {revisionPassages.map((p, i) => (
@@ -2286,20 +1956,6 @@ const [isPublishing, setIsPublishing] = useState(false);
                 )}
               </div>
               <div className="flex flex-col items-end gap-2 shrink-0">
-                {isUnderReviewAiFlagRevision && (
-                  <Button
-                    type="button"
-                    size="sm"
-                    className="h-8 text-xs gap-1.5"
-                    disabled={resubmitScreeningLoading}
-                    onClick={() => void handleResubmitAiScreening()}
-                  >
-                    {resubmitScreeningLoading ? (
-                      <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                    ) : null}
-                    {t.editor.resubmitAiScreening}
-                  </Button>
-                )}
                 <button
                   type="button"
                   onClick={() => setRevisionBannerDismissed(true)}
@@ -2339,10 +1995,12 @@ const [isPublishing, setIsPublishing] = useState(false);
             globalNotesCount={globalNotesCount}
             globalTodosCount={globalTodosCount}
             onToggleNotesPanel={() => setShowGlobalNotesPanel(!showGlobalNotesPanel)}
-            onTogglePhotosPanel={() => setShowPhotosPanel(!showPhotosPanel)}
-            onToggleBookStructurePanel={() => setShowBookStructurePanel(!showBookStructurePanel)}
-            onTogglePermanencePanel={() => setShowPermanencePanel((v) => !v)}
-            onToggleImportText={() => setShowImportDialog((v) => !v)}
+            onTogglePhotosPanel={() => (statusLocksText ? notifyTextLocked() : setShowPhotosPanel(!showPhotosPanel))}
+            onToggleBookStructurePanel={() =>
+              statusLocksText ? notifyTextLocked() : setShowBookStructurePanel(!showBookStructurePanel)
+            }
+            onTogglePermanencePanel={() => (statusLocksText ? notifyTextLocked() : setShowPermanencePanel((v) => !v))}
+            onToggleImportText={() => (statusLocksText ? notifyTextLocked() : setShowImportDialog((v) => !v))}
             onToggleExportText={() => {
               if (isReviewOrScreeningLockStatus(biographyStatus)) return;
               setShowExportDialog(true);
@@ -2377,9 +2035,9 @@ const [isPublishing, setIsPublishing] = useState(false);
             contentFreeflow={contentFreeflow}
             chapters={listChapterAnchors(contentFreeflow)}
             onSelectChapter={handleSelectChapter}
-            onAddChapter={handleAddChapter}
-            onModeChange={handleModeChange}
-            onModeChangeRequest={handleModeChangeRequest}
+            onAddChapter={statusLocksText ? notifyTextLocked : handleAddChapter}
+            onModeChange={statusLocksText ? notifyTextLocked : handleModeChange}
+            onModeChangeRequest={statusLocksText ? notifyTextLocked : handleModeChangeRequest}
             onFreeflowChange={handleFreeflowChange}
             biographyId={id}
             userId={user.id}
@@ -2387,9 +2045,9 @@ const [isPublishing, setIsPublishing] = useState(false);
               isRevisionMode && !showFinalVersionEditorLayout ? editableSectionKeys : undefined
             }
             title={title}
-            onTitleChange={handleTitleChange}
+            onTitleChange={statusLocksText ? notifyTextLocked : handleTitleChange}
             authorName={authorName}
-            onAuthorNameChange={handleAuthorNameChange}
+            onAuthorNameChange={statusLocksText ? notifyTextLocked : handleAuthorNameChange}
             biographyType={biographyType}
             isFrozen={isFrozen}
             saveStatus={saveStatus}
@@ -2406,11 +2064,11 @@ const [isPublishing, setIsPublishing] = useState(false);
                   content={finalVersion}
                   onContentChange={handleFinalVersionChange}
                   biographyId={id}
-                  isLocked={effectivelyLocked || lockFinalVersionForScreeningErrors}
+                  isLocked={effectivelyLocked || statusLocksText}
                   onPublish={
                     biographyStatus === 'final_version'
                       ? handleStartPdfDraft
-                      : () => setShowPublishDialog(true)
+                      : () => setShowReviewPublicationDialog(true)
                   }
                   primaryButtonLabel={
                     biographyStatus === 'final_version' ? t.editor.publicationStartPdfButton : undefined
@@ -2420,7 +2078,7 @@ const [isPublishing, setIsPublishing] = useState(false);
                     biographyStatus === 'pdf_draft' || biographyStatus === 'locked_pending_screening'
                   }
                   editorFontSize={editorFontSize}
-                  onRevertToDraft={!effectivelyLocked ? handleRevertToDraft : undefined}
+                  onRevertToDraft={biographyStatus === 'final_version' ? handleRevertToDraft : undefined}
                 />
                     ) : (
                 <GuidedSectionWorkspace
@@ -2451,8 +2109,6 @@ const [isPublishing, setIsPublishing] = useState(false);
                       : undefined
                   }
                   onGrammarCheck={handleGrammarCheck}
-                  onReviewWithAi={handleReviewWithAi}
-                  onApertusReview={aiEnabled ? handleApertusReview : undefined}
                 />
               )}
 
@@ -2492,7 +2148,6 @@ const [isPublishing, setIsPublishing] = useState(false);
         state={aiState}
         onAcceptSuggestion={handleAcceptSuggestion}
         onRejectSuggestion={handleRejectSuggestion}
-        onInsertPrompt={handleInsertPrompt}
       />
 
       {biography && (
@@ -2543,35 +2198,6 @@ const [isPublishing, setIsPublishing] = useState(false);
         />
       )}
 
-      <AISectionReview
-        open={showReviewDialog}
-        onOpenChange={setShowReviewDialog}
-        biographyId={id}
-        sectionKey={biographyMode === 'freeflow' ? 'freeflow' : activeSection}
-        sectionTitle={
-          biographyMode === 'freeflow'
-            ? title || t.biography.untitled
-            : t.sectionTitles[activeSection as keyof typeof t.sectionTitles] ||
-              BIOGRAPHY_SECTIONS.find((s) => s.key === activeSection)?.title ||
-              ''
-        }
-        content={
-          biographyMode === 'freeflow'
-            ? stripHtmlTags(contentFreeflow)
-            : activeSectionData.text
-        }
-        language={language}
-        onApplyChanges={handleApplyReviewChanges}
-      />
-
-      <ApertusReviewDialog
-        open={showApertusDialog}
-        onOpenChange={setShowApertusDialog}
-        biographyId={id}
-        sectionKey={biographyMode === 'freeflow' ? 'freeflow' : activeSection}
-        sectionTitle={title || t.biography.untitled}
-      />
-
       <GlobalNotesPanel
         biographyId={id}
         open={showGlobalNotesPanel}
@@ -2595,7 +2221,7 @@ const [isPublishing, setIsPublishing] = useState(false);
         recordLanguageTag={recordLanguageTag}
         recordScript={recordScript}
         biographyType={biographyType}
-        disabled={isFrozen}
+        disabled={isFrozen || statusLocksText}
         open={showPermanencePanel}
         onOpenChange={setShowPermanencePanel}
         onNameSaved={(name) => {
@@ -2670,14 +2296,6 @@ const [isPublishing, setIsPublishing] = useState(false);
         onStartPdfDraft={() => void handleStartPdfDraft()}
         onOpenExport={() => setShowExportDialog(true)}
         onApproveFinalPdf={() => void handleApproveFinalPdf()}
-      />
-
-      <PublishConfirmationDialog
-        open={showPublishDialog}
-        onOpenChange={setShowPublishDialog}
-        onConfirm={handlePublish}
-        isChecking={isPublishing}
-        checkingText={t.toast.checkingContent}
       />
 
       <SubmitForReviewDialog

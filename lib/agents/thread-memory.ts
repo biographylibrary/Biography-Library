@@ -218,6 +218,11 @@ Merge new information with existing memory. Keep still-relevant people and open 
     max_tokens: 768,
     temperature: 0.2,
     stream: false,
+    usage: {
+      purpose: 'memory_compression',
+      userId: thread.user_id,
+      biographyId: thread.biography_id,
+    },
   });
 
   return parseCompressionResponse(result.content ?? '', AGENT_SUMMARY_MAX_CHARS);

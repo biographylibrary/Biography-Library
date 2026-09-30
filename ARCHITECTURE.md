@@ -27,7 +27,6 @@ lib/
   auth-context.tsx          Auth provider + useAuth hook
   pdf-export.ts             jsPDF B5 document builder
   checkpoint-service.ts     Conversation state persistence
-  revision-history-service  Per-section version tracking
   section-status-service    Draft version state machine
   section-completion-service Mark sections done/undone
   biographies.ts            Biography CRUD helpers
@@ -118,13 +117,13 @@ Each section has its own row in `biography_sections` with an independent status 
 in_progress → draft_1 → draft_2 → draft_3 → approved → locked
 ```
 
-Draft increments happen when the user saves a revised version. `section_status-service.ts` owns these transitions. `revision-history-service.ts` stores snapshots so previous versions can be restored.
+Draft increments happen when the user saves a revised version. `section_status-service.ts` owns these transitions.
 
-The editor UI renders a `SectionSidebar` for navigation and a `SectionEditor` (Tiptap rich text) for the active section. An AI conversation mode (`ConversationMode`) guides the user through prompts before they write, storing the dialogue in `conversation_checkpoints`.
+The editor UI renders a `SectionSidebar` for navigation and a `SectionEditor` (Tiptap rich text) for the active section.
 
 ### Freeflow mode
 
-A single continuous rich-text field (`content_freeflow` on the `biographies` row). No section sidebar, no per-section status tracking. Suitable for users who want to write without structure. The same Tiptap editor is used; the AI assistant still works but without section-specific context.
+A single continuous rich-text field (`content_freeflow` on the `biographies` row). No section sidebar, no per-section status tracking. Suitable for users who want to write without structure. The same Tiptap editor is used; Echo and the grammar check work on the whole text.
 
 ### Book structure (both modes)
 
@@ -134,53 +133,38 @@ A single continuous rich-text field (`content_freeflow` on the `biographies` row
 
 ## 5. AI Pipeline
 
-### Infrastructure
+*Updated 30 September 2026 (block 1, AI tools).*
 
-All AI calls from the browser go through **Supabase Edge Functions** (Deno). The browser never holds an AI API key. Two functions handle AI workloads:
+AI works on an author's text in four cases only: **Echo** (suggests structure and edits inside the text, and also answers platform questions using the knowledge base), the **grammar check** on request, the **final check before print** (`runDraftAiReview`), and the **compliance screening** before publication (`runPublicationScreening`, moderation, not an author tool). Everything else was removed: reader-side automatic translation, guided prompts, summaries, rewriting, section review with AI, Apertus review, follow-up questions, structure proposals, the biography coach and publication reviewer agents.
 
-| Function | Role |
-|---|---|
-| `ai-assistant` | All text AI actions (grammar, prompts, rewrite, follow-up, analysis) |
-| `audio-transcription` | Audio file → transcript via Infomaniak Whisper endpoint |
-| `help-assistant` | In-app help chatbot; searches a local knowledge base before calling AI |
+### One client, one ledger
 
-The AI provider is **Infomaniak AI Services** (OpenAI-compatible endpoint, CH). Agent models are selected with `AGENT_MODEL_*` (see `lib/agents/models.ts`). Edge Function `ai-assistant` uses `INFOMANIAK_AI_MODEL_PRIMARY` / `INFOMANIAK_AI_MODEL_FALLBACK`. There is no app variable named `INFOMANIAK_AI_MODEL`. Credentials are never in the client bundle.
+Every call to a model goes through **`lib/agents/infomaniak-client.ts`** (chat, streaming, embeddings; Infomaniak AI Services, OpenAI-compatible, Switzerland). Each call, including failed attempts and fallback-model attempts, writes one row to **`ai_token_usage`** via `lib/ai/usage-recorder.ts` (service role only): user, biography, purpose (`echo`, `grammar`, `preprint_check`, `screening`, `embedding`, `memory_compression`, `transcription`, `tts`), model, `prompt_tokens`, `completion_tokens`, `total_tokens`, an `estimated` flag and the outcome. `usage` is read from the provider response; for streams the client asks for it with `stream_options.include_usage` and, if the provider omits or rejects it, estimates characters / 4 and marks the row as estimated. A `usage` context is a required option of `chat`, `chatStream` and `embed`, so an unrecorded call does not compile.
 
-### Client call flow (`lib/ai/ai-client.ts`)
+Two documented exceptions: **transcription** (Whisper) still runs in the Deno Edge Function `audio-transcription` and writes its own row (provider seconds, when returned); **text-to-speech** runs on Mistral Voxtral, not Infomaniak, and records the characters sent.
+
+Models are chosen with `AGENT_MODEL_*` (see `lib/agents/models.ts`); the grammar chain uses `INFOMANIAK_AI_MODEL_GRAMMAR`, then `_PRIMARY`, then `_FALLBACK`. Credentials are never in the client bundle.
+
+### Grammar check (`POST /api/biography/[id]/grammar`, Node runtime)
 
 ```
-Component calls aiService.*(...)
-  → lib/ai/ai-provider.ts builds payload
-  → lib/ai/ai-client.ts callAI(action, payload)
-      → refresh JWT if < 300s remaining
-      → POST /functions/v1/ai-assistant  {action, ...payload}
-      → handle 401 (retry once after refresh)
-      → handle 429 → throw AiLimitError (shows usage indicator)
-      → parse JSON response
+Browser (lib/grammar-service.ts, fetchWithAgentAuth)
+  → auth (Bearer JWT) → load profile + biography (service role)
+  → same rule as the RLS UPDATE policy on biographies:
+      owner + active account + not frozen, or staff
+  → text in the body (authors check unsaved text); > 30,000 characters after stripping
+      HTML → 413 with a message in four languages (no silent truncation)
+  → per-minute limit (ai_rate_limits), token cap, daily/weekly counters (ai_usage_tracking)
+  → chat() with models [Apertus 1.5, Gemma, Mistral], temperature 0.7, 2048 tokens,
+      45 s, 3 attempts per model on 429/503/504
+  → JSON array of suggestions, identical-pair suggestions dropped
 ```
 
-Timeout: 35 seconds. All AI calls are fire-and-respond; there is no streaming.
+Limits kept from the old Edge Function, unchanged: 5 per minute, 40 per UTC day, 200 per UTC week per user (staff exempt), same environment variable names.
 
-### AI actions
+### Token caps
 
-| Action | Service function | Returns |
-|---|---|---|
-| `grammar` | `checkGrammar()` | Array of `{original, suggestion, type, priority}` |
-| `prompts` | `getGuidedPrompts()` | Array of guided writing prompts for the section |
-| `summary` | `getSummary()` | Short text summary |
-| `rewrite` | `rewriteSection()` | Rewritten text in chosen tone |
-| `followup` | `analyzeAndRespond()` | Next question + acknowledgement for conversation mode |
-| `analyze-themes` | `analyzeThemes()` | Thematic analysis across completed sections |
-| `propose-structures` | `proposeNarrativeStructures()` | Alternative chapter orderings |
-| `recommend-next-section` | `recommendNextSection()` | Suggested next section key + reason |
-
-### Rate limiting
-
-Tracked in `ai_rate_limits`. Limits: 5 requests per minute, 40 per day, 200 per week per user. The Edge Function checks and increments the counter atomically. The `AiUsageIndicator` component shows remaining quota. Old records are cleaned up automatically (30-day retention via a scheduled policy).
-
-### Conversation mode
-
-`ConversationMode` runs a multi-turn guided interview before the user writes a section. State is saved to `conversation_checkpoints` after each exchange so sessions survive page reloads. The service tracks `questions_completed`, `is_follow_up`, and `has_had_follow_up` to avoid repetitive questions. If the AI call fails, a pre-written fallback acknowledgement (in all four supported languages) is shown so the UX never blocks.
+`ai_author_token_limits` holds three nullable values (day, week, month; `null` = off). Usage is summed from `ai_token_usage` over **calendar periods in Europe/Zurich** by `ai_author_token_usage()` (week starts Monday). Only `echo` and `grammar` count; `screening`, `preprint_check`, `embedding` and `memory_compression` never do, so an author who exhausted the cap can still publish. Over the cap, Echo and grammar answer 429 with `error: token_cap_exceeded`, a message in the author's language and the time the period reopens. Staff are exempt but recorded. The check fails open if the ledger cannot be read.
 
 ### Audio transcription
 
@@ -228,7 +212,7 @@ All decisions are written to `admin_action_log`. The user receives a `user_notif
 
 ### Re-submission
 
-On re-submission after `returned`, the AI re-screens only the previously flagged sections (not the full biography). The old report is closed when the new decision is made.
+On re-submission after `returned`, the AI screens the **whole text** again (since 30 September 2026 there are no targeted re-screenings: a guarantee about the published text cannot rest on part of it). The old report is closed by the new screening.
 
 ### Frozen biographies
 
@@ -250,8 +234,14 @@ This subsection records **agreed behaviour** for the PDF-first workflow and lega
 | `under_review` | Human reviewer queue (after AI flags / errors), or legacy path |
 | `published` | Live per visibility |
 | `removed` | Moderation take-down |
+| `suspended_pending_verification` | Suspended pending verification (staff) |
+| `revision_requested` | A reviewer asked the author to correct specific passages (30 days) |
+| `revision_pending_review` | The author sent the correction; waiting for the reviewer |
+| `revision_overdue` | The 30 days passed without a correction; only an appeal or staff can move it |
 
-Helpers: `lib/publication-state.ts` (`isAuthorTextEditableStatus`, `isReviewOrScreeningLockStatus`, etc.).
+Helpers: `lib/publication-state.ts` (`AUTHOR_TEXT_WRITABLE_STATUSES`, `canAuthorWriteText`, `isAuthorTextEditableStatus`, `isReviewOrScreeningLockStatus`, etc.).
+
+**Where the author may write text (closed list).** Text is writable only in `draft`, `sections_complete`, `final_version`, `pdf_draft` (correction rounds after the pre-print check) and `revision_requested`. In every other state, including `under_review` and `locked_pending_screening`, text is locked. The rule lives in two places that a test keeps equal: the SQL function `author_text_writable_statuses()` (triggers `a01_*` on `biographies` and on `biography_sections`, `biography_book_structure`, `person_events`, `person_relations`, `biography_media`, which follow the parent biography's status; migration `20260930120150_author_text_whitelist.sql`) and the TypeScript constant `AUTHOR_TEXT_WRITABLE_STATUSES`. The triggers stop sessions running as `authenticated` or `anon`; server routes that write text with the service role (Echo `apply-draft`, `convert-mode`) check the status in code. A new status is locked until it is added deliberately to both lists.
 
 **API (phase 2 — implemented)**
 
@@ -289,12 +279,37 @@ Watermarked PDF downloads are blocked while `status === 'final_version'` until t
 1. Content is locked; collateral files generated as above.
 2. **AI screening** runs on the content.
 3. **If AI finds no flags:** **publish** according to visibility (cover raster is already generated at approve-final); the biography appears in the public catalogue / search when visibility is public.
-4. **If AI finds flags:** the biography does **not** auto-publish. **Only the flagged sections** return to editable state (`under_review` + partial unlock in the editor from `moderation_reports.ai_analysis.flagged_passages`; authors with a long **final_version** use **FinalVersionEditor** unlocked for edits). **Re-screening** (`POST /api/review/submit` again) sends only the flagged section keys to the text builder when per-section rows exist; if the live text lives only in **`final_version`**, the pipeline falls back to that full HTML and passes the same section labels into the AI prompt as **focus hints** so `section_key` in the JSON stays aligned with the sidebar. Not a full new PDF draft cycle unless product extends this.
+4. **If AI finds flags:** the biography does **not** auto-publish. It goes to `under_review` with an open `moderation_reports` row, and the **text stays locked** (closed list above). A reviewer decides: publish, or ask the author to correct specific passages (`revision_requested`, 30 days, then `revision_pending_review`). The in-place correction of flagged sections inside `under_review` and its "resubmit for screening" button were removed on 30 September 2026. What the author can still do from `under_review` is **"Riprova analisi"** after an AI error (`ai_screening_status` = `ai_error` or `parse_error`): it re-runs the screening on the same, unchanged text (`POST /api/review/submit` accepts that retry only from `under_review` or `locked_pending_screening` with those two values).
 
 **3. Human reviewer vs auto-publish**
 
 - If the **AI approves** (nothing to flag): **automatic publication** (no human reviewer queue for that path).
 - If the **AI does not approve** (flags): enter the **existing reviewer flow** — reviewer sees **only problematic excerpts**, not the full book; author is notified; author corrects **flagged sections**; re-review; approval or rejection as today.
+
+---
+
+### 6b. Publication fingerprint gate
+
+Guarantee: **the text that goes online is exactly the text the screening examined.** Implemented in `lib/server/publication-fingerprint.ts`, table `publication_records` (service role only; migration `20260930115700_publication_records.sql`).
+
+- **Fingerprint**: SHA-256 of a canonical JSON of everything the public can read: title and names, `content` (what the public page shows), free-flow text, `final_version` (what the PDF, exports and archive use), `biography_sections`, the enabled parts of the book structure, photo captions, `person_events`, `person_relations`. Text is normalised to archive Markdown and NFC, so a harmless re-serialisation does not change it. `content` and `final_version` are still two separate fields (in the 11 published biographies the text of `content` is contained in `final_version`, which adds the section headings; they are not byte-identical), so both enter the fingerprint. Merging them is deferred to the Markdown block.
+- **Screening record**: every time the screening examines a biography it writes a `kind = 'screening'` row with the fingerprint, the verdict (`passed`, `flagged`, `ai_error`, `parse_error`, `text_changed`), the scope (always `full`), `examined_chars` (what the model received) and `source_chars` (the whole source text). The model receives at most the first 6000 characters (`MAX_CONTENT_CHARS` in `review-submit-pipeline.ts`). **Provisional rule until the chunked-screening block:** if `examined_chars < source_chars` the biography is never published automatically; it goes to the human queue with the reason written in the report (`screeningDetail: 'too_long'`). A biography of 6000 characters or fewer is read in full and can still publish on its own.
+- **Publication**: every server path that sets `status = 'published'` goes through `gatedPublish`. It recomputes the fingerprint, compares it according to the mode, writes a `kind = 'publication'` row (mode, actor, the screening fingerprint it refers to) *before* the status update, then records the outcome. If the comparison fails, nothing is published and the caller answers with an explicit message; if the row cannot be written, nothing is published.
+
+| Mode | Used by | Rule |
+|---|---|---|
+| `auto` | `runReviewSubmitScreening` (`/api/review/submit`, `/api/publication/approve-final-pdf`) | the fingerprint taken before the model call must equal the current one; checked **before** the UM identifier is minted. On mismatch the biography goes back to the queue (`under_review`, report "Text changed during screening", response `screeningDetail: 'text_changed'`) |
+| `human_approval` | admin `approve`, moderation `decide` with `status: 'published'` | a screening record of exactly this text must exist (otherwise: re-run the screening, or force). After a reviewer-requested correction the record is created when the author sends it (see below) |
+| `restore` | admin appeal upheld that returns to `published` | the text must equal the last publication (no earlier record: start from the current text) |
+| `forced` | admin `force_publish` | no comparison; fingerprint and actor are always recorded |
+
+**Correction requested by a reviewer.** When the author sends the correction (`POST /api/moderation/resubmit`, `revision_requested` to `revision_pending_review`) the server runs a screening of the corrected text **without publishing** (`screenRevisionAndAttach`, `lib/server/revision-screening.ts`). The result is attached to the open report (`ai_analysis.summary`, `flagged_passages`, `revision_screening`; the earlier analysis is kept in `previous_analysis`) and an internal message; the fingerprint goes in `publication_records`. The reviewer approves seeing it, and `gatedPublish` publishes only if the text is still exactly the one that was screened. If the screening cannot run, the author's submission still succeeds and the reviewer finds it written that it must be re-run (or use the forced publication, which leaves a trace).
+
+`lib/__tests__/publish-paths.test.ts` fails if a new server file writes `status: 'published'` without going through `gatedPublish`.
+
+### 6c. Reopening a published biography for a new chapter
+
+`POST /api/biography/reopen` (owner only) moves `published` to `draft`, with the status written by the server, only if `next_chapter_available_at` has passed (365 days after the last publication). The wait is checked when reopening, not when republishing, so an author does not write a chapter that cannot be published. **Known limit:** while the new chapter is being written the biography is not published, so it disappears from the catalogue and from its public page; the editor says so before reopening. To be solved in the Markdown block with a separate working copy, keeping the published version online until the new one passes the screening.
 
 ---
 

@@ -1,5 +1,6 @@
 'use client';
 
+import { buildMediaInsertPayload } from '@/lib/editor/write-payloads';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { supabase } from '@/lib/supabase';
 import { useTranslation } from '@/lib/i18n/i18n-context';
@@ -399,15 +400,16 @@ export function PhotoGalleryPanel({ biographyId, userId, onClose, embedded }: Ph
 
         const { data: inserted, error: insertError } = await supabase
           .from('biography_media')
-          .insert({
-            biography_id: biographyId,
-            user_id: userId,
-            file_url: fileUrl,
-            file_name: file.name,
-            caption: '',
-            layout,
-            display_order: 0,
-          })
+          .insert(
+            buildMediaInsertPayload({
+              biographyId,
+              userId,
+              fileUrl,
+              fileName: file.name,
+              layout,
+              displayOrder: 0,
+            })
+          )
           .select()
           .maybeSingle();
 
@@ -482,15 +484,16 @@ export function PhotoGalleryPanel({ biographyId, userId, onClose, embedded }: Ph
 
       const { data: inserted, error: insertError } = await supabase
         .from('biography_media')
-        .insert({
-          biography_id: biographyId,
-          user_id: userId,
-          file_url: fileUrl,
-          file_name: file.name,
-          caption: '',
-          layout: 'full-page',
-          display_order: newOrder,
-        })
+        .insert(
+          buildMediaInsertPayload({
+            biographyId,
+            userId,
+            fileUrl,
+            fileName: file.name,
+            layout: 'full-page',
+            displayOrder: newOrder,
+          })
+        )
         .select()
         .maybeSingle();
 

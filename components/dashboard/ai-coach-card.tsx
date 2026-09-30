@@ -17,7 +17,7 @@ import { useTranslation } from '@/lib/i18n/i18n-context';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 import { BIOGRAPHY_SECTIONS, type BiographyContent } from '@/lib/editor-constants';
-import { getSectionTitle } from '@/lib/ai/next-section-recommender';
+import { getSectionTitle } from '@/lib/section-titles';
 import type { Biography } from '@/lib/biographies';
 
 interface AICoachCardProps {

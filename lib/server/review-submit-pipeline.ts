@@ -1,7 +1,7 @@
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { purgeAgentMemoryForBiography } from '@/lib/agents/purge-agent-memory';
 import { runPublicationScreening } from '@/lib/agents/screening/run-publication-screening';
-import { getModelForRole } from '@/lib/agents/models';
+import { chat } from '@/lib/agents/infomaniak-client';
 import { storedToArchiveMarkdown } from '@/lib/archive-markdown';
 import { BIOGRAPHY_SECTIONS } from '@/lib/editor-constants';
 import {
@@ -9,9 +9,14 @@ import {
   notifyReviewerAssignedEmail,
 } from '@/lib/server/email/publication-helpers';
 import { resolveRecordLanguageTag } from '@/lib/record-language';
+import {
+  checkPublishGate,
+  computePublicFingerprint,
+  gatedPublish,
+  recordScreening,
+  type ScreeningVerdict,
+} from '@/lib/server/publication-fingerprint';
 
-const INFOMANIAK_ENDPOINT = process.env.INFOMANIAK_AI_ENDPOINT ?? '';
-const INFOMANIAK_TOKEN = process.env.INFOMANIAK_AI_TOKEN ?? '';
 
 const MAX_CONTENT_CHARS = 6000;
 const AI_TIMEOUT_MS = 30_000;
@@ -42,13 +47,8 @@ const UNDER_REVIEW_MESSAGES: Record<string, string> = {
   de: 'Ihre Biografie wurde zur manuellen Prüfung eingereicht.',
 };
 
-export type AnyClient = SupabaseClient<any, any, any>;
-
-export function buildServiceClient(): AnyClient {
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
-  return createClient(url, serviceKey, { auth: { persistSession: false } }) as AnyClient;
-}
+export { buildServiceClient, type AnyClient } from '@/lib/server/service-client';
+import type { AnyClient } from '@/lib/server/service-client';
 
 export async function checkPerUserThrottle(supabase: AnyClient, userId: string): Promise<boolean> {
   const { data, error } = await supabase.rpc('check_and_record_submit_attempt', {
@@ -102,12 +102,13 @@ async function fetchPreviousRejectionReport(
 
 /**
  * When status is `under_review` after AI flags, the latest open report carries
- * `flagged_passages`; re-screen only those sections (same as moderator rescreen).
+ * `flagged_passages`: a new screening closes that report (the new one replaces it).
+ * The screening itself always reads the whole text, not only those sections.
  */
 async function fetchOpenAiFlaggedReportForRescreen(
   supabase: AnyClient,
   biographyId: string
-): Promise<{ id: string; sectionKeys: string[] } | null> {
+): Promise<{ id: string } | null> {
   const { data: bio } = await supabase
     .from('biographies')
     .select('status')
@@ -132,26 +133,20 @@ async function fetchOpenAiFlaggedReportForRescreen(
     return null;
   }
 
-  const keys = Array.from(
-    new Set(
-      raw
-        .map((p: { section_key?: string }) => p.section_key)
-        .filter((k): k is string => typeof k === 'string' && k.length > 0)
-    )
-  );
-
-  if (keys.length === 0) {
-    return null;
-  }
-
-  return { id: report.id as string, sectionKeys: keys };
+  return { id: report.id as string };
 }
 
+/**
+ * Il testo che lo screening legge: `final_version` se c'è, altrimenti le sezioni e il
+ * flusso libero. Sempre il testo intero: lo screening non esamina più sezioni mirate,
+ * perché una garanzia sul testo pubblicato non può poggiare su una parte sola.
+ * `text` è ciò che riceve il modello (al massimo MAX_CONTENT_CHARS); `sourceChars`
+ * è la lunghezza del testo di partenza: se è maggiore, il modello non l'ha visto tutto.
+ */
 export async function fetchBiographyContent(
   supabase: AnyClient,
-  biographyId: string,
-  targetSectionKeys?: string[]
-): Promise<{ text: string; authorId: string; contentLanguage: string }> {
+  biographyId: string
+): Promise<{ text: string; authorId: string; contentLanguage: string; sourceChars: number }> {
   const { data: bio } = await supabase
     .from('biographies')
     .select(
@@ -163,37 +158,18 @@ export async function fetchBiographyContent(
   const authorId: string = (bio as any)?.user_id ?? '';
   const contentLanguage: string = resolveRecordLanguageTag(bio as any);
 
-  const hasTargetKeys = targetSectionKeys && targetSectionKeys.length > 0;
   const finalRaw = (bio as any)?.final_version?.trim();
-  if (!hasTargetKeys && finalRaw) {
-    let text = storedToArchiveMarkdown(finalRaw);
-    if (text.length > MAX_CONTENT_CHARS) {
-      text = text.slice(0, MAX_CONTENT_CHARS);
-    }
-    return { text, authorId, contentLanguage };
+  if (finalRaw) {
+    return { ...cutForModel(storedToArchiveMarkdown(finalRaw)), authorId, contentLanguage };
   }
-
-  /** Used below when targeted sections are empty but final_version holds the live text (PDF path). */
-  const finalVersionFallback = (): { text: string; authorId: string; contentLanguage: string } => {
-    let text = storedToArchiveMarkdown(finalRaw ?? '');
-    if (text.length > MAX_CONTENT_CHARS) {
-      text = text.slice(0, MAX_CONTENT_CHARS);
-    }
-    return { text, authorId, contentLanguage };
-  };
 
   const jsonContent =
     ((bio as { content?: Record<string, { text?: string } | undefined> | null }).content ??
       {}) as Record<string, { text?: string } | undefined>;
 
-  const wantedKeys =
-    targetSectionKeys && targetSectionKeys.length > 0
-      ? targetSectionKeys.filter((k) => k !== 'freeflow')
-      : BIOGRAPHY_SECTIONS.map((s) => s.key);
-
   const parts: string[] = [];
 
-  for (const key of wantedKeys) {
+  for (const { key } of BIOGRAPHY_SECTIONS) {
     const fromJson = jsonContent[key]?.text?.trim();
     if (fromJson) {
       parts.push(`[SECTION: ${key}]\n${storedToArchiveMarkdown(fromJson)}`);
@@ -201,18 +177,12 @@ export async function fetchBiographyContent(
   }
 
   if (parts.length === 0) {
-    let query = supabase
+    const { data: sections } = await supabase
       .from('biography_sections')
       .select('section_key, content')
       .eq('biography_id', biographyId)
       .not('content', 'is', null)
       .order('section_key', { ascending: true });
-
-    if (targetSectionKeys && targetSectionKeys.length > 0) {
-      query = query.in('section_key', targetSectionKeys);
-    }
-
-    const { data: sections } = await query;
 
     for (const section of (sections as any[]) ?? []) {
       if (section.content?.trim()) {
@@ -223,25 +193,17 @@ export async function fetchBiographyContent(
     }
   }
 
-  const isTargeted = targetSectionKeys && targetSectionKeys.length > 0;
-  const includeFreeflow = !isTargeted || targetSectionKeys?.includes('freeflow');
-
-  if (includeFreeflow && (bio as any)?.content_freeflow?.trim()) {
+  if ((bio as any)?.content_freeflow?.trim()) {
     parts.push(
       `[SECTION: freeflow]\n${storedToArchiveMarkdown((bio as any).content_freeflow.trim())}`
     );
   }
 
-  let text = parts.join('\n\n');
-  if (text.length > MAX_CONTENT_CHARS) {
-    text = text.slice(0, MAX_CONTENT_CHARS);
-  }
+  return { ...cutForModel(parts.join('\n\n')), authorId, contentLanguage };
+}
 
-  if (hasTargetKeys && !text.trim() && finalRaw) {
-    return finalVersionFallback();
-  }
-
-  return { text, authorId, contentLanguage };
+function cutForModel(full: string): { text: string; sourceChars: number } {
+  return { text: full.length > MAX_CONTENT_CHARS ? full.slice(0, MAX_CONTENT_CHARS) : full, sourceChars: full.length };
 }
 
 export interface DraftAiSuggestion {
@@ -370,7 +332,8 @@ function draftReviewFocusBlock(iteration: number): string {
 export async function runDraftAiReview(
   biographyText: string,
   iteration: number,
-  contentLanguage: string = 'en'
+  contentLanguage: string = 'en',
+  usageOwner: { userId?: string | null; biographyId?: string | null } = {}
 ): Promise<DraftAiFeedback> {
   const errorResult: DraftAiFeedback = {
     overall_quality: 0,
@@ -381,7 +344,7 @@ export async function runDraftAiReview(
     aiError: true,
   };
 
-  if (!INFOMANIAK_TOKEN || !INFOMANIAK_ENDPOINT) {
+  if (!process.env.INFOMANIAK_AI_TOKEN || !process.env.INFOMANIAK_AI_ENDPOINT) {
     console.warn('[review-submit-pipeline] Infomaniak AI not configured — draft review fallback');
     return errorResult;
   }
@@ -427,33 +390,21 @@ export async function runDraftAiReview(
     iterationFocusBlock;
 
   try {
-    const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), AI_TIMEOUT_MS);
-    const res = await fetch(INFOMANIAK_ENDPOINT, {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${INFOMANIAK_TOKEN}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        model: getModelForRole('reviewer').primary,
-        max_tokens: 2048,
-        temperature: 0.2,
-        messages: [
-          { role: 'system', content: systemPrompt },
-          { role: 'user', content: userPrompt },
-        ],
-      }),
-      signal: controller.signal,
-    }).finally(() => clearTimeout(timer));
+    const result = await chat({
+      role: 'reviewer',
+      messages: [
+        { role: 'system', content: systemPrompt },
+        { role: 'user', content: userPrompt },
+      ],
+      max_tokens: 2048,
+      temperature: 0.2,
+      timeoutMs: AI_TIMEOUT_MS,
+      // Solo il modello primario del revisore, come prima: nessun ripiego nascosto.
+      allowFallback: false,
+      usage: { purpose: 'preprint_check', ...usageOwner },
+    });
 
-    if (!res.ok) {
-      console.error('[review-submit-pipeline] Draft AI HTTP error:', res.status);
-      return errorResult;
-    }
-
-    const aiJson = await res.json();
-    const rawText: string = aiJson?.choices?.[0]?.message?.content ?? '';
+    const rawText: string = result.content ?? '';
     const match = rawText.match(/\{[\s\S]*\}/);
     if (!match) {
       console.error('[review-submit-pipeline] Draft AI response has no JSON object');
@@ -570,9 +521,196 @@ export type ReviewSubmitPipelineResult =
       result: 'under_review';
       message?: string;
       isRescreen: boolean;
-      screeningDetail?: 'parse_error' | 'ai_error' | 'flagged';
+      screeningDetail?: 'parse_error' | 'ai_error' | 'flagged' | 'text_changed' | 'too_long';
       flagCount?: number;
     };
+
+interface ManualReviewArgs {
+  serviceClient: AnyClient;
+  biographyId: string;
+  authorId: string;
+  contentLanguage: string;
+  priorStatus: string | null;
+  previousReviewerId: string | null;
+  isRescreen: boolean;
+  aiScreeningStatus: 'parse_error' | 'ai_error' | 'pending';
+  reportDescription: string;
+  reportSummary: string;
+  screeningDetail: 'parse_error' | 'ai_error' | 'text_changed' | 'too_long';
+  message: string;
+  /** Solo per "testo cambiato": lascia nel registro il fatto che l'impronta esaminata non è più quella attuale. */
+  recordTextChanged?: { fingerprint: string; examinedChars: number; sourceChars: number };
+}
+
+/**
+ * La scheda non si pubblica da sola: passa alla revisione umana (errore del
+ * modello, risposta illeggibile, oppure testo cambiato durante lo screening).
+ */
+async function routeToManualReview(args: ManualReviewArgs): Promise<ReviewSubmitPipelineResult> {
+  const { serviceClient, biographyId, authorId, contentLanguage } = args;
+
+  if (args.recordTextChanged) {
+    await recordScreening(serviceClient, {
+      biographyId,
+      fingerprint: args.recordTextChanged.fingerprint,
+      verdict: 'text_changed',
+      scope: 'full',
+      examinedChars: args.recordTextChanged.examinedChars,
+      sourceChars: args.recordTextChanged.sourceChars,
+    });
+  }
+
+  const patch: Record<string, unknown> = { ai_screening_status: args.aiScreeningStatus };
+  if (args.priorStatus === 'locked_pending_screening') {
+    patch.status = 'under_review';
+  }
+  await serviceClient.from('biographies').update(patch).eq('id', biographyId);
+
+  const { data: errorReport } = await serviceClient
+    .from('moderation_reports')
+    .insert({
+      biography_id: biographyId,
+      reporter_id: null,
+      report_type: 'level2_content',
+      origin: 'screening',
+      description: args.reportDescription,
+      status: 'unassigned',
+      ai_analysis: {
+        summary: args.reportSummary,
+        flagged_passages: [],
+      },
+      ai_violation_level: 0,
+    })
+    .select('id')
+    .maybeSingle();
+
+  const errorReviewerId = await pickReviewer(serviceClient, contentLanguage, args.previousReviewerId);
+
+  if (errorReviewerId && (errorReport as any)?.id) {
+    await serviceClient
+      .from('moderation_reports')
+      .update({
+        status: 'assigned',
+        assigned_to: errorReviewerId,
+        assigned_moderator_id: errorReviewerId,
+        assigned_at: new Date().toISOString(),
+      })
+      .eq('id', (errorReport as any).id);
+
+    const assignMsg = REVIEW_ASSIGNED_MESSAGES[contentLanguage] ?? REVIEW_ASSIGNED_MESSAGES['en'];
+    await notifyReviewerAssignedEmail({
+      client: serviceClient,
+      reviewerId: errorReviewerId,
+      biographyId,
+      contentLanguage,
+      notificationMessage: assignMsg,
+    });
+  }
+
+  const underReviewMsg = UNDER_REVIEW_MESSAGES[contentLanguage] ?? UNDER_REVIEW_MESSAGES['en'];
+  await notifyAuthorPublicationEmail({
+    client: serviceClient,
+    authorId,
+    biographyId,
+    templateId: 'publication_under_review',
+    contentLanguage,
+    notificationMessage: underReviewMsg,
+  });
+
+  return {
+    result: 'under_review',
+    message: args.message,
+    isRescreen: args.isRescreen,
+    screeningDetail: args.screeningDetail,
+  };
+}
+
+interface ScreeningPass {
+  authorId: string;
+  contentLanguage: string;
+  /** Ciò che ha ricevuto il modello. */
+  text: string;
+  /** Lunghezza del testo di partenza: maggiore di text.length se il modello non l'ha visto tutto. */
+  sourceChars: number;
+  /** Impronta del testo pubblico nel momento in cui lo screening lo legge. */
+  fingerprint: string;
+  screening: Awaited<ReturnType<typeof runPublicationScreening>>;
+  verdict: ScreeningVerdict;
+}
+
+/**
+ * Un esame: impronta del testo pubblico, lettura del testo, modello, traccia nel
+ * registro. Non cambia lo stato della scheda. Esame sempre del testo intero.
+ */
+async function runScreeningPass(serviceClient: AnyClient, biographyId: string): Promise<ScreeningPass> {
+  const fingerprint = await computePublicFingerprint(serviceClient, biographyId);
+  const { text, authorId, contentLanguage, sourceChars } = await fetchBiographyContent(
+    serviceClient,
+    biographyId
+  );
+  if (!authorId || !fingerprint) {
+    throw new Error('Biography not found');
+  }
+
+  const screening = await runPublicationScreening(text, undefined, { userId: authorId, biographyId });
+
+  const verdict: ScreeningVerdict = screening.aiError
+    ? screening.parseError
+      ? 'parse_error'
+      : 'ai_error'
+    : screening.passages.length === 0
+      ? 'passed'
+      : 'flagged';
+
+  await recordScreening(serviceClient, {
+    biographyId,
+    fingerprint,
+    verdict,
+    scope: 'full',
+    examinedChars: text.length,
+    sourceChars,
+  });
+
+  return { authorId, contentLanguage, text, sourceChars, fingerprint, screening, verdict };
+}
+
+export interface ReviewScreeningOutcome {
+  verdict: ScreeningVerdict;
+  fingerprint: string;
+  examinedChars: number;
+  sourceChars: number;
+  /** Vero se il modello non ha visto tutto il testo: la persona deve leggerlo per intero. */
+  partial: boolean;
+  overallSeverity: number;
+  flaggedPassages: Array<{ text: string; section_key: string | null; reason: string; level: number }>;
+}
+
+/**
+ * Screening senza pubblicazione: per una correzione inviata dopo una revisione
+ * richiesta. Registra l'esame (impronta e esito) e restituisce l'esito da allegare
+ * alla scheda; la decisione resta al revisore, e `gatedPublish` pubblicherà solo se
+ * l'impronta del testo coincide con quella registrata qui.
+ */
+export async function runScreeningForReview(
+  serviceClient: AnyClient,
+  biographyId: string
+): Promise<ReviewScreeningOutcome> {
+  const pass = await runScreeningPass(serviceClient, biographyId);
+  return {
+    verdict: pass.verdict,
+    fingerprint: pass.fingerprint,
+    examinedChars: pass.text.length,
+    sourceChars: pass.sourceChars,
+    partial: pass.text.length < pass.sourceChars,
+    overallSeverity: pass.screening.overall_severity ?? 0,
+    flaggedPassages: pass.screening.passages.map((p) => ({
+      text: p.text,
+      section_key: p.section_key ?? null,
+      reason: p.reason,
+      level: p.severity,
+    })),
+  };
+}
 
 /**
  * Runs AI screening and applies biography / moderation side-effects.
@@ -587,28 +725,9 @@ export async function runReviewSubmitScreening(
     ? await fetchOpenAiFlaggedReportForRescreen(serviceClient, biographyId)
     : null;
 
-  let previousReportId: string | null = null;
-  let targetSectionKeys: string[] | undefined;
-
-  if (moderatorRejection) {
-    previousReportId = moderatorRejection.id;
-    targetSectionKeys = moderatorRejection.rejectedPassages.map((p) => p.section_key);
-  } else if (aiRescreen) {
-    previousReportId = aiRescreen.id;
-    targetSectionKeys = aiRescreen.sectionKeys;
-  }
-
+  // Un nuovo screening chiude il rapporto precedente (vale per il testo intero).
+  const previousReportId: string | null = moderatorRejection?.id ?? aiRescreen?.id ?? null;
   const isRescreen = previousReportId !== null;
-
-  const { text, authorId, contentLanguage } = await fetchBiographyContent(
-    serviceClient,
-    biographyId,
-    targetSectionKeys
-  );
-
-  if (!authorId) {
-    throw new Error('Biography not found');
-  }
 
   let previousReviewerId: string | null = null;
   if (previousReportId) {
@@ -620,79 +739,80 @@ export async function runReviewSubmitScreening(
     previousReviewerId = (prevReport as { assigned_to?: string } | null)?.assigned_to ?? null;
   }
 
-  const screening = await runPublicationScreening(text, targetSectionKeys);
+  const {
+    authorId,
+    contentLanguage,
+    text,
+    sourceChars,
+    fingerprint: examinedFingerprint,
+    screening,
+  } = await runScreeningPass(serviceClient, biographyId);
 
   const priorStatus = await fetchBiographyStatus(serviceClient, biographyId);
 
   if (screening.aiError) {
-    const patch: Record<string, unknown> = {
-      ai_screening_status: screening.parseError ? 'parse_error' : 'ai_error',
-    };
-    if (priorStatus === 'locked_pending_screening') {
-      patch.status = 'under_review';
-    }
-    await serviceClient.from('biographies').update(patch).eq('id', biographyId);
-
-    const { data: errorReport } = await serviceClient
-      .from('moderation_reports')
-      .insert({
-        biography_id: biographyId,
-        reporter_id: null,
-        report_type: 'level2_content',
-        origin: 'screening',
-        description: 'AI screening failed — routed to manual review',
-        status: 'unassigned',
-        ai_analysis: {
-          summary: 'AI screening could not complete. Manual review required.',
-          flagged_passages: [],
-        },
-        ai_violation_level: 0,
-      })
-      .select('id')
-      .maybeSingle();
-
-    const errorReviewerId = await pickReviewer(serviceClient, contentLanguage, previousReviewerId);
-
-    if (errorReviewerId && (errorReport as any)?.id) {
-      await serviceClient
-        .from('moderation_reports')
-        .update({
-          status: 'assigned',
-          assigned_to: errorReviewerId,
-          assigned_moderator_id: errorReviewerId,
-          assigned_at: new Date().toISOString(),
-        })
-        .eq('id', (errorReport as any).id);
-
-      const assignMsg = REVIEW_ASSIGNED_MESSAGES[contentLanguage] ?? REVIEW_ASSIGNED_MESSAGES['en'];
-      await notifyReviewerAssignedEmail({
-        client: serviceClient,
-        reviewerId: errorReviewerId,
-        biographyId,
-        contentLanguage,
-        notificationMessage: assignMsg,
-      });
-    }
-
-    const underReviewMsg = UNDER_REVIEW_MESSAGES[contentLanguage] ?? UNDER_REVIEW_MESSAGES['en'];
-    await notifyAuthorPublicationEmail({
-      client: serviceClient,
-      authorId,
+    return routeToManualReview({
+      serviceClient,
       biographyId,
-      templateId: 'publication_under_review',
+      authorId,
       contentLanguage,
-      notificationMessage: underReviewMsg,
-    });
-
-    return {
-      result: 'under_review',
-      message: 'submitted for manual review',
+      priorStatus,
+      previousReviewerId,
       isRescreen,
+      aiScreeningStatus: screening.parseError ? 'parse_error' : 'ai_error',
+      reportDescription: 'AI screening failed — routed to manual review',
+      reportSummary: 'AI screening could not complete. Manual review required.',
       screeningDetail: screening.parseError ? 'parse_error' : 'ai_error',
-    };
+      message: 'submitted for manual review',
+    });
   }
 
   if (screening.passages.length === 0) {
+    const textChanged = (message: string) =>
+      routeToManualReview({
+        serviceClient,
+        biographyId,
+        authorId,
+        contentLanguage,
+        priorStatus,
+        previousReviewerId,
+        isRescreen,
+        aiScreeningStatus: 'pending',
+        reportDescription: 'Text changed during screening — routed to manual review',
+        reportSummary: message,
+        screeningDetail: 'text_changed',
+        message: 'text_changed_during_screening',
+        recordTextChanged: { fingerprint: examinedFingerprint, examinedChars: text.length, sourceChars },
+      });
+
+    // Regola provvisoria (fino allo screening a pezzi): se il modello non ha visto tutto il
+    // testo non si pubblica da soli. Nessun testo va online in automatico senza essere
+    // stato letto per intero dal modello; la scheda passa alla coda umana con il motivo scritto.
+    if (text.length < sourceChars) {
+      return routeToManualReview({
+        serviceClient,
+        biographyId,
+        authorId,
+        contentLanguage,
+        priorStatus,
+        previousReviewerId,
+        isRescreen,
+        aiScreeningStatus: 'pending',
+        reportDescription: 'Text longer than the screening window — routed to manual review',
+        reportSummary: `The screening model read ${text.length} of ${sourceChars} characters of this text, so it cannot publish it automatically. A person must read the whole text.`,
+        screeningDetail: 'too_long',
+        message: 'text_longer_than_screening_window',
+      });
+    }
+
+    // Prima dell'identificativo UM (permanente): se il testo è cambiato, niente UM.
+    const precheck = await checkPublishGate(serviceClient, {
+      biographyId,
+      mode: 'auto',
+      expectedFingerprint: examinedFingerprint,
+    });
+    if (!precheck.ok) return textChanged(precheck.message);
+
     const { ensureUmIdFor } = await import('@/lib/server/um-id-registry');
     await ensureUmIdFor(serviceClient, biographyId);
 
@@ -718,7 +838,24 @@ export async function runReviewSubmitScreening(
       if (until) publishPatch.provisional_until = until;
     }
 
-    await serviceClient.from('biographies').update(publishPatch).eq('id', biographyId);
+    const published = await gatedPublish(
+      serviceClient,
+      { biographyId, mode: 'auto', actorId: null, expectedFingerprint: examinedFingerprint },
+      async () => {
+        const { error: publishError } = await serviceClient
+          .from('biographies')
+          .update(publishPatch)
+          .eq('id', biographyId);
+        return publishError ? publishError.message : null;
+      }
+    );
+    if (!published.ok && published.blocked) return textChanged(published.message);
+    if (!published.ok) {
+      // Pubblicazione non riuscita (per esempio attesa fra capitoli): niente notifiche,
+      // niente cancellazione della memoria di Echo, niente risposta "pubblicata".
+      console.error('[review-submit-pipeline] publish update failed:', published.error);
+      throw new Error(`publish_failed: ${published.error}`);
+    }
 
     try {
       const { syncArchivePackage } = await import('@/lib/server/archive-package-store');

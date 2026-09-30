@@ -7,15 +7,12 @@ export type AgentRole =
   | 'coach'
   | 'reviewer'
   | 'onboarding'
-  | 'apertus'
   | 'embedding';
 
-export type AgentType = 'platform_guide' | 'biography_coach' | 'publication_reviewer' | 'echo';
+/** Un solo agente conversazionale: Echo (che include la guida alla piattaforma). */
+export type AgentType = 'echo';
 
 export const AGENT_TYPE_TO_ROLE: Record<AgentType, AgentRole> = {
-  platform_guide: 'onboarding',
-  biography_coach: 'coach',
-  publication_reviewer: 'reviewer',
   echo: 'onboarding',
 };
 
@@ -35,10 +32,6 @@ export const DEFAULT_MODELS: Record<AgentRole, { primary: string; fallback: stri
     primary: 'google/gemma-4-31B-it',
     fallback: 'mistralai/Ministral-3-14B-Instruct-2512',
   },
-  apertus: {
-    primary: 'swiss-ai/Apertus-v1.5-70B',
-    fallback: 'mistralai/Mistral-Small-4-119B-2603',
-  },
   embedding: {
     primary: 'bge_multilingual_gemma2',
     fallback: 'bge_multilingual_gemma2',
@@ -49,7 +42,6 @@ const ENV_KEYS: Record<AgentRole, { primary: string; fallback: string }> = {
   coach: { primary: 'AGENT_MODEL_COACH', fallback: 'AGENT_MODEL_COACH_FALLBACK' },
   reviewer: { primary: 'AGENT_MODEL_REVIEWER', fallback: 'AGENT_MODEL_REVIEWER_FALLBACK' },
   onboarding: { primary: 'AGENT_MODEL_ONBOARDING', fallback: 'AGENT_MODEL_ONBOARDING_FALLBACK' },
-  apertus: { primary: 'AGENT_MODEL_APERTUS', fallback: 'AGENT_MODEL_APERTUS_FALLBACK' },
   embedding: { primary: 'AGENT_EMBEDDING_MODEL', fallback: 'AGENT_EMBEDDING_MODEL_FALLBACK' },
 };
 
@@ -64,7 +56,6 @@ const MODEL_PARAMS: Record<AgentRole, ModelParams> = {
   coach: { max_tokens: 2048, temperature: 0.7, supportsThinking: false },
   reviewer: { max_tokens: 2048, temperature: 0.2, supportsThinking: false },
   onboarding: { max_tokens: 1024, temperature: 0.5, supportsThinking: false },
-  apertus: { max_tokens: 2048, temperature: 0.3, supportsThinking: false },
   embedding: { max_tokens: 0, temperature: 0, supportsThinking: false },
 };
 

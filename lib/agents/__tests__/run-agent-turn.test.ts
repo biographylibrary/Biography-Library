@@ -12,7 +12,6 @@ const updateAssistantMessageContent = vi.fn().mockResolvedValue({ id: 'msg-1', c
 const maybeCompressThreadMemory = vi.fn().mockResolvedValue(undefined);
 const chat = vi.fn();
 const chatStream = vi.fn();
-const executeCoachTool = vi.fn();
 const executeEchoTool = vi.fn();
 
 vi.mock('@/lib/agents/thread-service', () => ({
@@ -33,14 +32,6 @@ vi.mock('@/lib/agents/infomaniak-client', async (importOriginal) => {
   };
 });
 
-vi.mock('@/lib/agents/tools/coach-tools', () => ({
-  executeCoachTool: (...args: unknown[]) => executeCoachTool(...args),
-}));
-
-vi.mock('@/lib/agents/tools/reviewer-tools', () => ({
-  executeReviewerTool: vi.fn(),
-}));
-
 vi.mock('@/lib/agents/tools/echo-tools', () => ({
   executeEchoTool: (...args: unknown[]) => executeEchoTool(...args),
 }));
@@ -49,9 +40,9 @@ const preparedBase: PreparedAgentTurn = {
   threadId: 'thread-1',
   history: [],
   userMessage: 'Help me write childhood section',
-  systemPrompt: 'You are a coach',
+  systemPrompt: 'You are Echo',
   role: 'coach',
-  agentType: 'biography_coach',
+  agentType: 'echo',
   tools: [{ type: 'function', function: { name: 'propose_draft', description: 'draft', parameters: {} } }],
   biographyId: 'bio-1',
   userId: 'user-1',
@@ -116,7 +107,7 @@ describe('runStreamingAgentTurn', () => {
       })
       .mockResolvedValueOnce({ content: '' });
 
-    executeCoachTool.mockResolvedValue({
+    executeEchoTool.mockResolvedValue({
       content: '{"preview":"Once upon a time..."}',
       event: { tool: 'propose_draft', sectionKey: 'childhood', contentLength: 21 },
     });
@@ -128,7 +119,7 @@ describe('runStreamingAgentTurn', () => {
 
     await runStreamingAgentTurn(preparedBase, serviceClient, send);
 
-    expect(executeCoachTool).toHaveBeenCalledWith(
+    expect(executeEchoTool).toHaveBeenCalledWith(
       'propose_draft',
       '{"sectionKey":"childhood"}',
       expect.objectContaining({ biographyId: 'bio-1', userId: 'user-1' })
@@ -143,7 +134,6 @@ describe('runStreamingAgentTurn', () => {
   it('uses draft acknowledgment when model returns only propose_draft tool without text', async () => {
     const echoPrepared: PreparedAgentTurn = {
       ...preparedBase,
-      agentType: 'echo',
       locale: 'it',
     };
 

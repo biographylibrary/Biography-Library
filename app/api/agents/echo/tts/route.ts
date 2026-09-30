@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { authenticateAgentRequest } from '@/lib/agents/agent-chat-handler';
 import { checkAgentRateLimit } from '@/lib/agents/thread-service';
-import { isEchoTtsConfigured } from '@/lib/echo/voice-config';
-import { synthesizeVoxtralSpeech } from '@/lib/echo/voxtral-tts';
+import { echoTtsModel, isEchoTtsConfigured } from '@/lib/echo/voice-config';
+import { MAX_INPUT_CHARS, synthesizeVoxtralSpeech } from '@/lib/echo/voxtral-tts';
+import { recordAiUsage } from '@/lib/ai/usage-recorder';
 import { buildServiceClient } from '@/lib/server/review-submit-pipeline';
 import { isPlatformStaffRole } from '@/lib/server/staff-roles';
 import type { UserRole } from '@/lib/auth-context';
@@ -62,11 +63,26 @@ export async function POST(req: NextRequest) {
 
   const language = body.language ?? 'en';
 
+  // Sintesi vocale su Mistral (Voxtral), non su Infomaniak: si registrano i
+  // caratteri inviati, l'unità di fatturazione del fornitore, non token.
+  const sentChars = Math.min(text.length, MAX_INPUT_CHARS);
+  const recordTts = (ok: boolean) =>
+    recordAiUsage({
+      purpose: 'tts',
+      userId: auth.userId,
+      model: echoTtsModel(),
+      usageUnit: 'characters',
+      usageUnits: sentChars,
+      ok,
+    });
+
   try {
     const audio = await synthesizeVoxtralSpeech(text, language);
     if (!audio) {
+      await recordTts(false);
       return NextResponse.json({ error: 'TTS synthesis failed' }, { status: 502 });
     }
+    await recordTts(true);
 
     return new NextResponse(audio, {
       status: 200,
@@ -77,6 +93,7 @@ export async function POST(req: NextRequest) {
     });
   } catch (err) {
     console.error('[echo/tts]', err);
+    await recordTts(false);
     return NextResponse.json({ error: 'TTS synthesis failed' }, { status: 502 });
   }
 }

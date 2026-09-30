@@ -48,7 +48,11 @@ export async function POST(req: NextRequest) {
   ];
 
   try {
-    const result = await chat({ role: prepared.role, messages });
+    const result = await chat({
+      role: prepared.role,
+      messages,
+      usage: { purpose: 'echo', userId: prepared.userId, biographyId: prepared.biographyId ?? null },
+    });
     await appendMessage(serviceClient, prepared.threadId, {
       role: 'assistant',
       content: result.content,

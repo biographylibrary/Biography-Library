@@ -49,10 +49,11 @@ cp .env.example .env.local
 
 # 5. Deploy Edge Functions
 # Use the Supabase MCP deploy_edge_function tool for each function:
-#   ai-assistant, audio-transcription, log-error
+#   audio-transcription, log-error
 # Then set Edge Function secrets in the Supabase dashboard:
-#   INFOMANIAK_AI_TOKEN, INFOMANIAK_AI_ENDPOINT,
-#   INFOMANIAK_AI_MODEL_PRIMARY, INFOMANIAK_AI_MODEL_FALLBACK (ai-assistant)
+#   INFOMANIAK_AI_TOKEN, INFOMANIAK_AI_ENDPOINT (audio-transcription)
+# (the grammar check now runs in Next.js: INFOMANIAK_AI_MODEL_* and AI_*_LIMIT
+#  are read from the app's .env, not from Supabase secrets)
 
 # 6. Start the dev server
 npm run dev
@@ -179,6 +180,24 @@ This is safe while `bl-app` is running — it does not remove the active contain
 
 Migrations are plain SQL files in `supabase/migrations/`. The filename prefix is a timestamp (e.g., `20260205184358_`). Apply them in order.
 
+### Applying a migration (rule for every migration)
+
+`apply_migration` takes only a name and records as `version` the moment it runs, not the prefix of the file. To keep production's history equal to the file names, **applying and aligning the version are one step**, for each migration, before starting the next:
+
+1. Apply: `apply_migration` with `name` = the file name without the version prefix (for `20260930115700_publication_records.sql`: `publication_records`) and `query` = the file text.
+2. Find the version it registered: `select version, name from supabase_migrations.schema_migrations where name = '<name>' order by version desc limit 1;`
+3. Align it with the file:
+   ```sql
+   update supabase_migrations.schema_migrations
+      set version = '<version of the file>'
+    where name = '<name>' and version = '<version registered in step 2>';
+   ```
+   (exactly one row must change; the version is the primary key, so a clash fails loudly).
+4. Verify with `list_migrations`: the last entries must show `<version of the file>` and `<name>`, in the same order as the file names.
+5. Write the result in `docs/MIGRATION-INVENTORY.md` (section on the migrations of the block) if it is part of a documented release.
+
+File versions are unique and their alphabetical order is the order of application (a test checks it for the block-1 migrations). The historical mismatches before 30 September 2026 (24 different versions, 11 migrations without an entry, 3 duplicated versions) are **not** corrected: they are listed in `docs/MIGRATION-INVENTORY.md`, which anyone rebuilding the database must read first.
+
 To add a migration:
 
 1. Create a new file: `supabase/migrations/<timestamp>_<description>.sql`
@@ -188,18 +207,34 @@ To add a migration:
 5. Apply via the Supabase MCP tool or dashboard SQL editor.
 6. Commit the file to git.
 
-Never use `DROP TABLE`, `DROP COLUMN`, or `TRUNCATE` in a migration without explicit confirmation — the platform stores real user biographical data.
+Never use `DROP TABLE`, `DROP COLUMN`, or `TRUNCATE` in a migration without explicit confirmation, the platform stores real user biographical data.
+
+**Release of block 1 (AI tools and security).** Seven new migrations. Apply them only after explicit confirmation, with `apply_migration` (one call per file, in this order). The order of the file names is the order of application, so a database rebuilt from the files gets the same sequence. **Migration history:** after each `apply_migration` the registered version is aligned with the file version in the same step (procedure "Applying a migration" above); the historical mismatches are in `docs/MIGRATION-INVENTORY.md`. The new code works both before and after the restrictive migrations (it writes server-only columns with the service role); the old code does not work after them, and the new code cannot publish without `publication_records`.
+
+| # | Migration | When | What it does | Why there |
+|---|---|---|---|---|
+| 1 | `20260930115700_publication_records.sql` | **before the deploy** | adds the fingerprint log (service role only) | new table, the old code ignores it; the new code needs it to publish |
+| 2 | `20260930115800_ai_token_usage.sql` | **before the deploy** | adds the usage ledger, the caps and their seed values | new tables and function; the new code writes to it, `audio-transcription` too |
+| | *merge to `main` (deploy)* | | | |
+| 3 | `20260930115900_align_biographies_profiles_triggers.sql` | **after the deploy** | recreates, identical, the triggers and functions production already has | no change in production (the dry run checks it byte for byte); it sits here because the next one relies on it |
+| 4 | `20260930120000_server_only_columns_and_reports.sql` | **after the deploy** | restricts: server-only columns on `biographies` and `profiles`; drops three direct INSERT policies | the old code writes those columns from the browser and would break |
+| 5 | `20260930120100_drop_biography_view_translations.sql` | **after the deploy** | deletes the reader-translation cache table (18 derived rows) | the old code still reads it; the new code does not |
+| 6 | `20260930120150_author_text_whitelist.sql` | **after the deploy** | restricts: text writable only in the closed list of states, on `biographies` and five child tables | the new editor already respects it; the old one does not |
+| 7 | `20260930120200_agent_threads_echo_only.sql` | **after the deploy** | deletes non-Echo threads (none in production) and restricts `agent_type` to `echo` | the old code can create other types |
+
+Before applying anything: the dry run, `node scripts/build-dry-run.mjs`, a single `DO` block that applies the seven migrations in this order, compares the catalogue, tries the forbidden writes as `authenticated` on existing biographies and always ends with an exception that cancels everything (no INSERT, so no sequence is consumed). It is rehearsed on the local bench (`lib/server/__tests__/db/dry-run.test.ts`). Run it in production only at an agreed time: it holds locks on `biographies`, `profiles` and `moderation_reports` for the duration of the block (well under a second of work; `lock_timeout` 3 s cancels it if it cannot get them).
+
+After the last migration: test account up to the PDF draft, stopping before publication (no UM identifier), then by hand in the Supabase dashboard: delete `ai-assistant` and `help-assistant`, unset `INFOMANIAK_AI_MODEL`, `INFOMANIAK_AI_MODEL_HELP_PRIMARY`, `INFOMANIAK_AI_MODEL_HELP_FALLBACK`; then redeploy `audio-transcription` and check that Echo, the grammar check and the voice answer and leave rows in `ai_token_usage`. Rollback of migrations 4 and 6: `supabase/rollback/20260930_security_rollback.sql` (never applied automatically). Full checklist: `docs/BETA_RELEASE_CHECKLIST.md`.
 
 ---
 
 ## Supabase Edge Functions
 
-Four functions are deployed:
+Two functions are deployed for AI transcription and error reporting. The `ai-assistant` function (and the undocumented `help-assistant`, version 29, whose deployed source is kept in `docs/legacy/help-assistant/`) were removed from the repository on 30 September 2026 and must be deleted from the Supabase project by hand after the release of block 1 (tools available to the agent cannot delete functions). The grammar check is `POST /api/biography/[id]/grammar`:
 
 
 | Slug                  | Purpose                                                                 |
 | --------------------- | ----------------------------------------------------------------------- |
-| `ai-assistant`        | All writing AI actions (grammar, prompts, rewrite, follow-up, analysis) |
 | `audio-transcription` | Audio blob → transcript via Infomaniak Whisper endpoint                 |
 | `log-error`           | Receives client-side error reports and writes to `error_logs` table     |
 
@@ -216,7 +251,7 @@ Per una **sequenza operativa** (merge → migrazioni prod → env → deploy →
 
 - Supabase project created; URL and anon key copied to host env vars
 - All migrations applied in order
-- Edge Functions deployed (ai-assistant, audio-transcription, log-error)
+- Edge Functions deployed (audio-transcription, log-error)
 - Edge Function secrets set: `INFOMANIAK_AI_TOKEN`, `INFOMANIAK_AI_ENDPOINT`, model secrets per `DEPLOYMENT.md` (or unset secrets to use code defaults)
 - Host environment variables set on Jelastic: `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, `INFOMANIAK_AI_ENDPOINT`, `INFOMANIAK_AI_TOKEN`, `AGENT_MODEL_*` / `INFOMANIAK_AI_MODEL_PRIMARY` as in `.env.example` (there is no `INFOMANIAK_AI_MODEL`), `UM_ID_BASE_URL`, `NEXT_PUBLIC_APP_URL`
 - `npm run build` passes without errors on the container

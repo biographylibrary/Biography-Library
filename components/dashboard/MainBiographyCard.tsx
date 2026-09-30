@@ -18,7 +18,7 @@ import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 import { BIOGRAPHY_SECTIONS, type BiographyContent, lastBiographyEditorModeStorageKey } from '@/lib/editor-constants';
 import { isAuthorTextEditableStatus } from '@/lib/publication-state';
-import { getSectionTitle } from '@/lib/ai/next-section-recommender';
+import { getSectionTitle } from '@/lib/section-titles';
 import type { Biography } from '@/lib/biographies';
 import { GlobalNotesPanel } from '@/components/editor/GlobalNotesPanel';
 import { ChapterCooldownBanner } from '@/components/dashboard/ChapterCooldownBanner';

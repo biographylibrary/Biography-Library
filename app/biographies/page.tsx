@@ -12,11 +12,6 @@ import {
 } from '@/lib/biographies';
 import { formatMemorialAuthorAttribution, memorialSubjectName } from '@/lib/biography-display';
 import { isWithinProvisionalWindow } from '@/lib/provisional-window';
-import {
-  biographyMatchesLanguageFilter,
-  fetchPublishedTranslationLocales,
-  type CatalogLanguage,
-} from '@/lib/biography-translation-locales';
 import { BiographyLanguageBadges } from '@/components/biography/BiographyLanguageBadges';
 import { PioneerBadge } from '@/components/biography/PioneerBadge';
 import { supabase } from '@/lib/supabase';
@@ -110,10 +105,9 @@ interface BiographyCardProps {
   bio: PublishedBiography;
   t: ReturnType<typeof useTranslation>['t'];
   featured?: boolean;
-  translationLanguages?: CatalogLanguage[];
 }
 
-function BiographyCard({ bio, t, featured, translationLanguages = [] }: BiographyCardProps) {
+function BiographyCard({ bio, t, featured }: BiographyCardProps) {
   const { language } = useTranslation();
   const isMemorial = bio.biography_type === 'memorial';
   const subject = memorialSubjectName(bio.subject_name, bio.title);
@@ -211,7 +205,6 @@ function BiographyCard({ bio, t, featured, translationLanguages = [] }: Biograph
         <div className="flex items-center gap-1.5 flex-wrap pt-1">
           <BiographyLanguageBadges
             originalLanguage={bio.content_language || 'en'}
-            translationLanguages={translationLanguages}
           />
           <span className="text-xs font-medium text-muted-foreground">
             {typeLabel}
@@ -232,10 +225,9 @@ interface SectionProps {
   bios: PublishedBiography[];
   t: ReturnType<typeof useTranslation>['t'];
   featured?: boolean;
-  translationMap: Record<string, CatalogLanguage[]>;
 }
 
-function BiographySection({ title, bios, t, featured, translationMap }: SectionProps) {
+function BiographySection({ title, bios, t, featured }: SectionProps) {
   if (bios.length === 0) return null;
   return (
     <section className="mb-14">
@@ -250,7 +242,6 @@ function BiographySection({ title, bios, t, featured, translationMap }: SectionP
             bio={bio}
             t={t}
             featured={featured}
-            translationLanguages={translationMap[bio.id] ?? []}
           />
         ))}
       </div>
@@ -273,19 +264,15 @@ function PublicBiographiesPage() {
   const [search, setSearch] = useState('');
   const [langFilter, setLangFilter] = useState<string>('all');
   const [typeFilter, setTypeFilter] = useState<string>('all');
-  const [translationMap, setTranslationMap] = useState<Record<string, CatalogLanguage[]>>({});
 
   useEffect(() => {
     const load = async () => {
       setIsLoading(true);
 
-      const [featuredRes, mostReadRes, locales] = await Promise.all([
+      const [featuredRes, mostReadRes] = await Promise.all([
         fetchFeaturedBiographies(),
         fetchMostReadBiographies(),
-        fetchPublishedTranslationLocales(),
       ]);
-
-      setTranslationMap(locales);
 
       if (featuredRes.error || mostReadRes.error) {
         setError(featuredRes.error ?? mostReadRes.error ?? t.publicBiographies.errorLoading);
@@ -334,20 +321,14 @@ function PublicBiographiesPage() {
         const inAuthor = (bio.author_name || '').toLowerCase().includes(q);
         if (!inTitle && !inSubject && !inAuthor) return false;
       }
-      if (langFilter !== 'all' &&
-        !biographyMatchesLanguageFilter(
-          bio.content_language,
-          translationMap[bio.id],
-          langFilter
-        )
-      ) {
+      if (langFilter !== 'all' && (bio.content_language || 'en') !== langFilter) {
         return false;
       }
       if (typeFilter === 'autobiography' && bio.biography_type === 'memorial') return false;
       if (typeFilter === 'memorial' && bio.biography_type !== 'memorial') return false;
       return true;
     });
-  }, [allBios, search, langFilter, typeFilter, isSearchActive, translationMap]);
+  }, [allBios, search, langFilter, typeFilter, isSearchActive]);
 
   return (
     <div className="min-h-full bg-background">
@@ -434,8 +415,7 @@ function PublicBiographiesPage() {
                     key={bio.id}
                     bio={bio}
                     t={t}
-                    translationLanguages={translationMap[bio.id] ?? []}
-                  />
+                          />
                 ))}
               </div>
             )}
@@ -450,20 +430,17 @@ function PublicBiographiesPage() {
                 bios={featured}
                 t={t}
                 featured
-                translationMap={translationMap}
               />
             )}
             <BiographySection
               title={t.publicBiographies.mostReadTitle}
               bios={mostRead}
               t={t}
-              translationMap={translationMap}
             />
             <BiographySection
               title={t.publicBiographies.discoverTitle}
               bios={discover}
               t={t}
-              translationMap={translationMap}
             />
           </>
         )}

@@ -110,6 +110,7 @@
     "zod": "^3.23.8"
   },
   "devDependencies": {
+    "@electric-sql/pglite": "^0.5.8",
     "@types/markdown-it": "^14.2.0",
     "knip": "^6.37.0",
     "vite-tsconfig-paths": "^6.1.1",

@@ -15,7 +15,7 @@ export async function POST(req: NextRequest) {
   try {
     const serviceClient = buildServiceClient();
     const pruned = await pruneStaleKbChunks(serviceClient);
-    const result = await seedHelpKb(serviceClient);
+    const result = await seedHelpKb(serviceClient, undefined, staff.userId);
     return NextResponse.json({ ok: true, pruned, ...result });
   } catch (err) {
     const msg = err instanceof Error ? err.message : 'Seed failed';

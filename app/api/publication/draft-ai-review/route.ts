@@ -74,7 +74,10 @@ export async function POST(req: NextRequest) {
     const nextIteration = (currentIteration ?? 0) + 1;
 
     const { text, contentLanguage } = await fetchBiographyContent(serviceClient, biographyId);
-    const feedback = await runDraftAiReview(text, nextIteration, contentLanguage);
+    const feedback = await runDraftAiReview(text, nextIteration, contentLanguage, {
+      userId: user.id,
+      biographyId,
+    });
 
     const { error: updErr } = await serviceClient
       .from('biographies')
