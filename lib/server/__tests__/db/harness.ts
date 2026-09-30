@@ -48,6 +48,8 @@ $$;
 grant usage on schema auth, public to authenticated, anon, service_role;
 -- Come in Supabase: le tabelle nuove nascono con tutti i privilegi ai ruoli API.
 alter default privileges in schema public grant all on tables to authenticated, anon, service_role;
+-- Come in Supabase: ogni funzione creata in public nasce eseguibile da anon, authenticated e servizio.
+alter default privileges in schema public grant execute on functions to anon, authenticated, service_role;
 grant execute on function auth.uid() to public;
 
 create table auth.users (

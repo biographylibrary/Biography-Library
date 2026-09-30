@@ -235,6 +235,29 @@ CREATE TRIGGER a00_profiles_guard_server_columns
   FOR EACH ROW EXECUTE FUNCTION public.profiles_guard_server_columns();
 
 -- ─────────────────────────────────────────────────────────────────────────────
+-- Permessi delle funzioni nuove
+-- In Supabase ogni funzione creata in public riceve per impostazione predefinita
+-- EXECUTE per anon e authenticated. Qui:
+--   - le due funzioni dei trigger non hanno bisogno che chi scrive possa chiamarle
+--     (il permesso si controlla alla creazione del trigger, non quando scatta);
+--   - gli elenchi costanti li chiama il guard con la sessione di chi scrive: serve
+--     EXECUTE a authenticated (e al servizio), non ad anon. Nessuna accetta come
+--     parametro un utente o una biografia, nessuna è SECURITY DEFINER.
+-- ─────────────────────────────────────────────────────────────────────────────
+
+REVOKE EXECUTE ON FUNCTION public.biographies_guard_server_columns() FROM PUBLIC, anon, authenticated;
+REVOKE EXECUTE ON FUNCTION public.profiles_guard_server_columns() FROM PUBLIC, anon, authenticated;
+
+REVOKE EXECUTE ON FUNCTION public.biographies_server_owned_columns() FROM PUBLIC, anon;
+REVOKE EXECUTE ON FUNCTION public.biographies_insert_defaults() FROM PUBLIC, anon;
+REVOKE EXECUTE ON FUNCTION public.profiles_server_owned_columns() FROM PUBLIC, anon;
+REVOKE EXECUTE ON FUNCTION public.profiles_insert_defaults() FROM PUBLIC, anon;
+GRANT EXECUTE ON FUNCTION public.biographies_server_owned_columns() TO authenticated, service_role;
+GRANT EXECUTE ON FUNCTION public.biographies_insert_defaults() TO authenticated, service_role;
+GRANT EXECUTE ON FUNCTION public.profiles_server_owned_columns() TO authenticated, service_role;
+GRANT EXECUTE ON FUNCTION public.profiles_insert_defaults() TO authenticated, service_role;
+
+-- ─────────────────────────────────────────────────────────────────────────────
 -- moderation_reports
 -- Le segnalazioni dei lettori arrivano da /api/moderation/report (ruolo di
 -- servizio, limite per indirizzo e per account): nessun percorso legittimo

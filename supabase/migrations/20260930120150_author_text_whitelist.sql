@@ -209,3 +209,11 @@ CREATE TRIGGER a01_biography_media_guard_parent_status
 -- sicurezza di Supabase): i trigger le eseguono comunque.
 REVOKE EXECUTE ON FUNCTION public.biographies_guard_author_text() FROM PUBLIC, anon, authenticated;
 REVOKE EXECUTE ON FUNCTION public.author_text_child_guard() FROM PUBLIC, anon, authenticated;
+
+-- Gli elenchi costanti li chiamano i trigger con la sessione di chi scrive: serve
+-- EXECUTE a authenticated (e al servizio), non ad anon. Nessuna è SECURITY DEFINER e
+-- nessuna accetta un utente o una biografia come parametro.
+REVOKE EXECUTE ON FUNCTION public.author_text_writable_statuses() FROM PUBLIC, anon;
+REVOKE EXECUTE ON FUNCTION public.biographies_author_text_columns() FROM PUBLIC, anon;
+GRANT EXECUTE ON FUNCTION public.author_text_writable_statuses() TO authenticated, service_role;
+GRANT EXECUTE ON FUNCTION public.biographies_author_text_columns() TO authenticated, service_role;

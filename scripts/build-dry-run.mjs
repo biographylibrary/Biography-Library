@@ -70,7 +70,7 @@ const TESTS_SQL = String.raw`DO $t$
 DECLARE
   results jsonb := '[]'::jsonb;
   d_id uuid; d_owner uuid; p_id uuid; p_owner uuid; other_user uuid;
-  st text; r text; expected text; cnt bigint; tbl text; col text; owner_id uuid; bio_id uuid; label text;
+  st text; r text; expected text; cnt bigint; tbl text; col text; owner_id uuid; bio_id uuid; label text; fn record; got text;
   writable constant text[] := ARRAY['draft','sections_complete','final_version','pdf_draft','revision_requested'];
 BEGIN
   -- Schede di prova: una bozza e una pubblicata esistenti, di un autore con ruolo user, con più righe figlie possibile.
@@ -169,16 +169,36 @@ BEGIN
     -- 6) Ruolo di servizio e registro delle impronte.
     r := pg_temp.dry_try('service_role', null, format('update public.biographies set final_version = coalesce(final_version, %L) where id = %L', '', p_id));
     results := results || pg_temp.dry_check('servizio scrive in published', 'ok rows=1', r);
-    r := pg_temp.dry_try('authenticated', p_owner, 'select count(*) from public.publication_records');
-    results := results || pg_temp.dry_check('publication_records: authenticated', '%permission denied%', r);
-    r := pg_temp.dry_try('anon', null, 'select count(*) from public.publication_records');
-    results := results || pg_temp.dry_check('publication_records: anon', '%permission denied%', r);
-    r := pg_temp.dry_try('service_role', null, 'select count(*) from public.publication_records');
-    results := results || pg_temp.dry_check('publication_records: servizio', 'ok%', r);
-    r := pg_temp.dry_try('authenticated', p_owner, 'select count(*) from public.ai_token_usage');
-    results := results || pg_temp.dry_check('ai_token_usage: lettura delle proprie righe', 'ok%', r);
-    r := pg_temp.dry_try('authenticated', p_owner, 'update public.ai_token_usage set ok = ok');
-    results := results || pg_temp.dry_check('ai_token_usage: scrittura dell''autore', '%permission denied%', r);
+    IF to_regclass('public.publication_records') IS NOT NULL THEN
+      r := pg_temp.dry_try('authenticated', p_owner, 'select count(*) from public.publication_records');
+      results := results || pg_temp.dry_check('publication_records: authenticated', '%permission denied%', r);
+      r := pg_temp.dry_try('anon', null, 'select count(*) from public.publication_records');
+      results := results || pg_temp.dry_check('publication_records: anon', '%permission denied%', r);
+      r := pg_temp.dry_try('service_role', null, 'select count(*) from public.publication_records');
+      results := results || pg_temp.dry_check('publication_records: servizio', 'ok%', r);
+    END IF;
+    IF to_regclass('public.ai_token_usage') IS NOT NULL THEN
+      r := pg_temp.dry_try('authenticated', p_owner, 'select count(*) from public.ai_token_usage');
+      results := results || pg_temp.dry_check('ai_token_usage: lettura delle proprie righe', 'ok%', r);
+      r := pg_temp.dry_try('authenticated', p_owner, 'update public.ai_token_usage set ok = ok');
+      results := results || pg_temp.dry_check('ai_token_usage: scrittura dell''autore', '%permission denied%', r);
+    END IF;
+
+    -- 7) Permessi delle funzioni create dalle migrazioni del blocco 1: nessuna SECURITY DEFINER,
+    -- nessuna eseguibile da anon; authenticated solo gli elenchi costanti che i guard chiamano.
+    FOR fn IN SELECT p.oid, p.proname, p.prosecdef, array_to_string(p.proargnames[1:p.pronargs], ',') AS params
+                FROM pg_proc p WHERE p.pronamespace = 'public'::regnamespace AND p.proname = ANY (ARRAY[
+                  'ai_author_token_usage','author_text_child_guard','author_text_writable_statuses','biographies_author_text_columns',
+                  'biographies_guard_author_text','biographies_guard_server_columns','biographies_insert_defaults',
+                  'biographies_server_owned_columns','profiles_guard_server_columns','profiles_insert_defaults','profiles_server_owned_columns'])
+                ORDER BY p.proname LOOP
+      got := 'definer=' || fn.prosecdef::text || ' anon=' || has_function_privilege('anon', fn.oid, 'EXECUTE')::text
+             || ' auth=' || has_function_privilege('authenticated', fn.oid, 'EXECUTE')::text;
+      expected := 'definer=false anon=false auth=' || (fn.proname = ANY (ARRAY[
+                  'author_text_writable_statuses','biographies_author_text_columns','biographies_insert_defaults',
+                  'biographies_server_owned_columns','profiles_insert_defaults','profiles_server_owned_columns']))::text;
+      results := results || pg_temp.dry_check('funzione ' || fn.proname || ' [' || coalesce(fn.params, '-') || ']', expected, got);
+    END LOOP;
   END IF;
 
   PERFORM set_config('dry.results', results::text, true);
@@ -188,8 +208,18 @@ $t$`;
 const md5 = (text) => createHash('md5').update(text, 'utf8').digest('hex');
 
 /** Il testo esatto di ogni pezzo incorporato nello script: serve al controllo md5 fatto dal blocco stesso. */
+/** Sottoinsieme per una prova mirata: --only=20260930120000,20260930120150 (prefissi dei file). */
+function selectedMigrations() {
+  const arg = process.argv.find((a) => a.startsWith('--only='));
+  if (!arg) return RELEASE_ORDER;
+  const prefixes = arg.slice('--only='.length).split(',').filter(Boolean);
+  const picked = RELEASE_ORDER.filter((m) => prefixes.some((p) => m.file.startsWith(p)));
+  if (picked.length !== prefixes.length) throw new Error(`--only: prefissi non riconosciuti in ${arg}`);
+  return picked;
+}
+
 function pieces() {
-  const migrations = RELEASE_ORDER.map(({ file, when }, i) => {
+  const migrations = selectedMigrations().map(({ file, when }, i) => {
     const tag = `mig${i + 1}`;
     const body = compact(readFileSync(join(MIGRATIONS, file), 'utf8'));
     if (body.includes(`$${tag}$`)) throw new Error(`tag ${tag} presente nel testo di ${file}`);
@@ -326,7 +356,7 @@ ${applyBlock}
     INTO n_pass, n_fail FROM jsonb_array_elements(results) e;
 
   -- Resoconto compatto (il messaggio di errore ha un limite di lunghezza): una riga per prova.
-  SELECT coalesce(jsonb_agg(CASE WHEN (e ->> 'ok')::boolean THEN 'OK ' ELSE 'NO ' END || (e ->> 'prova') || ' => ' || left(e ->> 'ottenuto', 34)
+  SELECT coalesce(jsonb_agg(CASE WHEN (e ->> 'ok')::boolean THEN 'OK ' ELSE 'NO ' END || (e ->> 'prova') || ' => ' || left(e ->> 'ottenuto', 36)
                             || CASE WHEN (e ->> 'ok')::boolean THEN '' ELSE ' (atteso ' || (e ->> 'atteso') || ')' END), '[]'::jsonb)
     INTO lines FROM jsonb_array_elements(results) e;
 

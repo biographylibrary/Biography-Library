@@ -33,9 +33,12 @@ Girano come il loro proprietario (`postgres`): per costruzione aggirano il trigg
 | `cleanup_ai_rate_limits_30d()` | anche anonimi | cancella righe vecchie di `ai_rate_limits` | REVOKE come sopra |
 | `get_ai_usage(uuid)` | anche anonimi, `p_user_id` a scelta | legge il consumo di qualunque utente | usare `auth.uid()` invece del parametro, o REVOKE da anon |
 | `regenerate_share_token(uuid)`, `revoke_share_token(uuid)` | anche anonimi (falliscono senza `auth.uid()`) | controllano proprietà o staff | REVOKE da anon |
+| `generate_biography_slug(input_text text)` | anche anonimi | SECURITY DEFINER: restituisce uno slug libero leggendo tutte le schede, quindi chiunque può verificare se uno slug esiste (anche di una scheda privata) | REVOKE da anon e authenticated, serve solo al trigger `set_biography_slug` |
 | `get_biography_by_share_token(uuid, text)` | anche anonimi | lettura per chi ha il token | ok |
 | `get_my_role()`, `get_my_account_status()`, `profile_account_is_active(uuid)` | anche anonimi | lettura, servono alle policy | ok |
 | funzioni trigger (`handle_new_user`, `biographies_mark_pioneer`, `set_biography_slug`, `set_next_chapter_available_at`, `update_moderation_reports_updated_at`) | eseguibili nominalmente | non si chiamano a mano (restituiscono `trigger`) | REVOKE EXECUTE da public, anon, authenticated, per pulizia (lo segnala anche il controllo di sicurezza di Supabase) |
+
+**Funzioni nuove del blocco 1 (controllate il 1 ottobre 2026 sulla produzione, con la prova a secco):** undici, nessuna SECURITY DEFINER, nessuna eseguibile da anon. `authenticated` esegue soltanto sei elenchi costanti senza parametri (`biographies_server_owned_columns`, `biographies_insert_defaults`, `profiles_server_owned_columns`, `profiles_insert_defaults`, `author_text_writable_statuses`, `biographies_author_text_columns`), perché i guard le chiamano con la sessione di chi scrive. `ai_author_token_usage(p_user_id, ...)` accetta un utente ma non è SECURITY DEFINER e non è eseguibile né da anon né da authenticated (solo dal servizio). Le quattro funzioni dei trigger non sono eseguibili da chi scrive. Un test (`lib/server/__tests__/db/function-permissions.test.ts`) impedisce che ne nasca una nuova senza essere esaminata.
 
 Le funzioni `SECURITY DEFINER` vanno riesaminate a ogni migrazione: non esiste un controllo automatico. Proposta di regola: un test che elenca quelle eseguibili da `authenticated` o `anon` e fallisce se ne compare una non dichiarata.
 

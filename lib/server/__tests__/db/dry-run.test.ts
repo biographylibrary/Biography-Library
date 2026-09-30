@@ -151,12 +151,41 @@ describe('prova a secco: prova generale sul banco', () => {
     for (const st of ['draft', 'pdf_draft', 'revision_requested', 'under_review', 'locked_pending_screening', 'revision_overdue', 'removed', 'published']) {
       expect(lines.some((l) => l.startsWith(`OK testo in stato ${st} =>`))).toBe(true);
     }
+    // Permessi: una riga per ciascuna delle 11 funzioni create dalle migrazioni del blocco 1.
+    const fnLines = lines.filter((l) => l.startsWith('OK funzione '));
+    expect(fnLines).toHaveLength(11);
+    expect(fnLines.filter((l) => l.includes('definer=false anon=false auth=true'))).toHaveLength(6);
+    expect(fnLines.filter((l) => l.includes('definer=false anon=false auth=false'))).toHaveLength(5);
+    expect(fnLines.some((l) => l.startsWith('OK funzione ai_author_token_usage [p_user_id,p_now,p_purposes]'))).toBe(true);
     // Con righe figlie presenti, le cinque tabelle vengono provate davvero (nessuna saltata).
     expect(lines.filter((l) => l.includes('non provata qui'))).toEqual([]);
     const child = lines.filter((l) => /^OK (biography_|person_)/.test(l));
     expect(child).toHaveLength(10);
     expect(child.filter((l) => l.includes('author_text_locked'))).toHaveLength(5);
     expect(child.filter((l) => l.includes('=> ok rows='))).toHaveLength(5);
+  });
+
+  it('modalità a sottoinsieme: solo le migrazioni 4 e 6, senza le tabelle delle altre', async () => {
+    const subset = execFileSync('node', ['scripts/build-dry-run.mjs', '--only=20260930120000,20260930120150'], { encoding: 'utf8' });
+    let message = '';
+    try {
+      await db.exec(subset);
+    } catch (err) {
+      message = err instanceof Error ? err.message : String(err);
+    }
+    const report = JSON.parse(message.slice(message.indexOf('DRYRUN_RESULT') + 13).trim());
+    expect(report.errore_migrazione).toBeNull();
+    expect(report.migrazioni_applicate.map((m: { migrazione: string }) => m.migrazione.split(' ')[0])).toEqual([
+      '20260930120000_server_only_columns_and_reports.sql',
+      '20260930120150_author_text_whitelist.sql',
+    ]);
+    expect(report.prove_fallite).toBe(0);
+    expect(report.md5_pezzi_controllati).toBe(4);
+    expect(report.md5_diversi_da_quelli_attesi).toEqual({});
+    // Le prove che richiedono le tabelle delle altre migrazioni non girano; quelle dei permessi sì (10 funzioni).
+    expect(report.prove.some((l: string) => l.includes('publication_records'))).toBe(false);
+    expect(report.prove.filter((l: string) => l.startsWith('OK funzione '))).toHaveLength(10);
+    expect(report.delta_catalogo.tables.aggiunti).toEqual([]);
   });
 
   it('usa come autori delle schede di prova utenti con ruolo user (non lo staff)', async () => {

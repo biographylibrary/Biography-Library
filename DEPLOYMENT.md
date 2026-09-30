@@ -180,6 +180,24 @@ This is safe while `bl-app` is running — it does not remove the active contain
 
 Migrations are plain SQL files in `supabase/migrations/`. The filename prefix is a timestamp (e.g., `20260205184358_`). Apply them in order.
 
+### Applying a migration (rule for every migration)
+
+`apply_migration` takes only a name and records as `version` the moment it runs, not the prefix of the file. To keep production's history equal to the file names, **applying and aligning the version are one step**, for each migration, before starting the next:
+
+1. Apply: `apply_migration` with `name` = the file name without the version prefix (for `20260930115700_publication_records.sql`: `publication_records`) and `query` = the file text.
+2. Find the version it registered: `select version, name from supabase_migrations.schema_migrations where name = '<name>' order by version desc limit 1;`
+3. Align it with the file:
+   ```sql
+   update supabase_migrations.schema_migrations
+      set version = '<version of the file>'
+    where name = '<name>' and version = '<version registered in step 2>';
+   ```
+   (exactly one row must change; the version is the primary key, so a clash fails loudly).
+4. Verify with `list_migrations`: the last entries must show `<version of the file>` and `<name>`, in the same order as the file names.
+5. Write the result in `docs/MIGRATION-INVENTORY.md` (section on the migrations of the block) if it is part of a documented release.
+
+File versions are unique and their alphabetical order is the order of application (a test checks it for the block-1 migrations). The historical mismatches before 30 September 2026 (24 different versions, 11 migrations without an entry, 3 duplicated versions) are **not** corrected: they are listed in `docs/MIGRATION-INVENTORY.md`, which anyone rebuilding the database must read first.
+
 To add a migration:
 
 1. Create a new file: `supabase/migrations/<timestamp>_<description>.sql`
@@ -191,7 +209,7 @@ To add a migration:
 
 Never use `DROP TABLE`, `DROP COLUMN`, or `TRUNCATE` in a migration without explicit confirmation, the platform stores real user biographical data.
 
-**Release of block 1 (AI tools and security).** Seven new migrations. Apply them only after explicit confirmation, with `apply_migration` (one call per file, in this order). The order of the file names is the order of application, so a database rebuilt from the files gets the same sequence. **Migration history caveat:** `apply_migration` takes only a name and registers as `version` the timestamp of the moment it runs, not the prefix of the file (in production's history, 24 of the 91 entries that have a same-named file carry a different version, and 11 migrations of 21-25 September 2026 have no entry at all). Whether to align the seven new rows with the file versions is decided before applying. The new code works both before and after the restrictive migrations (it writes server-only columns with the service role); the old code does not work after them, and the new code cannot publish without `publication_records`.
+**Release of block 1 (AI tools and security).** Seven new migrations. Apply them only after explicit confirmation, with `apply_migration` (one call per file, in this order). The order of the file names is the order of application, so a database rebuilt from the files gets the same sequence. **Migration history:** after each `apply_migration` the registered version is aligned with the file version in the same step (procedure "Applying a migration" above); the historical mismatches are in `docs/MIGRATION-INVENTORY.md`. The new code works both before and after the restrictive migrations (it writes server-only columns with the service role); the old code does not work after them, and the new code cannot publish without `publication_records`.
 
 | # | Migration | When | What it does | Why there |
 |---|---|---|---|---|
