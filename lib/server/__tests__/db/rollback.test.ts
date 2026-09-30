@@ -13,7 +13,7 @@ const ALIGN = '20260930115900_align_biographies_profiles_triggers.sql';
 const SECURITY = [
   '20260930120000_server_only_columns_and_reports.sql',
   '20260930120150_author_text_whitelist.sql',
-  '20260930120250_publication_records.sql',
+  '20260930115700_publication_records.sql',
 ];
 const ROLLBACK = 'supabase/rollback/20260930_security_rollback.sql';
 

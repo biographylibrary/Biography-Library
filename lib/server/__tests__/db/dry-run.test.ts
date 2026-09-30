@@ -1,4 +1,6 @@
 import { execFileSync } from 'node:child_process';
+import { readFileSync, readdirSync } from 'node:fs';
+import { join } from 'node:path';
 import type { PGlite } from '@electric-sql/pglite';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { BIO, U, as, createTestDb } from './harness';
@@ -76,17 +78,52 @@ describe('prova a secco: prova generale sul banco', () => {
   it('applica le sette migrazioni nell\'ordine di rilascio e nessuna fallisce', async () => {
     const { report } = await runDry();
     expect(report.errore_migrazione).toBeNull();
-    expect(report.migrazioni_applicate.map((m: string) => m.split(' ')[0])).toEqual([
-      '20260930120250_publication_records.sql',
-      '20260930120300_ai_token_usage.sql',
+    expect(report.migrazioni_applicate.map((m: { migrazione: string }) => m.migrazione.split(' ')[0])).toEqual([
+      '20260930115700_publication_records.sql',
+      '20260930115800_ai_token_usage.sql',
       '20260930115900_align_biographies_profiles_triggers.sql',
       '20260930120000_server_only_columns_and_reports.sql',
       '20260930120100_drop_biography_view_translations.sql',
       '20260930120150_author_text_whitelist.sql',
       '20260930120200_agent_threads_echo_only.sql',
     ]);
-    expect(report.migrazioni_applicate.filter((m: string) => m.includes('(prima del deploy)'))).toHaveLength(2);
-    expect(report.migrazioni_applicate.filter((m: string) => m.includes('(dopo il deploy)'))).toHaveLength(5);
+    const labels = report.migrazioni_applicate.map((m: { migrazione: string }) => m.migrazione);
+    expect(labels.filter((m: string) => m.includes('(prima del deploy)'))).toHaveLength(2);
+    expect(labels.filter((m: string) => m.includes('(dopo il deploy)'))).toHaveLength(5);
+  });
+
+  it('il blocco controlla da sé il testo che esegue: gli md5 coincidono con quelli calcolati dai file', async () => {
+    const { report } = await runDry();
+    const expected = JSON.parse(execFileSync('node', ['scripts/build-dry-run.mjs', '--checksums'], { encoding: 'utf8' }));
+    expect(report.controllo_md5).toEqual(expected);
+    expect(Object.keys(expected)).toHaveLength(9);
+  });
+
+  it('i tempi sono registrati: durata totale, primo blocco e fine di ogni migrazione', async () => {
+    const { report } = await runDry();
+    expect(typeof report.durata_ms).toBe('number');
+    expect(report.primo_blocco_ms).toBeLessThanOrEqual(report.durata_ms);
+    const ends = report.migrazioni_applicate.map((m: { fine_ms: number }) => m.fine_ms);
+    expect(ends).toEqual([...ends].sort((a: number, b: number) => a - b));
+  });
+
+  it('l\'ordine dei nomi dei file coincide con l\'ordine di applicazione in produzione', () => {
+    const order: string[] = JSON.parse(execFileSync('node', ['scripts/build-dry-run.mjs', '--order'], { encoding: 'utf8' }));
+    const files = readdirSync(join(process.cwd(), 'supabase', 'migrations')).filter((f) => f.endsWith('.sql')).sort();
+    // Le sette del blocco 1 compaiono nei file nello stesso ordine in cui si applicano...
+    expect(files.filter((f) => order.includes(f))).toEqual(order);
+    // ...sono le ultime del repository, e le versioni (il prefisso numerico) sono tutte diverse.
+    expect(files.slice(-order.length)).toEqual(order);
+    const versions = order.map((f) => f.split('_')[0]);
+    expect(new Set(versions).size).toBe(order.length);
+    expect(versions).toEqual([...versions].sort());
+  });
+
+  it('l\'elenco del banco di prova è nello stesso ordine dei nomi dei file', () => {
+    const src = readFileSync(join(process.cwd(), 'lib/server/__tests__/db/harness.ts'), 'utf8');
+    const names = src.match(/'2026\d{10}_[a-z_]+\.sql'/g)?.map((m) => m.slice(1, -1)) ?? [];
+    expect(names.length).toBeGreaterThanOrEqual(5);
+    expect(names).toEqual([...names].sort());
   });
 
   it('tutte le prove danno l\'esito atteso', async () => {

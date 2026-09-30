@@ -25,10 +25,10 @@
   ## Che cosa NON tocca
   - 20260930115900_align_biographies_profiles_triggers.sql: ricrea a parità le funzioni
     e i trigger che in produzione già esistono, non c'è nulla da disfare;
-  - 20260930120250_publication_records.sql: il registro delle impronte resta (è una
+  - 20260930115700_publication_records.sql: il registro delle impronte resta (è una
     tabella nuova, scritta solo dal server; lasciarla non cambia nulla). Per
     eliminarla, in un secondo momento: DROP TABLE public.publication_records;
-  - 20260930120300_ai_token_usage.sql: non è di sicurezza.
+  - 20260930115800_ai_token_usage.sql: non è di sicurezza.
 
   ## Dopo il ritorno indietro
   Il codice nuovo dell'app continua a funzionare: scrive le colonne riservate con il

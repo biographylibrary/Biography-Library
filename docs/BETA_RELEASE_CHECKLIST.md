@@ -31,8 +31,8 @@ Usare come elenco da spuntare in team. Ordine consigliato: **merge → migrazion
 | # | Migrazione | Quando | Che cosa fa |
 |---|---|---|---|
 | 0 | prova a secco (`node scripts/build-dry-run.mjs`, un solo blocco che annulla tutto) | prima di tutto, a un orario concordato | applica le sette, confronta il catalogo, prova le scritture vietate; nessuna modifica resta |
-| 1 | `20260930120250_publication_records.sql` | **prima del deploy** | aggiunge il registro delle impronte |
-| 2 | `20260930120300_ai_token_usage.sql` | **prima del deploy** | aggiunge registro dei consumi e tetti |
+| 1 | `20260930115700_publication_records.sql` | **prima del deploy** | aggiunge il registro delle impronte |
+| 2 | `20260930115800_ai_token_usage.sql` | **prima del deploy** | aggiunge registro dei consumi e tetti |
 | | unione su `main` (deploy) | | |
 | 3 | `20260930115900_align_biographies_profiles_triggers.sql` | **dopo il deploy** | a parità con la produzione, non cambia nulla |
 | 4 | `20260930120000_server_only_columns_and_reports.sql` | **dopo il deploy** | colonne riservate al server; toglie tre policy di INSERT |
@@ -72,7 +72,7 @@ Controllare che sul **processo che esegue Next** siano impostate (non committate
 - [x] `INFOMANIAK_AI_MODEL_GRAMMAR` = `swiss-ai/Apertus-v1.5-70B` (se non risponde, la rotta ripiega su Gemma e poi su Mistral Small 4). Cambio di comportamento voluto: la funzione `ai-assistant` deployata (versione 108) usava Gemma e poi Mistral.
 - [ ] Eliminare dal progetto Supabase **`ai-assistant`** (versione 108) e **`help-assistant`** (versione 29, assente dal repository; sorgente conservato in `docs/legacy/help-assistant/`). Gli strumenti disponibili all'agente non possono eliminare funzioni: a mano, `supabase functions delete ai-assistant help-assistant --project-ref gckmusbozgbclokvbnwx`, o dalla dashboard.
 - [ ] Togliere i segreti che nessuna funzione rimasta legge: `INFOMANIAK_AI_MODEL` (vale `mistral3`; verificato che le funzioni `audio-transcription`, `auth-send-email`, `user-email-confirmed`, `send-engagement-emails` e `log-error` non lo leggono), `INFOMANIAK_AI_MODEL_HELP_PRIMARY`, `INFOMANIAK_AI_MODEL_HELP_FALLBACK`. Facoltativi, sempre inutilizzati dopo l'eliminazione: `INFOMANIAK_AI_MODEL_PRIMARY`, `INFOMANIAK_AI_MODEL_FALLBACK`, `AI_RATE_LIMIT`, `AI_DAILY_LIMIT`, `AI_WEEKLY_LIMIT`. Comando: `supabase secrets unset <nomi> --project-ref gckmusbozgbclokvbnwx`.
-- [ ] Ridistribuire `audio-transcription` **dopo** la migrazione `20260930120300_ai_token_usage.sql`: ora scrive anche in `ai_token_usage`.
+- [ ] Ridistribuire `audio-transcription` **dopo** la migrazione `20260930115800_ai_token_usage.sql`: ora scrive anche in `ai_token_usage`.
 - Nota: la funzione `user-email-confirmed` deployata è più vecchia di quella nel repository; non è parte del blocco 1, ma va riallineata prima o poi.
 
 ---

@@ -191,12 +191,12 @@ To add a migration:
 
 Never use `DROP TABLE`, `DROP COLUMN`, or `TRUNCATE` in a migration without explicit confirmation, the platform stores real user biographical data.
 
-**Release of block 1 (AI tools and security).** Seven new migrations. Apply them only after explicit confirmation, with `apply_migration` (one call per file, in this order; the migration history of production is kept by that tool, not by the file timestamps). The new code works both before and after the restrictive migrations (it writes server-only columns with the service role); the old code does not work after them, and the new code cannot publish without `publication_records`.
+**Release of block 1 (AI tools and security).** Seven new migrations. Apply them only after explicit confirmation, with `apply_migration` (one call per file, in this order). The order of the file names is the order of application, so a database rebuilt from the files gets the same sequence. **Migration history caveat:** `apply_migration` takes only a name and registers as `version` the timestamp of the moment it runs, not the prefix of the file (in production's history, 24 of the 91 entries that have a same-named file carry a different version, and 11 migrations of 21-25 September 2026 have no entry at all). Whether to align the seven new rows with the file versions is decided before applying. The new code works both before and after the restrictive migrations (it writes server-only columns with the service role); the old code does not work after them, and the new code cannot publish without `publication_records`.
 
 | # | Migration | When | What it does | Why there |
 |---|---|---|---|---|
-| 1 | `20260930120250_publication_records.sql` | **before the deploy** | adds the fingerprint log (service role only) | new table, the old code ignores it; the new code needs it to publish |
-| 2 | `20260930120300_ai_token_usage.sql` | **before the deploy** | adds the usage ledger, the caps and their seed values | new tables and function; the new code writes to it, `audio-transcription` too |
+| 1 | `20260930115700_publication_records.sql` | **before the deploy** | adds the fingerprint log (service role only) | new table, the old code ignores it; the new code needs it to publish |
+| 2 | `20260930115800_ai_token_usage.sql` | **before the deploy** | adds the usage ledger, the caps and their seed values | new tables and function; the new code writes to it, `audio-transcription` too |
 | | *merge to `main` (deploy)* | | | |
 | 3 | `20260930115900_align_biographies_profiles_triggers.sql` | **after the deploy** | recreates, identical, the triggers and functions production already has | no change in production (the dry run checks it byte for byte); it sits here because the next one relies on it |
 | 4 | `20260930120000_server_only_columns_and_reports.sql` | **after the deploy** | restricts: server-only columns on `biographies` and `profiles`; drops three direct INSERT policies | the old code writes those columns from the browser and would break |

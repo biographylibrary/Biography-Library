@@ -432,12 +432,13 @@ export async function createTestDb(
   await db.exec(BOOTSTRAP);
   // Le migrazioni vere, nell'ordine in cui verranno applicate. `skip` serve solo ai
   // controlli negativi: dimostra che il banco si accorge dell'assenza di una migrazione.
+  // L'ordine dei nomi dei file è l'ordine di applicazione (lo verifica dry-run.test.ts).
   for (const file of [
+    '20260930115700_publication_records.sql',
+    '20260930115800_ai_token_usage.sql',
     '20260930115900_align_biographies_profiles_triggers.sql',
     '20260930120000_server_only_columns_and_reports.sql',
     '20260930120150_author_text_whitelist.sql',
-    '20260930120250_publication_records.sql',
-    '20260930120300_ai_token_usage.sql',
   ]) {
     if (options.skip?.includes(file)) continue;
     if (options.only && !options.only.includes(file)) continue;
