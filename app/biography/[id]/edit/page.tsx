@@ -1206,6 +1206,11 @@ export default function BiographyEditorPage() {
     }
   }, [id, finalVersion, session, language, t]);
 
+  /** Fuori dagli stati di lavoro il testo è in sola lettura: lo si dice invece di lasciar fallire il salvataggio. */
+  const notifyTextLocked = useCallback(() => {
+    toast.info(t.editor.textLockedForStatus);
+  }, [t]);
+
   /**
    * Da `published` a `draft` per scrivere un nuovo capitolo: lo stato lo scrive il server
    * (POST /api/biography/reopen), che controlla anche i 365 giorni fra un capitolo e l'altro.
@@ -1978,10 +1983,12 @@ export default function BiographyEditorPage() {
             globalNotesCount={globalNotesCount}
             globalTodosCount={globalTodosCount}
             onToggleNotesPanel={() => setShowGlobalNotesPanel(!showGlobalNotesPanel)}
-            onTogglePhotosPanel={() => setShowPhotosPanel(!showPhotosPanel)}
-            onToggleBookStructurePanel={() => setShowBookStructurePanel(!showBookStructurePanel)}
-            onTogglePermanencePanel={() => setShowPermanencePanel((v) => !v)}
-            onToggleImportText={() => setShowImportDialog((v) => !v)}
+            onTogglePhotosPanel={() => (statusLocksText ? notifyTextLocked() : setShowPhotosPanel(!showPhotosPanel))}
+            onToggleBookStructurePanel={() =>
+              statusLocksText ? notifyTextLocked() : setShowBookStructurePanel(!showBookStructurePanel)
+            }
+            onTogglePermanencePanel={() => (statusLocksText ? notifyTextLocked() : setShowPermanencePanel((v) => !v))}
+            onToggleImportText={() => (statusLocksText ? notifyTextLocked() : setShowImportDialog((v) => !v))}
             onToggleExportText={() => {
               if (isReviewOrScreeningLockStatus(biographyStatus)) return;
               setShowExportDialog(true);
@@ -2016,9 +2023,9 @@ export default function BiographyEditorPage() {
             contentFreeflow={contentFreeflow}
             chapters={listChapterAnchors(contentFreeflow)}
             onSelectChapter={handleSelectChapter}
-            onAddChapter={handleAddChapter}
-            onModeChange={handleModeChange}
-            onModeChangeRequest={handleModeChangeRequest}
+            onAddChapter={statusLocksText ? notifyTextLocked : handleAddChapter}
+            onModeChange={statusLocksText ? notifyTextLocked : handleModeChange}
+            onModeChangeRequest={statusLocksText ? notifyTextLocked : handleModeChangeRequest}
             onFreeflowChange={handleFreeflowChange}
             biographyId={id}
             userId={user.id}
@@ -2026,9 +2033,9 @@ export default function BiographyEditorPage() {
               isRevisionMode && !showFinalVersionEditorLayout ? editableSectionKeys : undefined
             }
             title={title}
-            onTitleChange={handleTitleChange}
+            onTitleChange={statusLocksText ? notifyTextLocked : handleTitleChange}
             authorName={authorName}
-            onAuthorNameChange={handleAuthorNameChange}
+            onAuthorNameChange={statusLocksText ? notifyTextLocked : handleAuthorNameChange}
             biographyType={biographyType}
             isFrozen={isFrozen}
             saveStatus={saveStatus}
@@ -2202,7 +2209,7 @@ export default function BiographyEditorPage() {
         recordLanguageTag={recordLanguageTag}
         recordScript={recordScript}
         biographyType={biographyType}
-        disabled={isFrozen}
+        disabled={isFrozen || statusLocksText}
         open={showPermanencePanel}
         onOpenChange={setShowPermanencePanel}
         onNameSaved={(name) => {
