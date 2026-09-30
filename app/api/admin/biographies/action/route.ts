@@ -41,6 +41,12 @@ export async function POST(req: NextRequest) {
     action,
     actorId: ctx.userId,
   });
+  if (result.blocked) {
+    return NextResponse.json(
+      { error: result.blocked.code, message: result.blocked.message },
+      { status: 409 }
+    );
+  }
   if (result.error) {
     return NextResponse.json({ error: result.error }, { status: 500 });
   }

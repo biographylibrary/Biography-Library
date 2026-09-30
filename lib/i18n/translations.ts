@@ -427,15 +427,17 @@ export interface Translations {
     bookStructureImportCancel: string;
     noChaptersWarning: string;
     revisionRequired: string;
+    screeningTextChanged: string;
+    reopenForNewChapter: string;
+    reopenDialogTitle: string;
+    reopenDialogBody: string;
+    reopenConfirm: string;
+    reopenCancel: string;
+    reopenDone: string;
+    reopenCooldownToast: string;
     /** Same banner list, when flags come from AI screening (under_review), not moderator request_edit */
-    revisionRequiredAiScreening: string;
     /** Short line under the mustard “human review” banner when partial edit is available */
-    aiScreeningFlaggedEditHint: string;
     /** Re-run AI screening after editing flagged passages (under_review) */
-    resubmitAiScreening: string;
-    resubmitAiScreeningPublishedToast: string;
-    resubmitAiScreeningStillFlaggedToast: string;
-    resubmitAiScreeningErrorToast: string;
     revisionFlaggedPassages: string;
     revisionReviewerNote: string;
     revisionDismiss: string;
@@ -1676,6 +1678,7 @@ export interface Translations {
     insertDraftReplaceAllCardSubtitle: string;
     insertDraftReplaceAllConfirm: string;
     insertDraftReplaceMissing: string;
+    insertDraftLocked: string;
     undoLastChange: string;
     undoLastChangeHint: string;
     loadOlderMessages: string;
@@ -2117,14 +2120,14 @@ export const translations: Record<Language, Translations> = {
       bookStructureImportCancel: 'Cancel',
       noChaptersWarning: 'There are no chapter titles yet. The book stays one piece. You can mark a chapter title later.',
       revisionRequired: 'Revision required. The reviewer flagged the following:',
-      revisionRequiredAiScreening:
-        'Automatic screening flagged the passages below. Edit those parts—or your full final text in one place—then resubmit for screening when ready.',
-      aiScreeningFlaggedEditHint:
-        'You may edit only the sections listed below, or adjust the complete final text above. A reviewer will still verify the report.',
-      resubmitAiScreening: 'Resubmit for screening',
-      resubmitAiScreeningPublishedToast: 'Screening passed — your biography is now live.',
-      resubmitAiScreeningStillFlaggedToast: 'The screener still flagged passages. The list below is updated.',
-      resubmitAiScreeningErrorToast: 'Automatic screening did not finish. Retry in a few minutes, or wait for a moderator.',
+      screeningTextChanged: 'The text changed while it was being checked, so it was not published. The review team will look at it.',
+      reopenForNewChapter: 'Reopen to write a new chapter',
+      reopenDialogTitle: 'Reopen your biography?',
+      reopenDialogBody: 'While you write the new chapter your biography is not published: it disappears from the public catalog and from its public page until the new version passes the check and is published again.',
+      reopenConfirm: 'Reopen',
+      reopenCancel: 'Keep published',
+      reopenDone: 'Your biography is open for editing again.',
+      reopenCooldownToast: 'The next chapter can be written only after the waiting period.',
       revisionFlaggedPassages: 'Flagged passages',
       revisionReviewerNote: 'Reviewer note',
       revisionDismiss: 'Dismiss',
@@ -3422,6 +3425,7 @@ export const translations: Record<Language, Translations> = {
       insertDraftReplaceAllCardSubtitle: 'On the page, every "{from}" becomes "{to}".',
       insertDraftReplaceAllConfirm: 'Replace all',
       insertDraftReplaceMissing: 'I couldn\'t find that passage, so I didn\'t add anything at the end.',
+      insertDraftLocked: 'This biography is in a state where the text can\'t be changed, so I didn\'t add anything.',
       undoLastChange: 'Undo',
       undoLastChangeHint: 'Put the text back as it was before the last change',
       loadOlderMessages: 'Load older messages',
@@ -3862,14 +3866,14 @@ export const translations: Record<Language, Translations> = {
       bookStructureImportCancel: 'Annulla',
       noChaptersWarning: 'Non ci sono ancora titoli di capitolo. Il libro resta un pezzo solo. Un titolo si può segnare dopo.',
       revisionRequired: 'Revisione richiesta. Il revisore ha segnalato quanto segue:',
-      revisionRequiredAiScreening:
-        'Lo screening automatico ha segnalato i passaggi seguenti. Modifica quelle parti (o l’intera versione finale in un unico testo), poi reinvia allo screening quando sei pronto.',
-      aiScreeningFlaggedEditHint:
-        'Puoi modificare solo le sezioni elencate o il testo finale completo; un revisore umano verificherà comunque la segnalazione.',
-      resubmitAiScreening: 'Reinvia allo screening',
-      resubmitAiScreeningPublishedToast: 'Screening superato — la biografia è online.',
-      resubmitAiScreeningStillFlaggedToast: 'Restano passaggi da rivedere. L’elenco qui sotto è aggiornato.',
-      resubmitAiScreeningErrorToast: 'Lo screening automatico non è terminato. Riprova tra qualche minuto o attendi un moderatore.',
+      screeningTextChanged: 'Il testo è cambiato mentre veniva controllato, quindi non è stato pubblicato. Lo esaminerà il gruppo di revisione.',
+      reopenForNewChapter: 'Riapri per scrivere un nuovo capitolo',
+      reopenDialogTitle: 'Riaprire la biografia?',
+      reopenDialogBody: 'Mentre scrivi il nuovo capitolo la biografia non è pubblicata: sparisce dal catalogo e dalla sua pagina pubblica finché la nuova versione non supera il controllo e viene pubblicata di nuovo.',
+      reopenConfirm: 'Riapri',
+      reopenCancel: 'Lascia pubblicata',
+      reopenDone: 'La biografia è di nuovo aperta alla modifica.',
+      reopenCooldownToast: 'Il nuovo capitolo si potrà scrivere solo dopo il periodo di attesa.',
       revisionFlaggedPassages: 'Passaggi segnalati',
       revisionReviewerNote: 'Nota del revisore',
       revisionDismiss: 'Chiudi',
@@ -5169,6 +5173,7 @@ export const translations: Record<Language, Translations> = {
       insertDraftReplaceAllCardSubtitle: 'Nel foglio, ogni «{from}» diventa «{to}».',
       insertDraftReplaceAllConfirm: 'Sostituisci tutti',
       insertDraftReplaceMissing: 'Non ho trovato quel pezzo nel foglio, quindi non ho aggiunto nulla in fondo.',
+      insertDraftLocked: 'La biografia è in uno stato in cui il testo non si può modificare, quindi non ho aggiunto nulla.',
       undoLastChange: 'Annulla',
       undoLastChangeHint: 'Riporta il testo a com\'era prima dell\'ultimo cambio',
       loadOlderMessages: 'Carica messaggi precedenti',
@@ -5609,14 +5614,14 @@ export const translations: Record<Language, Translations> = {
       bookStructureImportCancel: 'Annuler',
       noChaptersWarning: 'Il n’y a pas encore de titres de chapitre. Le livre reste d’un seul tenant. Un titre peut être marqué plus tard.',
       revisionRequired: 'Révision requise. Le réviseur a signalé ce qui suit :',
-      revisionRequiredAiScreening:
-        'Le filtrage automatique a signalé les passages ci-dessous. Modifiez ces parties ou la version finale complète, puis renvoyez au filtrage lorsque vous êtes prêt.',
-      aiScreeningFlaggedEditHint:
-        'Vous pouvez modifier uniquement les sections listées ou le texte final complet ; un réviseur vérifiera tout de même le signalement.',
-      resubmitAiScreening: 'Renvoyer au filtrage',
-      resubmitAiScreeningPublishedToast: 'Filtrage réussi — votre biographie est en ligne.',
-      resubmitAiScreeningStillFlaggedToast: 'Des passages sont encore signalés. La liste ci-dessous est à jour.',
-      resubmitAiScreeningErrorToast: 'Le filtrage automatique n’a pas abouti. Réessayez dans quelques minutes ou attendez un modérateur.',
+      screeningTextChanged: 'Le texte a changé pendant la vérification, il n\'a donc pas été publié. L\'équipe de révision va l\'examiner.',
+      reopenForNewChapter: 'Rouvrir pour écrire un nouveau chapitre',
+      reopenDialogTitle: 'Rouvrir votre biographie ?',
+      reopenDialogBody: 'Pendant que vous écrivez le nouveau chapitre, votre biographie n\'est pas publiée : elle disparaît du catalogue public et de sa page publique jusqu\'à ce que la nouvelle version passe le contrôle et soit de nouveau publiée.',
+      reopenConfirm: 'Rouvrir',
+      reopenCancel: 'Laisser publiée',
+      reopenDone: 'Votre biographie est de nouveau ouverte à la modification.',
+      reopenCooldownToast: 'Le prochain chapitre ne pourra être écrit qu\'après la période d\'attente.',
       revisionFlaggedPassages: 'Passages signalés',
       revisionReviewerNote: 'Note du réviseur',
       revisionDismiss: 'Fermer',
@@ -6916,6 +6921,7 @@ export const translations: Record<Language, Translations> = {
       insertDraftReplaceAllCardSubtitle: 'Dans la page, chaque «{from}» devient «{to}».',
       insertDraftReplaceAllConfirm: 'Tout remplacer',
       insertDraftReplaceMissing: 'Je n\'ai pas trouvé ce passage, donc je n\'ai rien ajouté à la fin.',
+      insertDraftLocked: 'Cette biographie est dans un état où le texte ne peut pas être modifié, donc je n\'ai rien ajouté.',
       undoLastChange: 'Annuler',
       undoLastChangeHint: 'Remet le texte comme il était avant le dernier changement',
       loadOlderMessages: 'Charger les messages précédents',
@@ -7356,14 +7362,14 @@ export const translations: Record<Language, Translations> = {
       bookStructureImportCancel: 'Abbrechen',
       noChaptersWarning: 'Es gibt noch keine Kapiteltitel. Das Buch bleibt ein Stück. Ein Titel kann später gesetzt werden.',
       revisionRequired: 'Überarbeitung erforderlich. Der Prüfer hat Folgendes markiert:',
-      revisionRequiredAiScreening:
-        'Die automatische Prüfung hat die folgenden Passagen markiert. Bearbeiten Sie diese Teile oder den gesamten Endtext, und senden Sie danach erneut zum Screening.',
-      aiScreeningFlaggedEditHint:
-        'Sie können nur die aufgeführten Abschnitte oder den vollständigen Endtext anpassen; ein Prüfer wird den Bericht dennoch prüfen.',
-      resubmitAiScreening: 'Erneut zum Screening senden',
-      resubmitAiScreeningPublishedToast: 'Screening bestanden — Ihre Biografie ist live.',
-      resubmitAiScreeningStillFlaggedToast: 'Es gibt weiterhin markierte Passagen. Die Liste unten ist aktualisiert.',
-      resubmitAiScreeningErrorToast: 'Das automatische Screening wurde nicht abgeschlossen. In einigen Minuten erneut versuchen oder auf einen Prüfer warten.',
+      screeningTextChanged: 'Der Text hat sich während der Prüfung geändert und wurde deshalb nicht veröffentlicht. Das Prüfteam sieht ihn sich an.',
+      reopenForNewChapter: 'Für ein neues Kapitel wieder öffnen',
+      reopenDialogTitle: 'Biografie wieder öffnen?',
+      reopenDialogBody: 'Solange Sie am neuen Kapitel schreiben, ist Ihre Biografie nicht veröffentlicht: Sie verschwindet aus dem öffentlichen Katalog und von ihrer öffentlichen Seite, bis die neue Version die Prüfung besteht und erneut veröffentlicht wird.',
+      reopenConfirm: 'Wieder öffnen',
+      reopenCancel: 'Veröffentlicht lassen',
+      reopenDone: 'Ihre Biografie ist wieder zur Bearbeitung geöffnet.',
+      reopenCooldownToast: 'Das nächste Kapitel kann erst nach der Wartezeit geschrieben werden.',
       revisionFlaggedPassages: 'Markierte Passagen',
       revisionReviewerNote: 'Hinweis des Prüfers',
       revisionDismiss: 'Schließen',
@@ -8663,6 +8669,7 @@ export const translations: Record<Language, Translations> = {
       insertDraftReplaceAllCardSubtitle: 'Auf der Seite wird jedes „{from}“ zu „{to}“.',
       insertDraftReplaceAllConfirm: 'Alle ersetzen',
       insertDraftReplaceMissing: 'Ich habe die Stelle nicht gefunden, also habe ich unten nichts hinzugefügt.',
+      insertDraftLocked: 'Diese Biografie befindet sich in einem Zustand, in dem der Text nicht geändert werden kann, deshalb habe ich nichts hinzugefügt.',
       undoLastChange: 'Rückgängig',
       undoLastChangeHint: 'Setzt den Text auf den Stand vor der letzten Änderung zurück',
       loadOlderMessages: 'Ältere Nachrichten laden',

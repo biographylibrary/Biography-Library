@@ -3,6 +3,7 @@ import { getCallerStaffContext, isStaffModerator } from '@/lib/server/admin-api-
 import { statusRestoredByAppeal } from '@/lib/public-visibility';
 import { notifyAuthorPublicationEmail } from '@/lib/server/email/publication-helpers';
 import { writeModerationMessage } from '@/lib/server/moderation-register';
+import { checkPublishGate, gatedPublish } from '@/lib/server/publication-fingerprint';
 import { buildServiceClient } from '@/lib/server/review-submit-pipeline';
 
 export const dynamic = 'force-dynamic';
@@ -48,6 +49,16 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'No open appeal' }, { status: 400 });
   }
 
+  // Un ricorso accolto può riportare la scheda a `published`: è una pubblicazione
+  // come le altre, il testo deve essere quello dell'ultima pubblicazione.
+  const restoredStatus = statusRestoredByAppeal(outcome, row.biography_status_before_decision);
+  if (restoredStatus === 'published') {
+    const pre = await checkPublishGate(svc, { biographyId: row.biography_id, mode: 'restore' });
+    if (!pre.ok) {
+      return NextResponse.json({ error: pre.code, message: pre.message }, { status: 409 });
+    }
+  }
+
   const now = new Date().toISOString();
   const { error: appealErr } = await svc
     .from('moderation_reports')
@@ -56,8 +67,23 @@ export async function POST(req: NextRequest) {
     .eq('appeal_status', 'pending');
   if (appealErr) return NextResponse.json({ error: appealErr.message }, { status: 500 });
 
-  const restoredStatus = statusRestoredByAppeal(outcome, row.biography_status_before_decision);
-  if (restoredStatus) {
+  if (restoredStatus === 'published') {
+    const published = await gatedPublish(
+      svc,
+      { biographyId: row.biography_id, mode: 'restore', actorId: ctx.userId },
+      async () => {
+        const { error: bioErr } = await svc
+          .from('biographies')
+          .update({ status: restoredStatus })
+          .eq('id', row.biography_id);
+        return bioErr ? bioErr.message : null;
+      }
+    );
+    if (!published.ok && published.blocked) {
+      return NextResponse.json({ error: published.code, message: published.message }, { status: 409 });
+    }
+    if (!published.ok) return NextResponse.json({ error: published.error }, { status: 500 });
+  } else if (restoredStatus) {
     const { error: bioErr } = await svc
       .from('biographies')
       .update({ status: restoredStatus })

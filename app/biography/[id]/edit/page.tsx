@@ -50,7 +50,7 @@ import {
 } from '@/lib/editor/write-payloads';
 import { toast } from 'sonner';
 import type { Biography, BiographyPublicationStatus } from '@/lib/biographies';
-import { isBiographyPublicationStatus, isReviewOrScreeningLockStatus } from '@/lib/publication-state';
+import { canAuthorWriteText, isBiographyPublicationStatus, isReviewOrScreeningLockStatus } from '@/lib/publication-state';
 import { generateBiographyPDF, checkBiographyPdfReadiness, checkPdfPreflight, getPdfReadinessMessage } from '@/lib/pdf-export';
 import { AdvancedExportDialog } from '@/components/export/AdvancedExportDialog';
 import { LicenseChoiceDialog } from '@/components/editor/LicenseChoiceDialog';
@@ -69,6 +69,18 @@ import {
   getCompletedSections,
 } from '@/lib/section-completion-service';
 import { buildBiographyNarrativeContext } from '@/lib/biography-narrative-context';
+import { ChapterCooldownBanner } from '@/components/dashboard/ChapterCooldownBanner';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
+import { getChapterCooldownState } from '@/lib/biography-chapter-cooldown';
 
 type SaveStatus = 'saved' | 'saving' | 'unsaved' | 'error';
 
@@ -127,6 +139,8 @@ export default function BiographyEditorPage() {
   }, [id, refreshOnboarding, router, searchParams]);
 
   const [biography, setBiography] = useState<Biography | null>(null);
+  const [showReopenDialog, setShowReopenDialog] = useState(false);
+  const [reopenLoading, setReopenLoading] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [title, setTitle] = useState('');
   const [privacy, setPrivacy] = useState<'private' | 'link-only' | 'public'>(
@@ -188,7 +202,6 @@ export default function BiographyEditorPage() {
   const [publicationActionError, setPublicationActionError] = useState<string | null>(null);
   const [showSubmitForReviewDialog, setShowSubmitForReviewDialog] = useState(false);
   const [isSubmittingForReview, setIsSubmittingForReview] = useState(false);
-  const [resubmitScreeningLoading, setResubmitScreeningLoading] = useState(false);
   const [submitReadinessError, setSubmitReadinessError] = useState<string | null>(null);
   const [submitPreflightError, setSubmitPreflightError] = useState<string | null>(null);
   const [isPreflightChecking, setIsPreflightChecking] = useState(false);
@@ -1193,6 +1206,43 @@ export default function BiographyEditorPage() {
     }
   }, [id, finalVersion, session, language, t]);
 
+  /**
+   * Da `published` a `draft` per scrivere un nuovo capitolo: lo stato lo scrive il server
+   * (POST /api/biography/reopen), che controlla anche i 365 giorni fra un capitolo e l'altro.
+   */
+  const handleReopenForNewChapter = useCallback(async () => {
+    if (!id) return;
+    setReopenLoading(true);
+    try {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      const res = await fetch('/api/biography/reopen', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(session?.access_token ? { Authorization: `Bearer ${session.access_token}` } : {}),
+        },
+        body: JSON.stringify({ biographyId: id }),
+      });
+      if (!res.ok) {
+        const body = (await res.json().catch(() => ({}))) as { error?: string };
+        toast.error(body.error === 'chapter_cooldown_active' ? t.editor.reopenCooldownToast : t.toast.requestFailed);
+        return;
+      }
+      setBiographyStatus('draft');
+      setStatus('draft');
+      setBiography((prev) => (prev ? { ...prev, status: 'draft' } : prev));
+      setShowReopenDialog(false);
+      toast.success(t.editor.reopenDone);
+    } catch (err) {
+      console.error('Error reopening biography:', err);
+      toast.error(t.toast.requestFailed);
+    } finally {
+      setReopenLoading(false);
+    }
+  }, [id, t]);
+
   const handleRevertToDraft = useCallback(async () => {
     try {
       const { error } = await supabase
@@ -1235,7 +1285,7 @@ export default function BiographyEditorPage() {
       let apiResult: {
         result?: string;
         error?: string;
-        screeningDetail?: 'flagged' | 'ai_error' | 'parse_error';
+        screeningDetail?: 'flagged' | 'ai_error' | 'parse_error' | 'text_changed';
       } = {};
       try {
         const res = await fetch('/api/review/submit', {
@@ -1266,6 +1316,10 @@ export default function BiographyEditorPage() {
         const d = apiResult.screeningDetail;
         if (d === 'ai_error' || d === 'parse_error') {
           setAiScreeningResult(d);
+        } else if (d === 'text_changed') {
+          // Il testo è cambiato mentre lo screening lo esaminava: non è stato pubblicato.
+          setAiScreeningResult('pending');
+          toast.error(t.editor.screeningTextChanged);
         } else {
           setAiScreeningResult('flagged');
         }
@@ -1276,86 +1330,6 @@ export default function BiographyEditorPage() {
       setIsSubmittingForReview(false);
     }
   }, [id, user, t, biographyStatus]);
-
-  const handleResubmitAiScreening = useCallback(async () => {
-    if (!user?.id || !id) return;
-    setResubmitScreeningLoading(true);
-    try {
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
-      const res = await fetch('/api/review/submit', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          ...(session?.access_token ? { Authorization: `Bearer ${session.access_token}` } : {}),
-        },
-        body: JSON.stringify({ biographyId: id }),
-      });
-      const apiResult = await res.json().catch(() => ({}));
-      if (res.status === 429) {
-        toast.error(t.toast.tooManyRequests);
-        return;
-      }
-      if (res.status === 400 && apiResult?.error === 'missing_cover') {
-        toast.error(t.exportDialog.noCoverPhotoWarning);
-        return;
-      }
-      if (!res.ok) {
-        toast.error(t.toast.requestFailed);
-        return;
-      }
-      if (apiResult.result === 'published') {
-        setBiographyStatus('published');
-        setAiScreeningResult('passed');
-        setRevisionPassages([]);
-        setRevisionBannerDismissed(false);
-        setBiography((prev) =>
-          prev
-            ? {
-                ...prev,
-                status: 'published',
-                published_at: new Date().toISOString(),
-                ai_screening_status: 'passed',
-              }
-            : prev
-        );
-        toast.success(t.editor.resubmitAiScreeningPublishedToast);
-        return;
-      }
-      const d = apiResult.screeningDetail as string | undefined;
-      if (d === 'ai_error' || d === 'parse_error') {
-        setAiScreeningResult(d as 'ai_error' | 'parse_error');
-        toast.warning(t.editor.resubmitAiScreeningErrorToast);
-        return;
-      }
-      setAiScreeningResult('flagged');
-      setBiography((prev) => (prev ? { ...prev, ai_screening_status: 'flagged' } : prev));
-      const { data: openReport } = await supabase
-        .from('moderation_reports')
-        .select('ai_analysis')
-        .eq('biography_id', id)
-        .in('status', ['unassigned', 'assigned'])
-        .order('created_at', { ascending: false })
-        .limit(1)
-        .maybeSingle();
-      const raw = (openReport?.ai_analysis as { flagged_passages?: unknown } | null)?.flagged_passages;
-      if (Array.isArray(raw) && raw.length > 0) {
-        setRevisionPassages(
-          raw.map((p: { section_key?: string; reason?: string }) => ({
-            section_key: typeof p.section_key === 'string' ? p.section_key : 'unknown',
-            ai_reason: typeof p.reason === 'string' ? p.reason : '',
-          }))
-        );
-      }
-      toast.warning(t.editor.resubmitAiScreeningStillFlaggedToast);
-    } catch (e) {
-      console.error(e);
-      toast.error(t.toast.requestFailed);
-    } finally {
-      setResubmitScreeningLoading(false);
-    }
-  }, [user, id, t]);
 
   const handleOpenSubmitDialog = useCallback(async () => {
     setSubmitPreflightError(null);
@@ -1598,16 +1572,16 @@ export default function BiographyEditorPage() {
 
   const effectivelyLocked = isFrozen || biographyStatus === 'locked_pending_screening';
 
-  /** AI screening flagged passages: edit only listed sections (or freeflow) while under_review. */
-  const isUnderReviewAiFlagRevision =
-    biographyStatus === 'under_review' &&
-    (aiScreeningResult === 'flagged' || biography?.ai_screening_status === 'flagged') &&
-    revisionPassages.length > 0;
+  /**
+   * Il testo si scrive solo negli stati di lavoro (elenco chiuso, lo stesso del database:
+   * lib/publication-state.ts). Fuori elenco, anche in revisione o in attesa di screening,
+   * l'editor è in sola lettura: il database rifiuterebbe comunque la scrittura.
+   */
+  const statusLocksText = !canAuthorWriteText(biographyStatus, false);
 
+  /** Passaggi da correggere chiesti dal revisore: modifica limitata alle sezioni indicate (stato draft). */
   const isRevisionMode =
-    revisionPassages.length > 0 &&
-    !revisionBannerDismissed &&
-    (biographyStatus === 'draft' || isUnderReviewAiFlagRevision);
+    revisionPassages.length > 0 && !revisionBannerDismissed && biographyStatus === 'draft';
 
   const editableSectionKeys = new Set(revisionPassages.map((p) => p.section_key));
   const isActiveSectionRevisionLocked = isRevisionMode && !editableSectionKeys.has(activeSection);
@@ -1616,10 +1590,8 @@ export default function BiographyEditorPage() {
       ? isRevisionMode && !editableSectionKeys.has('freeflow')
       : isActiveSectionRevisionLocked;
 
-  /** Full editor lock from review queue, except partial edit when AI flagged specific sections. */
-  const reviewQueueLocksEditor =
-    isReviewOrScreeningLockStatus(biographyStatus) &&
-    !(biographyStatus === 'under_review' && isRevisionMode);
+  /** Blocco completo dell'editor per lo stato della scheda. */
+  const reviewQueueLocksEditor = statusLocksText;
   const draftHasSeverity3Flags = (draftAiFeedback?.red_flags ?? []).some((f) => f?.severity === 3);
   const aiUnavailable = draftAiFeedback?.ready_for_publication !== undefined && draftAiFeedback?.red_flags !== undefined
     ? (draftAiFeedback as { aiError?: boolean }).aiError === true
@@ -1638,13 +1610,6 @@ export default function BiographyEditorPage() {
     biographyStatus === 'pdf_draft' ||
     biographyStatus === 'locked_pending_screening' ||
     (biographyStatus === 'under_review' && (finalVersion?.trim().length ?? 0) >= 50);
-
-  const lockFinalVersionForScreeningErrors =
-    biographyStatus === 'under_review' &&
-    aiScreeningResult !== 'flagged' &&
-    (aiScreeningResult === 'ai_error' ||
-      aiScreeningResult === 'parse_error' ||
-      aiScreeningResult === 'pending');
 
   if (authLoading || !user || isLoading) {
     return (
@@ -1788,6 +1753,48 @@ export default function BiographyEditorPage() {
         </div>
       )}
 
+      {biographyStatus === 'published' && !isFrozen && biography && (
+        <div className="shrink-0 border-b border-border/50 bg-card px-4 py-3">
+          <div className="max-w-5xl mx-auto flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+            <div className="min-w-0 flex-1">
+              <ChapterCooldownBanner biography={biography} compact />
+            </div>
+            {getChapterCooldownState(biography)?.available && (
+              <Button
+                type="button"
+                size="sm"
+                className="shrink-0"
+                disabled={reopenLoading}
+                onClick={() => setShowReopenDialog(true)}
+              >
+                {t.editor.reopenForNewChapter}
+              </Button>
+            )}
+          </div>
+        </div>
+      )}
+
+      <AlertDialog open={showReopenDialog} onOpenChange={setShowReopenDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t.editor.reopenDialogTitle}</AlertDialogTitle>
+            <AlertDialogDescription>{t.editor.reopenDialogBody}</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={reopenLoading}>{t.editor.reopenCancel}</AlertDialogCancel>
+            <AlertDialogAction
+              disabled={reopenLoading}
+              onClick={(e) => {
+                e.preventDefault();
+                void handleReopenForNewChapter();
+              }}
+            >
+              {reopenLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : t.editor.reopenConfirm}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
       {aiScreeningResult === 'passed' && biographyStatus === 'published' && (
         <div className="shrink-0 bg-brand-greenLight/45 border-b border-brand-greenLight px-4 py-3 dark:bg-brand-greenLight/15 dark:border-brand-greenDark/40">
           <div className="max-w-5xl mx-auto flex items-start gap-3">
@@ -1839,11 +1846,6 @@ export default function BiographyEditorPage() {
                  language === 'de' ? 'Sie werden benachrichtigt, wenn die Überprüfung abgeschlossen ist.' :
                  'You will be notified when the review is complete.'}
               </p>
-              {biographyStatus === 'under_review' && revisionPassages.length > 0 && (
-                <p className="text-xs text-brand-ink/85 dark:text-brand-beigeLight/90 mt-2 border-t border-brand-mustardDark/25 pt-2">
-                  {t.editor.aiScreeningFlaggedEditHint}
-                </p>
-              )}
             </div>
           </div>
         </div>
@@ -1915,9 +1917,7 @@ export default function BiographyEditorPage() {
               <TriangleAlert className="h-4 w-4 text-brand-mustardDark dark:text-brand-mustardLight shrink-0 mt-0.5" />
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium text-brand-ink dark:text-brand-beigeLight mb-2">
-                  {isUnderReviewAiFlagRevision
-                    ? t.editor.revisionRequiredAiScreening
-                    : t.editor.revisionRequired}
+                  {t.editor.revisionRequired}
                 </p>
                 <ul className="space-y-1 mb-2">
                   {revisionPassages.map((p, i) => (
@@ -1939,20 +1939,6 @@ export default function BiographyEditorPage() {
                 )}
               </div>
               <div className="flex flex-col items-end gap-2 shrink-0">
-                {isUnderReviewAiFlagRevision && (
-                  <Button
-                    type="button"
-                    size="sm"
-                    className="h-8 text-xs gap-1.5"
-                    disabled={resubmitScreeningLoading}
-                    onClick={() => void handleResubmitAiScreening()}
-                  >
-                    {resubmitScreeningLoading ? (
-                      <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                    ) : null}
-                    {t.editor.resubmitAiScreening}
-                  </Button>
-                )}
                 <button
                   type="button"
                   onClick={() => setRevisionBannerDismissed(true)}
@@ -2059,7 +2045,7 @@ export default function BiographyEditorPage() {
                   content={finalVersion}
                   onContentChange={handleFinalVersionChange}
                   biographyId={id}
-                  isLocked={effectivelyLocked || lockFinalVersionForScreeningErrors}
+                  isLocked={effectivelyLocked || statusLocksText}
                   onPublish={
                     biographyStatus === 'final_version'
                       ? handleStartPdfDraft
@@ -2073,7 +2059,7 @@ export default function BiographyEditorPage() {
                     biographyStatus === 'pdf_draft' || biographyStatus === 'locked_pending_screening'
                   }
                   editorFontSize={editorFontSize}
-                  onRevertToDraft={!effectivelyLocked ? handleRevertToDraft : undefined}
+                  onRevertToDraft={biographyStatus === 'final_version' ? handleRevertToDraft : undefined}
                 />
                     ) : (
                 <GuidedSectionWorkspace

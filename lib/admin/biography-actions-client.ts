@@ -13,6 +13,6 @@ export async function runAdminBiographyAction(
   });
   if (!res.ok) {
     const data = await res.json().catch(() => ({}));
-    throw new Error(data.error || `Action failed with status ${res.status}`);
+    throw new Error(data.message || data.error || `Action failed with status ${res.status}`);
   }
 }

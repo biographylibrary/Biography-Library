@@ -9,6 +9,13 @@ import {
   notifyReviewerAssignedEmail,
 } from '@/lib/server/email/publication-helpers';
 import { resolveRecordLanguageTag } from '@/lib/record-language';
+import {
+  checkPublishGate,
+  computePublicFingerprint,
+  gatedPublish,
+  recordScreening,
+  type ScreeningVerdict,
+} from '@/lib/server/publication-fingerprint';
 
 
 const MAX_CONTENT_CHARS = 6000;
@@ -144,7 +151,7 @@ export async function fetchBiographyContent(
   supabase: AnyClient,
   biographyId: string,
   targetSectionKeys?: string[]
-): Promise<{ text: string; authorId: string; contentLanguage: string }> {
+): Promise<{ text: string; authorId: string; contentLanguage: string; sourceChars: number }> {
   const { data: bio } = await supabase
     .from('biographies')
     .select(
@@ -160,19 +167,26 @@ export async function fetchBiographyContent(
   const finalRaw = (bio as any)?.final_version?.trim();
   if (!hasTargetKeys && finalRaw) {
     let text = storedToArchiveMarkdown(finalRaw);
+    const sourceChars = text.length;
     if (text.length > MAX_CONTENT_CHARS) {
       text = text.slice(0, MAX_CONTENT_CHARS);
     }
-    return { text, authorId, contentLanguage };
+    return { text, authorId, contentLanguage, sourceChars };
   }
 
   /** Used below when targeted sections are empty but final_version holds the live text (PDF path). */
-  const finalVersionFallback = (): { text: string; authorId: string; contentLanguage: string } => {
+  const finalVersionFallback = (): {
+    text: string;
+    authorId: string;
+    contentLanguage: string;
+    sourceChars: number;
+  } => {
     let text = storedToArchiveMarkdown(finalRaw ?? '');
+    const sourceChars = text.length;
     if (text.length > MAX_CONTENT_CHARS) {
       text = text.slice(0, MAX_CONTENT_CHARS);
     }
-    return { text, authorId, contentLanguage };
+    return { text, authorId, contentLanguage, sourceChars };
   };
 
   const jsonContent =
@@ -226,6 +240,7 @@ export async function fetchBiographyContent(
   }
 
   let text = parts.join('\n\n');
+  const sourceChars = text.length;
   if (text.length > MAX_CONTENT_CHARS) {
     text = text.slice(0, MAX_CONTENT_CHARS);
   }
@@ -234,7 +249,7 @@ export async function fetchBiographyContent(
     return finalVersionFallback();
   }
 
-  return { text, authorId, contentLanguage };
+  return { text, authorId, contentLanguage, sourceChars };
 }
 
 export interface DraftAiSuggestion {
@@ -552,9 +567,109 @@ export type ReviewSubmitPipelineResult =
       result: 'under_review';
       message?: string;
       isRescreen: boolean;
-      screeningDetail?: 'parse_error' | 'ai_error' | 'flagged';
+      screeningDetail?: 'parse_error' | 'ai_error' | 'flagged' | 'text_changed';
       flagCount?: number;
     };
+
+interface ManualReviewArgs {
+  serviceClient: AnyClient;
+  biographyId: string;
+  authorId: string;
+  contentLanguage: string;
+  priorStatus: string | null;
+  previousReviewerId: string | null;
+  isRescreen: boolean;
+  aiScreeningStatus: 'parse_error' | 'ai_error' | 'pending';
+  reportDescription: string;
+  reportSummary: string;
+  screeningDetail: 'parse_error' | 'ai_error' | 'text_changed';
+  message: string;
+  /** Solo per "testo cambiato": lascia nel registro il fatto che l'impronta esaminata non è più quella attuale. */
+  recordTextChanged?: { fingerprint: string; examinedChars: number; sourceChars: number };
+}
+
+/**
+ * La scheda non si pubblica da sola: passa alla revisione umana (errore del
+ * modello, risposta illeggibile, oppure testo cambiato durante lo screening).
+ */
+async function routeToManualReview(args: ManualReviewArgs): Promise<ReviewSubmitPipelineResult> {
+  const { serviceClient, biographyId, authorId, contentLanguage } = args;
+
+  if (args.recordTextChanged) {
+    await recordScreening(serviceClient, {
+      biographyId,
+      fingerprint: args.recordTextChanged.fingerprint,
+      verdict: 'text_changed',
+      scope: 'full',
+      examinedChars: args.recordTextChanged.examinedChars,
+      sourceChars: args.recordTextChanged.sourceChars,
+    });
+  }
+
+  const patch: Record<string, unknown> = { ai_screening_status: args.aiScreeningStatus };
+  if (args.priorStatus === 'locked_pending_screening') {
+    patch.status = 'under_review';
+  }
+  await serviceClient.from('biographies').update(patch).eq('id', biographyId);
+
+  const { data: errorReport } = await serviceClient
+    .from('moderation_reports')
+    .insert({
+      biography_id: biographyId,
+      reporter_id: null,
+      report_type: 'level2_content',
+      origin: 'screening',
+      description: args.reportDescription,
+      status: 'unassigned',
+      ai_analysis: {
+        summary: args.reportSummary,
+        flagged_passages: [],
+      },
+      ai_violation_level: 0,
+    })
+    .select('id')
+    .maybeSingle();
+
+  const errorReviewerId = await pickReviewer(serviceClient, contentLanguage, args.previousReviewerId);
+
+  if (errorReviewerId && (errorReport as any)?.id) {
+    await serviceClient
+      .from('moderation_reports')
+      .update({
+        status: 'assigned',
+        assigned_to: errorReviewerId,
+        assigned_moderator_id: errorReviewerId,
+        assigned_at: new Date().toISOString(),
+      })
+      .eq('id', (errorReport as any).id);
+
+    const assignMsg = REVIEW_ASSIGNED_MESSAGES[contentLanguage] ?? REVIEW_ASSIGNED_MESSAGES['en'];
+    await notifyReviewerAssignedEmail({
+      client: serviceClient,
+      reviewerId: errorReviewerId,
+      biographyId,
+      contentLanguage,
+      notificationMessage: assignMsg,
+    });
+  }
+
+  const underReviewMsg = UNDER_REVIEW_MESSAGES[contentLanguage] ?? UNDER_REVIEW_MESSAGES['en'];
+  await notifyAuthorPublicationEmail({
+    client: serviceClient,
+    authorId,
+    biographyId,
+    templateId: 'publication_under_review',
+    contentLanguage,
+    notificationMessage: underReviewMsg,
+  });
+
+  return {
+    result: 'under_review',
+    message: args.message,
+    isRescreen: args.isRescreen,
+    screeningDetail: args.screeningDetail,
+  };
+}
 
 /**
  * Runs AI screening and applies biography / moderation side-effects.
@@ -582,13 +697,17 @@ export async function runReviewSubmitScreening(
 
   const isRescreen = previousReportId !== null;
 
-  const { text, authorId, contentLanguage } = await fetchBiographyContent(
+  // Impronta del testo pubblico nel momento in cui lo screening lo legge: chi
+  // pubblica la ricalcola e, se è diversa, non pubblica.
+  const examinedFingerprint = await computePublicFingerprint(serviceClient, biographyId);
+
+  const { text, authorId, contentLanguage, sourceChars } = await fetchBiographyContent(
     serviceClient,
     biographyId,
     targetSectionKeys
   );
 
-  if (!authorId) {
+  if (!authorId || !examinedFingerprint) {
     throw new Error('Biography not found');
   }
 
@@ -609,75 +728,67 @@ export async function runReviewSubmitScreening(
 
   const priorStatus = await fetchBiographyStatus(serviceClient, biographyId);
 
+  const verdict: ScreeningVerdict = screening.aiError
+    ? screening.parseError
+      ? 'parse_error'
+      : 'ai_error'
+    : screening.passages.length === 0
+      ? 'passed'
+      : 'flagged';
+
+  // Traccia dell'esame: impronta del testo, quanto ne ha visto il modello, esito.
+  await recordScreening(serviceClient, {
+    biographyId,
+    fingerprint: examinedFingerprint,
+    verdict,
+    scope: targetSectionKeys && targetSectionKeys.length > 0 ? 'targeted' : 'full',
+    examinedChars: text.length,
+    sourceChars,
+  });
+
   if (screening.aiError) {
-    const patch: Record<string, unknown> = {
-      ai_screening_status: screening.parseError ? 'parse_error' : 'ai_error',
-    };
-    if (priorStatus === 'locked_pending_screening') {
-      patch.status = 'under_review';
-    }
-    await serviceClient.from('biographies').update(patch).eq('id', biographyId);
-
-    const { data: errorReport } = await serviceClient
-      .from('moderation_reports')
-      .insert({
-        biography_id: biographyId,
-        reporter_id: null,
-        report_type: 'level2_content',
-        origin: 'screening',
-        description: 'AI screening failed — routed to manual review',
-        status: 'unassigned',
-        ai_analysis: {
-          summary: 'AI screening could not complete. Manual review required.',
-          flagged_passages: [],
-        },
-        ai_violation_level: 0,
-      })
-      .select('id')
-      .maybeSingle();
-
-    const errorReviewerId = await pickReviewer(serviceClient, contentLanguage, previousReviewerId);
-
-    if (errorReviewerId && (errorReport as any)?.id) {
-      await serviceClient
-        .from('moderation_reports')
-        .update({
-          status: 'assigned',
-          assigned_to: errorReviewerId,
-          assigned_moderator_id: errorReviewerId,
-          assigned_at: new Date().toISOString(),
-        })
-        .eq('id', (errorReport as any).id);
-
-      const assignMsg = REVIEW_ASSIGNED_MESSAGES[contentLanguage] ?? REVIEW_ASSIGNED_MESSAGES['en'];
-      await notifyReviewerAssignedEmail({
-        client: serviceClient,
-        reviewerId: errorReviewerId,
-        biographyId,
-        contentLanguage,
-        notificationMessage: assignMsg,
-      });
-    }
-
-    const underReviewMsg = UNDER_REVIEW_MESSAGES[contentLanguage] ?? UNDER_REVIEW_MESSAGES['en'];
-    await notifyAuthorPublicationEmail({
-      client: serviceClient,
-      authorId,
+    return routeToManualReview({
+      serviceClient,
       biographyId,
-      templateId: 'publication_under_review',
+      authorId,
       contentLanguage,
-      notificationMessage: underReviewMsg,
-    });
-
-    return {
-      result: 'under_review',
-      message: 'submitted for manual review',
+      priorStatus,
+      previousReviewerId,
       isRescreen,
+      aiScreeningStatus: screening.parseError ? 'parse_error' : 'ai_error',
+      reportDescription: 'AI screening failed — routed to manual review',
+      reportSummary: 'AI screening could not complete. Manual review required.',
       screeningDetail: screening.parseError ? 'parse_error' : 'ai_error',
-    };
+      message: 'submitted for manual review',
+    });
   }
 
   if (screening.passages.length === 0) {
+    const textChanged = (message: string) =>
+      routeToManualReview({
+        serviceClient,
+        biographyId,
+        authorId,
+        contentLanguage,
+        priorStatus,
+        previousReviewerId,
+        isRescreen,
+        aiScreeningStatus: 'pending',
+        reportDescription: 'Text changed during screening — routed to manual review',
+        reportSummary: message,
+        screeningDetail: 'text_changed',
+        message: 'text_changed_during_screening',
+        recordTextChanged: { fingerprint: examinedFingerprint, examinedChars: text.length, sourceChars },
+      });
+
+    // Prima dell'identificativo UM (permanente): se il testo è cambiato, niente UM.
+    const precheck = await checkPublishGate(serviceClient, {
+      biographyId,
+      mode: 'auto',
+      expectedFingerprint: examinedFingerprint,
+    });
+    if (!precheck.ok) return textChanged(precheck.message);
+
     const { ensureUmIdFor } = await import('@/lib/server/um-id-registry');
     await ensureUmIdFor(serviceClient, biographyId);
 
@@ -703,15 +814,23 @@ export async function runReviewSubmitScreening(
       if (until) publishPatch.provisional_until = until;
     }
 
-    const { error: publishError } = await serviceClient
-      .from('biographies')
-      .update(publishPatch)
-      .eq('id', biographyId);
-    if (publishError) {
+    const published = await gatedPublish(
+      serviceClient,
+      { biographyId, mode: 'auto', actorId: null, expectedFingerprint: examinedFingerprint },
+      async () => {
+        const { error: publishError } = await serviceClient
+          .from('biographies')
+          .update(publishPatch)
+          .eq('id', biographyId);
+        return publishError ? publishError.message : null;
+      }
+    );
+    if (!published.ok && published.blocked) return textChanged(published.message);
+    if (!published.ok) {
       // Pubblicazione non riuscita (per esempio attesa fra capitoli): niente notifiche,
       // niente cancellazione della memoria di Echo, niente risposta "pubblicata".
-      console.error('[review-submit-pipeline] publish update failed:', publishError);
-      throw new Error(`publish_failed: ${publishError.message}`);
+      console.error('[review-submit-pipeline] publish update failed:', published.error);
+      throw new Error(`publish_failed: ${published.error}`);
     }
 
     try {

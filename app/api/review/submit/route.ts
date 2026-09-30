@@ -10,7 +10,16 @@ import {
 
 type AnyClient = SupabaseClient<any, any, any>;
 
+/** Da questi stati l'autore manda la scheda in coda di pubblicazione. */
 const AUTHOR_SUBMIT_STATUSES = new Set(['draft', 'sections_complete', 'final_version']);
+
+/**
+ * Ripetere lo screening sullo STESSO testo dopo che l'analisi automatica è fallita
+ * ("Riprova analisi"): il testo è bloccato, non cambia. Solo con un errore dell'analisi,
+ * mai con 'pending' (screening in corso) né con passaggi segnalati (decide la persona).
+ */
+const AUTHOR_RETRY_STATUSES = new Set(['under_review', 'locked_pending_screening']);
+const AUTHOR_RETRY_SCREENING = new Set(['ai_error', 'parse_error']);
 
 function buildAnonClient(jwt: string): AnyClient {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL!;
@@ -66,7 +75,7 @@ export async function POST(req: NextRequest) {
 
     const { data: bio } = await serviceClient
       .from('biographies')
-      .select('user_id, status')
+      .select('user_id, status, ai_screening_status')
       .eq('id', biographyId)
       .maybeSingle();
 
@@ -83,7 +92,10 @@ export async function POST(req: NextRequest) {
 
       // Da uno stato non d'autore (in revisione, sospesa, rimossa, pubblicata...)
       // l'autore non può rimettere la scheda in coda di pubblicazione.
-      if (!AUTHOR_SUBMIT_STATUSES.has((bio as any).status)) {
+      const isRetry =
+        AUTHOR_RETRY_STATUSES.has((bio as any).status) &&
+        AUTHOR_RETRY_SCREENING.has((bio as any).ai_screening_status);
+      if (!AUTHOR_SUBMIT_STATUSES.has((bio as any).status) && !isRetry) {
         console.warn('[review/submit] 409 — status not submittable', {
           timestamp,
           biographyId,

@@ -189,13 +189,15 @@ To add a migration:
 5. Apply via the Supabase MCP tool or dashboard SQL editor.
 6. Commit the file to git.
 
-Never use `DROP TABLE`, `DROP COLUMN`, or `TRUNCATE` in a migration without explicit confirmation — the platform stores real user biographical data.
+Never use `DROP TABLE`, `DROP COLUMN`, or `TRUNCATE` in a migration without explicit confirmation, the platform stores real user biographical data.
+
+**Release of block 1 (AI tools and security).** Five new migrations; apply them only after explicit confirmation, in this order: first the additive ones (`20260930120200_publication_records.sql`, `20260930120300_ai_token_usage.sql`), then deploy the code, then the restrictive ones (`20260930115900_align_biographies_profiles_triggers.sql`, `20260930120000_server_only_columns_and_reports.sql`, `20260930120100_author_text_whitelist.sql`). The new code writes server-only columns with the service role, so it works both before and after the restrictive migrations; the old code does not work after them. Rollback of the restrictive ones: `supabase/rollback/20260930_security_rollback.sql` (never applied automatically). Full checklist: `docs/BETA_RELEASE_CHECKLIST.md`.
 
 ---
 
 ## Supabase Edge Functions
 
-Three functions are deployed for AI and error reporting (the `ai-assistant` function was deleted on 30 September 2026; the grammar check is `POST /api/biography/[id]/grammar`):
+Two functions are deployed for AI transcription and error reporting. The `ai-assistant` function (and the undocumented `help-assistant`, version 29, whose deployed source is kept in `docs/legacy/help-assistant/`) were removed from the repository on 30 September 2026 and must be deleted from the Supabase project by hand after the release of block 1 (tools available to the agent cannot delete functions). The grammar check is `POST /api/biography/[id]/grammar`:
 
 
 | Slug                  | Purpose                                                                 |

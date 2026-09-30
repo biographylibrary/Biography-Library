@@ -27,6 +27,13 @@ export const BIO = {
   removed: '10000000-0000-0000-0000-000000000004',
   suspended: '10000000-0000-0000-0000-000000000005',
   otherDraft: '10000000-0000-0000-0000-000000000006',
+  lockedPending: '10000000-0000-0000-0000-000000000007',
+  pdfDraft: '10000000-0000-0000-0000-000000000008',
+  finalVersion: '10000000-0000-0000-0000-000000000009',
+  revisionRequested: '10000000-0000-0000-0000-00000000000a',
+  revisionPending: '10000000-0000-0000-0000-00000000000b',
+  revisionOverdue: '10000000-0000-0000-0000-00000000000c',
+  sectionsComplete: '10000000-0000-0000-0000-00000000000d',
 } as const;
 
 const BOOTSTRAP = `
@@ -201,11 +208,68 @@ end; $$;
 create trigger enforce_biography_media_limit before insert on public.biography_media
   for each row execute function public.check_biography_media_limit();
 
+
+create table public.biography_sections (
+  id uuid primary key default gen_random_uuid(),
+  biography_id uuid not null references public.biographies(id) on delete cascade,
+  section_name text,
+  content text,
+  audio_transcript text,
+  created_at timestamptz default now(),
+  status varchar default 'in_progress',
+  draft_version integer default 1,
+  approved_at timestamptz,
+  revision_history jsonb default '[]'::jsonb,
+  section_key text,
+  unique (biography_id, section_key)
+);
+
+create table public.biography_book_structure (
+  id uuid primary key default gen_random_uuid(),
+  biography_id uuid not null references public.biographies(id) on delete cascade,
+  user_id uuid not null,
+  dedication_content text,
+  epigraph_content text,
+  epigraph_source text,
+  preface_content text,
+  epilogue_content text,
+  acknowledgements_content text,
+  specific_credits_content text,
+  created_at timestamptz default now(),
+  updated_at timestamptz default now()
+);
+
+create table public.person_events (
+  id uuid primary key default gen_random_uuid(),
+  biography_id uuid not null references public.biographies(id) on delete cascade,
+  event_type text not null,
+  event_label text,
+  sequence integer,
+  date_as_given text,
+  place_name_as_given text,
+  source_note text,
+  created_at timestamptz default now()
+);
+
+create table public.person_relations (
+  id uuid primary key default gen_random_uuid(),
+  biography_id uuid not null references public.biographies(id) on delete cascade,
+  relation_code text not null,
+  relation_label text,
+  related_name_as_written text,
+  source_note text,
+  created_at timestamptz default now()
+);
+
 alter table public.profiles enable row level security;
 alter table public.biographies enable row level security;
 alter table public.moderation_reports enable row level security;
 alter table public.section_completions enable row level security;
 alter table public.biography_media enable row level security;
+alter table public.biography_sections enable row level security;
+alter table public.biography_book_structure enable row level security;
+alter table public.person_events enable row level security;
+alter table public.person_relations enable row level security;
 
 create policy "Users can read own section completions" on public.section_completions for select to authenticated
   using ((select auth.uid()) = user_id);
@@ -224,6 +288,46 @@ create policy "Users can update own media" on public.biography_media for update 
   using ((select auth.uid()) = user_id) with check ((select auth.uid()) = user_id);
 create policy "Users can delete own media" on public.biography_media for delete to authenticated
   using ((select auth.uid()) = user_id);
+
+-- Policy come in produzione (30 settembre 2026): la proprietà, mai lo stato della scheda.
+create policy "Users can read own biography sections" on public.biography_sections for select to authenticated
+  using (exists (select 1 from public.biographies b where b.id = biography_sections.biography_id and b.user_id = (select auth.uid())));
+create policy "Users can insert own biography sections" on public.biography_sections for insert to authenticated
+  with check (exists (select 1 from public.biographies b where b.id = biography_sections.biography_id and b.user_id = (select auth.uid())));
+create policy "Users can update own biography sections" on public.biography_sections for update to authenticated
+  using (exists (select 1 from public.biographies b where b.id = biography_sections.biography_id and b.user_id = (select auth.uid())))
+  with check (exists (select 1 from public.biographies b where b.id = biography_sections.biography_id and b.user_id = (select auth.uid())));
+create policy "Users can delete own biography sections" on public.biography_sections for delete to authenticated
+  using (exists (select 1 from public.biographies b where b.id = biography_sections.biography_id and b.user_id = (select auth.uid())));
+
+create policy "Users can select own book structure" on public.biography_book_structure for select to authenticated
+  using (auth.uid() = user_id);
+create policy "Users can insert own book structure" on public.biography_book_structure for insert to authenticated
+  with check (auth.uid() = user_id);
+create policy "Users can update own book structure" on public.biography_book_structure for update to authenticated
+  using (auth.uid() = user_id) with check (auth.uid() = user_id);
+create policy "Users can delete own book structure" on public.biography_book_structure for delete to authenticated
+  using (auth.uid() = user_id);
+
+create policy "person_events: owner select" on public.person_events for select to authenticated
+  using (exists (select 1 from public.biographies b where b.id = person_events.biography_id and b.user_id = (select auth.uid())));
+create policy "person_events: owner insert" on public.person_events for insert to authenticated
+  with check (exists (select 1 from public.biographies b where b.id = person_events.biography_id and b.user_id = (select auth.uid()) and coalesce(b.is_frozen, false) = false));
+create policy "person_events: owner update" on public.person_events for update to authenticated
+  using (exists (select 1 from public.biographies b where b.id = person_events.biography_id and b.user_id = (select auth.uid()) and coalesce(b.is_frozen, false) = false))
+  with check (exists (select 1 from public.biographies b where b.id = person_events.biography_id and b.user_id = (select auth.uid()) and coalesce(b.is_frozen, false) = false));
+create policy "person_events: owner delete" on public.person_events for delete to authenticated
+  using (exists (select 1 from public.biographies b where b.id = person_events.biography_id and b.user_id = (select auth.uid()) and coalesce(b.is_frozen, false) = false));
+
+create policy "person_relations: owner select" on public.person_relations for select to authenticated
+  using (exists (select 1 from public.biographies b where b.id = person_relations.biography_id and b.user_id = (select auth.uid())));
+create policy "person_relations: owner insert" on public.person_relations for insert to authenticated
+  with check (exists (select 1 from public.biographies b where b.id = person_relations.biography_id and b.user_id = (select auth.uid()) and coalesce(b.is_frozen, false) = false));
+create policy "person_relations: owner update" on public.person_relations for update to authenticated
+  using (exists (select 1 from public.biographies b where b.id = person_relations.biography_id and b.user_id = (select auth.uid()) and coalesce(b.is_frozen, false) = false))
+  with check (exists (select 1 from public.biographies b where b.id = person_relations.biography_id and b.user_id = (select auth.uid()) and coalesce(b.is_frozen, false) = false));
+create policy "person_relations: owner delete" on public.person_relations for delete to authenticated
+  using (exists (select 1 from public.biographies b where b.id = person_relations.biography_id and b.user_id = (select auth.uid()) and coalesce(b.is_frozen, false) = false));
 
 -- Policy come in produzione (30 settembre 2026), prima della migrazione.
 create policy "Users can insert own profile" on public.profiles for insert to authenticated
@@ -245,6 +349,9 @@ create policy "Biographies: owner or staff can update, blocked if frozen" on pub
     or get_my_role() = any (array['reviewer','admin','super_admin']))
   with check ((user_id = (select auth.uid()) and not is_frozen and get_my_account_status() = 'active')
     or get_my_role() = any (array['reviewer','admin','super_admin']));
+
+create policy "Users can delete own biographies" on public.biographies for delete to authenticated
+  using (((select auth.uid()) = user_id) and (get_my_account_status() = 'active'));
 
 create policy "Any authenticated user can file a report" on public.moderation_reports for insert to authenticated
   with check (reporter_id = (select auth.uid()));
@@ -275,7 +382,14 @@ insert into public.biographies (id, user_id, status, title, published_at) values
   ('${BIO.underReview}', '${U.author}', 'under_review', 'In revisione', null),
   ('${BIO.removed}', '${U.author}', 'removed', 'Rimossa', null),
   ('${BIO.suspended}', '${U.author}', 'suspended_pending_verification', 'Sospesa', null),
-  ('${BIO.otherDraft}', '${U.other}', 'draft', 'Di un altro', null);
+  ('${BIO.otherDraft}', '${U.other}', 'draft', 'Di un altro', null),
+  ('${BIO.lockedPending}', '${U.author}', 'locked_pending_screening', 'In attesa di screening', null),
+  ('${BIO.pdfDraft}', '${U.author}', 'pdf_draft', 'Bozza PDF', null),
+  ('${BIO.finalVersion}', '${U.author}', 'final_version', 'Versione finale', null),
+  ('${BIO.revisionRequested}', '${U.author}', 'revision_requested', 'Revisione chiesta', null),
+  ('${BIO.revisionPending}', '${U.author}', 'revision_pending_review', 'Revisione inviata', null),
+  ('${BIO.revisionOverdue}', '${U.author}', 'revision_overdue', 'Revisione scaduta', null),
+  ('${BIO.sectionsComplete}', '${U.author}', 'sections_complete', 'Sezioni complete', null);
 `;
 
 /**
@@ -287,8 +401,16 @@ insert into public.biographies (id, user_id, status, title, published_at) values
 export async function reseed(db: PGlite): Promise<void> {
   await db.exec(`
     set session_replication_role = replica;
-    delete from public.ai_token_usage;
+    do $$ begin
+      -- Le tabelle delle migrazioni più recenti possono mancare (prove sul ritorno indietro).
+      if to_regclass('public.ai_token_usage') is not null then delete from public.ai_token_usage; end if;
+      if to_regclass('public.publication_records') is not null then delete from public.publication_records; end if;
+    end $$;
     delete from public.biography_media;
+    delete from public.biography_sections;
+    delete from public.biography_book_structure;
+    delete from public.person_events;
+    delete from public.person_relations;
     delete from public.section_completions;
     delete from public.moderation_reports;
     delete from public.biographies;
@@ -303,16 +425,27 @@ export async function reseed(db: PGlite): Promise<void> {
 
 export type DbRole = 'authenticated' | 'anon' | 'service_role' | 'postgres';
 
-export async function createTestDb(): Promise<PGlite> {
+export async function createTestDb(
+  options: { skip?: string[]; only?: string[]; extraFiles?: string[] } = {}
+): Promise<PGlite> {
   const db = new PGlite();
   await db.exec(BOOTSTRAP);
-  // Le migrazioni vere, nell'ordine in cui verranno applicate.
+  // Le migrazioni vere, nell'ordine in cui verranno applicate. `skip` serve solo ai
+  // controlli negativi: dimostra che il banco si accorge dell'assenza di una migrazione.
   for (const file of [
     '20260930115900_align_biographies_profiles_triggers.sql',
     '20260930120000_server_only_columns_and_reports.sql',
+    '20260930120100_author_text_whitelist.sql',
+    '20260930120200_publication_records.sql',
     '20260930120300_ai_token_usage.sql',
   ]) {
+    if (options.skip?.includes(file)) continue;
+    if (options.only && !options.only.includes(file)) continue;
     await db.exec(readFileSync(join(MIGRATIONS, file), 'utf8'));
+  }
+  // File eseguiti dopo le migrazioni (percorsi dalla radice del repository): per provare il ritorno indietro.
+  for (const file of options.extraFiles ?? []) {
+    await db.exec(readFileSync(join(process.cwd(), file), 'utf8'));
   }
   await reseed(db);
   return db;

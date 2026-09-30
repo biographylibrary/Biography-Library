@@ -6,13 +6,38 @@ import { purgeAgentMemoryForBiography } from '@/lib/agents/purge-agent-memory';
 import { notifyAuthorPublicationEmail } from '@/lib/server/email/publication-helpers';
 import { writeModerationMessage } from '@/lib/server/moderation-register';
 import { provisionalUntilOnFirstPublish, republicationClock } from '@/lib/provisional-window';
+import { checkPublishGate, gatedPublish } from '@/lib/server/publication-fingerprint';
 
 export type ModerationServerResult = {
   error: string | null;
   conflict?: boolean;
   claimed?: boolean;
   claimedByName?: string | null;
+  /** Pubblicazione rifiutata dal confronto dell'impronta del testo. */
+  blocked?: string;
 };
+
+/** Il browser dello staff manda la modifica da applicare: il server accetta solo queste colonne e questi stati. */
+const DECISION_PATCH_KEYS = new Set([
+  'status',
+  'published_at',
+  'revised_at',
+  'provisional_until',
+  'is_frozen',
+  'frozen_at',
+  'frozen_reason',
+]);
+const DECISION_PATCH_STATUSES = new Set(['published', 'draft', 'removed', 'revision_requested']);
+
+function invalidDecisionPatch(patch: Record<string, unknown>): string | null {
+  for (const key of Object.keys(patch)) {
+    if (!DECISION_PATCH_KEYS.has(key)) return `Invalid patch column: ${key}`;
+  }
+  if (patch.status !== undefined && !DECISION_PATCH_STATUSES.has(String(patch.status))) {
+    return `Invalid patch status: ${String(patch.status)}`;
+  }
+  return null;
+}
 
 async function insertNotification(
   client: SupabaseClient,
@@ -124,6 +149,11 @@ export async function serverSubmitDecision(params: {
     moderatorId,
   } = params;
 
+  if (bioPatch) {
+    const invalid = invalidDecisionPatch(bioPatch as Record<string, unknown>);
+    if (invalid) return { error: invalid, conflict: false };
+  }
+
   const claim = await serverClaimReportReview(reportId, moderatorId);
   if (!claim.claimed && claim.error === null) {
     return { error: null, conflict: true, claimed: false, claimedByName: claim.claimedByName };
@@ -132,6 +162,14 @@ export async function serverSubmitDecision(params: {
 
   const service = buildServiceClient();
   const now = new Date().toISOString();
+
+  // Prima di chiudere il rapporto: se la decisione pubblica, il testo deve essere
+  // quello che lo screening ha esaminato (altrimenti si rilancia lo screening o si
+  // usa la pubblicazione forzata, che lascia traccia).
+  if (bioPatch?.status === 'published') {
+    const pre = await checkPublishGate(service, { biographyId, mode: 'human_approval' });
+    if (!pre.ok) return { error: pre.message, conflict: false, blocked: pre.code };
+  }
 
   const { data: updated, error: reportError } = await service
     .from('moderation_reports')
@@ -177,8 +215,24 @@ export async function serverSubmitDecision(params: {
         if (until) patch.provisional_until = until;
       }
     }
-    const { error: bioError } = await service.from('biographies').update(patch).eq('id', biographyId);
-    if (bioError) return { error: bioError.message, conflict: false };
+    if (patch.status === 'published') {
+      const published = await gatedPublish(
+        service,
+        { biographyId, mode: 'human_approval', actorId: moderatorId },
+        async () => {
+          const { error: updateError } = await service.from('biographies').update(patch).eq('id', biographyId);
+          return updateError ? updateError.message : null;
+        }
+      );
+      if (!published.ok) {
+        return published.blocked
+          ? { error: published.message, conflict: false, blocked: published.code }
+          : { error: published.error, conflict: false };
+      }
+    } else {
+      const { error: bioError } = await service.from('biographies').update(patch).eq('id', biographyId);
+      if (bioError) return { error: bioError.message, conflict: false };
+    }
     if (patch.status === 'published') {
       // Pubblicazione (o ripubblicazione) riuscita: si cancella la memoria di Echo.
       try {

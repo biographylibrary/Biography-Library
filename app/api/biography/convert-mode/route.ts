@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { convertBiographyMode } from '@/lib/echo/biography-mode-convert';
 import { buildServiceClient } from '@/lib/server/review-submit-pipeline';
+import { canAuthorWriteText } from '@/lib/publication-state';
 
 type AnyClient = SupabaseClient<any, any, any>;
 
@@ -42,12 +43,19 @@ export async function POST(req: NextRequest) {
     const serviceClient = buildServiceClient();
     const { data: bio } = await serviceClient
       .from('biographies')
-      .select('user_id, biography_mode')
+      .select('user_id, biography_mode, status, is_frozen')
       .eq('id', biographyId)
       .maybeSingle();
 
     if (!bio || (bio as { user_id?: string }).user_id !== user.id) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    }
+
+    // La conversione riscrive il testo con la chiave di servizio: lo stato si
+    // controlla qui, con lo stesso elenco chiuso del trigger del database.
+    const { status, is_frozen } = bio as { status?: string | null; is_frozen?: boolean | null };
+    if (!canAuthorWriteText(status, is_frozen)) {
+      return NextResponse.json({ error: 'text_locked' }, { status: 409 });
     }
 
     const fromMode = (bio as { biography_mode?: string }).biography_mode as 'sections' | 'freeflow';

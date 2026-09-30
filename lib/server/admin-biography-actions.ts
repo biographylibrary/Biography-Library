@@ -1,5 +1,6 @@
 import { provisionalUntilOnFirstPublish } from '@/lib/provisional-window';
 import { purgeAgentMemoryForBiography } from '@/lib/agents/purge-agent-memory';
+import { gatedPublish, type GateFailureCode } from '@/lib/server/publication-fingerprint';
 import type { AnyClient } from '@/lib/server/service-client';
 
 /**
@@ -34,6 +35,8 @@ export const ADMIN_BIOGRAPHY_ACTIONS: readonly AdminBiographyAction[] = [
 export interface AdminBiographyActionResult {
   error: string | null;
   status?: string;
+  /** Pubblicazione rifiutata dal confronto dell'impronta: il testo non è quello esaminato. */
+  blocked?: { code: GateFailureCode; message: string };
 }
 
 export async function applyAdminBiographyAction(
@@ -87,8 +90,30 @@ export async function applyAdminBiographyAction(
       return { error: 'Unknown action' };
   }
 
-  const { error } = await service.from('biographies').update(patch).eq('id', biographyId);
-  if (error) return { error: error.message };
+  if (patch.status === 'published') {
+    // Ogni pubblicazione dal server passa dal confronto dell'impronta del testo:
+    // l'approvazione umana richiede lo screening di esattamente questo testo; la
+    // pubblicazione forzata salta il confronto ma lascia impronta e autore.
+    const published = await gatedPublish(
+      service,
+      {
+        biographyId,
+        mode: action === 'force_publish' ? 'forced' : 'human_approval',
+        actorId,
+      },
+      async () => {
+        const { error: updateError } = await service.from('biographies').update(patch).eq('id', biographyId);
+        return updateError ? updateError.message : null;
+      }
+    );
+    if (!published.ok && published.blocked) {
+      return { error: published.message, blocked: { code: published.code, message: published.message } };
+    }
+    if (!published.ok) return { error: published.error };
+  } else {
+    const { error } = await service.from('biographies').update(patch).eq('id', biographyId);
+    if (error) return { error: error.message };
+  }
 
   // Pubblicazione riuscita: si cancella la memoria di Echo di questa biografia.
   if (patch.status === 'published') {

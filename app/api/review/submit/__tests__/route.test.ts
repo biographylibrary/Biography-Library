@@ -73,6 +73,44 @@ describe('POST /api/review/submit', () => {
     }
   );
 
+  it.each([
+    ['under_review', 'ai_error'],
+    ['under_review', 'parse_error'],
+    ['locked_pending_screening', 'ai_error'],
+    ['locked_pending_screening', 'parse_error'],
+  ])(
+    '"Riprova analisi": da %s con %s l\'autore può ripetere lo screening sullo stesso testo',
+    async (status, screening) => {
+      tables.biographies = { user_id: 'owner-1', status, ai_screening_status: screening };
+      const res = await POST(req());
+      expect(res.status).toBe(200);
+      expect(runReviewSubmitScreening).toHaveBeenCalledTimes(1);
+    }
+  );
+
+  it.each([
+    ['under_review', 'flagged'],
+    ['under_review', 'pending'],
+    ['under_review', 'passed'],
+    ['locked_pending_screening', 'pending'],
+    ['published', 'ai_error'],
+    ['removed', 'parse_error'],
+    ['revision_pending_review', 'ai_error'],
+  ])('%s con %s: niente nuovo tentativo dell\'autore (passaggi segnalati, screening in corso, altri stati)', async (status, screening) => {
+    tables.biographies = { user_id: 'owner-1', status, ai_screening_status: screening };
+    const res = await POST(req());
+    expect(res.status).toBe(409);
+    expect(runReviewSubmitScreening).not.toHaveBeenCalled();
+  });
+
+  it('lo staff può rilanciare lo screening da qualunque stato', async () => {
+    tables.profiles = { role: 'reviewer' };
+    tables.biographies = { user_id: 'owner-1', status: 'under_review', ai_screening_status: 'flagged' };
+    const res = await POST(req());
+    expect(res.status).toBe(200);
+    expect(runReviewSubmitScreening).toHaveBeenCalledTimes(1);
+  });
+
   it('rifiuta chi non è il proprietario', async () => {
     tables.biographies = { user_id: 'someone-else', status: 'draft' };
     expect((await POST(req())).status).toBe(403);

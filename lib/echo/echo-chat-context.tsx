@@ -552,6 +552,9 @@ export function EchoChatProvider({
           if (json.code === 'replace_not_found') {
             throw new Error(t.echo.insertDraftReplaceMissing);
           }
+          if (json.code === 'text_locked') {
+            throw new Error(t.echo.insertDraftLocked);
+          }
           throw new Error(json.error || 'Failed to insert draft');
         }
 
@@ -588,7 +591,7 @@ export function EchoChatProvider({
         onDraftApplyFinished?.();
       }
     },
-    [user, biographyId, biographyMode, echoPage, sectionTitleFor, onDraftApplied, onDraftApplying, onDraftApplyFinished, onFlushEditorSave, t.echo.errorGeneric, t.echo.insertDraftReplaceMissing]
+    [user, biographyId, biographyMode, echoPage, sectionTitleFor, onDraftApplied, onDraftApplying, onDraftApplyFinished, onFlushEditorSave, t.echo.errorGeneric, t.echo.insertDraftReplaceMissing, t.echo.insertDraftLocked]
   );
 
   const deferInsertDraft = useCallback((messageId: string) => {
