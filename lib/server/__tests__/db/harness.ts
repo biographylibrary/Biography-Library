@@ -435,15 +435,21 @@ export async function createTestDb(
   // Le migrazioni vere, nell'ordine in cui verranno applicate. `skip` serve solo ai
   // controlli negativi: dimostra che il banco si accorge dell'assenza di una migrazione.
   // L'ordine dei nomi dei file è l'ordine di applicazione (lo verifica dry-run.test.ts).
-  for (const file of [
+  const all = [
     '20260930115700_publication_records.sql',
     '20260930115800_ai_token_usage.sql',
     '20260930115900_align_biographies_profiles_triggers.sql',
     '20260930120000_server_only_columns_and_reports.sql',
     '20260930120150_author_text_whitelist.sql',
-  ]) {
-    if (options.skip?.includes(file)) continue;
-    if (options.only && !options.only.includes(file)) continue;
+    '20260930120300_helper_functions_search_path.sql',
+  ];
+  const files = all.filter((file) => !options.skip?.includes(file) && (!options.only || options.only.includes(file)));
+  // L'ultima fissa il percorso di ricerca di funzioni create da 20260930120000 e 20260930120150:
+  // senza una delle due non ha nulla su cui lavorare (i controlli negativi che ne tolgono una tolgono anche lei).
+  const pathFix = all[all.length - 1];
+  const needs = all.filter((f) => /_server_only_columns_and_reports|_author_text_whitelist/.test(f));
+  for (const file of files) {
+    if (file === pathFix && !needs.every((n) => files.includes(n))) continue;
     await db.exec(readFileSync(join(MIGRATIONS, file), 'utf8'));
   }
   // File eseguiti dopo le migrazioni (percorsi dalla radice del repository): per provare il ritorno indietro.

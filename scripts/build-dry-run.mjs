@@ -9,6 +9,9 @@
  * modifica resta. Nessun INSERT, quindi nessuna sequenza consumata.
  *
  * Uso:  node scripts/build-dry-run.mjs > dry-run.sql
+ *        --only=PREFISSO,PREFISSO   solo quelle migrazioni (senza valori: nessuna, soltanto le prove)
+ *        --owners-like=MODELLO      le schede di prova sono solo di autori la cui email corrisponde (LIKE su profiles.email)
+ *        --checksums / --order      gli md5 attesi dei pezzi / l'ordine dei file
  * Il banco di prova lo esegue su un database locale
  * (lib/server/__tests__/db/dry-run.test.ts); la prova in produzione si fa solo dopo la
  * conferma dell'utente, con lo stesso testo.
@@ -30,7 +33,10 @@ export const RELEASE_ORDER = [
   { file: '20260930120100_drop_biography_view_translations.sql', when: 'dopo il deploy' },
   { file: '20260930120150_author_text_whitelist.sql', when: 'dopo il deploy' },
   { file: '20260930120200_agent_threads_echo_only.sql', when: 'dopo il deploy' },
+  { file: '20260930120300_helper_functions_search_path.sql', when: 'dopo il deploy' },
 ];
+
+const SEARCH_PATH_MIGRATION = '20260930120300_helper_functions_search_path.sql';
 
 /**
  * Toglie solo il commento di testa del file (il blocco iniziale). Niente altro:
@@ -63,26 +69,51 @@ select jsonb_build_object(
 
 /**
  * Il blocco di prove, eseguito come DO annidato (per poterne verificare il testo con un
- * controllo md5): sceglie una bozza e una pubblicata esistenti, prova le scritture e
- * lascia il resoconto in un parametro locale della transazione.
+ * controllo md5): sceglie due schede esistenti (una portata allo stato di bozza dentro il
+ * blocco), prova le scritture e lascia il resoconto in un parametro locale della transazione.
+ *
+ * - `ownersLike`: modello LIKE sull'email dell'autore (public.profiles.email). Con `%` si
+ *   sceglie fra tutti gli autori; in produzione si usa `%@biographylibrary.test`, così
+ *   le prove toccano solo schede di account di prova (dentro un blocco che si annulla).
+ * - `expectSearchPath`: verifica anche che le sei funzioni di elenco costante abbiano
+ *   `search_path` vuoto (migrazione 20260930120300): solo quando quella migrazione è fra
+ *   quelle applicate dal blocco o si prova uno stato già migrato (nessuna migrazione).
  */
-const TESTS_SQL = String.raw`DO $t$
+function buildTestsSql({ ownersLike, expectSearchPath }) {
+  if (!/^[A-Za-z0-9@._%-]+$/.test(ownersLike)) throw new Error(`--owners-like non valido: ${ownersLike}`);
+  const searchPathCheck = expectSearchPath
+    ? String.raw`    SELECT count(*) FILTER (WHERE p.proconfig = ARRAY['search_path=""']),
+           coalesce(string_agg(p.proname, ' ') FILTER (WHERE p.proconfig IS DISTINCT FROM ARRAY['search_path=""']), '')
+      INTO cnt, got
+      FROM pg_proc p WHERE p.pronamespace = 'public'::regnamespace AND p.proname = ANY (ARRAY['author_text_writable_statuses','biographies_author_text_columns',
+        'biographies_server_owned_columns','biographies_insert_defaults','profiles_server_owned_columns','profiles_insert_defaults']);
+    results := results || pg_temp.dry_check('sei funzioni di elenco: search_path vuoto', 'vuoto 6/6', 'vuoto ' || cnt || '/6' || CASE WHEN got = '' THEN '' ELSE ' senza: ' || got END);`
+    : '';
+  return String.raw`DO $t$
 DECLARE
   results jsonb := '[]'::jsonb;
   d_id uuid; d_owner uuid; p_id uuid; p_owner uuid; other_user uuid;
   st text; r text; expected text; cnt bigint; tbl text; col text; owner_id uuid; bio_id uuid; label text; fn record; got text;
   writable constant text[] := ARRAY['draft','sections_complete','final_version','pdf_draft','revision_requested'];
 BEGIN
-  -- Schede di prova: una bozza e una pubblicata esistenti, di un autore con ruolo user, con più righe figlie possibile.
-  SELECT b.id, b.user_id INTO d_id, d_owner FROM public.biographies b JOIN public.profiles o ON o.id = b.user_id WHERE b.status = 'draft'
-    ORDER BY (o.role = 'user') DESC,
+  -- Schede di prova, esistenti, di autori con ruolo user e account attivo (e, se richiesto, con email che
+  -- corrisponde al modello): la prima preferibilmente in bozza (lo stato lo porta comunque lo script, annullato),
+  -- la seconda pubblicata; entrambe con più righe figlie possibile.
+  SELECT b.id, b.user_id INTO d_id, d_owner FROM public.biographies b
+    JOIN public.profiles o ON o.id = b.user_id
+    WHERE o.role = 'user' AND o.account_status = 'active' AND o.email LIKE '${ownersLike}'
+    ORDER BY (b.status = 'draft') DESC,
              (SELECT count(*) FROM public.biography_media m WHERE m.biography_id = b.id)
            + (SELECT count(*) FROM public.biography_sections s WHERE s.biography_id = b.id)
            + (SELECT count(*) FROM public.biography_book_structure s WHERE s.biography_id = b.id) DESC, b.created_at LIMIT 1;
-  SELECT b.id, b.user_id INTO p_id, p_owner FROM public.biographies b JOIN public.profiles o ON o.id = b.user_id WHERE b.status = 'published'
-    ORDER BY (o.role = 'user') DESC, (SELECT count(*) FROM public.biography_media m WHERE m.biography_id = b.id) DESC, b.created_at LIMIT 1;
+  SELECT b.id, b.user_id INTO p_id, p_owner FROM public.biographies b
+    JOIN public.profiles o ON o.id = b.user_id
+    WHERE b.status = 'published' AND b.id IS DISTINCT FROM d_id
+      AND o.role = 'user' AND o.account_status = 'active' AND o.email LIKE '${ownersLike}'
+    ORDER BY (SELECT count(*) FROM public.biography_media m WHERE m.biography_id = b.id) DESC, b.created_at LIMIT 1;
   SELECT pr.id INTO other_user FROM public.profiles pr
-    WHERE pr.id NOT IN (coalesce(d_owner, pr.id), coalesce(p_owner, pr.id)) AND pr.account_status = 'active' AND pr.role = 'user' LIMIT 1;
+    WHERE pr.id NOT IN (coalesce(d_owner, pr.id), coalesce(p_owner, pr.id)) AND pr.account_status = 'active' AND pr.role = 'user'
+      AND pr.email LIKE '${ownersLike}' LIMIT 1;
 
   EXECUTE $f$
     CREATE FUNCTION pg_temp.dry_try(p_role text, p_uid uuid, p_sql text) RETURNS text LANGUAGE plpgsql AS $body$
@@ -128,9 +159,16 @@ BEGIN
     r := pg_temp.dry_try('authenticated', p_owner, format('update public.biographies set visibility = visibility, editor_font_size = editor_font_size where id = %L', p_id));
     results := results || pg_temp.dry_check('colonne che non sono testo restano scrivibili in published', 'ok rows=1', r);
 
-    -- 2) Colonne riservate al server.
-    FOREACH label IN ARRAY ARRAY['view_count = 999999', 'ai_screening_status = ''passed''', 'is_frozen = true', 'final_pdf_approved_at = now()', 'status = ''published''', 'published_at = now()'] LOOP
-      r := pg_temp.dry_try('authenticated', d_owner, format('update public.biographies set %s where id = %L', label, d_id));
+    -- 2) Colonne riservate al server. Ogni scrittura porta un valore DIVERSO da quello attuale: il guard blocca
+    -- i cambiamenti, non le scritture di un valore uguale (una scheda già esaminata ha ai_screening_status = 'passed').
+    FOREACH label IN ARRAY ARRAY['view_count', 'ai_screening_status', 'is_frozen', 'final_pdf_approved_at', 'status', 'published_at'] LOOP
+      r := pg_temp.dry_try('authenticated', d_owner, format('update public.biographies set %s where id = %L', CASE label
+             WHEN 'view_count' THEN 'view_count = coalesce(view_count, 0) + 999999'
+             WHEN 'ai_screening_status' THEN 'ai_screening_status = CASE WHEN ai_screening_status = ''passed'' THEN ''pending'' ELSE ''passed'' END'
+             WHEN 'is_frozen' THEN 'is_frozen = NOT coalesce(is_frozen, false)'
+             WHEN 'final_pdf_approved_at' THEN 'final_pdf_approved_at = now()'
+             WHEN 'status' THEN 'status = ''published'''
+             ELSE 'published_at = now()' END, d_id));
       results := results || pg_temp.dry_check('colonna riservata (bozza): ' || label, '%server_only_column%', r);
     END LOOP;
     r := pg_temp.dry_try('authenticated', p_owner, format('update public.biographies set status = %L where id = %L', 'draft', p_id));
@@ -199,11 +237,22 @@ BEGIN
                   'biographies_server_owned_columns','profiles_insert_defaults','profiles_server_owned_columns']))::text;
       results := results || pg_temp.dry_check('funzione ' || fn.proname || ' [' || coalesce(fn.params, '-') || ']', expected, got);
     END LOOP;
+
+    -- 8) Le sei funzioni di elenco costante eseguono come authenticated (con il percorso di ricerca che hanno in questo momento).
+    cnt := 0; got := '';
+    FOREACH label IN ARRAY ARRAY['author_text_writable_statuses','biographies_author_text_columns','biographies_server_owned_columns',
+                                 'biographies_insert_defaults','profiles_server_owned_columns','profiles_insert_defaults'] LOOP
+      r := pg_temp.dry_try('authenticated', p_owner, format('select public.%I()', label));
+      IF r = 'ok rows=1' THEN cnt := cnt + 1; ELSE got := got || ' ' || label || '=' || r; END IF;
+    END LOOP;
+    results := results || pg_temp.dry_check('sei funzioni di elenco: esecuzione come authenticated', 'ok 6/6', 'ok ' || cnt || '/6' || got);
+${searchPathCheck}
   END IF;
 
   PERFORM set_config('dry.results', results::text, true);
 END
 $t$`;
+}
 
 const md5 = (text) => createHash('md5').update(text, 'utf8').digest('hex');
 
@@ -218,8 +267,15 @@ function selectedMigrations() {
   return picked;
 }
 
+/** Modello LIKE sull'email degli autori da cui scegliere le schede di prova: --owners-like=%@biographylibrary.test */
+function ownersLike() {
+  const arg = process.argv.find((a) => a.startsWith('--owners-like='));
+  return arg ? arg.slice('--owners-like='.length) : '%';
+}
+
 function pieces() {
-  const migrations = selectedMigrations().map(({ file, when }, i) => {
+  const selected = selectedMigrations();
+  const migrations = selected.map(({ file, when }, i) => {
     const tag = `mig${i + 1}`;
     const body = compact(readFileSync(join(MIGRATIONS, file), 'utf8'));
     if (body.includes(`$${tag}$`)) throw new Error(`tag ${tag} presente nel testo di ${file}`);
@@ -227,7 +283,8 @@ function pieces() {
     return { file, when, tag, text, md5: md5(text), variable: `m${i + 1}` };
   });
   const catalog = { text: CATALOG_SQL, md5: md5(CATALOG_SQL) };
-  const testsText = `\n${TESTS_SQL}\n`;
+  const expectSearchPath = selected.length === 0 || selected.some((m) => m.file === SEARCH_PATH_MIGRATION);
+  const testsText = `\n${buildTestsSql({ ownersLike: ownersLike(), expectSearchPath })}\n`;
   const tests = { text: testsText, md5: md5(testsText) };
   if (catalog.text.includes('$cat$') || tests.text.includes('$tst$')) throw new Error('tag duplicato');
   return { migrations, catalog, tests };

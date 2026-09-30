@@ -25,30 +25,35 @@ const STUBS = `
   grant all on public.agent_threads, public.biography_view_translations to authenticated, anon, service_role;
 `;
 
+/** Tabelle e righe che in produzione ci sono già prima delle migrazioni nuove, più righe figlie su una bozza e su una pubblicata. */
+async function prepare(target: PGlite) {
+  await target.exec(STUBS);
+  // Un thread "platform_guide" da eliminare, e una riga di traduzione.
+  await target.exec(`insert into public.agent_threads (agent_type) values ('echo'), ('platform_guide');`);
+  // Righe figlie su una bozza e su una pubblicata, come in produzione, così le prove sulle cinque tabelle girano davvero.
+  await target.exec(`set session_replication_role = replica;`);
+  for (const bio of [BIO.draft, BIO.published]) {
+    await target.query(`insert into public.biography_media (biography_id, user_id, file_url, caption) values ($1, $2, 'https://x/f.jpg', 'didascalia')`, [bio, U.author]);
+    await target.query(`insert into public.biography_book_structure (biography_id, user_id, dedication_content) values ($1, $2, 'dedica')`, [bio, U.author]);
+    await target.query(`insert into public.biography_sections (biography_id, section_key, content) values ($1, 'childhood', 'testo')`, [bio]);
+    await target.query(`insert into public.person_events (biography_id, event_type, source_note) values ($1, 'birth', 'nota')`, [bio]);
+    await target.query(`insert into public.person_relations (biography_id, relation_code, source_note) values ($1, 'parent', 'nota')`, [bio]);
+  }
+  await target.exec(`set session_replication_role = origin;`);
+}
+
 beforeAll(async () => {
   script = execFileSync('node', ['scripts/build-dry-run.mjs'], { cwd: process.cwd(), encoding: 'utf8' });
   db = await createTestDb({ only: [ALIGN] });
-  await db.exec(STUBS);
-  // Un thread "platform_guide" da eliminare, e una riga di traduzione.
-  await db.exec(`insert into public.agent_threads (agent_type) values ('echo'), ('platform_guide');`);
-  // Righe figlie su una bozza e su una pubblicata, come in produzione, così le prove sulle cinque tabelle girano davvero.
-  await db.exec(`set session_replication_role = replica;`);
-  for (const bio of [BIO.draft, BIO.published]) {
-    await db.query(`insert into public.biography_media (biography_id, user_id, file_url, caption) values ($1, $2, 'https://x/f.jpg', 'didascalia')`, [bio, U.author]);
-    await db.query(`insert into public.biography_book_structure (biography_id, user_id, dedication_content) values ($1, $2, 'dedica')`, [bio, U.author]);
-    await db.query(`insert into public.biography_sections (biography_id, section_key, content) values ($1, 'childhood', 'testo')`, [bio]);
-    await db.query(`insert into public.person_events (biography_id, event_type, source_note) values ($1, 'birth', 'nota')`, [bio]);
-    await db.query(`insert into public.person_relations (biography_id, relation_code, source_note) values ($1, 'parent', 'nota')`, [bio]);
-  }
-  await db.exec(`set session_replication_role = origin;`);
+  await prepare(db);
 }, 120_000);
 
 afterAll(async () => {
   await db.close();
 });
 
-async function snapshot() {
-  const one = async (sql: string) => (await db.query<Record<string, unknown>>(sql)).rows;
+async function snapshot(target: PGlite = db) {
+  const one = async (sql: string) => (await target.query<Record<string, unknown>>(sql)).rows;
   return {
     triggers: await one(`select c.relname, t.tgname from pg_trigger t join pg_class c on c.oid = t.tgrelid where not t.tgisinternal and c.relnamespace = 'public'::regnamespace order by 1, 2`),
     policies: await one(`select tablename, policyname from pg_policies where schemaname = 'public' order by 1, 2`),
@@ -62,10 +67,10 @@ async function snapshot() {
   };
 }
 
-async function runDry(): Promise<{ message: string; report: Record<string, any> }> {
+async function runScript(target: PGlite, text: string): Promise<{ message: string; report: Record<string, any> }> {
   let message = '';
   try {
-    await db.exec(script);
+    await target.exec(text);
     throw new Error('IL BLOCCO NON HA SOLLEVATO: la prova a secco avrebbe scritto davvero');
   } catch (err) {
     message = err instanceof Error ? err.message : String(err);
@@ -74,8 +79,12 @@ async function runDry(): Promise<{ message: string; report: Record<string, any> 
   return { message, report: JSON.parse(message.slice(message.indexOf('DRYRUN_RESULT') + 'DRYRUN_RESULT'.length).trim()) };
 }
 
+async function runDry(): Promise<{ message: string; report: Record<string, any> }> {
+  return runScript(db, script);
+}
+
 describe('prova a secco: prova generale sul banco', () => {
-  it('applica le sette migrazioni nell\'ordine di rilascio e nessuna fallisce', async () => {
+  it('applica le otto migrazioni nell\'ordine di rilascio e nessuna fallisce', async () => {
     const { report } = await runDry();
     expect(report.errore_migrazione).toBeNull();
     expect(report.migrazioni_applicate.map((m: { migrazione: string }) => m.migrazione.split(' ')[0])).toEqual([
@@ -86,18 +95,19 @@ describe('prova a secco: prova generale sul banco', () => {
       '20260930120100_drop_biography_view_translations.sql',
       '20260930120150_author_text_whitelist.sql',
       '20260930120200_agent_threads_echo_only.sql',
+      '20260930120300_helper_functions_search_path.sql',
     ]);
     const labels = report.migrazioni_applicate.map((m: { migrazione: string }) => m.migrazione);
     expect(labels.filter((m: string) => m.includes('(prima del deploy)'))).toHaveLength(2);
-    expect(labels.filter((m: string) => m.includes('(dopo il deploy)'))).toHaveLength(5);
+    expect(labels.filter((m: string) => m.includes('(dopo il deploy)'))).toHaveLength(6);
   });
 
   it('il blocco controlla da sé il testo che esegue: gli md5 dei pezzi coincidono con quelli attesi dai file', async () => {
     const { report } = await runDry();
-    expect(report.md5_pezzi_controllati).toBe(9);
+    expect(report.md5_pezzi_controllati).toBe(10);
     expect(report.md5_diversi_da_quelli_attesi).toEqual({});
     const expected = JSON.parse(execFileSync('node', ['scripts/build-dry-run.mjs', '--checksums'], { encoding: 'utf8' }));
-    expect(Object.keys(expected)).toHaveLength(9);
+    expect(Object.keys(expected)).toHaveLength(10);
   });
 
   it('controllo negativo: se un pezzo viene alterato lo dice', async () => {
@@ -152,11 +162,14 @@ describe('prova a secco: prova generale sul banco', () => {
       expect(lines.some((l) => l.startsWith(`OK testo in stato ${st} =>`))).toBe(true);
     }
     // Permessi: una riga per ciascuna delle 11 funzioni create dalle migrazioni del blocco 1.
-    const fnLines = lines.filter((l) => l.startsWith('OK funzione '));
+    const fnLines = lines.filter((l) => l.startsWith('OK funzione ') && l.includes(' ['));
     expect(fnLines).toHaveLength(11);
     expect(fnLines.filter((l) => l.includes('definer=false anon=false auth=true'))).toHaveLength(6);
     expect(fnLines.filter((l) => l.includes('definer=false anon=false auth=false'))).toHaveLength(5);
     expect(fnLines.some((l) => l.startsWith('OK funzione ai_author_token_usage [p_user_id,p_now,p_purposes]'))).toBe(true);
+    // Le sei funzioni di elenco costante: eseguono come authenticated e hanno il percorso di ricerca vuoto.
+    expect(lines).toContain('OK sei funzioni di elenco: esecuzione come authenticated => ok 6/6');
+    expect(lines).toContain('OK sei funzioni di elenco: search_path vuoto => vuoto 6/6');
     // Con righe figlie presenti, le cinque tabelle vengono provate davvero (nessuna saltata).
     expect(lines.filter((l) => l.includes('non provata qui'))).toEqual([]);
     const child = lines.filter((l) => /^OK (biography_|person_)/.test(l));
@@ -184,7 +197,9 @@ describe('prova a secco: prova generale sul banco', () => {
     expect(report.md5_diversi_da_quelli_attesi).toEqual({});
     // Le prove che richiedono le tabelle delle altre migrazioni non girano; quelle dei permessi sì (10 funzioni).
     expect(report.prove.some((l: string) => l.includes('publication_records'))).toBe(false);
-    expect(report.prove.filter((l: string) => l.startsWith('OK funzione '))).toHaveLength(10);
+    expect(report.prove.filter((l: string) => l.startsWith('OK funzione ') && l.includes(' ['))).toHaveLength(10);
+    // La migrazione dell'ottava non è fra quelle applicate: il suo controllo non compare (le altre prove sì).
+    expect(report.prove.some((l: string) => l.includes('search_path vuoto'))).toBe(false);
     expect(report.delta_catalogo.tables.aggiunti).toEqual([]);
   });
 
@@ -285,6 +300,93 @@ describe('prova a secco: prova generale sul banco', () => {
     expect(tail.endsWith('$dry$;')).toBe(true);
     expect(script).toMatch(/RAISE EXCEPTION 'DRYRUN_RESULT %'[\s\S]*END\s*\$dry\$;/);
     expect(script).not.toMatch(/\bCOMMIT\b/);
+  });
+});
+
+describe('prova a secco su uno stato già migrato (nessuna migrazione applicata)', () => {
+  const EIGHTH = '20260930120300_helper_functions_search_path.sql';
+  const tests = (extra: string[] = []) =>
+    execFileSync('node', ['scripts/build-dry-run.mjs', '--only=', ...extra], { cwd: process.cwd(), encoding: 'utf8' });
+  let migrated: PGlite;
+
+  beforeAll(async () => {
+    migrated = await createTestDb();
+    await prepare(migrated);
+  }, 120_000);
+
+  afterAll(async () => {
+    await migrated.close();
+  });
+
+  it('gira senza applicare nulla: solo il catalogo e le prove, tutte riuscite, e non lascia tracce', async () => {
+    const before = await snapshot(migrated);
+    const { report } = await runScript(migrated, tests());
+    expect(report.errore_migrazione).toBeNull();
+    expect(report.migrazioni_applicate).toEqual([]);
+    expect(report.md5_pezzi_controllati).toBe(2);
+    expect(report.md5_diversi_da_quelli_attesi).toEqual({});
+    expect(report.errore_prove).toBeNull();
+    expect(report.prove_fallite).toBe(0);
+    expect(report.prove).toContain('OK sei funzioni di elenco: search_path vuoto => vuoto 6/6');
+    expect(report.prove.filter((l: string) => l.startsWith('OK funzione ') && l.includes(' ['))).toHaveLength(11);
+    expect(report.delta_catalogo.triggers).toEqual({ aggiunti: [], tolti: [] });
+    expect(await snapshot(migrated)).toEqual(before);
+  });
+
+  it('controllo negativo: senza la migrazione del percorso di ricerca il controllo segnala le sei funzioni', async () => {
+    const unmigrated = await createTestDb({ skip: [EIGHTH] });
+    try {
+      await prepare(unmigrated);
+      const { report } = await runScript(unmigrated, tests());
+      const failed: string[] = report.prove.filter((l: string) => l.startsWith('NO '));
+      expect(failed).toHaveLength(1);
+      expect(failed[0]).toMatch(/^NO sei funzioni di elenco: search_path vuoto => vuoto 0\/6 senza: /);
+      expect(failed[0]).toContain('(atteso vuoto 6/6)');
+    } finally {
+      await unmigrated.close();
+    }
+  });
+
+  it('il filtro sugli autori limita la scelta delle schede a quelli che corrispondono', async () => {
+    // Solo l'autore 'author@test': la scheda "di un altro" non partecipa, quindi la prova sulle schede altrui non c'è.
+    const { report: only } = await runScript(migrated, tests(['--owners-like=author@test']));
+    expect(only.prove_fallite).toBe(0);
+    expect(only.prove.some((l: string) => l.startsWith('OK scheda altrui'))).toBe(false);
+    // Senza filtro la prova sulle schede altrui c'è.
+    const { report: all } = await runScript(migrated, tests());
+    expect(all.prove.some((l: string) => l.startsWith('OK scheda altrui'))).toBe(true);
+    // Un modello che non corrisponde a nessuno: il blocco lo dice e non tocca nulla.
+    const { report: none } = await runScript(migrated, tests(['--owners-like=%@nessuno.example']));
+    expect(none.prove).toEqual(['NO schede di prova => mancano (atteso una bozza e una pubblicata)']);
+  });
+
+  it('se fra gli autori scelti non ci sono bozze, la scheda portata a bozza è una pubblicata, e resta tutto annullato', async () => {
+    // Con 'author@test' e la sua unica bozza resa pubblicata, nessuna scheda scelta è in bozza: come in produzione con gli account di prova.
+    // Le schede di prova di produzione sono tutte già esaminate (ai_screening_status = 'passed'): scrivere 'passed' non sarebbe un cambiamento.
+    await migrated.exec(`set session_replication_role = replica;
+      update public.biographies set status = 'published' where id = '${BIO.draft}';
+      update public.biographies set ai_screening_status = 'passed' where user_id = '${U.author}';
+      set session_replication_role = origin;`);
+    try {
+      const drafts = await migrated.query(`select 1 from public.biographies b join public.profiles o on o.id = b.user_id where b.status = 'draft' and o.email = 'author@test'`);
+      expect(drafts.rows).toHaveLength(0);
+      const before = await snapshot(migrated);
+      const { report } = await runScript(migrated, tests(['--owners-like=author@test']));
+      expect(report.errore_prove).toBeNull();
+      expect(report.prove_fallite).toBe(0);
+      expect(report.prove.filter((l: string) => l.startsWith('OK testo in stato '))).toHaveLength(12);
+      expect(await snapshot(migrated)).toEqual(before);
+      expect(report.prove).toContain("OK colonna riservata (bozza): ai_screening_status => errore 42501: server_only_column: ai");
+    } finally {
+      await migrated.exec(`set session_replication_role = replica;
+        update public.biographies set status = 'draft' where id = '${BIO.draft}';
+        update public.biographies set ai_screening_status = 'pending' where user_id = '${U.author}';
+        set session_replication_role = origin;`);
+    }
+  });
+
+  it('un modello con caratteri fuori elenco è rifiutato (niente testo libero nello script)', () => {
+    expect(() => tests(["--owners-like=x' OR '1'='1"])).toThrow();
   });
 });
 

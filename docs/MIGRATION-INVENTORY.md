@@ -78,9 +78,9 @@ Più due casi di nome diverso, non di assenza: il file `20260904090300_person_re
 3. Sapere che il banco di prova dei test (`lib/server/__tests__/db/`) è un sottoinsieme fedele delle tabelle che le migrazioni recenti toccano, non una copia dello schema: gira su PostgreSQL 18, mentre la produzione è PostgreSQL 17.6 (il catalogo dei vincoli NOT NULL è diverso).
 4. Le funzioni `SECURITY DEFINER` eseguibili da anon o authenticated vanno riesaminate a ogni migrazione (elenco in `docs/SICUREZZA-SCRITTURE-ELENCO.md`, punto 3).
 
-## 6. Le sette migrazioni del blocco 1
+## 6. Le otto migrazioni del blocco 1
 
-Registrate con la regola nuova (applicazione e allineamento della versione nello stesso passaggio). Tutte e sette applicate in produzione il 1 ottobre 2026; la storia passa da 94 a 101 voci e le sette hanno come versione il prefisso del proprio file.
+Registrate con la regola nuova (applicazione e allineamento della versione nello stesso passaggio). Tutte e otto applicate in produzione il 1 ottobre 2026; la storia passa da 94 a 102 voci e le otto hanno come versione il prefisso del proprio file.
 
 | File | Quando | Stato |
 |---|---|---|
@@ -91,3 +91,4 @@ Registrate con la regola nuova (applicazione e allineamento della versione nello
 | `20260930120100_drop_biography_view_translations` | dopo il deploy | applicata il 1 ottobre 2026 (versione registrata 20260930225411, riallineata a 20260930120100) |
 | `20260930120150_author_text_whitelist` | dopo il deploy | applicata il 1 ottobre 2026 (versione registrata 20260930225453, riallineata a 20260930120150) |
 | `20260930120200_agent_threads_echo_only` | dopo il deploy | applicata il 1 ottobre 2026 (versione registrata 20260930225519, riallineata a 20260930120200) |
+| `20260930120300_helper_functions_search_path` | dopo il deploy | applicata il 1 ottobre 2026 (versione registrata 20260930231549, riallineata a 20260930120300) |

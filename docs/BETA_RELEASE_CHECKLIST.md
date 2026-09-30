@@ -26,11 +26,11 @@ Usare come elenco da spuntare in team. Ordine consigliato: **merge → migrazion
 - [x] Migrazione agenti: `agent_tables` (thread, messaggi, RAG, `agent_usage`) su progetto dev `gckmusbozgbclokvbnwx`
 - [ ] Stesse migrazioni applicate su Supabase **produzione** (se progetto separato da dev)
 
-**Blocco 1 (ramo `blocco-1-strumenti-ai`): sette migrazioni nuove. Non applicarle senza conferma esplicita.** Sequenza completa, nell'ordine (una chiamata `apply_migration` per file):
+**Blocco 1 (ramo `blocco-1-strumenti-ai`): otto migrazioni nuove. Non applicarle senza conferma esplicita.** Sequenza completa, nell'ordine (una chiamata `apply_migration` per file):
 
 | # | Migrazione | Quando | Che cosa fa |
 |---|---|---|---|
-| 0 | prova a secco (`node scripts/build-dry-run.mjs`, un solo blocco che annulla tutto) | prima di tutto, a un orario concordato | applica le sette, confronta il catalogo, prova le scritture vietate; nessuna modifica resta. **Eseguita il 30 settembre 2026 su produzione: 41 prove su 41, nove pezzi di testo con md5 uguale ai file, 196 ms in tutto (da 33 a 196 ms con i blocchi presi), stato di produzione identico prima e dopo** |
+| 0 | prova a secco (`node scripts/build-dry-run.mjs`, un solo blocco che annulla tutto) | prima di tutto, a un orario concordato | applica le migrazioni del blocco (sette al momento della prova, otto oggi), confronta il catalogo, prova le scritture vietate; nessuna modifica resta. **Eseguita il 30 settembre 2026 su produzione: 41 prove su 41, nove pezzi di testo con md5 uguale ai file, 196 ms in tutto (da 33 a 196 ms con i blocchi presi), stato di produzione identico prima e dopo** |
 | 1 | `20260930115700_publication_records.sql` | **prima del deploy** | aggiunge il registro delle impronte |
 | 2 | `20260930115800_ai_token_usage.sql` | **prima del deploy** | aggiunge registro dei consumi e tetti |
 | | unione su `main` (deploy) | | |
@@ -39,6 +39,9 @@ Usare come elenco da spuntare in team. Ordine consigliato: **merge → migrazion
 | 5 | `20260930120100_drop_biography_view_translations.sql` | **dopo il deploy** | elimina la tabella delle traduzioni per i lettori (il vecchio codice la legge ancora) |
 | 6 | `20260930120150_author_text_whitelist.sql` | **dopo il deploy** | testo scrivibile solo negli stati di lavoro |
 | 7 | `20260930120200_agent_threads_echo_only.sql` | **dopo il deploy** | solo thread di Echo |
+| 8 | `20260930120300_helper_functions_search_path.sql` | **dopo il deploy** | percorso di ricerca vuoto sulle sei funzioni di elenco costante (chiude sei avvisi del controllo di Supabase) |
+
+Dopo l'ultima migrazione, le stesse prove senza applicare nulla: `node scripts/build-dry-run.mjs --only= --owners-like=%@biographylibrary.test` (solo schede di account di prova, blocco che annulla tutto). Eseguite il 1 ottobre 2026 dopo l'ottava: 54 prove su 54, catalogo invariato, nessuna traccia.
 
 Poi: prova con un account di prova fino alla bozza PDF, **senza pubblicare** (nessun identificativo UM); dal pannello Supabase eliminare `ai-assistant` e `help-assistant` e togliere i tre segreti (sezione 3); ridistribuire `audio-transcription`; verificare che Echo, grammatica e voce rispondano e lascino righe in `ai_token_usage`. Chi ha la pagina dell'editor già aperta con il codice vecchio vedrà rifiutare alcune scritture finché non la ricarica. Se la produzione si rompe: `supabase/rollback/20260930_security_rollback.sql` (una transazione; toglie i blocchi delle migrazioni 4 e 6 e rimette le tre policy; il codice nuovo continua a funzionare perché scrive con il ruolo di servizio).
 
