@@ -84,8 +84,8 @@ Registrate con la regola nuova (applicazione e allineamento della versione nello
 
 | File | Quando | Stato |
 |---|---|---|
-| `20260930115700_publication_records` | prima del deploy | da applicare |
-| `20260930115800_ai_token_usage` | prima del deploy | da applicare |
+| `20260930115700_publication_records` | prima del deploy | applicata il 1 ottobre 2026 (versione registrata 20260930222917, riallineata a 20260930115700) |
+| `20260930115800_ai_token_usage` | prima del deploy | applicata il 1 ottobre 2026 (versione registrata 20260930223004, riallineata a 20260930115800) |
 | `20260930115900_align_biographies_profiles_triggers` | dopo il deploy | da applicare |
 | `20260930120000_server_only_columns_and_reports` | dopo il deploy | da applicare |
 | `20260930120100_drop_biography_view_translations` | dopo il deploy | da applicare |
