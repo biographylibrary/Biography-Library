@@ -410,3 +410,38 @@ export async function appendDraftToBiography(
     mode: placed.mode,
   };
 }
+
+/**
+ * Dice se il pezzo da sostituire si trova nel testo salvato, con la stessa regola che userà
+ * l'applicazione (`placeDraftInDocument`). Serve a non mostrare all'autore una scheda che poi,
+ * al clic su «Sostituisci», risponde «non ho trovato quel pezzo».
+ *
+ * `null` se il testo non si può leggere (scheda non trovata o sezione non valida): in quel
+ * caso non si controlla nulla e decide l'applicazione, come prima.
+ */
+export async function replacePassageExists(
+  serviceClient: SupabaseClient,
+  userId: string,
+  biographyId: string,
+  sectionKey: string,
+  draftText: string,
+  placement: DraftPlacement
+): Promise<boolean | null> {
+  if (!biographyId || !isValidDraftSectionKey(sectionKey)) return null;
+
+  const { data: bio, error } = await serviceClient
+    .from('biographies')
+    .select('content, content_freeflow')
+    .eq('id', biographyId)
+    .eq('user_id', userId)
+    .maybeSingle();
+  if (error || !bio) return null;
+
+  const row = bio as { content?: BiographyContent | null; content_freeflow?: string | null };
+  const current =
+    sectionKey === FREEFLOW_SECTION_KEY
+      ? String(row.content_freeflow ?? '')
+      : String(row.content?.[sectionKey]?.text ?? '');
+
+  return placeDraftInDocument(current, draftText, placement).ok;
+}

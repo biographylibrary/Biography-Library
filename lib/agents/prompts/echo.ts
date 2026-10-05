@@ -52,6 +52,9 @@ export function buildEchoSystemPrompt(locale: string, ctx: EchoContext): string 
       `When you produce prose for the document, call propose_draft with sectionKey "freeflow". ` +
       `To add new prose, set draftText and omit replaceText. ` +
       `To change words already written, call read_section with sectionKey "freeflow" if you need the exact wording, then set replaceText to the exact current passage and draftText to the new wording. ` +
+      `replaceText must be ONE continuous piece of the document, copied letter for letter and as short as possible: the sentence, or the few words around the change. Never join pieces from different paragraphs, and never replace a long stretch to change a few words. ` +
+      `To delete words, replace the shortest exact passage that contains them with the same passage without them. ` +
+      `If propose_draft answers that the passage was not found, read the document again and retry with a shorter exact passage; if it still fails, tell the author plainly that you could not make the change, and never say that you changed something you did not. ` +
       `To change every occurrence, set replaceAll true. A long dash is the character — or –. To turn those into commas, set replaceText to the dash including the spaces around it when they are there, draftText to ", ", and replaceAll true. ` +
       `If you omit replaceText, the text is added at the end. Never do that when the author asked to change or replace existing text. If the passage is not found, nothing is added. ` +
       `Never tell the author to open the editor. The app puts the change in the page they already see. ` +
