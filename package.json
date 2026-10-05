@@ -111,7 +111,11 @@
   },
   "devDependencies": {
     "@electric-sql/pglite": "^0.5.8",
+    "@testing-library/dom": "^10.4.2",
+    "@testing-library/react": "^16.3.3",
+    "@testing-library/user-event": "^14.6.7",
     "@types/markdown-it": "^14.2.0",
+    "jsdom": "^26.1.0",
     "knip": "^6.37.0",
     "vite-tsconfig-paths": "^6.1.1",
     "vitest": "^4.1.9"
