@@ -442,11 +442,12 @@ export async function createTestDb(
     '20260930120000_server_only_columns_and_reports.sql',
     '20260930120150_author_text_whitelist.sql',
     '20260930120300_helper_functions_search_path.sql',
+    '20261006090000_biography_media_gallery_limit_15.sql',
   ];
   const files = all.filter((file) => !options.skip?.includes(file) && (!options.only || options.only.includes(file)));
   // L'ultima fissa il percorso di ricerca di funzioni create da 20260930120000 e 20260930120150:
   // senza una delle due non ha nulla su cui lavorare (i controlli negativi che ne tolgono una tolgono anche lei).
-  const pathFix = all[all.length - 1];
+  const pathFix = all.find((f) => f.includes('_helper_functions_search_path')) ?? '';
   const needs = all.filter((f) => /_server_only_columns_and_reports|_author_text_whitelist/.test(f));
   for (const file of files) {
     if (file === pathFix && !needs.every((n) => files.includes(n))) continue;

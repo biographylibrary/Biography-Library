@@ -134,10 +134,12 @@ describe('prova a secco: prova generale sul banco', () => {
   it('l\'ordine dei nomi dei file coincide con l\'ordine di applicazione in produzione', () => {
     const order: string[] = JSON.parse(execFileSync('node', ['scripts/build-dry-run.mjs', '--order'], { encoding: 'utf8' }));
     const files = readdirSync(join(process.cwd(), 'supabase', 'migrations')).filter((f) => f.endsWith('.sql')).sort();
-    // Le sette del blocco 1 compaiono nei file nello stesso ordine in cui si applicano...
+    // Le otto del blocco 1 compaiono nei file nello stesso ordine in cui si applicano...
     expect(files.filter((f) => order.includes(f))).toEqual(order);
-    // ...sono le ultime del repository, e le versioni (il prefisso numerico) sono tutte diverse.
-    expect(files.slice(-order.length)).toEqual(order);
+    // ...una di seguito all'altra (le migrazioni successive vengono dopo l'ultima, mai in mezzo),
+    // e le versioni (il prefisso numerico) sono tutte diverse.
+    const first = files.indexOf(order[0]);
+    expect(files.slice(first, first + order.length)).toEqual(order);
     const versions = order.map((f) => f.split('_')[0]);
     expect(new Set(versions).size).toBe(order.length);
     expect(versions).toEqual([...versions].sort());
