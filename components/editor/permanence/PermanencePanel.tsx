@@ -19,6 +19,8 @@ import {
   buildEventRow,
   emptyEventForm,
   rowToForm,
+  withPlaceQuery,
+  withPlaceSelection,
   type EventFormState,
   type UiLang,
 } from '@/lib/person-events';
@@ -106,14 +108,8 @@ function EventBlock({
       <PlaceSearchField
         query={form.placeQuery}
         selected={form.place}
-        onQueryChange={(placeQuery) => onChange({ ...form, placeQuery })}
-        onSelect={(place) =>
-          onChange({
-            ...form,
-            place,
-            placeQuery: place?.nameCurrent || place?.nameAsGiven || form.placeQuery,
-          })
-        }
+        onQueryChange={(placeQuery) => onChange(withPlaceQuery(form, placeQuery))}
+        onSelect={(place) => onChange(withPlaceSelection(form, place))}
         label={placeLabel}
         placeholder={p.placePlaceholder}
         hint={p.placeHint}
@@ -666,21 +662,12 @@ export function PermanencePanel({
                   selected={place.place}
                   onQueryChange={(placeQuery) =>
                     setPlaces((prev) =>
-                      prev.map((row, i) => (i === index ? { ...row, placeQuery } : row))
+                      prev.map((row, i) => (i === index ? withPlaceQuery(row, placeQuery) : row))
                     )
                   }
                   onSelect={(selected) =>
                     setPlaces((prev) =>
-                      prev.map((row, i) =>
-                        i === index
-                          ? {
-                              ...row,
-                              place: selected,
-                              placeQuery:
-                                selected?.nameCurrent || selected?.nameAsGiven || row.placeQuery,
-                            }
-                          : row
-                      )
+                      prev.map((row, i) => (i === index ? withPlaceSelection(row, selected) : row))
                     )
                   }
                   label={p.place}
