@@ -60,7 +60,7 @@ Fondatore unico, non sviluppatore: costruisce con Claude Code e Cursor. Non ci s
 - Importazione che conserva grassetto, corsivo e titoli. Accetta testo incollato, Word, txt, rtf, e un PDF digitale il cui testo si può selezionare. Se c’è già del testo, si chiede se sostituirlo o aggiungerlo in fondo. Un PDF solo fotografato o scansionato non viene letto
 - Echo può sostituire un passaggio, o ogni occorrenza di un segno (per esempio un trattino lungo), dentro il foglio. L’ultima modifica di Echo si può annullare. Il pezzo cambiato resta in grassetto per pochi secondi, senza essere salvato così
 - I file dell’editor che servivano alle nove sezioni fisse sono stati rimossi
-- Galleria foto fino a 30 immagini per biografia
+- Galleria foto fino a 15 immagini per biografia
 - Struttura libro: dedica, prefazione, copyright, nota dell'autore
 - Cooldown tra capitoli pubblicati (per utenti free, bypassato per staff)
 - Cronologia revisioni delle sezioni: il servizio (`lib/revision-history-service.ts`) era usato solo dalla revisione di sezione con IA, tolta il 30 settembre 2026; la colonna `biography_sections.revision_history` resta nel database

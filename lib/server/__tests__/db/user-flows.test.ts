@@ -328,10 +328,10 @@ describe('editor: scrivere, completare, condividere, licenza, visibilità, foto'
     }
   });
 
-  it('carica foto: riga in biography_media (fino a 30 di galleria), la copertina non conta', async () => {
+  it('carica foto: riga in biography_media (fino a 15 di galleria), la copertina non conta', async () => {
     const one = buildMediaInsertPayload({ biographyId: BIO.draft, userId: U.author, fileUrl: 'u/cover.jpg', fileName: 'cover.jpg', layout: 'cover', displayOrder: 0 });
     await insert('authenticated', U.author, 'biography_media', one);
-    for (let i = 0; i < 30; i++) {
+    for (let i = 0; i < 15; i++) {
       await insert(
         'authenticated',
         U.author,
@@ -340,9 +340,9 @@ describe('editor: scrivere, completare, condividere, licenza, visibilità, foto'
       );
     }
     const err = await errorOf(() =>
-      insert('authenticated', U.author, 'biography_media', buildMediaInsertPayload({ biographyId: BIO.draft, userId: U.author, fileUrl: 'u/x.jpg', fileName: 'x.jpg', layout: 'full-page', displayOrder: 31 }))
+      insert('authenticated', U.author, 'biography_media', buildMediaInsertPayload({ biographyId: BIO.draft, userId: U.author, fileUrl: 'u/x.jpg', fileName: 'x.jpg', layout: 'full-page', displayOrder: 16 }))
     );
-    expect(err).toContain('at most 30');
+    expect(err).toContain('at most 15');
   });
 
   it('un lettore anonimo aumenta le visualizzazioni (funzione SECURITY DEFINER)', async () => {

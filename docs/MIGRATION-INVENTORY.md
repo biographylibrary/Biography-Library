@@ -92,3 +92,11 @@ Registrate con la regola nuova (applicazione e allineamento della versione nello
 | `20260930120150_author_text_whitelist` | dopo il deploy | applicata il 1 ottobre 2026 (versione registrata 20260930225453, riallineata a 20260930120150) |
 | `20260930120200_agent_threads_echo_only` | dopo il deploy | applicata il 1 ottobre 2026 (versione registrata 20260930225519, riallineata a 20260930120200) |
 | `20260930120300_helper_functions_search_path` | dopo il deploy | applicata il 1 ottobre 2026 (versione registrata 20260930231549, riallineata a 20260930120300) |
+
+## 7. Migrazioni successive al blocco 1
+
+Stessa regola: applicazione e allineamento della versione nello stesso passaggio, dopo conferma.
+
+| File | Stato |
+|---|---|
+| `20261006090000_biography_media_gallery_limit_15` | da applicare: porta a 15 il limite di foto di galleria nel controllo del database (prima 30); nessuna biografia in produzione supera 10 foto di galleria (controllato il 6 ottobre 2026) |
