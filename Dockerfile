@@ -48,6 +48,13 @@ RUN apt-get update \
 COPY --from=builder /app/public ./public
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
+# sharp (elaborazione delle foto): il pacchetto standalone di Next 13.5 contiene il suo codice
+# JavaScript ma non il binario nativo (libvips), che sta in node_modules/@img e che il tracciamento dei
+# file non vede. `npm ci` ha installato nello stadio builder i binari della piattaforma di questa
+# immagine (Linux x64, glibc): si copiano qui. Senza queste righe la rotta POST
+# /api/biography/[id]/media risponde 500 «Could not load the "sharp" module». La prova automatica e'
+# .github/workflows/docker-image.yml.
+COPY --from=builder --chown=nextjs:nodejs /app/node_modules/@img ./node_modules/@img
 
 USER nextjs
 EXPOSE 3000

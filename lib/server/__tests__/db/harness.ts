@@ -443,6 +443,7 @@ export async function createTestDb(
     '20260930120150_author_text_whitelist.sql',
     '20260930120300_helper_functions_search_path.sql',
     '20261006090000_biography_media_gallery_limit_15.sql',
+    '20261006110000_biography_media_dimensions.sql',
   ];
   const files = all.filter((file) => !options.skip?.includes(file) && (!options.only || options.only.includes(file)));
   // L'ultima fissa il percorso di ricerca di funzioni create da 20260930120000 e 20260930120150:

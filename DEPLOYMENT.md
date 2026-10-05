@@ -149,6 +149,10 @@ To deploy a new version:
 
 The `next.config.js` has `images: { unoptimized: true }` because the Jelastic container does not run the Next.js image optimization server. All biography photos are served directly from Supabase Storage URLs.
 
+**`sharp` in the image (photo processing).** The standalone output of Next 13.5 does not contain the native `sharp` binary, so the `Dockerfile` copies `node_modules/@img` from the build stage into the runtime image (see the comment there). Without that line the photo route answers 500 ("Could not load the sharp module") only in production. The workflow `.github/workflows/docker-image.yml` builds the image and checks that `sharp` loads in it; it runs on pull requests that touch the Dockerfile, `package.json`, `next.config.js` or the photo route, and on demand. If the build platform ever changes (for example to arm64), the `@img` copy keeps working because it copies the whole folder, but re-run that workflow.
+
+**Request body size.** Photos are uploaded to `/api/biography/[id]/media` and can be up to 20 MB. If a reverse proxy (nginx on the Jelastic node) limits the body size, raise it to at least 21 MB; a rejected upload shows up as HTTP 413.
+
 The `netlify.toml` file is present from an earlier hosting experiment and is not used in the current Jelastic setup. It can be ignored.
 
 #### Docker disk maintenance

@@ -6,6 +6,14 @@ All notable changes are recorded here. Dates match migration timestamps where ap
 
 ## [Unreleased]
 
+### Photos (2026-10-06)
+
+- **Photo upload moved to the server** — `POST /api/biography/[id]/media` validates, compresses with `sharp` (EXIF orientation applied, sRGB, all metadata and GPS removed, long side 2560 px gallery / 3100 px covers, mozjpeg q85 progressive) and writes with the service role. The browser no longer writes to the `biography-photos` bucket.
+- **Gallery limit is 15 everywhere** (was 30 in code, 10 in the old database check).
+- **New columns** `biography_media.width/height/bytes/original_bytes` (migration `20261006110000`).
+- **Bucket under version control** (`20261006100000`) and browser writes closed (`20261006120000`, apply after deploy).
+- **`npm run photos:recompress`** — simulation by default, `--apply` to recompress existing photos.
+
 ---
 
 ## [0.9.0] — 2026-04-01

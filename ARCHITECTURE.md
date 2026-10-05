@@ -82,7 +82,7 @@ Roles stored in `profiles.role`: `user` → `reviewer` → `admin` → `super_ad
 | `biographies` | One row per biography. Key fields: `biography_mode` (sections/freeflow), `status`, `visibility`, `ai_screening_status`, `is_frozen`, `content_language` |
 | `biography_sections` | One row per (biography, section_key). Stores content, draft version, status, revision history array |
 | `biography_book_structure` | Front/back matter (dedication, epigraph, preface, epilogue, acknowledgements, specific_credits as JSONB) |
-| `biography_media` | Photos: file_url, layout hint, display_order, caption |
+| `biography_media` | Photos: file_url, layout, display_order, caption; `width`, `height`, `bytes`, `original_bytes` written by the server when it processes a photo (null = not yet processed) |
 | `conversation_checkpoints` | AI conversation state per (user, biography, section): conversation_log, answers, questions_completed |
 | `section_completions` | Lightweight completion flags per (biography, section_key) |
 | `moderation_reports` | Content review records: reporter_id, report_type, ai_analysis JSONB, flagged passages, status, decision |
@@ -90,6 +90,21 @@ Roles stored in `profiles.role`: `user` → `reviewer` → `admin` → `super_ad
 | `user_notifications` | In-app alerts sent to users after moderation decisions |
 | `admin_action_log` | Audit trail for all admin actions |
 | `error_logs` | Client-side errors sent via the `log-error` Edge Function |
+
+### Photos: upload, processing, storage (changed 2026-10-06)
+
+The browser no longer writes to the `biography-photos` bucket. `POST /api/biography/[id]/media` (Node runtime, `app/api/biography/[id]/media/route.ts`) is the only writer:
+
+1. **Who**: the biography owner, active account, biography not frozen, status in the author-writable list (`canAuthorWriteText`; the service role bypasses the `a01_*` triggers, so the route checks it in code). Gallery limit 15 (`lib/biography-media-constants.ts`, also enforced by a database trigger).
+2. **What**: the type is read from the first bytes (JPEG, PNG, WebP; HEIC and GIF are refused, because the prebuilt libheif in `sharp` decodes AVIF only), 20 MB in, 150 megapixels at most.
+3. **Processing** (`lib/server/photo-processing.ts`, `sharp`): EXIF orientation applied to the pixels, sRGB, every metadata block dropped (EXIF, XMP, IPTC, GPS, ICC), transparency flattened on white, long side at most 2560 px (gallery) or 3100 px (`cover`, `cover_a5`) and never enlarged, mozjpeg quality 85 progressive. The processed JPEG replaces the original; the original is not kept.
+4. **Write**: service role, path `{user_id}/{biography_id}/{timestamp}-{random}.jpg`, then the `biography_media` row with dimensions and byte counts. Covers: the previous cover files are removed only after the new upload succeeded.
+
+Storage policies (`storage.objects`, bucket `biography-photos`): after migration `20261006120000` the browser can read and delete its own folder (`(storage.foldername(name))[1] = auth.uid()::text`) but not write. The bucket is private; the PDF generator and the editor read through signed URLs.
+
+**Operational constraint**: Next 13.5 standalone output does not include the native `sharp` binary (`@img/sharp-<platform>` is loaded by a dynamic `require`; `outputFileTracingIncludes` does not apply to App Router route handlers in this version). The `Dockerfile` copies `node_modules/@img` into the runtime image; `.github/workflows/docker-image.yml` builds the image and proves `sharp` loads inside it.
+
+**Existing photos**: `scripts/recompress-photos.ts` (`npm run photos:recompress`, simulation by default, `--apply` to write; logic in `lib/server/photo-recompression.ts`). Order per photo: new file at a new path, read it back and check it, update the row and check where it points, only then delete the old file (and only if no other row, such as the paired `cover`/`cover_a5`, still uses it). Never touches the `archive` bucket.
 
 ### RLS pattern
 
@@ -335,7 +350,7 @@ Guarantee: **the text that goes online is exactly the text the screening examine
 6. Blank page
 7. Front matter (if enabled): dedication → epigraph → preface
 8. Main content — section chapters (section mode) or single chapter (freeflow); each with running header and page numbers
-9. Photo gallery pages — four layout options: full-page, two-vertical, two-horizontal, three-mixed
+9. Photo gallery pages — four layout options: full-page, two-vertical, two-horizontal, three-mixed. jsPDF embeds JPEG files as they are, so the PDF weight follows the photo weight: with 15 full-page 12-megapixel photos the PDF is 61.1 MB with the original files and 7.0 MB with the processed ones (`lib/pdf/__tests__/pdf-with-photos.test.ts`, 2026-10-06)
 10. Back matter (if enabled): epilogue → acknowledgements → specific credits
 11. Back cover — author, date, copyright
 
