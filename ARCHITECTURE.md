@@ -143,6 +143,8 @@ Every call to a model goes through **`lib/agents/infomaniak-client.ts`** (chat, 
 
 Two documented exceptions: **transcription** (Whisper) still runs in the Deno Edge Function `audio-transcription` and writes its own row (provider seconds, when returned); **text-to-speech** runs on Mistral Voxtral, not Infomaniak, and records the characters sent.
 
+**Tool calls written as text.** Gemma 4 sometimes writes a call to a tool as a line of text in its reply (`propose_draft(sectionKey="freeflow", draftText="...")`) instead of using the `tool_calls` field of the response; seen on 5 October 2026 in the first test with a real account, where the author read the raw line and got no Insert card. `lib/agents/text-tool-calls.ts` recognises it and `runStreamingAgentTurn` runs it as a real call. It only accepts tools actually offered to the model, only on a line of its own, and only with exact arguments (`key="text"`, `true`, numbers, or one JSON object); a tool name quoted inside a sentence is left alone. The request sent to the provider is the same as before block 1, so this is model behaviour, not a regression.
+
 Models are chosen with `AGENT_MODEL_*` (see `lib/agents/models.ts`); the grammar chain uses `INFOMANIAK_AI_MODEL_GRAMMAR`, then `_PRIMARY`, then `_FALLBACK`. Credentials are never in the client bundle.
 
 ### Grammar check (`POST /api/biography/[id]/grammar`, Node runtime)
