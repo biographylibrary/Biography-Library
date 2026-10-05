@@ -84,3 +84,24 @@ export function mapNominatimHit(item: {
     countryCode: null,
   };
 }
+
+/**
+ * La ricerca dei luoghi parte solo quando a scrivere è l'autore, e solo se non ha già scelto
+ * un luogo. Un valore caricato dal salvataggio (o appena scelto dall'elenco) non deve far
+ * partire una ricerca: aprirebbe un elenco per ogni campo già compilato, appena si apre la finestra.
+ */
+export function shouldSearchPlace(query: string, hasSelection: boolean, userTyped: boolean): boolean {
+  return userTyped && !hasSelection && query.trim().length >= 2;
+}
+
+/** I fornitori restituiscono a volte due voci con lo stesso nome mostrato: se ne tiene una. */
+export function dedupePlaceHits(hits: PlaceSearchHit[]): PlaceSearchHit[] {
+  const seen = new Set<string>();
+  return hits.filter((hit) => {
+    const key = hit.displayName.trim().toLowerCase();
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+}
+
