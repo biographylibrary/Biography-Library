@@ -131,6 +131,71 @@ describe('runStreamingAgentTurn', () => {
     expect(appendMessage).toHaveBeenCalled();
   });
 
+  it('riconosce la chiamata a propose_draft scritta come testo e fa comparire la scheda con «Inserisci»', async () => {
+    const textual = [
+      'That is a beautiful and generous motivation to begin with.',
+      '',
+      'propose_draft(sectionKey="freeflow", draftText="Un testo proposto.")',
+      '',
+      'I have drafted a passage based on your words.',
+    ].join('\n');
+
+    chat
+      .mockResolvedValueOnce({ content: textual })
+      .mockResolvedValueOnce({ content: '' })
+      .mockResolvedValueOnce({ content: '' });
+
+    executeEchoTool.mockResolvedValue({
+      content: '{"ok":true,"preview":true}',
+      event: { tool: 'propose_draft', sectionKey: 'freeflow', draftText: 'Un testo proposto.', preview: true },
+    });
+
+    async function* emptyStream() {
+      yield { type: 'done' };
+    }
+    chatStream.mockReturnValue(emptyStream());
+
+    await runStreamingAgentTurn({ ...preparedBase, locale: 'it' }, serviceClient, send);
+
+    // La chiamata viene eseguita come se fosse arrivata nel campo delle chiamate.
+    expect(executeEchoTool).toHaveBeenCalledTimes(1);
+    expect(executeEchoTool).toHaveBeenCalledWith(
+      'propose_draft',
+      '{"sectionKey":"freeflow","draftText":"Un testo proposto."}',
+      expect.objectContaining({ biographyId: 'bio-1', userId: 'user-1' })
+    );
+    // L'evento che disegna la scheda con il pulsante parte, legato al messaggio salvato.
+    const toolResult = events.find((e) => e.event === 'tool_result');
+    expect(toolResult?.data).toMatchObject({ tool: 'propose_draft', preview: true, assistantMessageId: 'msg-1' });
+    // Nel chat non resta la riga con la chiamata, restano le frasi attorno.
+    const shown = events
+      .filter((e) => e.event === 'token')
+      .map((e) => (e.data as { content: string }).content)
+      .join('\n');
+    expect(shown).not.toContain('propose_draft(');
+    expect(shown).toContain('beautiful and generous motivation');
+    expect(shown).toContain('I have drafted a passage');
+    // Salvata come chiamata vera (serve alla ripresa della conversazione), senza la riga di testo.
+    const savedAssistant = appendMessage.mock.calls
+      .map((call) => call[2] as { role: string; content: string; tool_calls?: unknown })
+      .find((row) => row.role === 'assistant' && Array.isArray(row.tool_calls));
+    expect(savedAssistant?.content).not.toContain('propose_draft(');
+    expect(savedAssistant?.tool_calls).toHaveLength(1);
+    expect(events.some((e) => e.event === 'done')).toBe(true);
+  });
+
+  it('non esegue nulla se il nome dello strumento compare solo dentro una frase', async () => {
+    chat.mockResolvedValueOnce({
+      content: 'Quando serve uso propose_draft(sectionKey="freeflow", draftText="X") per proporti un testo.',
+    });
+
+    await runStreamingAgentTurn(preparedBase, serviceClient, send);
+
+    expect(executeEchoTool).not.toHaveBeenCalled();
+    expect(events.some((e) => e.event === 'tool_result')).toBe(false);
+    expect(events.some((e) => e.event === 'done')).toBe(true);
+  });
+
   it('uses draft acknowledgment when model returns only propose_draft tool without text', async () => {
     const echoPrepared: PreparedAgentTurn = {
       ...preparedBase,

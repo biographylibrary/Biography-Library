@@ -10,6 +10,7 @@ import {
 import type { AgentRole, AgentType } from '@/lib/agents/models';
 import type { AiUsageContext } from '@/lib/ai/usage-recorder';
 import { appendMessage, updateAssistantMessageContent } from '@/lib/agents/thread-service';
+import { recoverTextToolCalls } from '@/lib/agents/text-tool-calls';
 import { maybeCompressThreadMemory } from '@/lib/agents/thread-memory';
 import {
   executeEchoTool,
@@ -273,6 +274,19 @@ export async function runStreamingAgentTurn(
       } catch (toolErr) {
         console.warn('[agents] tool pass failed, continuing without tools:', toolErr);
         break;
+      }
+
+      if (!result.tool_calls?.length) {
+        // Il modello può scrivere la chiamata come testo invece di usare `tool_calls`:
+        // la si riconosce, altrimenti l'autore legge la riga e non vede la scheda «Inserisci».
+        const recovered = recoverTextToolCalls(extractTextContent(result.content), prepared.tools);
+        if (recovered.calls.length) {
+          console.warn(
+            '[agents] tool call written as text, recovered:',
+            recovered.calls.map((call) => call.function.name).join(', ')
+          );
+          result = { ...result, content: recovered.text, tool_calls: recovered.calls };
+        }
       }
 
       if (result.tool_calls?.length) {
