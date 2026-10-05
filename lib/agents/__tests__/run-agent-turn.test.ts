@@ -196,6 +196,75 @@ describe('runStreamingAgentTurn', () => {
     expect(events.some((e) => e.event === 'done')).toBe(true);
   });
 
+  it('se la proposta di testo fallisce, l\'app lo dice anche quando il modello scrive di averla fatta', async () => {
+    const failing = [
+      { id: 'tc-1', type: 'function', function: { name: 'propose_draft', arguments: '{"sectionKey":"freeflow","draftText":"x","replaceText":"non c\'è"}' } },
+    ];
+    chat
+      .mockResolvedValueOnce({ content: 'Cancello subito la frase.', tool_calls: failing })
+      .mockResolvedValueOnce({ content: 'Fatto, ho cancellato la frase dal testo.' });
+    executeEchoTool.mockResolvedValue({ content: '{"error":"replaceText was not found in the document, so nothing was proposed."}' });
+
+    await runStreamingAgentTurn({ ...preparedBase, locale: 'it' }, serviceClient, send);
+
+    const shown = events
+      .filter((e) => e.event === 'token')
+      .map((e) => (e.data as { content: string }).content)
+      .join('');
+    // Le parole del modello restano, e l'ultima parola è dell'app.
+    expect(shown).toContain('Fatto, ho cancellato la frase dal testo.');
+    expect(shown.trimEnd().endsWith('quindi il tuo testo non è cambiato. Dimmi con parole tue il punto esatto da cambiare e riprovo.')).toBe(true);
+    expect(events.some((e) => e.event === 'tool_result')).toBe(false);
+    // Anche il messaggio salvato nella conversazione contiene l'avviso.
+    const saved = appendMessage.mock.calls
+      .map((call) => call[2] as { role: string; content: string })
+      .filter((row) => row.role === 'assistant')
+      .map((row) => row.content)
+      .join('\n');
+    expect(saved).toContain('il tuo testo non è cambiato');
+  });
+
+  it('l\'avviso c\'è anche quando il modello risponde subito con un testo dopo l\'errore, in inglese per le altre lingue', async () => {
+    chat
+      .mockResolvedValueOnce({
+        content: '',
+        tool_calls: [{ id: 'tc-1', type: 'function', function: { name: 'propose_draft', arguments: '{"sectionKey":"freeflow","draftText":"x","replaceText":"y"}' } }],
+      })
+      .mockResolvedValueOnce({ content: 'Done, the sentence is gone.' });
+    executeEchoTool.mockResolvedValue({ content: '{"error":"replaceText was not found in the document"}' });
+
+    await runStreamingAgentTurn(preparedBase, serviceClient, send);
+
+    const shown = events.filter((e) => e.event === 'token').map((e) => (e.data as { content: string }).content).join('');
+    expect(shown).toContain('Done, the sentence is gone.');
+    expect(shown).toContain('your text has not been changed');
+  });
+
+  it('nessun avviso se dopo un primo errore il modello riprova e la scheda compare', async () => {
+    const call = (id: string, replaceText: string) => ({
+      id,
+      type: 'function',
+      function: { name: 'propose_draft', arguments: JSON.stringify({ sectionKey: 'freeflow', draftText: 'Fu in quel contesto', replaceText }) },
+    });
+    chat
+      .mockResolvedValueOnce({ content: '', tool_calls: [call('tc-1', 'pezzo sbagliato unito a caso')] })
+      .mockResolvedValueOnce({ content: '', tool_calls: [call('tc-2', 'questo è un testo di prova Fu in quel contesto')] })
+      .mockResolvedValueOnce({ content: 'Ecco la modifica.' });
+    executeEchoTool
+      .mockResolvedValueOnce({ content: '{"error":"replaceText was not found in the document"}' })
+      .mockResolvedValueOnce({
+        content: '{"ok":true,"preview":true}',
+        event: { tool: 'propose_draft', sectionKey: 'freeflow', draftText: 'Fu in quel contesto', replaceText: 'questo è un testo di prova Fu in quel contesto', preview: true },
+      });
+
+    await runStreamingAgentTurn({ ...preparedBase, locale: 'it' }, serviceClient, send);
+
+    expect(executeEchoTool).toHaveBeenCalledTimes(2);
+    expect(events.filter((e) => e.event === 'tool_result')).toHaveLength(1);
+    const shown = events.filter((e) => e.event === 'token').map((e) => (e.data as { content: string }).content).join('');
+    expect(shown).not.toContain('non è cambiato');
+  });
+
   it('uses draft acknowledgment when model returns only propose_draft tool without text', async () => {
     const echoPrepared: PreparedAgentTurn = {
       ...preparedBase,

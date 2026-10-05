@@ -46,6 +46,33 @@ function draftAck(locale?: string): string {
   return DRAFT_ACK[lang] ?? DRAFT_ACK.en;
 }
 
+/**
+ * Scritta dall'app, non dal modello: il modello racconta spesso la modifica come già fatta anche
+ * quando lo strumento ha risposto con un errore. Se la proposta non è andata a buon fine l'autore
+ * deve leggerlo con certezza.
+ */
+const DRAFT_NOT_APPLIED: Record<string, string> = {
+  en: 'I could not make this change, so your text has not been changed. Tell me in your own words the exact passage to change and I will try again.',
+  it: 'Non sono riuscito a fare questa modifica, quindi il tuo testo non è cambiato. Dimmi con parole tue il punto esatto da cambiare e riprovo.',
+  fr: 'Je n\'ai pas pu faire cette modification, votre texte n\'a donc pas changé. Indiquez-moi avec vos mots le passage exact à modifier et je réessaie.',
+  de: 'Ich konnte diese Änderung nicht vornehmen, Ihr Text wurde deshalb nicht verändert. Nennen Sie mir mit eigenen Worten die genaue Stelle, und ich versuche es erneut.',
+};
+
+function draftNotApplied(locale?: string): string {
+  const lang = (locale ?? 'en').slice(0, 2);
+  return DRAFT_NOT_APPLIED[lang] ?? DRAFT_NOT_APPLIED.en;
+}
+
+/** Vero se la risposta dello strumento è un errore (propose_draft risponde `{ "error": ... }`). */
+function isToolError(content: string): boolean {
+  try {
+    const parsed = JSON.parse(content) as { error?: unknown };
+    return typeof parsed?.error === 'string' && parsed.error.length > 0;
+  } catch {
+    return false;
+  }
+}
+
 function asToolCalls(value: unknown): ToolCall[] {
   if (!Array.isArray(value)) return [];
   return value.filter((item): item is ToolCall => {
@@ -256,8 +283,11 @@ export async function runStreamingAgentTurn(
     (Boolean(prepared.biographyId) || prepared.agentType === 'echo');
 
   let hadDraftPreview = false;
+  let draftFailed = false;
   let draftAssistantMessageId: string | null = null;
   let draftDisplayPrefix = '';
+  /** Se l'ultima proposta di testo è fallita e nessuna è riuscita, l'app lo dichiara. */
+  const failureNote = () => (draftFailed && !hadDraftPreview ? draftNotApplied(prepared.locale) : '');
 
   if (toolsEnabled) {
     for (let round = 0; round < MAX_TOOL_ROUNDS; round++) {
@@ -311,6 +341,9 @@ export async function runStreamingAgentTurn(
 
         for (const tc of result.tool_calls) {
           const { content, event } = await executeToolCall(tc, prepared, serviceClient);
+          if (tc.function.name === 'propose_draft' && !event && isToolError(content)) {
+            draftFailed = true;
+          }
           if (event) {
             send('tool_result', { ...event, assistantMessageId: assistantRow.id });
             if (isDraftPreviewEvent(event)) {
@@ -334,7 +367,8 @@ export async function runStreamingAgentTurn(
 
       const directText = extractTextContent(result.content).trim();
       if (directText) {
-        await emitAssistantText(directText, prepared, serviceClient, send);
+        const note = failureNote();
+        await emitAssistantText(note ? `${directText}\n\n${note}` : directText, prepared, serviceClient, send);
         finishTurn();
         return;
       }
@@ -348,6 +382,14 @@ export async function runStreamingAgentTurn(
   if (!finalText && hadDraftPreview) {
     finalText = draftAck(prepared.locale);
     send('token', { content: finalText });
+  }
+
+  const note = failureNote();
+  if (note) {
+    // Si accoda alle parole del modello: quello che ha già scritto resta, ma l'ultima parola è dell'app.
+    const hadVisibleText = Boolean(finalText || draftDisplayPrefix);
+    send('token', { content: hadVisibleText ? `\n\n${note}` : note });
+    finalText = finalText ? `${finalText}\n\n${note}` : note;
   }
 
   if (!finalText && !draftDisplayPrefix) {

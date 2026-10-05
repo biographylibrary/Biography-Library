@@ -6,8 +6,8 @@ import { plainDraftText } from '@/lib/echo/apply-draft';
 
 export const echoHighlightKey = new PluginKey<DecorationSet>('echoChangeHighlight');
 
-/** How long the new or replaced words stay bold. */
-export const ECHO_CHANGE_HIGHLIGHT_MS = 4_000;
+/** How long the new or replaced words stay highlighted (bold, on a light background). */
+export const ECHO_CHANGE_HIGHLIGHT_MS = 10_000;
 
 export const echoChangeHighlight = Extension.create({
   name: 'echoChangeHighlight',
@@ -74,7 +74,9 @@ export function decorationsForDraft(
   doc: PMNode,
   draftText: string
 ): { set: DecorationSet; from: number } | null {
-  const needle = plainDraftText(draftText);
+  // L'editor separa i paragrafi con un solo a capo, il testo proposto ne ha due: senza questo
+  // un testo di più paragrafi non si trova per intero e si evidenzierebbe solo la prima riga.
+  const needle = plainDraftText(draftText).replace(/\n{2,}/g, '\n');
   const chars = documentChars(doc);
   const lines = needle
     .split('\n')

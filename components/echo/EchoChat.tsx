@@ -401,6 +401,8 @@ export function EchoChat({
                           )
                         : undefined
                     }
+                    replacedText={replaceOne ? m.pendingDraft.replaceText : undefined}
+                    replacedLabel={t.echo.insertDraftReplacedLabel}
                     preview={m.pendingDraft.draftText}
                     deferred={m.draftDeferred}
                     applying={m.applyingDraft}

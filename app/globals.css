@@ -184,6 +184,16 @@
   font-weight: 700 !important;
 }
 
+/* Le parole appena cambiate da Echo: grassetto (sopra) e fondo giallo tenue, per qualche secondo. */
+.ProseMirror .echo-just-changed {
+  background-color: rgb(250 204 21 / 0.3);
+  border-radius: 2px;
+}
+
+.dark .ProseMirror .echo-just-changed {
+  background-color: rgb(250 204 21 / 0.22);
+}
+
 .ProseMirror em,
 .ProseMirror i,
 .ProseMirror em *,

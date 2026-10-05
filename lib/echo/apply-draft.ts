@@ -187,6 +187,74 @@ function replaceFirstFlexible(source: string, target: string, replacement: strin
   return source.replace(pattern, () => replacement);
 }
 
+/** Apostrofi, virgolette, trattini e spazi che il modello e l'editor scrivono in modo diverso. */
+const MATCH_FOLD: Record<string, string> = {
+  '\u2018': "'", '\u2019': "'", '\u201A': "'", '\u2032': "'",
+  '\u201C': '"', '\u201D': '"', '\u201E': '"', '\u00AB': '"', '\u00BB': '"',
+  '\u2013': '-', '\u2014': '-', '\u2212': '-',
+  '\u00A0': ' ', '\u2009': ' ', '\u202F': ' ',
+};
+
+/**
+ * Forma confrontabile di un testo: senza i segni di markdown (* _ `), con apostrofi, virgolette e
+ * trattini ridotti a quelli semplici e con ogni spazio o a capo ridotto a un solo spazio. Per ogni
+ * carattere della forma confrontabile ricorda dove inizia e dove finisce nel testo originale.
+ */
+function foldForMatching(text: string): { norm: string; start: number[]; end: number[] } {
+  let norm = '';
+  const start: number[] = [];
+  const end: number[] = [];
+  for (let i = 0; i < text.length; i++) {
+    const raw = text[i];
+    if (raw === '*' || raw === '_' || raw === '`') continue;
+    const ch = MATCH_FOLD[raw] ?? raw;
+    if (/\s/.test(ch)) {
+      if (!norm.length) continue;
+      if (norm.endsWith(' ')) {
+        end[end.length - 1] = i + 1;
+      } else {
+        norm += ' ';
+        start.push(i);
+        end.push(i + 1);
+      }
+      continue;
+    }
+    norm += ch;
+    start.push(i);
+    end.push(i + 1);
+  }
+  return { norm, start, end };
+}
+
+const MIN_TOLERANT_MATCH_CHARS = 8;
+
+/** Vero se nel pezzo c'è un segno di grassetto, corsivo o codice senza il suo compagno (`**` conta come un segno). */
+function cutsMarkdownPair(piece: string): boolean {
+  for (const double of ['**', '__']) {
+    const parts = piece.split(double);
+    if ((parts.length - 1) % 2 !== 0) return true;
+    piece = parts.join('');
+  }
+  return [/\*/g, /_/g, /`/g].some((mark) => (piece.match(mark)?.length ?? 0) % 2 !== 0);
+}
+
+/**
+ * Cerca il pezzo ignorando le differenze di forma (vedi foldForMatching) e lo sostituisce, la
+ * prima volta che compare. Rifiuta pezzi troppo corti e corrispondenze che taglierebbero a metà
+ * una coppia di segni di markdown (lascerebbero grassetto o corsivo aperti fino a fine testo).
+ */
+function replaceTolerant(source: string, target: string, replacement: string): string | null {
+  const needle = foldForMatching(target).norm.trim();
+  if (needle.length < MIN_TOLERANT_MATCH_CHARS) return null;
+  const hay = foldForMatching(source);
+  const index = hay.norm.indexOf(needle);
+  if (index < 0) return null;
+  const from = hay.start[index];
+  const to = hay.end[index + needle.length - 1];
+  if (cutsMarkdownPair(source.slice(from, to))) return null;
+  return source.slice(0, from) + replacement + source.slice(to);
+}
+
 function insertUnderChapter(source: string, chapterTitle: string, draft: string): string | null {
   const lines = source.split('\n');
   const wanted = normalizeTitle(chapterTitle);
@@ -247,6 +315,8 @@ export function placeDraftInDocument(
     if (!placement.replaceAll) {
       const flexible = replaceFirstFlexible(base, replaceText, draft);
       if (flexible !== null) return { ok: true, text: flexible, mode: 'replaced' };
+      const tolerant = replaceTolerant(base, replaceText, draft);
+      if (tolerant !== null) return { ok: true, text: tolerant, mode: 'replaced' };
     }
     return { ok: false, code: 'replace_not_found' };
   }

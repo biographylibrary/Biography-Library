@@ -15,6 +15,9 @@ export interface EchoDraftInsertPromptProps {
   hidePreviewLabel: string;
   readyLabel: string;
   sectionMismatchWarning?: string;
+  /** Il testo che la sostituzione toglie, mostrato prima di quello nuovo. */
+  replacedText?: string;
+  replacedLabel?: string;
   preview: string;
   deferred?: boolean;
   applying?: boolean;
@@ -23,6 +26,15 @@ export interface EchoDraftInsertPromptProps {
   onConfirm: () => void;
   onDefer: () => void;
   onExpand?: () => void;
+}
+
+const REPLACED_CLIP_CHARS = 260;
+
+/** Un pezzo lungo si mostra con l'inizio e la fine, così si vede dove comincia e dove finisce. */
+function clipReplaced(text: string): string {
+  const flat = text.replace(/\s+/g, ' ').trim();
+  if (flat.length <= REPLACED_CLIP_CHARS) return flat;
+  return `${flat.slice(0, 180).trimEnd()} … ${flat.slice(-60).trimStart()}`;
 }
 
 const PREVIEW_COLLAPSED_MAX_H = 'max-h-52';
@@ -38,6 +50,8 @@ export function EchoDraftInsertPrompt({
   hidePreviewLabel,
   readyLabel,
   sectionMismatchWarning,
+  replacedText,
+  replacedLabel,
   preview,
   deferred = false,
   applying = false,
@@ -101,6 +115,13 @@ export function EchoDraftInsertPrompt({
           <AlertTriangle className="h-3.5 w-3.5 shrink-0 mt-0.5" />
           <span>{sectionMismatchWarning}</span>
         </div>
+      )}
+
+      {replacedText?.trim() && (
+        <p className="text-xs text-muted-foreground rounded border border-border/40 bg-background/40 px-2.5 py-1.5">
+          {replacedLabel && <span className="font-medium">{replacedLabel} </span>}
+          <span className="line-through decoration-muted-foreground/60">{clipReplaced(replacedText)}</span>
+        </p>
       )}
 
       <div

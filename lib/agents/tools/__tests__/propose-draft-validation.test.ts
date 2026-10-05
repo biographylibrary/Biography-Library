@@ -79,6 +79,18 @@ describe('propose_draft: il pezzo da sostituire deve esistere nel testo salvato'
     expect(result.event).toMatchObject({ preview: true });
   });
 
+  it('accetta un pezzo che differisce solo per apostrofi, virgolette, trattini o segni di markdown', async () => {
+    const { client } = clientWith({
+      content_freeflow: 'Sento ancora l\u2019eco di quelle \u201Cscuole sballate\u201D \u2014 ogni giorno.',
+      content: {},
+    });
+    const result = await call(client, {
+      replaceText: 'l\'eco di quelle "scuole sballate" - ogni giorno',
+      draftText: 'il ricordo di quelle scuole',
+    });
+    expect(result.event).toMatchObject({ preview: true });
+  });
+
   it('con «sostituisci tutte le occorrenze» il pezzo deve comunque esistere', async () => {
     const { client } = clientWith({ content_freeflow: DOC, content: {} });
     const missing = await call(client, { replaceText: '—', draftText: ', ', replaceAll: true });
