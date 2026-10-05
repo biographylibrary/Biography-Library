@@ -1676,6 +1676,7 @@ export interface Translations {
     insertDraftReplaceCardTitle: string;
     insertDraftReplaceCardSubtitle: string;
     insertDraftReplaceConfirm: string;
+    insertDraftReplacedLabel: string;
     insertDraftReplaceAllCardTitle: string;
     insertDraftReplaceAllCardSubtitle: string;
     insertDraftReplaceAllConfirm: string;
@@ -3425,6 +3426,7 @@ export const translations: Record<Language, Translations> = {
       insertDraftReplaceCardTitle: 'I\'ll replace a passage',
       insertDraftReplaceCardSubtitle: 'The text below takes the place of what you already wrote. I won\'t add it at the end.',
       insertDraftReplaceConfirm: 'Replace',
+      insertDraftReplacedLabel: 'It replaces:',
       insertDraftReplaceAllCardTitle: 'I\'ll replace every "{from}"',
       insertDraftReplaceAllCardSubtitle: 'On the page, every "{from}" becomes "{to}".',
       insertDraftReplaceAllConfirm: 'Replace all',
@@ -5175,6 +5177,7 @@ export const translations: Record<Language, Translations> = {
       insertDraftReplaceCardTitle: 'Sostituisco un pezzo del testo',
       insertDraftReplaceCardSubtitle: 'Il testo qui sotto prende il posto di quello che hai già scritto. Non lo aggiungo in fondo.',
       insertDraftReplaceConfirm: 'Sostituisci',
+      insertDraftReplacedLabel: 'Al posto di:',
       insertDraftReplaceAllCardTitle: 'Sostituisco ogni «{from}»',
       insertDraftReplaceAllCardSubtitle: 'Nel foglio, ogni «{from}» diventa «{to}».',
       insertDraftReplaceAllConfirm: 'Sostituisci tutti',
@@ -6925,6 +6928,7 @@ export const translations: Record<Language, Translations> = {
       insertDraftReplaceCardTitle: 'Je remplace un passage',
       insertDraftReplaceCardSubtitle: 'Le texte ci-dessous prend la place de ce que tu as déjà écrit. Je ne l\'ajoute pas à la fin.',
       insertDraftReplaceConfirm: 'Remplacer',
+      insertDraftReplacedLabel: 'À la place de :',
       insertDraftReplaceAllCardTitle: 'Je remplace chaque «{from}»',
       insertDraftReplaceAllCardSubtitle: 'Dans la page, chaque «{from}» devient «{to}».',
       insertDraftReplaceAllConfirm: 'Tout remplacer',
@@ -8675,6 +8679,7 @@ export const translations: Record<Language, Translations> = {
       insertDraftReplaceCardTitle: 'Ich ersetze eine Stelle',
       insertDraftReplaceCardSubtitle: 'Der Text unten ersetzt, was du schon geschrieben hast. Ich hänge ihn nicht unten an.',
       insertDraftReplaceConfirm: 'Ersetzen',
+      insertDraftReplacedLabel: 'Anstelle von:',
       insertDraftReplaceAllCardTitle: 'Ich ersetze jedes „{from}“',
       insertDraftReplaceAllCardSubtitle: 'Auf der Seite wird jedes „{from}“ zu „{to}“.',
       insertDraftReplaceAllConfirm: 'Alle ersetzen',

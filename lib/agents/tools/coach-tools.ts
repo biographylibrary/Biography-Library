@@ -7,6 +7,7 @@ import {
   countDraftWords,
   isValidDraftSectionKey,
   MAX_DRAFT_WORDS,
+  replacePassageExists,
 } from '@/lib/echo/apply-draft';
 
 export { MAX_DRAFT_WORDS };
@@ -47,6 +48,9 @@ export const COACH_TOOL_DEFINITIONS: ToolDefinition[] = [
         'To replace a passage, set replaceText to the exact current words and draftText to the new words. ' +
         'To change every occurrence, including a punctuation mark such as a long dash — or –, set replaceAll true. ' +
         'If replaceText is omitted, the text is added at the end. Never do that when the author asked to change existing text. ' +
+        'replaceText must be ONE continuous passage copied exactly from the document, as short as possible (the sentence, or the few words around the change); ' +
+        'never join pieces from different places or paragraphs. To delete words, replace the short passage that contains them with the same passage without them. ' +
+        'If the passage is not found, nothing is proposed and you get an error: read the document again and retry with a shorter exact passage. ' +
         'Do not tell them to open the editor.',
       parameters: {
         type: 'object',
@@ -62,7 +66,7 @@ export const COACH_TOOL_DEFINITIONS: ToolDefinition[] = [
           replaceText: {
             type: 'string',
             description:
-              'The exact current passage to replace, copied from the document. Can be one character, such as —.',
+              'The exact current passage to replace, copied letter for letter from the document: one continuous piece, never pieces joined from different places. Short is better. Can be one character, such as —.',
           },
           replaceAll: {
             type: 'boolean',
@@ -256,6 +260,27 @@ export async function executeCoachTool(
       }
 
       if (ctx.deferDraftApply) {
+        // Una scheda «Sostituisci» ha senso solo se il pezzo esiste davvero nel testo salvato.
+        // Se manca, l'errore torna al modello (che può rileggere il documento e riprovare) e
+        // l'autore non vede una scheda che poi non funziona.
+        if (replaceText.trim()) {
+          const found = await replacePassageExists(serviceClient, userId, biographyId, sectionKey, draftText, {
+            replaceText,
+            ...(replaceAll ? { replaceAll: true } : {}),
+          });
+          if (found === false) {
+            return {
+              content: JSON.stringify({
+                error:
+                  'replaceText was not found in the document, so nothing was proposed. ' +
+                  'It must be ONE continuous passage copied exactly from the document, never pieces joined from different places or paragraphs. ' +
+                  'Call read_section with sectionKey "freeflow", copy a short exact passage (the sentence, or the few words around the change) and call propose_draft again. ' +
+                  'To delete words, replace the short passage that contains them with the same passage without them. ' +
+                  'If you still cannot find it, tell the author plainly that you could not make the change.',
+              }),
+            };
+          }
+        }
         return {
           content: JSON.stringify({
             ok: true,
