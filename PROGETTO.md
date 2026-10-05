@@ -158,6 +158,7 @@ Fondatore unico, non sviluppatore: costruisce con Claude Code e Cursor. Non ci s
 
 **Test**
 - Vitest in CI: identificativo UM (otto vettori), agenti, pubblicazione, TTS, export permanenza, luoghi, lista d’attesa
+- Prove dei componenti (6 ottobre 2026): `jsdom`, `@testing-library/react` e `user-event` come dipendenze di sviluppo. Un test di componente sta in `components/**/__tests__/*.test.tsx` e sceglie il browser simulato con `// @vitest-environment jsdom` in testa al file (gli altri test restano in Node). Primo uso: `PlaceSearchField` dentro una finestra modale di Radix, dove user-event rifiuta il clic su un elemento fuori dal contenuto della finestra (`pointer-events: none` sul body), come succedeva davvero. jsdom è alla serie 26 perché la verifica automatica usa Node 20 e le serie successive richiedono Node 22 o superiore.
 
 ---
 

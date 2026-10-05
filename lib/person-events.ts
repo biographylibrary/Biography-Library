@@ -48,6 +48,26 @@ export const EMPTY_PLACE: PlaceSelection = {
   wikidataQid: null,
 };
 
+type WithPlace = { place: PlaceSelection | null; placeQuery: string };
+
+/**
+ * L'autore scrive nel campo del luogo: il testo cambia e un luogo già scelto non vale più.
+ * Una sola modifica dello stato per gesto: chiamare due funzioni di seguito sullo stesso
+ * modulo con una copia vecchia dello stato farebbe vincere l'ultima e perdere la prima.
+ */
+export function withPlaceQuery<T extends WithPlace>(row: T, placeQuery: string): T {
+  return { ...row, placeQuery, place: null };
+}
+
+/** L'autore sceglie un luogo dall'elenco: il testo del campo diventa il nome scelto. */
+export function withPlaceSelection<T extends WithPlace>(row: T, place: PlaceSelection | null): T {
+  return {
+    ...row,
+    place,
+    placeQuery: place?.nameCurrent || place?.nameAsGiven || row.placeQuery,
+  };
+}
+
 export function emptyEventForm(): EventFormState {
   return {
     id: null,
