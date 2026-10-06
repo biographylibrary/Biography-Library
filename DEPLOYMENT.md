@@ -143,6 +143,7 @@ The Next.js application is hosted on an **Infomaniak Jelastic** Node.js containe
 To deploy a new version:
 
 1. Merge to `main` — GitHub Actions SSH deploy runs automatically (see `.github/workflows/deploy.yml`).
+   Deploys run one at a time (`concurrency` group `deploy-jelastic` in the workflow). If two merges land within minutes, the second deploy waits for the first; if more than one is waiting, only the newest is kept (it contains the earlier commits), and the replaced runs show as "cancelled" in the Actions list. A deploy already running is never interrupted, because stopping it between `docker stop` and `docker run` would leave the app down. Before this rule, two merges 20 seconds apart (5 October 2026, run #94) started two deploys at once and the second failed with "container name /bl-app is already in use".
 2. Or manually on the node: `cd /opt/bl-app`, `git pull`, `docker build` + `docker run` as in the workflow.
 3. Verify env vars in `/opt/bl-app/.env` (also passed as `--env-file` to the container).
 4. After deploy, check disk: `docker system df` (see Docker disk maintenance below).
