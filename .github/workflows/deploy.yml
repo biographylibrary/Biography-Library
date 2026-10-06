@@ -5,6 +5,17 @@ on:
     branches:
       - main
 
+# Un deploy alla volta. Due unioni a pochi secondi di distanza facevano partire due deploy insieme
+# sullo stesso nodo: entrambi fermano e ricreano il container `bl-app`, e il secondo falliva con
+# «container name /bl-app is already in use» (5 ottobre 2026, deploy #94), con il rischio che restasse
+# in linea il commit più vecchio. Così il secondo aspetta che il primo finisca; se se ne accodano più
+# di uno resta solo il più recente, che contiene sempre anche i commit precedenti di `main`.
+# `cancel-in-progress: false` lascia finire il deploy già avviato: interromperlo a metà, fra lo stop
+# e l'avvio del container, lascerebbe l'app spenta.
+concurrency:
+  group: deploy-jelastic
+  cancel-in-progress: false
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
