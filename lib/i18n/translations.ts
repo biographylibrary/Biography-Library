@@ -1069,6 +1069,10 @@ export interface Translations {
     fileTooLarge: string;
     invalidFileType: string;
     uploadError: string;
+    heicUnsupported: string;
+    fileCorrupt: string;
+    tooManyPixels: string;
+    photosLocked: string;
     limitReached: string;
     deleteError: string;
     viewGrid: string;
@@ -2788,9 +2792,13 @@ export const translations: Record<Language, Translations> = {
       deleteConfirmTitle: 'Delete photo',
       deleteConfirmMessage: 'Are you sure you want to delete this photo? This action cannot be undone.',
       uploadProgress: 'Uploading...',
-      fileTooLarge: 'File is too large. Maximum size is 5 MB.',
+      fileTooLarge: 'File is too large. Maximum size is 20 MB.',
       invalidFileType: 'Invalid file type. Please upload a JPG, PNG, or WEBP image.',
       uploadError: 'Failed to upload photo. Please try again.',
+      heicUnsupported: 'HEIC photos are not supported. Save the photo as JPEG and try again.',
+      fileCorrupt: 'The file is damaged or is not a readable image. Try another photo.',
+      tooManyPixels: 'The image is too large (too many pixels). Reduce its resolution and try again.',
+      photosLocked: 'The biography can no longer be edited in its current state, so photos cannot be added.',
       limitReached: 'You have reached the maximum of {max} photos per biography.',
       deleteError: 'Failed to delete photo. Please try again.',
       viewGrid: 'Thumbnail view',
@@ -4539,9 +4547,13 @@ export const translations: Record<Language, Translations> = {
       deleteConfirmTitle: 'Elimina foto',
       deleteConfirmMessage: 'Sei sicuro di voler eliminare questa foto? Questa azione non può essere annullata.',
       uploadProgress: 'Caricamento...',
-      fileTooLarge: 'Il file è troppo grande. La dimensione massima è 5 MB.',
+      fileTooLarge: 'Il file è troppo grande. La dimensione massima è 20 MB.',
       invalidFileType: 'Tipo di file non valido. Carica un\'immagine JPG, PNG o WEBP.',
       uploadError: 'Caricamento foto fallito. Riprova.',
+      heicUnsupported: 'Il formato HEIC non è supportato. Salva la foto come JPEG e riprova.',
+      fileCorrupt: 'Il file è danneggiato o non è un\'immagine leggibile. Prova con un\'altra foto.',
+      tooManyPixels: 'L\'immagine è troppo grande (troppi pixel). Riduci la risoluzione e riprova.',
+      photosLocked: 'In questo stato la biografia non si può più modificare, quindi non è possibile aggiungere foto.',
       limitReached: 'Hai raggiunto il massimo di {max} foto per biografia.',
       deleteError: 'Eliminazione foto fallita. Riprova.',
       viewGrid: 'Vista miniature',
@@ -6290,9 +6302,13 @@ export const translations: Record<Language, Translations> = {
       deleteConfirmTitle: 'Supprimer la photo',
       deleteConfirmMessage: 'Êtes-vous sûr de vouloir supprimer cette photo ? Cette action est irréversible.',
       uploadProgress: 'Téléchargement...',
-      fileTooLarge: 'Fichier trop volumineux. La taille maximale est de 5 Mo.',
+      fileTooLarge: 'Fichier trop volumineux. La taille maximale est de 20 Mo.',
       invalidFileType: 'Type de fichier invalide. Veuillez télécharger une image JPG, PNG ou WEBP.',
       uploadError: 'Échec du téléchargement. Veuillez réessayer.',
+      heicUnsupported: 'Le format HEIC n\'est pas pris en charge. Enregistrez la photo en JPEG et réessayez.',
+      fileCorrupt: 'Le fichier est endommagé ou n\'est pas une image lisible. Essayez avec une autre photo.',
+      tooManyPixels: 'L\'image est trop grande (trop de pixels). Réduisez sa résolution et réessayez.',
+      photosLocked: 'Dans son état actuel, la biographie ne peut plus être modifiée : il n\'est pas possible d\'ajouter des photos.',
       limitReached: 'Vous avez atteint le maximum de {max} photos par biographie.',
       deleteError: 'Échec de la suppression. Veuillez réessayer.',
       viewGrid: 'Vue miniatures',
@@ -8041,9 +8057,13 @@ export const translations: Record<Language, Translations> = {
       deleteConfirmTitle: 'Foto löschen',
       deleteConfirmMessage: 'Möchten Sie dieses Foto wirklich löschen? Diese Aktion kann nicht rückgängig gemacht werden.',
       uploadProgress: 'Wird hochgeladen...',
-      fileTooLarge: 'Datei zu groß. Maximale Größe ist 5 MB.',
+      fileTooLarge: 'Datei zu groß. Maximale Größe ist 20 MB.',
       invalidFileType: 'Ungültiger Dateityp. Bitte laden Sie ein JPG-, PNG- oder WEBP-Bild hoch.',
       uploadError: 'Foto konnte nicht hochgeladen werden. Bitte versuchen Sie es erneut.',
+      heicUnsupported: 'Das HEIC-Format wird nicht unterstützt. Speichern Sie das Foto als JPEG und versuchen Sie es erneut.',
+      fileCorrupt: 'Die Datei ist beschädigt oder kein lesbares Bild. Versuchen Sie es mit einem anderen Foto.',
+      tooManyPixels: 'Das Bild ist zu groß (zu viele Pixel). Verringern Sie die Auflösung und versuchen Sie es erneut.',
+      photosLocked: 'In ihrem aktuellen Zustand kann die Biografie nicht mehr bearbeitet werden: Es können keine Fotos hinzugefügt werden.',
       limitReached: 'Sie haben das Maximum von {max} Fotos pro Biografie erreicht.',
       deleteError: 'Foto konnte nicht gelöscht werden. Bitte versuchen Sie es erneut.',
       viewGrid: 'Miniaturansicht',

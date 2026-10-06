@@ -16,7 +16,7 @@ Fondatore unico, non sviluppatore: costruisce con Claude Code e Cursor. Non ci s
 
 ---
 
-## Stato dell'implementazione (30 settembre 2026)
+## Stato dell'implementazione (6 ottobre 2026)
 
 ### Blocco 1: strumenti di intelligenza artificiale (30 settembre 2026, ramo `blocco-1-strumenti-ai`)
 
@@ -45,6 +45,24 @@ Fondatore unico, non sviluppatore: costruisce con Claude Code e Cursor. Non ci s
 5. *Lo staff può ancora scrivere nelle bozze altrui* dal browser (policy di UPDATE di `biographies`; righe di `biography_media` e `biography_book_structure`, le cui policy controllano solo `user_id`). Anche questo nell'elenco della sicurezza.
 6. *I pannelli foto, struttura del libro e importazione non hanno una vera modalità di sola lettura*: fuori dagli stati di lavoro non si aprono e un avviso lo dice.
 
+### Blocco 4: foto (6 ottobre 2026, ramo `blocco-4-foto`)
+
+**Cambiato**: il caricamento delle foto non passa più dal browser. Prima il browser scriveva il file direttamente nel bucket `biography-photos` (nessun limite vero di peso né di dimensioni, EXIF e posizione GPS compresi, nessun controllo sul contenuto). Ora il browser manda il file alla rotta `POST /api/biography/[id]/media` (`app/api/biography/[id]/media/route.ts`, Node), che controlla chi scrive (proprietario, account attivo, scheda non congelata, stato di lavoro), controlla il contenuto dai primi byte (JPEG, PNG, WebP; HEIC e GIF no), elabora con `sharp` (`lib/server/photo-processing.ts`) e scrive con la chiave di servizio. L'elaborazione applica l'orientamento EXIF ai pixel, converte in sRGB, toglie ogni metadato (EXIF, XMP, IPTC, GPS, profilo colore), appiattisce la trasparenza su bianco, porta il lato lungo a 2560 pixel per la galleria e a 3100 per le copertine (`cover`, `cover_a5`) senza mai ingrandire, e salva in JPEG progressivo mozjpeg qualità 85. Il file elaborato sostituisce quello di partenza, che non viene conservato. Limite in ingresso 20 MB, tetto di 150 milioni di pixel contro le bombe di decompressione. La galleria resta a 15 foto per biografia (era 30 nel codice e 10 nel vecchio controllo del database: ora è 15 ovunque, con un test che lo verifica).
+
+**Colonne nuove** in `biography_media` (tutte facoltative): `width`, `height`, `bytes`, `original_bytes`. Nulle significa «non ancora elaborata dal server».
+
+**Porta del browser chiusa**: la migrazione `20261006120000_storage_biography_photos_server_only_writes` toglie al browser le policy di inserimento e di aggiornamento sul bucket (restano la lettura delle proprie foto e la cancellazione) e fissa sul bucket il limite di 20 MiB per file, lo stesso numero della rotta e del pannello foto: «20 MB per immagine» vale in tutti e tre i punti, e un test li tiene uguali. La guida e la base di conoscenza di Echo dicevano «foto fino a 5 MB», un valore che non corrispondeva più a niente: ora dicono 20 MB nelle quattro lingue. Chi scrive è solo il server. Va applicata DOPO il deploy della rotta, altrimenti il vecchio codice, che scrive dal browser, smette di funzionare. Anche il secondo punto da cui il browser scriveva nel bucket, il salvataggio della copertina originale (`lib/editor/save-original-cover.ts`), passa dalla stessa rotta.
+
+**Il bucket sotto controllo di versione**: `20261006100000_storage_biography_photos_bucket` descrive il bucket `biography-photos` (privato, senza limite di peso né elenco di tipi ammessi) e le sue quattro policy sulla cartella dell'utente (inserimento, lettura, aggiornamento, cancellazione). In produzione esisteva già, creato a mano: la migrazione lo rende ripetibile (utile per la Fase 2) e non cambia nulla dove c'è già.
+
+**Foto già caricate**: lo script `scripts/recompress-photos.ts` (`npm run photos:recompress`) lavora per impostazione predefinita in simulazione e riporta per ogni foto peso attuale e stimato. Con `--apply` scrive il file nuovo con un percorso nuovo, lo rilegge e controlla che sia quello atteso, aggiorna la riga e controlla dove punta, e solo dopo cancella il vecchio; se un passo fallisce il vecchio resta e la riga torna com'era. Se due righe condividono lo stesso file (le copertine `cover` e `cover_a5`) il vecchio si cancella solo quando nessuna lo usa più. Non tocca mai il bucket `archive`. **Decisione del 6 ottobre 2026: le foto già presenti non si ricomprimono**, restano com'erano (con le colonne di dimensione nulle: «non ancora elaborata dal server»); lo script resta a disposizione e `--apply` non si esegue. Simulazione del 6 ottobre 2026 sulla produzione: 70 foto, 28,31 MB prima, 10,45 MB stimati dopo; cinque foto sopra 1 MB passano da 20,75 a 2,46 MB, le altre 65 (immagini del catalogo demo già compresse) crescono di circa il 7% perché si tolgono i metadati.
+
+**PDF con 15 foto a tutta pagina** (test `lib/pdf/__tests__/pdf-with-photos.test.ts`, generatore vero, foto da 12 megapixel): con le foto di partenza il PDF pesa 61,10 MB, con quelle compresse 7,02 MB; stesse 19 pagine e 16 immagini.
+
+**Da sapere**: in Next 13.5 il pacchetto `standalone` non contiene il binario nativo di `sharp` (`@img/sharp-<piattaforma>`, caricato con un `require` dinamico che il tracciamento non vede; `outputFileTracingIncludes` non vale per le rotte dell'App Router in questa versione). Il `Dockerfile` lo copia a mano; senza quella riga la rotta risponderebbe 500 solo in produzione. Il workflow `.github/workflows/docker-image.yml` costruisce l'immagine e prova che `sharp` funzioni dentro.
+
+**Aperto**: (1) la porta più larga di `biography_media`, l'inserimento e l'aggiornamento diretti dal browser con un `file_url` scelto dall'autore (un indirizzo falso nella riga, non un file nel bucket), resta, ed è nell'elenco della sicurezza; (2) il bucket non ha ancora un elenco di tipi ammessi (`allowed_mime_types`): ora che nessun browser scrive si può impostare senza rischi (`image/jpeg`); il limite di peso, 20 MiB, arriva con la migrazione `20261006120000`; (3) un eventuale limite di corpo della richiesta davanti all'applicazione (nginx del nodo Jelastic) va controllato sui 20 MB; (4) la base di conoscenza di Echo nel database dice ancora 30 foto e 5 MB fino al prossimo `kb:seed` (comando manuale che scrive in produzione, non eseguito).
+
 ### Funzionalità utente completate
 
 **Autenticazione e profilo**
@@ -60,7 +78,7 @@ Fondatore unico, non sviluppatore: costruisce con Claude Code e Cursor. Non ci s
 - Importazione che conserva grassetto, corsivo e titoli. Accetta testo incollato, Word, txt, rtf, e un PDF digitale il cui testo si può selezionare. Se c’è già del testo, si chiede se sostituirlo o aggiungerlo in fondo. Un PDF solo fotografato o scansionato non viene letto
 - Echo può sostituire un passaggio, o ogni occorrenza di un segno (per esempio un trattino lungo), dentro il foglio. L’ultima modifica di Echo si può annullare. Il pezzo cambiato resta in grassetto per pochi secondi, senza essere salvato così
 - I file dell’editor che servivano alle nove sezioni fisse sono stati rimossi
-- Galleria foto fino a 15 immagini per biografia
+- Galleria foto fino a 15 immagini per biografia; il file si controlla e si comprime sul server prima di salvarlo (blocco 4, 6 ottobre 2026)
 - Struttura libro: dedica, prefazione, copyright, nota dell'autore
 - Cooldown tra capitoli pubblicati (per utenti free, bypassato per staff)
 - Cronologia revisioni delle sezioni: il servizio (`lib/revision-history-service.ts`) era usato solo dalla revisione di sezione con IA, tolta il 30 settembre 2026; la colonna `biography_sections.revision_history` resta nel database
@@ -291,6 +309,7 @@ app/
   admin/            # pannello moderatori e staff
 
 lib/
+  server/photo-processing.ts / photo-storage.ts / photo-recompression.ts   # foto: elaborazione sharp, bucket, ricompressione
   um.ts / um-id.ts / edtf.ts / rights.ts / nfc.ts / record-language.ts
   permanence-text-export.ts   # export testo + linee header/colophon PDF
   person-events.ts / person-relations.ts
@@ -312,4 +331,4 @@ components/
 
 ---
 
-*Ultimo aggiornamento: 30 settembre 2026 (blocco 1, strumenti di intelligenza artificiale)*
+*Ultimo aggiornamento: 6 ottobre 2026 (blocco 4, foto elaborate sul server)*

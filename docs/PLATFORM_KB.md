@@ -56,7 +56,7 @@ Memorial biographies only. There is no status called provisional. The 30-day win
 
 ## book_structure_photos
 
-Book Structure panel (left sidebar): optional front matter (Dedication, Epigraph, Preface) and back matter (Epilogue, Acknowledgements, Credits) for PDF export. Notes & To-Do: private notepad, not exported. Photos: upload JPG/PNG/WEBP up to 5 MB, max 15 gallery photos, captions, reorder by drag; included in online reader and PDF gallery after last chapter.
+Book Structure panel (left sidebar): optional front matter (Dedication, Epigraph, Preface) and back matter (Epilogue, Acknowledgements, Credits) for PDF export. Notes & To-Do: private notepad, not exported. Photos: upload JPG/PNG/WEBP up to 20 MB each (the server resizes and compresses them, and removes the location and other hidden data), max 15 gallery photos, captions, reorder by drag; included in online reader and PDF gallery after last chapter.
 
 ## import_export
 

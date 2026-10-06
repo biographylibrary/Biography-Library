@@ -1,0 +1,84 @@
+name: Docker image
+
+# Costruisce l'immagine di produzione (lo stesso Dockerfile del deploy) e prova che dentro funzioni
+# sharp, la libreria che elabora le foto. Il motivo: in Next 13.5 il pacchetto `standalone` non
+# contiene il binario nativo di sharp, e il Dockerfile lo copia a mano (vedi i commenti in
+# next.config.js e nel Dockerfile). Se quella copia sparisce o cambia la piattaforma, il caricamento
+# delle foto smette di funzionare solo in produzione, e questa verifica lo trova prima.
+#
+# Parte solo quando cambia qualcosa che può rompere l'immagine, e a mano (Actions > Docker image >
+# Run workflow). Costruire l'immagine richiede alcuni minuti.
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - Dockerfile
+      - .dockerignore
+      - package.json
+      - package-lock.json
+      - next.config.js
+      - lib/server/photo-processing.ts
+      - 'app/api/biography/**/media/**'
+      - .github/workflows/docker-image.yml
+  workflow_dispatch:
+
+jobs:
+  sharp-in-image:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build the production image
+        run: docker build -t bl-app:smoke .
+
+      - name: sharp works in the image, with the same processing as the photo route
+        run: |
+          docker run --rm bl-app:smoke node -e '
+          const sharp = require("sharp");
+          const fail = (m) => { console.error("FAIL:", m); process.exit(1); };
+          (async () => {
+            console.log("sharp", sharp.versions.sharp, "| libvips", sharp.versions.vips, "| heif", sharp.versions.heif);
+            // Una foto con EXIF e posizione, orientamento 6, più grande del limite.
+            const input = await sharp({ create: { width: 4000, height: 3000, channels: 3, background: { r: 200, g: 100, b: 50 } } })
+              .withExif({ IFD0: { Make: "test" }, IFD3: { GPSLatitudeRef: "N", GPSLatitude: "44/1 24/1 0/1", GPSLongitudeRef: "E", GPSLongitude: "8/1 55/1 0/1" } })
+              .jpeg({ quality: 90 }).toBuffer();
+            if (!(await sharp(input).metadata()).exif) fail("la foto di prova non ha EXIF");
+            const { data, info } = await sharp(input, { failOn: "truncated", limitInputPixels: 150000000 })
+              .rotate().flatten({ background: "#ffffff" }).toColourspace("srgb")
+              .resize({ width: 2560, height: 2560, fit: "inside", withoutEnlargement: true })
+              .jpeg({ quality: 85, mozjpeg: true, progressive: true })
+              .toBuffer({ resolveWithObject: true });
+            const meta = await sharp(data).metadata();
+            if (info.width !== 2560 || info.height !== 1920) fail("dimensioni inattese " + info.width + "x" + info.height);
+            if (meta.exif || meta.xmp || meta.icc) fail("sono rimasti metadati");
+            if (data.includes(Buffer.from("Exif"))) fail("nel file resta traccia di EXIF");
+            if (!meta.isProgressive) fail("il JPEG non è progressivo");
+            console.log("OK:", info.width + "x" + info.height, info.format, data.length + " byte, senza metadati, progressivo");
+          })().catch((e) => fail(e.message));
+          '
+
+      - name: The photo route loads in the running container
+        run: |
+          docker run -d --name bl -p 3000:3000 \
+            -e NEXT_PUBLIC_SUPABASE_URL=https://placeholder.supabase.co \
+            -e NEXT_PUBLIC_SUPABASE_ANON_KEY=placeholder-anon-key \
+            -e SUPABASE_SERVICE_ROLE_KEY=placeholder-service-key \
+            bl-app:smoke
+          for i in $(seq 1 40); do
+            curl -s -o /dev/null http://localhost:3000/login && break
+            sleep 2
+          done
+          # Senza accesso la rotta risponde 401: perché ci arrivi, il suo modulo deve essersi caricato,
+          # e importa sharp. Se il binario mancasse risponderebbe 500.
+          code=$(curl -s -o /tmp/response.txt -w '%{http_code}' -X POST \
+            http://localhost:3000/api/biography/00000000-0000-0000-0000-000000000000/media)
+          echo "HTTP $code"; cat /tmp/response.txt; echo
+          docker logs bl 2>&1 | tail -n 20
+          if docker logs bl 2>&1 | grep -qi 'could not load the "sharp" module'; then
+            echo 'sharp non si carica nell immagine'; exit 1
+          fi
+          test "$code" = "401"

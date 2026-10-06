@@ -72,7 +72,11 @@ export function buildFinalVersionPayload(
   };
 }
 
-/** Riga di `biography_media` per una foto caricata. */
+/**
+ * Riga di `biography_media` per una foto caricata. `dimensions` è scritto solo dal server dopo
+ * l'elaborazione (rotta `/api/biography/[id]/media`): larghezza e altezza del file salvato, la sua
+ * dimensione e quella del file di partenza.
+ */
 export function buildMediaInsertPayload(params: {
   biographyId: string;
   userId: string;
@@ -80,6 +84,7 @@ export function buildMediaInsertPayload(params: {
   fileName: string;
   layout: string;
   displayOrder: number;
+  dimensions?: { width: number; height: number; bytes: number; originalBytes: number };
 }) {
   return {
     biography_id: params.biographyId,
@@ -89,5 +94,13 @@ export function buildMediaInsertPayload(params: {
     caption: '',
     layout: params.layout,
     display_order: params.displayOrder,
+    ...(params.dimensions
+      ? {
+          width: params.dimensions.width,
+          height: params.dimensions.height,
+          bytes: params.dimensions.bytes,
+          original_bytes: params.dimensions.originalBytes,
+        }
+      : {}),
   };
 }

@@ -1,6 +1,6 @@
 'use client';
 
-import { buildMediaInsertPayload } from '@/lib/editor/write-payloads';
+import { uploadBiographyPhoto, PHOTO_UPLOAD_MAX_BYTES, type PhotoUploadErrorCode } from '@/lib/client/biography-photo-upload';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { supabase } from '@/lib/supabase';
 import { useTranslation } from '@/lib/i18n/i18n-context';
@@ -37,19 +37,26 @@ interface MediaRow {
   layout: string;
   display_order: number;
   created_at: string;
+  /** Scritte dal server dopo l'elaborazione; nulle per le foto caricate prima. */
+  width?: number | null;
+  height?: number | null;
+  bytes?: number | null;
+  original_bytes?: number | null;
   previewUrl?: string;
 }
 
 interface PhotoGalleryPanelProps {
   biographyId: string;
-  userId: string;
+  /** Non serve più al pannello (il server ricava l'utente dal token); resta perché i chiamanti lo passano. */
+  userId?: string;
   onClose?: () => void;
   /** Render inside EditorSidebarDialog (no panel chrome) */
   embedded?: boolean;
 }
 
-const ACCEPTED_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
-const MAX_BYTES = 5 * 1024 * 1024;
+// Il tipo del file lo decide il server dal contenuto, non dal nome né dal tipo dichiarato dal browser.
+// Il limite di dimensione è quello del server: chi carica dal telefono non deve rimpicciolire le foto.
+const MAX_BYTES = PHOTO_UPLOAD_MAX_BYTES;
 const SIGNED_URL_EXPIRES = 3600;
 
 type GalleryViewMode = 'grid' | 'detail';
@@ -283,7 +290,7 @@ function PhotoCard({
   );
 }
 
-export function PhotoGalleryPanel({ biographyId, userId, onClose, embedded }: PhotoGalleryPanelProps) {
+export function PhotoGalleryPanel({ biographyId, onClose, embedded }: PhotoGalleryPanelProps) {
   const { t } = useTranslation();
   const [items, setItems] = useState<MediaRow[]>([]);
   const [uploading, setUploading] = useState(false);
@@ -352,92 +359,66 @@ export function PhotoGalleryPanel({ biographyId, userId, onClose, embedded }: Ph
     load();
   }, [load]);
 
+  /** Messaggio per l'autore dato il codice con cui il server ha rifiutato la foto. */
+  const uploadErrorMessage = useCallback(
+    (code: PhotoUploadErrorCode, max?: number) => {
+      switch (code) {
+        case 'file_too_large':
+          return t.photos.fileTooLarge;
+        case 'gallery_limit':
+          return t.photos.limitReached.replace('{max}', String(max ?? MAX_BIOGRAPHY_GALLERY_PHOTOS));
+        case 'unsupported_type':
+          return t.photos.invalidFileType;
+        case 'heic_unsupported':
+          return t.photos.heicUnsupported;
+        case 'corrupt_image':
+          return t.photos.fileCorrupt;
+        case 'too_many_pixels':
+          return t.photos.tooManyPixels;
+        case 'text_locked':
+        case 'biography_frozen':
+          return t.photos.photosLocked;
+        default:
+          return t.photos.uploadError;
+      }
+    },
+    [t]
+  );
+
   const uploadSpecialCover = useCallback(
     async (file: File, layout: 'cover' | 'cover_a5') => {
       setErrorMsg(null);
 
-      if (!ACCEPTED_TYPES.includes(file.type)) {
-        setErrorMsg(t.photos.invalidFileType);
-        return;
-      }
       if (file.size > MAX_BYTES) {
         setErrorMsg(t.photos.fileTooLarge);
         return;
       }
 
-      const existing = items.find((i) => i.layout === layout);
-      const localPreview = URL.createObjectURL(file);
-      objectUrlsRef.current.push(localPreview);
-
       setUploading(true);
       setUploadProgress(10);
 
       try {
-        if (existing) {
-          const path = storagePathFromUrl(existing.file_url);
-          if (path) await supabase.storage.from('biography-photos').remove([path]);
-          await supabase.from('biography_media').delete().eq('id', existing.id);
-        }
-
-        const ext = file.name.split('.').pop() ?? 'jpg';
-        const uniqueName = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
-        const storagePath = `${userId}/${biographyId}/${uniqueName}`;
-
-        const { error: uploadError } = await supabase.storage
-          .from('biography-photos')
-          .upload(storagePath, file, { cacheControl: '3600', upsert: false });
-
-        setUploadProgress(70);
-
-        if (uploadError) {
-          setErrorMsg(t.photos.uploadError);
-          URL.revokeObjectURL(localPreview);
-          return;
-        }
-
-        const { data: urlData } = supabase.storage.from('biography-photos').getPublicUrl(storagePath);
-        const fileUrl = urlData?.publicUrl ?? storagePath;
-
-        const { data: inserted, error: insertError } = await supabase
-          .from('biography_media')
-          .insert(
-            buildMediaInsertPayload({
-              biographyId,
-              userId,
-              fileUrl,
-              fileName: file.name,
-              layout,
-              displayOrder: 0,
-            })
-          )
-          .select()
-          .maybeSingle();
-
+        // Il server controlla, elabora e scrive; la copertina di prima la toglie lui, a caricamento riuscito.
+        const result = await uploadBiographyPhoto<MediaRow>(biographyId, file, layout);
         setUploadProgress(100);
 
-        if (insertError || !inserted) {
-          await supabase.storage.from('biography-photos').remove([storagePath]);
-          setErrorMsg(t.photos.uploadError);
-          URL.revokeObjectURL(localPreview);
-        } else {
-          await load();
+        if (!result.ok) {
+          setErrorMsg(uploadErrorMessage(result.code, result.max));
+          return;
         }
+        await load();
       } finally {
         setUploading(false);
         setUploadProgress(0);
       }
     },
-    [biographyId, userId, items, t, load]
+    [biographyId, t, load, uploadErrorMessage]
   );
 
   const handleFileSelect = useCallback(
     async (file: File) => {
       setErrorMsg(null);
 
-      if (!ACCEPTED_TYPES.includes(file.type)) {
-        setErrorMsg(t.photos.invalidFileType);
-        return;
-      }
       if (file.size > MAX_BYTES) {
         setErrorMsg(t.photos.fileTooLarge);
         return;
@@ -455,66 +436,24 @@ export function PhotoGalleryPanel({ biographyId, userId, onClose, embedded }: Ph
       setUploading(true);
       setUploadProgress(10);
 
-      const ext = file.name.split('.').pop() ?? 'jpg';
-      const uniqueName = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
-      const storagePath = `${userId}/${biographyId}/${uniqueName}`;
+      try {
+        const result = await uploadBiographyPhoto<MediaRow>(biographyId, file, 'full-page');
+        setUploadProgress(100);
 
-      const { error: uploadError } = await supabase.storage
-        .from('biography-photos')
-        .upload(storagePath, file, { cacheControl: '3600', upsert: false });
+        if (!result.ok) {
+          setErrorMsg(uploadErrorMessage(result.code, result.max));
+          URL.revokeObjectURL(localPreview);
+          return;
+        }
 
-      setUploadProgress(70);
-
-      if (uploadError) {
-        setErrorMsg(t.photos.uploadError);
+        setItems((prev) => [...prev, { ...result.media, previewUrl: localPreview }]);
+        setSelectedId(result.media.id);
+      } finally {
         setUploading(false);
         setUploadProgress(0);
-        URL.revokeObjectURL(localPreview);
-        return;
       }
-
-      const { data: urlData } = supabase.storage
-        .from('biography-photos')
-        .getPublicUrl(storagePath);
-
-      const fileUrl = urlData?.publicUrl ?? storagePath;
-
-      const newOrder =
-        galleryItems.length > 0 ? Math.max(...galleryItems.map((i) => i.display_order)) + 1 : 0;
-
-      const { data: inserted, error: insertError } = await supabase
-        .from('biography_media')
-        .insert(
-          buildMediaInsertPayload({
-            biographyId,
-            userId,
-            fileUrl,
-            fileName: file.name,
-            layout: 'full-page',
-            displayOrder: newOrder,
-          })
-        )
-        .select()
-        .maybeSingle();
-
-      setUploadProgress(100);
-
-      if (insertError || !inserted) {
-        await supabase.storage.from('biography-photos').remove([storagePath]);
-        setErrorMsg(t.photos.uploadError);
-        URL.revokeObjectURL(localPreview);
-      } else {
-        setItems((prev) => [
-          ...prev,
-          { ...(inserted as MediaRow), previewUrl: localPreview },
-        ]);
-        setSelectedId((inserted as MediaRow).id);
-      }
-
-      setUploading(false);
-      setUploadProgress(0);
     },
-    [biographyId, userId, galleryItems, t]
+    [biographyId, galleryItems.length, t, uploadErrorMessage]
   );
 
   const handleFileInput = useCallback(
