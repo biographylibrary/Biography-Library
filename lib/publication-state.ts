@@ -42,6 +42,28 @@ export const AUTHOR_TEXT_WRITABLE_STATUSES = [
   'revision_requested',
 ] as const;
 
+/**
+ * Colonne di testo di `biographies` protette dai trigger a01_ e lette
+ * dall'impronta di pubblicazione. Stesso elenco di
+ * `biographies_author_text_columns()` in SQL — un test blocca le divergenze.
+ */
+export const BIOGRAPHIES_AUTHOR_TEXT_COLUMNS = [
+  'title',
+  'content',
+  'content_freeflow',
+  'final_version',
+  'narrative_order',
+  'author_name',
+  'subject_name',
+  'name_as_written',
+  'name_given',
+  'name_family',
+  'name_order',
+  'name_romanized',
+  'romanization_system',
+  'content_html_legacy',
+] as const;
+
 /** Author may change body text in this state (not yet locked for screening, review or publication). */
 export function isAuthorTextEditableStatus(status: BiographyPublicationStatus): boolean {
   return (AUTHOR_TEXT_WRITABLE_STATUSES as readonly string[]).includes(status);

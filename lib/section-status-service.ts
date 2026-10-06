@@ -1,6 +1,19 @@
 import { supabase } from './supabase';
+import { looksLikeStoredHtml, storedToArchiveMarkdown, storedToSafeHtml } from '@/lib/archive-markdown';
 
 export type SectionStatus = 'in_progress' | 'draft_1' | 'draft_2' | 'draft_3' | 'approved' | 'locked';
+
+export interface RevisionHistoryEntry {
+  version: number;
+  timestamp: string;
+  /** Archive Markdown when present; legacy HTML may remain until migration. */
+  content?: string;
+  ai_suggestions?: any[];
+  user_action?: string;
+  changeType?: string;
+  description?: string;
+  improvementsApplied?: number;
+}
 
 export interface SectionStatusData {
   biography_id: string;
@@ -8,12 +21,18 @@ export interface SectionStatusData {
   status: SectionStatus;
   draft_version: number;
   approved_at: string | null;
-  revision_history: Array<{
-    version: number;
-    timestamp: string;
-    ai_suggestions?: any[];
-    user_action?: string;
-  }>;
+  revision_history: RevisionHistoryEntry[];
+}
+
+/** Read a history entry body for the editor (Markdown-safe HTML). */
+export function revisionHistoryEntryToSafeHtml(entry: RevisionHistoryEntry): string {
+  if (!entry.content) return '';
+  return storedToSafeHtml(entry.content);
+}
+
+/** True when a history entry is still stored as HTML tags (pre-migration). */
+export function revisionHistoryEntryLooksLikeHtml(entry: RevisionHistoryEntry): boolean {
+  return !!entry.content && looksLikeStoredHtml(entry.content);
 }
 
 export async function getSectionStatus(
@@ -74,6 +93,7 @@ export async function addRevisionToHistory(
   sectionKey: string,
   revision: {
     version: number;
+    content?: string;
     ai_suggestions?: any[];
     user_action?: string;
   }
@@ -82,13 +102,15 @@ export async function addRevisionToHistory(
     const existing = await getSectionStatus(biographyId, sectionKey);
     if (!existing) return false;
 
-    const newHistory = [
-      ...(existing.revision_history || []),
-      {
-        ...revision,
-        timestamp: new Date().toISOString(),
-      },
-    ];
+    const entry: RevisionHistoryEntry = {
+      ...revision,
+      timestamp: new Date().toISOString(),
+      ...(revision.content !== undefined
+        ? { content: storedToArchiveMarkdown(revision.content) }
+        : {}),
+    };
+
+    const newHistory = [...(existing.revision_history || []), entry];
 
     return await updateSectionStatus(biographyId, sectionKey, {
       revision_history: newHistory,

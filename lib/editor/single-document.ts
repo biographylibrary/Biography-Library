@@ -65,6 +65,30 @@ export function sectionsToDocumentHtml(
     .join('');
 }
 
+/** Join imported chapters into one archive-Markdown sheet. */
+export function sectionsToDocumentMarkdown(
+  sections: Array<{ title: string; content: string }>
+): string {
+  return sections
+    .map((section) => {
+      const body = storedToArchiveMarkdown(section.content || '').trim();
+      const title = section.title.trim();
+      if (!title) return body;
+      const heading = `# ${title}`;
+      return body ? `${heading}\n\n${body}` : heading;
+    })
+    .filter(Boolean)
+    .join('\n\n');
+}
+
+export function appendMarkdown(existing: string, incoming: string): string {
+  const left = storedToArchiveMarkdown(existing).replace(/\s+$/, '');
+  const right = storedToArchiveMarkdown(incoming).replace(/^\s+/, '');
+  if (!left) return right;
+  if (!right) return left;
+  return `${left}\n\n${right}`;
+}
+
 export function appendChapter(stored: string, title: string): string {
   const heading = `# ${title.trim()}`;
   const base = storedToArchiveMarkdown(stored).replace(/\s+$/, '');

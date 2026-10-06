@@ -48,4 +48,13 @@ describe('percorsi di pubblicazione dal server', () => {
       expect(GATED_PATHS, `${file} scrive status: 'published' senza passare da gatedPublish`).toContain(file);
     }
   });
+
+  it('recordFormatConversionScreening non è importato da nessuna rotta app/api', () => {
+    const apiFiles = walk(join(ROOT, 'app', 'api'));
+    for (const file of apiFiles) {
+      const text = readFileSync(file, 'utf8');
+      expect(text).not.toMatch(/markdown-format-conversion/);
+      expect(text).not.toMatch(/recordFormatConversionScreening/);
+    }
+  });
 });

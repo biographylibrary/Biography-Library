@@ -16,8 +16,10 @@ import {
 import {
   archiveMarkdownToHtml,
   htmlToArchiveMarkdown,
-  storedToArchiveMarkdown,
+  normalizeArchiveMarkdown,
 } from '@/lib/archive-markdown';
+import { cleanEditorIncomingHtml } from '@/lib/editor-content-clean';
+import { nfc } from '@/lib/nfc';
 
 interface RichTextEditorProps {
   content: string;
@@ -32,6 +34,7 @@ interface RichTextEditorProps {
   /** Newly added or replaced text, shown in bold for a few seconds. */
   highlightChange?: { id: number; text: string } | null;
   undoLastChange?: { label: string; hint: string; onUndo: () => void };
+  onPasteWarnings?: (warnings: Array<'tables' | 'images'>) => void;
 }
 
 export function RichTextEditor({
@@ -46,34 +49,47 @@ export function RichTextEditor({
   aiUsageRefresh,
   highlightChange,
   undoLastChange,
+  onPasteWarnings,
 }: RichTextEditorProps) {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const lastExternalContentRef = useRef(content);
   const highlightTextRef = useRef(highlightChange?.text);
   highlightTextRef.current = highlightChange?.text;
+  const onPasteWarningsRef = useRef(onPasteWarnings);
+  onPasteWarningsRef.current = onPasteWarnings;
 
   const editor = useEditor({
     immediatelyRender: false,
     editable: !isPublished,
     extensions: [...archiveTiptapExtensions(placeholder), CharacterCount, echoChangeHighlight],
-    content: archiveMarkdownToHtml(storedToArchiveMarkdown(content || '')),
+    content: normalizeArchiveMarkdown(content || ''),
+    contentType: 'markdown',
     editorProps: {
       attributes: {
         class:
-          'w-full min-h-[200px] max-w-none focus:outline-none px-3 py-4 [&_p]:leading-[1.5] max-sm:!text-[length:calc(var(--writing-size)*0.85)]',
+          'w-full min-h-[200px] max-w-none focus:outline-none px-3 py-4 [&_p]:leading-[1.5] max-sm:!text-[length:calc(var(--writing-size)*0.85)] [&_hr]:border-0 [&_hr]:my-6 [&_hr]:text-center [&_hr]:before:content-["*_*_*"] [&_hr]:before:tracking-[0.4em] [&_hr]:before:text-muted-foreground',
+      },
+      transformPastedHTML(html) {
+        const cleaned = cleanEditorIncomingHtml(html);
+        if (cleaned.warnings.length) {
+          onPasteWarningsRef.current?.(cleaned.warnings);
+        }
+        return cleaned.html || archiveMarkdownToHtml(cleaned.markdown);
       },
     },
     onUpdate: ({ editor: instance }) => {
-      onChange(htmlToArchiveMarkdown(instance.getHTML()));
+      // Canonical storage: our serializer (escape + NFC + ***), not TipTap getMarkdown.
+      const markdown = nfc(htmlToArchiveMarkdown(instance.getHTML()));
+      onChange(markdown);
     },
   });
 
   useEffect(() => {
     if (!editor) return;
-    const incoming = storedToArchiveMarkdown(content || '');
+    const incoming = normalizeArchiveMarkdown(content || '');
     const current = htmlToArchiveMarkdown(editor.getHTML());
     if (incoming !== current) {
-      editor.commands.setContent(archiveMarkdownToHtml(incoming), { emitUpdate: false });
+      editor.commands.setContent(incoming, { contentType: 'markdown', emitUpdate: false });
 
       const grew = content.length > lastExternalContentRef.current.length;
       lastExternalContentRef.current = content;

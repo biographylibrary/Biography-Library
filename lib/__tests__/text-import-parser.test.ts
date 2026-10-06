@@ -39,16 +39,15 @@ We visited Corsica every summer.`;
     expect(parsed.content).toContain('single paragraph');
   });
 
-  it('converts plain paragraphs to HTML', () => {
+  it('converts plain paragraphs to archive Markdown', () => {
     const parsed = parsePastedText('First paragraph.\n\nSecond paragraph.', 'en');
-    expect(parsed.content).toContain('<p>First paragraph.</p>');
-    expect(parsed.content).toContain('<p>Second paragraph.</p>');
+    expect(parsed.content).toBe('First paragraph.\n\nSecond paragraph.');
   });
 
-  it('keeps bold and italics when the paste is already HTML', () => {
+  it('keeps bold and italics as Markdown when the paste is already HTML', () => {
     const parsed = parsePastedText('<p>Un <strong>fatto</strong> e una <em>voce</em>.</p>', 'it');
-    expect(parsed.content).toContain('<strong>fatto</strong>');
-    expect(parsed.content).toContain('<em>voce</em>');
+    expect(parsed.content).toContain('**fatto**');
+    expect(parsed.content).toContain('*voce*');
     expect(parsed.hasSections).toBe(false);
   });
 

@@ -8,13 +8,14 @@
  * --dry-run non scrive nulla. Stampa il rapporto e lo salva in
  * reports/markdown-legacy-dryrun.json (non va in git).
  *
- * --apply copia l’HTML in content_html_legacy e scrive il Markdown.
- * Non tocca una scheda pubblicata se c’è perdita di testo o di formattazione.
- * Non applica mai una perdita di testo, neanche sulle bozze.
- * Non tocca um_identifiers.
+ * --apply: per ogni scheda (a) copia l’HTML in biography_source_html_legacy
+ * (ON CONFLICT DO NOTHING, solo se è davvero HTML), (b) scrive il Markdown,
+ * (c) se pubblicata registra in publication_records una riga di screening
+ * «conversione di formato». Non legge né scrive content_html_legacy.
+ * Prima le bozze (poi controllo testo semplice), poi le pubblicate.
+ * Si ferma al primo errore. Rieseguibile senza effetti doppi.
  *
  * Richiede .env.local con NEXT_PUBLIC_SUPABASE_URL e SUPABASE_SERVICE_ROLE_KEY.
- * La colonna content_html_legacy deve esistere prima di --apply.
  */
 
 import { mkdirSync, readFileSync, writeFileSync, existsSync } from 'fs';
@@ -23,14 +24,18 @@ import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 import {
   BOOK_TEXT_FIELDS,
   assessFields,
-  collectContentFields,
-  convertedContent,
   decideApply,
-  htmlSnapshotFields,
   type ApplyDecision,
-  type StoredField,
 } from '@/lib/archive-markdown-legacy';
-import { storedToArchiveMarkdown } from '@/lib/archive-markdown';
+import {
+  applyMarkdownConversionToBiography,
+  assessBiographyConversion,
+  collectBiographyFields,
+  type BiographyConversionRow,
+  type BookRow,
+  type SectionRow,
+  verifyPlainTextIdentity,
+} from '@/lib/server/markdown-format-conversion';
 
 function loadEnv(): void {
   const envPath = resolve(process.cwd(), '.env.local');
@@ -67,29 +72,6 @@ if (!url || !key) {
   process.exit(1);
 }
 
-type BioRow = {
-  id: string;
-  slug: string | null;
-  title: string | null;
-  um_id: string | null;
-  status: string | null;
-  content: unknown;
-  content_freeflow: string | null;
-  final_version: string | null;
-  content_html_legacy: { fields?: Record<string, string> } | null;
-};
-
-type SectionRow = {
-  id: string;
-  biography_id: string;
-  section_key: string | null;
-  content: string | null;
-};
-
-type BookRow = {
-  biography_id: string;
-} & Record<(typeof BOOK_TEXT_FIELDS)[number], string | null>;
-
 type ReportRow = {
   id: string;
   um_id: string | null;
@@ -120,31 +102,21 @@ async function fetchAll<T>(
   return rows;
 }
 
-function bookFields(book: BookRow | undefined): StoredField[] {
-  if (!book) return [];
-  return BOOK_TEXT_FIELDS.map((name) => ({
-    path: `book.${name}`,
-    value: book[name],
-  }));
-}
-
 async function main(): Promise<void> {
   const supabase = createClient(url as string, key as string, {
     auth: { persistSession: false, autoRefreshToken: false },
   });
 
   const [bios, sections, books] = await Promise.all([
-    fetchAll<BioRow>(
+    fetchAll<BiographyConversionRow>(
       supabase,
       'biographies',
-      apply
-        ? 'id, slug, title, um_id, status, content, content_freeflow, final_version, content_html_legacy'
-        : 'id, slug, title, um_id, status, content, content_freeflow, final_version'
+      'id, slug, title, um_id, status, content, content_freeflow, final_version'
     ),
     fetchAll<SectionRow>(
       supabase,
       'biography_sections',
-      'id, biography_id, section_key, content'
+      'id, biography_id, section_key, content, revision_history'
     ),
     fetchAll<BookRow>(
       supabase,
@@ -167,26 +139,47 @@ async function main(): Promise<void> {
     unchanged: 0,
     convert: 0,
     manual_review: 0,
+    fields_total: 0,
+    fields_unchanged: 0,
+    fields_convert: 0,
+    fields_manual_review: 0,
+    revision_history_entries: 0,
+    revision_history_html: 0,
+    revision_history_convert: 0,
+    revision_history_manual_review: 0,
   };
 
-  let applied = 0;
-  let failed = 0;
+  type WorkItem = {
+    bio: BiographyConversionRow;
+    decision: ApplyDecision;
+    fields: ReturnType<typeof collectBiographyFields>;
+  };
+  const work: WorkItem[] = [];
 
   for (const bio of bios) {
     const sectionRows = sectionsByBio.get(bio.id) ?? [];
-    const fields: StoredField[] = [
-      ...collectContentFields(bio.content),
-      { path: 'content_freeflow', value: bio.content_freeflow },
-      { path: 'final_version', value: bio.final_version },
-      ...sectionRows.map((section) => ({
-        path: `sections.${section.section_key || section.id}`,
-        value: section.content,
-      })),
-      ...bookFields(bookByBio.get(bio.id)),
-    ];
+    const fields = collectBiographyFields(bio, sectionRows, bookByBio.get(bio.id));
     const assessment = assessFields(fields);
+    for (const field of assessment.fields) {
+      if (field.kind === 'empty') continue;
+      counts.fields_total += 1;
+      if (field.kind === 'markdown') counts.fields_unchanged += 1;
+      else if (field.kind === 'text_loss') counts.fields_manual_review += 1;
+      else counts.fields_convert += 1;
+      if (field.path.startsWith('revision_history.')) {
+        counts.revision_history_entries += 1;
+        if (field.kind === 'clean' || field.kind === 'formatting_loss' || field.kind === 'text_loss') {
+          counts.revision_history_html += 1;
+        }
+        if (field.kind === 'text_loss') counts.revision_history_manual_review += 1;
+        else if (field.kind === 'clean' || field.kind === 'formatting_loss') {
+          counts.revision_history_convert += 1;
+        }
+      }
+    }
     const decision = decideApply(bio.status, assessment);
     counts[decision === 'skip_unchanged' ? 'unchanged' : decision] += 1;
+    work.push({ bio, decision, fields });
 
     if (decision !== 'skip_unchanged') {
       report.push({
@@ -208,64 +201,90 @@ async function main(): Promise<void> {
         [decision, bio.status ?? '-', bio.um_id ?? '(senza UM)', bio.title ?? bio.id].join('  ')
       );
     }
+  }
 
-    if (!apply || decision !== 'convert') continue;
+  let applied = 0;
+  let failed = 0;
+  let skipped = 0;
+
+  if (apply) {
+    const drafts = work.filter((w) => w.bio.status !== 'published');
+    const published = work.filter((w) => w.bio.status === 'published');
+
+    const runOne = async (item: WorkItem): Promise<void> => {
+      if (item.decision === 'skip_unchanged') {
+        skipped += 1;
+        return;
+      }
+      if (item.decision === 'manual_review') {
+        throw new Error(`manual_review:${item.bio.slug || item.bio.id}`);
+      }
+      verifyPlainTextIdentity(item.fields);
+      const result = await applyMarkdownConversionToBiography(
+        supabase,
+        item.bio,
+        sectionsByBio.get(item.bio.id) ?? [],
+        bookByBio.get(item.bio.id)
+      );
+      if (result === 'converted') {
+        applied += 1;
+        console.log(`scritta  ${item.bio.slug || item.bio.id}`);
+      } else {
+        skipped += 1;
+      }
+    };
 
     try {
-      const snapshot = htmlSnapshotFields(fields);
-      const previous = bio.content_html_legacy?.fields ?? {};
-      const merged = { ...snapshot, ...previous };
-      const book = bookByBio.get(bio.id);
-      const bookUpdate: Record<string, string> = {};
-      if (book) {
-        for (const name of BOOK_TEXT_FIELDS) {
-          const value = book[name];
-          if (typeof value === 'string' && value.trim()) {
-            bookUpdate[name] = storedToArchiveMarkdown(value);
-          }
+      for (const item of drafts) {
+        await runOne(item);
+      }
+      console.log('Controllo testo semplice e Markdown sulle bozze convertite…');
+      for (const item of drafts) {
+        if (item.decision !== 'convert') continue;
+        verifyPlainTextIdentity(item.fields);
+        const { data, error } = await supabase
+          .from('biographies')
+          .select('id, slug, title, um_id, status, content, content_freeflow, final_version')
+          .eq('id', item.bio.id)
+          .maybeSingle();
+        if (error || !data) throw new Error(`draft_reread_failed:${error?.message ?? item.bio.id}`);
+        const { data: secs, error: sErr } = await supabase
+          .from('biography_sections')
+          .select('id, biography_id, section_key, content, revision_history')
+          .eq('biography_id', item.bio.id);
+        if (sErr) throw new Error(sErr.message);
+        const { data: book, error: bErr } = await supabase
+          .from('biography_book_structure')
+          .select(['biography_id', ...BOOK_TEXT_FIELDS].join(', '))
+          .eq('biography_id', item.bio.id)
+          .maybeSingle();
+        if (bErr) throw new Error(bErr.message);
+        const after = assessBiographyConversion(
+          data as BiographyConversionRow,
+          (secs ?? []) as SectionRow[],
+          (book as BookRow | null) ?? undefined
+        );
+        if (after.decision !== 'skip_unchanged') {
+          throw new Error(`draft_still_html:${item.bio.id}`);
         }
       }
-
-      const { error: bioError } = await supabase
-        .from('biographies')
-        .update({
-          content: convertedContent(bio.content),
-          content_freeflow:
-            bio.content_freeflow == null
-              ? null
-              : storedToArchiveMarkdown(bio.content_freeflow),
-          final_version:
-            bio.final_version == null ? null : storedToArchiveMarkdown(bio.final_version),
-          content_html_legacy: {
-            captured_at: new Date().toISOString(),
-            fields: merged,
-          },
-        })
-        .eq('id', bio.id);
-      if (bioError) throw new Error(bioError.message);
-
-      for (const section of sectionRows) {
-        if (!section.content?.trim()) continue;
-        const { error } = await supabase
-          .from('biography_sections')
-          .update({ content: storedToArchiveMarkdown(section.content) })
-          .eq('id', section.id);
-        if (error) throw new Error(error.message);
+      console.log('Bozze ok. Conversione pubblicate…');
+      for (const item of published) {
+        await runOne(item);
       }
-
-      if (book && Object.keys(bookUpdate).length > 0) {
-        const { error } = await supabase
-          .from('biography_book_structure')
-          .update(bookUpdate)
-          .eq('biography_id', bio.id);
-        if (error) throw new Error(error.message);
-      }
-
-      applied += 1;
-      console.log(`scritta  ${bio.slug || bio.id}`);
     } catch (e) {
       failed += 1;
-      console.error(`errore  ${bio.slug || bio.id}: ${e instanceof Error ? e.message : e}`);
+      const msg = e instanceof Error ? e.message : String(e);
+      console.error(`errore  ${msg}`);
+      const mismatch = /^legacy_content_mismatch:([^:]+)/.exec(msg);
+      if (mismatch) {
+        const bio = bios.find((b) => b.id === mismatch[1]);
+        console.error(
+          `Copia HTML in biography_source_html_legacy diversa dal testo attuale. Scheda: ${
+            bio?.slug || bio?.um_id || mismatch[1]
+          } (${mismatch[1]}). Conversione interrotta.`
+        );
+      }
     }
   }
 
@@ -280,6 +299,7 @@ async function main(): Promise<void> {
         mode: dryRun ? 'dry-run' : 'apply',
         counts,
         applied,
+        skipped,
         failed,
         rows: report,
       },
@@ -292,11 +312,17 @@ async function main(): Promise<void> {
   console.log(
     `Schede ${counts.biographies}. Invariate ${counts.unchanged}. Convertibili ${counts.convert}. Da rivedere a mano ${counts.manual_review}.`
   );
+  console.log(
+    `Campi non vuoti ${counts.fields_total}: già Markdown ${counts.fields_unchanged}, convertibili ${counts.fields_convert}, non convertibili ${counts.fields_manual_review}.`
+  );
+  console.log(
+    `revision_history: voci ${counts.revision_history_entries}, HTML ${counts.revision_history_html}, convertibili ${counts.revision_history_convert}, non convertibili ${counts.revision_history_manual_review}.`
+  );
   console.log(`Rapporto: ${outPath}`);
   if (dryRun) {
     console.log('Prova soltanto. Nessuna scheda è stata modificata.');
   } else {
-    console.log(`Scritte ${applied}. Errori ${failed}.`);
+    console.log(`Scritte ${applied}. Saltate ${skipped}. Errori ${failed}.`);
   }
   if (failed > 0) process.exit(1);
 }

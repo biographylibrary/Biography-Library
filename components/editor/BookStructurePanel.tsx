@@ -4,10 +4,10 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { useEditor, EditorContent } from '@tiptap/react';
 import { archiveTiptapExtensions } from '@/lib/editor-archive-tiptap';
 import {
-  archiveMarkdownToHtml,
   htmlToArchiveMarkdown,
-  storedToArchiveMarkdown,
+  normalizeArchiveMarkdown,
 } from '@/lib/archive-markdown';
+import { nfc } from '@/lib/nfc';
 import { ChevronDown, ChevronRight, Loader2 } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
@@ -62,23 +62,24 @@ function RichBlockEditor({ content, onChange, placeholder }: RichBlockEditorProp
   const editor = useEditor({
     immediatelyRender: false,
     extensions: archiveTiptapExtensions(placeholder),
-    content: archiveMarkdownToHtml(storedToArchiveMarkdown(content || '')),
+    content: normalizeArchiveMarkdown(content || ''),
+    contentType: 'markdown',
     editorProps: {
       attributes: {
         class: 'min-h-[120px] prose prose-sm max-w-none focus:outline-none px-3 py-2 text-sm',
       },
     },
     onUpdate: ({ editor: instance }) => {
-      onChange(htmlToArchiveMarkdown(instance.getHTML()));
+      onChange(nfc(htmlToArchiveMarkdown(instance.getHTML())));
     },
   });
 
   useEffect(() => {
     if (!editor) return;
-    const incoming = storedToArchiveMarkdown(content || '');
+    const incoming = normalizeArchiveMarkdown(content || '');
     const current = htmlToArchiveMarkdown(editor.getHTML());
     if (incoming !== current) {
-      editor.commands.setContent(archiveMarkdownToHtml(incoming), { emitUpdate: false });
+      editor.commands.setContent(incoming, { contentType: 'markdown', emitUpdate: false });
     }
   }, [content, editor]);
 

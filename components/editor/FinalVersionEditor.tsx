@@ -10,6 +10,7 @@ import {
   RotateCcw,
   Loader2,
 } from 'lucide-react';
+import { BiographySectionBody } from '@/components/biography/BiographySectionBody';
 
 interface FinalVersionEditorProps {
   content: string;
@@ -123,10 +124,9 @@ export function FinalVersionEditor({
       <div className="flex-1 min-h-0 overflow-y-auto p-6">
         <Card className="max-w-4xl mx-auto p-6">
           {isLocked ? (
-            <div
-              className="prose prose-sm dark:prose-invert max-w-none"
-              style={{ fontSize: `${editorFontSize}px` }}
-              dangerouslySetInnerHTML={{ __html: content }}
+            <BiographySectionBody
+              text={content}
+              className="prose-sm"
             />
           ) : (
             <RichTextEditor

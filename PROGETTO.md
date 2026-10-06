@@ -38,7 +38,7 @@ Fondatore unico, non sviluppatore: costruisce con Claude Code e Cursor. Non ci s
 
 **Limiti noti del blocco 1** (non corretti qui, con il blocco che li risolve):
 
-1. *La pagina pubblica legge solo `content`.* PDF, esporti e archivio leggono `final_version` (altrimenti il flusso libero o le sezioni), ma la pagina online mostra soltanto `content`: una scheda scritta nel foglio libero apparirebbe vuota online. Oggi nessuna delle 11 schede pubblicate è in quella modalità. Si risolve nel blocco sul Markdown, insieme all'unificazione di `content` e `final_version`; non va toccato prima.
+1. ~~*La pagina pubblica legge solo `content`.*~~ **Chiuso nel blocco 2 Markdown (6 ottobre 2026):** la pagina pubblica legge anche `content_freeflow` / `biography_mode` e rende il foglio libero.
 2. *La scheda riaperta sparisce dal catalogo* mentre l'autore scrive il nuovo capitolo (vedi "Riapertura"). Stesso blocco, con una copia di lavoro separata.
 3. *Lo screening legge al massimo 6000 caratteri*: regola provvisoria sopra; l'esame completo a pezzi è nel blocco sullo screening.
 4. *Le schede in `revision_overdue` restano ferme senza via d'uscita per l'autore*: i 30 giorni sono passati, `/api/moderation/resubmit` accetta solo `revision_requested`, resta il ricorso e la decisione dello staff. Nell'elenco `docs/SICUREZZA-SCRITTURE-ELENCO.md`, per il passaggio successivo.
@@ -227,7 +227,15 @@ Unito in `main` con #51 (immagine standalone + prune). Non è più un ramo da me
 
 ### Piano Markdown d’archivio e segnalazioni a tre corsie
 
-**Chiuso nel codice** (settembre 2026): originale Markdown UTF-8, tre corsie di segnalazione, `provisional_until` per il memorial, pacchetto d’archivio. Resta in prova solo la conversione dell’HTML già salvato: `npm run markdown:legacy` senza scrivere. Le schede pubblicate con una perdita restano per la revisione a mano. Non toccare termini e manuale operativo (vivono fuori repo).
+**Chiuso nel codice** (settembre 2026): tre corsie di segnalazione, `provisional_until` per il memorial, pacchetto d’archivio.
+
+### Blocco 2: Markdown come origine (6 ottobre 2026, ramo `blocco-2-markdown`)
+
+**Decisione fissa**: l’originale della biografia è Markdown CommonMark UTF-8 (NFC). L’HTML esiste solo come resa al momento (`storedToSafeHtml` / TipTap), con HTML grezzo disattivato nel parser. Editor TipTap 3.19 + `@tiptap/markdown@3.19.0`; salvataggio tramite serializzatore d’archivio (`lib/archive-markdown.ts`) con escape dei caratteri significativi e separatore di scena `***`. Fuori dall’editor: sottolineato, colori, evidenziazione, barrato, codice, tabelle, immagini nel corpo, attributi `style`. Preferenza `editor_font_size` solo UI; PDF tipografia fissa (`PT_*`).
+
+**Resa unica**: pagina pubblica (anche foglio libero), anteprima revisore, PDF, esporti, archivio, screening e impronta leggono la stessa fonte Markdown. Test di allineamento `lib/__tests__/author-text-columns-sync.test.ts` tra SQL `biographies_author_text_columns()`, costante TypeScript e colonne dell’impronta.
+
+**Migrazione dati**: tabella `biography_source_html_legacy` applicata in produzione (`20261006140000` + `20261006140100` per `reason` / `previous_record_id` su `publication_records`). Conserva l’HTML precedente 180 giorni, RLS senza policy, solo `service_role`, indice su `biography_id`, univoca su `(biography_id, source_column, coalesce(entry_id,''))`, `purge_after` default `now() + 180 days`. Il comando `npm run markdown:legacy -- --apply` scrive solo lì (mai in `content_html_legacy`) e, per le pubblicate, una riga di screening «conversione di formato, contenuto invariato». **`content_html_legacy`**: in produzione è vuota (0/19 schede); non usata dal nuovo comando; **da eliminare insieme a `biography_source_html_legacy` dopo i 180 giorni** dalla conversione reale. **Data di svuotamento**: da annotare al via del passo 4 (conversione + 180 giorni). Conversione reale ancora in attesa della frase di via.
 
 ### Fase 2 — migrazione Infomaniak Public Cloud (rinviata)
 
@@ -250,7 +258,7 @@ Non ancora iniziata. Richiede aiuto professionale. Includerà: PostgreSQL con pg
 - **Anno UM**: solo eventi di archivio (pubblicazione, crediti, colophon); cambio anno in UTC; mai sulle date di vita.
 - **PDF attuale**: non aggiungere famiglie Noto a jsPDF; scritture non latine richiedono un motore diverso (subsetting).
 - **Memorial, 30 giorni**: restano (Manifesto e condizioni, fuori repo). In codice: colonna `provisional_until` quando esisterà, non uno stato `provisional`. La segnalazione resta possibile dopo la scadenza, per sempre.
-- **Formato di riferimento**: l’originale conservato della biografia è Markdown CommonMark in UTF-8. Il PDF è una resa generata, non l’originale. Si conservano la sorgente, i dati di contorno e il motore che li impagina, non gli impaginati già fatti. Da qui dipendono le copie di sicurezza, le esportazioni e la conservazione su un supporto fisico.
+- **Formato di riferimento (origine)**: l’originale conservato della biografia è Markdown CommonMark in UTF-8 (NFC), decisione chiusa nel blocco 2 (6 ottobre 2026). Si salva, si modifica, si versiona e si esporta come Markdown; l’HTML è solo resa generata al momento (parser con HTML grezzo disattivato). Separatore di scena canonico: `***`. Il PDF è una resa, non l’originale. Da qui dipendono archivio, copie di sicurezza, esportazioni e conservazione fisica.
 - **Originale d’archivio**: pacchetto `archive/{UM}/v{N}/` nel bucket privato `archive`. Autobiografia: v1 alla pubblicazione. Memorial: v1 solo dopo `provisional_until` (30 giorni), via `POST /api/cron/archive-packages`. Il manifesto non contiene la propria impronta. `erasePriorContent` toglie la versione precedente da storage, HTML legacy, cronologia, PDF esportati e chunk; dice al segnalante che le copie già scaricate non si ritirano. Le versioni già depositate non si riscrivono.
 
 ---

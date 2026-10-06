@@ -1,7 +1,8 @@
 /**
  * Original conservato: CommonMark + GFM ristretto a titoli, grassetto, corsivo,
- * liste, citazioni, collegamenti. NFC in scrittura. Il resto (sottolineatura,
- * allineamento, apice, pedice, codice, tabelle, HTML grezzo) non entra.
+ * liste, citazioni, collegamenti, a capo forzati e separatori di scena (***).
+ * NFC in scrittura. Il resto (sottolineatura, allineamento, apice, pedice,
+ * codice, barrato, tabelle, immagini, HTML grezzo) non entra.
  */
 import MarkdownIt from 'markdown-it';
 import { parse, NodeType, type HTMLElement, type Node } from 'node-html-parser';
@@ -13,6 +14,7 @@ const HTML_MARKERS =
 const ARCHIVE_HTML_TAGS = new Set([
   'p',
   'br',
+  'hr',
   'strong',
   'em',
   'h1',
@@ -27,6 +29,9 @@ const ARCHIVE_HTML_TAGS = new Set([
 
 const CONTROL_CHARS = /[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F-\u009F\u200B-\u200D\uFEFF]/g;
 
+/** Canonical scene separator in stored Markdown. */
+export const ARCHIVE_HORIZONTAL_RULE = '***';
+
 function isSafeHref(href: string): boolean {
   return /^(https?:\/\/|mailto:)/i.test(href.trim());
 }
@@ -35,22 +40,46 @@ function escapeAttr(value: string): string {
   return value.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;');
 }
 
-function decodeEntities(text: string): string {
-  return text
-    .replace(/&nbsp;/gi, ' ')
-    .replace(/&amp;/g, '&')
-    .replace(/&lt;/g, '<')
-    .replace(/&gt;/g, '>')
-    .replace(/&quot;/g, '"')
-    .replace(/&#39;/g, "'")
-    .replace(/&#x([0-9a-f]+);/gi, (_, hex: string) =>
-      String.fromCharCode(parseInt(hex, 16))
-    )
-    .replace(/&#(\d+);/g, (_, n: string) => String.fromCharCode(Number(n)));
+function decodeNbsp(text: string): string {
+  return text.replace(/&nbsp;/gi, ' ');
 }
 
+/** Escape inline Markdown-significant characters without decoding HTML entities. */
 function escapeInlineMd(text: string): string {
-  return decodeEntities(text).replace(/([\\*_[\]])/g, '\\$1');
+  return decodeNbsp(text)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/([\\`*_[\]])/g, '\\$1');
+}
+
+/**
+ * After inline escaping, stop CommonMark from reading the line as a list,
+ * heading, quote or thematic break.
+ */
+function escapeMarkdownBlockStart(line: string): string {
+  if (/^(\s{0,3})([-*_])(?:\s*\2){2,}\s*$/.test(line)) {
+    return line.replace(/([-*_])/g, '\\$1');
+  }
+  if (/^(\s{0,3})(#{1,6})(\s|$)/.test(line)) {
+    return line.replace(/^(\s{0,3})#/, '$1\\#');
+  }
+  if (/^(\s{0,3})([>*+-])(\s|$)/.test(line)) {
+    return line.replace(/^(\s{0,3})([>*+-])/, '$1\\$2');
+  }
+  if (/^(\s{0,3})(\d+)([.)])(\s+|$)/.test(line)) {
+    return line.replace(/^(\s{0,3})(\d+)([.)])(\s+|$)/, '$1$2\\$3$4');
+  }
+  return line;
+}
+
+/** Full escape for one plain-text line written as a normal paragraph. */
+export function escapeMarkdownBlockLine(line: string): string {
+  return escapeMarkdownBlockStart(escapeInlineMd(line));
+}
+
+function finalizeParagraphMd(alreadyInlineEscaped: string): string {
+  return alreadyInlineEscaped.split('\n').map(escapeMarkdownBlockStart).join('\n');
 }
 
 export function looksLikeStoredHtml(text: string): boolean {
@@ -69,7 +98,12 @@ function serializeInline(nodes: Node[]): string {
   let out = '';
   for (const node of nodes) {
     if (node.nodeType === NodeType.TEXT_NODE) {
-      out += escapeInlineMd(node.text);
+      let text = node.text;
+      // markdown-it emits a newline text node after <br>; keep a single hard break.
+      if (out.endsWith('  \n') && text.startsWith('\n')) {
+        text = text.slice(1);
+      }
+      out += escapeInlineMd(text);
       continue;
     }
     if (!isElement(node)) continue;
@@ -125,14 +159,19 @@ function serializeBlocks(nodes: Node[], listIndent = ''): string {
   for (const node of nodes) {
     if (node.nodeType === NodeType.TEXT_NODE) {
       const t = node.text.replace(/\s+/g, ' ').trim();
-      if (t) parts.push(escapeInlineMd(t));
+      if (t) parts.push(finalizeParagraphMd(escapeInlineMd(t)));
       continue;
     }
     if (!isElement(node)) continue;
 
     const tag = tagName(node);
     if (tag === 'script' || tag === 'style' || tag === 'noscript') continue;
-    if (tag === 'br' || tag === 'hr') continue;
+    if (tag === 'br') continue;
+
+    if (tag === 'hr') {
+      parts.push(ARCHIVE_HORIZONTAL_RULE);
+      continue;
+    }
 
     if (tag === 'h1' || tag === 'h2' || tag === 'h3') {
       const text = serializeInline(node.childNodes).trim();
@@ -145,8 +184,12 @@ function serializeBlocks(nodes: Node[], listIndent = ''): string {
       continue;
     }
     if (tag === 'p' || tag === 'div') {
-      const text = serializeInline(node.childNodes).trim();
-      if (text) parts.push(text);
+      const text = serializeInline(node.childNodes);
+      // Keep hard-break markers (`  \n`); drop other trailing spaces.
+      const normalized = text
+        .replace(/[ \t]+\n/g, '  \n')
+        .replace(/[ \t]+$/g, (m) => (m.length >= 2 ? '  ' : ''));
+      if (normalized) parts.push(finalizeParagraphMd(normalized));
       continue;
     }
     if (tag === 'blockquote') {
@@ -185,11 +228,30 @@ function serializeBlocks(nodes: Node[], listIndent = ''): string {
       continue;
     }
 
+    // Tables / unknown wrappers: keep visible text as paragraphs (cells in order).
+    if (tag === 'table') {
+      const cells = node.querySelectorAll('th, td');
+      for (const cell of cells) {
+        const text = serializeInline(cell.childNodes).trim();
+        if (text) parts.push(finalizeParagraphMd(text));
+      }
+      continue;
+    }
+
     const inner = serializeBlocks(node.childNodes, listIndent).trim();
     if (inner) parts.push(inner);
   }
 
   return parts.join('\n\n');
+}
+
+/** Normalize --- / ___ thematic breaks to canonical *** with blank lines. */
+export function normalizeArchiveHorizontalRules(markdown: string): string {
+  return markdown
+    .replace(/(^|\n)[ \t]{0,3}(?:(?:-[ \t]*){3,}|(?:_[ \t]*){3,}|(?:\*[ \t]*){3,})[ \t]*(?=\n|$)/g, `$1${ARCHIVE_HORIZONTAL_RULE}`)
+    .replace(/\n{0,2}\*\*\*\n{0,2}/g, `\n\n${ARCHIVE_HORIZONTAL_RULE}\n\n`)
+    .replace(/\n{3,}/g, '\n\n')
+    .trim();
 }
 
 export function htmlToArchiveMarkdown(html: string): string {
@@ -199,7 +261,7 @@ export function htmlToArchiveMarkdown(html: string): string {
   const md = serializeBlocks(root.childNodes)
     .replace(/\n{3,}/g, '\n\n')
     .trim();
-  return nfc(md);
+  return nfc(normalizeArchiveHorizontalRules(md));
 }
 
 function sanitizeArchiveHtml(html: string): string {
@@ -210,6 +272,7 @@ function sanitizeArchiveHtml(html: string): string {
     if (tag === 'i') tag = 'em';
     if (!ARCHIVE_HTML_TAGS.has(tag)) return '';
     if (tag === 'br') return '<br>';
+    if (tag === 'hr') return '<hr>';
     if (slash) return `</${tag}>`;
     if (tag === 'a') {
       const hrefMatch = /href\s*=\s*(["'])(.*?)\1/i.exec(attrs);
@@ -227,30 +290,66 @@ function sanitizeArchiveHtml(html: string): string {
 const markdownIt = new MarkdownIt({
   html: false,
   breaks: false,
-  linkify: true,
+  linkify: false,
   typographer: false,
 });
 
-markdownIt.disable(['code', 'fence', 'hr', 'image', 'strikethrough']);
+markdownIt.disable(['code', 'fence', 'image', 'strikethrough']);
 markdownIt.validateLink = (url) => isSafeHref(url);
 
 export function archiveMarkdownToHtml(markdown: string): string {
-  const src = nfc((markdown ?? '').replace(CONTROL_CHARS, '').trim());
+  const src = nfc(normalizeArchiveHorizontalRules((markdown ?? '').replace(CONTROL_CHARS, '')));
   if (!src) return '';
   return sanitizeArchiveHtml(markdownIt.render(src));
 }
 
-export function storedToArchiveMarkdown(stored: string): string {
+/** NFC + HR canonical form on already-Markdown (or legacy HTML) text. */
+export function normalizeArchiveMarkdown(stored: string): string {
   const raw = (stored ?? '').replace(CONTROL_CHARS, '');
   if (!raw.trim()) return '';
   if (looksLikeStoredHtml(raw)) {
     return htmlToArchiveMarkdown(raw);
   }
-  return nfc(raw.trim());
+  return nfc(normalizeArchiveHorizontalRules(raw.trim()));
+}
+
+export function storedToArchiveMarkdown(stored: string): string {
+  return normalizeArchiveMarkdown(stored);
 }
 
 export function storedToSafeHtml(stored: string): string {
   return archiveMarkdownToHtml(storedToArchiveMarkdown(stored));
+}
+
+/**
+ * Round-trip helper for tests and editor boundary: Markdown → HTML → Markdown.
+ * Must be stable for every admitted construct and for escaped plain text.
+ */
+export function roundTripArchiveMarkdown(markdown: string): string {
+  return htmlToArchiveMarkdown(archiveMarkdownToHtml(markdown));
+}
+
+/** Extract visible plain text from a single HTML paragraph for identity checks. */
+export function htmlParagraphPlainText(html: string): string {
+  const root = parse(html, { comment: false });
+  const walk = (nodes: Node[]): string => {
+    let out = '';
+    for (const node of nodes) {
+      if (node.nodeType === NodeType.TEXT_NODE) {
+        out += node.text.replace(/\u00a0/g, ' ');
+        continue;
+      }
+      if (!isElement(node)) continue;
+      const tag = tagName(node);
+      if (tag === 'br') {
+        out += '\n';
+        continue;
+      }
+      out += walk(node.childNodes);
+    }
+    return out;
+  };
+  return walk(root.childNodes);
 }
 
 export function storedToPlainText(stored: string): string {
@@ -259,6 +358,7 @@ export function storedToPlainText(stored: string): string {
     return nfc((stored ?? '').trim());
   }
   return html
+    .replace(/<hr\s*\/?>/gi, '\n\n')
     .replace(/<\/p>/gi, '\n\n')
     .replace(/<br\s*\/?>/gi, '\n')
     .replace(/<\/li>/gi, '\n')

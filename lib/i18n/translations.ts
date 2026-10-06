@@ -510,6 +510,7 @@ export interface Translations {
     decreaseIndent: string;
     quote: string;
     horizontalRule: string;
+    separator: string;
     clearFormatting: string;
     menu: string;
     styleBold: string;
@@ -929,6 +930,10 @@ export interface Translations {
     formatUnsupported: string;
     tooManyFiles: string;
     filesQueued: string;
+    /** Italian short notice: tables flattened to paragraphs. */
+    tablesFlattenedNotice: string;
+    /** Italian short notice: body images ignored. */
+    imagesIgnoredNotice: string;
   };
   importMapping: {
     title: string;
@@ -2220,6 +2225,7 @@ export const translations: Record<Language, Translations> = {
       decreaseIndent: 'Decrease Indent',
       quote: 'Quote',
       horizontalRule: 'Horizontal Line',
+      separator: 'Separator',
       clearFormatting: 'Clear Formatting',
       menu: 'Style',
       styleBold: 'Bold',
@@ -2654,6 +2660,10 @@ export const translations: Record<Language, Translations> = {
       formatUnsupported: 'Unsupported format. Use .txt, .docx or .rtf',
       tooManyFiles: 'Too many files. Maximum 10 per import',
       filesQueued: '{count} file(s) ready to import',
+      tablesFlattenedNotice:
+        'Le tabelle non sono supportate e sono state trasformate in testo.',
+      imagesIgnoredNotice:
+        'Le immagini nel testo sono state ignorate: le foto si caricano dal sistema delle foto.',
     },
     importMapping: {
       title: 'Map chapters to sections',
@@ -3975,6 +3985,7 @@ export const translations: Record<Language, Translations> = {
       decreaseIndent: 'Riduci Rientro',
       quote: 'Citazione',
       horizontalRule: 'Linea Separatrice',
+      separator: 'Separatore',
       clearFormatting: 'Rimuovi Formattazione',
       menu: 'Stile',
       styleBold: 'Grassetto',
@@ -4409,6 +4420,10 @@ export const translations: Record<Language, Translations> = {
       formatUnsupported: 'Formato non supportato. Usa .txt, .docx o .rtf',
       tooManyFiles: 'Troppi file. Massimo 10 per importazione',
       filesQueued: '{count} file pronti per l\'importazione',
+      tablesFlattenedNotice:
+        'Le tabelle non sono supportate e sono state trasformate in testo.',
+      imagesIgnoredNotice:
+        'Le immagini nel testo sono state ignorate: le foto si caricano dal sistema delle foto.',
     },
     importMapping: {
       title: 'Mappa i capitoli alle sezioni',
@@ -5730,6 +5745,7 @@ export const translations: Record<Language, Translations> = {
       decreaseIndent: 'Réduire Retrait',
       quote: 'Citation',
       horizontalRule: 'Ligne Horizontale',
+      separator: 'Séparateur',
       clearFormatting: 'Effacer Mise en Forme',
       menu: 'Style',
       styleBold: 'Gras',
@@ -6164,6 +6180,10 @@ export const translations: Record<Language, Translations> = {
       formatUnsupported: 'Format non pris en charge. Utilisez .txt, .docx ou .rtf',
       tooManyFiles: 'Trop de fichiers. Maximum 10 par importation',
       filesQueued: '{count} fichier(s) prêt(s) à importer',
+      tablesFlattenedNotice:
+        'Le tabelle non sono supportate e sono state trasformate in testo.',
+      imagesIgnoredNotice:
+        'Le immagini nel testo sono state ignorate: le foto si caricano dal sistema delle foto.',
     },
     importMapping: {
       title: 'Associer les chapitres aux sections',
@@ -7485,6 +7505,7 @@ export const translations: Record<Language, Translations> = {
       decreaseIndent: 'Einzug Verkleinern',
       quote: 'Zitat',
       horizontalRule: 'Horizontale Linie',
+      separator: 'Trenner',
       clearFormatting: 'Formatierung Entfernen',
       menu: 'Stil',
       styleBold: 'Fett',
@@ -7919,6 +7940,10 @@ export const translations: Record<Language, Translations> = {
       formatUnsupported: 'Nicht unterstütztes Format. Verwenden Sie .txt, .docx oder .rtf',
       tooManyFiles: 'Zu viele Dateien. Maximal 10 pro Import',
       filesQueued: '{count} Datei(en) bereit zum Import',
+      tablesFlattenedNotice:
+        'Le tabelle non sono supportate e sono state trasformate in testo.',
+      imagesIgnoredNotice:
+        'Le immagini nel testo sono state ignorate: le foto si caricano dal sistema delle foto.',
     },
     importMapping: {
       title: 'Kapitel den Abschnitten zuordnen',

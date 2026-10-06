@@ -55,6 +55,8 @@ interface BiographyViewData {
   content_language?: string | null;
   record_language_tag?: string | null;
   final_pdf_url?: string | null;
+  biography_mode?: 'sections' | 'freeflow' | null;
+  content_freeflow?: string | null;
 }
 
 interface SectionWithDate {
@@ -67,7 +69,15 @@ interface SectionWithDate {
 type ViewError = 'not-found' | 'private' | 'invalid-token' | null;
 
 const BIOGRAPHY_VIEW_SELECT =
-  'id, title, subject_name, biography_type, author_name, um_id, content, visibility, status, share_token, created_at, published_at, provisional_until, is_pioneer, is_frozen, frozen_at, export_txt_url, export_docx_url, listing_cover_url, content_language, record_language_tag, final_pdf_url';
+  'id, title, subject_name, biography_type, author_name, um_id, content, content_freeflow, biography_mode, visibility, status, share_token, created_at, published_at, provisional_until, is_pioneer, is_frozen, frozen_at, export_txt_url, export_docx_url, listing_cover_url, content_language, record_language_tag, final_pdf_url';
+
+function shouldRenderFreeflowBody(
+  bio: BiographyViewData,
+  sectionCount: number
+): boolean {
+  if (bio.biography_mode === 'freeflow') return true;
+  return !!bio.content_freeflow?.trim() && sectionCount === 0;
+}
 
 const VIEW_LANGUAGES: ViewLanguage[] = ['en', 'it', 'fr', 'de'];
 
@@ -187,7 +197,9 @@ export default function BiographyViewPage() {
           }
           const { data: fullBio } = await supabase
             .from('biographies')
-            .select('content_language, record_language_tag, final_pdf_url, is_pioneer')
+            .select(
+              'content_language, record_language_tag, final_pdf_url, is_pioneer, biography_mode, content_freeflow'
+            )
             .eq('id', resolvedId)
             .maybeSingle();
           if (fullBio && data) {
@@ -199,6 +211,10 @@ export default function BiographyViewPage() {
             ).record_language_tag;
             data.final_pdf_url = (fullBio as { final_pdf_url?: string }).final_pdf_url ?? null;
             data.is_pioneer = (fullBio as { is_pioneer?: boolean }).is_pioneer === true;
+            data.biography_mode = (fullBio as { biography_mode?: 'sections' | 'freeflow' })
+              .biography_mode;
+            data.content_freeflow = (fullBio as { content_freeflow?: string | null })
+              .content_freeflow;
           }
           if (data.status === 'published') {
             supabase.rpc('increment_view_count', { biography_uuid: resolvedId });
@@ -600,27 +616,34 @@ export default function BiographyViewPage() {
               )}
           </div>
 
-          {orderedSections.map((section) => {
-            const sectionTitle =
-              sectionTitlePack[section.key as keyof typeof sectionTitlePack] || section.key;
-            const sectionText = section.text;
+          {shouldRenderFreeflowBody(biography, orderedSections.length) &&
+          biography.content_freeflow?.trim() ? (
+            <section className="mb-12">
+              <BiographySectionBody text={biography.content_freeflow} />
+            </section>
+          ) : (
+            orderedSections.map((section) => {
+              const sectionTitle =
+                sectionTitlePack[section.key as keyof typeof sectionTitlePack] || section.key;
+              const sectionText = section.text;
 
-            return (
-              <section key={section.key} className="mb-12">
-                <div className="flex items-baseline justify-between gap-4 mb-6">
-                  <h2 className="text-2xl font-serif font-semibold text-primary">
-                    {sectionTitle}
-                  </h2>
-                  {section.sectionCreatedAt && (
-                    <span className="shrink-0 text-xs text-muted-foreground border border-border/60 rounded-full px-2.5 py-0.5 whitespace-nowrap">
-                      {t.view.publishedOn} {formatDate(section.sectionCreatedAt)}
-                    </span>
-                  )}
-                </div>
-                <BiographySectionBody text={sectionText} />
-              </section>
-            );
-          })}
+              return (
+                <section key={section.key} className="mb-12">
+                  <div className="flex items-baseline justify-between gap-4 mb-6">
+                    <h2 className="text-2xl font-serif font-semibold text-primary">
+                      {sectionTitle}
+                    </h2>
+                    {section.sectionCreatedAt && (
+                      <span className="shrink-0 text-xs text-muted-foreground border border-border/60 rounded-full px-2.5 py-0.5 whitespace-nowrap">
+                        {t.view.publishedOn} {formatDate(section.sectionCreatedAt)}
+                      </span>
+                    )}
+                  </div>
+                  <BiographySectionBody text={sectionText} />
+                </section>
+              );
+            })
+          )}
         </article>
 
         <footer className="mt-16 pt-8 border-t border-border text-center text-sm text-muted-foreground">
