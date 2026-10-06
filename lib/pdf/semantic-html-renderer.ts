@@ -205,6 +205,12 @@ function renderHeading(
   const plain = stripHtmlToPlain(innerHtml);
   if (!plain.trim()) return ctx.y;
 
+  // Measure with the heading font: wrapping at body size then drawing larger
+  // clips long titles at the right margin.
+  ctx.applyFont(ctx.doc, 'normal');
+  ctx.doc.setFontSize(fontSize);
+  ctx.doc.setTextColor(0, 0, 0);
+
   const headingLines = splitTextToSizeLang(ctx.doc, plain.trim(), tw, ctx.language);
   const headingHeight = headingLines.length * lineH;
   const bodyLineH = lineHForFont(PT_BODY);
@@ -219,11 +225,10 @@ function renderHeading(
     }
     ctx.drawPageNumber?.();
     ctx.y = ctx.textAreaTop;
+    ctx.applyFont(ctx.doc, 'normal');
+    ctx.doc.setFontSize(fontSize);
+    ctx.doc.setTextColor(0, 0, 0);
   }
-
-  ctx.applyFont(ctx.doc, 'normal');
-  ctx.doc.setFontSize(fontSize);
-  ctx.doc.setTextColor(0, 0, 0);
 
   for (const line of headingLines) {
     ctx.doc.text(line, ctx.textStartX(ctx.absolutePage), ctx.y);
@@ -349,12 +354,16 @@ export function renderSemanticHtmlBody(
       ctx.y = renderTable(ctx, block.outerHtml ?? block.inner);
     } else if (block.tag === 'ul' || block.tag === 'ol') {
       const items = block.inner.match(/<li\b[^>]*>([\s\S]*?)<\/li>/gi) ?? [];
+      const startAttr = /<ol\b[^>]*\bstart\s*=\s*["']?(\d+)/i.exec(block.outerHtml ?? '');
+      let n = startAttr ? Number(startAttr[1]) : 1;
+      if (!Number.isFinite(n) || n < 1) n = 1;
       for (let li = 0; li < items.length; li++) {
         const inner = items[li].replace(/<\/?li[^>]*>/gi, '');
         const isLastItem = li === items.length - 1;
+        const marker = block.tag === 'ol' ? `${n + li}. ` : '• ';
         ctx.y = renderParagraphLines(
           ctx,
-          `• ${stripHtmlToPlain(inner)}`,
+          `${marker}${stripHtmlToPlain(inner)}`,
           PT_BODY,
           { trailingGap: !(isLastItem && nextIsHeading) }
         );

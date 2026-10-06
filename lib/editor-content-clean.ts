@@ -83,7 +83,7 @@ function serializeCleanInline(nodes: Node[]): string {
     if (tag === 'a') {
       const href = (node.getAttribute('href') ?? '').trim();
       const inner = serializeCleanInline(node.childNodes);
-      if (inner && /^(https?:\/\/|mailto:)/i.test(href)) {
+      if (inner && /^https?:\/\//i.test(href)) {
         out += `<a href="${href.replace(/"/g, '&quot;')}">${inner}</a>`;
       } else {
         out += inner;

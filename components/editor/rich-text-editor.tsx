@@ -18,6 +18,7 @@ import {
 } from './echo-change-highlight';
 import { htmlToArchiveMarkdown, normalizeArchiveMarkdown } from '@/lib/archive-markdown';
 import { cleanEditorIncomingHtml } from '@/lib/editor-content-clean';
+import { handleArchivePasteEvent } from '@/lib/editor-paste';
 import { editorLoadMatchesStored } from '@/lib/editor-load-guard';
 import { useTranslation } from '@/lib/i18n/i18n-context';
 import { nfc } from '@/lib/nfc';
@@ -81,6 +82,11 @@ export function RichTextEditor({
       attributes: {
         class:
           'w-full min-h-[200px] max-w-none focus:outline-none px-3 py-4 [&_p]:leading-[1.5] max-sm:!text-[length:calc(var(--writing-size)*0.85)] [&_hr]:border-0 [&_hr]:my-6 [&_hr]:text-center [&_hr]:before:content-["*_*_*"] [&_hr]:before:tracking-[0.4em] [&_hr]:before:text-muted-foreground',
+      },
+      handlePaste(view, event) {
+        return handleArchivePasteEvent(view, event, (warnings) => {
+          onPasteWarningsRef.current?.(warnings);
+        });
       },
       transformPastedHTML(html) {
         const cleaned = cleanEditorIncomingHtml(html);

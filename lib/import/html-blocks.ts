@@ -104,11 +104,12 @@ export function extractSemanticBlocks(html: string): SemanticBlock[] {
       }
       lastEnd = m.index + m[0].length;
       if (m[1]) {
-        blocks.push({ tag: 'hr', inner: '' });
+        blocks.push({ tag: 'hr', inner: '', outerHtml: m[0] });
       } else {
         blocks.push({
           tag: m[2].toLowerCase() as SemanticTag,
           inner: m[3],
+          outerHtml: m[0],
         });
       }
     }

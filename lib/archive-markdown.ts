@@ -33,7 +33,8 @@ const CONTROL_CHARS = /[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F-\u009F\u200
 export const ARCHIVE_HORIZONTAL_RULE = '***';
 
 function isSafeHref(href: string): boolean {
-  return /^(https?:\/\/|mailto:)/i.test(href.trim());
+  // Archive links: only http(s). Never javascript:, data:, or bare hosts.
+  return /^https?:\/\//i.test(href.trim());
 }
 
 function escapeAttr(value: string): string {
