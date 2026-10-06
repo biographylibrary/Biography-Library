@@ -99,18 +99,49 @@ function serializeCleanInline(nodes: Node[]): string {
   return out;
 }
 
+/** One plain string per table cell, reading order (left-to-right, top-to-bottom). */
 function cellTexts(table: HTMLElement): string[] {
-  const cells = table.querySelectorAll('th, td');
   const texts: string[] = [];
-  for (const cell of cells) {
-    const text = serializeCleanInline(cell.childNodes).replace(/<br\s*\/?>/gi, '\n');
-    const plain = text.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
-    if (plain) {
-      const withBreaks = text
-        .split(/<br\s*\/?>/i)
-        .map((part) => part.replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim())
-        .filter(Boolean);
-      texts.push(...(withBreaks.length ? withBreaks : [plain]));
+  const pushPlain = (raw: string) => {
+    const parts = raw
+      .replace(/<br\s*\/?>/gi, '\n')
+      .split(/\n+/)
+      .map((part) => part.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim())
+      .filter(Boolean);
+    texts.push(...parts);
+  };
+
+  const walkRows = (root: HTMLElement) => {
+    const rows = [...root.childNodes].filter(
+      (n): n is HTMLElement => isElement(n) && tagName(n) === 'tr'
+    );
+    const sections = [...root.childNodes].filter(
+      (n): n is HTMLElement =>
+        isElement(n) && ['thead', 'tbody', 'tfoot'].includes(tagName(n))
+    );
+    for (const section of sections) walkRows(section);
+    for (const row of rows) {
+      for (const child of row.childNodes) {
+        if (!isElement(child)) continue;
+        const tag = tagName(child);
+        if (tag !== 'th' && tag !== 'td') continue;
+        const nestedTables = [...child.childNodes].filter(
+          (n): n is HTMLElement => isElement(n) && tagName(n) === 'table'
+        );
+        if (nestedTables.length > 0) {
+          for (const nested of nestedTables) texts.push(...cellTexts(nested));
+          continue;
+        }
+        pushPlain(serializeCleanInline(child.childNodes));
+      }
+    }
+  };
+
+  walkRows(table);
+  if (texts.length === 0) {
+    for (const cell of table.querySelectorAll('th, td')) {
+      if (!isElement(cell)) continue;
+      pushPlain(serializeCleanInline(cell.childNodes));
     }
   }
   return texts;
