@@ -2,11 +2,16 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useEditor, EditorContent } from '@tiptap/react';
-import { archiveTiptapExtensions } from '@/lib/editor-archive-tiptap';
+import {
+  archiveMarkdownToEditorHtml,
+  archiveTiptapExtensions,
+} from '@/lib/editor-archive-tiptap';
 import {
   htmlToArchiveMarkdown,
   normalizeArchiveMarkdown,
 } from '@/lib/archive-markdown';
+import { cleanEditorIncomingHtml } from '@/lib/editor-content-clean';
+import { editorLoadMatchesStored } from '@/lib/editor-load-guard';
 import { nfc } from '@/lib/nfc';
 import { ChevronDown, ChevronRight, Loader2 } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
@@ -59,18 +64,35 @@ interface RichBlockEditorProps {
 }
 
 function RichBlockEditor({ content, onChange, placeholder }: RichBlockEditorProps) {
+  const { t } = useTranslation();
+  const onChangeRef = useRef(onChange);
+  onChangeRef.current = onChange;
+  const [loadBlocked, setLoadBlocked] = useState(false);
+  const loadBlockedRef = useRef(false);
+
   const editor = useEditor({
     immediatelyRender: false,
     extensions: archiveTiptapExtensions(placeholder),
-    content: normalizeArchiveMarkdown(content || ''),
-    contentType: 'markdown',
+    content: archiveMarkdownToEditorHtml(content || ''),
     editorProps: {
       attributes: {
         class: 'min-h-[120px] prose prose-sm max-w-none focus:outline-none px-3 py-2 text-sm',
       },
+      transformPastedHTML(html) {
+        const cleaned = cleanEditorIncomingHtml(html);
+        return cleaned.html || archiveMarkdownToEditorHtml(cleaned.markdown);
+      },
+    },
+    onCreate: ({ editor: instance }) => {
+      const stored = normalizeArchiveMarkdown(content || '');
+      const ok = !stored.trim() || editorLoadMatchesStored(stored, instance);
+      loadBlockedRef.current = !ok;
+      setLoadBlocked(!ok);
+      instance.setEditable(ok);
     },
     onUpdate: ({ editor: instance }) => {
-      onChange(nfc(htmlToArchiveMarkdown(instance.getHTML())));
+      if (loadBlockedRef.current) return;
+      onChangeRef.current(nfc(htmlToArchiveMarkdown(instance.getHTML())));
     },
   });
 
@@ -79,14 +101,23 @@ function RichBlockEditor({ content, onChange, placeholder }: RichBlockEditorProp
     const incoming = normalizeArchiveMarkdown(content || '');
     const current = htmlToArchiveMarkdown(editor.getHTML());
     if (incoming !== current) {
-      editor.commands.setContent(incoming, { contentType: 'markdown', emitUpdate: false });
+      editor.commands.setContent(archiveMarkdownToEditorHtml(incoming), { emitUpdate: false });
     }
+    const ok = !incoming.trim() || editorLoadMatchesStored(incoming, editor);
+    loadBlockedRef.current = !ok;
+    setLoadBlocked(!ok);
+    editor.setEditable(ok);
   }, [content, editor]);
 
   return (
     <div className="border border-border rounded-md overflow-hidden bg-background">
-      <RichTextToolbar editor={editor} />
-      <div className="overflow-y-auto max-h-[300px]">
+      {loadBlocked && (
+        <div role="alert" className="border-b border-amber-700/40 bg-amber-50 px-3 py-2 text-sm text-amber-950">
+          {t.editor.loadTextLostReadOnly}
+        </div>
+      )}
+      <RichTextToolbar editor={editor} countsOnly={loadBlocked} />
+      <div className={`overflow-y-auto max-h-[300px]${loadBlocked ? ' opacity-70' : ''}`}>
         <EditorContent editor={editor} />
       </div>
     </div>

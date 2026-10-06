@@ -2,10 +2,13 @@
 
 import { useEditor, EditorContent } from '@tiptap/react';
 import CharacterCount from '@tiptap/extension-character-count';
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { RichTextToolbar } from './rich-text-toolbar';
 import type { EditorAiToolsMenuProps } from './editor-ai-tools-menu';
-import { archiveTiptapExtensions } from '@/lib/editor-archive-tiptap';
+import {
+  archiveMarkdownToEditorHtml,
+  archiveTiptapExtensions,
+} from '@/lib/editor-archive-tiptap';
 import { registerActiveEditorTarget } from '@/lib/editor/active-editor-selection';
 import {
   echoChangeHighlight,
@@ -13,12 +16,10 @@ import {
   decorationsForDraft,
   ECHO_CHANGE_HIGHLIGHT_MS,
 } from './echo-change-highlight';
-import {
-  archiveMarkdownToHtml,
-  htmlToArchiveMarkdown,
-  normalizeArchiveMarkdown,
-} from '@/lib/archive-markdown';
+import { htmlToArchiveMarkdown, normalizeArchiveMarkdown } from '@/lib/archive-markdown';
 import { cleanEditorIncomingHtml } from '@/lib/editor-content-clean';
+import { editorLoadMatchesStored } from '@/lib/editor-load-guard';
+import { useTranslation } from '@/lib/i18n/i18n-context';
 import { nfc } from '@/lib/nfc';
 
 interface RichTextEditorProps {
@@ -51,19 +52,31 @@ export function RichTextEditor({
   undoLastChange,
   onPasteWarnings,
 }: RichTextEditorProps) {
+  const { t } = useTranslation();
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const lastExternalContentRef = useRef(content);
   const highlightTextRef = useRef(highlightChange?.text);
   highlightTextRef.current = highlightChange?.text;
   const onPasteWarningsRef = useRef(onPasteWarnings);
   onPasteWarningsRef.current = onPasteWarnings;
+  const onChangeRef = useRef(onChange);
+  onChangeRef.current = onChange;
+  const [loadBlocked, setLoadBlocked] = useState(false);
+  const loadBlockedRef = useRef(false);
+
+  const applyLoadGuard = (instance: NonNullable<typeof editor>, stored: string) => {
+    const ok = !stored.trim() || editorLoadMatchesStored(stored, instance);
+    loadBlockedRef.current = !ok;
+    setLoadBlocked(!ok);
+    instance.setEditable(ok && !isPublished);
+    return ok;
+  };
 
   const editor = useEditor({
     immediatelyRender: false,
     editable: !isPublished,
     extensions: [...archiveTiptapExtensions(placeholder), CharacterCount, echoChangeHighlight],
-    content: normalizeArchiveMarkdown(content || ''),
-    contentType: 'markdown',
+    content: archiveMarkdownToEditorHtml(content || ''),
     editorProps: {
       attributes: {
         class:
@@ -74,13 +87,17 @@ export function RichTextEditor({
         if (cleaned.warnings.length) {
           onPasteWarningsRef.current?.(cleaned.warnings);
         }
-        return cleaned.html || archiveMarkdownToHtml(cleaned.markdown);
+        return cleaned.html || archiveMarkdownToEditorHtml(cleaned.markdown);
       },
     },
+    onCreate: ({ editor: instance }) => {
+      applyLoadGuard(instance, normalizeArchiveMarkdown(content || ''));
+    },
     onUpdate: ({ editor: instance }) => {
+      if (loadBlockedRef.current) return;
       // Canonical storage: our serializer (escape + NFC + ***), not TipTap getMarkdown.
       const markdown = nfc(htmlToArchiveMarkdown(instance.getHTML()));
-      onChange(markdown);
+      onChangeRef.current(markdown);
     },
   });
 
@@ -89,11 +106,12 @@ export function RichTextEditor({
     const incoming = normalizeArchiveMarkdown(content || '');
     const current = htmlToArchiveMarkdown(editor.getHTML());
     if (incoming !== current) {
-      editor.commands.setContent(incoming, { contentType: 'markdown', emitUpdate: false });
+      editor.commands.setContent(archiveMarkdownToEditorHtml(incoming), { emitUpdate: false });
+      applyLoadGuard(editor, incoming);
 
       const grew = content.length > lastExternalContentRef.current.length;
       lastExternalContentRef.current = content;
-      if (grew && !highlightTextRef.current) {
+      if (grew && !highlightTextRef.current && !loadBlockedRef.current) {
         requestAnimationFrame(() => {
           const el = scrollContainerRef.current;
           if (el) el.scrollTop = el.scrollHeight;
@@ -101,11 +119,13 @@ export function RichTextEditor({
       }
     } else {
       lastExternalContentRef.current = content;
+      applyLoadGuard(editor, incoming);
     }
-  }, [content, editor]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- guard helpers close over latest isPublished
+  }, [content, editor, isPublished]);
 
   useEffect(() => {
-    if (!editor || editor.isDestroyed || !highlightChange?.text) return;
+    if (!editor || editor.isDestroyed || !highlightChange?.text || loadBlocked) return;
     const mark = decorationsForDraft(editor.state.doc, highlightChange.text);
     if (mark) {
       editor.view.dispatch(editor.state.tr.setMeta(echoHighlightKey, mark.set));
@@ -118,7 +138,7 @@ export function RichTextEditor({
       editor.view.dispatch(editor.state.tr.setMeta(echoHighlightKey, 'clear'));
     }, ECHO_CHANGE_HIGHLIGHT_MS);
     return () => window.clearTimeout(timer);
-  }, [editor, highlightChange?.id, highlightChange?.text]);
+  }, [editor, highlightChange?.id, highlightChange?.text, loadBlocked]);
 
   useEffect(() => {
     if (!editor) return;
@@ -131,10 +151,9 @@ export function RichTextEditor({
   }, [editor]);
 
   useEffect(() => {
-    if (editor) {
-      editor.setEditable(!isPublished);
-    }
-  }, [editor, isPublished]);
+    if (!editor) return;
+    editor.setEditable(!loadBlocked && !isPublished);
+  }, [editor, isPublished, loadBlocked]);
 
   useEffect(() => {
     if (editor && editorFontSize) {
@@ -145,8 +164,18 @@ export function RichTextEditor({
     }
   }, [editor, editorFontSize]);
 
+  const readOnly = isPublished || loadBlocked;
+
   return (
     <div className="flex flex-col flex-1 min-h-0 h-full overflow-hidden">
+      {loadBlocked && (
+        <div
+          role="alert"
+          className="shrink-0 border-b border-amber-700/40 bg-amber-50 px-3 py-2 text-sm text-amber-950"
+        >
+          {t.editor.loadTextLostReadOnly}
+        </div>
+      )}
       <RichTextToolbar
         editor={editor}
         biographyId={biographyId}
@@ -154,12 +183,12 @@ export function RichTextEditor({
         onEditorFontSizeChange={onEditorFontSizeChange}
         aiTools={aiTools}
         aiUsageRefresh={aiUsageRefresh}
-        countsOnly={isPublished}
-        undoLastChange={undoLastChange}
+        countsOnly={readOnly}
+        undoLastChange={loadBlocked ? undefined : undoLastChange}
       />
       <div
         ref={scrollContainerRef}
-        className={`flex-1 min-h-0 overflow-y-auto${isPublished ? ' opacity-70 cursor-not-allowed select-none' : ''}`}
+        className={`flex-1 min-h-0 overflow-y-auto${readOnly ? ' opacity-70 cursor-not-allowed select-none' : ''}`}
       >
         <EditorContent editor={editor} />
       </div>

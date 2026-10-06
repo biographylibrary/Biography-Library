@@ -112,10 +112,12 @@ describe('archive markdown round-trip', () => {
     );
     expect(cleaned.warnings).toEqual(expect.arrayContaining(['tables', 'images']));
     expect(cleaned.markdown).toContain('Ciao');
-    expect(cleaned.markdown).toContain('A');
-    expect(cleaned.markdown).toContain('B');
+    expect(cleaned.markdown).toMatch(/A\n\nB/);
+    expect(cleaned.markdown).not.toContain('AB');
     expect(cleaned.markdown).toContain('fine');
     expect(cleaned.markdown).not.toContain('<table');
+    expect(cleaned.html).toContain('<p>A</p>');
+    expect(cleaned.html).toContain('<p>B</p>');
     expect(cleaned.html).not.toContain('style=');
     expect(cleaned.html).not.toContain('<u>');
     expect(cleaned.html).not.toContain('<img');
