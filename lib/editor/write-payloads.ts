@@ -60,13 +60,13 @@ export function buildLicenseChoicePayload(params: {
   return update;
 }
 
-/** Testo finale combinato: `final_version` e stato `final_version`. */
+/** Testo finale combinato: `final_version` (Markdown) e stato `final_version`. */
 export function buildFinalVersionPayload(
   text: string,
   narrativeOrder?: string[]
 ): Record<string, unknown> {
   return {
-    final_version: text,
+    ...nfcBiographyWriteFields({ final_version: text }),
     ...(narrativeOrder ? { narrative_order: narrativeOrder } : {}),
     status: 'final_version',
   };

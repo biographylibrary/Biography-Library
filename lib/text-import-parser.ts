@@ -11,21 +11,29 @@ import {
   sanitizeHtml,
   type HtmlHeadingChunk,
 } from '@/lib/import/html-normalizer';
+import {
+  cleanEditorIncomingHtml,
+  type ContentCleanWarning,
+} from '@/lib/editor-content-clean';
+import { htmlToArchiveMarkdown, storedToArchiveMarkdown } from '@/lib/archive-markdown';
 import type { Language } from '@/lib/i18n/translations';
 
 export interface ParsedSection {
   title: string;
+  /** Archive Markdown body for the section/chapter. */
   content: string;
   sectionKey?: string | null;
   confidence?: 'high' | 'medium' | 'low' | 'none';
 }
 
 export interface ParsedText {
+  /** Archive Markdown (not HTML). */
   content: string;
   sections?: ParsedSection[];
   headingChunks?: HtmlHeadingChunk[];
   hasSections: boolean;
   fileNames?: string[];
+  warnings?: ContentCleanWarning[];
 }
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024;
@@ -129,26 +137,36 @@ function mergeParsed(results: ParsedText[]): ParsedText {
   };
 }
 
+function toArchiveMarkdown(htmlOrMd: string): { markdown: string; warnings: ContentCleanWarning[] } {
+  const cleaned = cleanEditorIncomingHtml(htmlOrMd);
+  if (cleaned.markdown) return cleaned;
+  // Already Markdown / plain
+  return { markdown: storedToArchiveMarkdown(htmlOrMd), warnings: cleaned.warnings };
+}
+
 function finalizeParsed(
   content: string,
   language: Language,
   fileName?: string
 ): ParsedText {
-  const normalized = normalizeImportedHtml(content);
+  const cleanedIncoming = cleanEditorIncomingHtml(content);
+  const normalized = normalizeImportedHtml(cleanedIncoming.html || content);
   const htmlSections = detectSectionsFromHtml(normalized, language);
+  const warnings = cleanedIncoming.warnings;
 
   if (htmlSections && htmlSections.length > 0) {
     return {
       content: '',
       sections: htmlSections.map((s) => ({
         title: s.title,
-        content: s.content,
+        content: htmlToArchiveMarkdown(s.content),
         sectionKey: s.sectionKey,
         confidence: s.confidence,
       })),
       headingChunks: htmlSections.map((s) => ({ title: s.title, html: s.content })),
       hasSections: htmlSections.some((s) => s.title),
       fileNames: fileName ? [fileName] : undefined,
+      warnings,
     };
   }
 
@@ -156,16 +174,21 @@ function finalizeParsed(
   if (textSections) {
     return {
       content: '',
-      sections: textSections,
+      sections: textSections.map((s) => ({
+        ...s,
+        content: toArchiveMarkdown(s.content).markdown,
+      })),
       hasSections: true,
       fileNames: fileName ? [fileName] : undefined,
+      warnings,
     };
   }
 
   return {
-    content: normalized,
+    content: toArchiveMarkdown(normalized).markdown,
     hasSections: false,
     fileNames: fileName ? [fileName] : undefined,
+    warnings,
   };
 }
 

@@ -25,6 +25,7 @@ import {
   Type,
   Undo2,
   SwatchBook,
+  SeparatorHorizontal,
 } from 'lucide-react';
 import { EditorFontSizeControl } from './editor-font-size-control';
 import { EditorAiToolsMenu, type EditorAiToolsMenuProps } from './editor-ai-tools-menu';
@@ -302,6 +303,13 @@ export function RichTextToolbar({
           isActive={editor.isActive('blockquote')}
           title={t.formatting.quote}
           icon={Quote}
+        />
+
+        <ToolbarButton
+          onClick={() => editor.chain().focus().setHorizontalRule().run()}
+          isActive={false}
+          title={t.formatting.separator}
+          icon={SeparatorHorizontal}
         />
 
         <Separator orientation="vertical" className="h-6 mx-1" />

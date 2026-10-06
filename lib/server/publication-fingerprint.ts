@@ -1,7 +1,14 @@
 import { createHash } from 'node:crypto';
 import { storedToArchiveMarkdown } from '@/lib/archive-markdown';
 import { nfc } from '@/lib/nfc';
+import { BIOGRAPHIES_AUTHOR_TEXT_COLUMNS } from '@/lib/publication-state';
 import type { AnyClient } from '@/lib/server/service-client';
+
+/** Colonne di `biographies` lette per l'impronta (whitelist testo + modalità). */
+export const PUBLICATION_FINGERPRINT_BIOGRAPHY_COLUMNS = [
+  ...BIOGRAPHIES_AUTHOR_TEXT_COLUMNS,
+  'biography_mode',
+] as const;
 
 /**
  * Impronta del testo pubblico di una scheda e registro di screening e pubblicazioni.
@@ -241,9 +248,7 @@ export async function collectPublicTextInput(
 ): Promise<PublicTextInput | null> {
   const { data: bio, error } = await client
     .from('biographies')
-    .select(
-      'title, author_name, subject_name, name_as_written, name_given, name_family, name_order, name_romanized, romanization_system, content, content_freeflow, final_version, narrative_order, biography_mode, content_html_legacy'
-    )
+    .select(PUBLICATION_FINGERPRINT_BIOGRAPHY_COLUMNS.join(', '))
     .eq('id', biographyId)
     .maybeSingle();
   if (error) throw new Error(`publication_fingerprint_read_failed:biographies:${error.message}`);

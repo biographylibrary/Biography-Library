@@ -3,6 +3,7 @@ import {
   archiveMarkdownToHtml,
   htmlToArchiveMarkdown,
   looksLikeStoredHtml,
+  roundTripArchiveMarkdown,
   storedToArchiveMarkdown,
   storedToPlainText,
   storedToSafeHtml,
@@ -85,5 +86,20 @@ describe('archive-markdown', () => {
     const html = storedToSafeHtml('First paragraph.\n\nSecond paragraph.');
     expect(html).toContain('<p>First paragraph.</p>');
     expect(html).toContain('<p>Second paragraph.</p>');
+  });
+
+  it('preserves author literal tags as text, not HTML', () => {
+    const author = 'il tag <b>grassetto</b> e <p>';
+    const fromEditor = htmlToArchiveMarkdown(
+      `<p>${author.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')}</p>`
+    );
+    expect(fromEditor).toBe('il tag &lt;b&gt;grassetto&lt;/b&gt; e &lt;p&gt;');
+    expect(looksLikeStoredHtml(fromEditor)).toBe(false);
+    const html = storedToSafeHtml(fromEditor);
+    expect(html).not.toMatch(/<b\b/i);
+    expect(html).toContain('&lt;b&gt;');
+    expect(html).toContain('&lt;p&gt;');
+    expect(storedToPlainText(fromEditor)).toBe(author);
+    expect(roundTripArchiveMarkdown(fromEditor)).toBe(fromEditor);
   });
 });

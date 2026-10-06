@@ -13,7 +13,8 @@ export type SemanticTag =
   | 'ol'
   | 'li'
   | 'blockquote'
-  | 'table';
+  | 'table'
+  | 'hr';
 
 export interface SemanticBlock {
   tag: SemanticTag;
@@ -90,17 +91,31 @@ export function extractSemanticBlocks(html: string): SemanticBlock[] {
 
   const pushInlineBlocks = (chunk: string) => {
     if (!chunk.trim()) return;
-    const re = /<(p|h1|h2|h3|ul|ol|blockquote)\b[^>]*>([\s\S]*?)<\/\1>/gi;
+    const re =
+      /<(hr)\b[^>]*\/?>|<(p|h1|h2|h3|ul|ol|blockquote)\b[^>]*>([\s\S]*?)<\/\2>/gi;
     let m: RegExpExecArray | null;
+    let lastEnd = 0;
     let found = false;
     while ((m = re.exec(chunk)) !== null) {
       found = true;
-      blocks.push({
-        tag: m[1].toLowerCase() as SemanticTag,
-        inner: m[2],
-      });
+      const between = chunk.slice(lastEnd, m.index);
+      if (between.trim()) {
+        blocks.push({ tag: 'p', inner: between });
+      }
+      lastEnd = m.index + m[0].length;
+      if (m[1]) {
+        blocks.push({ tag: 'hr', inner: '' });
+      } else {
+        blocks.push({
+          tag: m[2].toLowerCase() as SemanticTag,
+          inner: m[3],
+        });
+      }
     }
-    if (!found && chunk.trim()) {
+    const tail = chunk.slice(lastEnd);
+    if (tail.trim()) {
+      blocks.push({ tag: 'p', inner: tail });
+    } else if (!found && chunk.trim()) {
       blocks.push({ tag: 'p', inner: chunk });
     }
   };

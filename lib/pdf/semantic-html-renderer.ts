@@ -361,6 +361,23 @@ export function renderSemanticHtmlBody(
       }
     } else if (block.tag === 'blockquote') {
       ctx.y = renderParagraphLines(ctx, block.inner, PT_BODY, { trailingGap: !nextIsHeading });
+    } else if (block.tag === 'hr') {
+      const fontSize = PT_BODY;
+      const lineH = lineHForFont(fontSize);
+      ctx.applyFont(ctx.doc, 'normal');
+      ctx.doc.setFontSize(fontSize);
+      if (ctx.y + lineH * 2 > ctx.textAreaBottom) {
+        ctx.addNewPage();
+        ctx.drawPageNumber?.();
+        ctx.y = ctx.textAreaTop;
+      }
+      ctx.y += lineH * 0.5;
+      const ornament = '* * *';
+      const tw = ctx.textAvailableWidth(ctx.absolutePage);
+      const textW = ctx.doc.getTextWidth(ornament);
+      const x = ctx.textStartX(ctx.absolutePage) + (tw - textW) / 2;
+      ctx.doc.text(ornament, x, ctx.y);
+      ctx.y += lineH * 1.5;
     } else {
       ctx.y = renderParagraphLines(ctx, block.inner, PT_BODY, { trailingGap: !nextIsHeading });
     }

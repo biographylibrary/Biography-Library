@@ -41,12 +41,13 @@ export async function convertBiographyMode(
   if (fetchErr || !bio) return { ok: false, error: 'Biography not found' };
 
   if (fromMode === 'sections' && toMode === 'freeflow') {
-    const html = await sectionsToFreeflow(serviceClient, biographyId);
+    const markdown = await sectionsToFreeflow(serviceClient, biographyId);
     const { error } = await serviceClient
       .from('biographies')
       .update({
         biography_mode: 'freeflow',
-        content_freeflow: html || (bio as { content_freeflow?: string }).content_freeflow || '',
+        content_freeflow:
+          markdown || (bio as { content_freeflow?: string }).content_freeflow || '',
       })
       .eq('id', biographyId);
     return error ? { ok: false, error: error.message } : { ok: true };

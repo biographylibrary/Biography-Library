@@ -35,7 +35,6 @@ const UNSUPPORTED_TAGS = new Set([
   'img',
   'pre',
   'code',
-  'hr',
   'font',
   'h4',
   'h5',
@@ -140,13 +139,28 @@ export function assessFields(fields: StoredField[]): LegacyAssessment {
  * Sulle bozze la formattazione non archiviabile si può convertire,
  * come fa già il salvataggio dell’editor.
  */
+function formattingLossIsOnlyAcceptedStyle(assessment: LegacyAssessment): boolean {
+  const losses = assessment.fields.filter((field) => field.kind === 'formatting_loss');
+  if (losses.length === 0) return true;
+  return losses.every(
+    (field) => field.unsupported.length > 0 && field.unsupported.every((u) => u === 'style')
+  );
+}
+
 export function decideApply(
   status: string | null | undefined,
   assessment: LegacyAssessment
 ): ApplyDecision {
   if (!assessment.hasHtml) return 'skip_unchanged';
   if (assessment.hasTextLoss) return 'manual_review';
-  if (status === 'published' && assessment.hasFormattingLoss) return 'manual_review';
+  // text-align:left (style) is an accepted loss; other formatting on published needs review.
+  if (
+    status === 'published' &&
+    assessment.hasFormattingLoss &&
+    !formattingLossIsOnlyAcceptedStyle(assessment)
+  ) {
+    return 'manual_review';
+  }
   return 'convert';
 }
 

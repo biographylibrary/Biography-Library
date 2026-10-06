@@ -237,6 +237,12 @@ create table public.biography_book_structure (
   epilogue_content text,
   acknowledgements_content text,
   specific_credits_content text,
+  dedication_enabled boolean not null default false,
+  epigraph_enabled boolean not null default false,
+  preface_enabled boolean not null default false,
+  epilogue_enabled boolean not null default false,
+  acknowledgements_enabled boolean not null default false,
+  specific_credits_enabled boolean not null default false,
   created_at timestamptz default now(),
   updated_at timestamptz default now()
 );
@@ -247,8 +253,11 @@ create table public.person_events (
   event_type text not null,
   event_label text,
   sequence integer,
+  date_edtf text,
   date_as_given text,
+  calendar_code text,
   place_name_as_given text,
+  place_name_current text,
   source_note text,
   created_at timestamptz default now()
 );
@@ -258,7 +267,12 @@ create table public.person_relations (
   biography_id uuid not null references public.biographies(id) on delete cascade,
   relation_code text not null,
   relation_label text,
+  direction text,
+  related_um_id text,
   related_name_as_written text,
+  related_name_romanized text,
+  valid_from_edtf text,
+  valid_to_edtf text,
   source_note text,
   created_at timestamptz default now()
 );
@@ -407,6 +421,7 @@ export async function reseed(db: PGlite): Promise<void> {
       -- Le tabelle delle migrazioni più recenti possono mancare (prove sul ritorno indietro).
       if to_regclass('public.ai_token_usage') is not null then delete from public.ai_token_usage; end if;
       if to_regclass('public.publication_records') is not null then delete from public.publication_records; end if;
+      if to_regclass('public.biography_source_html_legacy') is not null then delete from public.biography_source_html_legacy; end if;
     end $$;
     delete from public.biography_media;
     delete from public.biography_sections;
@@ -444,6 +459,8 @@ export async function createTestDb(
     '20260930120300_helper_functions_search_path.sql',
     '20261006090000_biography_media_gallery_limit_15.sql',
     '20261006110000_biography_media_dimensions.sql',
+    '20261006140000_biography_source_html_legacy.sql',
+    '20261006140100_publication_records_format_conversion.sql',
   ];
   const files = all.filter((file) => !options.skip?.includes(file) && (!options.only || options.only.includes(file)));
   // L'ultima fissa il percorso di ricerca di funzioni create da 20260930120000 e 20260930120150:

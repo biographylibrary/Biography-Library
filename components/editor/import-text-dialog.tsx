@@ -24,13 +24,17 @@ import {
   getImportErrorMessage,
   type ParsedText,
 } from '@/lib/text-import-parser';
-import { appendHtml } from '@/lib/import/html-blocks';
-import { htmlHasText, sectionsToDocumentHtml } from '@/lib/editor/single-document';
+import {
+  appendMarkdown,
+  htmlHasText,
+  sectionsToDocumentMarkdown,
+} from '@/lib/editor/single-document';
 import { saveOriginalCoverJpeg } from '@/lib/editor/save-original-cover';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/lib/auth-context';
 import { useTranslation } from '@/lib/i18n/i18n-context';
 import { type BiographyContent } from '@/lib/editor-constants';
+import { storedToSafeHtml } from '@/lib/archive-markdown';
 
 const MAX_PDF_BYTES = 30 * 1024 * 1024;
 
@@ -245,16 +249,16 @@ export function ImportTextDialog({
     }
   }, [pastedText, t, language]);
 
-  const incomingHtml = useCallback(() => {
+  const incomingMarkdown = useCallback(() => {
     if (!parsedContent) return '';
     return parsedContent.hasSections && parsedContent.sections?.length
-      ? sectionsToDocumentHtml(parsedContent.sections)
+      ? sectionsToDocumentMarkdown(parsedContent.sections)
       : parsedContent.content;
   }, [parsedContent]);
 
   const applySingleImport = useCallback(
     (action: ConflictAction) => {
-      const incomingText = incomingHtml();
+      const incomingText = incomingMarkdown();
       if (!htmlHasText(incomingText)) {
         resetDialog();
         onOpenChange(false);
@@ -263,12 +267,12 @@ export function ImportTextDialog({
       const newValue =
         action === 'replace' || !htmlHasText(currentFreeflowContent)
           ? incomingText
-          : appendHtml(currentFreeflowContent, incomingText);
+          : appendMarkdown(currentFreeflowContent, incomingText);
       onImportedToFreeflow(newValue);
       resetDialog();
       onOpenChange(false);
     },
-    [incomingHtml, currentFreeflowContent, onImportedToFreeflow, resetDialog, onOpenChange]
+    [incomingMarkdown, currentFreeflowContent, onImportedToFreeflow, resetDialog, onOpenChange]
   );
 
   const chooseCover = useCallback(
@@ -315,12 +319,12 @@ export function ImportTextDialog({
 
   const handleImportConfirm = useCallback(() => {
     if (!parsedContent) return;
-    if (sheetHasContent() && htmlHasText(incomingHtml())) {
+    if (sheetHasContent() && htmlHasText(incomingMarkdown())) {
       setAskConflict(true);
       return;
     }
     void finishImport('replace');
-  }, [parsedContent, sheetHasContent, incomingHtml, finishImport]);
+  }, [parsedContent, sheetHasContent, incomingMarkdown, finishImport]);
 
   const handleOpenChange = useCallback(
     (newOpen: boolean) => {
@@ -330,10 +334,9 @@ export function ImportTextDialog({
     [onOpenChange, resetDialog]
   );
 
-  const previewHtml =
-    parsedContent?.hasSections && parsedContent.sections?.length
-      ? sectionsToDocumentHtml(parsedContent.sections)
-      : parsedContent?.content || '';
+  const previewMarkdown = incomingMarkdown();
+  const previewHtml = storedToSafeHtml(previewMarkdown);
+  const importWarnings = parsedContent?.warnings ?? [];
 
   return (
     <>
@@ -466,6 +469,18 @@ export function ImportTextDialog({
                       <p className="text-sm text-muted-foreground">{t.importDialog.pdfInsidePhoto}</p>
                     )}
                   </div>
+                )}
+                {importWarnings.includes('tables') && (
+                  <Alert className="border-brand-mustardDark/40 bg-brand-mustardLight/20">
+                    <AlertCircle className="h-4 w-4" />
+                    <AlertDescription>{t.importDialog.tablesFlattenedNotice}</AlertDescription>
+                  </Alert>
+                )}
+                {importWarnings.includes('images') && (
+                  <Alert className="border-brand-mustardDark/40 bg-brand-mustardLight/20">
+                    <AlertCircle className="h-4 w-4" />
+                    <AlertDescription>{t.importDialog.imagesIgnoredNotice}</AlertDescription>
+                  </Alert>
                 )}
                 {parsedContent && htmlHasText(previewHtml) && (
                   <div className="rounded-md border border-border/60 bg-muted/30 p-4 max-h-[240px] overflow-y-auto import-preview">
