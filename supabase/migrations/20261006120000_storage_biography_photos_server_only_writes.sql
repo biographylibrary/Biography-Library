@@ -11,10 +11,13 @@
   1. Si tolgono due policy di `storage.objects` per `authenticated`:
        "Users can upload to own folder"   (INSERT)
        "Users can update own files"       (UPDATE)
-  2. Si fissa sul bucket un limite di dimensione di 10 MiB (10485760 byte) per file, come seconda
-     difesa: un file elaborato (JPEG, lato lungo al massimo 3100 pixel, qualità 85) sta di norma
-     fra uno e quattro megabyte, quindi il limite lascia margine ma ferma un file ingrossato.
-     Vale anche per il ruolo di servizio (è il bucket a rifiutare).
+  2. Si fissa sul bucket un limite di dimensione di 20 MiB (20971520 byte) per file: è lo stesso
+     massimo che la rotta accetta in ingresso (MAX_UPLOAD_BYTES in lib/server/photo-processing.ts) e
+     che il pannello foto annuncia, quindi «20 MB per immagine» vale in tutti e tre i punti. Fa da
+     seconda difesa: un file elaborato (JPEG, lato lungo al massimo 3100 pixel, qualità 85) sta di
+     norma fra uno e quattro megabyte, e questo limite ferma qualunque altro scrittore. Vale anche per
+     il ruolo di servizio (è il bucket a rifiutare). Il limite riguarda solo i file nuovi: i file già
+     nel bucket non cambiano e non vanno ricompressi (decisione del 6 ottobre 2026).
 
   ## Che cosa NON cambia
   La lettura (policy "Users can read own files") e la cancellazione dei propri file (policy "Users can
@@ -35,5 +38,5 @@ DROP POLICY IF EXISTS "Users can upload to own folder" ON storage.objects;
 DROP POLICY IF EXISTS "Users can update own files" ON storage.objects;
 
 UPDATE storage.buckets
-SET file_size_limit = 10485760
+SET file_size_limit = 20971520
 WHERE id = 'biography-photos';

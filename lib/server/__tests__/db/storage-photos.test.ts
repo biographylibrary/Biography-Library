@@ -208,9 +208,9 @@ describe('20261006120000: la scrittura diretta nel bucket si chiude', () => {
     expect(await as(db, 'authenticated', U.author, `select name from storage.objects order by name`)).toHaveLength(2);
   });
 
-  it('fissa il limite di 10 MiB sul bucket e non cambia nient\'altro del bucket', async () => {
+  it('fissa il limite di 20 MiB sul bucket e non cambia nient\'altro del bucket', async () => {
     expect(await bucket()).toEqual([
-      { id: 'biography-photos', name: 'biography-photos', public: false, avif_autodetection: false, file_size_limit: 10485760, allowed_mime_types: null },
+      { id: 'biography-photos', name: 'biography-photos', public: false, avif_autodetection: false, file_size_limit: 20971520, allowed_mime_types: null },
     ]);
   });
 
