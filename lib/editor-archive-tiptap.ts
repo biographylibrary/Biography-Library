@@ -1,8 +1,31 @@
 import StarterKit from '@tiptap/starter-kit';
 import Placeholder from '@tiptap/extension-placeholder';
+import { Link } from '@tiptap/extension-link';
 import { Markdown } from '@tiptap/markdown';
 import type { Extensions } from '@tiptap/react';
 import { archiveMarkdownToHtml, normalizeArchiveMarkdown } from '@/lib/archive-markdown';
+
+/**
+ * Explicit Link only: TipTap 3 StarterKit already bundles Link with autolink
+ * defaults. We disable StarterKit's Link and register our own so pasteRules
+ * cannot invent links from "consumo.La" (.La is a real TLD).
+ */
+const ArchiveLink = Link.extend({
+  addPasteRules() {
+    return [];
+  },
+}).configure({
+  openOnClick: false,
+  autolink: false,
+  linkOnPaste: false,
+  shouldAutoLink: () => false,
+  defaultProtocol: 'https',
+  protocols: ['http', 'https'],
+  HTMLAttributes: {
+    rel: 'noopener noreferrer nofollow',
+    target: '_blank',
+  },
+});
 
 /**
  * TipTap extensions for the archive document.
@@ -24,21 +47,11 @@ export function archiveTiptapExtensions(placeholder?: string): Extensions {
       code: false,
       codeBlock: false,
       underline: false,
+      // TipTap 3 StarterKit includes Link; configure off and use ArchiveLink.
+      link: false,
       // Scene separator (***) stays enabled (StarterKit default).
-      link: {
-        openOnClick: false,
-        // No autolink while typing/pasting prose ("consumo.La", "www…").
-        // Explicit link command and paste of a full http(s) URL still work.
-        autolink: false,
-        linkOnPaste: true,
-        defaultProtocol: 'https',
-        protocols: ['http', 'https', 'mailto'],
-        HTMLAttributes: {
-          rel: 'noopener noreferrer nofollow',
-          target: '_blank',
-        },
-      },
     }),
+    ArchiveLink,
   ];
   if (placeholder) {
     extensions.push(Placeholder.configure({ placeholder }));

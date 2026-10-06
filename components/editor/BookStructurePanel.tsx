@@ -11,6 +11,7 @@ import {
   normalizeArchiveMarkdown,
 } from '@/lib/archive-markdown';
 import { cleanEditorIncomingHtml } from '@/lib/editor-content-clean';
+import { handleArchivePasteEvent } from '@/lib/editor-paste';
 import { editorLoadMatchesStored } from '@/lib/editor-load-guard';
 import { nfc } from '@/lib/nfc';
 import { ChevronDown, ChevronRight, Loader2 } from 'lucide-react';
@@ -77,6 +78,9 @@ function RichBlockEditor({ content, onChange, placeholder }: RichBlockEditorProp
     editorProps: {
       attributes: {
         class: 'min-h-[120px] prose prose-sm max-w-none focus:outline-none px-3 py-2 text-sm',
+      },
+      handlePaste(view, event) {
+        return handleArchivePasteEvent(view, event);
       },
       transformPastedHTML(html) {
         const cleaned = cleanEditorIncomingHtml(html);
