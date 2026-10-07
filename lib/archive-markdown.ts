@@ -8,8 +8,12 @@ import MarkdownIt from 'markdown-it';
 import { parse, NodeType, type HTMLElement, type Node } from 'node-html-parser';
 import { nfc } from '@/lib/nfc';
 
-const HTML_MARKERS =
-  /<(?:p|br|div|span|strong|b|em|i|u|s|ul|ol|li|h[1-6]|blockquote|table|a|sup|sub|hr|pre|code)\b/i;
+/**
+ * Legacy HTML originals always start (after leading whitespace) with a block tag.
+ * Do not scan the whole string: a Markdown author may write "<b>", "se x<a y", "<3", etc.
+ */
+const LEGACY_HTML_BLOCK_START =
+  /^\s*<(?:p|h[1-6]|ul|ol|blockquote|div|hr|br|table|pre)\b/i;
 
 const ARCHIVE_HTML_TAGS = new Set([
   'p',
@@ -84,7 +88,7 @@ function finalizeParagraphMd(alreadyInlineEscaped: string): string {
 }
 
 export function looksLikeStoredHtml(text: string): boolean {
-  return HTML_MARKERS.test((text ?? '').trim());
+  return LEGACY_HTML_BLOCK_START.test(text ?? '');
 }
 
 function isElement(node: Node): node is HTMLElement {

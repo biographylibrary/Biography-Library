@@ -75,7 +75,25 @@ describe('archive-markdown', () => {
 
   it('treats stored HTML and Markdown both as the original', () => {
     expect(looksLikeStoredHtml('<p>Hi</p>')).toBe(true);
+    expect(looksLikeStoredHtml('  <h2>Title</h2>')).toBe(true);
+    expect(looksLikeStoredHtml('<ul><li>a</li></ul>')).toBe(true);
+    expect(looksLikeStoredHtml('<div>x</div>')).toBe(true);
+    expect(looksLikeStoredHtml('<br>')).toBe(true);
+    expect(looksLikeStoredHtml('<hr>')).toBe(true);
+    expect(looksLikeStoredHtml('<table><tr><td>a</td></tr></table>')).toBe(true);
+    expect(looksLikeStoredHtml('<pre>code</pre>')).toBe(true);
+    expect(looksLikeStoredHtml('<blockquote>q</blockquote>')).toBe(true);
     expect(looksLikeStoredHtml('## Title\n\nHello **world**.')).toBe(false);
+    // Inline-looking markers mid-text must not count as legacy HTML.
+    expect(looksLikeStoredHtml('se x<a y allora')).toBe(false);
+    expect(looksLikeStoredHtml('\\<b>grassetto finto\\</b>')).toBe(false);
+    expect(looksLikeStoredHtml('a < b')).toBe(false);
+    expect(looksLikeStoredHtml('<3')).toBe(false);
+    expect(looksLikeStoredHtml('il tag <p> serve per i paragrafi')).toBe(false);
+    expect(looksLikeStoredHtml('scrivi a <nome@esempio.ch>')).toBe(false);
+    // Inline-only openers are not legacy originals (those always start with a block tag).
+    expect(looksLikeStoredHtml('<strong>solo</strong>')).toBe(false);
+    expect(looksLikeStoredHtml('<span>x</span>')).toBe(false);
     expect(storedToArchiveMarkdown('<p>Hi <strong>there</strong></p>')).toBe('Hi **there**');
     expect(storedToArchiveMarkdown('Hi **there**')).toBe('Hi **there**');
     expect(storedToPlainText('**bold** and *i*')).toBe('bold and i');
