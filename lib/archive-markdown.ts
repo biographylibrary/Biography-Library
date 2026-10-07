@@ -354,9 +354,12 @@ export function htmlParagraphPlainText(html: string): string {
 }
 
 export function storedToPlainText(stored: string): string {
-  const html = storedToSafeHtml(stored);
+  const raw = stored ?? '';
+  if (!raw.trim()) return '';
+  const html = storedToSafeHtml(raw);
+  // Empty HTML (e.g. <p style="…"></p>) must not fall back to the raw markup.
   if (!html) {
-    return nfc((stored ?? '').trim());
+    return looksLikeStoredHtml(raw) ? '' : nfc(raw.trim());
   }
   return html
     .replace(/<hr\s*\/?>/gi, '\n\n')
