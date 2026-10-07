@@ -14,6 +14,14 @@ export type CleanedEditorContent = {
   warnings: ContentCleanWarning[];
 };
 
+/**
+ * Paste flattens h1–h6 to paragraphs (Word/web titles are style, not structure).
+ * File import keeps headings so section detection in text-import-parser still works.
+ */
+export type CleanEditorOptions = {
+  preserveHeadings?: boolean;
+};
+
 const DROP_TAGS = new Set([
   'script',
   'style',
@@ -74,11 +82,14 @@ const BLOCK_TAGS = new Set([
   'br',
 ]);
 
-/** Bullet glyphs Word / web paste when mso-list is missing. */
-const FALLBACK_BULLET = /^(?:[·•o§])\s+/u;
+/** Safe bullet glyphs (never words): · • § + space — OK without mso-list. */
+const SAFE_BULLET_GLYPH = /^(?:[·•§])\s+/u;
 
-/** Numbered / lettered markers: 1. 1) a. a) A. A) */
-const FALLBACK_ORDERED = /^([0-9]+|[A-Za-z])[.)]\s+/;
+/** Word “o” bullet — only inside mso-list / MsoListParagraph. */
+const MSO_O_BULLET = /^o\s+/;
+
+/** Numbered / lettered markers: 1. 1) a. a) A. A) — only with mso-list. */
+const MSO_ORDERED_MARKER = /^([0-9]+|[A-Za-z])[.)]\s+/;
 
 function isElement(node: Node): node is HTMLElement {
   return node.nodeType === NodeType.ELEMENT_NODE;
@@ -174,18 +185,6 @@ function isMsoListParagraph(el: HTMLElement): boolean {
   return style.includes('mso-list');
 }
 
-function listKindFromPlain(plain: string): { kind: 'ul' | 'ol'; body: string } | null {
-  const ordered = FALLBACK_ORDERED.exec(plain);
-  if (ordered) {
-    return { kind: 'ol', body: plain.slice(ordered[0].length).trim() };
-  }
-  const bullet = FALLBACK_BULLET.exec(plain);
-  if (bullet) {
-    return { kind: 'ul', body: plain.slice(bullet[0].length).trim() };
-  }
-  return null;
-}
-
 function headingTagFor(tag: string): 'h1' | 'h2' | 'h3' {
   if (tag === 'h1' || tag === 'h2' || tag === 'h3') return tag;
   return 'h3';
@@ -263,7 +262,12 @@ function flushList(buffer: ListBuffer | null, parts: string[]): ListBuffer | nul
   return null;
 }
 
-function serializeCleanBlocks(nodes: Node[], warnings: Set<ContentCleanWarning>): string {
+function serializeCleanBlocks(
+  nodes: Node[],
+  warnings: Set<ContentCleanWarning>,
+  options: CleanEditorOptions = {}
+): string {
+  const preserveHeadings = options.preserveHeadings === true;
   const parts: string[] = [];
   let listBuffer: ListBuffer | null = null;
 
@@ -277,26 +281,7 @@ function serializeCleanBlocks(nodes: Node[], warnings: Set<ContentCleanWarning>)
     if (html) parts.push(html);
   };
 
-  const tryConsumeAsListItem = (el: HTMLElement): boolean => {
-    const mso = isMsoListParagraph(el);
-    const plain = plainInlineText(el.childNodes);
-    if (!plain) return false;
-
-    let kind: 'ul' | 'ol' | null = null;
-    let bodyHtml = '';
-
-    const fromMarker = listKindFromPlain(plain);
-    if (fromMarker) {
-      kind = fromMarker.kind;
-      bodyHtml = escapeHtmlText(fromMarker.body);
-    } else if (mso) {
-      // mso-list without a visible marker we recognize → bullet, keep full text.
-      kind = 'ul';
-      bodyHtml = escapeHtmlText(plain);
-    } else {
-      return false;
-    }
-
+  const pushListItem = (kind: 'ul' | 'ol', bodyHtml: string): boolean => {
     if (!bodyHtml.trim()) return false;
     if (!listBuffer || listBuffer.kind !== kind) {
       listBuffer = flushList(listBuffer, parts);
@@ -304,6 +289,39 @@ function serializeCleanBlocks(nodes: Node[], warnings: Set<ContentCleanWarning>)
     }
     listBuffer.items.push(bodyHtml.trim());
     return true;
+  };
+
+  /**
+   * List rules (paste):
+   * - · • § + space → bullet, with or without mso-list
+   * - 1. 1) a. a) A. / o + space → only inside mso-list / MsoListParagraph
+   * - mso-list with no recognisable marker → bullet, full text kept
+   * - otherwise leave the paragraph unchanged
+   */
+  const tryConsumeAsListItem = (el: HTMLElement): boolean => {
+    const mso = isMsoListParagraph(el);
+    const plain = plainInlineText(el.childNodes);
+    if (!plain) return false;
+
+    const safe = SAFE_BULLET_GLYPH.exec(plain);
+    if (safe) {
+      return pushListItem('ul', escapeHtmlText(plain.slice(safe[0].length).trim()));
+    }
+
+    if (mso) {
+      const ordered = MSO_ORDERED_MARKER.exec(plain);
+      if (ordered) {
+        return pushListItem('ol', escapeHtmlText(plain.slice(ordered[0].length).trim()));
+      }
+      const oBullet = MSO_O_BULLET.exec(plain);
+      if (oBullet) {
+        return pushListItem('ul', escapeHtmlText(plain.slice(oBullet[0].length).trim()));
+      }
+      // mso-list without a visible marker we recognize → bullet, keep full text.
+      return pushListItem('ul', escapeHtmlText(plain));
+    }
+
+    return false;
   };
 
   for (const node of nodes) {
@@ -338,8 +356,13 @@ function serializeCleanBlocks(nodes: Node[], warnings: Set<ContentCleanWarning>)
       listBuffer = flushList(listBuffer, parts);
       const inner = unwrapHeadingStyleBold(serializeCleanInline(node.childNodes).trim());
       if (inner) {
-        const h = headingTagFor(tag);
-        parts.push(`<${h}>${inner}</${h}>`);
+        if (preserveHeadings) {
+          const h = headingTagFor(tag);
+          parts.push(`<${h}>${inner}</${h}>`);
+        } else {
+          // Paste: titles become normal paragraphs; style-bold already stripped.
+          pushParagraph(inner);
+        }
       }
       continue;
     }
@@ -347,7 +370,7 @@ function serializeCleanBlocks(nodes: Node[], warnings: Set<ContentCleanWarning>)
     if (tag === 'p') {
       if (tryConsumeAsListItem(node)) continue;
       if (hasBlockChild(node.childNodes)) {
-        pushRaw(serializeCleanBlocks(node.childNodes, warnings));
+        pushRaw(serializeCleanBlocks(node.childNodes, warnings, options));
         continue;
       }
       const inner = serializeCleanInline(node.childNodes).trim();
@@ -358,7 +381,7 @@ function serializeCleanBlocks(nodes: Node[], warnings: Set<ContentCleanWarning>)
     if (tag === 'div' || tag === 'section' || tag === 'article') {
       if (tryConsumeAsListItem(node)) continue;
       if (hasBlockChild(node.childNodes)) {
-        pushRaw(serializeCleanBlocks(node.childNodes, warnings));
+        pushRaw(serializeCleanBlocks(node.childNodes, warnings, options));
         continue;
       }
       const inner = serializeCleanInline(node.childNodes).trim();
@@ -368,7 +391,7 @@ function serializeCleanBlocks(nodes: Node[], warnings: Set<ContentCleanWarning>)
 
     if (tag === 'blockquote') {
       listBuffer = flushList(listBuffer, parts);
-      const inner = serializeCleanBlocks(node.childNodes, warnings);
+      const inner = serializeCleanBlocks(node.childNodes, warnings, options);
       if (inner) parts.push(`<blockquote>${inner}</blockquote>`);
       continue;
     }
@@ -382,7 +405,7 @@ function serializeCleanBlocks(nodes: Node[], warnings: Set<ContentCleanWarning>)
       const lis = items
         .map((li) => {
           if (hasBlockChild(li.childNodes)) {
-            const nested = serializeCleanBlocks(li.childNodes, warnings);
+            const nested = serializeCleanBlocks(li.childNodes, warnings, options);
             // Prefer first paragraph text inside the item.
             const m = /<p>([\s\S]*?)<\/p>/i.exec(nested);
             const inner = m ? m[1] : plainInlineText(li.childNodes);
@@ -399,7 +422,7 @@ function serializeCleanBlocks(nodes: Node[], warnings: Set<ContentCleanWarning>)
 
     if (tag === 'li') {
       if (hasBlockChild(node.childNodes)) {
-        pushRaw(serializeCleanBlocks(node.childNodes, warnings));
+        pushRaw(serializeCleanBlocks(node.childNodes, warnings, options));
         continue;
       }
       const inner = serializeCleanInline(node.childNodes).trim();
@@ -409,7 +432,7 @@ function serializeCleanBlocks(nodes: Node[], warnings: Set<ContentCleanWarning>)
 
     if (UNWRAP_MARKS.has(tag)) {
       if (hasBlockChild(node.childNodes)) {
-        pushRaw(serializeCleanBlocks(node.childNodes, warnings));
+        pushRaw(serializeCleanBlocks(node.childNodes, warnings, options));
         continue;
       }
       const inner = serializeCleanInline(node.childNodes).trim();
@@ -420,7 +443,7 @@ function serializeCleanBlocks(nodes: Node[], warnings: Set<ContentCleanWarning>)
     if (node.querySelector('img, picture, svg')) warnings.add('images');
     if (node.querySelector('table')) warnings.add('tables');
 
-    const nested = serializeCleanBlocks(node.childNodes, warnings);
+    const nested = serializeCleanBlocks(node.childNodes, warnings, options);
     if (nested) pushRaw(nested);
   }
 
@@ -429,7 +452,10 @@ function serializeCleanBlocks(nodes: Node[], warnings: Set<ContentCleanWarning>)
 }
 
 /** Clean arbitrary HTML (Word, web, other editors) into archive-safe HTML + Markdown. */
-export function cleanEditorIncomingHtml(html: string): CleanedEditorContent {
+export function cleanEditorIncomingHtml(
+  html: string,
+  options: CleanEditorOptions = {}
+): CleanedEditorContent {
   const warnings = new Set<ContentCleanWarning>();
   const raw = (html ?? '').trim();
   if (!raw) return { markdown: '', html: '', warnings: [] };
@@ -440,7 +466,7 @@ export function cleanEditorIncomingHtml(html: string): CleanedEditorContent {
   if (/<table\b/i.test(raw)) warnings.add('tables');
 
   const root = parse(raw, { comment: false });
-  const cleanedHtml = serializeCleanBlocks(root.childNodes, warnings);
+  const cleanedHtml = serializeCleanBlocks(root.childNodes, warnings, options);
   const markdown = htmlToArchiveMarkdown(cleanedHtml);
   return {
     markdown,
@@ -450,12 +476,15 @@ export function cleanEditorIncomingHtml(html: string): CleanedEditorContent {
 }
 
 /** Plain pasted text → Markdown paragraph(s). */
-export function cleanEditorIncomingPlainText(text: string): CleanedEditorContent {
+export function cleanEditorIncomingPlainText(
+  text: string,
+  options: CleanEditorOptions = {}
+): CleanedEditorContent {
   const raw = (text ?? '').replace(/\r\n/g, '\n').trim();
   if (!raw) return { markdown: '', html: '', warnings: [] };
   const html = raw
     .split(/\n{2,}/)
     .map((p) => `<p>${p.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\n/g, '<br>')}</p>`)
     .join('');
-  return cleanEditorIncomingHtml(html);
+  return cleanEditorIncomingHtml(html, options);
 }

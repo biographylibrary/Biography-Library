@@ -51,6 +51,16 @@ We visited Corsica every summer.`;
     expect(parsed.hasSections).toBe(false);
   });
 
+  it('file import keeps HTML h1 headings (paste would flatten them)', () => {
+    const parsed = parsePastedText(
+      '<h1>Infanzia</h1><p>Cresciuto al mare.</p><h1>Carriera</h1><p>Insegnante.</p>',
+      'it'
+    );
+    expect(parsed.hasSections).toBe(true);
+    expect(parsed.sections?.map((s) => s.title)).toEqual(['Infanzia', 'Carriera']);
+    expect(parsed.sections?.[0].content).toContain('Cresciuto al mare');
+  });
+
   it('exposes TextImportError with a stable name', () => {
     const err = new TextImportError('FILE_TOO_LARGE');
     expect(err).toBeInstanceOf(Error);
