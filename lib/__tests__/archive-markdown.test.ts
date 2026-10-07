@@ -80,6 +80,8 @@ describe('archive-markdown', () => {
     expect(storedToArchiveMarkdown('Hi **there**')).toBe('Hi **there**');
     expect(storedToPlainText('**bold** and *i*')).toBe('bold and i');
     expect(storedToPlainText('<p>Una vita.</p>')).toBe('Una vita.');
+    // Empty HTML must not echo the markup as “plain text”.
+    expect(storedToPlainText('<p style="text-align: left;"></p>')).toBe('');
   });
 
   it('wraps legacy plain text as paragraphs', () => {
