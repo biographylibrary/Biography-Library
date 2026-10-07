@@ -9,13 +9,21 @@ import {
   archiveMarkdownToEditorHtml,
   archiveTiptapExtensions,
 } from '@/lib/editor-archive-tiptap';
-import { htmlToArchiveMarkdown, normalizeArchiveMarkdown, storedToPlainText } from '@/lib/archive-markdown';
+import {
+  htmlToArchiveMarkdown,
+  looksLikeStoredHtml,
+  normalizeArchiveMarkdown,
+  storedToPlainText,
+} from '@/lib/archive-markdown';
 import { cleanEditorIncomingHtml } from '@/lib/editor-content-clean';
 import {
   editorLoadMatchesStored,
   plainTextFromEditorDoc,
   plainTextFromStoredMarkdown,
+  structureFromEditorDoc,
+  structureFromStoredMarkdown,
 } from '@/lib/editor-load-guard';
+import { buildEditorSavePayload } from '@/lib/editor/write-payloads';
 import { nfc } from '@/lib/nfc';
 
 /** Production content from Giuseppe Pira (truncated shape; full patterns covered below). */
@@ -193,3 +201,177 @@ describe('paste tables and autolink off', () => {
     expect(editor.getHTML()).toMatch(/<a\b[^>]*href="https:\/\/esempio\.ch\/path"/);
   });
 });
+
+describe('bold+italic vs scene separator (editor path)', () => {
+  function saveFromEditorHtml(html: string): string {
+    return nfc(htmlToArchiveMarkdown(html));
+  }
+
+  function roundTripStable(htmlIn: string) {
+    const firstSave = saveFromEditorHtml(htmlIn);
+    const editor = createArchiveEditor(firstSave);
+    expect(editorLoadMatchesStored(firstSave, editor)).toBe(true);
+    const secondSave = saveFromEditorHtml(editor.getHTML());
+    expect(secondSave).toBe(firstSave);
+    return { firstSave, editor };
+  }
+
+  it('strong+em round-trips without scene separators', () => {
+    const { firstSave, editor } = roundTripStable(
+      '<p>Poi disse: <strong><em>«frase»</em></strong>, e nessuno...</p>'
+    );
+    expect(firstSave).toBe('Poi disse: **_«frase»_**, e nessuno...');
+    expect(firstSave).not.toMatch(/\n\*\*\*\n/);
+    expect(editor.getHTML()).not.toContain('<hr');
+    expect(structureFromEditorDoc(editor).horizontalRules).toBe(0);
+  });
+
+  it.each([
+    ['***x***', 'x'],
+    ['**_x_**', 'x'],
+    ['_**x**_', 'x'],
+  ])('loads emphasis form %s as one block', (md, plain) => {
+    const editor = createArchiveEditor(md);
+    expect(editor.getHTML()).not.toContain('<hr');
+    expect(structureFromStoredMarkdown(md).horizontalRules).toBe(0);
+    expect(structureFromEditorDoc(editor).horizontalRules).toBe(0);
+    expect(editorLoadMatchesStored(md, editor)).toBe(true);
+    expect(plainTextFromEditorDoc(editor)).toBe(plain);
+    const saved = saveFromEditorHtml(editor.getHTML());
+    const again = saveFromEditorHtml(createArchiveEditor(saved).getHTML());
+    expect(again).toBe(saved);
+  });
+
+  it('***x*** text ***y*** stays emphasis, not separators', () => {
+    const md = '***x*** testo ***y***';
+    const editor = createArchiveEditor(md);
+    expect(editor.getHTML()).not.toContain('<hr');
+    expect(editorLoadMatchesStored(md, editor)).toBe(true);
+    const saved = saveFromEditorHtml(editor.getHTML());
+    expect(saved).not.toMatch(/^\*\*\*$/m);
+    expect(saveFromEditorHtml(createArchiveEditor(saved).getHTML())).toBe(saved);
+  });
+
+  it('lone *** and * * * lines are scene separators', () => {
+    for (const sep of ['***', '* * *']) {
+      const md = `Prima\n\n${sep}\n\nDopo`;
+      const editor = createArchiveEditor(md);
+      expect(editor.getHTML()).toContain('<hr');
+      expect(structureFromEditorDoc(editor).horizontalRules).toBe(1);
+      expect(editorLoadMatchesStored(md, editor)).toBe(true);
+    }
+  });
+
+  it('*** mid-sentence is not a separator', () => {
+    const md = 'prima *** mid';
+    const editor = createArchiveEditor(md);
+    expect(structureFromEditorDoc(editor).horizontalRules).toBe(0);
+    expect(editorLoadMatchesStored(md, editor)).toBe(true);
+  });
+
+  it('bold+italic inside link, list, and heading', () => {
+    roundTripStable(
+      '<p><a href="https://esempio.ch"><strong><em>link</em></strong></a></p>'
+    );
+    roundTripStable('<ul><li><p><strong><em>voce</em></strong></p></li></ul>');
+    roundTripStable('<h2><strong><em>Titolo</em></strong></h2>');
+  });
+
+  it('load guard fails when separators appear but stored has emphasis only', () => {
+    const stored = '**_ero già lontano_**';
+    const broken = createArchiveEditor('Prima\n\n***\n\nero già lontano\n\n***\n\nDopo');
+    // Force content that has HRs while claiming stored emphasis — plain text differs too.
+    // Structure-only regression: same plain text, wrong HR count.
+    const emphasisEditor = createArchiveEditor(stored);
+    expect(structureFromStoredMarkdown(stored).horizontalRules).toBe(0);
+    expect(structureFromEditorDoc(emphasisEditor).horizontalRules).toBe(0);
+    expect(structureFromEditorDoc(broken).horizontalRules).toBe(2);
+    expect(editorLoadMatchesStored(stored, broken)).toBe(false);
+  });
+});
+
+describe('legacy HTML detection must not rewrite Markdown with angle brackets', () => {
+  /** Forms that previously matched HTML_MARKERS mid-string and could truncate on save. */
+  const riskyMarkdown = [
+    '\\<b>x\\</b>',
+    '\\<i>x\\</i>',
+    'se x<a y allora',
+    '<3',
+    'a < b',
+    'il tag <p> serve per i paragrafi',
+    'contattami <nome@esempio.ch>',
+  ];
+
+  function saveFreeflow(content: string): string {
+    const payload = buildEditorSavePayload({
+      fields: { content_freeflow: content },
+      isMemorial: false,
+      visibility: 'private',
+      biographyMode: 'autobiography',
+    });
+    return payload.content_freeflow as string;
+  }
+
+  function saveFromEditorHtml(html: string): string {
+    return saveFreeflow(nfc(htmlToArchiveMarkdown(html)));
+  }
+
+  it.each(riskyMarkdown)(
+    'save path leaves risky Markdown %j intact (no HTML conversion)',
+    (sample) => {
+      expect(looksLikeStoredHtml(sample)).toBe(false);
+      const firstSave = saveFreeflow(sample);
+      expect(firstSave).toBe(sample);
+      const secondSave = saveFreeflow(firstSave);
+      expect(secondSave).toBe(firstSave);
+      // Former bug: "se x<a y allora" → "se x"; escaped tags split into paragraphs.
+      expect(storedToPlainText(firstSave)).toContain(
+        sample.replace(/\\</g, '<').replace(/\\>/g, '>')
+      );
+    }
+  );
+
+  it.each([
+    { label: 'typed bold tags', html: '<p>&lt;b&gt;x&lt;/b&gt;</p>', plain: '<b>x</b>' },
+    { label: 'typed italic tags', html: '<p>&lt;i&gt;x&lt;/i&gt;</p>', plain: '<i>x</i>' },
+    { label: 'less-than mid sentence', html: '<p>se x&lt;a y allora</p>', plain: 'se x<a y allora' },
+    { label: 'heart less-than', html: '<p>&lt;3</p>', plain: '<3' },
+    { label: 'compare a < b', html: '<p>a &lt; b</p>', plain: 'a < b' },
+    {
+      label: 'talking about p tags',
+      html: '<p>il tag &lt;p&gt; serve per i paragrafi</p>',
+      plain: 'il tag <p> serve per i paragrafi',
+    },
+    {
+      label: 'angle-bracket address',
+      html: '<p>contattami &lt;nome@esempio.ch&gt;</p>',
+      plain: 'contattami <nome@esempio.ch>',
+    },
+  ])(
+    'editor save → load → guard → save again is stable ($label)',
+    ({ html, plain }) => {
+      const firstSave = saveFromEditorHtml(html);
+      expect(looksLikeStoredHtml(firstSave)).toBe(false);
+      expect(storedToPlainText(firstSave)).toBe(plain);
+
+      const editor = createArchiveEditor(firstSave);
+      expect(editorLoadMatchesStored(firstSave, editor)).toBe(true);
+      expect(plainTextFromEditorDoc(editor)).toBe(plainTextFromStoredMarkdown(firstSave));
+
+      const secondSave = saveFromEditorHtml(editor.getHTML());
+      expect(secondSave).toBe(firstSave);
+    }
+  );
+
+  it('still converts real legacy HTML originals that start with a block tag', () => {
+    const legacy = '<p>Ciao <strong>mondo</strong></p>';
+    expect(looksLikeStoredHtml(legacy)).toBe(true);
+    const firstSave = saveFreeflow(legacy);
+    expect(firstSave).toBe('Ciao **mondo**');
+    const editor = createArchiveEditor(firstSave);
+    expect(editorLoadMatchesStored(firstSave, editor)).toBe(true);
+    const secondSave = saveFromEditorHtml(editor.getHTML());
+    expect(secondSave).toBe(firstSave);
+  });
+});
+

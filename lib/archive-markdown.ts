@@ -8,8 +8,12 @@ import MarkdownIt from 'markdown-it';
 import { parse, NodeType, type HTMLElement, type Node } from 'node-html-parser';
 import { nfc } from '@/lib/nfc';
 
-const HTML_MARKERS =
-  /<(?:p|br|div|span|strong|b|em|i|u|s|ul|ol|li|h[1-6]|blockquote|table|a|sup|sub|hr|pre|code)\b/i;
+/**
+ * Legacy HTML originals always start (after leading whitespace) with a block tag.
+ * Do not scan the whole string: a Markdown author may write "<b>", "se x<a y", "<3", etc.
+ */
+const LEGACY_HTML_BLOCK_START =
+  /^\s*<(?:p|h[1-6]|ul|ol|blockquote|div|hr|br|table|pre)\b/i;
 
 const ARCHIVE_HTML_TAGS = new Set([
   'p',
@@ -84,7 +88,7 @@ function finalizeParagraphMd(alreadyInlineEscaped: string): string {
 }
 
 export function looksLikeStoredHtml(text: string): boolean {
-  return HTML_MARKERS.test((text ?? '').trim());
+  return LEGACY_HTML_BLOCK_START.test(text ?? '');
 }
 
 function isElement(node: Node): node is HTMLElement {
@@ -93,6 +97,21 @@ function isElement(node: Node): node is HTMLElement {
 
 function tagName(el: HTMLElement): string {
   return (el.rawTagName || el.tagName || '').toLowerCase();
+}
+
+/** Single element child, ignoring whitespace-only text nodes. */
+function onlyElementChild(nodes: Node[]): HTMLElement | null {
+  let found: HTMLElement | null = null;
+  for (const node of nodes) {
+    if (node.nodeType === NodeType.TEXT_NODE) {
+      if ((node.text ?? '').replace(/\u00a0/g, ' ').trim()) return null;
+      continue;
+    }
+    if (!isElement(node)) continue;
+    if (found) return null;
+    found = node;
+  }
+  return found;
 }
 
 function serializeInline(nodes: Node[]): string {
@@ -114,15 +133,30 @@ function serializeInline(nodes: Node[]): string {
       out += '  \n';
       continue;
     }
-    const inner = serializeInline(node.childNodes);
+    // Bold+italic as **_…_** / _**…**_ — never ***…*** (ambiguous with scene breaks).
     if (tag === 'strong' || tag === 'b') {
+      const only = onlyElementChild(node.childNodes);
+      if (only && (tagName(only) === 'em' || tagName(only) === 'i')) {
+        const inner = serializeInline(only.childNodes);
+        if (inner) out += `**_${inner}_**`;
+        continue;
+      }
+      const inner = serializeInline(node.childNodes);
       if (inner) out += `**${inner}**`;
       continue;
     }
     if (tag === 'em' || tag === 'i') {
+      const only = onlyElementChild(node.childNodes);
+      if (only && (tagName(only) === 'strong' || tagName(only) === 'b')) {
+        const inner = serializeInline(only.childNodes);
+        if (inner) out += `_**${inner}**_`;
+        continue;
+      }
+      const inner = serializeInline(node.childNodes);
       if (inner) out += `*${inner}*`;
       continue;
     }
+    const inner = serializeInline(node.childNodes);
     if (tag === 'a') {
       const href = (node.getAttribute('href') ?? '').trim();
       if (inner && isSafeHref(href)) {
@@ -246,13 +280,29 @@ function serializeBlocks(nodes: Node[], listIndent = ''): string {
   return parts.join('\n\n');
 }
 
-/** Normalize --- / ___ thematic breaks to canonical *** with blank lines. */
+/**
+ * CommonMark thematic break: a line that contains only ***, ---, ___, or * * *
+ * (three or more of the same marker, optional spaces between, ≤3 leading spaces).
+ * Mid-line *** (bold+italic, prose) must not become a scene separator.
+ */
+const THEMATIC_BREAK_LINE =
+  /^[ \t]{0,3}(?:(?:\*[ \t]*){3,}|(?:-[ \t]*){3,}|(?:_[ \t]*){3,})[ \t]*$/;
+
+/** Normalize --- / ___ / * * * thematic breaks to canonical *** with blank lines. */
 export function normalizeArchiveHorizontalRules(markdown: string): string {
-  return markdown
-    .replace(/(^|\n)[ \t]{0,3}(?:(?:-[ \t]*){3,}|(?:_[ \t]*){3,}|(?:\*[ \t]*){3,})[ \t]*(?=\n|$)/g, `$1${ARCHIVE_HORIZONTAL_RULE}`)
-    .replace(/\n{0,2}\*\*\*\n{0,2}/g, `\n\n${ARCHIVE_HORIZONTAL_RULE}\n\n`)
-    .replace(/\n{3,}/g, '\n\n')
-    .trim();
+  const lines = (markdown ?? '').replace(/\r\n/g, '\n').split('\n');
+  const out: string[] = [];
+  for (const line of lines) {
+    if (THEMATIC_BREAK_LINE.test(line)) {
+      while (out.length && out[out.length - 1] === '') out.pop();
+      if (out.length) out.push('');
+      out.push(ARCHIVE_HORIZONTAL_RULE);
+      out.push('');
+      continue;
+    }
+    out.push(line);
+  }
+  return out.join('\n').replace(/\n{3,}/g, '\n\n').trim();
 }
 
 export function htmlToArchiveMarkdown(html: string): string {

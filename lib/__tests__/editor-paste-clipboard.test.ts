@@ -8,7 +8,12 @@ import { afterEach, beforeAll, describe, expect, it } from 'vitest';
 import { archiveTiptapExtensions } from '@/lib/editor-archive-tiptap';
 import { cleanEditorIncomingHtml } from '@/lib/editor-content-clean';
 import { handleArchivePasteEvent, decideArchivePaste } from '@/lib/editor-paste';
-import { htmlToArchiveMarkdown } from '@/lib/archive-markdown';
+import { htmlToArchiveMarkdown, storedToPlainText } from '@/lib/archive-markdown';
+import { nfc } from '@/lib/nfc';
+
+function escapeForHtmlFixture(text: string): string {
+  return text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
 
 beforeAll(() => {
   if (typeof globalThis.ClipboardEvent === 'undefined') {
@@ -140,6 +145,157 @@ function pasteClipboard(editor: Editor, html: string, plain: string) {
 }
 
 describe('archive clipboard paste (real path)', () => {
+  it('pasted h1–h6 become normal paragraphs; style-bold on the title is stripped', () => {
+    const editor = makeEditor();
+    const html = `<div class="WordSection1">
+      <h1><b><span>Capitolo uno</span></b></h1>
+      <h2>Titolo due</h2>
+      <h3>Titolo tre</h3>
+      <h4>Titolo quattro</h4>
+      <p>corpo</p>
+    </div>`;
+    const md = pasteClipboard(editor, html, 'Capitolo uno');
+    expect(md).toContain('Capitolo uno');
+    expect(md).toContain('Titolo due');
+    expect(md).toContain('Titolo tre');
+    expect(md).toContain('Titolo quattro');
+    expect(md).toContain('corpo');
+    // Not Markdown headings and not bold-wrapped title text.
+    expect(md).not.toMatch(/^#/m);
+    expect(md).not.toContain('**Capitolo uno**');
+    expect(editor.getHTML()).not.toMatch(/<h[1-6]\b/i);
+    expect(editor.getHTML()).toMatch(/<p>Capitolo uno<\/p>/);
+  });
+
+  it('Word MsoListParagraph → real bullet/ordered lists; safe glyphs without mso-list', () => {
+    const editor = makeEditor();
+    const wordLists = `<html><body>
+      <p class="MsoListParagraph" style="mso-list:l0 level1 lfo1">· Uno</p>
+      <p class="MsoListParagraph" style="mso-list:l0 level1 lfo1">· Due</p>
+      <p class="MsoListParagraph" style="mso-list:l1 level1 lfo2">1. Primo</p>
+      <p class="MsoListParagraph" style="mso-list:l1 level1 lfo2">2. Secondo</p>
+      <p class="MsoListParagraph" style="mso-list:l2 level1 lfo3">o Terzo</p>
+      <p>• Pallino</p>
+      <p>§ Sezione</p>
+      <p>a) Lettera</p>
+    </body></html>`;
+    const md = pasteClipboard(editor, wordLists, 'Uno');
+    expect(md).toMatch(/^- Uno/m);
+    expect(md).toMatch(/^- Due/m);
+    expect(md).toMatch(/^1\. Primo/m);
+    expect(md).toMatch(/^2\. Secondo/m);
+    expect(md).toMatch(/^- Terzo/m);
+    expect(md).toMatch(/^- Pallino/m);
+    expect(md).toMatch(/^- Sezione/m);
+    // Without mso-list, "a) Lettera" must stay intact.
+    expect(md).toContain('a) Lettera');
+    expect(md).not.toMatch(/^1\. Lettera/m);
+    expect(md).not.toContain('· Uno');
+    expect(editor.getHTML()).toMatch(/<ul>/);
+    expect(editor.getHTML()).toMatch(/<ol>/);
+  });
+
+  it.each([
+    'G. Verdi nacque a Busseto nel 1813.',
+    'E. Montale scrisse...',
+    'o forse no, rispose lei.',
+    '1944. Fu l\'anno della svolta.',
+    'a) Lettera semplice',
+  ])('prose that looks like a list marker keeps every word: %s', (sample) => {
+    const editor = makeEditor();
+    const asHtml = pasteClipboard(editor, `<p>${sample}</p>`, sample);
+    expect(storedToPlainText(asHtml)).toBe(sample);
+    expect(asHtml).not.toMatch(/^- /m);
+    // Must not become a numbered list that drops the leading token ("G.", "1944.", "a)").
+    expect(storedToPlainText(asHtml)).toContain(sample.slice(0, 3));
+
+    const plainEditor = makeEditor();
+    const asPlain = pasteClipboard(plainEditor, '', sample);
+    expect(storedToPlainText(asPlain)).toBe(sample);
+  });
+
+  it('common prose paragraphs keep every word; only · • § may become list markers', () => {
+    const samples = [
+      'G. Verdi nacque a Busseto nel 1813.',
+      'E. Montale scrisse Ossi di seppia.',
+      'o forse no, rispose lei.',
+      'a casa sua c\'era un pianoforte.',
+      '1944. Fu l\'anno della svolta.',
+      '3) non è un elenco',
+      'A. Einstein e la relatività.',
+      '(1) nota tra parentesi all\'inizio',
+      '• vero pallino',
+      '· vero punto mediano',
+      '§ vero paragrafo',
+    ];
+    const html = samples.map((s) => `<p>${s.replace(/&/g, '&amp;').replace(/</g, '&lt;')}</p>`).join('');
+    const cleaned = cleanEditorIncomingHtml(html);
+    const plain = storedToPlainText(cleaned.markdown);
+    for (const s of samples) {
+      if (/^[·•§]\s/.test(s)) {
+        const body = s.replace(/^[·•§]\s+/, '');
+        expect(plain).toContain(body);
+        expect(cleaned.markdown).toMatch(new RegExp(`^- ${body.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}`, 'm'));
+      } else {
+        expect(plain).toContain(s);
+      }
+    }
+    expect(plain).toContain('G. Verdi');
+    expect(plain).toContain('o forse no');
+    expect(plain).toContain('1944.');
+    expect(plain).toContain('3) non è un elenco');
+    expect(plain).toContain('A. Einstein');
+  });
+
+  it('div blocks without spaces stay separate paragraphs', () => {
+    const editor = makeEditor();
+    const html = `<div><div>Alpha</div><div>Beta</div></div>`;
+    const md = pasteClipboard(editor, html, 'AlphaBeta');
+    expect(md).toBe('Alpha\n\nBeta');
+    expect(md).not.toContain('AlphaBeta');
+  });
+
+  describe('author angle brackets and entities stay literal on paste', () => {
+    const samples = [
+      'il tag <p> serve per i paragrafi',
+      'se x<a y allora',
+      'scrivi a <mario@esempio.it> subito',
+      '3 < 5 e 7 > 2',
+      'AT&amp;T',
+    ];
+
+    function wrappers(sample: string): Array<{ label: string; html: string }> {
+      const e = escapeForHtmlFixture(sample);
+      return [
+        { label: 'paragraph', html: `<p>${e}</p>` },
+        { label: 'table cell', html: `<table><tr><td>${e}</td></tr></table>` },
+        { label: 'list item', html: `<ul><li><p>${e}</p></li></ul>` },
+        { label: 'bold', html: `<p><strong>${e}</strong></p>` },
+      ];
+    }
+
+    it.each(samples)('HTML paste keeps every word and is stable on re-save for %j', (sample) => {
+      for (const { label, html } of wrappers(sample)) {
+        const editor = makeEditor();
+        const first = pasteClipboard(editor, html, sample);
+        expect(storedToPlainText(first), label).toBe(sample);
+
+        // Second save from the editor document must match the first.
+        const second = nfc(htmlToArchiveMarkdown(editor.getHTML()));
+        expect(second, label).toBe(first);
+      }
+    });
+
+    it.each(samples)('plain-text paste keeps every word and is stable on re-save for %j', (sample) => {
+      const editor = makeEditor();
+      const first = pasteClipboard(editor, '', sample);
+      expect(storedToPlainText(first)).toBe(sample);
+      const second = nfc(htmlToArchiveMarkdown(editor.getHTML()));
+      expect(second).toBe(first);
+    });
+  });
+
+
   it('Word HTML table → one paragraph per cell + warning', () => {
     const editor = makeEditor();
     const md = pasteClipboard(editor, WORD_TABLE_HTML, WORD_PLAIN_TSV);
@@ -179,7 +335,22 @@ describe('archive clipboard paste (real path)', () => {
     expect(md).toMatch(/L'età molto avanzata\n\nLa soglia/);
     expect(warningsLog.flat()).toContain('tables');
   });
+
+  it('web table with bare td/th and nested p cells never glues words', () => {
+    const editor = makeEditor();
+    const html = `<table>
+      <thead><tr><th>A1</th><th>B1</th></tr></thead>
+      <tbody>
+        <tr><td>A2</td><td><p>B2a</p><p>B2b</p></td></tr>
+      </tbody>
+    </table>`;
+    const md = pasteClipboard(editor, html, 'A1');
+    expect(md).toMatch(/A1\n\nB1/);
+    expect(md).toMatch(/A2\n\nB2a\n\nB2b/);
+    expect(md).not.toMatch(/A1B1|A2B2|B2aB2b/);
+  });
 });
+
 
 describe('no automatic links (editor instance)', () => {
   it('Link extension has autolink and paste auto-link disabled', () => {

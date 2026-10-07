@@ -89,9 +89,28 @@ describe('archive markdown round-trip', () => {
   it('normalizes --- and ___ separators to ***', () => {
     expect(normalizeArchiveHorizontalRules('Prima\n\n---\n\nDopo')).toContain(ARCHIVE_HORIZONTAL_RULE);
     expect(normalizeArchiveHorizontalRules('Prima\n\n___\n\nDopo')).toContain(ARCHIVE_HORIZONTAL_RULE);
+    expect(normalizeArchiveHorizontalRules('Prima\n\n* * *\n\nDopo')).toBe(
+      `Prima\n\n${ARCHIVE_HORIZONTAL_RULE}\n\nDopo`
+    );
     const html = archiveMarkdownToHtml('Prima\n\n---\n\nDopo');
     expect(html).toContain('<hr>');
     expect(htmlToArchiveMarkdown(html)).toBe(`Prima\n\n${ARCHIVE_HORIZONTAL_RULE}\n\nDopo`);
+  });
+
+  it('does not treat mid-line *** as a scene separator', () => {
+    expect(normalizeArchiveHorizontalRules('***ero già lontano***')).toBe('***ero già lontano***');
+    expect(normalizeArchiveHorizontalRules('prima *** mid')).toBe('prima *** mid');
+    expect(normalizeArchiveHorizontalRules('Poi disse: ***«frase»***, e nessuno...')).toBe(
+      'Poi disse: ***«frase»***, e nessuno...'
+    );
+    expect(archiveMarkdownToHtml('***ero già lontano***')).not.toContain('<hr');
+    expect(archiveMarkdownToHtml('***ero già lontano***')).toMatch(/<(strong|em)>/i);
+  });
+
+  it('serializes bold+italic as unambiguous **_…_** / _**…**_', () => {
+    expect(htmlToArchiveMarkdown('<p><strong><em>«frase»</em></strong></p>')).toBe('**_«frase»_**');
+    expect(htmlToArchiveMarkdown('<p><em><strong>«frase»</strong></em></p>')).toBe('_**«frase»**_');
+    expect(htmlToArchiveMarkdown('<p><strong><em>x</em></strong></p>')).not.toContain('***');
   });
 
   it('does not execute raw HTML in Markdown', () => {
