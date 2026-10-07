@@ -9,6 +9,11 @@ import { archiveTiptapExtensions } from '@/lib/editor-archive-tiptap';
 import { cleanEditorIncomingHtml } from '@/lib/editor-content-clean';
 import { handleArchivePasteEvent, decideArchivePaste } from '@/lib/editor-paste';
 import { htmlToArchiveMarkdown, storedToPlainText } from '@/lib/archive-markdown';
+import { nfc } from '@/lib/nfc';
+
+function escapeForHtmlFixture(text: string): string {
+  return text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
 
 beforeAll(() => {
   if (typeof globalThis.ClipboardEvent === 'undefined') {
@@ -249,6 +254,47 @@ describe('archive clipboard paste (real path)', () => {
     expect(md).toBe('Alpha\n\nBeta');
     expect(md).not.toContain('AlphaBeta');
   });
+
+  describe('author angle brackets and entities stay literal on paste', () => {
+    const samples = [
+      'il tag <p> serve per i paragrafi',
+      'se x<a y allora',
+      'scrivi a <mario@esempio.it> subito',
+      '3 < 5 e 7 > 2',
+      'AT&amp;T',
+    ];
+
+    function wrappers(sample: string): Array<{ label: string; html: string }> {
+      const e = escapeForHtmlFixture(sample);
+      return [
+        { label: 'paragraph', html: `<p>${e}</p>` },
+        { label: 'table cell', html: `<table><tr><td>${e}</td></tr></table>` },
+        { label: 'list item', html: `<ul><li><p>${e}</p></li></ul>` },
+        { label: 'bold', html: `<p><strong>${e}</strong></p>` },
+      ];
+    }
+
+    it.each(samples)('HTML paste keeps every word and is stable on re-save for %j', (sample) => {
+      for (const { label, html } of wrappers(sample)) {
+        const editor = makeEditor();
+        const first = pasteClipboard(editor, html, sample);
+        expect(storedToPlainText(first), label).toBe(sample);
+
+        // Second save from the editor document must match the first.
+        const second = nfc(htmlToArchiveMarkdown(editor.getHTML()));
+        expect(second, label).toBe(first);
+      }
+    });
+
+    it.each(samples)('plain-text paste keeps every word and is stable on re-save for %j', (sample) => {
+      const editor = makeEditor();
+      const first = pasteClipboard(editor, '', sample);
+      expect(storedToPlainText(first)).toBe(sample);
+      const second = nfc(htmlToArchiveMarkdown(editor.getHTML()));
+      expect(second).toBe(first);
+    });
+  });
+
 
   it('Word HTML table → one paragraph per cell + warning', () => {
     const editor = makeEditor();

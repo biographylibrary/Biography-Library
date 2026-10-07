@@ -111,7 +111,8 @@ function serializeCleanInline(nodes: Node[]): string {
   let out = '';
   for (const node of nodes) {
     if (node.nodeType === NodeType.TEXT_NODE) {
-      out += node.text.replace(/\u00a0/g, ' ');
+      // node.text is decoded; re-emit as HTML text or <p>/<a/& become real tags later.
+      out += escapeHtmlText(node.text.replace(/\u00a0/g, ' '));
       continue;
     }
     if (!isElement(node)) continue;
@@ -406,10 +407,12 @@ function serializeCleanBlocks(
         .map((li) => {
           if (hasBlockChild(li.childNodes)) {
             const nested = serializeCleanBlocks(li.childNodes, warnings, options);
-            // Prefer first paragraph text inside the item.
+            // Prefer first paragraph text inside the item (already HTML-escaped).
             const m = /<p>([\s\S]*?)<\/p>/i.exec(nested);
-            const inner = m ? m[1] : plainInlineText(li.childNodes);
-            return inner ? `<li><p>${inner}</p></li>` : '';
+            if (m?.[1]) return `<li><p>${m[1]}</p></li>`;
+            // plainInlineText is decoded — escape before putting it back into HTML.
+            const plain = plainInlineText(li.childNodes);
+            return plain ? `<li><p>${escapeHtmlText(plain)}</p></li>` : '';
           }
           const inner = serializeCleanInline(li.childNodes).trim();
           return inner ? `<li><p>${inner}</p></li>` : '';
