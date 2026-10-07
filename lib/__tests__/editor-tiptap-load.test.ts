@@ -20,6 +20,8 @@ import {
   editorLoadMatchesStored,
   plainTextFromEditorDoc,
   plainTextFromStoredMarkdown,
+  structureFromEditorDoc,
+  structureFromStoredMarkdown,
 } from '@/lib/editor-load-guard';
 import { buildEditorSavePayload } from '@/lib/editor/write-payloads';
 import { nfc } from '@/lib/nfc';
@@ -197,6 +199,94 @@ describe('paste tables and autolink off', () => {
     const md = 'Vedi [sito](https://esempio.ch/path).';
     const editor = createArchiveEditor(md);
     expect(editor.getHTML()).toMatch(/<a\b[^>]*href="https:\/\/esempio\.ch\/path"/);
+  });
+});
+
+describe('bold+italic vs scene separator (editor path)', () => {
+  function saveFromEditorHtml(html: string): string {
+    return nfc(htmlToArchiveMarkdown(html));
+  }
+
+  function roundTripStable(htmlIn: string) {
+    const firstSave = saveFromEditorHtml(htmlIn);
+    const editor = createArchiveEditor(firstSave);
+    expect(editorLoadMatchesStored(firstSave, editor)).toBe(true);
+    const secondSave = saveFromEditorHtml(editor.getHTML());
+    expect(secondSave).toBe(firstSave);
+    return { firstSave, editor };
+  }
+
+  it('strong+em round-trips without scene separators', () => {
+    const { firstSave, editor } = roundTripStable(
+      '<p>Poi disse: <strong><em>«frase»</em></strong>, e nessuno...</p>'
+    );
+    expect(firstSave).toBe('Poi disse: **_«frase»_**, e nessuno...');
+    expect(firstSave).not.toMatch(/\n\*\*\*\n/);
+    expect(editor.getHTML()).not.toContain('<hr');
+    expect(structureFromEditorDoc(editor).horizontalRules).toBe(0);
+  });
+
+  it.each([
+    ['***x***', 'x'],
+    ['**_x_**', 'x'],
+    ['_**x**_', 'x'],
+  ])('loads emphasis form %s as one block', (md, plain) => {
+    const editor = createArchiveEditor(md);
+    expect(editor.getHTML()).not.toContain('<hr');
+    expect(structureFromStoredMarkdown(md).horizontalRules).toBe(0);
+    expect(structureFromEditorDoc(editor).horizontalRules).toBe(0);
+    expect(editorLoadMatchesStored(md, editor)).toBe(true);
+    expect(plainTextFromEditorDoc(editor)).toBe(plain);
+    const saved = saveFromEditorHtml(editor.getHTML());
+    const again = saveFromEditorHtml(createArchiveEditor(saved).getHTML());
+    expect(again).toBe(saved);
+  });
+
+  it('***x*** text ***y*** stays emphasis, not separators', () => {
+    const md = '***x*** testo ***y***';
+    const editor = createArchiveEditor(md);
+    expect(editor.getHTML()).not.toContain('<hr');
+    expect(editorLoadMatchesStored(md, editor)).toBe(true);
+    const saved = saveFromEditorHtml(editor.getHTML());
+    expect(saved).not.toMatch(/^\*\*\*$/m);
+    expect(saveFromEditorHtml(createArchiveEditor(saved).getHTML())).toBe(saved);
+  });
+
+  it('lone *** and * * * lines are scene separators', () => {
+    for (const sep of ['***', '* * *']) {
+      const md = `Prima\n\n${sep}\n\nDopo`;
+      const editor = createArchiveEditor(md);
+      expect(editor.getHTML()).toContain('<hr');
+      expect(structureFromEditorDoc(editor).horizontalRules).toBe(1);
+      expect(editorLoadMatchesStored(md, editor)).toBe(true);
+    }
+  });
+
+  it('*** mid-sentence is not a separator', () => {
+    const md = 'prima *** mid';
+    const editor = createArchiveEditor(md);
+    expect(structureFromEditorDoc(editor).horizontalRules).toBe(0);
+    expect(editorLoadMatchesStored(md, editor)).toBe(true);
+  });
+
+  it('bold+italic inside link, list, and heading', () => {
+    roundTripStable(
+      '<p><a href="https://esempio.ch"><strong><em>link</em></strong></a></p>'
+    );
+    roundTripStable('<ul><li><p><strong><em>voce</em></strong></p></li></ul>');
+    roundTripStable('<h2><strong><em>Titolo</em></strong></h2>');
+  });
+
+  it('load guard fails when separators appear but stored has emphasis only', () => {
+    const stored = '**_ero già lontano_**';
+    const broken = createArchiveEditor('Prima\n\n***\n\nero già lontano\n\n***\n\nDopo');
+    // Force content that has HRs while claiming stored emphasis — plain text differs too.
+    // Structure-only regression: same plain text, wrong HR count.
+    const emphasisEditor = createArchiveEditor(stored);
+    expect(structureFromStoredMarkdown(stored).horizontalRules).toBe(0);
+    expect(structureFromEditorDoc(emphasisEditor).horizontalRules).toBe(0);
+    expect(structureFromEditorDoc(broken).horizontalRules).toBe(2);
+    expect(editorLoadMatchesStored(stored, broken)).toBe(false);
   });
 });
 

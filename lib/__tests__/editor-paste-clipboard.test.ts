@@ -140,6 +140,56 @@ function pasteClipboard(editor: Editor, html: string, plain: string) {
 }
 
 describe('archive clipboard paste (real path)', () => {
+  it('pasted h1–h6 inside a wrapper div stay headings (not paragraphs)', () => {
+    const editor = makeEditor();
+    const html = `<div class="WordSection1">
+      <h1><b><span>Titolo uno</span></b></h1>
+      <h2>Titolo due</h2>
+      <h3>Titolo tre</h3>
+      <h4>Titolo quattro</h4>
+      <p>corpo</p>
+    </div>`;
+    const md = pasteClipboard(editor, html, 'Titolo uno');
+    expect(md).toMatch(/^# Titolo uno/m);
+    expect(md).toMatch(/^## Titolo due/m);
+    expect(md).toMatch(/^### Titolo tre/m);
+    expect(md).toMatch(/^### Titolo quattro/m);
+    // Style-bold on the whole heading must not become **…**
+    expect(md).not.toMatch(/^# \*\*/m);
+    expect(editor.getHTML()).toMatch(/<h1>Titolo uno<\/h1>/);
+    expect(editor.getHTML()).not.toMatch(/<h1><strong>/);
+  });
+
+  it('Word MsoListParagraph → real bullet/ordered lists; glyph fallback', () => {
+    const editor = makeEditor();
+    const wordLists = `<html><body>
+      <p class="MsoListParagraph" style="mso-list:l0 level1 lfo1">· Uno</p>
+      <p class="MsoListParagraph" style="mso-list:l0 level1 lfo1">· Due</p>
+      <p class="MsoListParagraph" style="mso-list:l1 level1 lfo2">1. Primo</p>
+      <p class="MsoListParagraph" style="mso-list:l1 level1 lfo2">2. Secondo</p>
+      <p>• Pallino</p>
+      <p>a) Lettera</p>
+    </body></html>`;
+    const md = pasteClipboard(editor, wordLists, 'Uno');
+    expect(md).toMatch(/^- Uno/m);
+    expect(md).toMatch(/^- Due/m);
+    expect(md).toMatch(/^1\. Primo/m);
+    expect(md).toMatch(/^2\. Secondo/m);
+    expect(md).toMatch(/^- Pallino/m);
+    expect(md).toMatch(/^1\. Lettera/m);
+    expect(md).not.toContain('· Uno');
+    expect(editor.getHTML()).toMatch(/<ul>/);
+    expect(editor.getHTML()).toMatch(/<ol>/);
+  });
+
+  it('div blocks without spaces stay separate paragraphs', () => {
+    const editor = makeEditor();
+    const html = `<div><div>Alpha</div><div>Beta</div></div>`;
+    const md = pasteClipboard(editor, html, 'AlphaBeta');
+    expect(md).toBe('Alpha\n\nBeta');
+    expect(md).not.toContain('AlphaBeta');
+  });
+
   it('Word HTML table → one paragraph per cell + warning', () => {
     const editor = makeEditor();
     const md = pasteClipboard(editor, WORD_TABLE_HTML, WORD_PLAIN_TSV);
@@ -179,7 +229,22 @@ describe('archive clipboard paste (real path)', () => {
     expect(md).toMatch(/L'età molto avanzata\n\nLa soglia/);
     expect(warningsLog.flat()).toContain('tables');
   });
+
+  it('web table with bare td/th and nested p cells never glues words', () => {
+    const editor = makeEditor();
+    const html = `<table>
+      <thead><tr><th>A1</th><th>B1</th></tr></thead>
+      <tbody>
+        <tr><td>A2</td><td><p>B2a</p><p>B2b</p></td></tr>
+      </tbody>
+    </table>`;
+    const md = pasteClipboard(editor, html, 'A1');
+    expect(md).toMatch(/A1\n\nB1/);
+    expect(md).toMatch(/A2\n\nB2a\n\nB2b/);
+    expect(md).not.toMatch(/A1B1|A2B2|B2aB2b/);
+  });
 });
+
 
 describe('no automatic links (editor instance)', () => {
   it('Link extension has autolink and paste auto-link disabled', () => {
