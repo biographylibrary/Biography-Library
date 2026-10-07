@@ -58,6 +58,7 @@ export function looksLikeTsvTable(plain: string): boolean {
  * Choose HTML to insert from clipboard payloads.
  * Prefer real HTML tables; if HTML has no <table> but plain is TSV, use TSV
  * (Word / some browsers flatten tables in text/html).
+ * Plain-only paste (no text/html): never hand off to TipTap Markdown — * _ stay literal.
  */
 export function decideArchivePaste(html: string, plain: string): ArchivePasteDecision | null {
   const hasHtmlTable = /<table\b/i.test(html ?? '');
@@ -71,6 +72,12 @@ export function decideArchivePaste(html: string, plain: string): ArchivePasteDec
     if (!cleaned.html.trim()) return null;
     return { html: cleaned.html, warnings: cleaned.warnings };
   }
+  // Empty / missing text/html → literal plain text (paragraphs + hard breaks).
+  if (!(html ?? '').trim() && (plain ?? '').length > 0) {
+    const cleaned = cleanEditorIncomingPlainText(plain);
+    if (!cleaned.html.trim()) return null;
+    return { html: cleaned.html, warnings: cleaned.warnings };
+  }
   return null;
 }
 
@@ -80,6 +87,20 @@ export function insertArchivePasteHtml(view: EditorView, html: string): boolean 
   const parser = PmDOMParser.fromSchema(view.state.schema);
   const wrap = document.createElement('div');
   wrap.innerHTML = html;
+  // A lone <p> must paste as open/inline content so mid-sentence, list items and
+  // headings keep surrounding text (a block <p> would split them).
+  const onlyP =
+    wrap.childNodes.length === 1 &&
+    wrap.firstElementChild?.tagName.toLowerCase() === 'p';
+  if (onlyP) {
+    const inner = document.createElement('div');
+    while (wrap.firstElementChild!.firstChild) {
+      inner.appendChild(wrap.firstElementChild!.firstChild);
+    }
+    const slice = parser.parseSlice(inner, { preserveWhitespace: true });
+    view.dispatch(view.state.tr.replaceSelection(slice));
+    return true;
+  }
   const slice = parser.parseSlice(wrap, { preserveWhitespace: true });
   // No scrollIntoView: jsdom/Text nodes lack getClientRects and paste must not depend on layout.
   view.dispatch(view.state.tr.replaceSelection(slice));
@@ -88,7 +109,7 @@ export function insertArchivePasteHtml(view: EditorView, html: string): boolean 
 
 /**
  * Handle a paste event for the archive editor.
- * Returns true when the event was consumed (table / TSV paths).
+ * Returns true when the event was consumed (table / TSV / plain-only paths).
  */
 export function handleArchivePasteEvent(
   view: EditorView,

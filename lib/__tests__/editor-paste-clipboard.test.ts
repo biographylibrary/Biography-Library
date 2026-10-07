@@ -5,10 +5,14 @@
  */
 import { Editor } from '@tiptap/core';
 import { afterEach, beforeAll, describe, expect, it } from 'vitest';
-import { archiveTiptapExtensions } from '@/lib/editor-archive-tiptap';
+import {
+  archiveMarkdownToEditorHtml,
+  archiveTiptapExtensions,
+} from '@/lib/editor-archive-tiptap';
 import { cleanEditorIncomingHtml } from '@/lib/editor-content-clean';
 import { handleArchivePasteEvent, decideArchivePaste } from '@/lib/editor-paste';
 import { htmlToArchiveMarkdown, storedToPlainText } from '@/lib/archive-markdown';
+import { editorLoadMatchesStored } from '@/lib/editor-load-guard';
 import { nfc } from '@/lib/nfc';
 
 function escapeForHtmlFixture(text: string): string {
@@ -134,10 +138,12 @@ function pasteClipboard(editor: Editor, html: string, plain: string) {
   editor.view.focus();
   const handled = handleArchivePasteEvent(editor.view, event, (w) => warningsLog.push(w));
   if (!handled) {
-    // Fallback mirrors TipTap when handlePaste returns false: cleaned HTML or plain.
-    const cleaned = html
-      ? cleanEditorIncomingHtml(html)
-      : cleanEditorIncomingHtml(`<p>${plain.replace(/&/g, '&amp;').replace(/</g, '&lt;')}</p>`);
+    // Fallback mirrors TipTap when handlePaste returns false: cleaned HTML path only.
+    // Plain-only must be handled by handleArchivePasteEvent (never TipTap Markdown).
+    if (!html) {
+      throw new Error('plain-only paste was not handled by handleArchivePasteEvent');
+    }
+    const cleaned = cleanEditorIncomingHtml(html);
     if (cleaned.warnings.length) warningsLog.push(cleaned.warnings);
     editor.commands.insertContent(cleaned.html || `<p>${plain}</p>`);
   }
@@ -351,6 +357,109 @@ describe('archive clipboard paste (real path)', () => {
   });
 });
 
+
+describe('plain-only paste stays literal (no TipTap Markdown)', () => {
+  const samples = [
+    '*x*',
+    '**x**',
+    '_x_',
+    '5 * 3 * 2',
+    'nota*',
+    'a_b_c',
+    '***',
+    '# non titolo',
+    '1. non elenco',
+    '- non elenco',
+    '> non citazione',
+    'il tag <p> serve',
+    'se x<a y allora',
+    'scrivi a <mario@esempio.it>',
+    'AT&amp;T',
+  ];
+
+  it('decideArchivePaste handles plain-only and leaves HTML paste to TipTap', () => {
+    const plain = decideArchivePaste('', '5 * 3 * 2');
+    expect(plain).not.toBeNull();
+    expect(plain!.html).toContain('5 * 3 * 2');
+    expect(plain!.html).not.toMatch(/<em>|<strong>/i);
+
+    // HTML present (non-table) → null so transformPastedHTML runs unchanged.
+    expect(decideArchivePaste('<p>ciao <em>x</em></p>', 'ciao x')).toBeNull();
+  });
+
+  it.each(samples)(
+    'plain-only paste keeps text, stays editable, second save stable: %j',
+    (sample) => {
+      const editor = makeEditor();
+      expect(editor.isEditable).toBe(true);
+      const first = pasteClipboard(editor, '', sample);
+      expect(editor.getHTML()).not.toMatch(/<em>|<strong>/i);
+      expect(storedToPlainText(first)).toBe(sample);
+
+      const second = nfc(htmlToArchiveMarkdown(editor.getHTML()));
+      expect(second).toBe(first);
+
+      const reloaded = makeEditor();
+      reloaded.commands.setContent(archiveMarkdownToEditorHtml(first));
+      expect(editorLoadMatchesStored(first, reloaded)).toBe(true);
+      expect(reloaded.isEditable).toBe(true);
+    }
+  );
+
+  it('plain paste mid-sentence keeps surrounding text and literal markers', () => {
+    const editor = makeEditor();
+    editor.commands.setContent('<p>AaaBbb</p>');
+    let pos = 0;
+    editor.state.doc.descendants((node, p) => {
+      if (node.isText && node.text === 'AaaBbb') {
+        pos = p + 3; // after "Aaa"
+        return false;
+      }
+    });
+    editor.commands.setTextSelection(pos);
+    pasteClipboard(editor, '', '5 * 3 * 2');
+    const saved = nfc(htmlToArchiveMarkdown(editor.getHTML()));
+    expect(storedToPlainText(saved)).toBe('Aaa5 * 3 * 2Bbb');
+    expect(editor.getHTML()).not.toMatch(/<em>/i);
+    expect(editorLoadMatchesStored(saved, editor)).toBe(true);
+  });
+
+  it('plain paste inside a list item stays literal', () => {
+    const editor = makeEditor();
+    editor.commands.setContent('<ul><li><p>voce</p></li></ul>');
+    let pos = 0;
+    editor.state.doc.descendants((node, p) => {
+      if (node.isText && node.text === 'voce') {
+        pos = p + node.nodeSize; // end of "voce"
+        return false;
+      }
+    });
+    editor.commands.setTextSelection(pos);
+    pasteClipboard(editor, '', '**x**');
+    const saved = nfc(htmlToArchiveMarkdown(editor.getHTML()));
+    expect(storedToPlainText(saved)).toContain('voce**x**');
+    expect(editor.getHTML()).not.toMatch(/<strong>/i);
+    expect(editorLoadMatchesStored(saved, editor)).toBe(true);
+  });
+
+  it('plain paste inside a heading stays literal', () => {
+    const editor = makeEditor();
+    editor.commands.setContent('<h2>Titolo</h2>');
+    let pos = 0;
+    editor.state.doc.descendants((node, p) => {
+      if (node.isText && node.text === 'Titolo') {
+        pos = p + node.nodeSize;
+        return false;
+      }
+    });
+    editor.commands.setTextSelection(pos);
+    pasteClipboard(editor, '', '_x_');
+    const saved = nfc(htmlToArchiveMarkdown(editor.getHTML()));
+    expect(storedToPlainText(saved)).toContain('Titolo_x_');
+    expect(editor.getHTML()).not.toMatch(/<em>/i);
+    expect(editorLoadMatchesStored(saved, editor)).toBe(true);
+  });
+});
 
 describe('no automatic links (editor instance)', () => {
   it('Link extension has autolink and paste auto-link disabled', () => {
