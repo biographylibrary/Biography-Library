@@ -7,6 +7,7 @@ import {
   htmlToArchiveMarkdown,
   normalizeArchiveHorizontalRules,
   roundTripArchiveMarkdown,
+  storedToPlainText,
   storedToSafeHtml,
 } from '@/lib/archive-markdown';
 import { cleanEditorIncomingHtml } from '@/lib/editor-content-clean';
@@ -123,6 +124,34 @@ describe('archive markdown round-trip', () => {
   it('escape helper matches serializer for a block line', () => {
     expect(escapeMarkdownBlockLine('1. Introduzione')).toBe('1\\. Introduzione');
     expect(escapeMarkdownBlockLine('# non è un titolo')).toBe('\\# non è un titolo');
+  });
+
+  it('protects list-item line starts like paragraphs (1944. # - --- …)', () => {
+    const heads = [
+      '1944. Fu l\'anno',
+      '1) non elenco',
+      '# non titolo',
+      '- altro',
+      '+ più',
+      '> non citazione',
+      '***',
+      '---',
+      'voce normale',
+    ];
+    for (const head of heads) {
+      const html = `<ul><li><p>${head
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')}</p></li></ul>`;
+      const md = htmlToArchiveMarkdown(html);
+      expect(storedToPlainText(md)).toBe(head);
+      // Must stay one bullet item, not a nested list / heading / scene break.
+      expect(md.startsWith('- ')).toBe(true);
+      expect(md).not.toMatch(/^\*\*\*$/m);
+      expect(archiveMarkdownToHtml(md)).toMatch(/<li>/);
+      expect(archiveMarkdownToHtml(md)).not.toMatch(/<hr\b/i);
+      expect(roundTripArchiveMarkdown(md)).toBe(md);
+    }
   });
 
   it('paste/import cleanup flattens tables and drops images with warnings', () => {

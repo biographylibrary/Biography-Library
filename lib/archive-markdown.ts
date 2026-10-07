@@ -247,7 +247,9 @@ function serializeBlocks(nodes: Node[], listIndent = ''): string {
       items.forEach((li, index) => {
         const marker = tag === 'ol' ? `${index + 1}. ` : '- ';
         const { headNodes, nested } = listItemHeadAndNested(li);
-        const head = serializeInline(headNodes).trim();
+        // Same block-start protection as paragraphs: "1944." / "#" / "---" inside a
+        // list item must not become nested lists, headings or scene breaks.
+        const head = finalizeParagraphMd(serializeInline(headNodes).trim());
         lines.push(`${listIndent}${marker}${head}`);
         for (const nest of nested) {
           const nestedMd = serializeBlocks([nest], `${listIndent}  `).trimEnd();
@@ -258,7 +260,7 @@ function serializeBlocks(nodes: Node[], listIndent = ''): string {
       continue;
     }
     if (tag === 'li') {
-      const text = serializeInline(node.childNodes).trim();
+      const text = finalizeParagraphMd(serializeInline(node.childNodes).trim());
       if (text) parts.push(`${listIndent}- ${text}`);
       continue;
     }

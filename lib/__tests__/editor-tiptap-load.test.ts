@@ -290,6 +290,41 @@ describe('bold+italic vs scene separator (editor path)', () => {
   });
 });
 
+describe('list items with marker-like heads (editor path)', () => {
+  const heads = [
+    '1944. Fu l\'anno',
+    '1) non elenco',
+    '# non titolo',
+    '- altro',
+    '+ più',
+    '> non citazione',
+    '***',
+    '---',
+    'voce normale',
+  ];
+
+  it.each(heads)(
+    'save → load → guard → save again keeps list item text %j',
+    (head) => {
+      const html = `<ul><li><p>${head
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')}</p></li></ul>`;
+      const firstSave = nfc(htmlToArchiveMarkdown(html));
+      expect(storedToPlainText(firstSave)).toBe(head);
+
+      const editor = createArchiveEditor(firstSave);
+      expect(editorLoadMatchesStored(firstSave, editor)).toBe(true);
+      expect(editor.getHTML()).toMatch(/<li>/);
+      expect(editor.getHTML()).not.toMatch(/<hr\b/i);
+
+      const secondSave = nfc(htmlToArchiveMarkdown(editor.getHTML()));
+      expect(secondSave).toBe(firstSave);
+      expect(storedToPlainText(secondSave)).toBe(head);
+    }
+  );
+});
+
 describe('legacy HTML detection must not rewrite Markdown with angle brackets', () => {
   /** Forms that previously matched HTML_MARKERS mid-string and could truncate on save. */
   const riskyMarkdown = [
