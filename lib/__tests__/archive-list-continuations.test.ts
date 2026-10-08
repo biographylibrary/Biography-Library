@@ -308,3 +308,131 @@ describe('marked (TipTap load path) and markdown-it agree on structure', () => {
     }
   });
 });
+
+/**
+ * Empty list items: main (7bbcf4f) always emitted the marker with an empty head.
+ * Captured from htmlToArchiveMarkdown on that revision for the same HTML inputs.
+ */
+const MAIN_EMPTY_LI_MD = {
+  trailing: '- a\n-',
+  middle: '- a\n- \n- c',
+  ordered: '1. uno\n2. \n3. tre',
+  onlyEmpty: '-',
+  /** main emitted `- padre\n  -`; blank line needed so markdown-it keeps a nested empty li. */
+  nestedEmpty: '- padre\n\n  -',
+  afterTextToggle: 'testo\n\n-',
+  emptyNoP: '- \n- b',
+  loneLi: '-',
+} as const;
+
+function roundTripEmptyList(html: string, expectedMd: string) {
+  const first = nfc(htmlToArchiveMarkdown(html));
+  expect(first).toBe(expectedMd);
+
+  const editor1 = createArchiveEditor(first);
+  // Load from MD must keep the same number of list items (incl. empty).
+  expect(structureListItemCount(editor1)).toBe(
+    (html.match(/<li\b/gi) ?? []).length
+  );
+  expect(editorLoadMatchesStored(first, editor1)).toBe(true);
+
+  const mid = saveFromEditor(editor1);
+  expect(mid).toBe(first);
+
+  const editor2 = createArchiveEditor(mid);
+  expect(editorLoadMatchesStored(mid, editor2)).toBe(true);
+  expect(saveFromEditor(editor2)).toBe(mid);
+}
+
+function structureListItemCount(editor: Editor): number {
+  let n = 0;
+  editor.state.doc.descendants((node) => {
+    if (node.type.name === 'listItem') n += 1;
+  });
+  return n;
+}
+
+describe('empty list items (regression: skipped after 5fb55bd)', () => {
+  it('trailing empty bullet matches main and round-trips without tripping the guard', () => {
+    const html = '<ul><li><p>a</p></li><li><p></p></li></ul>';
+    roundTripEmptyList(html, MAIN_EMPTY_LI_MD.trailing);
+  });
+
+  it('empty bullet between two filled items matches main and round-trips', () => {
+    const html = '<ul><li><p>a</p></li><li><p></p></li><li><p>c</p></li></ul>';
+    roundTripEmptyList(html, MAIN_EMPTY_LI_MD.middle);
+  });
+
+  it('empty ordered item matches main and round-trips', () => {
+    const html = '<ol><li><p>uno</p></li><li><p></p></li><li><p>tre</p></li></ol>';
+    roundTripEmptyList(html, MAIN_EMPTY_LI_MD.ordered);
+  });
+
+  it('only-empty bullet list matches main and round-trips', () => {
+    const html = '<ul><li><p></p></li></ul>';
+    roundTripEmptyList(html, MAIN_EMPTY_LI_MD.onlyEmpty);
+  });
+
+  it('empty li without <p> matches main and round-trips', () => {
+    const html = '<ul><li></li><li><p>b</p></li></ul>';
+    roundTripEmptyList(html, MAIN_EMPTY_LI_MD.emptyNoP);
+  });
+
+  it('paragraph then empty bullet (toggleBulletList shape) matches main and round-trips', () => {
+    const html = '<p>testo</p><ul><li><p></p></li></ul>';
+    roundTripEmptyList(html, MAIN_EMPTY_LI_MD.afterTextToggle);
+  });
+
+  it('toggleBulletList on an empty paragraph after text keeps the empty item', () => {
+    const editor = createArchiveEditor('testo');
+    editor.commands.setContent('<p>testo</p><p></p>');
+    editor.commands.focus('end');
+    editor.commands.toggleBulletList();
+    expect(editor.getHTML()).toMatch(/<ul>[\s\S]*<li>/);
+
+    const first = saveFromEditor(editor);
+    expect(first).toBe(MAIN_EMPTY_LI_MD.afterTextToggle);
+    expect(structureListItemCount(editor)).toBe(1);
+    expect(editorLoadMatchesStored(first, editor)).toBe(true);
+
+    const reloaded = createArchiveEditor(first);
+    expect(structureListItemCount(reloaded)).toBe(1);
+    expect(editorLoadMatchesStored(first, reloaded)).toBe(true);
+    expect(saveFromEditor(reloaded)).toBe(first);
+  });
+
+  it('nested empty bullet is kept, round-trips, and does not trip the guard', () => {
+    const html = '<ul><li><p>padre</p><ul><li><p></p></li></ul></li></ul>';
+    const first = nfc(htmlToArchiveMarkdown(html));
+    // Must keep a nested empty marker (5fb55bd dropped it). Blank line avoids setext.
+    expect(first).toBe(MAIN_EMPTY_LI_MD.nestedEmpty);
+    expect(first).toMatch(/padre/);
+    expect(first).toMatch(/\n\s+-/);
+
+    const editor1 = createArchiveEditor(first);
+    expect(structureListItemCount(editor1)).toBe(2);
+    expect(editorLoadMatchesStored(first, editor1)).toBe(true);
+    const mid = saveFromEditor(editor1);
+    expect(mid).toBe(first);
+    const editor2 = createArchiveEditor(mid);
+    expect(structureListItemCount(editor2)).toBe(2);
+    expect(editorLoadMatchesStored(mid, editor2)).toBe(true);
+  });
+
+  it('bare empty <li> emits a marker (li branch)', () => {
+    expect(htmlToArchiveMarkdown('<li><p></p></li>')).toBe(MAIN_EMPTY_LI_MD.loneLi);
+  });
+});
+
+describe('list item child order', () => {
+  it('keeps a paragraph that follows a nested list after the nest', () => {
+    const html =
+      '<ul><li><p>testa</p><ul><li><p>sotto</p></li></ul><p>dopo</p></li></ul>';
+    const md = htmlToArchiveMarkdown(html);
+    expect(md).toBe('- testa\n  - sotto\n\n  dopo');
+    expect(md.indexOf('sotto')).toBeLessThan(md.indexOf('dopo'));
+    const out = archiveMarkdownToHtml(md);
+    expect(countNestedListsInHtml(out)).toEqual({ ol: 0, ul: 2, li: 2 });
+    expect(out).toMatch(/sotto[\s\S]*dopo/);
+  });
+});

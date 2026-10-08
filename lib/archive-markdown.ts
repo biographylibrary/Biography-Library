@@ -171,21 +171,21 @@ function serializeInline(nodes: Node[]): string {
   return out;
 }
 
+type ListItemBlock =
+  | { kind: 'paragraph'; nodes: Node[] }
+  | { kind: 'list'; el: HTMLElement };
+
 /**
- * Split a list item into paragraph chunks (in order) and trailing nested lists.
- * Each <p> is its own chunk; bare inline nodes form a chunk; nested ul/ol are separate.
+ * List-item children in document order: each <p> (or loose inline run) and each
+ * nested ul/ol stay where they are (a paragraph after a nest is not pulled up).
  */
-function listItemParagraphsAndNested(li: HTMLElement): {
-  paragraphs: Node[][];
-  nested: HTMLElement[];
-} {
-  const paragraphs: Node[][] = [];
-  const nested: HTMLElement[] = [];
+function listItemBlocks(li: HTMLElement): ListItemBlock[] {
+  const blocks: ListItemBlock[] = [];
   let looseInline: Node[] = [];
 
   const flushLoose = () => {
     if (looseInline.length) {
-      paragraphs.push(looseInline);
+      blocks.push({ kind: 'paragraph', nodes: looseInline });
       looseInline = [];
     }
   };
@@ -193,12 +193,12 @@ function listItemParagraphsAndNested(li: HTMLElement): {
   for (const child of li.childNodes) {
     if (isElement(child) && (tagName(child) === 'ul' || tagName(child) === 'ol')) {
       flushLoose();
-      nested.push(child);
+      blocks.push({ kind: 'list', el: child });
       continue;
     }
     if (isElement(child) && tagName(child) === 'p') {
       flushLoose();
-      paragraphs.push([...child.childNodes]);
+      blocks.push({ kind: 'paragraph', nodes: [...child.childNodes] });
       continue;
     }
     if (
@@ -210,7 +210,7 @@ function listItemParagraphsAndNested(li: HTMLElement): {
     looseInline.push(child);
   }
   flushLoose();
-  return { paragraphs, nested };
+  return blocks;
 }
 
 /** Serialize one list-item paragraph (inline + block-start escape), like a normal <p>. */
@@ -222,6 +222,64 @@ function serializeListItemParagraph(nodes: Node[]): string {
   const body = normalized.trim();
   if (!body) return '';
   return finalizeParagraphMd(body);
+}
+
+/** Nested list whose first line is only a marker would setext-underline the parent head. */
+function nestedListStartsWithEmptyMarker(nestedMd: string): boolean {
+  const firstLine = nestedMd.split('\n')[0] ?? '';
+  return /^[ \t]*(?:[-*+]|\d+\.)[ \t]*$/.test(firstLine);
+}
+
+/**
+ * One list item → Markdown lines. Empty items still emit the marker (as on main).
+ * Continuation paragraphs and nested lists keep document order.
+ */
+function serializeListItemLines(
+  li: HTMLElement,
+  listIndent: string,
+  marker: string
+): string[] {
+  const markerIndent = ' '.repeat(marker.length);
+  const childListIndent = `${listIndent}${markerIndent}`;
+  const blocks = listItemBlocks(li);
+  const lines: string[] = [];
+  let markerEmitted = false;
+  let headParagraphDone = false;
+
+  const emitMarker = (head: string) => {
+    lines.push(`${listIndent}${marker}${head}`);
+    markerEmitted = true;
+    headParagraphDone = true;
+  };
+
+  for (const block of blocks) {
+    if (block.kind === 'paragraph') {
+      const md = serializeListItemParagraph(block.nodes);
+      if (!headParagraphDone) {
+        emitMarker(md);
+        continue;
+      }
+      if (!md) continue;
+      lines.push('');
+      for (const line of md.split('\n')) {
+        lines.push(`${childListIndent}${line}`);
+      }
+      continue;
+    }
+
+    if (!markerEmitted) emitMarker('');
+    const nestedMd = serializeBlocks([block.el], childListIndent).trimEnd();
+    if (!nestedMd) continue;
+    if (nestedListStartsWithEmptyMarker(nestedMd) && lines[lines.length - 1] !== '') {
+      lines.push('');
+    }
+    lines.push(nestedMd);
+  }
+
+  if (!markerEmitted) {
+    lines.push(`${listIndent}${marker}`);
+  }
+  return lines;
 }
 
 function serializeBlocks(nodes: Node[], listIndent = ''): string {
@@ -282,53 +340,14 @@ function serializeBlocks(nodes: Node[], listIndent = ''): string {
       const lines: string[] = [];
       items.forEach((li, index) => {
         const marker = tag === 'ol' ? `${index + 1}. ` : '- ';
-        const markerIndent = ' '.repeat(marker.length);
-        const childListIndent = `${listIndent}${markerIndent}`;
-        const { paragraphs, nested } = listItemParagraphsAndNested(li);
-        const paraMd = paragraphs
-          .map((nodes) => serializeListItemParagraph(nodes))
-          .filter(Boolean);
-        if (paraMd.length === 0 && nested.length === 0) return;
-
-        const head = paraMd[0] ?? '';
-        lines.push(`${listIndent}${marker}${head}`);
-        // CommonMark continuation paragraphs: blank line + indent = marker width.
-        for (let i = 1; i < paraMd.length; i++) {
-          lines.push('');
-          for (const line of paraMd[i].split('\n')) {
-            lines.push(`${childListIndent}${line}`);
-          }
-        }
-        for (const nest of nested) {
-          const nestedMd = serializeBlocks([nest], childListIndent).trimEnd();
-          if (nestedMd) lines.push(nestedMd);
-        }
+        lines.push(...serializeListItemLines(li, listIndent, marker));
       });
       if (lines.length) parts.push(lines.join('\n'));
       continue;
     }
     if (tag === 'li') {
-      const { paragraphs, nested } = listItemParagraphsAndNested(node);
-      const marker = '- ';
-      const markerIndent = ' '.repeat(marker.length);
-      const childListIndent = `${listIndent}${markerIndent}`;
-      const paraMd = paragraphs
-        .map((nodes) => serializeListItemParagraph(nodes))
-        .filter(Boolean);
-      if (paraMd.length === 0 && nested.length === 0) continue;
-      const head = paraMd[0] ?? '';
-      const itemLines: string[] = [`${listIndent}${marker}${head}`];
-      for (let i = 1; i < paraMd.length; i++) {
-        itemLines.push('');
-        for (const line of paraMd[i].split('\n')) {
-          itemLines.push(`${childListIndent}${line}`);
-        }
-      }
-      for (const nest of nested) {
-        const nestedMd = serializeBlocks([nest], childListIndent).trimEnd();
-        if (nestedMd) itemLines.push(nestedMd);
-      }
-      parts.push(itemLines.join('\n'));
+      const itemMd = serializeListItemLines(node, listIndent, '- ').join('\n');
+      if (itemMd) parts.push(itemMd);
       continue;
     }
 
