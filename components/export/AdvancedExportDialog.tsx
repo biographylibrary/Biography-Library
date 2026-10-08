@@ -75,14 +75,23 @@ interface DraftAiFeedback {
     type: DraftSuggestionType;
     section_key: string | null;
     text: string;
+    chunk_index?: number;
+    chunk_start?: number;
+    chunk_end?: number;
+    part_title?: string | null;
   }>;
   red_flags: Array<{
     section_key: string | null;
     issue: string;
     severity: 1 | 2 | 3;
+    chunk_index?: number;
+    chunk_start?: number;
+    chunk_end?: number;
+    part_title?: string | null;
   }>;
   ready_for_publication: boolean;
   aiError?: boolean;
+  chunksTotal?: number;
 }
 
 export function AdvancedExportDialog({
@@ -108,6 +117,7 @@ export function AdvancedExportDialog({
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [isPreviewing, setIsPreviewing] = useState(false);
   const [draftFeedback, setDraftFeedback] = useState<DraftAiFeedback | null>(null);
+  const [isPreprintChecking, setIsPreprintChecking] = useState(false);
 
   const isPdfFormat = format === 'pdf-b5-standard';
 
@@ -441,7 +451,7 @@ export function AdvancedExportDialog({
     if (biography.id) {
       try {
         const { data: { session } } = await supabase.auth.getSession();
-        const res = await fetch('/api/publication/draft-ai-review', {
+        const res = await fetch('/api/publication/record-pdf-draft', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -452,13 +462,51 @@ export function AdvancedExportDialog({
         const payload = await res.json().catch(() => ({}));
         if (res.ok) {
           setDraftIteration(typeof payload.iteration === 'number' ? payload.iteration : nextIteration);
-          setDraftFeedback((payload.feedback as DraftAiFeedback) ?? null);
         } else if ((payload as { error?: string }).error !== 'max_drafts_reached') {
-          setExportError(t.exportDialog.draftAiFeedbackUnavailable);
+          setExportError(t.exportDialog.draftRecordUnavailable);
         }
       } catch {
+        setExportError(t.exportDialog.draftRecordUnavailable);
+      }
+    }
+  };
+
+  const handlePreprintCheck = async () => {
+    if (!biography.id || biography.status !== 'pdf_draft') return;
+    setIsPreprintChecking(true);
+    setExportError(null);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      const res = await fetch('/api/publication/preprint-check', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(session?.access_token ? { Authorization: `Bearer ${session.access_token}` } : {}),
+        },
+        body: JSON.stringify({ biographyId: biography.id }),
+      });
+      const payload = await res.json().catch(() => ({}));
+      if (res.ok) {
+        setDraftFeedback((payload.feedback as DraftAiFeedback) ?? null);
+      } else if ((payload as { error?: string }).error === 'already_checked') {
+        setExportError(t.exportDialog.preprintAlreadyChecked);
+      } else if ((payload as { error?: string }).error === 'limit_exhausted') {
+        setExportError(t.exportDialog.preprintLimitExhausted);
+      } else if ((payload as { error?: string }).error === 'ai_error') {
+        setExportError(
+          (payload as { message?: string }).message ?? t.exportDialog.draftAiFeedbackUnavailable
+        );
+      } else if ((payload as { error?: string }).error === 'empty_text') {
+        setExportError(
+          (payload as { message?: string }).message ?? t.exportDialog.draftAiFeedbackUnavailable
+        );
+      } else {
         setExportError(t.exportDialog.draftAiFeedbackUnavailable);
       }
+    } catch {
+      setExportError(t.exportDialog.draftAiFeedbackUnavailable);
+    } finally {
+      setIsPreprintChecking(false);
     }
   };
 
@@ -545,6 +593,8 @@ export function AdvancedExportDialog({
       selectedSections.length === 0) ||
     pdfNotReady ||
     draftLimitExceeded;
+  const canRunPreprint =
+    !isPublished && isPdfFormat && biography.status === 'pdf_draft' && !reviewLocked;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -636,6 +686,31 @@ export function AdvancedExportDialog({
               </div>
             )}
 
+            {canRunPreprint && (
+              <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between rounded-lg border border-border bg-muted/30 px-4 py-3">
+                <p className="text-sm text-muted-foreground leading-relaxed">
+                  {t.exportDialog.preprintCheckHint}
+                </p>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  className="shrink-0"
+                  onClick={handlePreprintCheck}
+                  disabled={isPreprintChecking || isExporting}
+                >
+                  {isPreprintChecking ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      {t.exportDialog.preprintCheckRunning}
+                    </>
+                  ) : (
+                    t.exportDialog.preprintCheckAction
+                  )}
+                </Button>
+              </div>
+            )}
+
             {!isPublished && isPdfFormat && draftFeedback && (
               <div className="space-y-3 rounded-lg border border-border bg-card p-4">
                 <div className="flex items-center justify-between gap-2">
@@ -650,7 +725,7 @@ export function AdvancedExportDialog({
                   </p>
                 )}
                 {hasSeverity3RedFlag && (
-                  <div className="rounded-md border border-brand-wine/35 bg-brand-wine/10 px-3 py-2 text-xs text-brand-wineDark dark:text-brand-beigeLight">
+                  <div className="rounded-md border border-brand-mustardDark/40 bg-brand-mustardLight/45 px-3 py-2 text-xs text-brand-ink dark:text-brand-beigeLight">
                     {t.exportDialog.draftAiSeverity3Block}
                   </div>
                 )}
@@ -684,11 +759,26 @@ export function AdvancedExportDialog({
                         <div key={type} className="space-y-1">
                           <p className="text-xs uppercase tracking-wide text-muted-foreground">{typeLabel}</p>
                           <ul className="space-y-1 text-sm">
-                            {items.map((item, idx) => (
-                              <li key={`${type}-${idx}`} className="text-foreground">
-                                • {item.text}
-                              </li>
-                            ))}
+                            {items.map((item, idx) => {
+                              const total = draftFeedback.chunksTotal;
+                              const partLabel = item.part_title
+                                ? item.part_title
+                                : typeof item.chunk_index === 'number' && typeof total === 'number'
+                                  ? t.exportDialog.preprintPartOf
+                                      .replace('{n}', String(item.chunk_index + 1))
+                                      .replace('{m}', String(total))
+                                  : typeof item.chunk_index === 'number'
+                                    ? t.exportDialog.preprintPartOf
+                                        .replace('{n}', String(item.chunk_index + 1))
+                                        .replace('{m}', '?')
+                                    : '';
+                              return (
+                                <li key={`${type}-${idx}`} className="text-foreground">
+                                  • {item.text}
+                                  {partLabel ? ` (${partLabel})` : ''}
+                                </li>
+                              );
+                            })}
                           </ul>
                         </div>
                       );

@@ -1,7 +1,6 @@
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { purgeAgentMemoryForBiography } from '@/lib/agents/purge-agent-memory';
 import { runPublicationScreening } from '@/lib/agents/screening/run-publication-screening';
-import { chat } from '@/lib/agents/infomaniak-client';
 import { storedToArchiveMarkdown } from '@/lib/archive-markdown';
 import { BIOGRAPHY_SECTIONS } from '@/lib/editor-constants';
 import {
@@ -16,15 +15,25 @@ import {
   recordScreening,
   type ScreeningVerdict,
 } from '@/lib/server/publication-fingerprint';
+import type {
+  PreprintFeedback,
+  PreprintRedFlag,
+  PreprintSuggestion,
+} from '@/lib/server/preprint-check';
 
-
-const MAX_CONTENT_CHARS = 6000;
-const AI_TIMEOUT_MS = 30_000;
 
 const STAFF_ROLES = new Set(['reviewer', 'admin', 'super_admin']);
 
 export const SUBMIT_THROTTLE_WINDOW_SECS = 60;
 export const SUBMIT_THROTTLE_MAX = 3;
+
+/** Azioni distinte per `check_and_record_submit_attempt` (non si consumano a vicenda). */
+export type SubmitThrottleAction =
+  | 'review_submit'
+  | 'approve_final_pdf'
+  | 'preprint_check'
+  | 'moderation_resubmit'
+  | 'record_pdf_draft';
 
 const AUTO_PUBLISHED_MESSAGES: Record<string, string> = {
   en: 'Your biography has been reviewed and published automatically.',
@@ -50,11 +59,16 @@ const UNDER_REVIEW_MESSAGES: Record<string, string> = {
 export { buildServiceClient, type AnyClient } from '@/lib/server/service-client';
 import type { AnyClient } from '@/lib/server/service-client';
 
-export async function checkPerUserThrottle(supabase: AnyClient, userId: string): Promise<boolean> {
+export async function checkPerUserThrottle(
+  supabase: AnyClient,
+  userId: string,
+  action: SubmitThrottleAction = 'review_submit'
+): Promise<boolean> {
   const { data, error } = await supabase.rpc('check_and_record_submit_attempt', {
     p_user_id: userId,
     p_window_secs: SUBMIT_THROTTLE_WINDOW_SECS,
     p_max_attempts: SUBMIT_THROTTLE_MAX,
+    p_action: action,
   });
   if (error) {
     console.error('[review-submit-pipeline] Throttle RPC error:', error);
@@ -137,11 +151,10 @@ async function fetchOpenAiFlaggedReportForRescreen(
 }
 
 /**
- * Il testo che lo screening legge: `final_version` se c'è, altrimenti le sezioni e il
- * flusso libero. Sempre il testo intero: lo screening non esamina più sezioni mirate,
- * perché una garanzia sul testo pubblicato non può poggiare su una parte sola.
- * `text` è ciò che riceve il modello (al massimo MAX_CONTENT_CHARS); `sourceChars`
- * è la lunghezza del testo di partenza: se è maggiore, il modello non l'ha visto tutto.
+ * Il testo che lo screening e il controllo finale leggono: `final_version` se c'è,
+ * altrimenti le sezioni e il flusso libero. Sempre il testo intero (poi spezzato
+ * in pezzi a valle): nessuna garanzia sul testo pubblicato può poggiare su un
+ * taglio anticipato. `sourceChars` = `text.length`.
  */
 export async function fetchBiographyContent(
   supabase: AnyClient,
@@ -160,7 +173,8 @@ export async function fetchBiographyContent(
 
   const finalRaw = (bio as any)?.final_version?.trim();
   if (finalRaw) {
-    return { ...cutForModel(storedToArchiveMarkdown(finalRaw)), authorId, contentLanguage };
+    const text = storedToArchiveMarkdown(finalRaw);
+    return { text, sourceChars: text.length, authorId, contentLanguage };
   }
 
   const jsonContent =
@@ -199,224 +213,16 @@ export async function fetchBiographyContent(
     );
   }
 
-  return { ...cutForModel(parts.join('\n\n')), authorId, contentLanguage };
+  const text = parts.join('\n\n');
+  return { text, sourceChars: text.length, authorId, contentLanguage };
 }
 
-function cutForModel(full: string): { text: string; sourceChars: number } {
-  return { text: full.length > MAX_CONTENT_CHARS ? full.slice(0, MAX_CONTENT_CHARS) : full, sourceChars: full.length };
-}
-
-export interface DraftAiSuggestion {
-  type: 'narrative' | 'completeness' | 'clarity' | 'style';
-  section_key: string | null;
-  text: string;
-}
-
-export interface DraftAiRedFlag {
-  section_key: string | null;
-  issue: string;
-  severity: 1 | 2 | 3;
-}
-
-export interface DraftAiFeedback {
-  overall_quality: number;
-  strengths: string[];
-  suggestions: DraftAiSuggestion[];
-  red_flags: DraftAiRedFlag[];
-  ready_for_publication: boolean;
-  aiError?: boolean;
-}
-
-function normalizeDraftFeedback(input: unknown): DraftAiFeedback {
-  if (!input || typeof input !== 'object') {
-    return {
-      overall_quality: 0,
-      strengths: [],
-      suggestions: [],
-      red_flags: [],
-      ready_for_publication: false,
-      aiError: true,
-    };
-  }
-
-  const obj = input as Record<string, unknown>;
-  const quality =
-    typeof obj.overall_quality === 'number' && Number.isFinite(obj.overall_quality)
-      ? Math.max(0, Math.min(5, Math.round(obj.overall_quality)))
-      : 0;
-  const strengths = Array.isArray(obj.strengths)
-    ? obj.strengths.filter((s): s is string => typeof s === 'string').slice(0, 3)
-    : [];
-  const suggestions = Array.isArray(obj.suggestions)
-    ? obj.suggestions
-        .map((s): DraftAiSuggestion | null => {
-          if (!s || typeof s !== 'object') return null;
-          const rec = s as Record<string, unknown>;
-          const type = rec.type;
-          if (type !== 'narrative' && type !== 'completeness' && type !== 'clarity' && type !== 'style') {
-            return null;
-          }
-          const text = typeof rec.text === 'string' ? rec.text.slice(0, 200) : '';
-          if (!text) return null;
-          return {
-            type,
-            section_key: typeof rec.section_key === 'string' ? rec.section_key : null,
-            text,
-          };
-        })
-        .filter((s): s is DraftAiSuggestion => s !== null)
-    : [];
-  const redFlags = Array.isArray(obj.red_flags)
-    ? obj.red_flags
-        .map((r): DraftAiRedFlag | null => {
-          if (!r || typeof r !== 'object') return null;
-          const rec = r as Record<string, unknown>;
-          const sev = rec.severity;
-          const issue = typeof rec.issue === 'string' ? rec.issue : '';
-          if (!issue || (sev !== 1 && sev !== 2 && sev !== 3)) return null;
-          return {
-            section_key: typeof rec.section_key === 'string' ? rec.section_key : null,
-            issue,
-            severity: sev,
-          };
-        })
-        .filter((r): r is DraftAiRedFlag => r !== null)
-    : [];
-
-  return {
-    overall_quality: quality,
-    strengths,
-    suggestions,
-    red_flags: redFlags,
-    ready_for_publication: obj.ready_for_publication === true,
-  };
-}
-
-const DRAFT_LANG_NAMES: Record<string, string> = {
-  en: 'English',
-  it: 'Italian',
-  de: 'German',
-  fr: 'French',
-};
-
-function draftReviewFocusBlock(iteration: number): string {
-  if (iteration <= 1) {
-    return (
-      'This is the FIRST draft review. Focus exclusively on:\n' +
-      '- Narrative flow: does the story move naturally from beginning to end?\n' +
-      '- Completeness: are key life moments (childhood, family, work, turning points) present or clearly missing?\n' +
-      '- Emotional authenticity: does the voice feel genuine, not generic?\n' +
-      'Do NOT flag minor style or grammar issues at this stage.\n' +
-      'Flag as red_flag severity 3 ONLY content that is clearly defamatory or contains explicit personal data about a named living third party.'
-    );
-  }
-  if (iteration === 2) {
-    return (
-      'This is the SECOND draft review. The narrative structure is already set. Focus on:\n' +
-      '- Clarity: are there sentences or paragraphs that are confusing or ambiguous?\n' +
-      '- Repetition: identify passages that repeat the same information unnecessarily\n' +
-      '- Pacing: flag sections that feel rushed (too short for their importance) or overlong (too detailed for their relevance)\n' +
-      'Do NOT re-evaluate narrative completeness already addressed in draft 1.\n' +
-      'Flag as red_flag severity 3 ONLY content that is clearly defamatory or makes unverified legal/criminal accusations about a named living person.'
-    );
-  }
-  return (
-    `This is draft review #${iteration} before publication. Focus on:\n` +
-    '- Final polish: anything that would embarrass the author if published as-is\n' +
-    '- Legal sensitivity: statements about living persons that could constitute defamation, privacy violations, or unverified criminal accusations — flag these as severity 3 (they will BLOCK publication and trigger human review)\n' +
-    '- AI training risk: if the text explicitly asks to be used for AI training, flag severity 3\n' +
-    'Be thorough. A missed severity-3 issue here goes to human moderators.'
-  );
-}
-
-export async function runDraftAiReview(
-  biographyText: string,
-  iteration: number,
-  contentLanguage: string = 'en',
-  usageOwner: { userId?: string | null; biographyId?: string | null } = {}
-): Promise<DraftAiFeedback> {
-  const errorResult: DraftAiFeedback = {
-    overall_quality: 0,
-    strengths: [],
-    suggestions: [],
-    red_flags: [],
-    ready_for_publication: false,
-    aiError: true,
-  };
-
-  if (!process.env.INFOMANIAK_AI_TOKEN || !process.env.INFOMANIAK_AI_ENDPOINT) {
-    console.warn('[review-submit-pipeline] Infomaniak AI not configured — draft review fallback');
-    return errorResult;
-  }
-
-  const langCode = (contentLanguage || 'en').toLowerCase().split(/[-_]/)[0];
-  const langName = DRAFT_LANG_NAMES[langCode] ?? 'English';
-
-  const systemPrompt =
-    'You are a biography editor reviewing a personal life story for publication. ' +
-    'Your role is to give constructive, encouraging feedback. The author may be elderly or not a professional writer. ' +
-    `Write every user-visible string in the JSON (strengths, suggestions[].text, red_flags[].issue) in ${langName}. ` +
-    'Be kind but honest. Respond only with valid JSON.';
-  const jsonShapeBlock =
-    'Return ONLY this JSON shape (no markdown, no explanations):\n' +
-    '{\n' +
-    '  "overall_quality": 1-5,\n' +
-    '  "strengths": ["max 3 short strings"],\n' +
-    '  "suggestions": [\n' +
-    '    {\n' +
-    '      "type": "narrative" | "completeness" | "clarity" | "style",\n' +
-    '      "section_key": "string or null",\n' +
-    '      "text": "short actionable suggestion, max 200 chars"\n' +
-    '    }\n' +
-    '  ],\n' +
-    '  "red_flags": [\n' +
-    '    {\n' +
-    '      "section_key": "string or null",\n' +
-    '      "issue": "brief description",\n' +
-    '      "severity": 1 | 2 | 3\n' +
-    '    }\n' +
-    '  ],\n' +
-    '  "ready_for_publication": boolean\n' +
-    '}\n\n';
-
-  const iterationFocusBlock = draftReviewFocusBlock(iteration);
-
-  const userPrompt =
-    jsonShapeBlock +
-    `IMPORTANT: All JSON string values shown to the author must be written in ${langName}.\n\n` +
-    'Biography:\n' +
-    biographyText +
-    '\n\n' +
-    iterationFocusBlock;
-
-  try {
-    const result = await chat({
-      role: 'reviewer',
-      messages: [
-        { role: 'system', content: systemPrompt },
-        { role: 'user', content: userPrompt },
-      ],
-      max_tokens: 2048,
-      temperature: 0.2,
-      timeoutMs: AI_TIMEOUT_MS,
-      // Solo il modello primario del revisore, come prima: nessun ripiego nascosto.
-      allowFallback: false,
-      usage: { purpose: 'preprint_check', ...usageOwner },
-    });
-
-    const rawText: string = result.content ?? '';
-    const match = rawText.match(/\{[\s\S]*\}/);
-    if (!match) {
-      console.error('[review-submit-pipeline] Draft AI response has no JSON object');
-      return errorResult;
-    }
-    const parsed = JSON.parse(match[0]);
-    return normalizeDraftFeedback(parsed);
-  } catch (err) {
-    console.error('[review-submit-pipeline] Draft AI review error:', err);
-    return errorResult;
-  }
-}
+/** @deprecated Alias: il controllo finale è `runPreprintCheck` / `PreprintFeedback`. */
+export type DraftAiSuggestion = PreprintSuggestion;
+/** @deprecated Alias: il controllo finale è `runPreprintCheck` / `PreprintFeedback`. */
+export type DraftAiRedFlag = PreprintRedFlag;
+/** @deprecated Alias: il controllo finale è `runPreprintCheck` / `PreprintFeedback`. */
+export type DraftAiFeedback = PreprintFeedback;
 
 async function pickReviewer(
   supabase: AnyClient,
@@ -521,7 +327,7 @@ export type ReviewSubmitPipelineResult =
       result: 'under_review';
       message?: string;
       isRescreen: boolean;
-      screeningDetail?: 'parse_error' | 'ai_error' | 'flagged' | 'text_changed' | 'too_long';
+      screeningDetail?: 'parse_error' | 'ai_error' | 'flagged' | 'text_changed' | 'incomplete';
       flagCount?: number;
     };
 
@@ -536,7 +342,7 @@ interface ManualReviewArgs {
   aiScreeningStatus: 'parse_error' | 'ai_error' | 'pending';
   reportDescription: string;
   reportSummary: string;
-  screeningDetail: 'parse_error' | 'ai_error' | 'text_changed' | 'too_long';
+  screeningDetail: 'parse_error' | 'ai_error' | 'text_changed' | 'incomplete';
   message: string;
   /** Solo per "testo cambiato": lascia nel registro il fatto che l'impronta esaminata non è più quella attuale. */
   recordTextChanged?: { fingerprint: string; examinedChars: number; sourceChars: number };
@@ -628,9 +434,11 @@ async function routeToManualReview(args: ManualReviewArgs): Promise<ReviewSubmit
 interface ScreeningPass {
   authorId: string;
   contentLanguage: string;
-  /** Ciò che ha ricevuto il modello. */
+  /** Testo di origine (interamente spezzato in pezzi dallo screening). */
   text: string;
-  /** Lunghezza del testo di partenza: maggiore di text.length se il modello non l'ha visto tutto. */
+  /** Caratteri esaminati (somma dei body dei pezzi con verdetto). */
+  examinedChars: number;
+  /** Lunghezza del testo di partenza. */
   sourceChars: number;
   /** Impronta del testo pubblico nel momento in cui lo screening lo legge. */
   fingerprint: string;
@@ -639,7 +447,7 @@ interface ScreeningPass {
 }
 
 /**
- * Un esame: impronta del testo pubblico, lettura del testo, modello, traccia nel
+ * Un esame: impronta del testo pubblico, lettura del testo a pezzi, traccia nel
  * registro. Non cambia lo stato della scheda. Esame sempre del testo intero.
  */
 async function runScreeningPass(serviceClient: AnyClient, biographyId: string): Promise<ScreeningPass> {
@@ -654,6 +462,10 @@ async function runScreeningPass(serviceClient: AnyClient, biographyId: string): 
 
   const screening = await runPublicationScreening(text, undefined, { userId: authorId, biographyId });
 
+  const examinedChars = screening.aiError
+    ? (screening.examinedChars ?? 0)
+    : (screening.examinedChars ?? text.length);
+
   const verdict: ScreeningVerdict = screening.aiError
     ? screening.parseError
       ? 'parse_error'
@@ -667,11 +479,20 @@ async function runScreeningPass(serviceClient: AnyClient, biographyId: string): 
     fingerprint,
     verdict,
     scope: 'full',
-    examinedChars: text.length,
+    examinedChars,
     sourceChars,
   });
 
-  return { authorId, contentLanguage, text, sourceChars, fingerprint, screening, verdict };
+  return {
+    authorId,
+    contentLanguage,
+    text,
+    examinedChars,
+    sourceChars,
+    fingerprint,
+    screening,
+    verdict,
+  };
 }
 
 export interface ReviewScreeningOutcome {
@@ -679,10 +500,19 @@ export interface ReviewScreeningOutcome {
   fingerprint: string;
   examinedChars: number;
   sourceChars: number;
-  /** Vero se il modello non ha visto tutto il testo: la persona deve leggerlo per intero. */
+  /** Vero se examined_chars < source_chars: la persona deve leggere il testo per intero. */
   partial: boolean;
   overallSeverity: number;
-  flaggedPassages: Array<{ text: string; section_key: string | null; reason: string; level: number }>;
+  flaggedPassages: Array<{
+    text: string;
+    section_key: string | null;
+    reason: string;
+    level: number;
+    chunk_index?: number;
+    chunk_start?: number;
+    chunk_end?: number;
+    part_title?: string | null;
+  }>;
 }
 
 /**
@@ -699,15 +529,19 @@ export async function runScreeningForReview(
   return {
     verdict: pass.verdict,
     fingerprint: pass.fingerprint,
-    examinedChars: pass.text.length,
+    examinedChars: pass.examinedChars,
     sourceChars: pass.sourceChars,
-    partial: pass.text.length < pass.sourceChars,
+    partial: pass.examinedChars < pass.sourceChars,
     overallSeverity: pass.screening.overall_severity ?? 0,
     flaggedPassages: pass.screening.passages.map((p) => ({
       text: p.text,
       section_key: p.section_key ?? null,
       reason: p.reason,
       level: p.severity,
+      chunk_index: p.chunk_index,
+      chunk_start: p.chunk_start,
+      chunk_end: p.chunk_end,
+      part_title: p.part_title,
     })),
   };
 }
@@ -743,6 +577,7 @@ export async function runReviewSubmitScreening(
     authorId,
     contentLanguage,
     text,
+    examinedChars,
     sourceChars,
     fingerprint: examinedFingerprint,
     screening,
@@ -782,13 +617,16 @@ export async function runReviewSubmitScreening(
         reportSummary: message,
         screeningDetail: 'text_changed',
         message: 'text_changed_during_screening',
-        recordTextChanged: { fingerprint: examinedFingerprint, examinedChars: text.length, sourceChars },
+        recordTextChanged: {
+          fingerprint: examinedFingerprint,
+          examinedChars,
+          sourceChars,
+        },
       });
 
-    // Regola provvisoria (fino allo screening a pezzi): se il modello non ha visto tutto il
-    // testo non si pubblica da soli. Nessun testo va online in automatico senza essere
-    // stato letto per intero dal modello; la scheda passa alla coda umana con il motivo scritto.
-    if (text.length < sourceChars) {
+    // Ultima verifica: examined_chars deve coincidere con source_chars. Se no (pezzo
+    // saltato o conteggio incoerente) è uno screening incompleto → coda umana.
+    if (examinedChars < sourceChars) {
       return routeToManualReview({
         serviceClient,
         biographyId,
@@ -798,10 +636,10 @@ export async function runReviewSubmitScreening(
         previousReviewerId,
         isRescreen,
         aiScreeningStatus: 'pending',
-        reportDescription: 'Text longer than the screening window — routed to manual review',
-        reportSummary: `The screening model read ${text.length} of ${sourceChars} characters of this text, so it cannot publish it automatically. A person must read the whole text.`,
-        screeningDetail: 'too_long',
-        message: 'text_longer_than_screening_window',
+        reportDescription: 'Incomplete screening — routed to manual review',
+        reportSummary: `Screening covered ${examinedChars} of ${sourceChars} characters; automatic publication requires every character to have been examined. A person must review the whole text.`,
+        screeningDetail: 'incomplete',
+        message: 'screening_incomplete',
       });
     }
 

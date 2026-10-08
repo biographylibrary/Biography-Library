@@ -16,12 +16,13 @@ import { looksLikeStoredHtml, storedToArchiveMarkdown, storedToPlainText } from 
 import { nfc } from '@/lib/nfc';
 import {
   computePublicFingerprint,
+  FORMAT_CONVERSION_SCREENING_REASON,
   type ScreeningVerdict,
   type ScreeningScope,
 } from '@/lib/server/publication-fingerprint';
 import type { AnyClient } from '@/lib/server/service-client';
 
-export const FORMAT_CONVERSION_REASON = 'conversione di formato, contenuto invariato';
+export const FORMAT_CONVERSION_REASON = FORMAT_CONVERSION_SCREENING_REASON;
 
 export type SectionRow = {
   id: string;

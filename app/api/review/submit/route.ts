@@ -105,7 +105,7 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    if (!(await checkPerUserThrottle(serviceClient, callerId))) {
+    if (!(await checkPerUserThrottle(serviceClient, callerId, 'review_submit'))) {
       console.warn('[review/submit] 429 — throttled', { timestamp, biographyId, callerId });
       return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
     }

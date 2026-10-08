@@ -86,7 +86,7 @@ export function isLockedPendingScreeningStatus(status: BiographyPublicationStatu
   return status === 'locked_pending_screening';
 }
 
-/** Watermarked PDF draft rounds — uses `pdf_draft_iteration` 1–3 in DB. */
+/** Watermarked PDF draft rounds — uses `pdf_draft_iteration` up to PDF_DRAFT_MAX_ITERATION. */
 export function isPdfDraftPhaseStatus(status: BiographyPublicationStatus): boolean {
   return status === 'pdf_draft';
 }

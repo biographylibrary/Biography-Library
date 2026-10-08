@@ -16,7 +16,21 @@ Fondatore unico, non sviluppatore: costruisce con Claude Code e Cursor. Non ci s
 
 ---
 
-## Stato dell'implementazione (6 ottobre 2026)
+## Stato dell'implementazione (8 ottobre 2026)
+
+### Blocco 3: screening a pezzi e controllo finale (8 ottobre 2026, ramo `blocco-3-screening`)
+
+**Screening sull’intero testo**: `runPublicationScreening` spezza il Markdown lungo titoli e paragrafi (`lib/agents/screening/split-markdown-chunks.ts`), con pezzo massimo **23 863 token / 95 452 caratteri** (un quarto della finestra Infomaniak da 100 000 token per Gemma 4 31B, tolti prompt e uscita). Ogni pezzo porta l’ultimo paragrafo del precedente come contesto. Al massimo due pezzi in parallelo; timeout 180 s; fino a tre tentativi sullo stesso modello (timeout/429/503) prima del ripiego. Se anche un solo pezzo resta senza verdetto → `ai_error` e coda umana. A pezzi tutti riusciti, `examined_chars = source_chars` e l’impronta in `publication_records` è quella del testo ricostruito. La regola `examined_chars < source_chars` resta come ultima verifica.
+
+**Righe di conversione di formato**: `latestScreening` ignora le righe con `reason = FORMAT_CONVERSION_REASON` (non sono screening veri); restano traccia dell’impronta. Un test dimostra che non bastano a pubblicare un testo cambiato.
+
+**Controllo finale prima della stampa**: tolto `runDraftAiReview` dai giri di bozza. Le bozze PDF incrementano solo `pdf_draft_iteration` (`POST /api/publication/record-pdf-draft`). L’autore chiede un unico controllo a pezzi (`POST /api/publication/preprint-check`, scopo `preprint_check`, fuori tetto autore): una volta per impronta del contenuto, al massimo 3 per biografia in 30 giorni (`PREPRINT_CHECK_MAX_PER_30_DAYS`, tabella `preprint_check_runs`). Non blocca l’approvazione del PDF.
+
+**Limiti di frequenza**: `check_and_record_submit_attempt` accetta `p_action` distinto per rotta (`review_submit`, `approve_final_pdf`, `preprint_check`, `record_pdf_draft`, …).
+
+**Migrazioni** (da applicare in produzione solo dopo conferma): `20261008120000_submit_attempt_per_action.sql`, `20261008120100_preprint_check_runs.sql`.
+
+**Filigrana PDF**: etichette dedicate per le bozze 1–3; dalla 4ª in poi etichetta generica con il numero (`PDF_DRAFT_MAX_ITERATION = 30`).
 
 ### Blocco 1: strumenti di intelligenza artificiale (30 settembre 2026, ramo `blocco-1-strumenti-ai`)
 
@@ -40,7 +54,7 @@ Fondatore unico, non sviluppatore: costruisce con Claude Code e Cursor. Non ci s
 
 1. ~~*La pagina pubblica legge solo `content`.*~~ **Chiuso nel blocco 2 Markdown (6 ottobre 2026):** la pagina pubblica legge anche `content_freeflow` / `biography_mode` e rende il foglio libero.
 2. *La scheda riaperta sparisce dal catalogo* mentre l'autore scrive il nuovo capitolo (vedi "Riapertura"). Stesso blocco, con una copia di lavoro separata.
-3. *Lo screening legge al massimo 6000 caratteri*: regola provvisoria sopra; l'esame completo a pezzi è nel blocco sullo screening.
+3. ~~*Lo screening legge al massimo 6000 caratteri*~~ — risolto nel blocco 3 (screening a pezzi, 8 ottobre 2026).
 4. *Le schede in `revision_overdue` restano ferme senza via d'uscita per l'autore*: i 30 giorni sono passati, `/api/moderation/resubmit` accetta solo `revision_requested`, resta il ricorso e la decisione dello staff. Nell'elenco `docs/SICUREZZA-SCRITTURE-ELENCO.md`, per il passaggio successivo.
 5. *Lo staff può ancora scrivere nelle bozze altrui* dal browser (policy di UPDATE di `biographies`; righe di `biography_media` e `biography_book_structure`, le cui policy controllano solo `user_id`). Anche questo nell'elenco della sicurezza.
 6. *I pannelli foto, struttura del libro e importazione non hanno una vera modalità di sola lettura*: fuori dagli stati di lavoro non si aprono e un avviso lo dice.
@@ -120,7 +134,7 @@ Fondatore unico, non sviluppatore: costruisce con Claude Code e Cursor. Non ci s
 
 **Pubblicazione**
 - Flusso approvazione PDF a tre fasi: `draft` → `draft_ai_feedback` → `published`
-- Controllo finale prima della stampa (`runDraftAiReview`) e screening di conformità (`runPublicationScreening`) con Gemma 4 31B; il controllo di conformità dal browser è stato tolto, lo screening gira solo sul server (`/api/review/submit`, `/api/publication/approve-final-pdf`)
+- Controllo finale prima della stampa (`runPreprintCheck`, a richiesta) e screening di conformità a pezzi (`runPublicationScreening`) con Gemma 4 31B; solo sul server (`/api/publication/preprint-check`, `/api/review/submit`, `/api/publication/approve-final-pdf`, correzione `/api/moderation/resubmit`)
 - Revisione manuale moderatori per casi segnalati
 - Export PDF avanzato (multi-pagina, con galleria, struttura libro) + intestazione/colophon permanenza
 - Export testo semplice UTF-8 (intestazione invariante bilingue)

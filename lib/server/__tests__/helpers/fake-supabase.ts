@@ -41,12 +41,17 @@ export function createFakeDb(seed: Record<string, Row[]> = {}, options: FakeDbOp
     let orderBy: { col: string; asc: boolean } | null = null;
     let max: number | null = null;
     let wantsRows = false;
+    let headOnly = false;
 
     const chain: Record<string, unknown> = {};
 
     const matching = () => rowsOf(table).filter((r) => filters.every((f) => f(r)));
 
-    function run(): { data: Row[] | null; error: { message: string } | null } {
+    function run(): {
+      data: Row[] | null;
+      error: { message: string } | null;
+      count: number | null;
+    } {
       if (op === 'insert') {
         const inserted: Row[] = [];
         for (const item of Array.isArray(payload) ? payload : [payload as Row]) {
@@ -56,33 +61,34 @@ export function createFakeDb(seed: Record<string, Row[]> = {}, options: FakeDbOp
             ...item,
           };
           const err = options.failInsert?.(table, row) ?? null;
-          if (err) return { data: null, error: err };
+          if (err) return { data: null, error: err, count: null };
           rowsOf(table).push(row);
           log.push({ op: 'insert', table, data: row });
           inserted.push(row);
         }
-        return { data: inserted, error: null };
+        return { data: inserted, error: null, count: inserted.length };
       }
       if (op === 'update') {
         const hit = matching();
         for (const row of hit) {
           const err = options.failUpdate?.(table, payload as Row, row) ?? null;
-          if (err) return { data: null, error: err };
+          if (err) return { data: null, error: err, count: null };
         }
         for (const row of hit) {
           Object.assign(row, payload as Row);
           log.push({ op: 'update', table, data: { ...(payload as Row), id: row.id } });
           options.onUpdate?.(table, payload as Row, row);
         }
-        return { data: hit, error: null };
+        return { data: hit, error: null, count: hit.length };
       }
       if (op === 'delete') {
         const hit = matching();
         tables[table] = rowsOf(table).filter((r) => !hit.includes(r));
         for (const row of hit) log.push({ op: 'delete', table, data: row });
-        return { data: hit, error: null };
+        return { data: hit, error: null, count: hit.length };
       }
       let out = matching();
+      const count = out.length;
       if (orderBy) {
         const { col, asc } = orderBy;
         out = [...out].sort((a, b) => {
@@ -92,11 +98,12 @@ export function createFakeDb(seed: Record<string, Row[]> = {}, options: FakeDbOp
         });
       }
       if (max != null) out = out.slice(0, max);
-      return { data: out, error: null };
+      return { data: headOnly ? [] : out, error: null, count };
     }
 
-    chain.select = () => {
+    chain.select = (_cols?: string, opts?: { count?: string; head?: boolean }) => {
       wantsRows = true;
+      headOnly = opts?.head === true;
       return chain;
     };
     chain.insert = (rows: Row | Row[]) => {
@@ -118,6 +125,10 @@ export function createFakeDb(seed: Record<string, Row[]> = {}, options: FakeDbOp
     chain.in = (col: string, vals: unknown[]) => (filters.push((r) => vals.includes(r[col])), chain);
     chain.is = (col: string, val: unknown) => (filters.push((r) => (r[col] ?? null) === val), chain);
     chain.not = (col: string, _op: string, val: unknown) => (filters.push((r) => (r[col] ?? null) !== val), chain);
+    chain.gte = (col: string, val: unknown) => (
+      filters.push((r) => String(r[col] ?? '') >= String(val)),
+      chain
+    );
     chain.or = () => chain;
     chain.order = (col: string, opts?: { ascending?: boolean }) => {
       orderBy = { col, asc: opts?.ascending !== false };
@@ -129,13 +140,16 @@ export function createFakeDb(seed: Record<string, Row[]> = {}, options: FakeDbOp
     };
     const single = async () => {
       const res = run();
-      return { data: res.data?.[0] ?? null, error: res.error };
+      return { data: res.data?.[0] ?? null, error: res.error, count: res.count };
     };
     chain.maybeSingle = single;
     chain.single = single;
     chain.then = (resolve: (v: unknown) => unknown, reject?: (e: unknown) => unknown) => {
       const res = run();
-      const value = wantsRows || op === 'select' ? res : { data: null, error: res.error };
+      const value =
+        wantsRows || op === 'select'
+          ? res
+          : { data: null, error: res.error, count: res.count };
       return Promise.resolve(value).then(resolve, reject);
     };
     return chain;
@@ -143,7 +157,7 @@ export function createFakeDb(seed: Record<string, Row[]> = {}, options: FakeDbOp
 
   const client = {
     from: (table: string) => builder(table),
-    rpc: async () => ({ data: true, error: null }),
+    rpc: async (_name: string, _args?: Record<string, unknown>) => ({ data: true, error: null }),
   } as unknown as AnyClient;
 
   return { client, tables, log };
