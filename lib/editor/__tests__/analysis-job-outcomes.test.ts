@@ -2,9 +2,11 @@ import { describe, expect, it } from 'vitest';
 import {
   applyApproveOutcome,
   applySubmitOutcome,
+  mergePublishedBiographyFields,
   normalizeScreeningOutcome,
   outcomeFromFailedJob,
 } from '@/lib/editor/analysis-job-outcomes';
+import { getChapterCooldownState } from '@/lib/biography-chapter-cooldown';
 
 describe('analysis-job-outcomes', () => {
   it('normalize + applySubmit per ogni esito', () => {
@@ -47,5 +49,31 @@ describe('analysis-job-outcomes', () => {
     });
     expect(n?.result).toBe('under_review');
     if (n?.result === 'under_review') expect(n.screeningDetail).toBeUndefined();
+  });
+
+  it('dopo published: merge dei campi dalla riga → banner cooldown con giorni veri', () => {
+    const future = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString();
+    const local = {
+      status: 'published' as const,
+      published_at: null as string | null,
+      next_chapter_available_at: null as string | null,
+      chapters_count: 0,
+      last_chapter_published_at: null as string | null,
+      final_pdf_url: null as string | null,
+      listing_cover_url: null as string | null,
+    };
+    expect(getChapterCooldownState(local)?.daysRemaining).toBe(0);
+
+    const merged = mergePublishedBiographyFields(local, {
+      published_at: new Date().toISOString(),
+      next_chapter_available_at: future,
+      chapters_count: 1,
+      last_chapter_published_at: new Date().toISOString(),
+      final_pdf_url: 'https://cdn/final.pdf',
+      listing_cover_url: 'https://cdn/cover.png',
+    });
+    expect(merged.next_chapter_available_at).toBe(future);
+    expect(merged.chapters_count).toBe(1);
+    expect(getChapterCooldownState(merged)?.daysRemaining).toBeGreaterThan(300);
   });
 });

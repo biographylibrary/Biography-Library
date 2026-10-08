@@ -3,7 +3,9 @@ import { act, renderHook, waitFor } from '@testing-library/react';
 import { useEffect, useState } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
+  ANALYSIS_JOB_POLL_ERROR_SLOW_AFTER,
   ANALYSIS_JOB_POLL_FAST_MS,
+  ANALYSIS_JOB_POLL_MOUNT_RETRY_MS,
   ANALYSIS_JOB_POLL_SLOW_AFTER_MS,
   ANALYSIS_JOB_POLL_SLOW_MS,
   useAnalysisJob,
@@ -156,9 +158,7 @@ describe('useAnalysisJob', () => {
     expect(fetchMock).toHaveBeenCalledTimes(1);
 
     await act(async () => {
-      await vi.advanceTimersByTimeAsync(
-        ANALYSIS_JOB_POLL_SLOW_MS - ANALYSIS_JOB_POLL_FAST_MS
-      );
+      await vi.advanceTimersByTimeAsync(ANALYSIS_JOB_POLL_SLOW_MS - ANALYSIS_JOB_POLL_FAST_MS);
       await flushMicrotasks();
     });
     expect(fetchMock).toHaveBeenCalledTimes(2);
@@ -205,5 +205,172 @@ describe('useAnalysisJob', () => {
       await flushMicrotasks();
     });
     expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it.each([
+    ['risposta 500', async () => ({ ok: false, status: 500, json: async () => ({}) })],
+    ['fetch che lancia', async () => {
+      throw new Error('network down');
+    }],
+    ['401', async () => ({ ok: false, status: 401, json: async () => ({}) })],
+  ])(
+    'dopo una lettura fallita (%s) il sondaggio continua e onSettled scatta solo a fine lavoro',
+    async (_label, failImpl) => {
+      vi.useFakeTimers();
+      const onSettled = vi.fn();
+      const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+
+      let call = 0;
+      fetchMock.mockImplementation(async () => {
+        call += 1;
+        if (call === 1) {
+          return { ok: true, json: async () => runningJob() };
+        }
+        if (call === 2) {
+          return failImpl();
+        }
+        return { ok: true, json: async () => doneJob() };
+      });
+
+      const { result } = renderHook(() =>
+        useAnalysisJob({ biographyId: 'bio-1', kind: 'screening', onSettled })
+      );
+
+      await act(async () => {
+        await flushMicrotasks();
+      });
+      expect(result.current.job?.status).toBe('running');
+      expect(result.current.polling).toBe(true);
+
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(ANALYSIS_JOB_POLL_FAST_MS);
+        await flushMicrotasks();
+      });
+      expect(onSettled).not.toHaveBeenCalled();
+      expect(result.current.polling).toBe(true);
+
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(ANALYSIS_JOB_POLL_FAST_MS);
+        await flushMicrotasks();
+      });
+      expect(onSettled).toHaveBeenCalledTimes(1);
+      expect(onSettled.mock.calls[0][0].status).toBe('done');
+      warn.mockRestore();
+    }
+  );
+
+  it('dieci errori consecutivi passano al ritardo lento; un successo riporta al veloce', async () => {
+    vi.useFakeTimers();
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    const onSettled = vi.fn();
+
+    let call = 0;
+    fetchMock.mockImplementation(async () => {
+      call += 1;
+      if (call === 1) return { ok: true, json: async () => runningJob() };
+      if (call <= 1 + ANALYSIS_JOB_POLL_ERROR_SLOW_AFTER) {
+        return { ok: false, status: 500, json: async () => ({}) };
+      }
+      return { ok: true, json: async () => runningJob() };
+    });
+
+    renderHook(() => useAnalysisJob({ biographyId: 'bio-1', kind: 'screening', onSettled }));
+
+    await act(async () => {
+      await flushMicrotasks();
+    });
+
+    for (let i = 0; i < ANALYSIS_JOB_POLL_ERROR_SLOW_AFTER; i++) {
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(ANALYSIS_JOB_POLL_FAST_MS);
+        await flushMicrotasks();
+      });
+    }
+    expect(warn).toHaveBeenCalled();
+
+    const callsAfterErrors = fetchMock.mock.calls.length;
+
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(ANALYSIS_JOB_POLL_FAST_MS);
+      await flushMicrotasks();
+    });
+    // Ancora sul ritardo lento: il tick veloce non deve bastare
+    expect(fetchMock.mock.calls.length).toBe(callsAfterErrors);
+
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(ANALYSIS_JOB_POLL_SLOW_MS - ANALYSIS_JOB_POLL_FAST_MS);
+      await flushMicrotasks();
+    });
+    expect(fetchMock.mock.calls.length).toBe(callsAfterErrors + 1);
+
+    // Dopo il successo il prossimo tick torna al ritardo veloce
+    const afterSuccess = fetchMock.mock.calls.length;
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(ANALYSIS_JOB_POLL_FAST_MS);
+      await flushMicrotasks();
+    });
+    expect(fetchMock.mock.calls.length).toBe(afterSuccess + 1);
+    expect(onSettled).not.toHaveBeenCalled();
+    warn.mockRestore();
+  });
+
+  it('watch() e prima lettura fallita: continua a interrogare', async () => {
+    vi.useFakeTimers();
+    const onSettled = vi.fn();
+
+    let call = 0;
+    fetchMock.mockImplementation(async () => {
+      call += 1;
+      if (call <= 2) return { ok: false, status: 500, json: async () => ({}) };
+      return { ok: true, json: async () => doneJob() };
+    });
+
+    const { result } = renderHook(() =>
+      useAnalysisJob({ biographyId: 'bio-1', kind: 'screening', onSettled })
+    );
+
+    await act(async () => {
+      await flushMicrotasks();
+      // Montaggio: due fallimenti (tick + retry), job ancora null
+    });
+
+    await act(async () => {
+      result.current.watch();
+      await flushMicrotasks();
+    });
+    expect(result.current.polling).toBe(true);
+
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(ANALYSIS_JOB_POLL_FAST_MS);
+      await flushMicrotasks();
+    });
+    expect(onSettled).toHaveBeenCalledTimes(1);
+    expect(onSettled.mock.calls[0][0].status).toBe('done');
+  });
+
+  it('montaggio con 401 poi 200: riprova dopo breve ritardo', async () => {
+    vi.useFakeTimers();
+    let call = 0;
+    fetchMock.mockImplementation(async () => {
+      call += 1;
+      if (call === 1) return { ok: false, status: 401, json: async () => ({}) };
+      return { ok: true, json: async () => runningJob() };
+    });
+
+    const { result } = renderHook(() =>
+      useAnalysisJob({ biographyId: 'bio-1', kind: 'screening' })
+    );
+
+    await act(async () => {
+      await flushMicrotasks();
+    });
+    expect(result.current.job).toBeNull();
+
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(ANALYSIS_JOB_POLL_MOUNT_RETRY_MS);
+      await flushMicrotasks();
+    });
+    expect(result.current.job?.status).toBe('running');
+    expect(result.current.polling).toBe(true);
   });
 });

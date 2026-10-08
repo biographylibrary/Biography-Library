@@ -1,17 +1,25 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { createFakeDb } from './helpers/fake-supabase';
-import {
-  REVISION_SCREENING_COULD_NOT_RUN_MESSAGE,
-  getLatestJob,
-  interruptStaleJobs,
-  startAnalysisJob,
-} from '@/lib/server/analysis-jobs';
+
+const routeScreeningFailureToManualReview = vi.fn(async () => undefined);
+
+vi.mock('@/lib/server/review-submit-pipeline', () => ({
+  routeScreeningFailureToManualReview: (...a: unknown[]) =>
+    (routeScreeningFailureToManualReview as (...x: unknown[]) => Promise<unknown>)(...a),
+}));
 
 vi.mock('@/lib/server/moderation-register', () => ({
   writeModerationMessage: vi.fn(async () => undefined),
 }));
 
 import { writeModerationMessage } from '@/lib/server/moderation-register';
+import {
+  REVISION_SCREENING_COULD_NOT_RUN_MESSAGE,
+  getLatestJob,
+  interruptStaleJobs,
+  startAnalysisJob,
+  sweepStaleAnalysisJobs,
+} from '@/lib/server/analysis-jobs';
 
 describe('analysis-jobs', () => {
   const prevStale = process.env.ANALYSIS_JOB_STALE_MINUTES;
@@ -38,7 +46,9 @@ describe('analysis-jobs', () => {
     let releases: Array<() => void> = [];
     const gate = () =>
       new Promise<unknown>((resolve) => {
-        releases.push(() => resolve({ result: 'published', screeningStatus: 'passed', isRescreen: false }));
+        releases.push(() =>
+          resolve({ result: 'published', screeningStatus: 'passed', isRescreen: false })
+        );
       });
 
     const a = await startAnalysisJob(db.client, 'bio-1', 'screening', gate);
@@ -59,8 +69,22 @@ describe('analysis-jobs', () => {
     [{ result: 'under_review', screeningDetail: 'flagged', isRescreen: false, flagCount: 2 }],
     [{ result: 'under_review', screeningDetail: 'ai_error', isRescreen: false }],
     [{ result: 'under_review', screeningDetail: 'parse_error', isRescreen: false }],
-    [{ result: 'under_review', screeningDetail: 'text_changed', message: 'text_changed_during_screening', isRescreen: false }],
-    [{ result: 'under_review', screeningDetail: 'incomplete', message: 'screening_incomplete', isRescreen: false }],
+    [
+      {
+        result: 'under_review',
+        screeningDetail: 'text_changed',
+        message: 'text_changed_during_screening',
+        isRescreen: false,
+      },
+    ],
+    [
+      {
+        result: 'under_review',
+        screeningDetail: 'incomplete',
+        message: 'screening_incomplete',
+        isRescreen: false,
+      },
+    ],
   ])('salva l\'esito %j come done', async (outcome) => {
     const db = createFakeDb({
       biographies: [{ id: 'bio-1', status: 'under_review', ai_screening_status: 'pending' }],
@@ -71,9 +95,10 @@ describe('analysis-jobs', () => {
       expect(db.tables.analysis_jobs.find((j) => j.id === jobId)?.status).toBe('done')
     );
     expect(db.tables.analysis_jobs.find((j) => j.id === jobId)?.outcome).toEqual(outcome);
+    expect(routeScreeningFailureToManualReview).not.toHaveBeenCalled();
   });
 
-  it('eccezione → failed e ai_screening_status ai_error se ancora pending', async () => {
+  it('eccezione → failed e instrada in coda umana se screening senza reportId', async () => {
     const db = createFakeDb({
       biographies: [{ id: 'bio-1', status: 'under_review', ai_screening_status: 'pending' }],
       analysis_jobs: [],
@@ -84,11 +109,14 @@ describe('analysis-jobs', () => {
     await vi.waitFor(() =>
       expect(db.tables.analysis_jobs.find((j) => j.id === jobId)?.status).toBe('failed')
     );
-    expect(db.tables.biographies[0].ai_screening_status).toBe('ai_error');
-    expect(db.tables.biographies[0].status).toBe('under_review');
+    expect(routeScreeningFailureToManualReview).toHaveBeenCalledWith(
+      expect.anything(),
+      'bio-1',
+      'failed'
+    );
   });
 
-  it('lavoro interrupted che poi termina non riscrive riga né ai_screening_status', async () => {
+  it('lavoro interrupted che poi termina non riscrive riga né richiama instradamento', async () => {
     const db = createFakeDb({
       biographies: [{ id: 'bio-1', status: 'under_review', ai_screening_status: 'pending' }],
       analysis_jobs: [],
@@ -99,7 +127,6 @@ describe('analysis-jobs', () => {
     });
     const { jobId } = await startAnalysisJob(db.client, 'bio-1', 'screening', () => slow);
 
-    // Un'altra via chiude il lavoro (bonifica) mentre work è ancora in sospeso.
     await db.client
       .from('analysis_jobs')
       .update({
@@ -109,10 +136,6 @@ describe('analysis-jobs', () => {
       })
       .eq('id', jobId)
       .eq('status', 'running');
-    await db.client
-      .from('biographies')
-      .update({ ai_screening_status: 'ai_error' })
-      .eq('id', 'bio-1');
 
     release({ result: 'published', screeningStatus: 'passed', isRescreen: false });
     await new Promise((r) => setTimeout(r, 20));
@@ -121,10 +144,11 @@ describe('analysis-jobs', () => {
     expect(db.tables.analysis_jobs.find((j) => j.id === jobId)?.outcome).toEqual({
       error: 'interrupted',
     });
-    expect(db.tables.biographies[0].ai_screening_status).toBe('ai_error');
+    // finishJob ha saltato la scrittura; nessun instradamento dal finish tardivo
+    expect(routeScreeningFailureToManualReview).not.toHaveBeenCalled();
   });
 
-  it('bonifica: scaduto → interrupted e ai_error solo se scheda ancora in corso', async () => {
+  it('bonifica: scaduto → interrupted e instradamento coda umana', async () => {
     process.env.ANALYSIS_JOB_STALE_MINUTES = '1';
     const old = new Date(Date.now() - 5 * 60_000).toISOString();
     const db = createFakeDb({
@@ -145,10 +169,14 @@ describe('analysis-jobs', () => {
     const n = await interruptStaleJobs(db.client, 'bio-1', 'screening');
     expect(n).toBe(1);
     expect(db.tables.analysis_jobs[0].status).toBe('interrupted');
-    expect(db.tables.biographies[0].ai_screening_status).toBe('ai_error');
+    expect(routeScreeningFailureToManualReview).toHaveBeenCalledWith(
+      expect.anything(),
+      'bio-1',
+      'interrupted'
+    );
   });
 
-  it('bonifica: non tocca una scheda già spostata da una persona', async () => {
+  it('bonifica: non tocca una scheda già spostata (instradamento no-op via claim)', async () => {
     process.env.ANALYSIS_JOB_STALE_MINUTES = '1';
     const old = new Date(Date.now() - 5 * 60_000).toISOString();
     const db = createFakeDb({
@@ -168,11 +196,16 @@ describe('analysis-jobs', () => {
     });
     await interruptStaleJobs(db.client, 'bio-1', 'screening');
     expect(db.tables.analysis_jobs[0].status).toBe('interrupted');
+    expect(routeScreeningFailureToManualReview).toHaveBeenCalledWith(
+      expect.anything(),
+      'bio-1',
+      'interrupted'
+    );
     expect(db.tables.biographies[0].status).toBe('published');
     expect(db.tables.biographies[0].ai_screening_status).toBe('passed');
   });
 
-  it('bonifica correzione: messaggio interno nel rapporto', async () => {
+  it('bonifica correzione: messaggio interno, nessun rapporto nuovo', async () => {
     process.env.ANALYSIS_JOB_STALE_MINUTES = '1';
     const old = new Date(Date.now() - 5 * 60_000).toISOString();
     const db = createFakeDb({
@@ -199,7 +232,66 @@ describe('analysis-jobs', () => {
         message: REVISION_SCREENING_COULD_NOT_RUN_MESSAGE,
       })
     );
+    expect(routeScreeningFailureToManualReview).not.toHaveBeenCalled();
     expect(db.tables.biographies[0].ai_screening_status).toBeNull();
+  });
+
+  it('lavoro correzione fallito: messaggio interno, nessun rapporto nuovo', async () => {
+    const db = createFakeDb({
+      biographies: [{ id: 'bio-1', status: 'revision_pending_review', ai_screening_status: null }],
+      analysis_jobs: [],
+    });
+    const { jobId } = await startAnalysisJob(
+      db.client,
+      'bio-1',
+      'screening',
+      async () => {
+        throw new Error('revision boom');
+      },
+      { reportId: 'r1', authorId: 'author-1' }
+    );
+    await vi.waitFor(() =>
+      expect(db.tables.analysis_jobs.find((j) => j.id === jobId)?.status).toBe('failed')
+    );
+    expect(routeScreeningFailureToManualReview).not.toHaveBeenCalled();
+    expect(writeModerationMessage).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.objectContaining({ reportId: 'r1', internal: true })
+    );
+  });
+
+  it('controllo finale fallito o interrotto: nessun rapporto', async () => {
+    process.env.ANALYSIS_JOB_STALE_MINUTES = '1';
+    const old = new Date(Date.now() - 5 * 60_000).toISOString();
+    const db = createFakeDb({
+      biographies: [{ id: 'bio-1', status: 'pdf_draft', ai_screening_status: null }],
+      analysis_jobs: [
+        {
+          id: 'pre-stale',
+          biography_id: 'bio-1',
+          kind: 'preprint_check',
+          status: 'running',
+          started_at: old,
+          finished_at: null,
+          outcome: null,
+          context: {},
+        },
+      ],
+    });
+    await interruptStaleJobs(db.client, 'bio-1', 'preprint_check');
+    expect(routeScreeningFailureToManualReview).not.toHaveBeenCalled();
+
+    const db2 = createFakeDb({
+      biographies: [{ id: 'bio-2', status: 'pdf_draft' }],
+      analysis_jobs: [],
+    });
+    const { jobId } = await startAnalysisJob(db2.client, 'bio-2', 'preprint_check', async () => {
+      throw new Error('preprint boom');
+    });
+    await vi.waitFor(() =>
+      expect(db2.tables.analysis_jobs.find((j) => j.id === jobId)?.status).toBe('failed')
+    );
+    expect(routeScreeningFailureToManualReview).not.toHaveBeenCalled();
   });
 
   it('startAnalysisJob bonifica prima dell\'inserimento', async () => {
@@ -250,5 +342,44 @@ describe('analysis-jobs', () => {
     });
     const latest = await getLatestJob(db.client, 'bio-1', 'screening');
     expect(latest.status).toBe('interrupted');
+  });
+
+  it('sweepStaleAnalysisJobs interrompe i scaduti e non tocca i recenti', async () => {
+    process.env.ANALYSIS_JOB_STALE_MINUTES = '1';
+    const old = new Date(Date.now() - 5 * 60_000).toISOString();
+    const recent = new Date().toISOString();
+    const db = createFakeDb({
+      biographies: [
+        { id: 'bio-1', status: 'under_review', ai_screening_status: 'pending' },
+        { id: 'bio-2', status: 'under_review', ai_screening_status: 'pending' },
+      ],
+      analysis_jobs: [
+        {
+          id: 'stale-a',
+          biography_id: 'bio-1',
+          kind: 'screening',
+          status: 'running',
+          started_at: old,
+          finished_at: null,
+          outcome: null,
+          context: {},
+        },
+        {
+          id: 'fresh-b',
+          biography_id: 'bio-2',
+          kind: 'screening',
+          status: 'running',
+          started_at: recent,
+          finished_at: null,
+          outcome: null,
+          context: {},
+        },
+      ],
+    });
+
+    const n = await sweepStaleAnalysisJobs(db.client);
+    expect(n).toBe(1);
+    expect(db.tables.analysis_jobs.find((j) => j.id === 'stale-a')?.status).toBe('interrupted');
+    expect(db.tables.analysis_jobs.find((j) => j.id === 'fresh-b')?.status).toBe('running');
   });
 });

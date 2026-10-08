@@ -118,36 +118,51 @@ async function fetchPreviousRejectionReport(
  * When status is `under_review` after AI flags, the latest open report carries
  * `flagged_passages`: a new screening closes that report (the new one replaces it).
  * The screening itself always reads the whole text, not only those sections.
+ *
+ * Also closes open screening reports created for AI/job failures (empty
+ * `flagged_passages`, origin `screening`) when `ai_screening_status` is
+ * `ai_error` or `parse_error` — otherwise "Riprova analisi" that then publishes
+ * would leave the failure report open forever.
  */
-async function fetchOpenAiFlaggedReportForRescreen(
+export async function fetchOpenAiFlaggedReportForRescreen(
   supabase: AnyClient,
   biographyId: string
 ): Promise<{ id: string } | null> {
   const { data: bio } = await supabase
     .from('biographies')
-    .select('status')
+    .select('status, ai_screening_status')
     .eq('id', biographyId)
     .maybeSingle();
 
-  if ((bio as { status?: string } | null)?.status !== 'under_review') {
+  const bioRow = bio as { status?: string; ai_screening_status?: string } | null;
+  if (bioRow?.status !== 'under_review') {
     return null;
   }
 
   const { data: report } = await supabase
     .from('moderation_reports')
-    .select('id, ai_analysis')
+    .select('id, origin, ai_analysis')
     .eq('biography_id', biographyId)
     .in('status', ['unassigned', 'assigned'])
     .order('created_at', { ascending: false })
     .limit(1)
     .maybeSingle();
 
-  const raw = (report?.ai_analysis as { flagged_passages?: unknown } | null)?.flagged_passages;
-  if (!Array.isArray(raw) || raw.length === 0 || !report?.id) {
-    return null;
+  if (!report?.id) return null;
+
+  const raw = (report.ai_analysis as { flagged_passages?: unknown } | null)?.flagged_passages;
+  const hasFlagged = Array.isArray(raw) && raw.length > 0;
+  if (hasFlagged) {
+    return { id: report.id as string };
   }
 
-  return { id: report.id as string };
+  const screeningStatus = bioRow.ai_screening_status;
+  const isAiFailureStatus = screeningStatus === 'ai_error' || screeningStatus === 'parse_error';
+  if (isAiFailureStatus && (report as { origin?: string }).origin === 'screening') {
+    return { id: report.id as string };
+  }
+
+  return null;
 }
 
 /**
@@ -349,6 +364,76 @@ interface ManualReviewArgs {
 }
 
 /**
+ * Rapporto di moderazione + revisore + email/notifiche (parte condivisa della
+ * coda umana dopo uno screening che non pubblica).
+ */
+async function openScreeningManualReviewReport(args: {
+  serviceClient: AnyClient;
+  biographyId: string;
+  authorId: string;
+  contentLanguage: string;
+  previousReviewerId: string | null;
+  reportDescription: string;
+  reportSummary: string;
+}): Promise<void> {
+  const { serviceClient, biographyId, authorId, contentLanguage } = args;
+
+  const { data: errorReport } = await serviceClient
+    .from('moderation_reports')
+    .insert({
+      biography_id: biographyId,
+      reporter_id: null,
+      report_type: 'level2_content',
+      origin: 'screening',
+      description: args.reportDescription,
+      status: 'unassigned',
+      ai_analysis: {
+        summary: args.reportSummary,
+        flagged_passages: [],
+      },
+      ai_violation_level: 0,
+    })
+    .select('id')
+    .maybeSingle();
+
+  const errorReviewerId = await pickReviewer(serviceClient, contentLanguage, args.previousReviewerId);
+
+  if (errorReviewerId && (errorReport as { id?: string } | null)?.id) {
+    const reportId = (errorReport as { id: string }).id;
+    await serviceClient
+      .from('moderation_reports')
+      .update({
+        status: 'assigned',
+        assigned_to: errorReviewerId,
+        assigned_moderator_id: errorReviewerId,
+        assigned_at: new Date().toISOString(),
+      })
+      .eq('id', reportId);
+
+    const assignMsg = REVIEW_ASSIGNED_MESSAGES[contentLanguage] ?? REVIEW_ASSIGNED_MESSAGES['en'];
+    await notifyReviewerAssignedEmail({
+      client: serviceClient,
+      reviewerId: errorReviewerId,
+      biographyId,
+      contentLanguage,
+      notificationMessage: assignMsg,
+    });
+  }
+
+  if (authorId) {
+    const underReviewMsg = UNDER_REVIEW_MESSAGES[contentLanguage] ?? UNDER_REVIEW_MESSAGES['en'];
+    await notifyAuthorPublicationEmail({
+      client: serviceClient,
+      authorId,
+      biographyId,
+      templateId: 'publication_under_review',
+      contentLanguage,
+      notificationMessage: underReviewMsg,
+    });
+  }
+}
+
+/**
  * La scheda non si pubblica da sola: passa alla revisione umana (errore del
  * modello, risposta illeggibile, oppure testo cambiato durante lo screening).
  */
@@ -372,55 +457,14 @@ async function routeToManualReview(args: ManualReviewArgs): Promise<ReviewSubmit
   }
   await serviceClient.from('biographies').update(patch).eq('id', biographyId);
 
-  const { data: errorReport } = await serviceClient
-    .from('moderation_reports')
-    .insert({
-      biography_id: biographyId,
-      reporter_id: null,
-      report_type: 'level2_content',
-      origin: 'screening',
-      description: args.reportDescription,
-      status: 'unassigned',
-      ai_analysis: {
-        summary: args.reportSummary,
-        flagged_passages: [],
-      },
-      ai_violation_level: 0,
-    })
-    .select('id')
-    .maybeSingle();
-
-  const errorReviewerId = await pickReviewer(serviceClient, contentLanguage, args.previousReviewerId);
-
-  if (errorReviewerId && (errorReport as any)?.id) {
-    await serviceClient
-      .from('moderation_reports')
-      .update({
-        status: 'assigned',
-        assigned_to: errorReviewerId,
-        assigned_moderator_id: errorReviewerId,
-        assigned_at: new Date().toISOString(),
-      })
-      .eq('id', (errorReport as any).id);
-
-    const assignMsg = REVIEW_ASSIGNED_MESSAGES[contentLanguage] ?? REVIEW_ASSIGNED_MESSAGES['en'];
-    await notifyReviewerAssignedEmail({
-      client: serviceClient,
-      reviewerId: errorReviewerId,
-      biographyId,
-      contentLanguage,
-      notificationMessage: assignMsg,
-    });
-  }
-
-  const underReviewMsg = UNDER_REVIEW_MESSAGES[contentLanguage] ?? UNDER_REVIEW_MESSAGES['en'];
-  await notifyAuthorPublicationEmail({
-    client: serviceClient,
-    authorId,
+  await openScreeningManualReviewReport({
+    serviceClient,
     biographyId,
-    templateId: 'publication_under_review',
+    authorId,
     contentLanguage,
-    notificationMessage: underReviewMsg,
+    previousReviewerId: args.previousReviewerId,
+    reportDescription: args.reportDescription,
+    reportSummary: args.reportSummary,
   });
 
   return {
@@ -429,6 +473,71 @@ async function routeToManualReview(args: ManualReviewArgs): Promise<ReviewSubmit
     isRescreen: args.isRescreen,
     screeningDetail: args.screeningDetail,
   };
+}
+
+export type ScreeningFailureCause = 'failed' | 'interrupted' | 'start_failed';
+
+const SCREENING_FAILURE_CAUSE_LABEL: Record<ScreeningFailureCause, string> = {
+  failed: 'failed',
+  interrupted: 'interrupted',
+  start_failed: 'could not start',
+};
+
+/**
+ * Lavoro di screening caduto o interrotto → stessa coda umana di un errore AI
+ * rilevato dalla pipeline. Presa atomica su `pending`; se la scheda è già uscita
+ * da pending non fa nulla. Non lancia mai (fallimenti dopo la presa restano
+ * `ai_error` e l'autore può usare «Riprova analisi»).
+ */
+export async function routeScreeningFailureToManualReview(
+  client: AnyClient,
+  biographyId: string,
+  cause: ScreeningFailureCause
+): Promise<void> {
+  try {
+    const { data: claimed } = await client
+      .from('biographies')
+      .update({ ai_screening_status: 'ai_error' })
+      .eq('id', biographyId)
+      .eq('ai_screening_status', 'pending')
+      .in('status', ['under_review', 'locked_pending_screening'])
+      .select('id, status, user_id, content_language, record_language_tag');
+
+    const rows = (Array.isArray(claimed) ? claimed : claimed ? [claimed] : []) as Array<{
+      id?: string;
+      status?: string;
+      user_id?: string;
+      content_language?: string | null;
+      record_language_tag?: string | null;
+    }>;
+    const row = rows[0];
+    if (!row?.id) return;
+
+    const priorStatus = row.status ?? null;
+    if (priorStatus === 'locked_pending_screening') {
+      await client
+        .from('biographies')
+        .update({ status: 'under_review' })
+        .eq('id', biographyId)
+        .eq('status', 'locked_pending_screening');
+    }
+
+    const authorId = row.user_id ?? '';
+    const contentLanguage = resolveRecordLanguageTag(row);
+    const causeLabel = SCREENING_FAILURE_CAUSE_LABEL[cause];
+
+    await openScreeningManualReviewReport({
+      serviceClient: client,
+      biographyId,
+      authorId,
+      contentLanguage,
+      previousReviewerId: null,
+      reportDescription: `Screening job did not complete (${causeLabel}) — routed to manual review`,
+      reportSummary: `The screening job did not finish (${causeLabel}). Manual review required.`,
+    });
+  } catch (err) {
+    console.error('[routeScreeningFailureToManualReview]', { biographyId, cause, err });
+  }
 }
 
 interface ScreeningPass {

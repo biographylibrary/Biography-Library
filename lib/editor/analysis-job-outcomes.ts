@@ -137,3 +137,28 @@ export function applyApproveOutcome(outcome: ScreeningJobOutcome): ApproveOutcom
     loadFlaggedPassages: true,
   };
 }
+
+/** Campi che la pubblicazione scrive in riga e che l'editor deve riprendere senza ricaricare. */
+export type PublishedBiographyFields = {
+  published_at?: string | null;
+  last_chapter_published_at?: string | null;
+  next_chapter_available_at?: string | null;
+  chapters_count?: number | null;
+  final_pdf_url?: string | null;
+  listing_cover_url?: string | null;
+};
+
+export function mergePublishedBiographyFields<T extends PublishedBiographyFields>(
+  prev: T,
+  row: PublishedBiographyFields
+): T {
+  return {
+    ...prev,
+    published_at: row.published_at ?? prev.published_at,
+    last_chapter_published_at: row.last_chapter_published_at ?? prev.last_chapter_published_at,
+    next_chapter_available_at: row.next_chapter_available_at ?? prev.next_chapter_available_at,
+    chapters_count: row.chapters_count ?? prev.chapters_count,
+    final_pdf_url: row.final_pdf_url ?? prev.final_pdf_url,
+    listing_cover_url: row.listing_cover_url ?? prev.listing_cover_url,
+  };
+}
