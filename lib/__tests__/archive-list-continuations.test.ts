@@ -14,7 +14,11 @@ import {
   archiveMarkdownToEditorHtml,
   archiveTiptapExtensions,
 } from '@/lib/editor-archive-tiptap';
-import { editorLoadMatchesStored } from '@/lib/editor-load-guard';
+import {
+  editorLoadMatchesStored,
+  structureFromArchiveHtml,
+  structureFromEditorDoc,
+} from '@/lib/editor-load-guard';
 import { handleArchivePasteEvent } from '@/lib/editor-paste';
 import { nfc } from '@/lib/nfc';
 
@@ -421,6 +425,55 @@ describe('empty list items (regression: skipped after 5fb55bd)', () => {
 
   it('bare empty <li> emits a marker (li branch)', () => {
     expect(htmlToArchiveMarkdown('<li><p></p></li>')).toBe(MAIN_EMPTY_LI_MD.loneLi);
+  });
+
+  it('empty parent with empty nested child matches main ("- \\n  -") and round-trips', () => {
+    const html = '<ul><li><p></p><ul><li><p></p></li></ul></li></ul>';
+    // main (7bbcf4f): no blank line between bare marker and nested empty marker
+    const expected = '- \n  -';
+
+    const editor = createArchiveEditor('-');
+    editor.commands.setContent(html);
+    expect(structureFromEditorDoc(editor)).toMatchObject({
+      bulletLists: 2,
+      listItems: 2,
+    });
+
+    const first = saveFromEditor(editor);
+    expect(first).toBe(expected);
+
+    const fromMd = structureFromArchiveHtml(archiveMarkdownToHtml(first));
+    expect(fromMd).toMatchObject({ bulletLists: 2, listItems: 2 });
+    expect(structureFromEditorDoc(editor)).toEqual(fromMd);
+    expect(editorLoadMatchesStored(first, editor)).toBe(true);
+
+    const reloaded = createArchiveEditor(first);
+    expect(structureFromEditorDoc(reloaded)).toMatchObject({
+      bulletLists: 2,
+      listItems: 2,
+    });
+    expect(editorLoadMatchesStored(first, reloaded)).toBe(true);
+  });
+
+  it('empty ordered parent with empty nested bullet: structure parity and guard', () => {
+    const html = '<ol><li><p></p><ul><li><p></p></li></ul></li></ol>';
+    const editor = createArchiveEditor('1. ');
+    editor.commands.setContent(html);
+    expect(structureFromEditorDoc(editor)).toMatchObject({
+      orderedLists: 1,
+      bulletLists: 1,
+      listItems: 2,
+    });
+
+    const first = saveFromEditor(editor);
+    const fromMd = structureFromArchiveHtml(archiveMarkdownToHtml(first));
+    expect(fromMd).toMatchObject({ orderedLists: 1, bulletLists: 1, listItems: 2 });
+    expect(structureFromEditorDoc(editor)).toEqual(fromMd);
+    expect(editorLoadMatchesStored(first, editor)).toBe(true);
+
+    const reloaded = createArchiveEditor(first);
+    expect(structureFromEditorDoc(reloaded)).toEqual(fromMd);
+    expect(editorLoadMatchesStored(first, reloaded)).toBe(true);
   });
 });
 

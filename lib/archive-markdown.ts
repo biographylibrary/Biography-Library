@@ -270,7 +270,9 @@ function serializeListItemLines(
     if (!markerEmitted) emitMarker('');
     const nestedMd = serializeBlocks([block.el], childListIndent).trimEnd();
     if (!nestedMd) continue;
-    if (nestedListStartsWithEmptyMarker(nestedMd) && lines[lines.length - 1] !== '') {
+    const prev = lines[lines.length - 1] ?? '';
+    const prevIsBareMarker = prev.trim() === marker.trim();
+    if (nestedListStartsWithEmptyMarker(nestedMd) && prev !== '' && !prevIsBareMarker) {
       lines.push('');
     }
     lines.push(nestedMd);
