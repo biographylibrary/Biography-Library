@@ -80,16 +80,28 @@ describe('correzione inviata: screening senza pubblicazione, esito allegato alla
     }));
     await attach(db);
     const analysis = db.tables.moderation_reports[0].ai_analysis as Record<string, any>;
-    expect(analysis.flagged_passages).toEqual([{ text: 'frase', section_key: 'family', reason: 'motivo', level: 3 }]);
+    expect(analysis.flagged_passages).toEqual([
+      expect.objectContaining({ text: 'frase', section_key: 'family', reason: 'motivo', level: 3 }),
+    ]);
     expect(analysis.summary).toContain('flagged 1 passage');
     expect(db.tables.moderation_reports[0].ai_violation_level).toBe(3);
   });
 
-  it('testo oltre la finestra del modello: lo dice, il revisore deve leggerlo tutto', async () => {
+  it('esame parziale (examined < source): lo dice, il revisore deve leggerlo tutto', async () => {
     const db = makeDb('a'.repeat(8_000));
+    screen.mockImplementation(async () => ({
+      passages: [],
+      overall_severity: 0,
+      examinedChars: 100,
+      sourceChars: 8_000,
+    }));
     await attach(db);
     const analysis = db.tables.moderation_reports[0].ai_analysis as Record<string, any>;
-    expect(analysis.revision_screening).toMatchObject({ partial: true, examined_chars: 6000, source_chars: 8000 });
+    expect(analysis.revision_screening).toMatchObject({
+      partial: true,
+      examined_chars: 100,
+      source_chars: 8000,
+    });
     expect(analysis.summary).toContain('read the whole text before approving');
   });
 

@@ -4,6 +4,17 @@ import { nfc } from '@/lib/nfc';
 import { BIOGRAPHIES_AUTHOR_TEXT_COLUMNS } from '@/lib/publication-state';
 import type { AnyClient } from '@/lib/server/service-client';
 
+/**
+ * Stesso testo di `FORMAT_CONVERSION_REASON` in markdown-format-conversion.ts
+ * (tenuto qui per non creare un ciclo di import). Un test verifica l'uguaglianza.
+ */
+export const FORMAT_CONVERSION_SCREENING_REASON = 'conversione di formato, contenuto invariato';
+
+/** Righe scritte dalla conversione di formato: non sono uno screening vero. */
+export function isFormatConversionScreeningReason(reason: string | null | undefined): boolean {
+  return reason === FORMAT_CONVERSION_SCREENING_REASON;
+}
+
 /** Colonne di `biographies` lette per l'impronta (whitelist testo + modalità). */
 export const PUBLICATION_FINGERPRINT_BIOGRAPHY_COLUMNS = [
   ...BIOGRAPHIES_AUTHOR_TEXT_COLUMNS,
@@ -336,17 +347,27 @@ export interface LatestScreening {
 }
 
 export async function latestScreening(client: AnyClient, biographyId: string): Promise<LatestScreening | null> {
+  // Si leggono più righe perché le conversioni di formato (reason valorizzato,
+  // examined_chars spesso 0) non sono screening veri: si saltano, restano solo
+  // come traccia della continuità dell'impronta.
   const { data, error } = await client
     .from('publication_records')
-    .select('id, fingerprint, verdict, created_at')
+    .select('id, fingerprint, verdict, created_at, reason')
     .eq('biography_id', biographyId)
     .eq('kind', 'screening')
     .neq('verdict', 'text_changed')
     .order('created_at', { ascending: false })
-    .limit(1)
-    .maybeSingle();
+    .limit(50);
   if (error) throw new Error(`publication_fingerprint_read_failed:publication_records:${error.message}`);
-  return (data as LatestScreening | null) ?? null;
+  const rows = (data as Array<LatestScreening & { reason?: string | null }> | null) ?? [];
+  const row = rows.find((r) => !isFormatConversionScreeningReason(r.reason));
+  if (!row) return null;
+  return {
+    id: row.id,
+    fingerprint: row.fingerprint,
+    verdict: row.verdict,
+    created_at: row.created_at,
+  };
 }
 
 async function latestPublished(

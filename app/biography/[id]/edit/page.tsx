@@ -1290,7 +1290,7 @@ export default function BiographyEditorPage() {
       let apiResult: {
         result?: string;
         error?: string;
-        screeningDetail?: 'flagged' | 'ai_error' | 'parse_error' | 'text_changed' | 'too_long';
+        screeningDetail?: 'flagged' | 'ai_error' | 'parse_error' | 'text_changed' | 'incomplete' | 'too_long';
       } = {};
       try {
         const res = await fetch('/api/review/submit', {
@@ -1325,8 +1325,8 @@ export default function BiographyEditorPage() {
           // Il testo è cambiato mentre lo screening lo esaminava: non è stato pubblicato.
           setAiScreeningResult('pending');
           toast.error(t.editor.screeningTextChanged);
-        } else if (d === 'too_long') {
-          // Testo più lungo di quanto il modello legga: lo esamina una persona.
+        } else if (d === 'incomplete' || d === 'too_long') {
+          // Screening incompleto: lo esamina una persona.
           setAiScreeningResult('pending');
           toast.info(t.editor.screeningTooLong);
         } else {
@@ -1543,7 +1543,7 @@ export default function BiographyEditorPage() {
                 ai_screening_status:
                   d === 'ai_error' || d === 'parse_error'
                     ? d
-                    : d === 'text_changed' || d === 'too_long'
+                    : d === 'text_changed' || d === 'incomplete' || d === 'too_long'
                       ? 'pending'
                       : 'flagged',
                 pdf_draft_iteration: null,
@@ -1554,7 +1554,7 @@ export default function BiographyEditorPage() {
         );
         if (d === 'ai_error' || d === 'parse_error') {
           setAiScreeningResult(d as 'ai_error' | 'parse_error');
-        } else if (d === 'text_changed' || d === 'too_long') {
+        } else if (d === 'text_changed' || d === 'incomplete' || d === 'too_long') {
           setAiScreeningResult('pending');
           if (d === 'text_changed') toast.error(t.editor.screeningTextChanged);
           else toast.info(t.editor.screeningTooLong);
@@ -1609,17 +1609,8 @@ export default function BiographyEditorPage() {
 
   /** Blocco completo dell'editor per lo stato della scheda. */
   const reviewQueueLocksEditor = statusLocksText;
-  const draftHasSeverity3Flags = (draftAiFeedback?.red_flags ?? []).some((f) => f?.severity === 3);
-  const aiUnavailable = draftAiFeedback?.ready_for_publication !== undefined && draftAiFeedback?.red_flags !== undefined
-    ? (draftAiFeedback as { aiError?: boolean }).aiError === true
-    : false;
-  const draftAiReviewPending =
-    (pdfDraftIteration ?? 0) >= 1 && draftAiFeedback == null && !aiUnavailable;
-  /** Align with server: block only on missing drafts, severity-3 flags, or AI review still loading. */
-  const canApproveFinalPdfFromDraftFeedback =
-    (pdfDraftIteration ?? 0) >= 1 &&
-    !draftHasSeverity3Flags &&
-    (aiUnavailable || draftAiFeedback != null);
+  /** Serve almeno una bozza PDF; il controllo finale (preprint) è facoltativo e non blocca. */
+  const canApproveFinalPdfFromDraftFeedback = (pdfDraftIteration ?? 0) >= 1;
 
   const showFinalVersionEditorLayout =
     biographyStatus === 'final_version' ||
@@ -1705,28 +1696,6 @@ export default function BiographyEditorPage() {
                   String(pdfDraftIteration ?? 0)
                 )}
               </p>
-              {draftHasSeverity3Flags && (
-                <p className="text-xs text-brand-wineDark dark:text-brand-mustardLight mt-1">
-                  {language === 'it'
-                    ? 'Questa bozza contiene contenuti che possono bloccare la pubblicazione. Rivedi prima di procedere.'
-                    : language === 'fr'
-                    ? 'Ce brouillon contient du contenu pouvant bloquer la publication. Révisez avant de continuer.'
-                    : language === 'de'
-                    ? 'Dieser Entwurf enthält Inhalte, die die Veröffentlichung blockieren können. Bitte vor dem Fortfahren prüfen.'
-                    : 'This draft contains content that may block publication. Please review before proceeding.'}
-                </p>
-              )}
-              {aiUnavailable && (
-                <p className="text-xs text-brand-ink/80 dark:text-brand-beigeLight/85 mt-1">
-                  {language === 'it'
-                    ? 'Analisi AI non disponibile. Puoi comunque procedere alla pubblicazione.'
-                    : language === 'fr'
-                    ? 'Révision IA indisponible. Vous pouvez tout de même soumettre à publication.'
-                    : language === 'de'
-                    ? 'KI-Analyse nicht verfügbar. Sie können trotzdem zur Veröffentlichung fortfahren.'
-                    : 'AI review unavailable. You can still proceed to publication.'}
-                </p>
-              )}
             </div>
             <div className="flex flex-wrap items-center gap-2 shrink-0">
               <Button
@@ -2283,10 +2252,8 @@ export default function BiographyEditorPage() {
         publicationActionLoading={publicationActionLoading}
         canApproveFinalPdf={canApproveFinalPdfFromDraftFeedback}
         pdfDraftIteration={pdfDraftIteration}
-        draftHasSeverity3Flags={draftHasSeverity3Flags}
-        draftAiHasSuggestions={
-          draftAiFeedback?.ready_for_publication === false && !draftHasSeverity3Flags
-        }
+        draftHasSeverity3Flags={false}
+        draftAiHasSuggestions={draftAiFeedback?.ready_for_publication === false}
         submitPreflightError={submitPreflightError}
         publicationActionError={publicationActionError}
         aiScreeningResult={aiScreeningResult}

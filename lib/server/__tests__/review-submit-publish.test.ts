@@ -153,11 +153,17 @@ describe('impronta: il testo pubblicato è quello esaminato', () => {
     expect(log.indexOf('um-id')).toBeLessThan(log.indexOf('publish-update'));
   });
 
-  it('un testo oltre il limite: registra quanto ne ha visto il modello e quanto ce n\'era', async () => {
-    const db = makeDb({ finalVersion: 'a'.repeat(10_500) });
-    await runReviewSubmitScreening(db.client, 'bio-1');
+  it('un testo lungo: con pezzi tutti esaminati, examined_chars = source_chars e si pubblica', async () => {
+    const long = 'a'.repeat(10_500);
+    const db = makeDb({ finalVersion: long });
+    const result = await runReviewSubmitScreening(db.client, 'bio-1');
+    expect(result.result).toBe('published');
     const screening = db.tables.publication_records.find((r) => r.kind === 'screening');
-    expect(screening).toMatchObject({ examined_chars: 6000, source_chars: 10_500, scope: 'full' });
+    expect(screening).toMatchObject({
+      examined_chars: long.length,
+      source_chars: long.length,
+      scope: 'full',
+    });
   });
 
   it('errore del modello: registra l\'esito, nessuna pubblicazione, revisione umana', async () => {
@@ -196,15 +202,21 @@ describe('impronta: il testo pubblicato è quello esaminato', () => {
   });
 });
 
-describe('regola provvisoria: niente pubblicazione automatica se il modello non ha visto tutto il testo', () => {
-  it('testo oltre i 6000 caratteri: non pubblica, coda umana con il motivo scritto, nessun identificativo UM', async () => {
+describe('regola di sicurezza: niente pubblicazione automatica se examined_chars < source_chars', () => {
+  it('se lo screening riporta un esame parziale: coda umana, nessun UM', async () => {
     const db = makeDb({ finalVersion: 'a'.repeat(6_001) });
+    screen.mockImplementation(async () => ({
+      passages: [],
+      overall_severity: 0,
+      examinedChars: 100,
+      sourceChars: 6_001,
+    }));
     const result = await runReviewSubmitScreening(db.client, 'bio-1');
 
     expect(result).toMatchObject({
       result: 'under_review',
-      screeningDetail: 'too_long',
-      message: 'text_longer_than_screening_window',
+      screeningDetail: 'incomplete',
+      message: 'screening_incomplete',
     });
     expect(log).not.toContain('publish-update');
     expect(ensureUm).not.toHaveBeenCalled();
@@ -213,12 +225,20 @@ describe('regola provvisoria: niente pubblicazione automatica se il modello non 
     expect(db.tables.publication_records.some((r) => r.kind === 'publication')).toBe(false);
 
     const report = db.tables.moderation_reports.find((r) => r.biography_id === 'bio-1')!;
-    expect(report.description).toContain('Text longer than the screening window');
-    expect((report.ai_analysis as { summary: string }).summary).toContain('6000 of 6001 characters');
+    expect(report.description).toContain('Incomplete screening');
+    expect((report.ai_analysis as { summary: string }).summary).toContain('100 of 6001 characters');
+    expect((report.ai_analysis as { summary: string }).summary).not.toMatch(/longer than/i);
   });
 
-  it('testo di esattamente 6000 caratteri: il modello lo ha visto tutto, si pubblica', async () => {
-    const db = makeDb({ finalVersion: 'a'.repeat(6_000) });
+  it('quando examined_chars = source_chars si pubblica', async () => {
+    const body = 'a'.repeat(6_000);
+    const db = makeDb({ finalVersion: body });
+    screen.mockImplementation(async () => ({
+      passages: [],
+      overall_severity: 0,
+      examinedChars: body.length,
+      sourceChars: body.length,
+    }));
     const result = await runReviewSubmitScreening(db.client, 'bio-1');
     expect(result.result).toBe('published');
     expect(db.tables.publication_records.find((r) => r.kind === 'screening')).toMatchObject({
@@ -227,18 +247,26 @@ describe('regola provvisoria: niente pubblicazione automatica se il modello non 
     });
   });
 
-  it('testo lungo senza versione finale (sezioni e flusso libero): stessa regola', async () => {
-    const db = makeDb({ finalVersion: '' });
-    db.tables.biographies[0].content = { childhood: { text: 'b'.repeat(7_000) } };
+  it('un pezzo fallito (ai_error) non pubblica', async () => {
+    const db = makeDb({ finalVersion: 'a'.repeat(9_000) });
+    screen.mockImplementation(async () => ({
+      passages: [],
+      overall_severity: 0,
+      aiError: true,
+      examinedChars: 0,
+      sourceChars: 9_000,
+    }));
     const result = await runReviewSubmitScreening(db.client, 'bio-1');
-    expect(result).toMatchObject({ result: 'under_review', screeningDetail: 'too_long' });
+    expect(result).toMatchObject({ result: 'under_review', screeningDetail: 'ai_error' });
   });
 
-  it('la regola vale anche se il modello non segnala nulla nella parte che ha letto, e non nasconde i passaggi segnalati', async () => {
+  it('passaggi segnalati restano prioritari sulla regola di lunghezza', async () => {
     const db = makeDb({ finalVersion: 'a'.repeat(9_000) });
     screen.mockImplementation(async () => ({
       passages: [{ text: 'x', section_key: 'childhood', reason: 'r', severity: 2 }],
       overall_severity: 2,
+      examinedChars: 9_000,
+      sourceChars: 9_000,
     }));
     const result = await runReviewSubmitScreening(db.client, 'bio-1');
     expect(result).toMatchObject({ result: 'under_review', screeningDetail: 'flagged' });

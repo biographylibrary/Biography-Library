@@ -2,7 +2,10 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getAuthenticatedUser } from '@/lib/server/onboarding-api-auth';
 import { writeModerationMessage } from '@/lib/server/moderation-register';
 import { screenRevisionAndAttach } from '@/lib/server/revision-screening';
-import { buildServiceClient } from '@/lib/server/review-submit-pipeline';
+import {
+  buildServiceClient,
+  checkPerUserThrottle,
+} from '@/lib/server/review-submit-pipeline';
 
 export const dynamic = 'force-dynamic';
 
@@ -22,6 +25,11 @@ export async function POST(req: NextRequest) {
   if (!biographyId) return NextResponse.json({ error: 'Biography id required' }, { status: 400 });
 
   const svc = buildServiceClient();
+
+  if (!(await checkPerUserThrottle(svc, auth.user.id, 'moderation_resubmit'))) {
+    return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
+  }
+
   const { data: moved, error } = await svc
     .from('biographies')
     .update({ status: 'revision_pending_review' })

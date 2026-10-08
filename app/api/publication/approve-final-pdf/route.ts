@@ -8,7 +8,6 @@ import {
 } from '@/lib/server/review-submit-pipeline';
 import { generateUploadFinalPdf } from '@/lib/server/final-pdf-artifacts';
 import { resolveRecordLanguageTag } from '@/lib/record-language';
-import { computePublicFingerprint, recordScreening } from '@/lib/server/publication-fingerprint';
 
 type AnyClient = SupabaseClient<any, any, any>;
 
@@ -46,13 +45,13 @@ export async function POST(req: NextRequest) {
 
     const serviceClient = buildServiceClient();
 
-    if (!(await checkPerUserThrottle(serviceClient, user.id))) {
+    if (!(await checkPerUserThrottle(serviceClient, user.id, 'approve_final_pdf'))) {
       return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
     }
 
     const { data: bio } = await serviceClient
       .from('biographies')
-      .select('user_id, status, pdf_draft_iteration, final_version, content_language, record_language_tag, draft_ai_feedback')
+      .select('user_id, status, pdf_draft_iteration, final_version, content_language, record_language_tag')
       .eq('id', biographyId)
       .maybeSingle();
 
@@ -104,15 +103,6 @@ export async function POST(req: NextRequest) {
     }
 
     const contentLanguage: string = resolveRecordLanguageTag(bio as any);
-    const draftFeedback = (bio as any).draft_ai_feedback as
-      | {
-          red_flags?: Array<{ section_key?: string | null; issue?: string; severity?: number }>;
-        }
-      | null
-      | undefined;
-    const severity3Flags = (draftFeedback?.red_flags ?? []).filter(
-      (flag) => flag?.severity === 3 && typeof flag.issue === 'string' && flag.issue.trim().length > 0
-    );
 
     let finalPdfUrl: string;
     let listingCoverUrl: string | null = null;
@@ -151,70 +141,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Update failed' }, { status: 500 });
     }
 
-    if (severity3Flags.length > 0) {
-      const flaggedPassages = severity3Flags.map((flag) => ({
-        section_key: typeof flag.section_key === 'string' ? flag.section_key : null,
-        text: flag.issue as string,
-        level: 3,
-      }));
-
-      const { data: report } = await serviceClient
-        .from('moderation_reports')
-        .insert({
-          biography_id: biographyId,
-          reporter_id: null,
-          report_type: 'level2_content',
-          origin: 'screening',
-          description: 'Draft AI review flagged severity-3 content before final submission',
-          status: 'unassigned',
-          ai_analysis: {
-            summary: `${flaggedPassages.length} severity-3 draft AI flag(s)`,
-            flagged_passages: flaggedPassages,
-          },
-          ai_violation_level: 3,
-        })
-        .select('id')
-        .maybeSingle();
-
-      if (!(report as any)?.id) {
-        console.error('[approve-final-pdf] failed to create moderation report for severity-3 draft flags');
-      }
-      await serviceClient
-        .from('biographies')
-        .update({
-          status: 'under_review',
-          ai_screening_status: 'flagged',
-        })
-        .eq('id', biographyId);
-
-      // Il testo passa alla persona senza uno screening: si registra comunque l'impronta
-      // di quello che le viene consegnato (examined_chars = 0: il modello di screening
-      // non l'ha esaminato), così l'approvazione umana potrà confrontarla.
-      try {
-        const fingerprint = await computePublicFingerprint(serviceClient, biographyId);
-        if (fingerprint) {
-          await recordScreening(serviceClient, {
-            biographyId,
-            fingerprint,
-            verdict: 'flagged',
-            scope: 'full',
-            examinedChars: 0,
-            sourceChars: 0,
-          });
-        }
-      } catch (recordErr) {
-        console.error('[approve-final-pdf] screening record failed:', recordErr);
-      }
-
-      return NextResponse.json({
-        result: 'under_review',
-        screeningDetail: 'flagged',
-        flagCount: flaggedPassages.length,
-        finalPdfUrl,
-        listingCoverUrl,
-      });
-    }
-
+    // Il controllo finale (preprint) non blocca: solo lo screening di conformità decide.
     try {
       const result = await runReviewSubmitScreening(serviceClient, biographyId);
       if (result.result === 'published') {

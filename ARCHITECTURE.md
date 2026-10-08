@@ -148,9 +148,9 @@ A single continuous rich-text field (`content_freeflow` on the `biographies` row
 
 ## 5. AI Pipeline
 
-*Updated 30 September 2026 (block 1, AI tools).*
+*Updated 8 October 2026 (block 3, chunked screening + preprint check).*
 
-AI works on an author's text in four cases only: **Echo** (suggests structure and edits inside the text, and also answers platform questions using the knowledge base), the **grammar check** on request, the **final check before print** (`runDraftAiReview`), and the **compliance screening** before publication (`runPublicationScreening`, moderation, not an author tool). Everything else was removed: reader-side automatic translation, guided prompts, summaries, rewriting, section review with AI, Apertus review, follow-up questions, structure proposals, the biography coach and publication reviewer agents.
+AI works on an author's text in four cases only: **Echo** (suggests structure and edits inside the text, and also answers platform questions using the knowledge base), the **grammar check** on request, the **final check before print** (`runPreprintCheck`, on demand), and the **compliance screening** before publication (`runPublicationScreening`, chunked over the whole text; moderation, not an author tool). Everything else was removed: reader-side automatic translation, guided prompts, summaries, rewriting, section review with AI, Apertus review, follow-up questions, structure proposals, the biography coach and publication reviewer agents, and per-draft AI review on watermarked PDF downloads.
 
 ### One client, one ledger
 
@@ -252,7 +252,7 @@ This subsection records **agreed behaviour** for the PDF-first workflow and lega
 | `draft` | Work in progress |
 | `sections_complete` | All sections marked complete |
 | `final_version` | Author in final prose pass (pre–PDF workflow) |
-| `pdf_draft` | Watermarked PDF draft rounds; `pdf_draft_iteration` 1–3; optional `pdf_draft_started_at` |
+| `pdf_draft` | Watermarked PDF draft rounds; `pdf_draft_iteration` 1–`PDF_DRAFT_MAX_ITERATION` (30); optional `pdf_draft_started_at` |
 | `locked_pending_screening` | Final PDF approved; text locked; collateral generated; AI screening next; optional `final_pdf_approved_at` |
 | `under_review` | Human reviewer queue (after AI flags / errors), or legacy path |
 | `published` | Live per visibility |
@@ -271,11 +271,12 @@ Helpers: `lib/publication-state.ts` (`AUTHOR_TEXT_WRITABLE_STATUSES`, `canAuthor
 | Route | Purpose |
 |-------|---------|
 | `POST /api/publication/start-pdf-draft` | `final_version` → `pdf_draft`; sets `pdf_draft_started_at`, clears `pdf_draft_iteration` and `draft_ai_feedback` |
-| `POST /api/publication/draft-ai-review` | After each watermarked draft download: runs `runDraftAiReview`, increments `pdf_draft_iteration` (1–3), stores `draft_ai_feedback` jsonb |
-| `POST /api/publication/approve-final-pdf` | Requires `pdf_draft` + `pdf_draft_iteration` 1–3; locks → `locked_pending_screening`; `await` TXT/DOCX export; runs AI screening (shared `lib/server/review-submit-pipeline.ts`). Severity-3 draft AI flags force `under_review` before screening. |
+| `POST /api/publication/record-pdf-draft` | After each watermarked draft download: increments `pdf_draft_iteration` only (no model call). `draft-ai-review` remains as a deprecated alias. |
+| `POST /api/publication/preprint-check` | Optional final quality check on the whole text in chunks (`runPreprintCheck`); stores feedback in `draft_ai_feedback`; one run per content fingerprint, max 3 per biography / 30 days (`preprint_check_runs`). Does not block approval. |
+| `POST /api/publication/approve-final-pdf` | Requires `pdf_draft` + at least one draft iteration; locks → `locked_pending_screening`; `await` TXT/DOCX export; runs chunked AI screening (shared `lib/server/review-submit-pipeline.ts`). Preprint suggestions never force `under_review`. |
 | `POST /api/review/submit` | Legacy path + rescreen; uses same pipeline |
 
-Watermarked PDF downloads are blocked while `status === 'final_version'` until the author starts the PDF phase (export dialog shows `draftPhaseRequiredBeforeDraft`). After each draft PDF export, the client calls `draft-ai-review`; feedback is shown in `AdvancedExportDialog` (severity 3 blocks final approval in UI).
+Watermarked PDF downloads are blocked while `status === 'final_version'` until the author starts the PDF phase (export dialog shows `draftPhaseRequiredBeforeDraft`). Draft downloads call `record-pdf-draft`. The author may run `preprint-check` once finished; it is advisory only.
 
 **Cover assets (v1)**
 
@@ -291,9 +292,9 @@ Watermarked PDF downloads are blocked while `status === 'final_version'` until t
 
 **1. PDF draft rounds (replaces current submit)**
 
-- The author downloads a **full PDF** with draft watermark on **every** page (iterations 1–3 via `pdf_draft_iteration`, e.g. first / second / third draft; third round is the last chance to change content before locking).
-- After each download, the UI asks whether everything is OK or they want changes.
-- **If OK on the approved round:** generate the **final** PDF (no watermark), **lock text** definitively, and generate **.txt** and **.docx** collateral per existing export rules.
+- The author downloads a **full PDF** with draft watermark on **every** page (`pdf_draft_iteration` up to `PDF_DRAFT_MAX_ITERATION` = 30). Labels are dedicated for rounds 1–3; from round 4 onward the watermark is a generic “DRAFT N” / “BOZZA N” with the number.
+- Draft rounds are for the author’s own review (Echo and grammar remain available while writing). The optional **final check before print** is a separate action.
+- **If OK:** generate the **final** PDF (no watermark), **lock text** definitively, and generate **.txt** and **.docx** collateral per existing export rules.
 - **“CSS rules” for cover / back cover** means the **layout rules already encoded in the PDF pipeline** (measurements, colours, fonts in `lib/pdf-export.ts` / jsPDF — not a separate HTML/CSS export). Implementation must be verified against this spec.
 - **Cover image assets for listings** (grid, biography page) are **rasterised from the first page of the approved final PDF** (e.g. JPG/WebP derivatives at defined sizes). The public biography page layout will be redesigned to show this asset at a **medium** size (not huge, not tiny).
 
@@ -316,7 +317,7 @@ Watermarked PDF downloads are blocked while `status === 'final_version'` until t
 Guarantee: **the text that goes online is exactly the text the screening examined.** Implemented in `lib/server/publication-fingerprint.ts`, table `publication_records` (service role only; migration `20260930115700_publication_records.sql`).
 
 - **Fingerprint**: SHA-256 of a canonical JSON of everything the public can read: title and names, `content`, free-flow text, `final_version`, `biography_sections`, the enabled parts of the book structure, photo captions, `person_events`, `person_relations`. Text is normalised to archive Markdown and NFC. `content` and `final_version` remain two fields (both enter the fingerprint). Author-text columns are listed once in SQL `biographies_author_text_columns()`, in `BIOGRAPHIES_AUTHOR_TEXT_COLUMNS`, and in the fingerprint select — kept equal by `lib/__tests__/author-text-columns-sync.test.ts`.
-- **Screening record**: every time the screening examines a biography it writes a `kind = 'screening'` row with the fingerprint, the verdict (`passed`, `flagged`, `ai_error`, `parse_error`, `text_changed`), the scope (always `full`), `examined_chars` (what the model received) and `source_chars` (the whole source text). The model receives at most the first 6000 characters (`MAX_CONTENT_CHARS` in `review-submit-pipeline.ts`). **Provisional rule until the chunked-screening block:** if `examined_chars < source_chars` the biography is never published automatically; it goes to the human queue with the reason written in the report (`screeningDetail: 'too_long'`). A biography of 6000 characters or fewer is read in full and can still publish on its own.
+- **Screening record**: every time the screening examines a biography it writes a `kind = 'screening'` row with the fingerprint, the verdict (`passed`, `flagged`, `ai_error`, `parse_error`, `text_changed`), the scope (always `full`), `examined_chars` (sum of chunk bodies that received a valid verdict) and `source_chars` (the whole source text). The text is split into chunks (`splitMarkdownIntoChunks`, max **23 863 tokens / 95 452 characters** per chunk — one quarter of Infomaniak’s 100 000-token window for Gemma 4 31B after prompt/output reserve); each chunk carries the previous paragraph as context. If any chunk lacks a valid verdict → `ai_error` and human queue. When every chunk succeeds, `examined_chars = source_chars`. **Safety rule retained:** if `examined_chars < source_chars` the biography is never published automatically (`screeningDetail: 'too_long'`). Format-conversion rows (`reason = FORMAT_CONVERSION_REASON`) are not real screenings: `latestScreening` skips them.
 - **Publication**: every server path that sets `status = 'published'` goes through `gatedPublish`. It recomputes the fingerprint, compares it according to the mode, writes a `kind = 'publication'` row (mode, actor, the screening fingerprint it refers to) *before* the status update, then records the outcome. If the comparison fails, nothing is published and the caller answers with an explicit message; if the row cannot be written, nothing is published.
 
 | Mode | Used by | Rule |
@@ -356,10 +357,11 @@ Guarantee: **the text that goes online is exactly the text the screening examine
 
 ### Draft watermarks
 
-`pdf_draft_iteration` on the biography row (1–3) controls the watermark text:
+`pdf_draft_iteration` on the biography row (1–`PDF_DRAFT_MAX_ITERATION`, currently 30) controls the watermark text:
 - 1 → "DRAFT"
 - 2 → "SECOND DRAFT"
 - 3 → "THIRD DRAFT — FINAL REVIEW"
+- 4+ → generic “DRAFT N” / “BOZZA N” (and FR/DE equivalents) with the iteration number
 
 Watermarks are rendered diagonally across every page. When the biography is published the field is null and no watermark is applied. Multi-language watermark text is supported.
 
