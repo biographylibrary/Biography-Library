@@ -316,12 +316,31 @@ export default function BiographyEditorPage() {
     [t.editor.screeningTextChanged, t.editor.screeningTooLong, language, loadFlaggedPassagesFromReport]
   );
 
-  const { watch: watchScreeningJob } = useAnalysisJob({
+  const { job: screeningJob, watch: watchScreeningJob } = useAnalysisJob({
     biographyId: id,
     kind: 'screening',
     enabled: Boolean(id),
     onSettled: handleScreeningJobSettled,
   });
+
+  // Dopo un riavvio la GET può già restituire interrupted/failed (bonifica):
+  // se la UI è ancora in pending, applica ai_error. Non tocca schede già uscite da pending.
+  const appliedTerminalJobRef = useRef<string | null>(null);
+  useEffect(() => {
+    if (!screeningJob || screeningJob.status === 'none' || screeningJob.status === 'running') {
+      return;
+    }
+    if (screeningJob.status !== 'failed' && screeningJob.status !== 'interrupted') {
+      return;
+    }
+    const showingPending =
+      aiScreeningResult === 'pending' &&
+      (biographyStatus === 'under_review' || biographyStatus === 'locked_pending_screening');
+    if (!showingPending) return;
+    if (appliedTerminalJobRef.current === screeningJob.jobId) return;
+    appliedTerminalJobRef.current = screeningJob.jobId;
+    void handleScreeningJobSettled(screeningJob);
+  }, [screeningJob, aiScreeningResult, biographyStatus, handleScreeningJobSettled]);
 
   useEffect(() => {
     const loadProfilePreferences = async () => {

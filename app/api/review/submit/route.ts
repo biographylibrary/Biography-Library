@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
-import { startAnalysisJob } from '@/lib/server/analysis-jobs';
+import { applyAiErrorIfStillPending, startAnalysisJob } from '@/lib/server/analysis-jobs';
 import {
   buildServiceClient,
   checkPerUserThrottle,
@@ -149,7 +149,9 @@ export async function POST(req: NextRequest) {
       if (e?.message === 'Biography not found') {
         return NextResponse.json({ error: 'Biography not found' }, { status: 404 });
       }
-      throw e;
+      console.error('[review/submit] startAnalysisJob failed:', e);
+      await applyAiErrorIfStillPending(serviceClient, biographyId, 'screening');
+      return NextResponse.json({ error: 'Internal error' }, { status: 500 });
     }
   } catch (err) {
     console.error('[review/submit] Unhandled error:', err);

@@ -47,10 +47,15 @@ function isUniqueViolation(error: { code?: string; message?: string } | null): b
   return msg.includes('23505') || /duplicate key|unique constraint/i.test(msg);
 }
 
-async function applyAiErrorIfStillPending(
+/**
+ * Porta `ai_screening_status` a `ai_error` solo se la scheda è ancora in
+ * under_review / locked_pending_screening con pending (es. lavoro fallito
+ * o avvio del job fallito dopo il cambio di stato).
+ */
+export async function applyAiErrorIfStillPending(
   client: AnyClient,
   biographyId: string,
-  kind: AnalysisJobKind
+  kind: AnalysisJobKind = 'screening'
 ): Promise<void> {
   if (kind !== 'screening') return;
   const { data: bio } = await client
@@ -239,7 +244,9 @@ export async function startAnalysisJob(
         true
       );
     }
-  })();
+  })().catch((err) => {
+    console.error('[analysis-jobs] background work rejected', { jobId, kind, err });
+  });
 
   return { jobId, started: true };
 }

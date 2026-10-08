@@ -24,6 +24,8 @@ const startAnalysisJob = vi.fn(
 
 vi.mock('@/lib/server/onboarding-api-auth', () => ({ getAuthenticatedUser: () => auth() }));
 vi.mock('@/lib/server/analysis-jobs', () => ({
+  REVISION_SCREENING_COULD_NOT_RUN_MESSAGE:
+    'Automatic screening could not run on the corrected text. Run the screening again, or publish with the forced publication (which leaves a trace).',
   startAnalysisJob: (...a: unknown[]) =>
     (startAnalysisJob as (...x: unknown[]) => Promise<unknown>)(...a),
 }));
@@ -101,6 +103,22 @@ describe('POST /api/moderation/resubmit', () => {
     expect(db.tables.biographies[0].status).toBe('revision_pending_review');
     // Il lavoro in background fallisce senza far fallire la risposta HTTP.
     await vi.waitFor(() => expect(screenRevisionAndAttach).toHaveBeenCalled());
+  });
+
+  it('se startAnalysisJob lancia: ok true e messaggio interno nel rapporto', async () => {
+    startAnalysisJob.mockRejectedValueOnce(new Error('analysis_job_insert_failed'));
+    const res = await POST(req());
+    expect(res.status).toBe(200);
+    expect(await res.json()).toEqual({ ok: true });
+    expect(db.tables.biographies[0].status).toBe('revision_pending_review');
+    expect(
+      db.tables.moderation_messages?.some(
+        (m) =>
+          m.report_id === 'r1' &&
+          m.is_internal === true &&
+          String(m.message).includes('Automatic screening could not run')
+      )
+    ).toBe(true);
   });
 
   it.each(['draft', 'published', 'under_review', 'revision_overdue', 'revision_pending_review'])(

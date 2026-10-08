@@ -4,9 +4,10 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import type { AnalysisJobKind, AnalysisJobStatus } from '@/lib/analysis-job-constants';
 import { supabase } from '@/lib/supabase';
 
-const FAST_MS = 3_000;
-const SLOW_MS = 15_000;
-const SLOW_AFTER_MS = 10 * 60_000;
+/** Esposti per i test con timer finti. */
+export const ANALYSIS_JOB_POLL_FAST_MS = 3_000;
+export const ANALYSIS_JOB_POLL_SLOW_MS = 15_000;
+export const ANALYSIS_JOB_POLL_SLOW_AFTER_MS = 10 * 60_000;
 
 export type AnalysisJobPoll =
   | { status: 'none' }
@@ -101,7 +102,10 @@ export function useAnalysisJob({
 
     const elapsed =
       startedAtRef.current != null ? Date.now() - startedAtRef.current : 0;
-    const delay = elapsed >= SLOW_AFTER_MS ? SLOW_MS : FAST_MS;
+    const delay =
+      elapsed >= ANALYSIS_JOB_POLL_SLOW_AFTER_MS
+        ? ANALYSIS_JOB_POLL_SLOW_MS
+        : ANALYSIS_JOB_POLL_FAST_MS;
     const id = window.setTimeout(() => {
       if (document.visibilityState !== 'visible') return;
       void tick();

@@ -4,6 +4,7 @@ import { NextRequest } from 'next/server';
 const getUser = vi.fn();
 const runReviewSubmitScreening = vi.fn();
 const startAnalysisJob = vi.fn();
+const applyAiErrorIfStillPending = vi.fn(async () => undefined);
 const updates: Array<Record<string, unknown>> = [];
 const tables: Record<string, Record<string, unknown> | null> = {};
 
@@ -12,7 +13,10 @@ vi.mock('@supabase/supabase-js', () => ({
 }));
 
 vi.mock('@/lib/server/analysis-jobs', () => ({
-  startAnalysisJob: (...a: unknown[]) => startAnalysisJob(...a),
+  startAnalysisJob: (...a: unknown[]) =>
+    (startAnalysisJob as (...x: unknown[]) => unknown)(...a),
+  applyAiErrorIfStillPending: (...a: unknown[]) =>
+    (applyAiErrorIfStillPending as (...x: unknown[]) => Promise<unknown>)(...a),
 }));
 
 vi.mock('@/lib/server/review-submit-pipeline', () => ({
@@ -131,5 +135,17 @@ describe('POST /api/review/submit', () => {
     tables.biography_media = null;
     expect((await POST(req())).status).toBe(400);
     expect(updates).toHaveLength(0);
+  });
+
+  it('se startAnalysisJob fallisce: ai_error e 500', async () => {
+    startAnalysisJob.mockRejectedValueOnce(new Error('analysis_job_insert_failed'));
+    const res = await POST(req());
+    expect(res.status).toBe(500);
+    expect(applyAiErrorIfStillPending).toHaveBeenCalledWith(
+      expect.anything(),
+      'bio-1',
+      'screening'
+    );
+    expect(updates.some((u) => u.status === 'under_review')).toBe(true);
   });
 });

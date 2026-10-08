@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getAuthenticatedUser } from '@/lib/server/onboarding-api-auth';
-import { startAnalysisJob } from '@/lib/server/analysis-jobs';
+import {
+  REVISION_SCREENING_COULD_NOT_RUN_MESSAGE,
+  startAnalysisJob,
+} from '@/lib/server/analysis-jobs';
 import { writeModerationMessage } from '@/lib/server/moderation-register';
 import { screenRevisionAndAttach } from '@/lib/server/revision-screening';
 import {
@@ -60,22 +63,39 @@ export async function POST(req: NextRequest) {
 
   // Screening del testo corretto in background: non pubblica; allega l'esito al rapporto.
   // L'invio dell'autore non aspetta il lavoro. ai_screening_status non si tocca
-  // (scheda in revision_pending_review).
-  await startAnalysisJob(
-    svc,
-    biographyId,
-    'screening',
-    async () => {
-      const attached = await screenRevisionAndAttach(svc, {
-        biographyId,
-        reportId,
-        authorId: auth.user.id,
-      });
-      if (!attached.ok) throw new Error('revision_screening_attach_failed');
-      return { ok: true, verdict: attached.verdict ?? null };
-    },
-    { reportId, authorId: auth.user.id }
-  );
+  // (scheda in revision_pending_review). Se l'avvio del lavoro fallisce, lo stato
+  // è già revision_pending_review: rispondi ok e segnala nel rapporto.
+  try {
+    await startAnalysisJob(
+      svc,
+      biographyId,
+      'screening',
+      async () => {
+        const attached = await screenRevisionAndAttach(svc, {
+          biographyId,
+          reportId,
+          authorId: auth.user.id,
+        });
+        if (!attached.ok) throw new Error('revision_screening_attach_failed');
+        return { ok: true, verdict: attached.verdict ?? null };
+      },
+      { reportId, authorId: auth.user.id }
+    );
+  } catch (err) {
+    console.error('[moderation/resubmit] startAnalysisJob failed', err);
+    if (reportId) {
+      try {
+        await writeModerationMessage(svc, {
+          reportId,
+          senderId: auth.user.id,
+          internal: true,
+          message: REVISION_SCREENING_COULD_NOT_RUN_MESSAGE,
+        });
+      } catch (messageErr) {
+        console.error('[moderation/resubmit] interrupt message failed', messageErr);
+      }
+    }
+  }
 
   return NextResponse.json({ ok: true });
 }
