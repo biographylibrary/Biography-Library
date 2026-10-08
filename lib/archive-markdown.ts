@@ -171,21 +171,57 @@ function serializeInline(nodes: Node[]): string {
   return out;
 }
 
-function listItemHeadAndNested(li: HTMLElement): { headNodes: Node[]; nested: HTMLElement[] } {
+/**
+ * Split a list item into paragraph chunks (in order) and trailing nested lists.
+ * Each <p> is its own chunk; bare inline nodes form a chunk; nested ul/ol are separate.
+ */
+function listItemParagraphsAndNested(li: HTMLElement): {
+  paragraphs: Node[][];
+  nested: HTMLElement[];
+} {
+  const paragraphs: Node[][] = [];
   const nested: HTMLElement[] = [];
-  const headNodes: Node[] = [];
+  let looseInline: Node[] = [];
+
+  const flushLoose = () => {
+    if (looseInline.length) {
+      paragraphs.push(looseInline);
+      looseInline = [];
+    }
+  };
+
   for (const child of li.childNodes) {
     if (isElement(child) && (tagName(child) === 'ul' || tagName(child) === 'ol')) {
+      flushLoose();
       nested.push(child);
       continue;
     }
     if (isElement(child) && tagName(child) === 'p') {
-      headNodes.push(...child.childNodes);
+      flushLoose();
+      paragraphs.push([...child.childNodes]);
       continue;
     }
-    headNodes.push(child);
+    if (
+      child.nodeType === NodeType.TEXT_NODE &&
+      !(child.text ?? '').replace(/\u00a0/g, ' ').trim()
+    ) {
+      continue;
+    }
+    looseInline.push(child);
   }
-  return { headNodes, nested };
+  flushLoose();
+  return { paragraphs, nested };
+}
+
+/** Serialize one list-item paragraph (inline + block-start escape), like a normal <p>. */
+function serializeListItemParagraph(nodes: Node[]): string {
+  const text = serializeInline(nodes);
+  const normalized = text
+    .replace(/[ \t]+\n/g, '  \n')
+    .replace(/[ \t]+$/g, (m) => (m.length >= 2 ? '  ' : ''));
+  const body = normalized.trim();
+  if (!body) return '';
+  return finalizeParagraphMd(body);
 }
 
 function serializeBlocks(nodes: Node[], listIndent = ''): string {
@@ -246,13 +282,25 @@ function serializeBlocks(nodes: Node[], listIndent = ''): string {
       const lines: string[] = [];
       items.forEach((li, index) => {
         const marker = tag === 'ol' ? `${index + 1}. ` : '- ';
-        const { headNodes, nested } = listItemHeadAndNested(li);
-        // Same block-start protection as paragraphs: "1944." / "#" / "---" inside a
-        // list item must not become nested lists, headings or scene breaks.
-        const head = finalizeParagraphMd(serializeInline(headNodes).trim());
+        const markerIndent = ' '.repeat(marker.length);
+        const childListIndent = `${listIndent}${markerIndent}`;
+        const { paragraphs, nested } = listItemParagraphsAndNested(li);
+        const paraMd = paragraphs
+          .map((nodes) => serializeListItemParagraph(nodes))
+          .filter(Boolean);
+        if (paraMd.length === 0 && nested.length === 0) return;
+
+        const head = paraMd[0] ?? '';
         lines.push(`${listIndent}${marker}${head}`);
+        // CommonMark continuation paragraphs: blank line + indent = marker width.
+        for (let i = 1; i < paraMd.length; i++) {
+          lines.push('');
+          for (const line of paraMd[i].split('\n')) {
+            lines.push(`${childListIndent}${line}`);
+          }
+        }
         for (const nest of nested) {
-          const nestedMd = serializeBlocks([nest], `${listIndent}  `).trimEnd();
+          const nestedMd = serializeBlocks([nest], childListIndent).trimEnd();
           if (nestedMd) lines.push(nestedMd);
         }
       });
@@ -260,8 +308,27 @@ function serializeBlocks(nodes: Node[], listIndent = ''): string {
       continue;
     }
     if (tag === 'li') {
-      const text = finalizeParagraphMd(serializeInline(node.childNodes).trim());
-      if (text) parts.push(`${listIndent}- ${text}`);
+      const { paragraphs, nested } = listItemParagraphsAndNested(node);
+      const marker = '- ';
+      const markerIndent = ' '.repeat(marker.length);
+      const childListIndent = `${listIndent}${markerIndent}`;
+      const paraMd = paragraphs
+        .map((nodes) => serializeListItemParagraph(nodes))
+        .filter(Boolean);
+      if (paraMd.length === 0 && nested.length === 0) continue;
+      const head = paraMd[0] ?? '';
+      const itemLines: string[] = [`${listIndent}${marker}${head}`];
+      for (let i = 1; i < paraMd.length; i++) {
+        itemLines.push('');
+        for (const line of paraMd[i].split('\n')) {
+          itemLines.push(`${childListIndent}${line}`);
+        }
+      }
+      for (const nest of nested) {
+        const nestedMd = serializeBlocks([nest], childListIndent).trimEnd();
+        if (nestedMd) itemLines.push(nestedMd);
+      }
+      parts.push(itemLines.join('\n'));
       continue;
     }
 
