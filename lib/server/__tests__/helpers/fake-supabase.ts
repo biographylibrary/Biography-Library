@@ -11,8 +11,8 @@ export type Row = Record<string, unknown>;
 
 export interface FakeDbOptions {
   /** Restituisce un errore per far fallire un update (per esempio l'attesa fra capitoli). */
-  failUpdate?: (table: string, patch: Row, row: Row) => { message: string } | null;
-  failInsert?: (table: string, row: Row) => { message: string } | null;
+  failUpdate?: (table: string, patch: Row, row: Row) => { message: string; code?: string } | null;
+  failInsert?: (table: string, row: Row) => { message: string; code?: string } | null;
   /** Chiamata a ogni update riuscito, nell'ordine in cui avvengono. */
   onUpdate?: (table: string, patch: Row, row: Row) => void;
 }
@@ -49,19 +49,38 @@ export function createFakeDb(seed: Record<string, Row[]> = {}, options: FakeDbOp
 
     function run(): {
       data: Row[] | null;
-      error: { message: string } | null;
+      error: { message: string; code?: string } | null;
       count: number | null;
     } {
       if (op === 'insert') {
         const inserted: Row[] = [];
         for (const item of Array.isArray(payload) ? payload : [payload as Row]) {
+          const nowIso = new Date().toISOString();
           const row: Row = {
             id: `${table}-${++counter}`,
-            created_at: new Date(Date.UTC(2026, 8, 30, 0, 0, 0, counter)).toISOString(),
+            created_at: nowIso,
+            // Per analysis_jobs la bonifica usa started_at rispetto a Date.now().
+            started_at: nowIso,
             ...item,
           };
           const err = options.failInsert?.(table, row) ?? null;
           if (err) return { data: null, error: err, count: null };
+          // Indice unico parziale analysis_jobs (biography_id, kind) WHERE status = 'running'
+          if (table === 'analysis_jobs' && row.status === 'running') {
+            const clash = rowsOf(table).find(
+              (r) =>
+                r.status === 'running' &&
+                r.biography_id === row.biography_id &&
+                r.kind === row.kind
+            );
+            if (clash) {
+              return {
+                data: null,
+                error: { message: 'duplicate key value violates unique constraint', code: '23505' },
+                count: null,
+              };
+            }
+          }
           rowsOf(table).push(row);
           log.push({ op: 'insert', table, data: row });
           inserted.push(row);
@@ -127,6 +146,10 @@ export function createFakeDb(seed: Record<string, Row[]> = {}, options: FakeDbOp
     chain.not = (col: string, _op: string, val: unknown) => (filters.push((r) => (r[col] ?? null) !== val), chain);
     chain.gte = (col: string, val: unknown) => (
       filters.push((r) => String(r[col] ?? '') >= String(val)),
+      chain
+    );
+    chain.lt = (col: string, val: unknown) => (
+      filters.push((r) => String(r[col] ?? '') < String(val)),
       chain
     );
     chain.or = () => chain;

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getAuthenticatedUser } from '@/lib/server/onboarding-api-auth';
+import { startAnalysisJob } from '@/lib/server/analysis-jobs';
 import { writeModerationMessage } from '@/lib/server/moderation-register';
 import { screenRevisionAndAttach } from '@/lib/server/revision-screening';
 import {
@@ -57,11 +58,24 @@ export async function POST(req: NextRequest) {
     });
   }
 
-  // Screening del testo corretto, senza pubblicare: l'esito si allega al rapporto e
-  // lascia l'impronta nel registro. Il revisore approva vedendolo; la pubblicazione
-  // passa dal confronto dell'impronta. Se lo screening non gira, l'invio riesce
-  // comunque e il revisore trova scritto che va rilanciato.
-  await screenRevisionAndAttach(svc, { biographyId, reportId, authorId: auth.user.id });
+  // Screening del testo corretto in background: non pubblica; allega l'esito al rapporto.
+  // L'invio dell'autore non aspetta il lavoro. ai_screening_status non si tocca
+  // (scheda in revision_pending_review).
+  await startAnalysisJob(
+    svc,
+    biographyId,
+    'screening',
+    async () => {
+      const attached = await screenRevisionAndAttach(svc, {
+        biographyId,
+        reportId,
+        authorId: auth.user.id,
+      });
+      if (!attached.ok) throw new Error('revision_screening_attach_failed');
+      return { ok: true, verdict: attached.verdict ?? null };
+    },
+    { reportId, authorId: auth.user.id }
+  );
 
   return NextResponse.json({ ok: true });
 }

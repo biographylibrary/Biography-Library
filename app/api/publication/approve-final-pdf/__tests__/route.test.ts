@@ -6,12 +6,17 @@ const buildServiceClient = vi.fn();
 const generateUploadFinalPdf = vi.fn();
 const generateAndStoreExports = vi.fn();
 const runReviewSubmitScreening = vi.fn();
+const startAnalysisJob = vi.fn();
 const getUser = vi.fn();
 
 vi.mock('@supabase/supabase-js', () => ({
   createClient: vi.fn(() => ({
     auth: { getUser },
   })),
+}));
+
+vi.mock('@/lib/server/analysis-jobs', () => ({
+  startAnalysisJob: (...a: unknown[]) => startAnalysisJob(...a),
 }));
 
 vi.mock('@/lib/server/review-submit-pipeline', () => ({
@@ -73,6 +78,34 @@ describe('approve-final-pdf route', () => {
     });
     generateAndStoreExports.mockResolvedValue(undefined);
     runReviewSubmitScreening.mockResolvedValue({ result: 'published', screeningStatus: 'passed', isRescreen: false });
+    startAnalysisJob.mockResolvedValue({ jobId: 'job-approve', started: true });
+  });
+
+  it('dopo PDF e lock risponde 202 con jobId e URL', async () => {
+    const client = makeServiceClient({
+      user_id: 'user-1',
+      status: 'pdf_draft',
+      pdf_draft_iteration: 1,
+      final_version: 'x'.repeat(60),
+      content_language: 'it',
+    });
+    buildServiceClient.mockReturnValue(client);
+
+    const { POST } = await import('@/app/api/publication/approve-final-pdf/route');
+    const req = new NextRequest('http://localhost/api/publication/approve-final-pdf', {
+      method: 'POST',
+      headers: { authorization: 'Bearer jwt' },
+      body: JSON.stringify({ biographyId: 'bio-1' }),
+    });
+    const res = await POST(req);
+    expect(res.status).toBe(202);
+    const body = await res.json();
+    expect(body).toMatchObject({
+      jobId: 'job-approve',
+      finalPdfUrl: 'https://cdn/final.pdf',
+      listingCoverUrl: 'https://cdn/cover.png',
+    });
+    expect(startAnalysisJob).toHaveBeenCalledTimes(1);
   });
 
   it('returns 401 without bearer token', async () => {

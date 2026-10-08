@@ -6,8 +6,27 @@ let db: FakeDb;
 const auth = vi.fn();
 const screenRevisionAndAttach = vi.fn(async () => ({ ok: true }));
 const checkPerUserThrottle = vi.fn(async () => true);
+const startAnalysisJob = vi.fn(
+  async (
+    _c: unknown,
+    _id: string,
+    _k: string,
+    work: () => Promise<unknown>,
+    _ctx?: unknown
+  ) => {
+    // Come il gestore reale: work in background, errori assorbiti.
+    void Promise.resolve()
+      .then(() => work())
+      .catch(() => undefined);
+    return { jobId: 'job-rev', started: true };
+  }
+);
 
 vi.mock('@/lib/server/onboarding-api-auth', () => ({ getAuthenticatedUser: () => auth() }));
+vi.mock('@/lib/server/analysis-jobs', () => ({
+  startAnalysisJob: (...a: unknown[]) =>
+    (startAnalysisJob as (...x: unknown[]) => Promise<unknown>)(...a),
+}));
 vi.mock('@/lib/server/review-submit-pipeline', () => ({
   buildServiceClient: () => db.client,
   checkPerUserThrottle: (...a: unknown[]) =>
@@ -41,7 +60,7 @@ beforeEach(() => {
 });
 
 describe('POST /api/moderation/resubmit', () => {
-  it('sposta la scheda in revision_pending_review e fa partire lo screening sul testo corretto', async () => {
+  it('sposta la scheda in revision_pending_review e avvia lo screening senza aspettarlo', async () => {
     const res = await POST(req());
     expect(res.status).toBe(200);
     expect(db.tables.biographies[0].status).toBe('revision_pending_review');
@@ -50,7 +69,10 @@ describe('POST /api/moderation/resubmit', () => {
       'owner-1',
       'moderation_resubmit'
     );
-    expect(screenRevisionAndAttach).toHaveBeenCalledTimes(1);
+    expect(startAnalysisJob).toHaveBeenCalledTimes(1);
+    expect(startAnalysisJob.mock.calls[0][2]).toBe('screening');
+    expect(startAnalysisJob.mock.calls[0][4]).toEqual({ reportId: 'r1', authorId: 'owner-1' });
+    await vi.waitFor(() => expect(screenRevisionAndAttach).toHaveBeenCalledTimes(1));
     expect(screenRevisionAndAttach).toHaveBeenCalledWith(expect.anything(), {
       biographyId: 'b1',
       reportId: 'r1',
@@ -68,7 +90,7 @@ describe('POST /api/moderation/resubmit', () => {
     checkPerUserThrottle.mockResolvedValueOnce(false);
     const res = await POST(req());
     expect(res.status).toBe(429);
-    expect(screenRevisionAndAttach).not.toHaveBeenCalled();
+    expect(startAnalysisJob).not.toHaveBeenCalled();
     expect(db.tables.biographies[0].status).toBe('revision_requested');
   });
 
@@ -77,6 +99,8 @@ describe('POST /api/moderation/resubmit', () => {
     const res = await POST(req());
     expect(res.status).toBe(200);
     expect(db.tables.biographies[0].status).toBe('revision_pending_review');
+    // Il lavoro in background fallisce senza far fallire la risposta HTTP.
+    await vi.waitFor(() => expect(screenRevisionAndAttach).toHaveBeenCalled());
   });
 
   it.each(['draft', 'published', 'under_review', 'revision_overdue', 'revision_pending_review'])(

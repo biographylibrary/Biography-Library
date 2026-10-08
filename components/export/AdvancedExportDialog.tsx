@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import { useAnalysisJob } from '@/hooks/use-analysis-job';
 import {
   Dialog,
   DialogContent,
@@ -118,6 +119,35 @@ export function AdvancedExportDialog({
   const [isPreviewing, setIsPreviewing] = useState(false);
   const [draftFeedback, setDraftFeedback] = useState<DraftAiFeedback | null>(null);
   const [isPreprintChecking, setIsPreprintChecking] = useState(false);
+
+  const handlePreprintSettled = useCallback(
+    (job: { status: string; outcome: unknown }) => {
+      setIsPreprintChecking(false);
+      if (job.status === 'failed' || job.status === 'interrupted') {
+        setExportError(t.exportDialog.draftAiFeedbackUnavailable);
+        return;
+      }
+      const outcome = job.outcome as { feedback?: DraftAiFeedback; error?: string } | null;
+      if (outcome?.feedback) {
+        setDraftFeedback(outcome.feedback);
+        setExportError(null);
+        return;
+      }
+      setExportError(t.exportDialog.draftAiFeedbackUnavailable);
+    },
+    [t.exportDialog.draftAiFeedbackUnavailable]
+  );
+
+  const { watch: watchPreprintJob, polling: preprintPolling } = useAnalysisJob({
+    biographyId: biography.id ?? '',
+    kind: 'preprint_check',
+    enabled: open && Boolean(biography.id) && biography.status === 'pdf_draft',
+    onSettled: handlePreprintSettled,
+  });
+
+  useEffect(() => {
+    if (preprintPolling) setIsPreprintChecking(true);
+  }, [preprintPolling]);
 
   const isPdfFormat = format === 'pdf-b5-standard';
 
@@ -486,27 +516,21 @@ export function AdvancedExportDialog({
         body: JSON.stringify({ biographyId: biography.id }),
       });
       const payload = await res.json().catch(() => ({}));
-      if (res.ok) {
-        setDraftFeedback((payload.feedback as DraftAiFeedback) ?? null);
-      } else if ((payload as { error?: string }).error === 'already_checked') {
+      if (res.status === 202 && typeof (payload as { jobId?: string }).jobId === 'string') {
+        watchPreprintJob();
+        return;
+      }
+      setIsPreprintChecking(false);
+      if ((payload as { error?: string }).error === 'already_checked') {
         setExportError(t.exportDialog.preprintAlreadyChecked);
       } else if ((payload as { error?: string }).error === 'limit_exhausted') {
         setExportError(t.exportDialog.preprintLimitExhausted);
-      } else if ((payload as { error?: string }).error === 'ai_error') {
-        setExportError(
-          (payload as { message?: string }).message ?? t.exportDialog.draftAiFeedbackUnavailable
-        );
-      } else if ((payload as { error?: string }).error === 'empty_text') {
-        setExportError(
-          (payload as { message?: string }).message ?? t.exportDialog.draftAiFeedbackUnavailable
-        );
       } else {
         setExportError(t.exportDialog.draftAiFeedbackUnavailable);
       }
     } catch {
-      setExportError(t.exportDialog.draftAiFeedbackUnavailable);
-    } finally {
       setIsPreprintChecking(false);
+      setExportError(t.exportDialog.draftAiFeedbackUnavailable);
     }
   };
 
@@ -689,7 +713,9 @@ export function AdvancedExportDialog({
             {canRunPreprint && (
               <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between rounded-lg border border-border bg-muted/30 px-4 py-3">
                 <p className="text-sm text-muted-foreground leading-relaxed">
-                  {t.exportDialog.preprintCheckHint}
+                  {isPreprintChecking
+                    ? t.exportDialog.preprintCheckWaiting
+                    : t.exportDialog.preprintCheckHint}
                 </p>
                 <Button
                   type="button"
