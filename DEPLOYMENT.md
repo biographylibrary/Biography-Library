@@ -185,6 +185,8 @@ This is safe while `bl-app` is running — it does not remove the active contain
 
 Migrations are plain SQL files in `supabase/migrations/`. The filename prefix is a timestamp (e.g., `20260205184358_`). Apply them in order.
 
+**Block 3b (async analysis jobs).** Before deploying the code that returns HTTP 202 for screening / preprint: apply `20261008220000_analysis_jobs.sql` (table `analysis_jobs`, service_role only). Optional local-only env (ignored when `NODE_ENV=production`): `ANALYSIS_JOB_STALE_MINUTES` (default 20) — minutes before a stuck `running` job is marked `interrupted`.
+
 ### Applying a migration (rule for every migration)
 
 `apply_migration` takes only a name and records as `version` the moment it runs, not the prefix of the file. To keep production's history equal to the file names, **applying and aligning the version are one step**, for each migration, before starting the next:

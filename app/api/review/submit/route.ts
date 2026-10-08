@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
+import { applyAiErrorIfStillPending, startAnalysisJob } from '@/lib/server/analysis-jobs';
 import {
   buildServiceClient,
   checkPerUserThrottle,
@@ -140,26 +141,17 @@ export async function POST(req: NextRequest) {
     );
 
     try {
-      const result = await runReviewSubmitScreening(serviceClient, biographyId);
-      if (result.result === 'published') {
-        return NextResponse.json({
-          result: 'published',
-          screeningStatus: result.screeningStatus,
-          isRescreen: result.isRescreen,
-        });
-      }
-      return NextResponse.json({
-        result: 'under_review',
-        message: result.message,
-        isRescreen: result.isRescreen,
-        screeningDetail: result.screeningDetail,
-        flagCount: result.flagCount,
-      });
+      const { jobId } = await startAnalysisJob(serviceClient, biographyId, 'screening', () =>
+        runReviewSubmitScreening(serviceClient, biographyId)
+      );
+      return NextResponse.json({ jobId }, { status: 202 });
     } catch (e: any) {
       if (e?.message === 'Biography not found') {
         return NextResponse.json({ error: 'Biography not found' }, { status: 404 });
       }
-      throw e;
+      console.error('[review/submit] startAnalysisJob failed:', e);
+      await applyAiErrorIfStillPending(serviceClient, biographyId, 'screening');
+      return NextResponse.json({ error: 'Internal error' }, { status: 500 });
     }
   } catch (err) {
     console.error('[review/submit] Unhandled error:', err);

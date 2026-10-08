@@ -422,6 +422,7 @@ export async function reseed(db: PGlite): Promise<void> {
       if to_regclass('public.ai_token_usage') is not null then delete from public.ai_token_usage; end if;
       if to_regclass('public.publication_records') is not null then delete from public.publication_records; end if;
       if to_regclass('public.preprint_check_runs') is not null then delete from public.preprint_check_runs; end if;
+      if to_regclass('public.analysis_jobs') is not null then delete from public.analysis_jobs; end if;
       if to_regclass('public.biography_source_html_legacy') is not null then delete from public.biography_source_html_legacy; end if;
     end $$;
     delete from public.biography_media;
@@ -464,6 +465,7 @@ export async function createTestDb(
     '20261006140100_publication_records_format_conversion.sql',
     '20261008120000_submit_attempt_per_action.sql',
     '20261008120100_preprint_check_runs.sql',
+    '20261008220000_analysis_jobs.sql',
   ];
   const files = all.filter((file) => !options.skip?.includes(file) && (!options.only || options.only.includes(file)));
   // L'ultima fissa il percorso di ricerca di funzioni create da 20260930120000 e 20260930120150:

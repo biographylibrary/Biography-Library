@@ -20,7 +20,7 @@ Fondatore unico, non sviluppatore: costruisce con Claude Code e Cursor. Non ci s
 
 ### Blocco 3: screening a pezzi e controllo finale (8 ottobre 2026, ramo `blocco-3-screening`)
 
-**Screening sull’intero testo**: `runPublicationScreening` spezza il Markdown lungo titoli e paragrafi (`lib/agents/screening/split-markdown-chunks.ts`), con pezzo massimo **23 863 token / 95 452 caratteri** (un quarto della finestra Infomaniak da 100 000 token per Gemma 4 31B, tolti prompt e uscita). Ogni pezzo porta l’ultimo paragrafo del precedente come contesto. Al massimo due pezzi in parallelo; timeout 180 s; fino a tre tentativi sullo stesso modello (timeout/429/503) prima del ripiego. Se anche un solo pezzo resta senza verdetto → `ai_error` e coda umana. A pezzi tutti riusciti, `examined_chars = source_chars` e l’impronta in `publication_records` è quella del testo ricostruito. La regola `examined_chars < source_chars` resta come ultima verifica.
+**Screening sull’intero testo**: `runPublicationScreening` spezza il Markdown lungo titoli e paragrafi (`lib/agents/screening/split-markdown-chunks.ts`), con pezzo massimo **23 863 token / 95 452 caratteri** (un quarto della finestra Infomaniak da 100 000 token per Gemma 4 31B, tolti prompt e uscita). Ogni pezzo porta l’ultimo paragrafo del precedente come contesto. Al massimo due pezzi in parallelo; timeout 180 s; fino a tre tentativi sullo stesso modello (timeout/429/503) prima del ripiego. Se anche un solo pezzo resta senza verdetto → `ai_error` e coda umana. A pezzi tutti riusciti, `examined_chars = source_chars` e l’impronta in `publication_records` è quella del testo ricostruito. La regola `examined_chars < source_chars` resta come ultima verifica (`screeningDetail: 'incomplete'`).
 
 **Righe di conversione di formato**: `latestScreening` ignora le righe con `reason = FORMAT_CONVERSION_REASON` (non sono screening veri); restano traccia dell’impronta. Un test dimostra che non bastano a pubblicare un testo cambiato.
 
@@ -29,6 +29,10 @@ Fondatore unico, non sviluppatore: costruisce con Claude Code e Cursor. Non ci s
 **Limiti di frequenza**: `check_and_record_submit_attempt` accetta `p_action` distinto per rotta (`review_submit`, `approve_final_pdf`, `preprint_check`, `record_pdf_draft`, …).
 
 **Migrazioni** (da applicare in produzione solo dopo conferma): `20261008120000_submit_attempt_per_action.sql`, `20261008120100_preprint_check_runs.sql`.
+
+### Blocco 3b: analisi asincrona (ottobre 2026, ramo `blocco-3b-screening-asincrono`)
+
+Screening di pubblicazione, controllo finale e screening della correzione dopo revisione girano in **background** (`analysis_jobs`, `lib/server/analysis-jobs.ts`). Le rotte rispondono **202** con `jobId`; l’editor sonda `GET /api/analysis-jobs` (`hooks/use-analysis-job.ts`). Nessuna regola di sicurezza cambia: pubblica solo un lavoro `done` con ogni pezzo esaminato; fallito/interrotto/scaduto non pubblica. Lavori `running` più vecchi di 20 minuti → `interrupted` (soglia `ANALYSIS_JOB_STALE_MINUTES` solo fuori produzione). Migrazione: `20261008220000_analysis_jobs.sql` (applicare prima del rilascio).
 
 **Filigrana PDF**: etichette dedicate per le bozze 1–3; dalla 4ª in poi etichetta generica con il numero (`PDF_DRAFT_MAX_ITERATION = 30`).
 

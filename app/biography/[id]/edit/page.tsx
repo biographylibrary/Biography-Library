@@ -49,6 +49,13 @@ import {
   buildMarkCompletePayload,
 } from '@/lib/editor/write-payloads';
 import { toast } from 'sonner';
+import { useAnalysisJob } from '@/hooks/use-analysis-job';
+import {
+  applyApproveOutcome,
+  applySubmitOutcome,
+  normalizeScreeningOutcome,
+  outcomeFromFailedJob,
+} from '@/lib/editor/analysis-job-outcomes';
 import type { Biography, BiographyPublicationStatus } from '@/lib/biographies';
 import { canAuthorWriteText, isBiographyPublicationStatus, isReviewOrScreeningLockStatus } from '@/lib/publication-state';
 import { generateBiographyPDF, checkBiographyPdfReadiness, checkPdfPreflight, getPdfReadinessMessage } from '@/lib/pdf-export';
@@ -222,8 +229,118 @@ export default function BiographyEditorPage() {
   const [revisionPassages, setRevisionPassages] = useState<Array<{ section_key: string; ai_reason: string }>>([]);
   const [revisionNote, setRevisionNote] = useState<string | null>(null);
   const [revisionBannerDismissed, setRevisionBannerDismissed] = useState(false);
+  /** 'submit' | 'approve' — quale logica UI applicare quando il lavoro screening termina. */
+  const screeningUiSourceRef = useRef<'submit' | 'approve'>('submit');
 
   const editorContainerRef = useRef<HTMLDivElement>(null);
+
+  const loadFlaggedPassagesFromReport = useCallback(async () => {
+    const { data: openReport } = await supabase
+      .from('moderation_reports')
+      .select('ai_analysis')
+      .eq('biography_id', id)
+      .in('status', ['unassigned', 'assigned'])
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    const raw = (openReport?.ai_analysis as { flagged_passages?: unknown } | null)?.flagged_passages;
+    if (Array.isArray(raw) && raw.length > 0) {
+      setRevisionPassages(
+        raw.map((p: { section_key?: string; reason?: string }) => ({
+          section_key: typeof p.section_key === 'string' ? p.section_key : 'unknown',
+          ai_reason: typeof p.reason === 'string' ? p.reason : '',
+        }))
+      );
+    }
+  }, [id]);
+
+  const handleScreeningJobSettled = useCallback(
+    async (job: {
+      status: string;
+      outcome: unknown;
+    }) => {
+      const outcome =
+        job.status === 'failed' || job.status === 'interrupted'
+          ? outcomeFromFailedJob()
+          : normalizeScreeningOutcome(job.outcome);
+      if (!outcome) return;
+
+      if (screeningUiSourceRef.current === 'approve') {
+        const effects = applyApproveOutcome(outcome);
+        setBiographyStatus(effects.biographyStatus);
+        setAiScreeningResult(effects.aiScreeningResult);
+        setPdfDraftIteration(null);
+        setDraftAiFeedback(null);
+        setBiography((prev) =>
+          prev
+            ? ({
+                ...prev,
+                status: effects.biographyStatus,
+                ai_screening_status: effects.ai_screening_status as
+                  | 'passed'
+                  | 'flagged'
+                  | 'pending'
+                  | 'ai_error'
+                  | 'parse_error',
+                pdf_draft_iteration: null,
+                draft_ai_feedback: null,
+                ...(effects.biographyStatus === 'published'
+                  ? { published_at: new Date().toISOString() }
+                  : {}),
+              } as Biography)
+            : prev
+        );
+        if (effects.toast?.key === 'text_changed') toast.error(t.editor.screeningTextChanged);
+        else if (effects.toast?.key === 'incomplete') toast.info(t.editor.screeningTooLong);
+        if (effects.biographyStatus === 'published') {
+          toast.success(
+            language === 'it'
+              ? 'Pubblicata dopo lo screening automatico.'
+              : language === 'fr'
+                ? 'Publiée après filtrage automatique.'
+                : language === 'de'
+                  ? 'Nach automatischem Screening veröffentlicht.'
+                  : 'Published after automatic screening.'
+          );
+        }
+        if (effects.loadFlaggedPassages) await loadFlaggedPassagesFromReport();
+        return;
+      }
+
+      const effects = applySubmitOutcome(outcome);
+      setBiographyStatus(effects.biographyStatus);
+      setAiScreeningResult(effects.aiScreeningResult);
+      if (effects.toast?.key === 'text_changed') toast.error(t.editor.screeningTextChanged);
+      else if (effects.toast?.key === 'incomplete') toast.info(t.editor.screeningTooLong);
+    },
+    [t.editor.screeningTextChanged, t.editor.screeningTooLong, language, loadFlaggedPassagesFromReport]
+  );
+
+  const { job: screeningJob, watch: watchScreeningJob } = useAnalysisJob({
+    biographyId: id,
+    kind: 'screening',
+    enabled: Boolean(id),
+    onSettled: handleScreeningJobSettled,
+  });
+
+  // Dopo un riavvio la GET può già restituire interrupted/failed (bonifica):
+  // se la UI è ancora in pending, applica ai_error. Non tocca schede già uscite da pending.
+  const appliedTerminalJobRef = useRef<string | null>(null);
+  useEffect(() => {
+    if (!screeningJob || screeningJob.status === 'none' || screeningJob.status === 'running') {
+      return;
+    }
+    if (screeningJob.status !== 'failed' && screeningJob.status !== 'interrupted') {
+      return;
+    }
+    const showingPending =
+      aiScreeningResult === 'pending' &&
+      (biographyStatus === 'under_review' || biographyStatus === 'locked_pending_screening');
+    if (!showingPending) return;
+    if (appliedTerminalJobRef.current === screeningJob.jobId) return;
+    appliedTerminalJobRef.current = screeningJob.jobId;
+    void handleScreeningJobSettled(screeningJob);
+  }, [screeningJob, aiScreeningResult, biographyStatus, handleScreeningJobSettled]);
 
   useEffect(() => {
     const loadProfilePreferences = async () => {
@@ -416,6 +533,12 @@ export default function BiographyEditorPage() {
         else if (screening === 'ai_error') setAiScreeningResult('ai_error');
         else if (screening === 'parse_error') setAiScreeningResult('parse_error');
         else setAiScreeningResult(null);
+
+        if (data.status === 'locked_pending_screening') {
+          screeningUiSourceRef.current = 'approve';
+        } else if (data.status === 'under_review') {
+          screeningUiSourceRef.current = 'submit';
+        }
 
         if (data.status === 'draft') {
           const { data: report } = await supabase
@@ -1285,13 +1408,9 @@ export default function BiographyEditorPage() {
       setRevisionNote(null);
       setRevisionBannerDismissed(false);
       setAiScreeningResult('pending');
+      screeningUiSourceRef.current = 'submit';
 
       const { data: { session } } = await supabase.auth.getSession();
-      let apiResult: {
-        result?: string;
-        error?: string;
-        screeningDetail?: 'flagged' | 'ai_error' | 'parse_error' | 'text_changed' | 'incomplete' | 'too_long';
-      } = {};
       try {
         const res = await fetch('/api/review/submit', {
           method: 'POST',
@@ -1301,44 +1420,32 @@ export default function BiographyEditorPage() {
           },
           body: JSON.stringify({ biographyId: id }),
         });
-        apiResult = await res.json();
+        const apiResult = await res.json().catch(() => ({}));
         if (!res.ok) {
-          // Il server ha rifiutato prima di cambiare lo stato: si torna com'era.
           setBiographyStatus(previousStatus);
           setAiScreeningResult(null);
           setSubmitReadinessError(t.toast.requestFailed);
           return;
         }
+        if (res.status !== 202 || typeof (apiResult as { jobId?: string }).jobId !== 'string') {
+          setBiographyStatus(previousStatus);
+          setAiScreeningResult(null);
+          setSubmitReadinessError(t.toast.requestFailed);
+          return;
+        }
+        watchScreeningJob();
       } catch (fetchErr) {
         console.error('AI review call failed:', fetchErr);
-        apiResult = { result: 'under_review', screeningDetail: 'ai_error' };
-      }
-
-      if (apiResult.result === 'published') {
-        setBiographyStatus('published');
-        setAiScreeningResult('passed');
-      } else if (apiResult.result === 'under_review') {
-        const d = apiResult.screeningDetail;
-        if (d === 'ai_error' || d === 'parse_error') {
-          setAiScreeningResult(d);
-        } else if (d === 'text_changed') {
-          // Il testo è cambiato mentre lo screening lo esaminava: non è stato pubblicato.
-          setAiScreeningResult('pending');
-          toast.error(t.editor.screeningTextChanged);
-        } else if (d === 'incomplete' || d === 'too_long') {
-          // Screening incompleto: lo esamina una persona.
-          setAiScreeningResult('pending');
-          toast.info(t.editor.screeningTooLong);
-        } else {
-          setAiScreeningResult('flagged');
-        }
+        setBiographyStatus(previousStatus);
+        setAiScreeningResult(null);
+        setSubmitReadinessError(t.toast.requestFailed);
       }
     } catch (err) {
       console.error('Error submitting for review:', err);
     } finally {
       setIsSubmittingForReview(false);
     }
-  }, [id, user, t, biographyStatus]);
+  }, [id, user, t, biographyStatus, watchScreeningJob]);
 
   const handleOpenSubmitDialog = useCallback(async () => {
     setSubmitPreflightError(null);
@@ -1490,102 +1597,59 @@ export default function BiographyEditorPage() {
         toast.error(msg);
         return;
       }
+      if (res.status !== 202 || typeof (apiResult as { jobId?: string }).jobId !== 'string') {
+        setPublicationActionError(t.toast.requestFailed);
+        toast.error(t.toast.requestFailed);
+        return;
+      }
 
       const finalPdfUrlFromApi =
         typeof (apiResult as { finalPdfUrl?: string }).finalPdfUrl === 'string'
           ? (apiResult as { finalPdfUrl: string }).finalPdfUrl
           : null;
+      const listingCoverFromApi =
+        typeof (apiResult as { listingCoverUrl?: string | null }).listingCoverUrl === 'string'
+          ? (apiResult as { listingCoverUrl: string }).listingCoverUrl
+          : null;
 
       setRevisionPassages([]);
       setRevisionNote(null);
       setRevisionBannerDismissed(false);
-
-      if (apiResult.result === 'published') {
-        setBiographyStatus('published');
-        setAiScreeningResult('passed');
-        setPdfDraftIteration(null);
-        setDraftAiFeedback(null);
-        setBiography((prev) =>
-          prev
-            ? {
-                ...prev,
-                status: 'published',
-                published_at: new Date().toISOString(),
-                ai_screening_status: 'passed',
-                pdf_draft_iteration: null,
-                draft_ai_feedback: null,
-                final_pdf_url: finalPdfUrlFromApi ?? prev.final_pdf_url,
-              }
-            : prev
-        );
-        toast.success(
-          language === 'it'
-            ? 'Pubblicata dopo lo screening automatico.'
-            : language === 'fr'
-              ? 'Publiée après filtrage automatique.'
-              : language === 'de'
-                ? 'Nach automatischem Screening veröffentlicht.'
-                : 'Published after automatic screening.'
-        );
-        return;
-      }
-
-      if (apiResult.result === 'under_review') {
-        const d = apiResult.screeningDetail as string | undefined;
-        setBiographyStatus('under_review');
-        setPdfDraftIteration(null);
-        setDraftAiFeedback(null);
-        setBiography((prev) =>
-          prev
-            ? {
-                ...prev,
-                status: 'under_review',
-                ai_screening_status:
-                  d === 'ai_error' || d === 'parse_error'
-                    ? d
-                    : d === 'text_changed' || d === 'incomplete' || d === 'too_long'
-                      ? 'pending'
-                      : 'flagged',
-                pdf_draft_iteration: null,
-                draft_ai_feedback: null,
-                final_pdf_url: finalPdfUrlFromApi ?? prev.final_pdf_url,
-              }
-            : prev
-        );
-        if (d === 'ai_error' || d === 'parse_error') {
-          setAiScreeningResult(d as 'ai_error' | 'parse_error');
-        } else if (d === 'text_changed' || d === 'incomplete' || d === 'too_long') {
-          setAiScreeningResult('pending');
-          if (d === 'text_changed') toast.error(t.editor.screeningTextChanged);
-          else toast.info(t.editor.screeningTooLong);
-        } else {
-          setAiScreeningResult('flagged');
-          const { data: openReport } = await supabase
-            .from('moderation_reports')
-            .select('ai_analysis')
-            .eq('biography_id', id)
-            .in('status', ['unassigned', 'assigned'])
-            .order('created_at', { ascending: false })
-            .limit(1)
-            .maybeSingle();
-          const raw = (openReport?.ai_analysis as { flagged_passages?: unknown } | null)?.flagged_passages;
-          if (Array.isArray(raw) && raw.length > 0) {
-            setRevisionPassages(
-              raw.map((p: { section_key?: string; reason?: string }) => ({
-                section_key: typeof p.section_key === 'string' ? p.section_key : 'unknown',
-                ai_reason: typeof p.reason === 'string' ? p.reason : '',
-              }))
-            );
-          }
-        }
-      }
+      setBiographyStatus('locked_pending_screening');
+      setAiScreeningResult('pending');
+      setPdfDraftIteration(null);
+      setDraftAiFeedback(null);
+      screeningUiSourceRef.current = 'approve';
+      setBiography((prev) =>
+        prev
+          ? ({
+              ...prev,
+              status: 'locked_pending_screening',
+              ai_screening_status: 'pending',
+              pdf_draft_iteration: null,
+              draft_ai_feedback: null,
+              final_pdf_url: finalPdfUrlFromApi ?? prev.final_pdf_url,
+              ...(listingCoverFromApi
+                ? { listing_cover_url: listingCoverFromApi }
+                : {}),
+            } as Biography)
+          : prev
+      );
+      watchScreeningJob();
     } catch (err) {
       console.error(err);
-      toast.error('Request failed');
+      toast.error(t.toast.requestFailed);
     } finally {
       setPublicationActionLoading(null);
     }
-  }, [user, id, t.editor.publicationPdfDraftHint, t.exportDialog.noCoverPhotoWarning, language]);
+  }, [
+    user,
+    id,
+    t.editor.reviewPublication.approveDisabledHint,
+    t.exportDialog.noCoverPhotoWarning,
+    t.toast.requestFailed,
+    watchScreeningJob,
+  ]);
 
   const effectivelyLocked = isFrozen || biographyStatus === 'locked_pending_screening';
 
@@ -1730,10 +1794,7 @@ export default function BiographyEditorPage() {
           <div className="max-w-5xl mx-auto flex items-center gap-3">
             <Loader2 className="h-4 w-4 text-brand-ink dark:text-brand-beigeLight animate-spin shrink-0" />
             <p className="text-sm text-brand-ink dark:text-brand-beigeLight">
-              {language === 'it' ? 'Analisi automatica del testo in corso…' :
-               language === 'fr' ? 'Analyse automatique du texte en cours…' :
-               language === 'de' ? 'Automatische Textanalyse läuft…' :
-               'Running automatic text screening…'}
+              {t.editor.reviewPublication.screeningPendingHint}
             </p>
           </div>
         </div>

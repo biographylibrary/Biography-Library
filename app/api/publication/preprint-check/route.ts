@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
+import { startAnalysisJob } from '@/lib/server/analysis-jobs';
 import {
   buildServiceClient,
   checkPerUserThrottle,
@@ -96,46 +97,33 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const { text, contentLanguage } = await fetchBiographyContent(serviceClient, biographyId);
-    const feedback = await runPreprintCheck(text, contentLanguage, {
-      userId: user.id,
-      biographyId,
+    const { jobId } = await startAnalysisJob(serviceClient, biographyId, 'preprint_check', async () => {
+      const { text, contentLanguage } = await fetchBiographyContent(serviceClient, biographyId);
+      const feedback = await runPreprintCheck(text, contentLanguage, {
+        userId: user.id,
+        biographyId,
+      });
+
+      if (feedback.emptyText) {
+        throw new Error('empty_text');
+      }
+      if (feedback.aiError) {
+        throw new Error('ai_error');
+      }
+
+      await recordPreprintCheckRun(serviceClient, biographyId, contentFingerprint);
+
+      const stored = { ...feedback, contentFingerprint };
+      const { error: updErr } = await serviceClient
+        .from('biographies')
+        .update({ draft_ai_feedback: stored })
+        .eq('id', biographyId);
+      if (updErr) throw new Error(`Update failed: ${updErr.message}`);
+
+      return { feedback: stored };
     });
 
-    if (feedback.emptyText) {
-      return NextResponse.json(
-        { error: 'empty_text', message: 'The biography text is empty; nothing to check.' },
-        { status: 400 }
-      );
-    }
-
-    if (feedback.aiError) {
-      return NextResponse.json(
-        {
-          error: 'ai_error',
-          message: 'Final check could not complete. Previous feedback was left unchanged.',
-        },
-        { status: 502 }
-      );
-    }
-
-    await recordPreprintCheckRun(serviceClient, biographyId, contentFingerprint);
-
-    const { error: updErr } = await serviceClient
-      .from('biographies')
-      .update({
-        draft_ai_feedback: { ...feedback, contentFingerprint },
-      })
-      .eq('id', biographyId);
-
-    if (updErr) {
-      console.error('[preprint-check] update error:', updErr);
-      return NextResponse.json({ error: 'Update failed' }, { status: 500 });
-    }
-
-    return NextResponse.json({
-      feedback: { ...feedback, contentFingerprint },
-    });
+    return NextResponse.json({ jobId }, { status: 202 });
   } catch (err) {
     console.error('[preprint-check]', err);
     return NextResponse.json({ error: 'Internal error' }, { status: 500 });

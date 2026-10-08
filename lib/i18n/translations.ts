@@ -315,6 +315,7 @@ export interface Translations {
     preprintCheckHint: string;
     preprintCheckAction: string;
     preprintCheckRunning: string;
+    preprintCheckWaiting: string;
     preprintAlreadyChecked: string;
     preprintLimitExhausted: string;
     preprintPartOf: string;
@@ -2028,6 +2029,7 @@ export const translations: Record<Language, Translations> = {
       preprintCheckHint: 'When you are done editing, run one final quality check on the whole text. It does not block approval.',
       preprintCheckAction: 'Final check before print',
       preprintCheckRunning: 'Checking…',
+      preprintCheckWaiting: 'The check is in progress — keep this window open.',
       preprintAlreadyChecked: 'This version of the text was already checked.',
       preprintLimitExhausted: 'You have reached the limit of final checks for this biography in the last 30 days.',
       preprintPartOf: 'part {n} of {m}',
@@ -2183,7 +2185,8 @@ export const translations: Record<Language, Translations> = {
           'Your biography is being reviewed. You can return here when the review is complete to continue with PDF export.',
         lockedPendingScreeningHint:
           'Your final PDF was approved and automatic screening is running. You will be notified when it completes.',
-        screeningPendingHint: 'Automatic text screening is running…',
+        screeningPendingHint:
+          'Analysis is in progress. You can close this page: we will write to you when it is ready. If after twenty minutes you have no news, reopen the page: you will be able to run the analysis again.',
         revisionFlaggedHint:
           'Some passages were flagged. Edit the highlighted sections in the editor, then resubmit for screening when ready.',
         stepChapterOrderTitle: 'Prepare the final version',
@@ -3795,6 +3798,7 @@ export const translations: Record<Language, Translations> = {
       preprintCheckHint: 'Quando hai finito di lavorare, chiedi un unico controllo di qualità su tutto il testo. Non blocca l’approvazione.',
       preprintCheckAction: 'Controllo finale prima della stampa',
       preprintCheckRunning: 'Controllo in corso…',
+      preprintCheckWaiting: 'Il controllo è in corso, tieni aperta questa finestra.',
       preprintAlreadyChecked: 'Questa versione del testo è già stata controllata.',
       preprintLimitExhausted: 'Hai raggiunto il limite di controlli finali per questa biografia negli ultimi 30 giorni.',
       preprintPartOf: 'parte {n} di {m}',
@@ -3952,7 +3956,8 @@ export const translations: Record<Language, Translations> = {
           'La biografia è in revisione. Torna qui al termine per continuare con l\'export PDF.',
         lockedPendingScreeningHint:
           'Il PDF finale è stato approvato e lo screening automatico è in corso. Riceverai una notifica al termine.',
-        screeningPendingHint: 'Analisi automatica del testo in corso…',
+        screeningPendingHint:
+          "L'analisi è in corso. Puoi chiudere questa pagina: ti scriviamo noi appena è pronta. Se dopo venti minuti non hai notizie, riapri la pagina: potrai ripetere l'analisi.",
         revisionFlaggedHint:
           'Alcuni passaggi sono stati segnalati. Modifica le sezioni evidenziate nell\'editor, poi reinvia per lo screening quando sei pronto.',
         stepChapterOrderTitle: 'Prepara la versione finale',
@@ -5564,6 +5569,7 @@ export const translations: Record<Language, Translations> = {
       preprintCheckHint: 'Quand vous avez terminé, lancez un seul contrôle de qualité sur tout le texte. Il ne bloque pas l’approbation.',
       preprintCheckAction: 'Contrôle final avant impression',
       preprintCheckRunning: 'Contrôle…',
+      preprintCheckWaiting: 'Le contrôle est en cours : gardez cette fenêtre ouverte.',
       preprintAlreadyChecked: 'Cette version du texte a déjà été contrôlée.',
       preprintLimitExhausted: 'Vous avez atteint la limite de contrôles finaux pour cette biographie sur les 30 derniers jours.',
       preprintPartOf: 'partie {n} sur {m}',
@@ -5721,7 +5727,8 @@ export const translations: Record<Language, Translations> = {
           'Votre biographie est en cours de révision. Revenez ici une fois terminé pour continuer avec l’export PDF.',
         lockedPendingScreeningHint:
           'Votre PDF final a été approuvé et le filtrage automatique est en cours. Vous serez notifié à la fin.',
-        screeningPendingHint: 'Analyse automatique du texte en cours…',
+        screeningPendingHint:
+          "L'analyse est en cours. Vous pouvez fermer cette page : nous vous écrirons dès qu'elle est prête. Si après vingt minutes vous n'avez pas de nouvelles, rouvrez la page : vous pourrez relancer l'analyse.",
         revisionFlaggedHint:
           'Certains passages ont été signalés. Modifiez les sections concernées dans l’éditeur, puis renvoyez pour le filtrage lorsque vous êtes prêt.',
         stepChapterOrderTitle: 'Préparer la version finale',
@@ -7333,6 +7340,7 @@ export const translations: Record<Language, Translations> = {
       preprintCheckHint: 'Wenn Sie fertig sind, führen Sie eine einzige Qualitätsprüfung am gesamten Text durch. Sie blockiert die Freigabe nicht.',
       preprintCheckAction: 'Abschlussprüfung vor dem Druck',
       preprintCheckRunning: 'Prüfung…',
+      preprintCheckWaiting: 'Die Prüfung läuft — lassen Sie dieses Fenster geöffnet.',
       preprintAlreadyChecked: 'Diese Textfassung wurde bereits geprüft.',
       preprintLimitExhausted: 'Sie haben das Limit an Abschlussprüfungen für diese Biografie in den letzten 30 Tagen erreicht.',
       preprintPartOf: 'Teil {n} von {m}',
@@ -7490,7 +7498,8 @@ export const translations: Record<Language, Translations> = {
           'Ihre Biografie wird überprüft. Kehren Sie hierher zurück, wenn die Überprüfung abgeschlossen ist, um mit dem PDF-Export fortzufahren.',
         lockedPendingScreeningHint:
           'Ihr finales PDF wurde genehmigt und das automatische Screening läuft. Sie werden benachrichtigt, wenn es abgeschlossen ist.',
-        screeningPendingHint: 'Automatische Textanalyse läuft…',
+        screeningPendingHint:
+          'Die Analyse läuft. Sie können diese Seite schließen: wir schreiben Ihnen, sobald sie fertig ist. Wenn Sie nach zwanzig Minuten nichts gehört haben, öffnen Sie die Seite erneut: dann können Sie die Analyse wiederholen.',
         revisionFlaggedHint:
           'Einige Passagen wurden markiert. Bearbeiten Sie die hervorgehobenen Abschnitte im Editor und senden Sie erneut zum Screening, wenn Sie bereit sind.',
         stepChapterOrderTitle: 'Endfassung vorbereiten',
