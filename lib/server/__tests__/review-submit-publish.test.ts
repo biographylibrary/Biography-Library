@@ -131,6 +131,23 @@ describe('edizione e originale non pubblicato', () => {
     expect(ensureUm).not.toHaveBeenCalled();
   });
 
+  it('se la scheda non è più locked_pending_screening, non torna in final_version e lo screening prosegue', async () => {
+    const db = editionDb('draft');
+    screen.mockImplementationOnce(async () => {
+      const edition = db.tables.biographies.find((b) => b.id === 'bio-1');
+      if (edition) edition.status = 'under_review';
+      return { passages: [], overall_severity: 0 };
+    });
+    const result = await runReviewSubmitScreening(db.client, 'bio-1');
+    expect(result.result).not.toBe('held_for_original');
+    expect(result.result).toBe('published');
+    expect(db.tables.biographies.find((b) => b.id === 'bio-1')).toMatchObject({
+      status: 'published',
+      ai_screening_status: 'passed',
+    });
+    expect(ensureUm).not.toHaveBeenCalled();
+  });
+
   it('se l\'originale è pubblicato, l\'edizione si pubblica', async () => {
     const db = editionDb('published');
     const result = await runReviewSubmitScreening(db.client, 'bio-1');

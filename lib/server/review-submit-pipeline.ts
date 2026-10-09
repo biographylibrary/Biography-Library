@@ -725,15 +725,21 @@ export async function runReviewSubmitScreening(
         translationOf: prior.translation_of,
         originalStatus: (original as { status?: string } | null)?.status ?? null,
       })) {
-        await serviceClient
+        const { data: held, error: holdError } = await serviceClient
           .from('biographies')
           .update({ status: 'final_version', ai_screening_status: null })
-          .eq('id', biographyId);
-        return {
-          result: 'held_for_original',
-          screeningStatus: 'passed',
-          isRescreen,
-        };
+          .eq('id', biographyId)
+          .eq('status', 'locked_pending_screening')
+          .select('id')
+          .maybeSingle();
+        if (holdError) throw new Error(`hold_for_original_failed: ${holdError.message}`);
+        if (held) {
+          return {
+            result: 'held_for_original',
+            screeningStatus: 'passed',
+            isRescreen,
+          };
+        }
       }
     } else {
       const { ensureUmIdFor } = await import('@/lib/server/um-id-registry');

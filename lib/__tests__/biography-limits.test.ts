@@ -1,8 +1,8 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { getUserBiographyCount, ONE_BIOGRAPHY_PER_USER_ERROR } from '@/lib/biography-limits';
 
-const mockMaybeSingle = vi.fn();
-const mockEq = vi.fn(() => ({ maybeSingle: mockMaybeSingle }));
+const mockIs = vi.fn();
+const mockEq = vi.fn(() => ({ is: mockIs }));
 const mockSelect = vi.fn(() => ({ eq: mockEq }));
 const mockFrom = vi.fn<(table: string) => { select: typeof mockSelect }>();
 
