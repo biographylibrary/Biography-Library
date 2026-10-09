@@ -94,7 +94,7 @@ export interface PublicTextInput {
 }
 
 /** Testo lungo come lo vede l'archivio: Markdown d'archivio, NFC, senza spazi ai bordi. */
-function body(value: unknown): string | null {
+export function normalizePublicBodyText(value: unknown): string | null {
   if (value == null) return null;
   const text = String(value);
   if (!text.trim()) return null;
@@ -102,11 +102,14 @@ function body(value: unknown): string | null {
 }
 
 /** Nomi e brevi campi: NFC e spazi ai bordi. */
-function short(value: unknown): string | null {
+export function normalizePublicShortText(value: unknown): string | null {
   if (value == null) return null;
   const text = nfc(String(value)).trim();
   return text || null;
 }
+
+const body = normalizePublicBodyText;
+const short = normalizePublicShortText;
 
 function stable(value: unknown): unknown {
   if (Array.isArray(value)) return value.map(stable);
@@ -120,7 +123,8 @@ function stable(value: unknown): unknown {
   return value;
 }
 
-const BOOK_PARTS = [
+/** Parti del libro (nome blocco screening, colonna contenuto, flag abilitazione). */
+export const BOOK_PARTS_FOR_SCREENING = [
   ['dedication', 'dedication_content', 'dedication_enabled'],
   ['epigraph', 'epigraph_content', 'epigraph_enabled'],
   ['preface', 'preface_content', 'preface_enabled'],
@@ -128,6 +132,8 @@ const BOOK_PARTS = [
   ['acknowledgements', 'acknowledgements_content', 'acknowledgements_enabled'],
   ['specific_credits', 'specific_credits_content', 'specific_credits_enabled'],
 ] as const;
+
+const BOOK_PARTS = BOOK_PARTS_FOR_SCREENING;
 
 const EVENT_FIELDS = [
   'event_type',

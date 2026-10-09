@@ -424,6 +424,12 @@ export function ModerationDetailPanel({ report, onClose, onRefresh }: Moderation
                         key={i}
                         className="rounded-lg border-l-4 border-brand-mustardDark bg-brand-mustardLight/50 dark:bg-brand-mustardDark/25 dark:border-brand-mustardLight px-3 py-2.5 space-y-1"
                       >
+                        {fp.section_key && (
+                          <p className="text-xs font-medium text-foreground">
+                            {t.sectionTitles[fp.section_key as keyof typeof t.sectionTitles] ||
+                              fp.section_key}
+                          </p>
+                        )}
                         <p className="text-xs text-foreground italic leading-relaxed">
                           {`\u201C${fp.text}\u201D`}
                         </p>

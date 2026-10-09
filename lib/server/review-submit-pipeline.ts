@@ -1,8 +1,6 @@
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { purgeAgentMemoryForBiography } from '@/lib/agents/purge-agent-memory';
 import { runPublicationScreening } from '@/lib/agents/screening/run-publication-screening';
-import { storedToArchiveMarkdown } from '@/lib/archive-markdown';
-import { BIOGRAPHY_SECTIONS } from '@/lib/editor-constants';
 import {
   notifyAuthorPublicationEmail,
   notifyReviewerAssignedEmail,
@@ -162,70 +160,17 @@ export async function fetchOpenAiFlaggedReportForRescreen(
 }
 
 /**
- * Il testo che lo screening e il controllo finale leggono: `final_version` se c'è,
- * altrimenti le sezioni e il flusso libero. Sempre il testo intero (poi spezzato
- * in pezzi a valle): nessuna garanzia sul testo pubblicato può poggiare su un
- * taglio anticipato. `sourceChars` = `text.length`.
+ * Testo che lo screening di pubblicazione legge: tutto il testo pubblico
+ * (corpo, titoli/nomi, parti del libro, didascalie, eventi, relazioni).
+ * Costruzione unica in `fetchScreeningPublicText` (scope `publication`).
+ * `sourceChars` = lunghezza del testo completo così costruito.
  */
 export async function fetchBiographyContent(
   supabase: AnyClient,
   biographyId: string
 ): Promise<{ text: string; authorId: string; contentLanguage: string; sourceChars: number }> {
-  const { data: bio } = await supabase
-    .from('biographies')
-    .select(
-      'user_id, content, content_freeflow, content_language, record_language_tag, final_version, biography_mode'
-    )
-    .eq('id', biographyId)
-    .maybeSingle();
-
-  const authorId: string = (bio as any)?.user_id ?? '';
-  const contentLanguage: string = resolveRecordLanguageTag(bio as any);
-
-  const finalRaw = (bio as any)?.final_version?.trim();
-  if (finalRaw) {
-    const text = storedToArchiveMarkdown(finalRaw);
-    return { text, sourceChars: text.length, authorId, contentLanguage };
-  }
-
-  const jsonContent =
-    ((bio as { content?: Record<string, { text?: string } | undefined> | null }).content ??
-      {}) as Record<string, { text?: string } | undefined>;
-
-  const parts: string[] = [];
-
-  for (const { key } of BIOGRAPHY_SECTIONS) {
-    const fromJson = jsonContent[key]?.text?.trim();
-    if (fromJson) {
-      parts.push(`[SECTION: ${key}]\n${storedToArchiveMarkdown(fromJson)}`);
-    }
-  }
-
-  if (parts.length === 0) {
-    const { data: sections } = await supabase
-      .from('biography_sections')
-      .select('section_key, content')
-      .eq('biography_id', biographyId)
-      .not('content', 'is', null)
-      .order('section_key', { ascending: true });
-
-    for (const section of (sections as any[]) ?? []) {
-      if (section.content?.trim()) {
-        parts.push(
-          `[SECTION: ${section.section_key}]\n${storedToArchiveMarkdown(section.content.trim())}`
-        );
-      }
-    }
-  }
-
-  if ((bio as any)?.content_freeflow?.trim()) {
-    parts.push(
-      `[SECTION: freeflow]\n${storedToArchiveMarkdown((bio as any).content_freeflow.trim())}`
-    );
-  }
-
-  const text = parts.join('\n\n');
-  return { text, sourceChars: text.length, authorId, contentLanguage };
+  const { fetchScreeningPublicText } = await import('@/lib/server/screening-public-text');
+  return fetchScreeningPublicText(supabase, biographyId, 'publication');
 }
 
 /** @deprecated Alias: il controllo finale è `runPreprintCheck` / `PreprintFeedback`. */

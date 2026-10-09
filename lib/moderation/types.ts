@@ -52,6 +52,7 @@ export interface FlaggedPassage {
   text: string;
   reason: string;
   level: number | string;
+  section_key?: string | null;
 }
 
 export interface AiAnalysis {

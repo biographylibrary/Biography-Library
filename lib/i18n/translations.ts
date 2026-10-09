@@ -330,6 +330,18 @@ export interface Translations {
     challenges: string;
     passions: string;
     legacy: string;
+    freeflow: string;
+    title_and_names: string;
+    final_version: string;
+    dedication: string;
+    epigraph: string;
+    preface: string;
+    epilogue: string;
+    acknowledgements: string;
+    specific_credits: string;
+    photo_captions: string;
+    life_events: string;
+    relations: string;
   };
   sections: {
     earlyYears: string;
@@ -2044,6 +2056,18 @@ export const translations: Record<Language, Translations> = {
       challenges: 'Challenges & Lessons Learned',
       passions: 'Passions & Hobbies',
       legacy: 'Legacy & Final Thoughts',
+      freeflow: 'Free-flow text',
+      title_and_names: 'Title and names',
+      final_version: 'Final version',
+      dedication: 'Dedication',
+      epigraph: 'Epigraph',
+      preface: 'Preface',
+      epilogue: 'Epilogue',
+      acknowledgements: 'Acknowledgements',
+      specific_credits: 'Specific credits',
+      photo_captions: 'Photo captions',
+      life_events: 'Life events',
+      relations: 'Relations',
     },
     sections: {
       earlyYears: 'Early Years',
@@ -3813,6 +3837,18 @@ export const translations: Record<Language, Translations> = {
       challenges: 'Sfide e Lezioni Apprese',
       passions: 'Passioni e Hobby',
       legacy: 'Eredit\u00e0 e Pensieri Finali',
+      freeflow: 'Testo a flusso libero',
+      title_and_names: 'Titolo e nomi',
+      final_version: 'Versione finale',
+      dedication: 'Dedica',
+      epigraph: 'Epigrafe',
+      preface: 'Prefazione',
+      epilogue: 'Epilogo',
+      acknowledgements: 'Ringraziamenti',
+      specific_credits: 'Crediti specifici',
+      photo_captions: 'Didascalie',
+      life_events: 'Eventi di vita',
+      relations: 'Relazioni',
     },
     sections: {
       earlyYears: 'Primi Anni',
@@ -5584,6 +5620,18 @@ export const translations: Record<Language, Translations> = {
       challenges: 'D\u00e9fis et Le\u00e7ons Apprises',
       passions: 'Passions et Loisirs',
       legacy: 'H\u00e9ritage et Pens\u00e9es Finales',
+      freeflow: 'Texte en flux libre',
+      title_and_names: 'Titre et noms',
+      final_version: 'Version finale',
+      dedication: 'Dédicace',
+      epigraph: 'Épigraphe',
+      preface: 'Préface',
+      epilogue: 'Épilogue',
+      acknowledgements: 'Remerciements',
+      specific_credits: 'Crédits spécifiques',
+      photo_captions: 'Légendes des photos',
+      life_events: 'Événements de vie',
+      relations: 'Relations',
     },
     sections: {
       earlyYears: 'Premi\u00e8res Ann\u00e9es',
@@ -7355,6 +7403,18 @@ export const translations: Record<Language, Translations> = {
       challenges: 'Herausforderungen und Lektionen',
       passions: 'Leidenschaften und Hobbys',
       legacy: 'Verm\u00e4chtnis und Abschlie\u00dfende Gedanken',
+      freeflow: 'Freier Fließtext',
+      title_and_names: 'Titel und Namen',
+      final_version: 'Endfassung',
+      dedication: 'Widmung',
+      epigraph: 'Epigraph',
+      preface: 'Vorwort',
+      epilogue: 'Nachwort',
+      acknowledgements: 'Danksagungen',
+      specific_credits: 'Spezielle Credits',
+      photo_captions: 'Bildunterschriften',
+      life_events: 'Lebensereignisse',
+      relations: 'Beziehungen',
     },
     sections: {
       earlyYears: 'Fr\u00fche Jahre',
