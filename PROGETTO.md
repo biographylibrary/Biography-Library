@@ -50,9 +50,9 @@ Il controllo finale prima della stampa usa lo stesso costruttore con scope `prep
 
 ### Blocco 5, passi 1–2: edizioni e lingua del testo (9 ottobre 2026, ramo `blocco-5-edizioni`)
 
-Una traduzione è una riga di `biographies` con `translation_of` (niente catene), al massimo una lingua per opera. `record_language_tag` è obbligatorio; `content_language` non si legge più. La colonna si elimina solo con `20261009150000_drop_content_language_after_release.sql`, dopo questo rilascio. Didascalie per edizione in `biography_edition_captions`. Eventi e relazioni restano dell'originale. Lettura pubblica di un'edizione solo se anche l'originale è pubblicato e pubblico (`biography_public_read_allowed`). Scritture fuori da Latn/Cyrl/Grek si pubblicano da `final_version` con `POST /api/publication/approve-text`, senza `pdf_draft`. Lo strumento «Traduci», il catalogo per lingua e il selettore «Leggi in» non ci sono ancora.
+Una traduzione è una riga di `biographies` con `translation_of` (niente catene), al massimo una lingua per opera. `record_language_tag` è obbligatorio. `content_language` non si legge più: la elimina `20261009150000_drop_content_language_after_release.sql`. Didascalie per edizione in `biography_edition_captions`. Eventi e relazioni restano dell'originale. Lettura pubblica di un'edizione solo se anche l'originale è pubblicato e pubblico (`biography_public_read_allowed`). Scritture fuori da Latn/Cyrl/Grek si pubblicano da `final_version` con `POST /api/publication/approve-text`, senza `pdf_draft`. Lo strumento «Traduci», il catalogo per lingua e il selettore «Leggi in» non ci sono ancora.
 
-Migrazione da applicare a mano prima del merge: `20261009143000_biography_editions.sql`. Poi la Edge Function `send-engagement-emails`. Le didascalie d'edizione seguono lo stato della scheda (`a01_biography_edition_captions_guard_parent_status`). Un'edizione non si invia allo screening se l'originale non è pubblicato; se l'originale esce da pubblicato durante il lavoro, la scheda torna in `final_version`. La seconda migrazione, dopo il rilascio, ricrea `biography_flat` senza `content_language`.
+La migrazione `20261009143000_biography_editions.sql` è stata applicata a mano in produzione il 9 ottobre 2026 prima dell'unione. La funzione edge `send-engagement-emails` è stata ridistribuita il 10 ottobre 2026 (versione 13) cambiando solo `index.ts`, con i quattro file condivisi delle email identici a quelli già in produzione. Le didascalie d'edizione seguono lo stato della scheda (`a01_biography_edition_captions_guard_parent_status`). Un'edizione non si invia allo screening se l'originale non è pubblicato; se l'originale esce da pubblicato durante il lavoro, la scheda torna in `final_version`. La seconda migrazione ricrea `biography_flat` senza `content_language` e si esegue dopo l'unione di questo ritiro, in una sola transazione.
 
 ### Blocco 1: strumenti di intelligenza artificiale (30 settembre 2026, ramo `blocco-1-strumenti-ai`)
 
@@ -233,7 +233,7 @@ Se Apertus non risponde, la grammatica passa a Gemma e poi a Mistral senza un me
 
 ### Piano permanenza / UM — `docs/piano-permanenza.md`
 
-**Chiuso** (4 settembre 2026). Fondamenta + editor + licenza + export testo/PDF + notazione UM in UI + backfill. Debito tracciato: motore PDF non-latino, ritiro `content_language`, NFC residuo, mappature esterne (§9 non ora).
+**Chiuso** (4 settembre 2026). Fondamenta + editor + licenza + export testo/PDF + notazione UM in UI + backfill. Debito tracciato: motore PDF non-latino, ritiro `content_language`, NFC residuo, mappature esterne (§9 non ora). Il debito «ritiro content_language» è chiuso con `20261009150000`.
 
 ### Piano Echo voce Voxtral — `.cursor/plans/echo_voce_voxtral.plan.md`
 
@@ -276,6 +276,10 @@ Unito in `main` con #51 (immagine standalone + prune). Non è più un ramo da me
 ### Fase 2 — migrazione Infomaniak Public Cloud (rinviata)
 
 Non ancora iniziata. Richiede aiuto professionale. Includerà: PostgreSQL con pgvector su Docker (il DBaaS gestito Infomaniak non ha pgvector di default), Kubernetes gestito, object storage S3, auth self-gestita. Jelastic escluso come destinazione dati per il limite 100 GB/nodo.
+
+### Debiti
+
+Codice condiviso delle email e funzioni edge. shared/email è andato avanti da giugno (modelli per lista d'attesa e segnalazioni, anno UM nel piè di pagina) e render.ts ora importa @/lib/um, un alias di Next.js che le funzioni edge non risolvono. Lo script scripts/setup-supabase-email-production.mjs, fermo al 25 giugno, non sa impacchettare quel file: il repository così com'è non si può distribuire come funzione edge. send-engagement-emails è in produzione con i file condivisi di giugno e solo index.ts aggiornato; auth-send-email e user-email-confirmed girano anch'esse su quei file. Da risolvere nel blocco 6 o portando le funzioni a rotte Node.
 
 ---
 

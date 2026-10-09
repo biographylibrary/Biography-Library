@@ -43,7 +43,6 @@ function makeDb(opts: { publishError?: string; finalVersion?: string } = {}): Fa
           author_name: '',
           content: {},
           content_freeflow: null,
-          content_language: 'en',
           record_language_tag: 'en',
           final_version: opts.finalVersion ?? FINAL,
           biography_mode: 'freeflow',
@@ -277,7 +276,7 @@ describe('impronta: il testo pubblicato è quello esaminato', () => {
     const db = createFakeDb(
       {
         biographies: [
-          { id: 'bio-1', user_id: 'author-1', content: {}, content_language: 'en', record_language_tag: 'en', final_version: FINAL, biography_mode: 'freeflow', status: 'locked_pending_screening' },
+          { id: 'bio-1', user_id: 'author-1', content: {}, record_language_tag: 'en', final_version: FINAL, biography_mode: 'freeflow', status: 'locked_pending_screening' },
         ],
       },
       { failInsert: (table) => (table === 'publication_records' ? { message: 'db down' } : null) }

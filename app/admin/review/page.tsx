@@ -46,7 +46,7 @@ interface ReviewBiography {
   title: string;
   author_name: string;
   author_id: string;
-  content_language: string | null;
+  record_language_tag: string | null;
   biography_type: string | null;
   slug: string | null;
   updated_at: string;
@@ -161,7 +161,7 @@ function ReviewQueueContent() {
       title: b.title ?? '',
       author_name: b.author_name ?? '',
       author_id: b.user_id,
-      content_language: b.record_language_tag ?? null,
+      record_language_tag: b.record_language_tag ?? null,
       biography_type: b.biography_type ?? null,
       slug: b.slug ?? null,
       updated_at: b.updated_at,
@@ -563,7 +563,7 @@ function ReviewQueueContent() {
                             {bio.author_name || '—'}
                           </td>
                           <td className="px-4 py-3 hidden lg:table-cell text-xs text-muted-foreground uppercase tracking-wide">
-                            {bio.content_language ?? '—'}
+                            {bio.record_language_tag ?? '—'}
                           </td>
                           <td className="px-4 py-3 hidden lg:table-cell text-xs text-muted-foreground">
                             {bio.biography_type === 'memorial'

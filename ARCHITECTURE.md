@@ -79,7 +79,7 @@ Roles stored in `profiles.role`: `user` → `reviewer` → `admin` → `super_ad
 | Table | Purpose |
 |---|---|
 | `profiles` | Extends `auth.users`; stores role, ui_font_size, ai_features preference |
-| `biographies` | One row per edition. Originals have `translation_of` null; a translation points at its original (no chains). Text language is `record_language_tag` (BCP 47). `content_language` is unread and dropped only after release. |
+| `biographies` | One row per edition. Originals have `translation_of` null; a translation points at its original (no chains). Text language is `record_language_tag` (BCP 47). `content_language` è stata eliminata da `20261009150000`. |
 | `biography_sections` | One row per (biography, section_key). Stores content, draft version, status, revision history array |
 | `biography_book_structure` | Front/back matter (dedication, epigraph, preface, epilogue, acknowledgements, specific_credits as JSONB) |
 | `biography_media` | Photos of the original: file_url, layout, display_order, caption. Editions do not copy the files. |

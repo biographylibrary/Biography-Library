@@ -74,8 +74,6 @@ export const NON_PUBLIC_TEXT_COLUMNS: Record<string, string> = {
   'biographies.visibility': 'Scelta di pubblicazione, non testo narrativo.',
   'biographies.status': 'Stato del flusso, non testo.',
   'biographies.share_token': 'Token tecnico.',
-  'biographies.content_language':
-    'Codice lingua residuo, ritirato dal codice. La colonna si elimina dopo il rilascio.',
   'biographies.translation_of': 'Riferimento all\'originale (uuid), non testo.',
   'biographies.frozen_reason': 'Nota staff interna, non pubblica.',
   'biographies.slug': 'Identificativo URL.',
