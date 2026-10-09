@@ -291,3 +291,34 @@ describe('regola di sicurezza: niente pubblicazione automatica se examined_chars
     expect(db.tables.publication_records.find((r) => r.kind === 'screening')?.scope).toBe('full');
   });
 });
+
+describe('Riprova analisi dopo errore instradato (PASSO 2)', () => {
+  it('pubblicazione dopo ai_error chiude il rapporto screening a passaggi vuoti', async () => {
+    const db = makeDb();
+    db.tables.biographies[0].status = 'under_review';
+    db.tables.biographies[0].ai_screening_status = 'ai_error';
+    db.tables.moderation_reports = [
+      {
+        id: 'err-report',
+        biography_id: 'bio-1',
+        status: 'assigned',
+        origin: 'screening',
+        created_at: '2026-10-08T10:00:00Z',
+        ai_analysis: {
+          summary: 'The screening job did not finish (failed). Manual review required.',
+          flagged_passages: [],
+        },
+        ai_violation_level: 0,
+        assigned_to: 'rev-1',
+      },
+    ];
+
+    const result = await runReviewSubmitScreening(db.client, 'bio-1');
+    expect(result.result).toBe('published');
+    expect(result).toMatchObject({ isRescreen: true });
+    expect(db.tables.moderation_reports.find((r) => r.id === 'err-report')).toMatchObject({
+      status: 'decided',
+      decision: 'publish',
+    });
+  });
+});

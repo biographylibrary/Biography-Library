@@ -216,6 +216,7 @@ draft → submitted → ai_screening → pending_review → published
 5. **No flags** → biography status set to `published`, notification sent to user.
 6. **Flags found** → `moderation_reports` row created with AI analysis JSONB; biography set to `pending_review`; assigned to the reviewer with the fewest open reports (load balancing).
 7. **AI error** → manual review path; report created with `ai_screening_status = 'ai_error'`.
+8. **Fallen / interrupted / unstartable screening job** (block 3c) → same manual review path via `routeScreeningFailureToManualReview` (atomic claim on `pending`); cron `POST /api/cron/analysis-jobs` runs the stale sweep without requiring the editor. Revision-correction jobs (`reportId` in context) and `preprint_check` do not open new reports.
 
 ### Step 2 — Human review (`/admin/review`)
 
@@ -274,7 +275,8 @@ Helpers: `lib/publication-state.ts` (`AUTHOR_TEXT_WRITABLE_STATUSES`, `canAuthor
 | `POST /api/publication/record-pdf-draft` | After each watermarked draft download: increments `pdf_draft_iteration` only (no model call). `draft-ai-review` remains as a deprecated alias. |
 | `POST /api/publication/preprint-check` | Starts a background quality check (`analysis_jobs`, kind `preprint_check`); responds **202** with `jobId`. On success writes `draft_ai_feedback` and `preprint_check_runs`. Does not block approval. |
 | `GET /api/analysis-jobs` | Owner or staff: latest job status/outcome for `biographyId` + `kind` (also interrupts stale `running` jobs). |
-| `POST /api/publication/approve-final-pdf` | Requires `pdf_draft` + at least one draft iteration; locks → `locked_pending_screening`; `await` TXT/DOCX export; runs chunked AI screening (shared `lib/server/review-submit-pipeline.ts`). Preprint suggestions never force `under_review`. |
+| `POST /api/cron/analysis-jobs` | Cron (`CRON_SECRET`): `sweepStaleAnalysisJobs` — interrupt all stale `running` jobs; publication screening → human queue via `routeScreeningFailureToManualReview`. |
+| `POST /api/publication/approve-final-pdf` | Requires `pdf_draft` + at least one draft iteration; locks → `locked_pending_screening`; `await` TXT/DOCX export; starts screening job (**202**). Preprint suggestions never force `under_review`. |
 | `POST /api/review/submit` | Sync status → `under_review` + pending; starts screening job; **202** `{ jobId }` |
 
 Watermarked PDF downloads are blocked while `status === 'final_version'` until the author starts the PDF phase (export dialog shows `draftPhaseRequiredBeforeDraft`). Draft downloads call `record-pdf-draft`. The author may run `preprint-check` once finished; it is advisory only.

@@ -53,6 +53,7 @@ import { useAnalysisJob } from '@/hooks/use-analysis-job';
 import {
   applyApproveOutcome,
   applySubmitOutcome,
+  mergePublishedBiographyFields,
   normalizeScreeningOutcome,
   outcomeFromFailedJob,
 } from '@/lib/editor/analysis-job-outcomes';
@@ -254,6 +255,22 @@ export default function BiographyEditorPage() {
     }
   }, [id]);
 
+  /** Campi che la pubblicazione scrive in riga: senza ricaricare, il banner cooldown resta a 0. */
+  const syncPublishedBiographyFields = useCallback(async () => {
+    if (!id) return;
+    const { data } = await supabase
+      .from('biographies')
+      .select(
+        'published_at, last_chapter_published_at, next_chapter_available_at, chapters_count, final_pdf_url, listing_cover_url'
+      )
+      .eq('id', id)
+      .maybeSingle();
+    if (!data) return;
+    setBiography((prev) =>
+      prev ? (mergePublishedBiographyFields(prev, data) as Biography) : prev
+    );
+  }, [id]);
+
   const handleScreeningJobSettled = useCallback(
     async (job: {
       status: string;
@@ -284,15 +301,13 @@ export default function BiographyEditorPage() {
                   | 'parse_error',
                 pdf_draft_iteration: null,
                 draft_ai_feedback: null,
-                ...(effects.biographyStatus === 'published'
-                  ? { published_at: new Date().toISOString() }
-                  : {}),
               } as Biography)
             : prev
         );
         if (effects.toast?.key === 'text_changed') toast.error(t.editor.screeningTextChanged);
         else if (effects.toast?.key === 'incomplete') toast.info(t.editor.screeningTooLong);
         if (effects.biographyStatus === 'published') {
+          await syncPublishedBiographyFields();
           toast.success(
             language === 'it'
               ? 'Pubblicata dopo lo screening automatico.'
@@ -310,10 +325,29 @@ export default function BiographyEditorPage() {
       const effects = applySubmitOutcome(outcome);
       setBiographyStatus(effects.biographyStatus);
       setAiScreeningResult(effects.aiScreeningResult);
+      setBiography((prev) =>
+        prev
+          ? ({
+              ...prev,
+              status: effects.biographyStatus,
+              ai_screening_status: (effects.aiScreeningResult ??
+                prev.ai_screening_status) as Biography['ai_screening_status'],
+            } as Biography)
+          : prev
+      );
       if (effects.toast?.key === 'text_changed') toast.error(t.editor.screeningTextChanged);
       else if (effects.toast?.key === 'incomplete') toast.info(t.editor.screeningTooLong);
+      if (effects.biographyStatus === 'published') {
+        await syncPublishedBiographyFields();
+      }
     },
-    [t.editor.screeningTextChanged, t.editor.screeningTooLong, language, loadFlaggedPassagesFromReport]
+    [
+      t.editor.screeningTextChanged,
+      t.editor.screeningTooLong,
+      language,
+      loadFlaggedPassagesFromReport,
+      syncPublishedBiographyFields,
+    ]
   );
 
   const { job: screeningJob, watch: watchScreeningJob } = useAnalysisJob({

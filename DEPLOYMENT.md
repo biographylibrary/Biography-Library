@@ -120,7 +120,7 @@ Supabase is managed separately from the application host.
 - `RESEND_API_KEY`
 - `RESEND_FROM_EMAIL` (e.g. `Biography Library <noreply@biographylibrary.org>`)
 - `NEXT_PUBLIC_SITE_NAME`, `NEXT_PUBLIC_APP_URL` (or `NEXT_PUBLIC_SITE_URL`)
-- `CRON_SECRET` (protects `send-engagement-emails` and `user-email-confirmed` webhooks)
+- `CRON_SECRET` (protects `send-engagement-emails`, `user-email-confirmed` webhooks, and Next.js cron routes `POST /api/cron/report-deadlines`, `POST /api/cron/analysis-jobs`)
 - `ENGAGEMENT_EMAILS_ENABLED=true` (optional, default on)
 - `PDF_DRAFT_REMINDER_DAYS=7` (optional)
 
@@ -186,6 +186,14 @@ This is safe while `bl-app` is running — it does not remove the active contain
 Migrations are plain SQL files in `supabase/migrations/`. The filename prefix is a timestamp (e.g., `20260205184358_`). Apply them in order.
 
 **Block 3b (async analysis jobs).** Before deploying the code that returns HTTP 202 for screening / preprint: apply `20261008220000_analysis_jobs.sql` (table `analysis_jobs`, service_role only). Optional local-only env (ignored when `NODE_ENV=production`): `ANALYSIS_JOB_STALE_MINUTES` (default 20) — minutes before a stuck `running` job is marked `interrupted`.
+
+**Block 3c (fallen screening jobs).** After deploy, install the Jelastic crontab line that sweeps stale analysis jobs every 10 minutes (does not depend on anyone opening the editor). Script: `scripts/run-analysis-jobs-cron.sh` → `POST /api/cron/analysis-jobs` with `Authorization: Bearer $CRON_SECRET`. Failed or interrupted publication screening jobs are routed to the human queue (`routeScreeningFailureToManualReview`) the same way as an in-pipeline AI error.
+
+```cron
+*/10 * * * * /opt/bl-app/scripts/run-analysis-jobs-cron.sh >> /var/log/bl-analysis-jobs.log 2>&1
+```
+
+Ensure `CRON_SECRET` is set in `/opt/bl-app/.env` (same secret as report-deadlines and engagement). Copy the script into the deployed app tree if the image does not already ship `scripts/`.
 
 ### Applying a migration (rule for every migration)
 

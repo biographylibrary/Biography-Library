@@ -4,7 +4,7 @@ import { NextRequest } from 'next/server';
 const getUser = vi.fn();
 const runReviewSubmitScreening = vi.fn();
 const startAnalysisJob = vi.fn();
-const applyAiErrorIfStillPending = vi.fn(async () => undefined);
+const routeScreeningFailureToManualReview = vi.fn(async () => undefined);
 const updates: Array<Record<string, unknown>> = [];
 const tables: Record<string, Record<string, unknown> | null> = {};
 
@@ -15,8 +15,6 @@ vi.mock('@supabase/supabase-js', () => ({
 vi.mock('@/lib/server/analysis-jobs', () => ({
   startAnalysisJob: (...a: unknown[]) =>
     (startAnalysisJob as (...x: unknown[]) => unknown)(...a),
-  applyAiErrorIfStillPending: (...a: unknown[]) =>
-    (applyAiErrorIfStillPending as (...x: unknown[]) => Promise<unknown>)(...a),
 }));
 
 vi.mock('@/lib/server/review-submit-pipeline', () => ({
@@ -42,6 +40,8 @@ vi.mock('@/lib/server/review-submit-pipeline', () => ({
   checkPerUserThrottle: async () => true,
   generateAndStoreExports: async () => undefined,
   runReviewSubmitScreening: (...a: unknown[]) => runReviewSubmitScreening(...a),
+  routeScreeningFailureToManualReview: (...a: unknown[]) =>
+    (routeScreeningFailureToManualReview as (...x: unknown[]) => Promise<unknown>)(...a),
 }));
 
 import { POST } from '@/app/api/review/submit/route';
@@ -137,15 +137,23 @@ describe('POST /api/review/submit', () => {
     expect(updates).toHaveLength(0);
   });
 
-  it('se startAnalysisJob fallisce: ai_error e 500', async () => {
+  it('se startAnalysisJob fallisce: instrada in coda umana e 500', async () => {
     startAnalysisJob.mockRejectedValueOnce(new Error('analysis_job_insert_failed'));
     const res = await POST(req());
     expect(res.status).toBe(500);
-    expect(applyAiErrorIfStillPending).toHaveBeenCalledWith(
+    expect(routeScreeningFailureToManualReview).toHaveBeenCalledWith(
       expect.anything(),
       'bio-1',
-      'screening'
+      'start_failed'
     );
     expect(updates.some((u) => u.status === 'under_review')).toBe(true);
+  });
+
+  it('se startAnalysisJob fallisce e l\'instradamento non lancia: comunque 500', async () => {
+    startAnalysisJob.mockRejectedValueOnce(new Error('analysis_job_insert_failed'));
+    routeScreeningFailureToManualReview.mockResolvedValueOnce(undefined);
+    const res = await POST(req());
+    expect(res.status).toBe(500);
+    expect(await res.json()).toEqual({ error: 'Internal error' });
   });
 });

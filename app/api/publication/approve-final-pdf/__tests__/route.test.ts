@@ -7,7 +7,7 @@ const generateUploadFinalPdf = vi.fn();
 const generateAndStoreExports = vi.fn();
 const runReviewSubmitScreening = vi.fn();
 const startAnalysisJob = vi.fn();
-const applyAiErrorIfStillPending = vi.fn(async () => undefined);
+const routeScreeningFailureToManualReview = vi.fn(async () => undefined);
 const getUser = vi.fn();
 
 vi.mock('@supabase/supabase-js', () => ({
@@ -19,8 +19,6 @@ vi.mock('@supabase/supabase-js', () => ({
 vi.mock('@/lib/server/analysis-jobs', () => ({
   startAnalysisJob: (...a: unknown[]) =>
     (startAnalysisJob as (...x: unknown[]) => unknown)(...a),
-  applyAiErrorIfStillPending: (...a: unknown[]) =>
-    (applyAiErrorIfStillPending as (...x: unknown[]) => Promise<unknown>)(...a),
 }));
 
 vi.mock('@/lib/server/review-submit-pipeline', () => ({
@@ -28,6 +26,8 @@ vi.mock('@/lib/server/review-submit-pipeline', () => ({
   checkPerUserThrottle: () => checkPerUserThrottle(),
   generateAndStoreExports: () => generateAndStoreExports(),
   runReviewSubmitScreening: () => runReviewSubmitScreening(),
+  routeScreeningFailureToManualReview: (...a: unknown[]) =>
+    (routeScreeningFailureToManualReview as (...x: unknown[]) => Promise<unknown>)(...a),
 }));
 
 vi.mock('@/lib/server/final-pdf-artifacts', () => ({
@@ -112,7 +112,7 @@ describe('approve-final-pdf route', () => {
     expect(startAnalysisJob).toHaveBeenCalledTimes(1);
   });
 
-  it('se startAnalysisJob fallisce: ai_error e 500', async () => {
+  it('se startAnalysisJob fallisce: instrada in coda umana e 500', async () => {
     const client = makeServiceClient({
       user_id: 'user-1',
       status: 'pdf_draft',
@@ -131,10 +131,10 @@ describe('approve-final-pdf route', () => {
     });
     const res = await POST(req);
     expect(res.status).toBe(500);
-    expect(applyAiErrorIfStillPending).toHaveBeenCalledWith(
+    expect(routeScreeningFailureToManualReview).toHaveBeenCalledWith(
       expect.anything(),
       'bio-1',
-      'screening'
+      'start_failed'
     );
   });
 

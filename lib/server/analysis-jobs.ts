@@ -4,6 +4,7 @@ import {
   type AnalysisJobStatus,
 } from '@/lib/analysis-job-constants';
 import { writeModerationMessage } from '@/lib/server/moderation-register';
+import { routeScreeningFailureToManualReview } from '@/lib/server/review-submit-pipeline';
 import type { AnyClient } from '@/lib/server/service-client';
 
 /** Messaggio interno uguale a screenRevisionAndAttach quando lo screening non gira. */
@@ -47,35 +48,6 @@ function isUniqueViolation(error: { code?: string; message?: string } | null): b
   return msg.includes('23505') || /duplicate key|unique constraint/i.test(msg);
 }
 
-/**
- * Porta `ai_screening_status` a `ai_error` solo se la scheda è ancora in
- * under_review / locked_pending_screening con pending (es. lavoro fallito
- * o avvio del job fallito dopo il cambio di stato).
- */
-export async function applyAiErrorIfStillPending(
-  client: AnyClient,
-  biographyId: string,
-  kind: AnalysisJobKind = 'screening'
-): Promise<void> {
-  if (kind !== 'screening') return;
-  const { data: bio } = await client
-    .from('biographies')
-    .select('status, ai_screening_status')
-    .eq('id', biographyId)
-    .maybeSingle();
-  const row = bio as { status?: string; ai_screening_status?: string } | null;
-  if (!row) return;
-  const statusOk =
-    row.status === 'under_review' || row.status === 'locked_pending_screening';
-  if (!statusOk || row.ai_screening_status !== 'pending') return;
-  await client
-    .from('biographies')
-    .update({ ai_screening_status: 'ai_error' })
-    .eq('id', biographyId)
-    .eq('status', row.status)
-    .eq('ai_screening_status', 'pending');
-}
-
 async function notifyRevisionInterrupted(
   client: AnyClient,
   context: AnalysisJobContext
@@ -93,6 +65,26 @@ async function notifyRevisionInterrupted(
   } catch (err) {
     console.error('[analysis-jobs] revision interrupt message failed', err);
   }
+}
+
+/**
+ * Dopo un lavoro di screening di pubblicazione caduto/interrotto: coda umana
+ * (rapporto + notifiche). I lavori di correzione (context.reportId) e il
+ * controllo finale non aprono rapporti nuovi.
+ */
+async function handleScreeningJobTerminal(
+  client: AnyClient,
+  biographyId: string,
+  kind: AnalysisJobKind,
+  context: AnalysisJobContext,
+  cause: 'failed' | 'interrupted'
+): Promise<void> {
+  if (kind !== 'screening') return;
+  if (context.reportId) {
+    await notifyRevisionInterrupted(client, context);
+    return;
+  }
+  await routeScreeningFailureToManualReview(client, biographyId, cause);
 }
 
 /**
@@ -132,13 +124,38 @@ export async function interruptStaleJobs(
       continue;
     }
     n += 1;
-    await applyAiErrorIfStillPending(client, biographyId, kind);
     const ctx = (row.context ?? {}) as AnalysisJobContext;
-    if (kind === 'screening' && ctx.reportId) {
-      await notifyRevisionInterrupted(client, ctx);
-    }
+    await handleScreeningJobTerminal(client, biographyId, kind, ctx, 'interrupted');
   }
   return n;
+}
+
+/**
+ * Bonifica globale: trova tutti i lavori 'running' più vecchi della soglia e, per
+ * ogni coppia (biografia, tipo), chiama interruptStaleJobs. Restituisce il numero
+ * di lavori interrotti. Indipendente da chi apre l'editor.
+ */
+export async function sweepStaleAnalysisJobs(client: AnyClient): Promise<number> {
+  const cutoff = new Date(Date.now() - analysisJobStaleMinutes() * 60_000).toISOString();
+  const { data: stale } = await client
+    .from('analysis_jobs')
+    .select('biography_id, kind')
+    .eq('status', 'running')
+    .lt('started_at', cutoff);
+
+  const rows = (stale as Array<{ biography_id?: string; kind?: AnalysisJobKind }> | null) ?? [];
+  const seen = new Set<string>();
+  let total = 0;
+  for (const row of rows) {
+    const biographyId = row.biography_id;
+    const kind = row.kind;
+    if (!biographyId || !kind) continue;
+    const key = `${biographyId}:${kind}`;
+    if (seen.has(key)) continue;
+    seen.add(key);
+    total += await interruptStaleJobs(client, biographyId, kind);
+  }
+  return total;
 }
 
 async function findRunningJob(
@@ -165,7 +182,7 @@ async function finishJob(
   kind: AnalysisJobKind,
   status: 'done' | 'failed',
   outcome: unknown,
-  touchAiErrorOnFail: boolean
+  context: AnalysisJobContext
 ): Promise<void> {
   const finishedAt = new Date().toISOString();
   const { data: updated } = await client
@@ -181,8 +198,8 @@ async function finishJob(
     });
     return;
   }
-  if (status === 'failed' && touchAiErrorOnFail) {
-    await applyAiErrorIfStillPending(client, biographyId, kind);
+  if (status === 'failed') {
+    await handleScreeningJobTerminal(client, biographyId, kind, context, 'failed');
   }
 }
 
@@ -228,7 +245,7 @@ export async function startAnalysisJob(
   void (async () => {
     try {
       const outcome = await work();
-      await finishJob(client, jobId, biographyId, kind, 'done', outcome, false);
+      await finishJob(client, jobId, biographyId, kind, 'done', outcome, context);
     } catch (err) {
       console.error('[analysis-jobs] work failed', { jobId, kind, err });
       await finishJob(
@@ -241,7 +258,7 @@ export async function startAnalysisJob(
           error: 'exception',
           message: err instanceof Error ? err.message : String(err),
         },
-        true
+        context
       );
     }
   })().catch((err) => {
