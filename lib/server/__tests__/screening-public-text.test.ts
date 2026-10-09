@@ -299,7 +299,6 @@ describe('fetchScreeningPublicText via fake DB', () => {
           content_freeflow: null,
           final_version: 'Corpo finale.',
           biography_mode: 'freeflow',
-          content_language: 'it',
           record_language_tag: 'it',
         },
       ],

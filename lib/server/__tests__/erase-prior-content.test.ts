@@ -44,7 +44,6 @@ describe('erasePriorContent', () => {
                 um_id: 'UM-0000-K3NQ-7FX2-MVP4',
                 user_id: 'author',
                 record_language_tag: 'it',
-                content_language: 'it',
               },
               error: null,
             };

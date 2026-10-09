@@ -103,6 +103,7 @@ create table public.biographies (
   updated_at timestamptz default now(),
   share_token text,
   completed_at timestamptz,
+  -- Resta nel bootstrap: la migrazione delle edizioni la legge ancora per riempire record_language_tag. La toglie la successiva, in fondo all'elenco.
   content_language text not null default 'en',
   editor_font_size integer default 16,
   final_version text default '',
@@ -255,9 +256,13 @@ create table public.person_events (
   sequence integer,
   date_edtf text,
   date_as_given text,
+  date_start_iso date,
+  date_start_jdn integer,
   calendar_code text,
   place_name_as_given text,
   place_name_current text,
+  place_lat double precision,
+  place_lon double precision,
   source_note text,
   created_at timestamptz default now()
 );
@@ -468,13 +473,21 @@ export async function createTestDb(
     '20261008120100_preprint_check_runs.sql',
     '20261008220000_analysis_jobs.sql',
     '20261009143000_biography_editions.sql',
+    '20261009150000_drop_content_language_after_release.sql',
   ];
   const files = all.filter((file) => !options.skip?.includes(file) && (!options.only || options.only.includes(file)));
+  // La seconda migrazione legge translation_of, aggiunta dalla prima. Chi usa only o skip
+  // e non applica le edizioni non deve eseguire il ritiro della colonna per sbaglio.
+  const editionsFile = all.find((file) => file.startsWith('20261009143000_'));
+  const dropFile = all.find((file) => file.startsWith('20261009150000_'));
+  const applicable = editionsFile && dropFile && !files.includes(editionsFile)
+    ? files.filter((file) => file !== dropFile)
+    : files;
   // L'ultima fissa il percorso di ricerca di funzioni create da 20260930120000 e 20260930120150:
   // senza una delle due non ha nulla su cui lavorare (i controlli negativi che ne tolgono una tolgono anche lei).
   const pathFix = all.find((f) => f.includes('_helper_functions_search_path')) ?? '';
   const needs = all.filter((f) => /_server_only_columns_and_reports|_author_text_whitelist/.test(f));
-  for (const file of files) {
+  for (const file of applicable) {
     if (file === pathFix && !needs.every((n) => files.includes(n))) continue;
     await db.exec(readFileSync(join(MIGRATIONS, file), 'utf8'));
   }

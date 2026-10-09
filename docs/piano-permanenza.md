@@ -34,5 +34,5 @@ Gli atomi (eventi, relazioni, UM id, `updated_at`) ci sono già.
 ## Debito noto (fuori da questo piano, ma tracciato)
 
 - Motore PDF diverso da jsPDF per scritture non latine (subsetting glifi).
-- `content_language` ancora presente (CHECK a 4 lingue); ritiro completo più avanti.
+- `content_language` ancora presente (CHECK a 4 lingue); ritiro completo più avanti. Il debito è chiuso con `20261009150000`.
 - NFC non ancora su *ogni* API di scrittura secondaria (import, some admin paths).

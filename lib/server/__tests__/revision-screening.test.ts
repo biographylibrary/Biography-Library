@@ -34,7 +34,6 @@ function makeDb(finalVersion = TEXT): FakeDb {
         final_version: finalVersion,
         content: {},
         content_freeflow: null,
-        content_language: 'it',
         record_language_tag: 'it',
         biography_type: 'autobiography',
         published_at: '2026-01-01T00:00:00Z',
@@ -152,7 +151,7 @@ describe('correzione inviata: screening senza pubblicazione, esito allegato alla
 
   it('se lo screening non gira, non solleva e lascia scritto che va rilanciato', async () => {
     const db = createFakeDb(
-      { biographies: [{ id: 'b1', user_id: 'author-1', status: 'revision_pending_review', final_version: TEXT, content_language: 'it', record_language_tag: 'it' }], moderation_reports: [{ id: 'r1', biography_id: 'b1', ai_analysis: OLD_ANALYSIS }] },
+      { biographies: [{ id: 'b1', user_id: 'author-1', status: 'revision_pending_review', final_version: TEXT, record_language_tag: 'it' }], moderation_reports: [{ id: 'r1', biography_id: 'b1', ai_analysis: OLD_ANALYSIS }] },
       { failInsert: (table) => (table === 'publication_records' ? { message: 'db down' } : null) }
     );
     const r = await attach(db);
@@ -180,7 +179,6 @@ describe('correzione inviata: screening senza pubblicazione, esito allegato alla
           final_version: TEXT,
           content: {},
           content_freeflow: null,
-          content_language: 'it',
           record_language_tag: 'it',
           biography_type: 'autobiography',
           published_at: '2026-01-01T00:00:00Z',

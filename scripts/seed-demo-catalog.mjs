@@ -16,7 +16,7 @@ const DEMOS = [
     email: 'demo-author-it@biographylibrary.test',
     name: 'Demo Autore IT',
     language: 'it',
-    content_language: 'it',
+    record_language_tag: 'it',
     slug: 'demo-mia-storia-it',
     title: 'La mia storia',
     author_name: 'Elena Rossi',
@@ -43,7 +43,7 @@ const DEMOS = [
     email: 'demo-author-en@biographylibrary.test',
     name: 'Demo Author EN',
     language: 'en',
-    content_language: 'en',
+    record_language_tag: 'en',
     slug: 'demo-my-story-en',
     title: 'My Story',
     author_name: 'James Whitfield',
@@ -70,7 +70,7 @@ const DEMOS = [
     email: 'demo-author-fr@biographylibrary.test',
     name: 'Demo Auteur FR',
     language: 'fr',
-    content_language: 'fr',
+    record_language_tag: 'fr',
     slug: 'demo-mon-histoire-fr',
     title: 'Mon histoire',
     author_name: 'Marie Dubois',
@@ -97,7 +97,7 @@ const DEMOS = [
     email: 'demo-author-de@biographylibrary.test',
     name: 'Demo Autor DE',
     language: 'de',
-    content_language: 'de',
+    record_language_tag: 'de',
     slug: 'demo-meine-geschichte-de',
     title: 'Meine Geschichte',
     author_name: 'Hans Müller',
@@ -124,7 +124,7 @@ const DEMOS = [
     email: 'demo-memorial-it@biographylibrary.test',
     name: 'Demo Memorial IT',
     language: 'it',
-    content_language: 'it',
+    record_language_tag: 'it',
     slug: 'demo-memoria-giovanni-it',
     biography_type: 'memorial',
     subject_name: 'Giovanni Bianchi',
@@ -153,7 +153,7 @@ const DEMOS = [
     email: 'demo-memorial-en@biographylibrary.test',
     name: 'Demo Memorial EN',
     language: 'en',
-    content_language: 'en',
+    record_language_tag: 'en',
     slug: 'demo-memorial-robert-en',
     biography_type: 'memorial',
     subject_name: 'Robert Harper',
@@ -182,7 +182,7 @@ const DEMOS = [
     email: 'demo-memorial-fr@biographylibrary.test',
     name: 'Demo Memorial FR',
     language: 'fr',
-    content_language: 'fr',
+    record_language_tag: 'fr',
     slug: 'demo-memorial-henri-fr',
     biography_type: 'memorial',
     subject_name: 'Henri Lambert',
@@ -211,7 +211,7 @@ const DEMOS = [
     email: 'demo-memorial-de@biographylibrary.test',
     name: 'Demo Memorial DE',
     language: 'de',
-    content_language: 'de',
+    record_language_tag: 'de',
     slug: 'demo-memorial-helmut-de',
     biography_type: 'memorial',
     subject_name: 'Helmut Schneider',
@@ -355,7 +355,7 @@ async function ensureBiography(supabase, userId, demo) {
     author_name: demo.author_name,
     content,
     final_version: finalVersion,
-    record_language_tag: demo.content_language,
+    record_language_tag: demo.record_language_tag,
     record_script: 'Latn',
     record_direction: 'ltr',
     visibility: 'public',
@@ -397,7 +397,7 @@ async function main() {
   console.log('Seeding demo catalogue (8 biographies: 4 autobiography + 4 memorial)…\n');
 
   for (const demo of DEMOS) {
-    process.stdout.write(`${demo.content_language.toUpperCase()} ${demo.title}… `);
+    process.stdout.write(`${demo.record_language_tag.toUpperCase()} ${demo.title}… `);
     const userId = await ensureUser(supabase, demo);
     await ensureProfile(supabase, userId, demo);
     const bioId = await ensureBiography(supabase, userId, demo);

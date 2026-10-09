@@ -91,7 +91,7 @@ describe('approve-final-pdf route', () => {
       status: 'pdf_draft',
       pdf_draft_iteration: 1,
       final_version: 'x'.repeat(60),
-      content_language: 'it',
+      record_language_tag: 'it',
     });
     buildServiceClient.mockReturnValue(client);
 
@@ -118,7 +118,7 @@ describe('approve-final-pdf route', () => {
       status: 'pdf_draft',
       pdf_draft_iteration: 1,
       final_version: 'x'.repeat(60),
-      content_language: 'it',
+      record_language_tag: 'it',
     });
     buildServiceClient.mockReturnValue(client);
     startAnalysisJob.mockRejectedValueOnce(new Error('analysis_job_insert_failed'));
@@ -155,7 +155,7 @@ describe('approve-final-pdf route', () => {
       status: 'pdf_draft',
       pdf_draft_iteration: 1,
       final_version: 'x'.repeat(60),
-      content_language: 'it',
+      record_language_tag: 'it',
     });
     buildServiceClient.mockReturnValue(client);
 
@@ -201,7 +201,7 @@ describe('approve-final-pdf route', () => {
       status: 'final_version',
       pdf_draft_iteration: 1,
       final_version: 'x'.repeat(60),
-      content_language: 'it',
+      record_language_tag: 'it',
     });
     buildServiceClient.mockReturnValue(client);
 
