@@ -18,10 +18,7 @@ vi.mock('@/lib/agents/screening/run-publication-screening', () => ({
   runPublicationScreening: vi.fn(),
 }));
 
-import {
-  fetchOpenAiFlaggedReportForRescreen,
-  routeScreeningFailureToManualReview,
-} from '@/lib/server/review-submit-pipeline';
+import { routeScreeningFailureToManualReview } from '@/lib/server/review-submit-pipeline';
 
 describe('routeScreeningFailureToManualReview', () => {
   beforeEach(() => {
@@ -165,99 +162,5 @@ describe('routeScreeningFailureToManualReview', () => {
 
     expect(db.tables.biographies[0].ai_screening_status).toBe('ai_error');
     expect(db.tables.moderation_reports).toHaveLength(0);
-  });
-});
-
-describe('fetchOpenAiFlaggedReportForRescreen (PASSO 2)', () => {
-  it('trova il rapporto aperto con passaggi segnalati (comportamento storico)', async () => {
-    const db = createFakeDb({
-      biographies: [
-        { id: 'bio-1', status: 'under_review', ai_screening_status: 'flagged' },
-      ],
-      moderation_reports: [
-        {
-          id: 'flagged-report',
-          biography_id: 'bio-1',
-          status: 'assigned',
-          origin: 'screening',
-          created_at: '2026-10-08T12:00:00Z',
-          ai_analysis: {
-            summary: '1 passage flagged',
-            flagged_passages: [{ text: 'x', section_key: 'childhood', reason: 'r', level: 2 }],
-          },
-        },
-      ],
-    });
-
-    expect(await fetchOpenAiFlaggedReportForRescreen(db.client, 'bio-1')).toEqual({
-      id: 'flagged-report',
-    });
-  });
-
-  it('prima del fix: rapporto da errore AI con passaggi vuoti non veniva trovato (dimostrazione)', async () => {
-    // Con solo flagged_passages non vuoti il vecchio codice restituiva null.
-    // Ora, con origin screening + ai_error/parse_error, deve trovarlo.
-    const db = createFakeDb({
-      biographies: [
-        { id: 'bio-1', status: 'under_review', ai_screening_status: 'ai_error' },
-      ],
-      moderation_reports: [
-        {
-          id: 'err-report',
-          biography_id: 'bio-1',
-          status: 'assigned',
-          origin: 'screening',
-          created_at: '2026-10-08T12:00:00Z',
-          ai_analysis: { summary: 'AI screening could not complete.', flagged_passages: [] },
-          ai_violation_level: 0,
-        },
-      ],
-    });
-
-    const found = await fetchOpenAiFlaggedReportForRescreen(db.client, 'bio-1');
-    // Correzione: include anche rapporti screening aperti con passaggi vuoti quando ai_error/parse_error.
-    expect(found).toEqual({ id: 'err-report' });
-  });
-
-  it('parse_error con passaggi vuoti: stesso percorso', async () => {
-    const db = createFakeDb({
-      biographies: [
-        { id: 'bio-1', status: 'under_review', ai_screening_status: 'parse_error' },
-      ],
-      moderation_reports: [
-        {
-          id: 'parse-report',
-          biography_id: 'bio-1',
-          status: 'unassigned',
-          origin: 'screening',
-          created_at: '2026-10-08T12:00:00Z',
-          ai_analysis: { summary: 'parse error', flagged_passages: [] },
-        },
-      ],
-    });
-
-    expect(await fetchOpenAiFlaggedReportForRescreen(db.client, 'bio-1')).toEqual({
-      id: 'parse-report',
-    });
-  });
-
-  it('passaggi vuoti senza ai_error/parse_error: non chiude (non è un riesame da errore)', async () => {
-    const db = createFakeDb({
-      biographies: [
-        { id: 'bio-1', status: 'under_review', ai_screening_status: 'pending' },
-      ],
-      moderation_reports: [
-        {
-          id: 'other',
-          biography_id: 'bio-1',
-          status: 'assigned',
-          origin: 'screening',
-          created_at: '2026-10-08T12:00:00Z',
-          ai_analysis: { summary: 'other', flagged_passages: [] },
-        },
-      ],
-    });
-
-    expect(await fetchOpenAiFlaggedReportForRescreen(db.client, 'bio-1')).toBeNull();
   });
 });

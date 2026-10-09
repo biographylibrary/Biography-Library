@@ -115,14 +115,12 @@ async function fetchPreviousRejectionReport(
 }
 
 /**
- * When status is `under_review` after AI flags, the latest open report carries
- * `flagged_passages`: a new screening closes that report (the new one replaces it).
- * The screening itself always reads the whole text, not only those sections.
- *
- * Also closes open screening reports created for AI/job failures (empty
- * `flagged_passages`, origin `screening`) when `ai_screening_status` is
- * `ai_error` or `parse_error` — otherwise "Riprova analisi" that then publishes
- * would leave the failure report open forever.
+ * Quando uno screening nuovo sostituisce il precedente, chiude il rapporto aperto
+ * più recente (unassigned/assigned): passaggi segnalati, oppure rapporto da errore
+ * del lavoro/modello (`origin: screening`, passaggi vuoti). Non dipende da
+ * `ai_screening_status` (le rotte lo rimettono a `pending` prima del lavoro).
+ * Accetta `under_review` e `locked_pending_screening`. Non tocca altre origini
+ * né rapporti già decisi.
  */
 export async function fetchOpenAiFlaggedReportForRescreen(
   supabase: AnyClient,
@@ -130,12 +128,12 @@ export async function fetchOpenAiFlaggedReportForRescreen(
 ): Promise<{ id: string } | null> {
   const { data: bio } = await supabase
     .from('biographies')
-    .select('status, ai_screening_status')
+    .select('status')
     .eq('id', biographyId)
     .maybeSingle();
 
-  const bioRow = bio as { status?: string; ai_screening_status?: string } | null;
-  if (bioRow?.status !== 'under_review') {
+  const status = (bio as { status?: string } | null)?.status;
+  if (status !== 'under_review' && status !== 'locked_pending_screening') {
     return null;
   }
 
@@ -156,9 +154,7 @@ export async function fetchOpenAiFlaggedReportForRescreen(
     return { id: report.id as string };
   }
 
-  const screeningStatus = bioRow.ai_screening_status;
-  const isAiFailureStatus = screeningStatus === 'ai_error' || screeningStatus === 'parse_error';
-  if (isAiFailureStatus && (report as { origin?: string }).origin === 'screening') {
+  if ((report as { origin?: string }).origin === 'screening') {
     return { id: report.id as string };
   }
 

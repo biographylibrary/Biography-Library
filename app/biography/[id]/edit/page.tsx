@@ -301,6 +301,9 @@ export default function BiographyEditorPage() {
                   | 'parse_error',
                 pdf_draft_iteration: null,
                 draft_ai_feedback: null,
+                ...(effects.biographyStatus === 'published'
+                  ? { published_at: new Date().toISOString() }
+                  : {}),
               } as Biography)
             : prev
         );
@@ -332,6 +335,9 @@ export default function BiographyEditorPage() {
               status: effects.biographyStatus,
               ai_screening_status: (effects.aiScreeningResult ??
                 prev.ai_screening_status) as Biography['ai_screening_status'],
+              ...(effects.biographyStatus === 'published'
+                ? { published_at: new Date().toISOString() }
+                : {}),
             } as Biography)
           : prev
       );
