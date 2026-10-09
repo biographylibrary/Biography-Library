@@ -22,9 +22,15 @@ const TABLES = [
   'biography_media',
   'person_events',
   'person_relations',
+  'biography_edition_captions',
 ] as const;
 
-const FINGERPRINT_MEDIA = ['biography_media.caption', 'biography_media.layout', 'biography_media.display_order'];
+const FINGERPRINT_MEDIA = [
+  'biography_media.caption',
+  'biography_media.layout',
+  'biography_media.display_order',
+  'biography_edition_captions.caption',
+];
 const FINGERPRINT_EVENTS = [
   'person_events.event_type',
   'person_events.event_label',

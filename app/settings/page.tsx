@@ -96,13 +96,15 @@ export default function SettingsPage() {
       const { count } = await supabase
         .from('biographies')
         .select('id', { count: 'exact', head: true })
-        .eq('user_id', user.id);
+        .eq('user_id', user.id)
+        .is('translation_of', null);
       setBiographyCount(count ?? 0);
 
       const { data: latest } = await supabase
         .from('biographies')
         .select('id')
         .eq('user_id', user.id)
+        .is('translation_of', null)
         .order('updated_at', { ascending: false })
         .limit(1)
         .maybeSingle();

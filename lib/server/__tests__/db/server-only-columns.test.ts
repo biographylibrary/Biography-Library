@@ -80,7 +80,7 @@ describe('biographies: l\'autore non salta lo screening', () => {
       db,
       'authenticated',
       U.fresh,
-      `insert into biographies (user_id, title) values ($1, 'Nuova') returning id, status`,
+      `insert into biographies (user_id, title, record_language_tag, record_script, record_direction) values ($1, 'Nuova', 'it', 'Latn', 'ltr') returning id, status`,
       [U.fresh]
     );
     expect(created.status).toBe('draft');
@@ -139,7 +139,7 @@ describe('biographies: l\'autore non salta lo screening', () => {
     );
     await asService(`update biographies set status = 'draft' where id = $1`, [BIO.removed]);
     await asService(
-      `insert into biographies (user_id, title, status, ai_screening_status) values ($1, 'p', 'published', 'passed')`,
+      `insert into biographies (user_id, title, status, ai_screening_status, record_language_tag, record_script, record_direction) values ($1, 'p', 'published', 'passed', 'it', 'Latn', 'ltr')`,
       [U.fresh2]
     );
   });

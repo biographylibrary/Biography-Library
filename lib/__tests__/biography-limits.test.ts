@@ -24,7 +24,7 @@ describe('biography-limits', () => {
 
   it('returns biography count for a user', async () => {
     mockSelect.mockReturnValueOnce({
-      eq: vi.fn().mockResolvedValue({ count: 1, error: null }),
+      eq: vi.fn(() => ({ is: vi.fn().mockResolvedValue({ count: 1, error: null }) })),
     });
 
     const count = await getUserBiographyCount('user-1');
@@ -34,7 +34,7 @@ describe('biography-limits', () => {
 
   it('returns 0 when the count query fails', async () => {
     mockSelect.mockReturnValueOnce({
-      eq: vi.fn().mockResolvedValue({ count: null, error: { message: 'db error' } }),
+      eq: vi.fn(() => ({ is: vi.fn().mockResolvedValue({ count: null, error: { message: 'db error' } }) })),
     });
 
     expect(await getUserBiographyCount('user-1')).toBe(0);
@@ -42,7 +42,7 @@ describe('biography-limits', () => {
 
   it('treats null count as zero biographies', async () => {
     mockSelect.mockReturnValueOnce({
-      eq: vi.fn().mockResolvedValue({ count: null, error: null }),
+      eq: vi.fn(() => ({ is: vi.fn().mockResolvedValue({ count: null, error: null }) })),
     });
 
     expect(await getUserBiographyCount('user-1')).toBe(0);

@@ -88,6 +88,42 @@ describe('decisione di moderazione: pubblicazione', () => {
   });
 });
 
+describe('edizione commemorativa ripubblicata', () => {
+  it('scrive solo revised_at, senza una finestra provvisoria', async () => {
+    db = createFakeDb({
+      biographies: [
+        {
+          id: 'orig',
+          user_id: 'author-1',
+          status: 'published',
+          title: 'Originale',
+          final_version: 'Testo esaminato',
+          biography_type: 'memorial',
+        },
+        {
+          id: 'b1',
+          user_id: 'author-1',
+          status: 'revision_pending_review',
+          title: 'T',
+          final_version: 'Testo esaminato',
+          biography_type: 'memorial',
+          translation_of: 'orig',
+          published_at: '2026-01-01T00:00:00Z',
+          provisional_until: null,
+        },
+      ],
+      moderation_reports: [{ id: 'r1', biography_id: 'b1', status: 'assigned', reviewed_by: null }],
+    });
+    await screened();
+    const r = await decide({ status: 'published', published_at: '2026-10-01T00:00:00Z' });
+    expect(r.error).toBeNull();
+    const edition = db.tables.biographies.find((b) => b.id === 'b1');
+    expect(edition?.status).toBe('published');
+    expect(edition?.revised_at).toEqual(expect.any(String));
+    expect(edition?.provisional_until ?? null).toBeNull();
+  });
+});
+
 describe('decisione di moderazione: il browser non sceglie le colonne', () => {
   it.each([
     ['final_version', { final_version: 'scritto dallo staff' }],

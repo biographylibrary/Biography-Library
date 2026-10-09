@@ -1,16 +1,14 @@
 /**
- * Lingua del contenuto della scheda (BCP 47).
- * Preferisce `record_language_tag`; fallback a `content_language` durante la transizione.
+ * Lingua del testo della scheda (BCP 47): solo `record_language_tag`.
  */
 
 export function resolveRecordLanguageTag(
   row: {
     record_language_tag?: string | null;
-    content_language?: string | null;
   } | null | undefined,
   fallback = 'en'
 ): string {
-  const tag = row?.record_language_tag?.trim() || row?.content_language?.trim();
+  const tag = row?.record_language_tag?.trim();
   return tag || fallback;
 }
 

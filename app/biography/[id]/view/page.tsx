@@ -14,7 +14,6 @@ import { Logo } from '@/components/logo';
 import { ThemeToggle } from '@/components/theme-toggle';
 import { FileDown, Loader as Loader2, Lock, Archive, Flag } from 'lucide-react';
 import { useTranslation } from '@/lib/i18n/i18n-context';
-import { translations, type Language, type Translations } from '@/lib/i18n/translations';
 import { ReportBiographyModal } from '@/components/editor/ReportBiographyModal';
 import { useToast } from '@/hooks/use-toast';
 import { Toaster } from '@/components/ui/toaster';
@@ -29,8 +28,8 @@ import { PermanentIdentifier } from '@/components/biography/PermanentIdentifier'
 import { PioneerBadge } from '@/components/biography/PioneerBadge';
 import { formatDateWithUmYear } from '@/lib/um';
 import { resolveRecordLanguageTag } from '@/lib/record-language';
-
-type ViewLanguage = 'en' | 'it' | 'fr' | 'de';
+import { isPdfScriptCovered } from '@/lib/pdf/covered-scripts';
+import { textLanguageLabels } from '@/lib/text-languages';
 
 interface BiographyViewData {
   id: string;
@@ -52,8 +51,10 @@ interface BiographyViewData {
   export_txt_url: string | null;
   export_docx_url: string | null;
   listing_cover_url?: string | null;
-  content_language?: string | null;
   record_language_tag?: string | null;
+  record_script?: string | null;
+  record_direction?: string | null;
+  translation_of?: string | null;
   final_pdf_url?: string | null;
   biography_mode?: 'sections' | 'freeflow' | null;
   content_freeflow?: string | null;
@@ -69,7 +70,7 @@ interface SectionWithDate {
 type ViewError = 'not-found' | 'private' | 'invalid-token' | null;
 
 const BIOGRAPHY_VIEW_SELECT =
-  'id, title, subject_name, biography_type, author_name, um_id, content, content_freeflow, biography_mode, visibility, status, share_token, created_at, published_at, provisional_until, is_pioneer, is_frozen, frozen_at, export_txt_url, export_docx_url, listing_cover_url, content_language, record_language_tag, final_pdf_url';
+  'id, title, subject_name, biography_type, author_name, um_id, content, content_freeflow, biography_mode, visibility, status, share_token, created_at, published_at, provisional_until, is_pioneer, is_frozen, frozen_at, export_txt_url, export_docx_url, listing_cover_url, record_language_tag, record_script, record_direction, translation_of, final_pdf_url';
 
 function shouldRenderFreeflowBody(
   bio: BiographyViewData,
@@ -79,28 +80,12 @@ function shouldRenderFreeflowBody(
   return !!bio.content_freeflow?.trim() && sectionCount === 0;
 }
 
-const VIEW_LANGUAGES: ViewLanguage[] = ['en', 'it', 'fr', 'de'];
-
 function formatDate(dateStr: string, locale?: string): string {
   return new Date(dateStr).toLocaleDateString(locale, {
     day: 'numeric',
     month: 'long',
     year: 'numeric',
   });
-}
-
-function isViewLanguage(value: string | null | undefined): value is ViewLanguage {
-  return !!value && VIEW_LANGUAGES.includes(value as ViewLanguage);
-}
-
-function languageLabel(lang: string, t: Translations): string {
-  const map: Record<string, string> = {
-    en: t.view.languageNameEn,
-    it: t.view.languageNameIt,
-    fr: t.view.languageNameFr,
-    de: t.view.languageNameDe,
-  };
-  return map[lang] ?? lang.toUpperCase();
 }
 
 function interpolate(template: string, values: Record<string, string>): string {
@@ -132,11 +117,6 @@ export default function BiographyViewPage() {
   const [coverImageUrl, setCoverImageUrl] = useState<string | null>(null);
   const [resolvedBiographyId, setResolvedBiographyId] = useState<string | null>(null);
 
-  const resolvedContentLang = resolveRecordLanguageTag(biography);
-  const contentLanguage = isViewLanguage(resolvedContentLang)
-    ? resolvedContentLang
-    : 'en';
-
   const showRightsNotice =
     !!biography &&
     ((biography.visibility === 'public' && biography.status === 'published') || loadedViaShareToken);
@@ -144,8 +124,46 @@ export default function BiographyViewPage() {
   const hasServerPdf =
     biography?.status === 'published' && !!biography.final_pdf_url?.trim();
 
-  const sectionTitlePack =
-    translations[contentLanguage as Language]?.sectionTitles ?? t.sectionTitles;
+  const sectionTitlePack = t.sectionTitles;
+  const textTag = resolveRecordLanguageTag(biography);
+  const textLabels = textLanguageLabels(textTag, uiLanguage);
+
+  useEffect(() => {
+    if (!biography || biography.status !== 'published' || biography.visibility !== 'public') return;
+    const root = biography.translation_of || biography.id;
+    let cancelled = false;
+    const links: HTMLLinkElement[] = [];
+    void (async () => {
+      const { data } = await supabase
+        .from('biographies')
+        .select('id, slug, record_language_tag, translation_of')
+        .or(`id.eq.${root},translation_of.eq.${root}`)
+        .eq('status', 'published')
+        .eq('visibility', 'public');
+      if (cancelled || !data) return;
+      for (const row of data as Array<{ id: string; slug: string | null; record_language_tag: string | null; translation_of: string | null }>) {
+        const href = `${window.location.origin}/biography/${row.slug || row.id}/view`;
+        const link = document.createElement('link');
+        link.rel = 'alternate';
+        link.hreflang = row.record_language_tag || 'und';
+        link.href = href;
+        document.head.appendChild(link);
+        links.push(link);
+        if (!row.translation_of) {
+          const fallback = document.createElement('link');
+          fallback.rel = 'alternate';
+          fallback.hreflang = 'x-default';
+          fallback.href = href;
+          document.head.appendChild(fallback);
+          links.push(fallback);
+        }
+      }
+    })();
+    return () => {
+      cancelled = true;
+      for (const link of links) link.remove();
+    };
+  }, [biography]);
 
   useEffect(() => {
     const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -198,17 +216,17 @@ export default function BiographyViewPage() {
           const { data: fullBio } = await supabase
             .from('biographies')
             .select(
-              'content_language, record_language_tag, final_pdf_url, is_pioneer, biography_mode, content_freeflow'
+              'record_language_tag, record_script, record_direction, translation_of, final_pdf_url, is_pioneer, biography_mode, content_freeflow'
             )
             .eq('id', resolvedId)
             .maybeSingle();
           if (fullBio && data) {
-            data.content_language = resolveRecordLanguageTag(
-              fullBio as { content_language?: string; record_language_tag?: string }
+            data.record_language_tag = resolveRecordLanguageTag(
+              fullBio as { record_language_tag?: string }
             );
-            data.record_language_tag = (
-              fullBio as { record_language_tag?: string | null }
-            ).record_language_tag;
+            data.record_script = (fullBio as { record_script?: string | null }).record_script ?? null;
+            data.record_direction = (fullBio as { record_direction?: string | null }).record_direction ?? null;
+            data.translation_of = (fullBio as { translation_of?: string | null }).translation_of ?? null;
             data.final_pdf_url = (fullBio as { final_pdf_url?: string }).final_pdf_url ?? null;
             data.is_pioneer = (fullBio as { is_pioneer?: boolean }).is_pioneer === true;
             data.biography_mode = (fullBio as { biography_mode?: 'sections' | 'freeflow' })
@@ -217,7 +235,7 @@ export default function BiographyViewPage() {
               .content_freeflow;
           }
           if (data.status === 'published') {
-            supabase.rpc('increment_view_count', { biography_uuid: resolvedId });
+            supabase.rpc('increment_view_count', { biography_uuid: data.translation_of || resolvedId });
           }
         } else {
           loadError = 'invalid-token';
@@ -233,7 +251,7 @@ export default function BiographyViewPage() {
 
         if (!publicQuery.error && publicQuery.data) {
           data = publicQuery.data as BiographyViewData;
-          supabase.rpc('increment_view_count', { biography_uuid: resolvedId });
+          supabase.rpc('increment_view_count', { biography_uuid: data.translation_of || resolvedId });
         } else {
           const { data: authData } = await supabase.auth.getSession();
           if (authData.session) {
@@ -246,7 +264,7 @@ export default function BiographyViewPage() {
             if (!privilegedQuery.error && privilegedQuery.data) {
               data = privilegedQuery.data as BiographyViewData;
               if (data.status === 'published' && data.visibility === 'public') {
-                supabase.rpc('increment_view_count', { biography_uuid: resolvedId });
+                supabase.rpc('increment_view_count', { biography_uuid: data.translation_of || resolvedId });
               }
             } else {
               loadError = 'not-found';
@@ -267,6 +285,17 @@ export default function BiographyViewPage() {
         setError(loadError ?? 'not-found');
         setIsLoading(false);
         return;
+      }
+
+      if (data.translation_of) {
+        const { data: original } = await supabase
+          .from('biographies')
+          .select('is_pioneer')
+          .eq('id', data.translation_of)
+          .maybeSingle();
+        if (original && (original as { is_pioneer?: boolean }).is_pioneer === true) {
+          data.is_pioneer = true;
+        }
       }
 
       setBiography(data);
@@ -517,7 +546,11 @@ export default function BiographyViewPage() {
         </div>
       </header>
 
-      <main className="max-w-4xl mx-auto px-4 sm:px-6 py-8">
+      <main
+        className="max-w-4xl mx-auto px-4 sm:px-6 py-8"
+        lang={textTag}
+        dir={biography.record_direction === 'rtl' ? 'rtl' : 'ltr'}
+      >
         {coverImageUrl && (
           <div className="mb-10">
             <div
@@ -587,15 +620,21 @@ export default function BiographyViewPage() {
               />
             )}
             <div className="mt-3 not-prose">
+              <p className="mb-2 text-sm text-muted-foreground">
+                {t.textLanguage.label}: {textLabels.inUi} — {textLabels.own}
+              </p>
               <BiographyLanguageBadges
-                originalLanguage={contentLanguage}
+                originalLanguage={textTag}
                 size="md"
               />
+            {!hasServerPdf && !isPdfScriptCovered(biography.record_script) && (
+              <p className="mt-3 text-sm text-muted-foreground">{t.textLanguage.pdfUnavailableBody}</p>
+            )}
             </div>
             {hasServerPdf && (
               <p className="text-xs text-muted-foreground mt-2 not-prose">
                 {interpolate(t.view.pdfOriginalLanguage, {
-                  language: languageLabel(contentLanguage, t),
+                  language: textLabels.inUi,
                 })}
               </p>
             )}

@@ -79,12 +79,13 @@ Roles stored in `profiles.role`: `user` → `reviewer` → `admin` → `super_ad
 | Table | Purpose |
 |---|---|
 | `profiles` | Extends `auth.users`; stores role, ui_font_size, ai_features preference |
-| `biographies` | One row per biography. Key fields: `biography_mode` (sections/freeflow), `status`, `visibility`, `ai_screening_status`, `is_frozen`, `content_language` |
+| `biographies` | One row per edition. Originals have `translation_of` null; a translation points at its original (no chains). Text language is `record_language_tag` (BCP 47). `content_language` is unread and dropped only after release. |
 | `biography_sections` | One row per (biography, section_key). Stores content, draft version, status, revision history array |
 | `biography_book_structure` | Front/back matter (dedication, epigraph, preface, epilogue, acknowledgements, specific_credits as JSONB) |
-| `biography_media` | Photos: file_url, layout, display_order, caption; `width`, `height`, `bytes`, `original_bytes` written by the server when it processes a photo (null = not yet processed) |
+| `biography_media` | Photos of the original: file_url, layout, display_order, caption. Editions do not copy the files. |
 | `conversation_checkpoints` | AI conversation state per (user, biography, section): conversation_log, answers, questions_completed |
 | `section_completions` | Lightweight completion flags per (biography, section_key) |
+| `biography_edition_captions` | Caption of an edition for a photo that stays on the original (`biography_id` + `media_id`). Public read only when that edition and its original are both published and public. |
 | `moderation_reports` | Content review records: reporter_id, report_type, ai_analysis JSONB, flagged passages, status, decision |
 | `ai_rate_limits` | Per-user request tracking for daily/weekly quota enforcement |
 | `user_notifications` | In-app alerts sent to users after moderation decisions |
@@ -217,6 +218,7 @@ draft → submitted → ai_screening → pending_review → published
 6. **Flags found** → `moderation_reports` row created with AI analysis JSONB; biography set to `pending_review`; assigned to the reviewer with the fewest open reports (load balancing).
 7. **AI error** → manual review path; report created with `ai_screening_status = 'ai_error'`.
 8. **Fallen / interrupted / unstartable screening job** (block 3c) → same manual review path via `routeScreeningFailureToManualReview` (atomic claim on `pending`); cron `POST /api/cron/analysis-jobs` runs the stale sweep without requiring the editor. Revision-correction jobs (`reportId` in context) and `preprint_check` do not open new reports.
+9. **Writings the PDF engine does not cover** (Latn, Cyrl, Grek only) go from `final_version` to `locked_pending_screening` through `POST /api/publication/approve-text`. The author confirms the text online; the confirmation is stored in `final_pdf_approved_at`. No `pdf_draft`, no `final_pdf_url`. An edition is published only when its original is already `published`; otherwise the screening result is `held_for_original` and the row stays locked.
 
 ### Step 2 — Human review (`/admin/review`)
 

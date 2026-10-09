@@ -136,12 +136,16 @@ function ReviewQueueContent() {
 
     let bioQuery = supabase
       .from('biographies')
-      .select('id, title, author_name, user_id, content_language, biography_type, slug, updated_at, reviewed_by, ai_screening_status')
+      .select('id, title, author_name, user_id, record_language_tag, biography_type, slug, updated_at, reviewed_by, ai_screening_status')
       .eq('status', 'under_review')
       .order('updated_at', { ascending: true });
 
     if (languageFilter) {
-      bioQuery = bioQuery.in('content_language', languageFilter);
+      const parts = languageFilter.flatMap((code) => [
+        `record_language_tag.eq.${code}`,
+        `record_language_tag.like.${code}-*`,
+      ]);
+      bioQuery = bioQuery.or(parts.join(','));
     }
 
     const { data: bios, error } = await bioQuery;
@@ -157,7 +161,7 @@ function ReviewQueueContent() {
       title: b.title ?? '',
       author_name: b.author_name ?? '',
       author_id: b.user_id,
-      content_language: b.content_language ?? null,
+      content_language: b.record_language_tag ?? null,
       biography_type: b.biography_type ?? null,
       slug: b.slug ?? null,
       updated_at: b.updated_at,

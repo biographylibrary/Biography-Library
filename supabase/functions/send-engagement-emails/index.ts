@@ -61,8 +61,9 @@ Deno.serve(async (req: Request) => {
 
   const { data: chapterRows } = await supabase
     .from("biographies")
-    .select("id, title, user_id, content_language, next_chapter_available_at, chapters_count")
+    .select("id, title, user_id, record_language_tag, next_chapter_available_at, chapters_count")
     .eq("status", "published")
+    .is("translation_of", null)
     .gte("chapters_count", 1)
     .lte("next_chapter_available_at", nowIso)
     .is("chapter_available_email_sent_at", null)
@@ -120,8 +121,9 @@ Deno.serve(async (req: Request) => {
 
   const { data: draftRows } = await supabase
     .from("biographies")
-    .select("id, title, user_id, content_language, pdf_draft_started_at, pdf_draft_iteration, updated_at")
+    .select("id, title, user_id, record_language_tag, pdf_draft_started_at, pdf_draft_iteration, updated_at")
     .eq("status", "pdf_draft")
+    .is("translation_of", null)
     .not("pdf_draft_started_at", "is", null)
     .lte("updated_at", staleBefore)
     .is("pdf_draft_reminder_sent_at", null)

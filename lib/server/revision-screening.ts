@@ -1,6 +1,15 @@
 import { runScreeningForReview, type ReviewScreeningOutcome } from '@/lib/server/review-submit-pipeline';
 import { writeModerationMessage } from '@/lib/server/moderation-register';
+import { editionOriginalBlock } from '@/lib/server/edition-publish';
 import type { AnyClient } from '@/lib/server/service-client';
+
+async function releaseEditionRevision(svc: AnyClient, biographyId: string): Promise<void> {
+  await svc
+    .from('biographies')
+    .update({ status: 'revision_requested', ai_screening_status: null })
+    .eq('id', biographyId)
+    .eq('status', 'revision_pending_review');
+}
 
 function summaryOf(outcome: ReviewScreeningOutcome): string {
   const read = `${outcome.examinedChars} of ${outcome.sourceChars} characters`;
@@ -32,6 +41,11 @@ export async function screenRevisionAndAttach(
   svc: AnyClient,
   params: { biographyId: string; reportId: string | null; authorId: string }
 ): Promise<{ ok: boolean; verdict?: ReviewScreeningOutcome['verdict'] }> {
+  if (await editionOriginalBlock(svc, params.biographyId)) {
+    await releaseEditionRevision(svc, params.biographyId);
+    return { ok: true, verdict: 'passed' };
+  }
+
   let outcome: ReviewScreeningOutcome;
   try {
     outcome = await runScreeningForReview(svc, params.biographyId);
@@ -51,6 +65,11 @@ export async function screenRevisionAndAttach(
       }
     }
     return { ok: false };
+  }
+
+  if (await editionOriginalBlock(svc, params.biographyId)) {
+    await releaseEditionRevision(svc, params.biographyId);
+    return { ok: true, verdict: outcome.verdict };
   }
 
   if (!params.reportId) return { ok: true, verdict: outcome.verdict };

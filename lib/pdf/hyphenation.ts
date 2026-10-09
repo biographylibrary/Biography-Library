@@ -13,7 +13,7 @@ const PATTERNS: Record<string, object> = {
 
 const instances = new Map<string, Hypher>();
 
-/** Map biography `content_language` to a supported hyphenation pattern. */
+/** Map the text language tag to a supported hyphenation pattern. */
 export function normalizePdfLanguage(code: string | undefined | null): string {
   const base = (code ?? 'en').toLowerCase().split(/[-_]/)[0];
   return base in PATTERNS ? base : 'en';

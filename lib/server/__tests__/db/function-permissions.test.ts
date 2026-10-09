@@ -138,7 +138,9 @@ describe('funzioni nuove: permessi', () => {
   });
 
   it('controllo negativo: senza i REVOKE, anon eseguirebbe le funzioni nuove', async () => {
-    const bare = await createTestDb({ skip: ['20260930120150_author_text_whitelist.sql'] });
+    const bare = await createTestDb({
+      skip: ['20260930120150_author_text_whitelist.sql', '20261009143000_biography_editions.sql'],
+    });
     try {
       const { rows } = await bare.query<{ anon: boolean }>(
         `select has_function_privilege('anon', 'public.profiles_server_owned_columns()'::regprocedure, 'EXECUTE') as anon`

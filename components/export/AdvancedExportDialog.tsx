@@ -51,8 +51,8 @@ interface BiographyData {
   final_version?: string | null;
   status?: string;
   created_at: string;
-  /** Preferred UI language for watermarks (falls back to DB when dialog opens). */
-  content_language?: string | null;
+  /** Lingua del testo, per sillabazione e filigrana. */
+  record_language_tag?: string | null;
 }
 
 interface AdvancedExportDialogProps {
@@ -163,13 +163,13 @@ export function AdvancedExportDialog({
     if (!biography.id) return;
     const { data } = await supabase
       .from('biographies')
-      .select('pdf_draft_iteration, content_language, record_language_tag, draft_ai_feedback')
+      .select('pdf_draft_iteration, record_language_tag, draft_ai_feedback')
       .eq('id', biography.id)
       .maybeSingle();
     setDraftIteration(data?.pdf_draft_iteration ?? null);
     setDraftFeedback((data?.draft_ai_feedback as DraftAiFeedback | null) ?? null);
     setContentLanguage(resolveRecordLanguageTag(data ?? biography));
-  }, [biography.id, biography.content_language]);
+  }, [biography.id, biography.record_language_tag]);
 
   useEffect(() => {
     if (open && isPdfFormat && biography.id) {

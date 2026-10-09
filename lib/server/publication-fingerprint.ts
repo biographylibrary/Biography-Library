@@ -89,6 +89,8 @@ export interface PublicTextInput {
   sections: Array<{ section_key?: string | null; content?: string | null }>;
   bookStructure: Record<string, unknown> | null;
   media: Array<{ layout?: string | null; caption?: string | null; display_order?: number | null }>;
+  /** Didascalie dell'edizione. Vuoto sull'originale: non entra nell'impronta se assente. */
+  editionCaptions?: Array<{ caption?: string | null }>;
   events: Array<Record<string, unknown>>;
   relations: Array<Record<string, unknown>>;
 }
@@ -214,7 +216,13 @@ export function canonicalPublicText(input: PublicTextInput): string {
     }))
   );
 
-  const canonical = {
+  const editionCaptions = sortedJson(
+    (input.editionCaptions ?? [])
+      .map((row) => ({ caption: body(row.caption) }))
+      .filter((row) => row.caption)
+  );
+
+  const canonical: Record<string, unknown> = {
     v: 1,
     names: {
       title: short(bio.title),
@@ -239,6 +247,7 @@ export function canonicalPublicText(input: PublicTextInput): string {
     events: sortedJson(input.events.map((e) => pick(e, EVENT_FIELDS))),
     relations: sortedJson(input.relations.map((r) => pick(r, RELATION_FIELDS))),
   };
+  if (editionCaptions.length > 0) canonical.edition_captions = editionCaptions;
 
   return JSON.stringify(canonical);
 }
@@ -271,7 +280,7 @@ export async function collectPublicTextInput(
   if (error) throw new Error(`publication_fingerprint_read_failed:biographies:${error.message}`);
   if (!bio) return null;
 
-  const [sections, bookRows, media, events, relations] = await Promise.all([
+  const [sections, bookRows, media, editionCaptions, events, relations] = await Promise.all([
     rows(client, 'biography_sections', biographyId, 'section_key, content'),
     rows(
       client,
@@ -280,6 +289,7 @@ export async function collectPublicTextInput(
       'dedication_content, epigraph_content, epigraph_source, preface_content, epilogue_content, acknowledgements_content, specific_credits_content, dedication_enabled, epigraph_enabled, preface_enabled, epilogue_enabled, acknowledgements_enabled, specific_credits_enabled'
     ),
     rows(client, 'biography_media', biographyId, 'layout, caption, display_order'),
+    rows(client, 'biography_edition_captions', biographyId, 'caption'),
     rows(
       client,
       'person_events',
@@ -299,6 +309,7 @@ export async function collectPublicTextInput(
     sections: sections as PublicTextInput['sections'],
     bookStructure: (bookRows[0] as Record<string, unknown> | undefined) ?? null,
     media: media as PublicTextInput['media'],
+    editionCaptions: editionCaptions as PublicTextInput['editionCaptions'],
     events,
     relations,
   };

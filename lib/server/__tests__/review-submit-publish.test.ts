@@ -72,6 +72,74 @@ beforeEach(() => {
   screen.mockImplementation(async () => ({ passages: [], overall_severity: 0 }));
 });
 
+describe('edizione e originale non pubblicato', () => {
+  function editionDb(originalStatus: string) {
+    return createFakeDb({
+      biographies: [
+        {
+          id: 'orig',
+          user_id: 'author-1',
+          status: originalStatus,
+          title: 'Originale',
+          record_language_tag: 'it',
+          final_version: FINAL,
+          biography_mode: 'freeflow',
+          content: {},
+        },
+        {
+          id: 'bio-1',
+          user_id: 'author-1',
+          title: 'Traduzione',
+          author_name: '',
+          content: {},
+          content_freeflow: null,
+          record_language_tag: 'es',
+          final_version: FINAL,
+          biography_mode: 'freeflow',
+          status: 'locked_pending_screening',
+          biography_type: 'autobiography',
+          published_at: null,
+          provisional_until: null,
+          translation_of: 'orig',
+          ai_screening_status: 'pending',
+        },
+      ],
+    });
+  }
+
+  it('se l\'originale non è pubblicato, torna in final_version e non lascia lo screening passato', async () => {
+    const db = editionDb('draft');
+    const result = await runReviewSubmitScreening(db.client, 'bio-1');
+    expect(result).toMatchObject({ result: 'held_for_original', screeningStatus: 'passed' });
+    expect(db.tables.biographies.find((b) => b.id === 'bio-1')).toMatchObject({
+      status: 'final_version',
+      ai_screening_status: null,
+    });
+    expect(ensureUm).not.toHaveBeenCalled();
+  });
+
+  it('se l\'originale passa a non pubblicato mentre lo screening gira, stessa uscita', async () => {
+    const db = editionDb('published');
+    screen.mockImplementationOnce(async () => {
+      const original = db.tables.biographies.find((b) => b.id === 'orig');
+      if (original) original.status = 'draft';
+      return { passages: [], overall_severity: 0 };
+    });
+    const result = await runReviewSubmitScreening(db.client, 'bio-1');
+    expect(result.result).toBe('held_for_original');
+    expect(db.tables.biographies.find((b) => b.id === 'bio-1')?.status).toBe('final_version');
+    expect(ensureUm).not.toHaveBeenCalled();
+  });
+
+  it('se l\'originale è pubblicato, l\'edizione si pubblica', async () => {
+    const db = editionDb('published');
+    const result = await runReviewSubmitScreening(db.client, 'bio-1');
+    expect(result.result).toBe('published');
+    expect(db.tables.biographies.find((b) => b.id === 'bio-1')?.status).toBe('published');
+    expect(ensureUm).not.toHaveBeenCalled();
+  });
+});
+
 describe('screening pulito e pubblicazione', () => {
   it('cancella la memoria di Echo solo dopo che la pubblicazione è riuscita', async () => {
     const db = makeDb();

@@ -22,6 +22,7 @@ export default function WorkspacePage() {
         .from('biographies')
         .select('id')
         .eq('user_id', user!.id)
+        .is('translation_of', null)
         .order('updated_at', { ascending: false })
         .limit(1)
         .maybeSingle();

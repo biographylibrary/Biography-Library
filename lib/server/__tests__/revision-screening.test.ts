@@ -52,6 +52,41 @@ beforeEach(() => {
   screen.mockImplementation(async () => ({ passages: [], overall_severity: 0 }));
 });
 
+describe('edizione in correzione', () => {
+  it('se l\'originale non è più pubblicato durante lo screening, torna a revision_requested', async () => {
+    const db = createFakeDb({
+      biographies: [
+        { id: 'orig', user_id: 'author-1', status: 'published', record_language_tag: 'it' },
+        {
+          id: 'b1',
+          user_id: 'author-1',
+          status: 'revision_pending_review',
+          title: '',
+          author_name: '',
+          final_version: TEXT,
+          content: {},
+          record_language_tag: 'es',
+          biography_type: 'memorial',
+          translation_of: 'orig',
+          ai_screening_status: 'pending',
+        },
+      ],
+      moderation_reports: [{ id: 'r1', biography_id: 'b1', status: 'decided', ai_analysis: OLD_ANALYSIS }],
+    });
+    screen.mockImplementationOnce(async () => {
+      const original = db.tables.biographies.find((b) => b.id === 'orig');
+      if (original) original.status = 'under_review';
+      return { passages: [], overall_severity: 0 };
+    });
+    const r = await attach(db);
+    expect(r.ok).toBe(true);
+    expect(db.tables.biographies.find((b) => b.id === 'b1')).toMatchObject({
+      status: 'revision_requested',
+      ai_screening_status: null,
+    });
+  });
+});
+
 describe('correzione inviata: screening senza pubblicazione, esito allegato alla scheda', () => {
   it('esito pulito: registra l\'esame, allega il riassunto, non cambia lo stato', async () => {
     const db = makeDb();

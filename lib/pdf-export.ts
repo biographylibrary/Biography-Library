@@ -14,6 +14,7 @@ import { renderSemanticHtmlBody } from '@/lib/pdf/semantic-html-renderer';
 import { planTextBeforeBlockBreak } from '@/lib/pdf/block-pagination';
 import { addImageFitted } from '@/lib/pdf/photo-fit';
 import { splitTextToSizeLang } from '@/lib/pdf/text-wrap';
+import { isPdfScriptCovered } from '@/lib/pdf/covered-scripts';
 import { resolvePdfBiographyLabels } from '@/lib/biography-display';
 import type { Language } from '@/lib/i18n/translations';
 import {
@@ -1494,7 +1495,6 @@ export async function checkBiographyPdfReadiness(
 
   // Fail-open script check: separate query so a missing column never breaks PDF.
   // Covered by bundled Noto Serif: Latn, Cyrl, Grek. Emit only on positive unsupported read.
-  const PDF_COVERED_SCRIPTS = new Set(['Latn', 'Cyrl', 'Grek']);
   try {
     const { data: scriptRow, error: scriptError } = await supabase
       .from('biographies')
@@ -1506,7 +1506,7 @@ export async function checkBiographyPdfReadiness(
       scriptRow?.record_script &&
       typeof scriptRow.record_script === 'string' &&
       scriptRow.record_script.trim() !== '' &&
-      !PDF_COVERED_SCRIPTS.has(scriptRow.record_script)
+      !isPdfScriptCovered(scriptRow.record_script)
     ) {
       issues.push('unsupported-script');
     }

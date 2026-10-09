@@ -29,6 +29,7 @@ export type AnalysisJobRow = {
 
 export type ScreeningJobOutcome =
   | { result: 'published'; screeningStatus: 'passed'; isRescreen: boolean }
+  | { result: 'held_for_original'; screeningStatus: 'passed'; isRescreen: boolean }
   | {
       result: 'under_review';
       message?: string;

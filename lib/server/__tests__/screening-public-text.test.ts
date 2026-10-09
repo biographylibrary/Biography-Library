@@ -76,6 +76,7 @@ function inputCoveringReadableFields(): PublicTextInput {
         display_order: 1,
       },
     ],
+    editionCaptions: [{ caption: sentinel('biography_edition_captions.caption') }],
     events: [
       {
         event_type: 'birth',

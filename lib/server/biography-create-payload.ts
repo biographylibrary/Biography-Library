@@ -1,11 +1,5 @@
 import { isContentLicenseUri } from '@/lib/rights';
-
-const LANGUAGE_ENDONYMS: Record<string, string> = {
-  it: 'italiano',
-  en: 'English',
-  fr: 'français',
-  de: 'Deutsch',
-};
+import { textLanguageIdentity } from '@/lib/text-languages';
 
 function nfc(value: string | null | undefined): string {
   return (value ?? '').normalize('NFC').trim();
@@ -41,9 +35,10 @@ export function buildBiographyInsertPayload(
   const biographyType = body.biographyType === 'memorial' ? 'memorial' : 'autobiography';
   const visibility = body.visibility ?? 'private';
   const biographyMode = body.biographyMode === 'freeflow' ? 'freeflow' : 'sections';
-  const contentLanguage = ['en', 'it', 'fr', 'de'].includes(body.contentLanguage ?? '')
-    ? (body.contentLanguage as string)
-    : 'en';
+  const language = textLanguageIdentity(body.contentLanguage) ?? textLanguageIdentity('en');
+  if (!language) {
+    return { ok: false, status: 400, error: 'Invalid text language' };
+  }
 
   const titleRaw = nfc(body.title);
   const authorName = nfc(body.authorName);
@@ -76,13 +71,12 @@ export function buildBiographyInsertPayload(
     content: {},
     biography_mode: biographyMode,
     biography_type: biographyType,
-    content_language: contentLanguage,
     author_name: authorName,
     schema_version: 2,
-    record_language_tag: contentLanguage,
-    record_script: 'Latn',
-    record_direction: 'ltr',
-    record_language_endonym: LANGUAGE_ENDONYMS[contentLanguage] ?? contentLanguage,
+    record_language_tag: language.tag,
+    record_script: language.script,
+    record_direction: language.direction,
+    record_language_endonym: language.endonym,
     name_as_written: nameAsWritten,
   };
 

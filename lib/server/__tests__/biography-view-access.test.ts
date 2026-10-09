@@ -8,7 +8,7 @@ function client(status: string) {
     title: 'Hidden',
     author_name: 'A',
     content: {},
-    content_language: 'it',
+    record_language_tag: 'it',
     visibility: 'public',
     status,
     share_token: 'tok',

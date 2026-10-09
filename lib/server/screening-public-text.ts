@@ -74,7 +74,9 @@ export const NON_PUBLIC_TEXT_COLUMNS: Record<string, string> = {
   'biographies.visibility': 'Scelta di pubblicazione, non testo narrativo.',
   'biographies.status': 'Stato del flusso, non testo.',
   'biographies.share_token': 'Token tecnico.',
-  'biographies.content_language': 'Codice lingua (BCP 47).',
+  'biographies.content_language':
+    'Codice lingua residuo, ritirato dal codice. La colonna si elimina dopo il rilascio.',
+  'biographies.translation_of': 'Riferimento all\'originale (uuid), non testo.',
   'biographies.frozen_reason': 'Nota staff interna, non pubblica.',
   'biographies.slug': 'Identificativo URL.',
   'biographies.ai_screening_status': 'Stato tecnico dello screening.',
@@ -128,6 +130,7 @@ export const FINGERPRINT_READABLE_FIELDS = [
   'biography_book_structure.acknowledgements_content',
   'biography_book_structure.specific_credits_content',
   'biography_media.caption',
+  'biography_edition_captions.caption',
   'person_events.event_label',
   'person_events.date_as_given',
   'person_events.place_name_as_given',
@@ -153,7 +156,8 @@ export function readableFieldsForScope(scope: ScreeningTextScope): FingerprintRe
       f === 'biographies.content_freeflow' ||
       f === 'biographies.final_version' ||
       f.startsWith('biography_book_structure.') ||
-      f === 'biography_media.caption'
+      f === 'biography_media.caption' ||
+      f === 'biography_edition_captions.caption'
   );
 }
 
@@ -345,6 +349,10 @@ function buildPhotoCaptions(input: PublicTextInput): string | null {
     const layout = normalizePublicShortText(m.layout) ?? 'photo';
     lines.push(`${layout}: ${caption}`);
   }
+  for (const row of input.editionCaptions ?? []) {
+    const caption = normalizePublicBodyText(row.caption);
+    if (caption) lines.push(`caption: ${caption}`);
+  }
   if (lines.length === 0) return null;
   return sectionBlock('photo_captions', lines.join('\n'));
 }
@@ -431,12 +439,12 @@ export async function fetchScreeningPublicText(
 
   const { data: meta } = await client
     .from('biographies')
-    .select('user_id, content_language, record_language_tag')
+    .select('user_id, record_language_tag')
     .eq('id', biographyId)
     .maybeSingle();
 
   const authorId = (meta as { user_id?: string } | null)?.user_id ?? '';
-  const contentLanguage = resolveRecordLanguageTag(meta as { content_language?: string; record_language_tag?: string } | null);
+  const contentLanguage = resolveRecordLanguageTag(meta as { record_language_tag?: string } | null);
   const { text, sourceChars } = assembleScreeningText(input, scope);
   return { text, sourceChars, authorId, contentLanguage };
 }

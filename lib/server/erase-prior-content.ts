@@ -34,7 +34,7 @@ export async function erasePriorContent(
 
   const { data: bio, error: bioError } = await svc
     .from('biographies')
-    .select('id, um_id, user_id, record_language_tag, content_language')
+    .select('id, um_id, user_id, record_language_tag')
     .eq('id', biographyId)
     .maybeSingle();
   if (bioError || !bio) throw new Error(bioError?.message || 'Biography not found');
@@ -131,7 +131,7 @@ export async function erasePriorContent(
   if (chunkErr) throw new Error(chunkErr.message);
   removed.push('biography_chunks');
 
-  const lang = ((bio.record_language_tag as string | null) || (bio.content_language as string | null) || 'en')
+  const lang = ((bio.record_language_tag as string | null) || 'en')
     .split('-')[0]
     .toLowerCase();
   const { error: msgErr } = await svc.from('moderation_messages').insert({

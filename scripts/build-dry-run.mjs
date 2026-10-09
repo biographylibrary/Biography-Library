@@ -93,7 +93,7 @@ function buildTestsSql({ ownersLike, expectSearchPath }) {
 DECLARE
   results jsonb := '[]'::jsonb;
   d_id uuid; d_owner uuid; p_id uuid; p_owner uuid; other_user uuid;
-  st text; r text; expected text; cnt bigint; tbl text; col text; owner_id uuid; bio_id uuid; label text; fn record; got text;
+  st text; r text; expected text; cnt bigint; tbl text; col text; owner_id uuid; bio_id uuid; target_id uuid; label text; fn record; got text;
   writable constant text[] := ARRAY['draft','sections_complete','final_version','pdf_draft','revision_requested'];
 BEGIN
   -- Schede di prova, esistenti, di autori con ruolo user e account attivo (e, se richiesto, con email che
@@ -151,6 +151,12 @@ BEGIN
       results := results || pg_temp.dry_check('testo in stato ' || st, expected, r);
     END LOOP;
     EXECUTE format('update public.biographies set status = %L where id = %L', 'draft', d_id);
+    IF EXISTS (
+      SELECT 1 FROM information_schema.columns
+      WHERE table_schema = 'public' AND table_name = 'biographies' AND column_name = 'translation_of'
+    ) THEN
+      EXECUTE format('update public.biographies set status = %L where translation_of = %L', 'draft', d_id);
+    END IF;
 
     r := pg_temp.dry_try('authenticated', p_owner, format('update public.biographies set final_version = coalesce(final_version, %L) || %L where id = %L', '', 'x', p_id));
     results := results || pg_temp.dry_check('testo in stato published', '%author_text_locked%', r);
@@ -188,16 +194,30 @@ BEGIN
       results := results || pg_temp.dry_check('scheda altrui (bozza)', 'ok rows=0', r);
     END IF;
 
-    -- 5) Tabelle figlie: solo dove esistono righe (nessun INSERT).
-    FOREACH tbl IN ARRAY ARRAY['biography_media', 'biography_book_structure', 'biography_sections', 'person_events', 'person_relations'] LOOP
-      col := CASE tbl WHEN 'biography_media' THEN 'caption' WHEN 'biography_book_structure' THEN 'dedication_content'
-                      WHEN 'biography_sections' THEN 'content' ELSE 'source_note' END;
+    -- 5) Tabelle figlie: solo dove esistono righe (nessun INSERT). Sei, con le didascalie d'edizione.
+    FOREACH tbl IN ARRAY ARRAY['biography_media', 'biography_book_structure', 'biography_sections', 'person_events', 'person_relations', 'biography_edition_captions'] LOOP
+      IF to_regclass('public.' || tbl) IS NULL THEN
+        CONTINUE;
+      END IF;
+      col := CASE tbl
+               WHEN 'biography_media' THEN 'caption'
+               WHEN 'biography_edition_captions' THEN 'caption'
+               WHEN 'biography_book_structure' THEN 'dedication_content'
+               WHEN 'biography_sections' THEN 'content'
+               ELSE 'source_note' END;
       FOR bio_id, owner_id, label IN SELECT d_id, d_owner, 'bozza' UNION ALL SELECT p_id, p_owner, 'pubblicata' LOOP
-        EXECUTE format('select count(*) from public.%I where biography_id = %L', tbl, bio_id) INTO cnt;
+        target_id := bio_id;
+        IF tbl = 'biography_edition_captions' THEN
+          EXECUTE format('select id from public.biographies where translation_of = %L limit 1', bio_id) INTO target_id;
+          IF target_id IS NULL THEN
+            CONTINUE;
+          END IF;
+        END IF;
+        EXECUTE format('select count(*) from public.%I where biography_id = %L', tbl, target_id) INTO cnt;
         IF cnt = 0 THEN
           results := results || jsonb_build_object('prova', tbl || ' (' || label || ')', 'atteso', 'righe presenti', 'ottenuto', 'nessuna riga: non provata qui (coperta dal banco)', 'ok', true, 'saltata', true);
         ELSE
-          r := pg_temp.dry_try('authenticated', owner_id, format('update public.%I set %I = %I where biography_id = %L', tbl, col, col, bio_id));
+          r := pg_temp.dry_try('authenticated', owner_id, format('update public.%I set %I = %I where biography_id = %L', tbl, col, col, target_id));
           results := results || pg_temp.dry_check(tbl || ' (' || label || ', ' || cnt || ' righe)',
             CASE label WHEN 'bozza' THEN 'ok rows=' || cnt ELSE '%author_text_locked%' END, r);
         END IF;

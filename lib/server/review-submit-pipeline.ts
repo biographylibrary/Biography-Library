@@ -29,6 +29,7 @@ export const SUBMIT_THROTTLE_MAX = 3;
 export type SubmitThrottleAction =
   | 'review_submit'
   | 'approve_final_pdf'
+  | 'approve_text'
   | 'preprint_check'
   | 'moderation_resubmit'
   | 'record_pdf_draft';
@@ -279,6 +280,7 @@ async function fetchBiographyStatus(supabase: AnyClient, biographyId: string): P
 
 export type ReviewSubmitPipelineResult =
   | { result: 'published'; screeningStatus: 'passed'; isRescreen: boolean }
+  | { result: 'held_for_original'; screeningStatus: 'passed'; isRescreen: boolean }
   | {
       result: 'under_review';
       message?: string;
@@ -442,13 +444,12 @@ export async function routeScreeningFailureToManualReview(
       .eq('id', biographyId)
       .eq('ai_screening_status', 'pending')
       .in('status', ['under_review', 'locked_pending_screening'])
-      .select('id, status, user_id, content_language, record_language_tag');
+      .select('id, status, user_id, record_language_tag');
 
     const rows = (Array.isArray(claimed) ? claimed : claimed ? [claimed] : []) as Array<{
       id?: string;
       status?: string;
       user_id?: string;
-      content_language?: string | null;
       record_language_tag?: string | null;
     }>;
     const row = rows[0];
@@ -701,26 +702,50 @@ export async function runReviewSubmitScreening(
     });
     if (!precheck.ok) return textChanged(precheck.message);
 
-    const { ensureUmIdFor } = await import('@/lib/server/um-id-registry');
-    await ensureUmIdFor(serviceClient, biographyId);
-
     const { data: priorBio } = await serviceClient
       .from('biographies')
-      .select('biography_type, published_at, provisional_until')
+      .select('biography_type, published_at, provisional_until, translation_of')
       .eq('id', biographyId)
       .maybeSingle();
     const prior = priorBio as {
       biography_type?: string | null;
       published_at?: string | null;
       provisional_until?: string | null;
+      translation_of?: string | null;
     } | null;
+
+    if (prior?.translation_of) {
+      const { editionMayPublish } = await import('@/lib/server/edition-publish');
+      const { data: original } = await serviceClient
+        .from('biographies')
+        .select('status')
+        .eq('id', prior.translation_of)
+        .maybeSingle();
+      if (!editionMayPublish({
+        translationOf: prior.translation_of,
+        originalStatus: (original as { status?: string } | null)?.status ?? null,
+      })) {
+        await serviceClient
+          .from('biographies')
+          .update({ status: 'final_version', ai_screening_status: null })
+          .eq('id', biographyId);
+        return {
+          result: 'held_for_original',
+          screeningStatus: 'passed',
+          isRescreen,
+        };
+      }
+    } else {
+      const { ensureUmIdFor } = await import('@/lib/server/um-id-registry');
+      await ensureUmIdFor(serviceClient, biographyId);
+    }
     const publishedAt = prior?.published_at ?? new Date().toISOString();
     const publishPatch: Record<string, string> = {
       status: 'published',
       ai_screening_status: 'passed',
     };
     if (!prior?.published_at) publishPatch.published_at = publishedAt;
-    if (prior?.biography_type === 'memorial' && !prior.provisional_until && !prior.published_at) {
+    if (!prior?.translation_of && prior?.biography_type === 'memorial' && !prior.provisional_until && !prior.published_at) {
       const { provisionalUntilOnFirstPublish } = await import('@/lib/provisional-window');
       const until = provisionalUntilOnFirstPublish('memorial', publishedAt);
       if (until) publishPatch.provisional_until = until;
@@ -745,11 +770,13 @@ export async function runReviewSubmitScreening(
       throw new Error(`publish_failed: ${published.error}`);
     }
 
-    try {
-      const { syncArchivePackage } = await import('@/lib/server/archive-package-store');
-      await syncArchivePackage(serviceClient, biographyId, 'publication');
-    } catch (err) {
-      console.error('[review-submit-pipeline] archive package failed (non-blocking):', err);
+    if (!prior?.translation_of) {
+      try {
+        const { syncArchivePackage } = await import('@/lib/server/archive-package-store');
+        await syncArchivePackage(serviceClient, biographyId, 'publication');
+      } catch (err) {
+        console.error('[review-submit-pipeline] archive package failed (non-blocking):', err);
+      }
     }
 
     if (isRescreen && previousReportId) {
