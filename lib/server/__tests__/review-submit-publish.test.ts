@@ -293,32 +293,124 @@ describe('regola di sicurezza: niente pubblicazione automatica se examined_chars
 });
 
 describe('Riprova analisi dopo errore instradato (PASSO 2)', () => {
-  it('pubblicazione dopo ai_error chiude il rapporto screening a passaggi vuoti', async () => {
+  const errorReport = {
+    id: 'err-report',
+    biography_id: 'bio-1',
+    status: 'assigned' as const,
+    origin: 'screening',
+    created_at: '2026-10-08T10:00:00Z',
+    ai_analysis: {
+      summary: 'The screening job did not finish (failed). Manual review required.',
+      flagged_passages: [] as unknown[],
+    },
+    ai_violation_level: 0,
+    assigned_to: 'rev-1',
+  };
+
+  it('under_review: dopo la scrittura della rotta (pending) lo screening che passa chiude il rapporto', async () => {
+    const db = makeDb();
+    // Stato iniziale da errore, poi la stessa scrittura sincrona di review/submit.
+    db.tables.biographies[0].status = 'under_review';
+    db.tables.biographies[0].ai_screening_status = 'ai_error';
+    db.tables.moderation_reports = [{ ...errorReport }];
+    await db.client
+      .from('biographies')
+      .update({ status: 'under_review', ai_screening_status: 'pending' })
+      .eq('id', 'bio-1');
+
+    const result = await runReviewSubmitScreening(db.client, 'bio-1');
+    expect(result.result).toBe('published');
+    expect(result).toMatchObject({ isRescreen: true });
+    expect(db.tables.biographies[0].status).toBe('published');
+    expect(db.tables.moderation_reports.find((r) => r.id === 'err-report')).toMatchObject({
+      status: 'decided',
+      decision: 'publish',
+    });
+  });
+
+  it('locked_pending_screening + pending (come approve-final-pdf): chiude il rapporto da errore', async () => {
     const db = makeDb();
     db.tables.biographies[0].status = 'under_review';
     db.tables.biographies[0].ai_screening_status = 'ai_error';
+    db.tables.moderation_reports = [{ ...errorReport }];
+    // Stessa scrittura sincrona di approve-final-pdf prima del lavoro.
+    await db.client
+      .from('biographies')
+      .update({ status: 'locked_pending_screening', ai_screening_status: 'pending' })
+      .eq('id', 'bio-1');
+
+    const result = await runReviewSubmitScreening(db.client, 'bio-1');
+    expect(result.result).toBe('published');
+    expect(result).toMatchObject({ isRescreen: true });
+    expect(db.tables.biographies[0].status).toBe('published');
+    expect(db.tables.moderation_reports.find((r) => r.id === 'err-report')).toMatchObject({
+      status: 'decided',
+      decision: 'publish',
+    });
+  });
+
+  it('primo invio senza rapporto aperto: pubblica e non chiude nulla', async () => {
+    const db = makeDb();
+    db.tables.moderation_reports = [];
+    await db.client
+      .from('biographies')
+      .update({ status: 'under_review', ai_screening_status: 'pending' })
+      .eq('id', 'bio-1');
+
+    const result = await runReviewSubmitScreening(db.client, 'bio-1');
+    expect(result.result).toBe('published');
+    expect(result).toMatchObject({ isRescreen: false });
+    expect(db.tables.moderation_reports).toHaveLength(0);
+  });
+
+  it('rapporto aperto con origin diversa da screening: non chiuso', async () => {
+    const db = makeDb();
+    db.tables.biographies[0].status = 'under_review';
+    db.tables.biographies[0].ai_screening_status = 'pending';
     db.tables.moderation_reports = [
       {
-        id: 'err-report',
+        id: 'reader-report',
         biography_id: 'bio-1',
         status: 'assigned',
-        origin: 'screening',
+        origin: 'user_report',
         created_at: '2026-10-08T10:00:00Z',
-        ai_analysis: {
-          summary: 'The screening job did not finish (failed). Manual review required.',
-          flagged_passages: [],
-        },
-        ai_violation_level: 0,
+        ai_analysis: { summary: 'reader flag', flagged_passages: [] },
         assigned_to: 'rev-1',
       },
     ];
 
     const result = await runReviewSubmitScreening(db.client, 'bio-1');
     expect(result.result).toBe('published');
-    expect(result).toMatchObject({ isRescreen: true });
-    expect(db.tables.moderation_reports.find((r) => r.id === 'err-report')).toMatchObject({
+    expect(result).toMatchObject({ isRescreen: false });
+    expect(db.tables.moderation_reports.find((r) => r.id === 'reader-report')).toMatchObject({
+      status: 'assigned',
+      origin: 'user_report',
+    });
+  });
+
+  it('rapporto già decided: non toccato', async () => {
+    const db = makeDb();
+    db.tables.biographies[0].status = 'under_review';
+    db.tables.biographies[0].ai_screening_status = 'pending';
+    db.tables.moderation_reports = [
+      {
+        id: 'old-decided',
+        biography_id: 'bio-1',
+        status: 'decided',
+        decision: 'no_action',
+        origin: 'screening',
+        created_at: '2026-10-08T10:00:00Z',
+        decided_at: '2026-10-08T11:00:00Z',
+        ai_analysis: { summary: 'old error', flagged_passages: [] },
+      },
+    ];
+
+    const result = await runReviewSubmitScreening(db.client, 'bio-1');
+    expect(result.result).toBe('published');
+    expect(result).toMatchObject({ isRescreen: false });
+    expect(db.tables.moderation_reports.find((r) => r.id === 'old-decided')).toMatchObject({
       status: 'decided',
-      decision: 'publish',
+      decision: 'no_action',
     });
   });
 });
