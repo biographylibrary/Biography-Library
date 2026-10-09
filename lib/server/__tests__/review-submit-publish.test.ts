@@ -39,10 +39,10 @@ function makeDb(opts: { publishError?: string; finalVersion?: string } = {}): Fa
         {
           id: 'bio-1',
           user_id: 'author-1',
-          title: 'La mia vita',
-          author_name: 'Anna',
+          title: '',
+          author_name: '',
           content: {},
-          content_freeflow: '<p>Testo</p>',
+          content_freeflow: null,
           content_language: 'en',
           record_language_tag: 'en',
           final_version: opts.finalVersion ?? FINAL,
@@ -203,15 +203,25 @@ describe('impronta: il testo pubblicato è quello esaminato', () => {
 });
 
 describe('regola di sicurezza: niente pubblicazione automatica se examined_chars < source_chars', () => {
-  it('se lo screening riporta un esame parziale: coda umana, nessun UM', async () => {
+  it('se lo screening riporta un esame parziale: coda umana, nessun UM (anche con blocco aggiunto)', async () => {
     const db = makeDb({ finalVersion: 'a'.repeat(6_001) });
-    screen.mockImplementation(async () => ({
+    db.tables.biography_book_structure = [
+      {
+        biography_id: 'bio-1',
+        dedication_enabled: true,
+        dedication_content: 'Dedica in coda al corpo.',
+      },
+    ];
+    screen.mockImplementation(async (text: unknown) => ({
       passages: [],
       overall_severity: 0,
       examinedChars: 100,
-      sourceChars: 6_001,
+      sourceChars: String(text ?? '').length,
     }));
     const result = await runReviewSubmitScreening(db.client, 'bio-1');
+    const screenedLen = String(screen.mock.calls[0]?.[0] ?? '').length;
+    expect(screenedLen).toBeGreaterThan(6_001);
+    expect(String(screen.mock.calls[0]?.[0] ?? '')).toContain('Dedica in coda al corpo.');
 
     expect(result).toMatchObject({
       result: 'under_review',
@@ -226,7 +236,9 @@ describe('regola di sicurezza: niente pubblicazione automatica se examined_chars
 
     const report = db.tables.moderation_reports.find((r) => r.biography_id === 'bio-1')!;
     expect(report.description).toContain('Incomplete screening');
-    expect((report.ai_analysis as { summary: string }).summary).toContain('100 of 6001 characters');
+    expect((report.ai_analysis as { summary: string }).summary).toContain(
+      `100 of ${screenedLen} characters`
+    );
     expect((report.ai_analysis as { summary: string }).summary).not.toMatch(/longer than/i);
   });
 

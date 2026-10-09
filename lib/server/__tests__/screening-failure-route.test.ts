@@ -18,7 +18,10 @@ vi.mock('@/lib/agents/screening/run-publication-screening', () => ({
   runPublicationScreening: vi.fn(),
 }));
 
-import { routeScreeningFailureToManualReview } from '@/lib/server/review-submit-pipeline';
+import {
+  fetchOpenAiFlaggedReportForRescreen,
+  routeScreeningFailureToManualReview,
+} from '@/lib/server/review-submit-pipeline';
 
 describe('routeScreeningFailureToManualReview', () => {
   beforeEach(() => {
@@ -162,5 +165,32 @@ describe('routeScreeningFailureToManualReview', () => {
 
     expect(db.tables.biographies[0].ai_screening_status).toBe('ai_error');
     expect(db.tables.moderation_reports).toHaveLength(0);
+  });
+});
+
+describe('fetchOpenAiFlaggedReportForRescreen', () => {
+  it('caso storico: rapporto aperto con passaggi segnalati e stato pending, trovato', async () => {
+    const db = createFakeDb({
+      biographies: [
+        { id: 'bio-1', status: 'under_review', ai_screening_status: 'pending' },
+      ],
+      moderation_reports: [
+        {
+          id: 'flagged-report',
+          biography_id: 'bio-1',
+          status: 'assigned',
+          origin: 'screening',
+          created_at: '2026-10-08T12:00:00Z',
+          ai_analysis: {
+            summary: '1 passage flagged',
+            flagged_passages: [{ text: 'x', section_key: 'childhood', reason: 'r', level: 2 }],
+          },
+        },
+      ],
+    });
+
+    expect(await fetchOpenAiFlaggedReportForRescreen(db.client, 'bio-1')).toEqual({
+      id: 'flagged-report',
+    });
   });
 });

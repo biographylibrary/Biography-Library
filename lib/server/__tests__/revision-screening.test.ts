@@ -29,9 +29,11 @@ function makeDb(finalVersion = TEXT): FakeDb {
         id: 'b1',
         user_id: 'author-1',
         status: 'revision_pending_review',
-        title: 'T',
+        title: '',
+        author_name: '',
         final_version: finalVersion,
         content: {},
+        content_freeflow: null,
         content_language: 'it',
         record_language_tag: 'it',
         biography_type: 'autobiography',
@@ -129,6 +131,53 @@ describe('correzione inviata: screening senza pubblicazione, esito allegato alla
     const r = await attach(db, null);
     expect(r.ok).toBe(true);
     expect(db.tables.publication_records).toHaveLength(1);
+  });
+
+  it('consegna allo screening anche dedica e didascalia (stesso testo pubblico)', async () => {
+    const db = createFakeDb({
+      biographies: [
+        {
+          id: 'b1',
+          user_id: 'author-1',
+          status: 'revision_pending_review',
+          title: '',
+          author_name: '',
+          final_version: TEXT,
+          content: {},
+          content_freeflow: null,
+          content_language: 'it',
+          record_language_tag: 'it',
+          biography_type: 'autobiography',
+          published_at: '2026-01-01T00:00:00Z',
+        },
+      ],
+      biography_book_structure: [
+        {
+          biography_id: 'b1',
+          dedication_enabled: true,
+          dedication_content: 'DEDICA_REVISIONE_SENTINEL',
+        },
+      ],
+      biography_media: [
+        {
+          biography_id: 'b1',
+          layout: 'full-page',
+          caption: 'CAPTION_REVISIONE_SENTINEL',
+          display_order: 0,
+        },
+      ],
+      biography_sections: [],
+      person_events: [],
+      person_relations: [],
+      moderation_reports: [{ id: 'r1', biography_id: 'b1', status: 'decided', ai_analysis: OLD_ANALYSIS }],
+    });
+
+    await attach(db);
+    expect(screen).toHaveBeenCalled();
+    const screenedText = String(screen.mock.calls[0]?.[0] ?? '');
+    expect(screenedText).toContain('DEDICA_REVISIONE_SENTINEL');
+    expect(screenedText).toContain('CAPTION_REVISIONE_SENTINEL');
+    expect(screenedText).toContain(TEXT);
   });
 });
 

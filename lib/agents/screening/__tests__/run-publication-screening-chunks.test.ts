@@ -129,4 +129,61 @@ describe('runPublicationScreening a pezzi', () => {
     await runPublicationScreening(text);
     expect(seen.some((u) => u.includes(tail))).toBe(true);
   });
+
+  it('accuse in didascalia, epigrafe e relazione: flagged con section_key giusti', async () => {
+    const markers = {
+      photo_captions: 'ACCUSA_CAPTION_NOME_INVENTATO',
+      epigraph: 'ACCUSA_EPIGRAPH_NOME_INVENTATO',
+      relations: 'ACCUSA_RELATION_NOME_INVENTATO',
+    };
+    const text = [
+      `[SECTION: epigraph]\n${markers.epigraph}`,
+      `[SECTION: photo_captions]\nfull-page: ${markers.photo_captions}`,
+      `[SECTION: relations]\nrelation_label: ${markers.relations}`,
+    ].join('\n\n');
+
+    chat.mockImplementation(async (opts: unknown) => {
+      const messages = (opts as { messages: { role: string; content: string }[] }).messages;
+      const user = messages.find((m) => m.role === 'user')?.content ?? '';
+      const passages: Array<{ text: string; section_key: string; reason: string; severity: number }> =
+        [];
+      for (const [section_key, marker] of Object.entries(markers)) {
+        if (user.includes(marker)) {
+          passages.push({
+            text: marker,
+            section_key,
+            reason: 'hidden accusation',
+            severity: 3,
+          });
+        }
+      }
+      return {
+        tool_calls: [
+          {
+            id: 'tc',
+            type: 'function',
+            function: {
+              name: 'submit_screening_verdict',
+              arguments: JSON.stringify({
+                passages,
+                overall_severity: passages.length ? 3 : 0,
+                summary: 'flags',
+              }),
+            },
+          },
+        ],
+        content: '',
+        modelUsed: 'm',
+      };
+    });
+
+    const result = await runPublicationScreening(text);
+    expect(result.aiError).toBeUndefined();
+    expect(result.overall_severity).toBe(3);
+    for (const [section_key, marker] of Object.entries(markers)) {
+      expect(
+        result.passages.some((p) => p.section_key === section_key && p.text.includes(marker))
+      ).toBe(true);
+    }
+  });
 });

@@ -2011,7 +2011,10 @@ export default function BiographyEditorPage() {
                     <li key={i} className="flex items-start gap-2 text-xs text-brand-ink/85 dark:text-brand-beigeLight/85">
                       <Lock className="h-3 w-3 shrink-0 mt-0.5" />
                       <span>
-                        <span className="font-medium">{p.section_key}</span>
+                        <span className="font-medium">
+                          {t.sectionTitles[p.section_key as keyof typeof t.sectionTitles] ||
+                            p.section_key}
+                        </span>
                         {': '}
                         {p.ai_reason}
                       </span>

@@ -4,7 +4,6 @@ import { startAnalysisJob } from '@/lib/server/analysis-jobs';
 import {
   buildServiceClient,
   checkPerUserThrottle,
-  fetchBiographyContent,
 } from '@/lib/server/review-submit-pipeline';
 import {
   canRunPreprintCheck,
@@ -98,7 +97,12 @@ export async function POST(req: NextRequest) {
     }
 
     const { jobId } = await startAnalysisJob(serviceClient, biographyId, 'preprint_check', async () => {
-      const { text, contentLanguage } = await fetchBiographyContent(serviceClient, biographyId);
+      const { fetchScreeningPublicText } = await import('@/lib/server/screening-public-text');
+      const { text, contentLanguage } = await fetchScreeningPublicText(
+        serviceClient,
+        biographyId,
+        'preprint'
+      );
       const feedback = await runPreprintCheck(text, contentLanguage, {
         userId: user.id,
         biographyId,
