@@ -12,6 +12,7 @@ export type ScreeningDetail =
 
 export type ScreeningJobOutcome =
   | { result: 'published'; screeningStatus?: string; isRescreen?: boolean }
+  | { result: 'held_for_original'; screeningStatus?: string; isRescreen?: boolean }
   | {
       result: 'under_review';
       message?: string;
@@ -31,9 +32,9 @@ export type AiScreeningUi =
 export function normalizeScreeningOutcome(raw: unknown): ScreeningJobOutcome | null {
   if (!raw || typeof raw !== 'object') return null;
   const o = raw as Record<string, unknown>;
-  if (o.result === 'published') {
+  if (o.result === 'published' || o.result === 'held_for_original') {
     return {
-      result: 'published',
+      result: o.result,
       screeningStatus: typeof o.screeningStatus === 'string' ? o.screeningStatus : undefined,
       isRescreen: o.isRescreen === true,
     };
@@ -65,12 +66,19 @@ export function outcomeFromFailedJob(): ScreeningJobOutcome {
 }
 
 export type SubmitOutcomeEffects = {
-  biographyStatus: 'published' | 'under_review';
+  biographyStatus: 'published' | 'under_review' | 'locked_pending_screening' | 'final_version';
   aiScreeningResult: AiScreeningUi;
-  toast?: { type: 'error' | 'info'; key: 'text_changed' | 'incomplete' };
+  toast?: { type: 'error' | 'info'; key: 'text_changed' | 'incomplete' | 'held_for_original' };
 };
 
 export function applySubmitOutcome(outcome: ScreeningJobOutcome): SubmitOutcomeEffects {
+  if (outcome.result === 'held_for_original') {
+    return {
+      biographyStatus: 'final_version',
+      aiScreeningResult: null,
+      toast: { type: 'info', key: 'held_for_original' },
+    };
+  }
   if (outcome.result === 'published') {
     return { biographyStatus: 'published', aiScreeningResult: 'passed' };
   }
@@ -96,11 +104,20 @@ export function applySubmitOutcome(outcome: ScreeningJobOutcome): SubmitOutcomeE
 }
 
 export type ApproveOutcomeEffects = SubmitOutcomeEffects & {
-  ai_screening_status: string;
+  ai_screening_status: string | null;
   loadFlaggedPassages: boolean;
 };
 
 export function applyApproveOutcome(outcome: ScreeningJobOutcome): ApproveOutcomeEffects {
+  if (outcome.result === 'held_for_original') {
+    return {
+      biographyStatus: 'final_version',
+      aiScreeningResult: null,
+      ai_screening_status: null,
+      loadFlaggedPassages: false,
+      toast: { type: 'info', key: 'held_for_original' },
+    };
+  }
   if (outcome.result === 'published') {
     return {
       biographyStatus: 'published',

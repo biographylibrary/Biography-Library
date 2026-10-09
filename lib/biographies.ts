@@ -28,7 +28,7 @@ export interface Biography {
   is_frozen?: boolean;
   frozen_at?: string | null;
   frozen_reason?: string | null;
-  content_language?: string;
+  record_language_tag?: string | null;
   chapters_count?: number;
   last_chapter_published_at?: string | null;
   next_chapter_available_at?: string | null;
@@ -48,7 +48,7 @@ export interface PublishedBiography {
   title: string;
   subject_name?: string | null;
   author_name: string;
-  content_language: string;
+  record_language_tag?: string | null;
   biography_type: 'autobiography' | 'memorial';
   chapters_count: number;
   published_at: string | null;
@@ -65,7 +65,7 @@ export interface PublishedBiography {
 }
 
 const PUBLISHED_SELECT =
-  'id, title, subject_name, author_name, content_language, biography_type, chapters_count, published_at, view_count, is_featured, featured_at, slug, listing_cover_url, provisional_until, is_pioneer';
+  'id, title, subject_name, author_name, record_language_tag, biography_type, chapters_count, published_at, view_count, is_featured, featured_at, slug, listing_cover_url, provisional_until, is_pioneer';
 
 export async function fetchPublishedBiographies() {
   const { data, error } = await supabase
@@ -73,6 +73,7 @@ export async function fetchPublishedBiographies() {
     .select(PUBLISHED_SELECT)
     .eq('status', 'published')
     .eq('visibility', 'public')
+    .is('translation_of', null)
     .order('published_at', { ascending: false });
 
   return {
@@ -87,6 +88,7 @@ export async function fetchFeaturedBiographies() {
     .select(PUBLISHED_SELECT)
     .eq('status', 'published')
     .eq('visibility', 'public')
+    .is('translation_of', null)
     .eq('is_featured', true)
     .order('featured_at', { ascending: false })
     .limit(6);
@@ -103,6 +105,7 @@ export async function fetchMostReadBiographies() {
     .select(PUBLISHED_SELECT)
     .eq('status', 'published')
     .eq('visibility', 'public')
+    .is('translation_of', null)
     .order('view_count', { ascending: false })
     .limit(10);
 
@@ -117,7 +120,8 @@ export async function fetchDiscoverBiographies(excludeIds: string[]) {
     .from('biographies')
     .select(PUBLISHED_SELECT)
     .eq('status', 'published')
-    .eq('visibility', 'public');
+    .eq('visibility', 'public')
+    .is('translation_of', null);
 
   if (excludeIds.length > 0) {
     query = query.not('id', 'in', `(${excludeIds.join(',')})`);

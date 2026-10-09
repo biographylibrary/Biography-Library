@@ -106,7 +106,9 @@ describe('l\'elenco degli stati', () => {
 
 describe('controllo negativo: senza la migrazione il banco se ne accorge', () => {
   it('senza 20260930120150 l\'autore riscrive il testo di una scheda pubblicata', async () => {
-    const bare = await createTestDb({ skip: ['20260930120150_author_text_whitelist.sql'] });
+    const bare = await createTestDb({
+      skip: ['20260930120150_author_text_whitelist.sql', '20261009143000_biography_editions.sql'],
+    });
     try {
       const res = await as(bare, 'authenticated', U.author, `update biographies set final_version = 'riscritto' where id = $1 returning id`, [BIO.published]);
       expect(res).toHaveLength(1);
@@ -203,9 +205,11 @@ describe('biographies: il testo si scrive solo negli stati di lavoro', () => {
 });
 
 describe('tabelle figlie: seguono lo stato della scheda madre', () => {
+  const editionOf = (bio: string) => `2${bio.slice(1)}`;
+
   /** Una riga per tabella figlia su ogni scheda (inserita come script: senza trigger). */
   async function seedChildren(): Promise<void> {
-    for (const bio of Object.values(BIO_BY_STATUS)) {
+    for (const [status, bio] of Object.entries(BIO_BY_STATUS)) {
       await asAdmin(`set session_replication_role = replica`);
       await asAdmin(
         `insert into biography_sections (biography_id, section_key, section_name, content) values ($1, 'childhood', 'Infanzia', 'testo')`,
@@ -221,6 +225,20 @@ describe('tabelle figlie: seguono lo stato della scheda madre', () => {
         `insert into biography_media (biography_id, user_id, file_url, caption, layout) values ($1, $2, 'https://x/f.jpg', 'didascalia', 'full-page')`,
         [bio, U.author]
       );
+      await asAdmin(
+        `insert into biography_media (biography_id, user_id, file_url, caption, layout) values ($1, $2, 'https://x/f2.jpg', 'seconda', 'full-page')`,
+        [bio, U.author]
+      );
+      await asAdmin(
+        `insert into biographies (id, user_id, status, title, translation_of, record_language_tag, record_script, record_direction)
+         values ($1, $2, $3, 'Edizione', $4, 'es', 'Latn', 'ltr')`,
+        [editionOf(bio), U.author, status, bio]
+      );
+      await asAdmin(
+        `insert into biography_edition_captions (biography_id, media_id, caption)
+         select $1, id, 'didascalia' from biography_media where biography_id = $2 and file_url = 'https://x/f.jpg' limit 1`,
+        [editionOf(bio), bio]
+      );
       await asAdmin(`set session_replication_role = origin`);
     }
   }
@@ -230,6 +248,8 @@ describe('tabelle figlie: seguono lo stato della scheda madre', () => {
     insert: string;
     insertParams: (bio: string) => unknown[];
     update: string;
+    /** Scheda su cui sta la riga, se non è la scheda di stato (le didascalie stanno sull'edizione). */
+    rowId?: (bio: string) => string;
   }> = [
     {
       table: 'biography_sections',
@@ -261,6 +281,14 @@ describe('tabelle figlie: seguono lo stato della scheda madre', () => {
       insertParams: (bio) => [bio],
       update: `update biography_media set caption = 'didascalia cambiata' where biography_id = $1`,
     },
+    {
+      table: 'biography_edition_captions',
+      insert: `insert into biography_edition_captions (biography_id, media_id, caption)
+               values ($1, (select id from biography_media where biography_id = $2 and file_url = 'https://x/f2.jpg' limit 1), 'nuova')`,
+      insertParams: (bio) => [editionOf(bio), bio],
+      update: `update biography_edition_captions set caption = 'cambiata' where biography_id = $1`,
+      rowId: editionOf,
+    },
   ];
 
   for (const t of TABLES) {
@@ -268,12 +296,13 @@ describe('tabelle figlie: seguono lo stato della scheda madre', () => {
       it.each(BIOGRAPHY_STATUS_VALUES.map((s) => [s]))('stato %s: inserimento, modifica, cancellazione', async (status) => {
         await seedChildren();
         const bio = BIO_BY_STATUS[status];
+        const row = t.rowId?.(bio) ?? bio;
         const writable = WRITABLE.has(status);
         const del = `delete from ${t.table} where biography_id = $1`;
 
         const insertErr = await errorOf(() => asAuthor(t.insert, t.insertParams(bio)));
-        const updateErr = await errorOf(() => asAuthor(`${t.update} returning id`, [bio]));
-        const deleteErr = await errorOf(() => asAuthor(`${del} returning id`, [bio]));
+        const updateErr = await errorOf(() => asAuthor(`${t.update} returning id`, [row]));
+        const deleteErr = await errorOf(() => asAuthor(`${del} returning id`, [row]));
 
         if (writable) {
           expect(insertErr).toBeNull();
@@ -293,7 +322,7 @@ describe('tabelle figlie: seguono lo stato della scheda madre', () => {
         await seedChildren();
         for (const bio of [BIO.published, BIO.underReview, BIO.lockedPending]) {
           expect(await errorOf(() => asService(t.insert, t.insertParams(bio)))).toBeNull();
-          expect(await errorOf(() => asService(t.update, [bio]))).toBeNull();
+          expect(await errorOf(() => asService(t.update, [t.rowId?.(bio) ?? bio]))).toBeNull();
         }
       });
 
@@ -308,7 +337,10 @@ describe('tabelle figlie: seguono lo stato della scheda madre', () => {
       it('non sposta una riga su una scheda bloccata', async () => {
         await seedChildren();
         const err = await errorOf(() =>
-          asAuthor(`update ${t.table} set biography_id = $1 where biography_id = $2`, [BIO.published, BIO.draft])
+          asAuthor(`update ${t.table} set biography_id = $1 where biography_id = $2`, [
+            t.rowId?.(BIO.published) ?? BIO.published,
+            t.rowId?.(BIO.draft) ?? BIO.draft,
+          ])
         );
         expect(err).toContain('author_text_locked');
       });

@@ -24,6 +24,9 @@ import { PhotoGalleryDialog } from '@/components/editor/PhotoGalleryDialog';
 import { ImportTextDialog } from '@/components/editor/import-text-dialog';
 import { FinalReviewDialog } from '@/components/editor/FinalReviewDialog';
 import { ReviewPublicationDialog } from '@/components/editor/ReviewPublicationDialog';
+import { TextLanguageField } from '@/components/editor/TextLanguageField';
+import { textLanguageIdentity } from '@/lib/text-languages';
+import { isPdfScriptCovered } from '@/lib/pdf/covered-scripts';
 import { FinalVersionEditor } from '@/components/editor/FinalVersionEditor';
 import { SubmitForReviewDialog } from '@/components/editor/SubmitForReviewDialog';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
@@ -157,6 +160,7 @@ export default function BiographyEditorPage() {
   const [rightsStatementUri, setRightsStatementUri] = useState<string | null>(null);
   const [recordLanguageTag, setRecordLanguageTag] = useState<string | null>(null);
   const [recordScript, setRecordScript] = useState<string | null>('Latn');
+  const [textPublishConfirmed, setTextPublishConfirmed] = useState(false);
   const [licenseDialogOpen, setLicenseDialogOpen] = useState(false);
   const [licenseDialogMode, setLicenseDialogMode] = useState<'initial' | 'upgrade'>('initial');
   const [licenseBusy, setLicenseBusy] = useState(false);
@@ -298,7 +302,8 @@ export default function BiographyEditorPage() {
                   | 'flagged'
                   | 'pending'
                   | 'ai_error'
-                  | 'parse_error',
+                  | 'parse_error'
+                  | null,
                 pdf_draft_iteration: null,
                 draft_ai_feedback: null,
                 ...(effects.biographyStatus === 'published'
@@ -309,6 +314,7 @@ export default function BiographyEditorPage() {
         );
         if (effects.toast?.key === 'text_changed') toast.error(t.editor.screeningTextChanged);
         else if (effects.toast?.key === 'incomplete') toast.info(t.editor.screeningTooLong);
+        else if (effects.toast?.key === 'held_for_original') toast.info(t.textLanguage.heldForOriginal);
         if (effects.biographyStatus === 'published') {
           await syncPublishedBiographyFields();
           toast.success(
@@ -343,6 +349,7 @@ export default function BiographyEditorPage() {
       );
       if (effects.toast?.key === 'text_changed') toast.error(t.editor.screeningTextChanged);
       else if (effects.toast?.key === 'incomplete') toast.info(t.editor.screeningTooLong);
+      else if (effects.toast?.key === 'held_for_original') toast.info(t.textLanguage.heldForOriginal);
       if (effects.biographyStatus === 'published') {
         await syncPublishedBiographyFields();
       }
@@ -350,6 +357,7 @@ export default function BiographyEditorPage() {
     [
       t.editor.screeningTextChanged,
       t.editor.screeningTooLong,
+      t.textLanguage.heldForOriginal,
       language,
       loadFlaggedPassagesFromReport,
       syncPublishedBiographyFields,
@@ -477,11 +485,7 @@ export default function BiographyEditorPage() {
           typeof data.rights_statement_uri === 'string' ? data.rights_statement_uri : null
         );
         setRecordLanguageTag(
-          typeof data.record_language_tag === 'string'
-            ? data.record_language_tag
-            : typeof data.content_language === 'string'
-              ? data.content_language
-              : null
+          typeof data.record_language_tag === 'string' ? data.record_language_tag : null
         );
         setRecordScript(
           typeof data.record_script === 'string' ? data.record_script : 'Latn'
@@ -1624,7 +1628,9 @@ export default function BiographyEditorPage() {
       const apiResult = await res.json().catch(() => ({}));
       if (!res.ok) {
         const msg =
-          typeof apiResult?.message === 'string'
+          apiResult?.error === 'original_not_published'
+            ? t.textLanguage.originalNotPublished
+            : typeof apiResult?.message === 'string'
             ? apiResult.message
             : apiResult?.error === 'drafts_required'
               ? t.editor.reviewPublication.approveDisabledHint
@@ -1688,8 +1694,67 @@ export default function BiographyEditorPage() {
     t.editor.reviewPublication.approveDisabledHint,
     t.exportDialog.noCoverPhotoWarning,
     t.toast.requestFailed,
+    t.textLanguage.originalNotPublished,
     watchScreeningJob,
   ]);
+
+  const handleTextLanguageChange = useCallback(async (tag: string) => {
+    const identity = textLanguageIdentity(tag);
+    if (!identity || !canAuthorWriteText(biographyStatus, isFrozen)) return;
+    const { error } = await supabase
+      .from('biographies')
+      .update({
+        record_language_tag: identity.tag,
+        record_script: identity.script,
+        record_direction: identity.direction,
+        record_language_endonym: identity.endonym,
+      })
+      .eq('id', id);
+    if (error) {
+      toast.error(t.toast.requestFailed);
+      return;
+    }
+    setRecordLanguageTag(identity.tag);
+    setRecordScript(identity.script);
+  }, [biographyStatus, id, isFrozen, t.toast.requestFailed]);
+
+  const handleApproveText = useCallback(async () => {
+    if (!user?.id || !textPublishConfirmed) return;
+    setPublicationActionLoading('approve');
+    setPublicationActionError(null);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      const res = await fetch('/api/publication/approve-text', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(session?.access_token ? { Authorization: `Bearer ${session.access_token}` } : {}),
+        },
+        body: JSON.stringify({ biographyId: id, confirmed: true }),
+      });
+      const apiResult = await res.json().catch(() => ({}));
+      if (!res.ok || res.status !== 202 || typeof (apiResult as { jobId?: string }).jobId !== 'string') {
+        const msg =
+          (apiResult as { error?: string }).error === 'original_not_published'
+            ? t.textLanguage.originalNotPublished
+            : t.toast.requestFailed;
+        toast.error(msg);
+        return;
+      }
+      setBiographyStatus('locked_pending_screening');
+      setAiScreeningResult('pending');
+      screeningUiSourceRef.current = 'approve';
+      setBiography((prev) =>
+        prev ? ({ ...prev, status: 'locked_pending_screening', ai_screening_status: 'pending' } as Biography) : prev
+      );
+      watchScreeningJob();
+    } catch (err) {
+      console.error(err);
+      toast.error(t.toast.requestFailed);
+    } finally {
+      setPublicationActionLoading(null);
+    }
+  }, [id, t.toast.requestFailed, t.textLanguage.originalNotPublished, textPublishConfirmed, user, watchScreeningJob]);
 
   const effectivelyLocked = isFrozen || biographyStatus === 'locked_pending_screening';
 
@@ -1776,6 +1841,18 @@ export default function BiographyEditorPage() {
           <p className="text-xs text-brand-ink dark:text-brand-beigeLight">
             {t.admin.frozenBannerMessage}
           </p>
+        </div>
+      )}
+
+      {!isFrozen && (
+        <div className="shrink-0 border-b border-border/60 bg-background px-4 py-3">
+          <div className="max-w-5xl mx-auto">
+            <TextLanguageField
+              value={recordLanguageTag}
+              disabled={statusLocksText}
+              onChange={(tag) => void handleTextLanguageChange(tag)}
+            />
+          </div>
         </div>
       )}
 
@@ -2264,7 +2341,7 @@ export default function BiographyEditorPage() {
             final_version: finalVersion,
             status: biographyStatus,
             created_at: biography.created_at,
-            content_language: biography.content_language ?? language,
+            record_language_tag: recordLanguageTag,
           }}
           isPublished={biographyStatus === 'published'}
           biographyStatus={biographyStatus}
@@ -2367,6 +2444,10 @@ export default function BiographyEditorPage() {
         onStartPdfDraft={() => void handleStartPdfDraft()}
         onOpenExport={() => setShowExportDialog(true)}
         onApproveFinalPdf={() => void handleApproveFinalPdf()}
+        textOnlyPublication={!isPdfScriptCovered(recordScript)}
+        textConfirmed={textPublishConfirmed}
+        onTextConfirmedChange={setTextPublishConfirmed}
+        onApproveText={() => void handleApproveText()}
       />
 
       <SubmitForReviewDialog

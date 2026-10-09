@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { isPdfScriptCovered } from '@/lib/pdf/covered-scripts';
 import { buildServiceClient } from '@/lib/server/service-client';
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 
@@ -43,7 +44,7 @@ export async function POST(req: NextRequest) {
 
     const { data: bio } = await dbClient
       .from('biographies')
-      .select('user_id, status')
+      .select('user_id, status, record_script, translation_of')
       .eq('id', biographyId)
       .maybeSingle();
 
@@ -52,6 +53,12 @@ export async function POST(req: NextRequest) {
     }
     if ((bio as any).user_id !== user.id) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    }
+    if (!isPdfScriptCovered((bio as { record_script?: string | null }).record_script)) {
+      return NextResponse.json(
+        { error: 'unsupported_script', message: 'This writing is published from the text, without a PDF.' },
+        { status: 400 }
+      );
     }
     if ((bio as any).status !== 'final_version') {
       return NextResponse.json(
@@ -63,7 +70,7 @@ export async function POST(req: NextRequest) {
     const { data: coverMedia } = await dbClient
       .from('biography_media')
       .select('id')
-      .eq('biography_id', biographyId)
+      .eq('biography_id', (bio as { translation_of?: string | null }).translation_of || biographyId)
       .in('layout', ['cover', 'cover_a5'])
       .limit(1)
       .maybeSingle();

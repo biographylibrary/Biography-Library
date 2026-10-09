@@ -58,7 +58,6 @@ type Row = {
   um_id: string | null;
   status: string | null;
   biography_type: string | null;
-  content_language: string | null;
   record_language_tag: string | null;
   final_pdf_url: string | null;
   export_txt_url: string | null;
@@ -89,7 +88,7 @@ async function main(): Promise<void> {
   const { data, error } = await supabase
     .from('biographies')
     .select(
-      'id, slug, title, um_id, status, biography_type, content_language, record_language_tag, final_pdf_url, export_txt_url, export_docx_url, listing_cover_url'
+      'id, slug, title, um_id, status, biography_type, record_language_tag, final_pdf_url, export_txt_url, export_docx_url, listing_cover_url'
     )
     .or('final_pdf_url.not.is.null,export_txt_url.not.is.null,export_docx_url.not.is.null')
     .order('created_at', { ascending: true });

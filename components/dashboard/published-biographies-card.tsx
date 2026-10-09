@@ -34,6 +34,7 @@ export function PublishedBiographiesCard({ userId }: PublishedBiographiesCardPro
         .select('id, title, published_at, author_name')
         .eq('user_id', userId)
         .eq('status', 'published')
+        .is('translation_of', null)
         .order('published_at', { ascending: false });
 
       if (!error && data) {

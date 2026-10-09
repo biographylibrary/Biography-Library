@@ -39,6 +39,23 @@ async function prepare(target: PGlite) {
     await target.query(`insert into public.person_events (biography_id, event_type, source_note) values ($1, 'birth', 'nota')`, [bio]);
     await target.query(`insert into public.person_relations (biography_id, relation_code, source_note) values ($1, 'parent', 'nota')`, [bio]);
   }
+  const captions = await target.query<{ t: string | null }>(`select to_regclass('public.biography_edition_captions')::text as t`);
+  if (captions.rows[0]?.t) {
+    const editionOf = async (bio: string, edition: string, status: string) => {
+      await target.query(
+        `insert into public.biographies (id, user_id, status, title, translation_of, record_language_tag, record_script, record_direction)
+         values ($1, $2, $3, 'Edizione', $4, 'es', 'Latn', 'ltr')`,
+        [edition, U.author, status, bio]
+      );
+      await target.query(
+        `insert into public.biography_edition_captions (biography_id, media_id, caption)
+         select $1, id, 'didascalia edizione' from public.biography_media where biography_id = $2 limit 1`,
+        [edition, bio]
+      );
+    };
+    await editionOf(BIO.draft, '20000000-0000-0000-0000-0000000000e1', 'draft');
+    await editionOf(BIO.published, '20000000-0000-0000-0000-0000000000e2', 'published');
+  }
   await target.exec(`set session_replication_role = origin;`);
 }
 
@@ -172,7 +189,8 @@ describe('prova a secco: prova generale sul banco', () => {
     // Le sei funzioni di elenco costante: eseguono come authenticated e hanno il percorso di ricerca vuoto.
     expect(lines).toContain('OK sei funzioni di elenco: esecuzione come authenticated => ok 6/6');
     expect(lines).toContain('OK sei funzioni di elenco: search_path vuoto => vuoto 6/6');
-    // Con righe figlie presenti, le cinque tabelle vengono provate davvero (nessuna saltata).
+    // Con righe figlie presenti, le cinque tabelle di questo banco (senza la migrazione
+    // delle edizioni) vengono provate davvero. La sesta, biography_edition_captions, è nel banco completo.
     expect(lines.filter((l) => l.includes('non provata qui'))).toEqual([]);
     const child = lines.filter((l) => /^OK (biography_|person_)/.test(l));
     expect(child).toHaveLength(10);
@@ -330,13 +348,20 @@ describe('prova a secco su uno stato già migrato (nessuna migrazione applicata)
     expect(report.errore_prove).toBeNull();
     expect(report.prove_fallite).toBe(0);
     expect(report.prove).toContain('OK sei funzioni di elenco: search_path vuoto => vuoto 6/6');
+    const childHere = (report.prove as string[]).filter((l) => /^OK (biography_|person_)/.test(l));
+    expect(childHere).toHaveLength(12);
+    expect(childHere.filter((l) => l.includes('author_text_locked'))).toHaveLength(6);
+    expect(childHere.filter((l) => l.includes('=> ok rows='))).toHaveLength(6);
+    expect(childHere.some((l) => l.includes('biography_edition_captions'))).toBe(true);
     expect(report.prove.filter((l: string) => l.startsWith('OK funzione ') && l.includes(' ['))).toHaveLength(11);
     expect(report.delta_catalogo.triggers).toEqual({ aggiunti: [], tolti: [] });
     expect(await snapshot(migrated)).toEqual(before);
   });
 
   it('controllo negativo: senza la migrazione del percorso di ricerca il controllo segnala le sei funzioni', async () => {
-    const unmigrated = await createTestDb({ skip: [EIGHTH] });
+    const unmigrated = await createTestDb({
+      skip: [EIGHTH, '20261009143000_biography_editions.sql'],
+    });
     try {
       await prepare(unmigrated);
       const { report } = await runScript(unmigrated, tests());
@@ -366,7 +391,7 @@ describe('prova a secco su uno stato già migrato (nessuna migrazione applicata)
     // Con 'author@test' e la sua unica bozza resa pubblicata, nessuna scheda scelta è in bozza: come in produzione con gli account di prova.
     // Le schede di prova di produzione sono tutte già esaminate (ai_screening_status = 'passed'): scrivere 'passed' non sarebbe un cambiamento.
     await migrated.exec(`set session_replication_role = replica;
-      update public.biographies set status = 'published' where id = '${BIO.draft}';
+      update public.biographies set status = 'published' where id = '${BIO.draft}' or id = '20000000-0000-0000-0000-0000000000e1';
       update public.biographies set ai_screening_status = 'passed' where user_id = '${U.author}';
       set session_replication_role = origin;`);
     try {
@@ -381,7 +406,7 @@ describe('prova a secco su uno stato già migrato (nessuna migrazione applicata)
       expect(report.prove).toContain("OK colonna riservata (bozza): ai_screening_status => errore 42501: server_only_column: ai");
     } finally {
       await migrated.exec(`set session_replication_role = replica;
-        update public.biographies set status = 'draft' where id = '${BIO.draft}';
+        update public.biographies set status = 'draft' where id = '${BIO.draft}' or id = '20000000-0000-0000-0000-0000000000e1';
         update public.biographies set ai_screening_status = 'pending' where user_id = '${U.author}';
         set session_replication_role = origin;`);
     }

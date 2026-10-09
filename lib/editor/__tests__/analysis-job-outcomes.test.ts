@@ -10,6 +10,15 @@ import { getChapterCooldownState } from '@/lib/biography-chapter-cooldown';
 
 describe('analysis-job-outcomes', () => {
   it('normalize + applySubmit per ogni esito', () => {
+    expect(applySubmitOutcome({ result: 'held_for_original', screeningStatus: 'passed' })).toMatchObject({
+      biographyStatus: 'final_version',
+      aiScreeningResult: null,
+      toast: { key: 'held_for_original' },
+    });
+    expect(applyApproveOutcome({ result: 'held_for_original', screeningStatus: 'passed' })).toMatchObject({
+      biographyStatus: 'final_version',
+      ai_screening_status: null,
+    });
     expect(applySubmitOutcome({ result: 'published', screeningStatus: 'passed' })).toMatchObject({
       biographyStatus: 'published',
       aiScreeningResult: 'passed',

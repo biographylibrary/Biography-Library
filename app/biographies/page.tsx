@@ -204,7 +204,7 @@ function BiographyCard({ bio, t, featured }: BiographyCardProps) {
         </p>
         <div className="flex items-center gap-1.5 flex-wrap pt-1">
           <BiographyLanguageBadges
-            originalLanguage={bio.content_language || 'en'}
+            originalLanguage={bio.record_language_tag || 'en'}
           />
           <span className="text-xs font-medium text-muted-foreground">
             {typeLabel}
@@ -321,7 +321,7 @@ function PublicBiographiesPage() {
         const inAuthor = (bio.author_name || '').toLowerCase().includes(q);
         if (!inTitle && !inSubject && !inAuthor) return false;
       }
-      if (langFilter !== 'all' && (bio.content_language || 'en') !== langFilter) {
+      if (langFilter !== 'all' && (bio.record_language_tag || 'en').split('-')[0] !== langFilter) {
         return false;
       }
       if (typeFilter === 'autobiography' && bio.biography_type === 'memorial') return false;

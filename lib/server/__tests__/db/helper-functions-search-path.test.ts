@@ -36,7 +36,7 @@ const ELEVEN = [
 let db: PGlite;
 
 beforeAll(async () => {
-  db = await createTestDb({ skip: [FILE] });
+  db = await createTestDb({ skip: [FILE, '20261009143000_biography_editions.sql'] });
 }, 120_000);
 
 afterAll(async () => {

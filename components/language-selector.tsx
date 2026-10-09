@@ -12,7 +12,7 @@ import { useTranslation } from '@/lib/i18n/i18n-context';
 import { Language, languageNames, languageFlags } from '@/lib/i18n/translations';
 
 export function LanguageSelector() {
-  const { language, setLanguage } = useTranslation();
+  const { t, language, setLanguage } = useTranslation();
 
   const handleLanguageChange = async (lang: Language) => {
     await setLanguage(lang);
@@ -23,7 +23,7 @@ export function LanguageSelector() {
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" size="icon" className="h-9 w-9">
           <Languages className="h-[1.2rem] w-[1.2rem]" />
-          <span className="sr-only">Select language</span>
+          <span className="sr-only">{t.textLanguage.interfaceLabel}</span>
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">

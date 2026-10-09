@@ -23,8 +23,8 @@ export type OpenReportResult = {
   effect: LaneEffect;
 };
 
-function recordLanguage(bio: { record_language_tag?: string | null; content_language?: string | null }): string {
-  return ((bio.record_language_tag || bio.content_language || 'en').split('-')[0] || 'en').toLowerCase();
+function recordLanguage(bio: { record_language_tag?: string | null }): string {
+  return ((bio.record_language_tag || 'en').split('-')[0] || 'en').toLowerCase();
 }
 
 async function notifyImmediateReviewers(
@@ -65,7 +65,7 @@ export async function openModerationReport(
 ): Promise<OpenReportResult> {
   const { data: bio, error: bioErr } = await svc
     .from('biographies')
-    .select('id, status, user_id, title, record_language_tag, content_language')
+    .select('id, status, user_id, title, record_language_tag')
     .eq('id', input.biographyId)
     .maybeSingle();
 
@@ -107,7 +107,7 @@ export async function openModerationReport(
     if (statusErr) throw new Error(statusErr.message);
   }
 
-  const lang = recordLanguage(bio as { record_language_tag?: string | null; content_language?: string | null });
+  const lang = recordLanguage(bio as { record_language_tag?: string | null });
   const { error: msgErr } = await svc.from('moderation_messages').insert({
     report_id: reportId,
     sender_id: input.senderId,

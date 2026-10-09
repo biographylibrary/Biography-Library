@@ -3,17 +3,12 @@ import { resolveRecordLanguageTag, recordLanguageUiBase } from '@/lib/record-lan
 import { nfcBiographyWriteFields } from '@/lib/nfc-biography';
 
 describe('resolveRecordLanguageTag', () => {
-  it('prefers record_language_tag', () => {
-    expect(
-      resolveRecordLanguageTag({
-        record_language_tag: 'it-CH',
-        content_language: 'en',
-      })
-    ).toBe('it-CH');
+  it('usa record_language_tag', () => {
+    expect(resolveRecordLanguageTag({ record_language_tag: 'it-CH' })).toBe('it-CH');
   });
 
-  it('falls back to content_language', () => {
-    expect(resolveRecordLanguageTag({ content_language: 'fr' })).toBe('fr');
+  it('senza tag torna al valore di riserva', () => {
+    expect(resolveRecordLanguageTag({})).toBe('en');
   });
 });
 

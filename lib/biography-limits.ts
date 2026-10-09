@@ -6,7 +6,8 @@ export async function getUserBiographyCount(userId: string): Promise<number> {
   const { count, error } = await supabase
     .from('biographies')
     .select('id', { count: 'exact', head: true })
-    .eq('user_id', userId);
+    .eq('user_id', userId)
+    .is('translation_of', null);
 
   if (error) return 0;
   return count ?? 0;

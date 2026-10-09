@@ -88,6 +88,34 @@ describe('POST /api/moderation/resubmit', () => {
     ).toBe(false);
   });
 
+  it('non invia un\'edizione se l\'originale non è pubblicato', async () => {
+    db = createFakeDb({
+      biographies: [
+        { id: 'orig', user_id: 'owner-1', status: 'draft' },
+        { id: 'b1', user_id: 'owner-1', status: 'revision_requested', translation_of: 'orig' },
+      ],
+      moderation_reports: [{ id: 'r1', biography_id: 'b1', status: 'decided' }],
+    });
+    const res = await POST(req());
+    expect(res.status).toBe(409);
+    expect(await res.json()).toMatchObject({ error: 'original_not_published' });
+    expect(db.tables.biographies.find((b) => b.id === 'b1')?.status).toBe('revision_requested');
+    expect(startAnalysisJob).not.toHaveBeenCalled();
+  });
+
+  it('invia un\'edizione se l\'originale è pubblicato', async () => {
+    db = createFakeDb({
+      biographies: [
+        { id: 'orig', user_id: 'owner-1', status: 'published' },
+        { id: 'b1', user_id: 'owner-1', status: 'revision_requested', translation_of: 'orig' },
+      ],
+      moderation_reports: [{ id: 'r1', biography_id: 'b1', status: 'decided' }],
+    });
+    const res = await POST(req());
+    expect(res.status).toBe(200);
+    expect(db.tables.biographies.find((b) => b.id === 'b1')?.status).toBe('revision_pending_review');
+  });
+
   it('risponde 429 se il limite moderation_resubmit è esaurito', async () => {
     checkPerUserThrottle.mockResolvedValueOnce(false);
     const res = await POST(req());

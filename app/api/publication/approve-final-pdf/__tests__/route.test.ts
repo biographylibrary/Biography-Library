@@ -169,6 +169,31 @@ describe('approve-final-pdf route', () => {
     expect(res.status).toBe(403);
   });
 
+  it('risponde 409 se l\'edizione ha l\'originale non pubblicato, senza scrivere', async () => {
+    getUser.mockResolvedValue({ data: { user: { id: 'user-1' } }, error: null });
+    const client = makeServiceClient({
+      user_id: 'user-1',
+      status: 'pdf_draft',
+      pdf_draft_iteration: 1,
+      final_version: 'x'.repeat(60),
+      record_script: 'Latn',
+      translation_of: 'orig-1',
+    });
+    buildServiceClient.mockReturnValue(client);
+    const { POST } = await import('@/app/api/publication/approve-final-pdf/route');
+    const res = await POST(
+      new NextRequest('http://localhost/api/publication/approve-final-pdf', {
+        method: 'POST',
+        headers: { authorization: 'Bearer jwt' },
+        body: JSON.stringify({ biographyId: 'bio-1' }),
+      })
+    );
+    expect(res.status).toBe(409);
+    expect(await res.json()).toMatchObject({ error: 'original_not_published' });
+    expect(client.update).not.toHaveBeenCalled();
+    expect(generateUploadFinalPdf).not.toHaveBeenCalled();
+  });
+
   it('returns 400 when biography is not in pdf_draft status', async () => {
     getUser.mockResolvedValue({ data: { user: { id: 'user-1' } }, error: null });
     const client = makeServiceClient({

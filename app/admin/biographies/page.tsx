@@ -98,7 +98,7 @@ function AdminBiographiesContent() {
           created_at,
           updated_at,
           published_at,
-          content_language,
+          record_language_tag,
           is_frozen,
           ai_screening_status,
           biography_type,

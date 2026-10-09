@@ -426,7 +426,7 @@ async function main() {
 
     const { data: bio, error: bioErr } = await supabase
       .from('biographies')
-      .select('id, user_id, title, content_language, slug')
+      .select('id, user_id, title, record_language_tag, slug')
       .eq('slug', slug)
       .maybeSingle();
 
@@ -441,7 +441,7 @@ async function main() {
     await seedGalleryPhotos(supabase, bio.user_id, bio.id, slug);
     await upsertBookStructure(supabase, bio.id, bio.user_id, BOOK_STRUCTURE_BY_SLUG[slug]);
 
-    const lang = (bio.content_language as string) || 'en';
+    const lang = (bio.record_language_tag as string) || 'en';
     const { finalPdfUrl, listingCoverUrl } = await generateUploadFinalPdf(supabase, bio.id, lang);
     await generateAndStoreExports(supabase, bio.id);
 

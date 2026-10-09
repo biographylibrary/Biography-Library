@@ -10,6 +10,7 @@ import {
   buildServiceClient,
   checkPerUserThrottle,
 } from '@/lib/server/review-submit-pipeline';
+import { editionOriginalBlock } from '@/lib/server/edition-publish';
 
 export const dynamic = 'force-dynamic';
 
@@ -29,6 +30,11 @@ export async function POST(req: NextRequest) {
   if (!biographyId) return NextResponse.json({ error: 'Biography id required' }, { status: 400 });
 
   const svc = buildServiceClient();
+
+  const originalBlock = await editionOriginalBlock(svc, biographyId);
+  if (originalBlock) {
+    return NextResponse.json(originalBlock, { status: 409 });
+  }
 
   if (!(await checkPerUserThrottle(svc, auth.user.id, 'moderation_resubmit'))) {
     return NextResponse.json({ error: 'Too many requests' }, { status: 429 });

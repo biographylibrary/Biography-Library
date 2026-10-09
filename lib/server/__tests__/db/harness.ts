@@ -392,20 +392,20 @@ insert into public.profiles (id, email, role, account_status) values
   ('${U.fresh}', 'fresh@test', 'user', 'active'),
   ('${U.fresh2}', 'fresh2@test', 'user', 'active');
 
-insert into public.biographies (id, user_id, status, title, published_at) values
-  ('${BIO.draft}', '${U.author}', 'draft', 'Bozza', null),
-  ('${BIO.published}', '${U.author}', 'published', 'Pubblicata', now()),
-  ('${BIO.underReview}', '${U.author}', 'under_review', 'In revisione', null),
-  ('${BIO.removed}', '${U.author}', 'removed', 'Rimossa', null),
-  ('${BIO.suspended}', '${U.author}', 'suspended_pending_verification', 'Sospesa', null),
-  ('${BIO.otherDraft}', '${U.other}', 'draft', 'Di un altro', null),
-  ('${BIO.lockedPending}', '${U.author}', 'locked_pending_screening', 'In attesa di screening', null),
-  ('${BIO.pdfDraft}', '${U.author}', 'pdf_draft', 'Bozza PDF', null),
-  ('${BIO.finalVersion}', '${U.author}', 'final_version', 'Versione finale', null),
-  ('${BIO.revisionRequested}', '${U.author}', 'revision_requested', 'Revisione chiesta', null),
-  ('${BIO.revisionPending}', '${U.author}', 'revision_pending_review', 'Revisione inviata', null),
-  ('${BIO.revisionOverdue}', '${U.author}', 'revision_overdue', 'Revisione scaduta', null),
-  ('${BIO.sectionsComplete}', '${U.author}', 'sections_complete', 'Sezioni complete', null);
+insert into public.biographies (id, user_id, status, title, published_at, record_language_tag, record_script, record_direction) values
+  ('${BIO.draft}', '${U.author}', 'draft', 'Bozza', null, 'it', 'Latn', 'ltr'),
+  ('${BIO.published}', '${U.author}', 'published', 'Pubblicata', now(), 'it', 'Latn', 'ltr'),
+  ('${BIO.underReview}', '${U.author}', 'under_review', 'In revisione', null, 'it', 'Latn', 'ltr'),
+  ('${BIO.removed}', '${U.author}', 'removed', 'Rimossa', null, 'it', 'Latn', 'ltr'),
+  ('${BIO.suspended}', '${U.author}', 'suspended_pending_verification', 'Sospesa', null, 'it', 'Latn', 'ltr'),
+  ('${BIO.otherDraft}', '${U.other}', 'draft', 'Di un altro', null, 'it', 'Latn', 'ltr'),
+  ('${BIO.lockedPending}', '${U.author}', 'locked_pending_screening', 'In attesa di screening', null, 'it', 'Latn', 'ltr'),
+  ('${BIO.pdfDraft}', '${U.author}', 'pdf_draft', 'Bozza PDF', null, 'it', 'Latn', 'ltr'),
+  ('${BIO.finalVersion}', '${U.author}', 'final_version', 'Versione finale', null, 'it', 'Latn', 'ltr'),
+  ('${BIO.revisionRequested}', '${U.author}', 'revision_requested', 'Revisione chiesta', null, 'it', 'Latn', 'ltr'),
+  ('${BIO.revisionPending}', '${U.author}', 'revision_pending_review', 'Revisione inviata', null, 'it', 'Latn', 'ltr'),
+  ('${BIO.revisionOverdue}', '${U.author}', 'revision_overdue', 'Revisione scaduta', null, 'it', 'Latn', 'ltr'),
+  ('${BIO.sectionsComplete}', '${U.author}', 'sections_complete', 'Sezioni complete', null, 'it', 'Latn', 'ltr');
 `;
 
 /**
@@ -424,6 +424,7 @@ export async function reseed(db: PGlite): Promise<void> {
       if to_regclass('public.preprint_check_runs') is not null then delete from public.preprint_check_runs; end if;
       if to_regclass('public.analysis_jobs') is not null then delete from public.analysis_jobs; end if;
       if to_regclass('public.biography_source_html_legacy') is not null then delete from public.biography_source_html_legacy; end if;
+      if to_regclass('public.biography_edition_captions') is not null then delete from public.biography_edition_captions; end if;
     end $$;
     delete from public.biography_media;
     delete from public.biography_sections;
@@ -466,6 +467,7 @@ export async function createTestDb(
     '20261008120000_submit_attempt_per_action.sql',
     '20261008120100_preprint_check_runs.sql',
     '20261008220000_analysis_jobs.sql',
+    '20261009143000_biography_editions.sql',
   ];
   const files = all.filter((file) => !options.skip?.includes(file) && (!options.only || options.only.includes(file)));
   // L'ultima fissa il percorso di ricerca di funzioni create da 20260930120000 e 20260930120150:

@@ -26,6 +26,7 @@ import { useAuth } from '@/lib/auth-context';
 import { useOnboardingGate } from '@/components/onboarding/OnboardingGateProvider';
 import { patchOnboarding } from '@/lib/onboarding/onboarding-client';
 import { createBiography, fetchBiographies, ONE_BIOGRAPHY_PER_USER_ERROR } from '@/lib/biographies';
+import { TextLanguageField } from '@/components/editor/TextLanguageField';
 import type { ContentLicenseUri } from '@/lib/rights';
 import {
   WIZARD_STEP_ORDER,
@@ -81,6 +82,7 @@ export function OnboardingWizard() {
   const [subjectName, setSubjectName] = useState('');
   const [authorName, setAuthorName] = useState('');
   const [privacy, setPrivacy] = useState<'private' | 'link-only' | 'public'>('private');
+  const [textLanguage, setTextLanguage] = useState<string>(language);
   const [submitting, setSubmitting] = useState(false);
   const [licenseDialogOpen, setLicenseDialogOpen] = useState(false);
 
@@ -189,7 +191,7 @@ export function OnboardingWizard() {
         mode,
         isMemorial ? authorName.trim() : user.user_metadata?.name || user.email || '',
         biographyType,
-        language,
+        textLanguage,
         isMemorial ? subjectName.trim() : undefined,
         rightsStatementUri ?? null
       );
@@ -369,6 +371,7 @@ export function OnboardingWizard() {
               />
             </div>
           )}
+          <TextLanguageField value={textLanguage} onChange={setTextLanguage} />
           <div className="space-y-2">
             <Label>{t.biography.privacyLabel}</Label>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">

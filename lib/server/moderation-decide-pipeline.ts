@@ -197,7 +197,7 @@ export async function serverSubmitDecision(params: {
     if (patch.status === 'published') {
       const { data: current } = await service
         .from('biographies')
-        .select('status, biography_type, published_at, provisional_until')
+        .select('status, biography_type, published_at, provisional_until, translation_of')
         .eq('id', biographyId)
         .maybeSingle();
       const row = current as {
@@ -205,12 +205,31 @@ export async function serverSubmitDecision(params: {
         biography_type?: string | null;
         published_at?: string | null;
         provisional_until?: string | null;
+        translation_of?: string | null;
       } | null;
+      if (row?.translation_of) {
+        const { editionMayPublish } = await import('@/lib/server/edition-publish');
+        const { data: original } = await service
+          .from('biographies')
+          .select('status')
+          .eq('id', row.translation_of)
+          .maybeSingle();
+        if (!editionMayPublish({
+          translationOf: row.translation_of,
+          originalStatus: (original as { status?: string } | null)?.status ?? null,
+        })) {
+          return { error: 'original_not_published', conflict: false };
+        }
+      }
       if (row?.status === 'revision_pending_review') {
         delete patch.published_at;
-        Object.assign(patch, republicationClock(row.biography_type, now));
+        if (row.translation_of) {
+          patch.revised_at = now;
+        } else {
+          Object.assign(patch, republicationClock(row.biography_type, now));
+        }
         republication = true;
-      } else if (row?.biography_type === 'memorial' && !row.provisional_until && typeof patch.published_at === 'string') {
+      } else if (!row?.translation_of && row?.biography_type === 'memorial' && !row.provisional_until && typeof patch.published_at === 'string') {
         const until = provisionalUntilOnFirstPublish('memorial', patch.published_at);
         if (until) patch.provisional_until = until;
       }

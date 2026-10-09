@@ -16,7 +16,7 @@ Fondatore unico, non sviluppatore: costruisce con Claude Code e Cursor. Non ci s
 
 ---
 
-## Stato dell'implementazione (8 ottobre 2026)
+## Stato dell'implementazione (9 ottobre 2026)
 
 ### Blocco 3: screening a pezzi e controllo finale (8 ottobre 2026, ramo `blocco-3-screening`)
 
@@ -47,6 +47,12 @@ Bonifica indipendente dall’editor: `sweepStaleAnalysisJobs` + `POST /api/cron/
 Lo screening di pubblicazione e della correzione non leggono più solo il corpo (`final_version` o sezioni/flusso). Un solo costruttore (`lib/server/screening-public-text.ts`, `assembleScreeningText` / `fetchScreeningPublicText`) consegna tutto il testo pubblico dell’impronta: corpo (se `final_version` e il corpo composto da `content`/sezioni/flusso differiscono dopo la stessa normalizzazione dell’impronta, si esaminano entrambi, con blocco `[SECTION: final_version]`), titolo e nomi, parti del libro attive, didascalie, eventi e relazioni. Marcatori `[SECTION: …]` e etichette i18n per i nuovi blocchi. `source_chars` è la lunghezza di quel testo; `examined_chars` deve restare uguale a verdetti completi.
 
 Il controllo finale prima della stampa usa lo stesso costruttore con scope `preprint` (corpo + parti libro + didascalie; non titoli/nomi, eventi, relazioni): resta un consiglio non bloccante. Test di completezza, allineamento schema PGlite ↔ cataloghi leggibili/esclusi/non pubblici, rilievi con `section_key`, spezzatura e correzione dopo revisione.
+
+### Blocco 5, passi 1–2: edizioni e lingua del testo (9 ottobre 2026, ramo `blocco-5-edizioni`)
+
+Una traduzione è una riga di `biographies` con `translation_of` (niente catene), al massimo una lingua per opera. `record_language_tag` è obbligatorio; `content_language` non si legge più. La colonna si elimina solo con `20261009150000_drop_content_language_after_release.sql`, dopo questo rilascio. Didascalie per edizione in `biography_edition_captions`. Eventi e relazioni restano dell'originale. Lettura pubblica di un'edizione solo se anche l'originale è pubblicato e pubblico (`biography_public_read_allowed`). Scritture fuori da Latn/Cyrl/Grek si pubblicano da `final_version` con `POST /api/publication/approve-text`, senza `pdf_draft`. Lo strumento «Traduci», il catalogo per lingua e il selettore «Leggi in» non ci sono ancora.
+
+Migrazione da applicare a mano prima del merge: `20261009143000_biography_editions.sql`. Poi la Edge Function `send-engagement-emails`. Le didascalie d'edizione seguono lo stato della scheda (`a01_biography_edition_captions_guard_parent_status`). Un'edizione non si invia allo screening se l'originale non è pubblicato; se l'originale esce da pubblicato durante il lavoro, la scheda torna in `final_version`. La seconda migrazione, dopo il rilascio, ricrea `biography_flat` senza `content_language`.
 
 ### Blocco 1: strumenti di intelligenza artificiale (30 settembre 2026, ramo `blocco-1-strumenti-ai`)
 

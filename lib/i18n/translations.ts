@@ -1720,6 +1720,21 @@ export interface Translations {
     loadingOlderMessages: string;
     icebreakerPools: EchoIcebreakerPoolsByContext;
   };
+  textLanguage: {
+    label: string;
+    hint: string;
+    interfaceLabel: string;
+    searchPlaceholder: string;
+    regionLabel: string;
+    regionHint: string;
+    noResults: string;
+    pdfUnavailableTitle: string;
+    pdfUnavailableBody: string;
+    declaration: string;
+    confirmPublication: string;
+    heldForOriginal: string;
+    originalNotPublished: string;
+  };
 }
 
 export const translations: Record<Language, Translations> = {
@@ -1737,6 +1752,21 @@ export const translations: Record<Language, Translations> = {
       close: 'Close',
       confirm: 'Confirm',
       signOut: 'Sign out',
+    },
+    textLanguage: {
+      label: 'Language of the text',
+      hint: 'The language this biography is written in. It is not the language of the menus.',
+      interfaceLabel: 'Interface language',
+      searchPlaceholder: 'Search by name or code',
+      regionLabel: 'Region (optional)',
+      regionHint: 'For example BR for Brazilian Portuguese.',
+      noResults: 'No language matches.',
+      pdfUnavailableTitle: 'This writing has no PDF yet',
+      pdfUnavailableBody: 'The print file does not cover this writing yet. The text stays readable here and can be exported as text. Read it and confirm that this is the version you want to publish.',
+      declaration: 'I have read the text and I confirm that this is the version I want to publish.',
+      confirmPublication: 'Confirm and run screening',
+      heldForOriginal: 'Screening passed. The translation will be published when the original is published.',
+      originalNotPublished: 'You can send the translation once the original is published.',
     },
     nav: {
       demoBiographies: 'Demo biographies',
@@ -3518,6 +3548,21 @@ export const translations: Record<Language, Translations> = {
       close: 'Chiudi',
       confirm: 'Conferma',
       signOut: 'Esci',
+    },
+    textLanguage: {
+      label: 'Lingua del testo',
+      hint: 'La lingua in cui è scritta questa biografia. Non è la lingua dei menu.',
+      interfaceLabel: 'Lingua dell\'interfaccia',
+      searchPlaceholder: 'Cerca per nome o codice',
+      regionLabel: 'Regione (facoltativa)',
+      regionHint: 'Per esempio BR per il portoghese del Brasile.',
+      noResults: 'Nessuna lingua corrisponde.',
+      pdfUnavailableTitle: 'Per questa scrittura il PDF non c\'è ancora',
+      pdfUnavailableBody: 'Il file di stampa non copre ancora questa scrittura. Il testo si legge qui e si può esportare come testo. Leggilo e conferma che è la versione che vuoi pubblicare.',
+      declaration: 'Ho letto il testo e confermo che è la versione che voglio pubblicare.',
+      confirmPublication: 'Conferma e avvia il controllo',
+      heldForOriginal: 'Il controllo è passato. La traduzione sarà pubblicata quando lo sarà l\'originale.',
+      originalNotPublished: 'La traduzione si invia quando l\'originale è pubblicato.',
     },
     nav: {
       demoBiographies: 'Biografie demo',
@@ -5302,6 +5347,21 @@ export const translations: Record<Language, Translations> = {
       confirm: 'Confirmer',
       signOut: 'Se d\u00e9connecter',
     },
+    textLanguage: {
+      label: 'Langue du texte',
+      hint: 'La langue dans laquelle cette biographie est écrite. Ce n\'est pas la langue des menus.',
+      interfaceLabel: 'Langue de l\'interface',
+      searchPlaceholder: 'Chercher par nom ou code',
+      regionLabel: 'Région (facultative)',
+      regionHint: 'Par exemple BR pour le portugais du Brésil.',
+      noResults: 'Aucune langue ne correspond.',
+      pdfUnavailableTitle: 'Cette écriture n\'a pas encore de PDF',
+      pdfUnavailableBody: 'Le fichier d\'impression ne couvre pas encore cette écriture. Le texte se lit ici et peut s\'exporter en texte. Lisez-le et confirmez que c\'est la version à publier.',
+      declaration: 'J\'ai lu le texte et je confirme que c\'est la version que je veux publier.',
+      confirmPublication: 'Confirmer et lancer le contrôle',
+      heldForOriginal: 'Le contrôle est passé. La traduction sera publiée lorsque l\'original le sera.',
+      originalNotPublished: 'La traduction s\'envoie quand l\'original est publié.',
+    },
     nav: {
       demoBiographies: 'Biographies démo',
       myBiography: 'Ma biographie',
@@ -7084,6 +7144,21 @@ export const translations: Record<Language, Translations> = {
       close: 'Schlie\u00dfen',
       confirm: 'Best\u00e4tigen',
       signOut: 'Abmelden',
+    },
+    textLanguage: {
+      label: 'Sprache des Textes',
+      hint: 'Die Sprache, in der diese Biografie geschrieben ist. Das ist nicht die Sprache der Menüs.',
+      interfaceLabel: 'Sprache der Oberfläche',
+      searchPlaceholder: 'Nach Name oder Code suchen',
+      regionLabel: 'Region (optional)',
+      regionHint: 'Zum Beispiel BR für brasilianisches Portugiesisch.',
+      noResults: 'Keine Sprache entspricht.',
+      pdfUnavailableTitle: 'Für diese Schrift gibt es noch kein PDF',
+      pdfUnavailableBody: 'Die Druckdatei deckt diese Schrift noch nicht ab. Der Text bleibt hier lesbar und lässt sich als Text exportieren. Lies ihn und bestätige, dass dies die Fassung ist, die du veröffentlichen willst.',
+      declaration: 'Ich habe den Text gelesen und bestätige, dass dies die Fassung ist, die ich veröffentlichen will.',
+      confirmPublication: 'Bestätigen und Prüfung starten',
+      heldForOriginal: 'Die Prüfung ist bestanden. Die Übersetzung wird veröffentlicht, wenn das Original veröffentlicht ist.',
+      originalNotPublished: 'Die Übersetzung wird eingereicht, wenn das Original veröffentlicht ist.',
     },
     nav: {
       demoBiographies: 'Demo-Biografien',

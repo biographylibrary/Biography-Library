@@ -47,6 +47,11 @@ interface ReviewPublicationDialogProps {
   onStartPdfDraft: () => void;
   onOpenExport: () => void;
   onApproveFinalPdf: () => void;
+  /** Scrittura fuori dal motore PDF: conferma sul testo, senza bozza. */
+  textOnlyPublication?: boolean;
+  textConfirmed?: boolean;
+  onTextConfirmedChange?: (value: boolean) => void;
+  onApproveText?: () => void;
 }
 
 export function ReviewPublicationDialog({
@@ -70,6 +75,10 @@ export function ReviewPublicationDialog({
   onStartPdfDraft,
   onOpenExport,
   onApproveFinalPdf,
+  textOnlyPublication = false,
+  textConfirmed = false,
+  onTextConfirmedChange,
+  onApproveText,
 }: ReviewPublicationDialogProps) {
   const { t } = useTranslation();
   const rp = t.editor.reviewPublication;
@@ -225,7 +234,7 @@ export function ReviewPublicationDialog({
               </li>
             )}
 
-            {biographyStatus === 'final_version' && (
+            {biographyStatus === 'final_version' && !textOnlyPublication && (
               <li className="flex gap-3 rounded-lg border border-border/60 p-4">
                 <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary text-sm font-medium">
                   1
@@ -248,6 +257,40 @@ export function ReviewPublicationDialog({
                       <FileText className="h-4 w-4" />
                     )}
                     {rp.stepPdfDraftButton}
+                  </Button>
+                </div>
+              </li>
+            )}
+
+            {textOnlyPublication && biographyStatus === 'final_version' && (
+              <li className="flex gap-3 rounded-lg border border-border/60 p-4">
+                <div className="flex-1 space-y-2 min-w-0">
+                  <p className="font-medium text-sm">{t.textLanguage.pdfUnavailableTitle}</p>
+                  <p className="text-xs text-muted-foreground leading-relaxed">
+                    {t.textLanguage.pdfUnavailableBody}
+                  </p>
+                  <label className="flex items-start gap-2 text-sm">
+                    <input
+                      type="checkbox"
+                      className="mt-1"
+                      checked={textConfirmed}
+                      onChange={(event) => onTextConfirmedChange?.(event.target.checked)}
+                    />
+                    <span>{t.textLanguage.declaration}</span>
+                  </label>
+                  <Button
+                    type="button"
+                    size="sm"
+                    className={actionButtonClass}
+                    disabled={publicationActionLoading !== null || !textConfirmed}
+                    onClick={() => void onApproveText?.()}
+                  >
+                    {publicationActionLoading === 'approve' ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <ShieldCheck className="h-4 w-4" />
+                    )}
+                    {t.textLanguage.confirmPublication}
                   </Button>
                 </div>
               </li>

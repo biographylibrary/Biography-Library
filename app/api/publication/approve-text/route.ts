@@ -8,8 +8,6 @@ import {
   routeScreeningFailureToManualReview,
   runReviewSubmitScreening,
 } from '@/lib/server/review-submit-pipeline';
-import { generateUploadFinalPdf } from '@/lib/server/final-pdf-artifacts';
-import { resolveRecordLanguageTag } from '@/lib/record-language';
 import { isPdfScriptCovered } from '@/lib/pdf/covered-scripts';
 import { editionOriginalBlock } from '@/lib/server/edition-publish';
 
@@ -24,6 +22,12 @@ function buildAnonClient(jwt: string): AnyClient {
   }) as AnyClient;
 }
 
+/**
+ * Pubblicazione senza PDF per le scritture che il motore non copre.
+ * La conferma esplicita dell'autore è l'equivalente dell'approvazione del PDF
+ * e si registra nello stesso campo `final_pdf_approved_at`.
+ * Dalla versione finale si passa al lock, senza `pdf_draft`.
+ */
 export async function POST(req: NextRequest) {
   try {
     const authHeader = req.headers.get('authorization') ?? '';
@@ -41,97 +45,56 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
     }
 
-    const body = await req.json();
+    const body = await req.json().catch(() => null);
     const biographyId = body?.biographyId as string | undefined;
     if (!biographyId) {
       return NextResponse.json({ error: 'biographyId is required' }, { status: 400 });
     }
+    if (body?.confirmed !== true) {
+      return NextResponse.json(
+        { error: 'confirmation_required', message: 'The author must confirm the text.' },
+        { status: 400 }
+      );
+    }
 
     const serviceClient = buildServiceClient();
-
-    if (!(await checkPerUserThrottle(serviceClient, user.id, 'approve_final_pdf'))) {
+    if (!(await checkPerUserThrottle(serviceClient, user.id, 'approve_text'))) {
       return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
     }
 
     const { data: bio } = await serviceClient
       .from('biographies')
-      .select('user_id, status, pdf_draft_iteration, final_version, record_language_tag, record_script, translation_of')
+      .select('user_id, status, final_version, record_script')
       .eq('id', biographyId)
       .maybeSingle();
 
     if (!bio) {
       return NextResponse.json({ error: 'Biography not found' }, { status: 404 });
     }
-    if ((bio as any).user_id !== user.id) {
+    if ((bio as { user_id?: string }).user_id !== user.id) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
     const originalBlock = await editionOriginalBlock(serviceClient, biographyId);
     if (originalBlock) {
       return NextResponse.json(originalBlock, { status: 409 });
     }
-    if (!isPdfScriptCovered((bio as { record_script?: string | null }).record_script)) {
+    if (isPdfScriptCovered((bio as { record_script?: string | null }).record_script)) {
       return NextResponse.json(
-        { error: 'unsupported_script', message: 'This writing is published from the text, without a PDF.' },
+        { error: 'pdf_required', message: 'This writing is published through the PDF.' },
         { status: 400 }
       );
     }
-    if ((bio as any).status !== 'pdf_draft') {
+    if ((bio as { status?: string }).status !== 'final_version') {
       return NextResponse.json(
-        { error: 'invalid_status', message: 'Biography must be in pdf_draft status' },
+        { error: 'invalid_status', message: 'Biography must be in final_version status' },
         { status: 400 }
       );
     }
-
-    const iter = (bio as any).pdf_draft_iteration as number | null;
-    if (iter == null || iter < 1) {
-      return NextResponse.json(
-        {
-          error: 'drafts_required',
-          message: 'Generate at least one watermarked draft PDF before final approval.',
-        },
-        { status: 400 }
-      );
-    }
-
-    const finalV = (bio as any).final_version as string | null | undefined;
+    const finalV = (bio as { final_version?: string | null }).final_version;
     if (!finalV || finalV.trim().length < 50) {
       return NextResponse.json(
         { error: 'missing_final_text', message: 'Final version text is missing or too short.' },
         { status: 400 }
-      );
-    }
-
-    const { data: coverMedia } = await serviceClient
-      .from('biography_media')
-      .select('id')
-      .eq('biography_id', (bio as { translation_of?: string | null }).translation_of || biographyId)
-      .in('layout', ['cover', 'cover_a5'])
-      .limit(1)
-      .maybeSingle();
-
-    if (!coverMedia) {
-      return NextResponse.json(
-        { error: 'missing_cover', message: 'Cover photo required' },
-        { status: 400 }
-      );
-    }
-
-    const contentLanguage: string = resolveRecordLanguageTag(bio as any);
-
-    let finalPdfUrl: string;
-    let listingCoverUrl: string | null = null;
-    try {
-      const artifacts = await generateUploadFinalPdf(serviceClient, biographyId, contentLanguage);
-      finalPdfUrl = artifacts.finalPdfUrl;
-      listingCoverUrl = artifacts.listingCoverUrl;
-    } catch (e) {
-      console.error('[approve-final-pdf] final PDF generation/upload failed:', e);
-      return NextResponse.json(
-        {
-          error: 'final_pdf_failed',
-          message: 'Could not generate or store the final PDF. Please try again.',
-        },
-        { status: 500 }
       );
     }
 
@@ -143,35 +106,27 @@ export async function POST(req: NextRequest) {
       .update({
         status: 'locked_pending_screening',
         final_pdf_approved_at: now,
-        pdf_draft_iteration: null,
         ai_screening_status: 'pending',
-        final_pdf_url: finalPdfUrl,
-        listing_cover_url: listingCoverUrl,
       })
       .eq('id', biographyId);
 
     if (lockErr) {
-      console.error('[approve-final-pdf] lock update error:', lockErr);
+      console.error('[approve-text] lock update error:', lockErr);
       return NextResponse.json({ error: 'Update failed' }, { status: 500 });
     }
 
-    // Il controllo finale (preprint) non blocca: solo lo screening di conformità decide.
-    // Lo screening parte in background; PDF e URL sono già in riga biografia.
     try {
       const { jobId } = await startAnalysisJob(serviceClient, biographyId, 'screening', () =>
         runReviewSubmitScreening(serviceClient, biographyId)
       );
-      return NextResponse.json({ jobId, finalPdfUrl, listingCoverUrl }, { status: 202 });
-    } catch (e: any) {
-      if (e?.message === 'Biography not found') {
-        return NextResponse.json({ error: 'Biography not found' }, { status: 404 });
-      }
-      console.error('[approve-final-pdf] startAnalysisJob failed:', e);
+      return NextResponse.json({ jobId }, { status: 202 });
+    } catch (e: unknown) {
+      console.error('[approve-text] startAnalysisJob failed:', e);
       await routeScreeningFailureToManualReview(serviceClient, biographyId, 'start_failed');
       return NextResponse.json({ error: 'Internal error' }, { status: 500 });
     }
   } catch (err) {
-    console.error('[approve-final-pdf]', err);
+    console.error('[approve-text]', err);
     return NextResponse.json({ error: 'Internal error' }, { status: 500 });
   }
 }
