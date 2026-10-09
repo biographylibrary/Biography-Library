@@ -139,6 +139,24 @@ export const FINGERPRINT_READABLE_FIELDS = [
   'person_relations.source_note',
 ] as const;
 
+export type FingerprintReadableField = (typeof FINGERPRINT_READABLE_FIELDS)[number];
+
+/**
+ * Campi di `FINGERPRINT_READABLE_FIELDS` che lo scope `preprint` esamina
+ * (corpo, parti del libro, didascalie). Titoli/nomi, eventi e relazioni no.
+ */
+export function readableFieldsForScope(scope: ScreeningTextScope): FingerprintReadableField[] {
+  if (scope === 'publication') return [...FINGERPRINT_READABLE_FIELDS];
+  return FINGERPRINT_READABLE_FIELDS.filter(
+    (f) =>
+      f === 'biographies.content' ||
+      f === 'biographies.content_freeflow' ||
+      f === 'biographies.final_version' ||
+      f.startsWith('biography_book_structure.') ||
+      f === 'biography_media.caption'
+  );
+}
+
 const NAME_FIELDS = [
   ['title', 'title'],
   ['author_name', 'author_name'],
@@ -176,34 +194,61 @@ function labeledLines(rows: Array<[string, string]>): string {
   return rows.map(([label, value]) => `${label}: ${value}`).join('\n');
 }
 
-/** Corpo a sezioni / freeflow con marcatori, come lo screening storico senza final_version. */
-export function buildComposedBodyMarked(input: PublicTextInput): string {
-  const bio = input.biography;
-  const parts: string[] = [];
-
+/**
+ * Voci di `content` come sulla pagina pubblica: prima le chiavi note nell'ordine
+ * di `BIOGRAPHY_SECTIONS`, poi le altre in ordine alfabetico. Solo testo stringa
+ * non vuoto dopo il trim.
+ */
+export function orderedContentEntries(
+  content: unknown
+): Array<{ key: string; text: string }> {
   const contentObj =
-    bio.content && typeof bio.content === 'object' && !Array.isArray(bio.content)
-      ? (bio.content as Record<string, { text?: unknown } | undefined>)
+    content && typeof content === 'object' && !Array.isArray(content)
+      ? (content as Record<string, { text?: unknown } | undefined>)
       : {};
 
-  for (const { key } of BIOGRAPHY_SECTIONS) {
+  const knownOrder = BIOGRAPHY_SECTIONS.map((s) => s.key);
+  const knownSet = new Set<string>(knownOrder);
+  const out: Array<{ key: string; text: string }> = [];
+
+  for (const key of knownOrder) {
     const raw = contentObj[key]?.text;
-    const text = typeof raw === 'string' ? raw.trim() : '';
-    if (!text) continue;
+    if (typeof raw !== 'string' || !raw.trim()) continue;
+    out.push({ key, text: raw });
+  }
+
+  for (const key of Object.keys(contentObj)
+    .filter((k) => !knownSet.has(k))
+    .sort((a, b) => a.localeCompare(b))) {
+    const raw = contentObj[key]?.text;
+    if (typeof raw !== 'string' || !raw.trim()) continue;
+    out.push({ key, text: raw });
+  }
+
+  return out;
+}
+
+/** Corpo a sezioni / freeflow con marcatori; tabella se manca o differisce dal JSON. */
+export function buildComposedBodyMarked(input: PublicTextInput): string {
+  const parts: string[] = [];
+  const jsonNorm = new Map<string, string>();
+
+  for (const { key, text } of orderedContentEntries(input.biography.content)) {
     const normalized = normalizePublicBodyText(text);
-    if (normalized) parts.push(sectionBlock(key, normalized));
+    if (!normalized) continue;
+    jsonNorm.set(key, normalized);
+    parts.push(sectionBlock(key, normalized));
   }
 
-  if (parts.length === 0) {
-    for (const s of input.sections) {
-      const normalized = normalizePublicBodyText(s.content);
-      if (s.section_key && normalized) {
-        parts.push(sectionBlock(s.section_key, normalized));
-      }
-    }
+  for (const s of input.sections) {
+    const key = s.section_key;
+    const normalized = normalizePublicBodyText(s.content);
+    if (!key || !normalized) continue;
+    if (jsonNorm.get(key) === normalized) continue;
+    parts.push(sectionBlock(`${key}, tabella`, normalized));
   }
 
-  const freeflow = normalizePublicBodyText(bio.content_freeflow);
+  const freeflow = normalizePublicBodyText(input.biography.content_freeflow);
   if (freeflow) parts.push(sectionBlock('freeflow', freeflow));
 
   return joinBlocks(parts);
@@ -211,37 +256,29 @@ export function buildComposedBodyMarked(input: PublicTextInput): string {
 
 /** Stesso corpo senza marcatori, per confrontarlo con final_version normalizzato. */
 export function buildComposedBodyPlain(input: PublicTextInput): string {
-  const bio = input.biography;
   const chunks: string[] = [];
+  const jsonNorm = new Map<string, string>();
 
-  const contentObj =
-    bio.content && typeof bio.content === 'object' && !Array.isArray(bio.content)
-      ? (bio.content as Record<string, { text?: unknown } | undefined>)
-      : {};
-
-  let fromJson = false;
-  for (const { key } of BIOGRAPHY_SECTIONS) {
-    const raw = contentObj[key]?.text;
-    const normalized = normalizePublicBodyText(typeof raw === 'string' ? raw : null);
-    if (normalized) {
-      chunks.push(normalized);
-      fromJson = true;
-    }
+  for (const { key, text } of orderedContentEntries(input.biography.content)) {
+    const normalized = normalizePublicBodyText(text);
+    if (!normalized) continue;
+    jsonNorm.set(key, normalized);
+    chunks.push(normalized);
   }
 
-  if (!fromJson) {
-    for (const s of input.sections) {
-      const normalized = normalizePublicBodyText(s.content);
-      if (normalized) chunks.push(normalized);
-    }
+  for (const s of input.sections) {
+    const key = s.section_key;
+    const normalized = normalizePublicBodyText(s.content);
+    if (!key || !normalized) continue;
+    if (jsonNorm.get(key) === normalized) continue;
+    chunks.push(normalized);
   }
 
-  const freeflow = normalizePublicBodyText(bio.content_freeflow);
+  const freeflow = normalizePublicBodyText(input.biography.content_freeflow);
   if (freeflow) chunks.push(freeflow);
 
   return chunks.join('\n\n');
 }
-
 function buildBodyBlocks(input: PublicTextInput): string[] {
   const composedMarked = buildComposedBodyMarked(input);
   const composedPlain = buildComposedBodyPlain(input);
@@ -282,12 +319,15 @@ function buildBookParts(input: PublicTextInput): string[] {
   for (const [name, contentCol, enabledCol] of BOOK_PARTS_FOR_SCREENING) {
     if (bs[enabledCol] !== true) continue;
     const content = normalizePublicBodyText(bs[contentCol]);
-    if (!content) continue;
     if (name === 'epigraph') {
       const source = normalizePublicShortText(bs.epigraph_source);
-      const body = source ? `${content}\nepigraph_source: ${source}` : content;
+      if (!content && !source) continue;
+      const body = [content, source ? `epigraph_source: ${source}` : null]
+        .filter((line): line is string => Boolean(line))
+        .join('\n');
       out.push(sectionBlock('epigraph', body));
     } else {
+      if (!content) continue;
       out.push(sectionBlock(name, content));
     }
   }
