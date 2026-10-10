@@ -45,6 +45,12 @@ export async function GET(req: NextRequest) {
     if (!ownership.ok) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
+    if (ownership.isEdition) {
+      return NextResponse.json(
+        { error: 'echo_not_available_for_edition' },
+        { status: 403 }
+      );
+    }
   }
 
   let thread = await getActiveThread(serviceClient, {

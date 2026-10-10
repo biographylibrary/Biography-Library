@@ -159,15 +159,6 @@ export async function prepareAgentTurn(
     return { ok: false, status: 429, ...body };
   }
 
-  const thread = await getOrCreateThread(serviceClient, {
-    userId,
-    agentType,
-    biographyId: biographyId ?? null,
-    locale,
-  });
-
-  const { history, memoryBlock } = await buildAgentContext(serviceClient, thread);
-
   const echoPage = payload.echoPage ?? 'hub';
   let biographyMode: 'sections' | 'freeflow' | undefined;
   let publicationStatus: string | undefined;
@@ -178,10 +169,24 @@ export async function prepareAgentTurn(
     if (!ownership.ok) {
       return { ok: false, status: 403, error: 'Forbidden' };
     }
+    if (ownership.isEdition) {
+      return { ok: false, status: 403, error: 'echo_not_available_for_edition' };
+    }
     biographyMode = ownership.biography_mode as 'sections' | 'freeflow' | undefined;
     publicationStatus = ownership.status;
     narrative = ownership.narrative;
+  }
 
+  const thread = await getOrCreateThread(serviceClient, {
+    userId,
+    agentType,
+    biographyId: biographyId ?? null,
+    locale,
+  });
+
+  const { history, memoryBlock } = await buildAgentContext(serviceClient, thread);
+
+  if (biographyId) {
     try {
       await indexBiography(serviceClient, biographyId, userId);
     } catch (err) {

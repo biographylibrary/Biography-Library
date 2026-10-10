@@ -96,4 +96,29 @@ describe('prepareAgentTurn memorial context', () => {
     expect(result.systemPrompt).toContain('documenting Francesco');
     expect(result.systemPrompt).toContain('ACTIVE SECTION');
   });
+
+  it('edizione: 403 echo_not_available_for_edition senza thread né indice', async () => {
+    verifyBiographyOwnership.mockResolvedValue({
+      ok: true,
+      isEdition: true,
+      biography_mode: 'freeflow',
+      status: 'draft',
+    });
+
+    const result = await prepareAgentTurn('user-1', {
+      agentType: 'echo',
+      message: 'Aiutami',
+      biographyId: 'edition-1',
+      language: 'it',
+      echoPage: 'editor_freeflow',
+    });
+
+    expect(result).toEqual({
+      ok: false,
+      status: 403,
+      error: 'echo_not_available_for_edition',
+    });
+    expect(getOrCreateThread).not.toHaveBeenCalled();
+    expect(indexBiography).not.toHaveBeenCalled();
+  });
 });
