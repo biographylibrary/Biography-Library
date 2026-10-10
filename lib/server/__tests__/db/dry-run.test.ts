@@ -360,7 +360,7 @@ describe('prova a secco su uno stato già migrato (nessuna migrazione applicata)
 
   it('controllo negativo: senza la migrazione del percorso di ricerca il controllo segnala le sei funzioni', async () => {
     const unmigrated = await createTestDb({
-      skip: [EIGHTH, '20261009143000_biography_editions.sql'],
+      skip: [EIGHTH, '20261009143000_biography_editions.sql', '20261010120000_edition_original_version_at.sql'],
     });
     try {
       await prepare(unmigrated);
