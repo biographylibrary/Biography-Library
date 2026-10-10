@@ -171,7 +171,7 @@ Models are chosen with `AGENT_MODEL_*` (see `lib/agents/models.ts`); the grammar
 
 ### Author translations (editions)
 
-- `POST /api/biography/create-edition` — owner only; body `{ originalId, languageTag, startFrom: 'copy' | 'blank' }`. Creates a draft row with `translation_of`, no UM id, no pioneer flag, no chapter cooldown / provisional window. Copies or blanks narrative text (NFC). Concurrent same-language inserts map unique-index violations to `409 language_already_present`.
+- `POST /api/biography/create-edition` — owner only; body `{ originalId, languageTag, startFrom: 'copy' | 'blank' }`. Creates a draft row with `translation_of`, no UM id, no pioneer flag, no chapter cooldown / provisional window. Text and structure are written in the same INSERT (`copy` or `blank`); there is no mid-copy step to roll back. Concurrent same-language inserts map unique-index violations to `409 language_already_present`. Visibility and license (`visibility`, `rights_*`) are copied from the original and kept in sync by a database trigger; authors cannot diverge them on an edition row.
 - `POST /api/biography/edition-aligned` — owner only on a row with `translation_of`; sets `original_version_at` to the current `COALESCE(revised_at, published_at)` of the original.
 - Submit paths (`approve-final-pdf`, `approve-text`, `review/submit`) refuse an edition whose plain text still matches the original (`409 translation_identical_to_original`) and still require the original to be `published`.
 

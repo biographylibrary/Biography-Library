@@ -18,12 +18,15 @@ vi.mock('@/lib/server/service-client', () => ({
 
 import { POST } from '@/app/api/biography/create-edition/route';
 
+const ORIG_ID = '10000000-0000-4000-8000-000000000001';
+const AUTHOR_ID = '20000000-0000-4000-8000-000000000001';
+
 function seed() {
   db = createFakeDb({
     biographies: [
       {
-        id: 'orig-1',
-        user_id: 'author-1',
+        id: ORIG_ID,
+        user_id: AUTHOR_ID,
         translation_of: null,
         status: 'published',
         is_frozen: false,
@@ -61,7 +64,7 @@ const req = (body: Record<string, unknown>) =>
 
 beforeEach(() => {
   seed();
-  getUser.mockReturnValue({ id: 'author-1' });
+  getUser.mockReturnValue({ id: AUTHOR_ID });
   process.env.NEXT_PUBLIC_SUPABASE_URL = 'https://example.supabase.co';
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY = 'anon';
   process.env.SUPABASE_SERVICE_ROLE_KEY = 'service';
@@ -69,26 +72,32 @@ beforeEach(() => {
 
 describe('POST /api/biography/create-edition', () => {
   it('201 con copy', async () => {
-    const res = await POST(req({ originalId: 'orig-1', languageTag: 'en', startFrom: 'copy' }));
+    const res = await POST(req({ originalId: ORIG_ID, languageTag: 'en', startFrom: 'copy' }));
     expect(res.status).toBe(201);
     const json = await res.json();
     expect(json.id).toBeTruthy();
     const row = db.tables.biographies.find((b) => b.id === json.id) as Record<string, unknown>;
-    expect(row.translation_of).toBe('orig-1');
+    expect(row.translation_of).toBe(ORIG_ID);
     expect(row.original_version_at).toBe('2026-01-10T00:00:00Z');
     expect(row.um_id).toBeUndefined();
   });
 
   it('400 invalid_language', async () => {
-    const res = await POST(req({ originalId: 'orig-1', languageTag: 'not-a-lang', startFrom: 'blank' }));
+    const res = await POST(req({ originalId: ORIG_ID, languageTag: 'not-a-lang', startFrom: 'blank' }));
     expect(res.status).toBe(400);
     expect(await res.json()).toMatchObject({ error: 'invalid_language' });
   });
 
   it('403 forbidden', async () => {
     getUser.mockReturnValue({ id: 'other' });
-    const res = await POST(req({ originalId: 'orig-1', languageTag: 'en', startFrom: 'blank' }));
+    const res = await POST(req({ originalId: ORIG_ID, languageTag: 'en', startFrom: 'blank' }));
     expect(res.status).toBe(403);
     expect(await res.json()).toMatchObject({ error: 'forbidden' });
+  });
+
+  it('404 not_found se originalId non è un UUID', async () => {
+    const res = await POST(req({ originalId: 'not-a-uuid', languageTag: 'en', startFrom: 'copy' }));
+    expect(res.status).toBe(404);
+    expect(await res.json()).toMatchObject({ error: 'not_found' });
   });
 });

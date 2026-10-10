@@ -214,7 +214,7 @@ export function buildEditionInsertRow(input: {
     name_order: input.original.name_order,
     name_romanized: input.original.name_romanized != null ? nfc(input.original.name_romanized) : null,
     romanization_system: input.original.romanization_system,
-    visibility: 'private',
+    visibility: input.original.visibility ?? 'private',
     content: text.content,
     content_freeflow: text.content_freeflow,
     narrative_order: text.narrative_order,
@@ -242,10 +242,13 @@ export function isLanguageUniqueViolation(message: string): boolean {
   );
 }
 
-/**
- * Crea l'edizione con il client di servizio. Se la copia del testo fallisce
- * a metà (qui: dopo l'insert), elimina la riga e risponde 500.
- */
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+export function isUuid(value: unknown): value is string {
+  return typeof value === 'string' && UUID_RE.test(value);
+}
+
+/** Crea l'edizione con il client di servizio (testo e struttura nella stessa INSERT). */
 export async function createEditionWithService(
   client: AnyClient,
   userId: string,
@@ -257,6 +260,10 @@ export async function createEditionWithService(
   const parsed = parseCreateEditionBody(body);
   if (!parsed.ok) {
     return { ok: false, status: parsed.status, error: parsed.error };
+  }
+
+  if (!isUuid(body.originalId)) {
+    return { ok: false, status: 404, error: 'not_found' };
   }
 
   const { data: original, error: loadError } = await client
@@ -319,33 +326,4 @@ export async function createEditionWithService(
   }
 
   return { ok: true, id };
-}
-
-/**
- * Variante usata nei test: dopo l'insert esegue un passo di copia che può fallire;
- * in quel caso elimina l'edizione.
- */
-export async function createEditionWithCopyStep(
-  client: AnyClient,
-  userId: string,
-  body: CreateEditionBody,
-  copyStep?: (editionId: string) => Promise<void>
-): Promise<
-  | { ok: true; id: string }
-  | { ok: false; status: number; error: string }
-> {
-  const created = await createEditionWithService(client, userId, body);
-  if (!created.ok) return created;
-  if (!copyStep) return created;
-  try {
-    await copyStep(created.id);
-    return created;
-  } catch (err) {
-    await client.from('biographies').delete().eq('id', created.id);
-    return {
-      ok: false,
-      status: 500,
-      error: err instanceof Error ? err.message : 'copy_failed',
-    };
-  }
 }

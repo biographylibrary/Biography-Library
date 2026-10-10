@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getAuthenticatedUser } from '@/lib/server/onboarding-api-auth';
 import { buildServiceClient } from '@/lib/server/service-client';
 import { originalVersionTimestamp } from '@/lib/edition-drift';
+import { isUuid } from '@/lib/server/edition-create';
 
 export async function POST(req: NextRequest) {
   const auth = await getAuthenticatedUser(req);
@@ -19,6 +20,9 @@ export async function POST(req: NextRequest) {
   const editionId = typeof body.editionId === 'string' ? body.editionId : '';
   if (!editionId) {
     return NextResponse.json({ error: 'editionId is required' }, { status: 400 });
+  }
+  if (!isUuid(editionId)) {
+    return NextResponse.json({ error: 'not_found' }, { status: 404 });
   }
 
   const client = buildServiceClient();

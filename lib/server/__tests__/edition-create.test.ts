@@ -1,8 +1,8 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it } from 'vitest';
 import {
   buildEditionInsertRow,
   buildEditionTextFields,
-  createEditionWithCopyStep,
+  createEditionWithService,
   decideCreateEdition,
   isLanguageUniqueViolation,
   parseCreateEditionBody,
@@ -10,9 +10,12 @@ import {
 } from '@/lib/server/edition-create';
 import { createFakeDb, type FakeDb } from '@/lib/server/__tests__/helpers/fake-supabase';
 
+const ORIG_ID = '10000000-0000-4000-8000-000000000001';
+const AUTHOR_ID = '20000000-0000-4000-8000-000000000001';
+
 const baseOriginal = (): OriginalForEdition => ({
-  id: 'orig-1',
-  user_id: 'author-1',
+  id: ORIG_ID,
+  user_id: AUTHOR_ID,
   translation_of: null,
   status: 'published',
   is_frozen: false,
@@ -52,14 +55,14 @@ describe('parseCreateEditionBody / decideCreateEdition', () => {
 
   it('not_found', () => {
     expect(
-      decideCreateEdition({ userId: 'author-1', languageTag: 'en', original: null, existingTags: [] })
+      decideCreateEdition({ userId: AUTHOR_ID, languageTag: 'en', original: null, existingTags: [] })
     ).toEqual({ ok: false, status: 404, error: 'not_found' });
   });
 
   it('forbidden', () => {
     expect(
       decideCreateEdition({
-        userId: 'author-1',
+        userId: AUTHOR_ID,
         languageTag: 'en',
         original: { ...baseOriginal(), user_id: 'other' },
         existingTags: [],
@@ -70,7 +73,7 @@ describe('parseCreateEditionBody / decideCreateEdition', () => {
   it('original_is_edition', () => {
     expect(
       decideCreateEdition({
-        userId: 'author-1',
+        userId: AUTHOR_ID,
         languageTag: 'en',
         original: { ...baseOriginal(), translation_of: 'root' },
         existingTags: [],
@@ -81,7 +84,7 @@ describe('parseCreateEditionBody / decideCreateEdition', () => {
   it('frozen', () => {
     expect(
       decideCreateEdition({
-        userId: 'author-1',
+        userId: AUTHOR_ID,
         languageTag: 'en',
         original: { ...baseOriginal(), is_frozen: true },
         existingTags: [],
@@ -92,7 +95,7 @@ describe('parseCreateEditionBody / decideCreateEdition', () => {
   it('original_not_published', () => {
     expect(
       decideCreateEdition({
-        userId: 'author-1',
+        userId: AUTHOR_ID,
         languageTag: 'en',
         original: { ...baseOriginal(), status: 'draft' },
         existingTags: [],
@@ -103,7 +106,7 @@ describe('parseCreateEditionBody / decideCreateEdition', () => {
   it('language_already_present (edizione o originale)', () => {
     expect(
       decideCreateEdition({
-        userId: 'author-1',
+        userId: AUTHOR_ID,
         languageTag: 'en',
         original: baseOriginal(),
         existingTags: ['en'],
@@ -111,7 +114,7 @@ describe('parseCreateEditionBody / decideCreateEdition', () => {
     ).toEqual({ ok: false, status: 409, error: 'language_already_present' });
     expect(
       decideCreateEdition({
-        userId: 'author-1',
+        userId: AUTHOR_ID,
         languageTag: 'it',
         original: baseOriginal(),
         existingTags: [],
@@ -121,9 +124,9 @@ describe('parseCreateEditionBody / decideCreateEdition', () => {
 });
 
 describe('buildEditionInsertRow', () => {
-  it('non assegna um_id né Pioniere; original_version_at da published_at', () => {
+  it('non assegna um_id né Pioniere; original_version_at da published_at; copia visibility', () => {
     const row = buildEditionInsertRow({
-      userId: 'author-1',
+      userId: AUTHOR_ID,
       original: baseOriginal(),
       language: { tag: 'en', script: 'Latn', direction: 'ltr', endonym: 'English' },
       startFrom: 'copy',
@@ -133,16 +136,17 @@ describe('buildEditionInsertRow', () => {
     expect(row.provisional_until).toBeUndefined();
     expect(row.next_chapter_available_at).toBeUndefined();
     expect(row.chapters_count).toBeUndefined();
-    expect(row.translation_of).toBe('orig-1');
+    expect(row.translation_of).toBe(ORIG_ID);
     expect(row.status).toBe('draft');
     expect(row.schema_version).toBe(2);
     expect(row.original_version_at).toBe('2026-01-10T00:00:00Z');
+    expect(row.visibility).toBe('public');
     expect(row.content_freeflow).toContain('Testo');
   });
 
   it('original_version_at da revised_at se presente', () => {
     const row = buildEditionInsertRow({
-      userId: 'author-1',
+      userId: AUTHOR_ID,
       original: { ...baseOriginal(), revised_at: '2026-03-01T00:00:00Z' },
       language: { tag: 'en', script: 'Latn', direction: 'ltr', endonym: 'English' },
       startFrom: 'blank',
@@ -162,15 +166,15 @@ describe('isLanguageUniqueViolation', () => {
   });
 });
 
-describe('createEditionWithCopyStep: annullamento se la copia fallisce', () => {
+describe('createEditionWithService: testo e struttura nella stessa INSERT', () => {
   let db: FakeDb;
 
   beforeEach(() => {
     db = createFakeDb({
       biographies: [
         {
-          id: 'orig-1',
-          user_id: 'author-1',
+          id: ORIG_ID,
+          user_id: AUTHOR_ID,
           translation_of: null,
           status: 'published',
           is_frozen: false,
@@ -180,9 +184,9 @@ describe('createEditionWithCopyStep: annullamento se la copia fallisce', () => {
           subject_name: null,
           name_as_written: 'A',
           biography_mode: 'freeflow',
-          content: {},
-          content_freeflow: '<p>x</p>',
-          narrative_order: [],
+          content: { childhood: { text: 'Infanzia', todo: false, audioTranscript: '' } },
+          content_freeflow: '<h1>Capitolo</h1><p>Testo</p>',
+          narrative_order: ['childhood'],
           visibility: 'public',
           rights_statement_uri: null,
           rights_chosen_at: null,
@@ -199,33 +203,36 @@ describe('createEditionWithCopyStep: annullamento se la copia fallisce', () => {
     });
   });
 
-  it('elimina l\'edizione se il passo di copia fallisce', async () => {
-    const result = await createEditionWithCopyStep(
-      db.client,
-      'author-1',
-      { originalId: 'orig-1', languageTag: 'en', startFrom: 'copy' },
-      async () => {
-        throw new Error('copy_midway');
-      }
-    );
-    expect(result).toMatchObject({ ok: false, status: 500 });
-    expect(db.tables.biographies.filter((b) => b.translation_of === 'orig-1')).toHaveLength(0);
+  it('con copy la riga inserita contiene già testo e struttura', async () => {
+    const result = await createEditionWithService(db.client, AUTHOR_ID, {
+      originalId: ORIG_ID,
+      languageTag: 'en',
+      startFrom: 'copy',
+    });
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    const row = db.tables.biographies.find((b) => b.id === result.id) as Record<string, unknown>;
+    expect(row.translation_of).toBe(ORIG_ID);
+    expect(row.content_freeflow).toContain('Testo');
+    expect(row.content).toMatchObject({
+      childhood: expect.objectContaining({ text: 'Infanzia' }),
+    });
+    expect(row.narrative_order).toEqual(['childhood']);
   });
 
-  it('i due modi e blank (import)', async () => {
-    for (const startFrom of ['copy', 'blank'] as const) {
-      const result = await createEditionWithCopyStep(db.client, 'author-1', {
-        originalId: 'orig-1',
-        languageTag: startFrom === 'copy' ? 'en' : 'fr',
-        startFrom,
-      });
-      expect(result.ok).toBe(true);
-      if (result.ok) {
-        const row = db.tables.biographies.find((b) => b.id === result.id) as Record<string, unknown>;
-        expect(row.um_id).toBeUndefined();
-        expect(row.translation_of).toBe('orig-1');
-      }
-    }
+  it('con blank la riga ha la sola struttura senza il testo', async () => {
+    const result = await createEditionWithService(db.client, AUTHOR_ID, {
+      originalId: ORIG_ID,
+      languageTag: 'fr',
+      startFrom: 'blank',
+    });
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    const row = db.tables.biographies.find((b) => b.id === result.id) as Record<string, unknown>;
+    expect(row.content_freeflow).toContain('<h1>');
+    expect(row.content_freeflow).not.toContain('Testo');
+    const content = row.content as Record<string, { text?: string }>;
+    expect(content.childhood?.text ?? '').toBe('');
   });
 });
 
