@@ -13,7 +13,7 @@ describe('BookParts', () => {
     const html = renderToStaticMarkup(
       <BookParts position="front" parts={parts} languageTag="it" />
     );
-    expect(html).toContain('aria-label="Dedica"');
+    expect(html).toContain('<section class="text-center" aria-label="Dedica"');
     expect(html).toContain('aria-label="Epigrafe"');
     expect(html).toContain('Prefazione');
     expect(html).not.toMatch(/>\s*Dedica\s*</);

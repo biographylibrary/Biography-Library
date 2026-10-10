@@ -3,7 +3,11 @@
  * Puro: usabile da browser, rotte e archivio. Nessun import di server.
  */
 
-import { storedToArchiveMarkdown, storedToPlainText } from '@/lib/archive-markdown';
+import {
+  escapeMarkdownBlockLine,
+  storedToArchiveMarkdown,
+  storedToPlainText,
+} from '@/lib/archive-markdown';
 import { stripHtmlTags } from '@/lib/export-utils';
 import { translations } from '@/lib/i18n/translations';
 import { uiLangFromTag } from '@/lib/text-ui-lang';
@@ -165,7 +169,16 @@ export function formatBookPartsArchiveMarkdown(
       const body = storedToArchiveMarkdown(part.text).trim();
       const lines = [`## ${title}`, '', body];
       if (part.key === 'epigraph' && part.source?.trim()) {
-        lines.push('', `${EM_DASH} ${part.source.trim()}`);
+        const escapedSource = part.source
+          .trim()
+          .split('\n')
+          .map((line, index) =>
+            index === 0
+              ? `${EM_DASH} ${escapeMarkdownBlockLine(line)}`
+              : escapeMarkdownBlockLine(line)
+          )
+          .join('\n');
+        lines.push('', escapedSource);
       }
       return lines.join('\n');
     })

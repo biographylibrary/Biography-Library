@@ -24,12 +24,12 @@ export function BookParts({ position, parts, languageTag }: BookPartsProps) {
         const title = bookPartTitle(part.key, languageTag);
         if (part.key === 'dedication') {
           return (
-            <div key={part.key} className="text-center" aria-label={title}>
+            <section key={part.key} className="text-center" aria-label={title}>
               <BiographySectionBody
                 text={part.text}
                 className="italic text-lg [&_p]:text-center"
               />
-            </div>
+            </section>
           );
         }
         if (part.key === 'epigraph') {

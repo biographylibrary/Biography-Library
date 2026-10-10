@@ -1,6 +1,12 @@
 import { describe, expect, it } from 'vitest';
+import { escapeMarkdownBlockLine } from '@/lib/archive-markdown';
 import { buildBiographyMarkdown } from '@/lib/archive-package';
-import { selectBookParts, type BookStructureRow } from '@/lib/book-parts';
+import {
+  formatBookPartsArchiveMarkdown,
+  selectBookParts,
+  type BookPart,
+  type BookStructureRow,
+} from '@/lib/book-parts';
 import { buildPermanencePlainText } from '@/lib/permanence-text-export';
 import { loadPermanenceExportBundle } from '@/lib/server/permanence-stored-exports';
 
@@ -61,6 +67,24 @@ describe('archivio e testi con parti del libro', () => {
     expect(epilogo).toBeGreaterThan(corpo);
     expect(crediti).toBeGreaterThan(epilogo);
     expect(md).toContain('— Autore');
+  });
+
+  it('protegge asterischi, parentesi quadre e a capo nella fonte dell\'epigrafe', () => {
+    const parts: BookPart[] = [
+      {
+        key: 'epigraph',
+        text: 'Citazione',
+        source: '*fonte* [nota]\nseconda riga',
+      },
+    ];
+    const md = formatBookPartsArchiveMarkdown(parts, 'it');
+    const first = escapeMarkdownBlockLine('*fonte* [nota]');
+    const second = escapeMarkdownBlockLine('seconda riga');
+    expect(md).toContain(`— ${first}`);
+    expect(md).toContain(second);
+    expect(md).toContain('\\*fonte\\*');
+    expect(md).toContain('\\[nota\\]');
+    expect(md).toMatch(/— .+\\*fonte\\*.+\nseconda riga/);
   });
 
   it('senza parti l\'output Markdown è identico a oggi', () => {
