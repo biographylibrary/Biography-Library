@@ -9,6 +9,7 @@ import {
   runReviewSubmitScreening,
   STAFF_ROLES,
 } from '@/lib/server/review-submit-pipeline';
+import { editionIdenticalBlock, editionOriginalBlock } from '@/lib/server/edition-publish';
 
 type AnyClient = SupabaseClient<any, any, any>;
 
@@ -110,6 +111,15 @@ export async function POST(req: NextRequest) {
     if (!(await checkPerUserThrottle(serviceClient, callerId, 'review_submit'))) {
       console.warn('[review/submit] 429 — throttled', { timestamp, biographyId, callerId });
       return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
+    }
+
+    const originalBlock = await editionOriginalBlock(serviceClient, biographyId);
+    if (originalBlock) {
+      return NextResponse.json(originalBlock, { status: 409 });
+    }
+    const identicalBlock = await editionIdenticalBlock(serviceClient, biographyId);
+    if (identicalBlock) {
+      return NextResponse.json(identicalBlock, { status: 409 });
     }
 
     const { data: coverMedia } = await serviceClient

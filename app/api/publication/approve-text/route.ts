@@ -9,7 +9,7 @@ import {
   runReviewSubmitScreening,
 } from '@/lib/server/review-submit-pipeline';
 import { isPdfScriptCovered } from '@/lib/pdf/covered-scripts';
-import { editionOriginalBlock } from '@/lib/server/edition-publish';
+import { editionIdenticalBlock, editionOriginalBlock } from '@/lib/server/edition-publish';
 
 type AnyClient = SupabaseClient<any, any, any>;
 
@@ -77,6 +77,10 @@ export async function POST(req: NextRequest) {
     const originalBlock = await editionOriginalBlock(serviceClient, biographyId);
     if (originalBlock) {
       return NextResponse.json(originalBlock, { status: 409 });
+    }
+    const identicalBlock = await editionIdenticalBlock(serviceClient, biographyId);
+    if (identicalBlock) {
+      return NextResponse.json(identicalBlock, { status: 409 });
     }
     if (isPdfScriptCovered((bio as { record_script?: string | null }).record_script)) {
       return NextResponse.json(
