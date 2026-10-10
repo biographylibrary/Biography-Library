@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { useCallback, useState } from 'react';
+import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { useTranslation } from '@/lib/i18n/i18n-context';
 import { textLanguageLabels } from '@/lib/text-languages';
@@ -40,7 +41,10 @@ export function EditionBanner({
     try {
       const { data: sessionData } = await supabase.auth.getSession();
       const token = sessionData.session?.access_token;
-      if (!token) return;
+      if (!token) {
+        toast.error(t.toast.requestFailed);
+        return;
+      }
       const res = await fetch('/api/biography/edition-aligned', {
         method: 'POST',
         headers: {
@@ -55,11 +59,15 @@ export function EditionBanner({
       };
       if (res.ok && payload.originalVersionAt) {
         onAligned(payload.originalVersionAt);
+      } else {
+        toast.error(t.toast.requestFailed);
       }
+    } catch {
+      toast.error(t.toast.requestFailed);
     } finally {
       setBusy(false);
     }
-  }, [editionId, onAligned]);
+  }, [editionId, onAligned, t.toast.requestFailed]);
 
   return (
     <div className="mx-4 mt-3 mb-1 space-y-2 rounded-lg border border-brand-blue/40 bg-brand-blue/15 px-4 py-3 text-sm text-brand-ink">
@@ -87,7 +95,10 @@ export function EditionBanner({
       )}
       {identicalSectionCount > 0 && (
         <p>
-          {copy.identicalSections.replace('{count}', String(identicalSectionCount))}
+          {(identicalSectionCount === 1
+            ? copy.identicalSectionOne
+            : copy.identicalSections
+          ).replace('{count}', String(identicalSectionCount))}
         </p>
       )}
     </div>

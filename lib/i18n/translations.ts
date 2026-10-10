@@ -391,6 +391,7 @@ export interface Translations {
     todoItems: string;
     signInForAi: string;
     failedGrammar: string;
+    grammarUnavailableForLanguage: string;
     editorMode: string;
     conversationMode: string;
     publishedChapterNotice: string;
@@ -1756,6 +1757,7 @@ export interface Translations {
     driftConfirm: string;
     originalUnpublishedNote: string;
     identicalSections: string;
+    identicalSectionOne: string;
     managedByOriginal: string;
     photosDeferred: string;
     deleteEdition: string;
@@ -1832,6 +1834,7 @@ export const translations: Record<Language, Translations> = {
       originalUnpublishedNote:
         'The original is not published at the moment: you can write the translation, but you cannot send it until the original is published again',
       identicalSections: '{count} sections are still identical to the original',
+      identicalSectionOne: '1 section is still identical to the original',
       managedByOriginal: 'Managed by the original',
       photosDeferred:
         'Photos are those of the original; captions in this language will be written later',
@@ -2232,6 +2235,7 @@ export const translations: Record<Language, Translations> = {
       todoItems: 'TODO Items',
       signInForAi: 'You must be signed in to use AI features. Please refresh the page.',
       failedGrammar: 'Failed to check grammar',
+      grammarUnavailableForLanguage: 'Grammar check is not available for this language',
       editorMode: 'Editor Mode',
       conversationMode: 'Conversation Mode',
       publishedChapterNotice: 'This chapter is published and cannot be edited.',
@@ -3673,6 +3677,7 @@ export const translations: Record<Language, Translations> = {
       originalUnpublishedNote:
         'L\'originale non è al momento pubblicato: puoi scrivere la traduzione, ma non puoi inviarla finché l\'originale non è di nuovo pubblicato',
       identicalSections: '{count} sezioni sono ancora uguali all\'originale',
+      identicalSectionOne: '1 sezione è ancora uguale all\'originale',
       managedByOriginal: 'Gestito dall\'originale',
       photosDeferred:
         'Le foto sono quelle dell\'originale; le didascalie in questa lingua si scriveranno in un secondo momento',
@@ -4073,6 +4078,7 @@ export const translations: Record<Language, Translations> = {
       todoItems: 'Cose da Fare',
       signInForAi: 'Devi aver effettuato l\'accesso per usare le funzionalit\u00e0 AI. Ricarica la pagina.',
       failedGrammar: 'Impossibile controllare la grammatica',
+      grammarUnavailableForLanguage: 'Il controllo grammaticale non è disponibile per questa lingua',
       editorMode: 'Modalità Editor',
       conversationMode: 'Modalità Conversazione',
       publishedChapterNotice: 'Questo capitolo è pubblicato e non può essere modificato.',
@@ -5516,6 +5522,7 @@ export const translations: Record<Language, Translations> = {
       originalUnpublishedNote:
         'L\'original n\'est pas publié pour le moment : vous pouvez écrire la traduction, mais vous ne pouvez pas l\'envoyer tant que l\'original n\'est pas de nouveau publié',
       identicalSections: '{count} sections sont encore identiques à l\'original',
+      identicalSectionOne: '1 section est encore identique à l\'original',
       managedByOriginal: 'Géré par l\'original',
       photosDeferred:
         'Les photos sont celles de l\'original ; les légendes dans cette langue s\'écriront plus tard',
@@ -5916,6 +5923,8 @@ export const translations: Record<Language, Translations> = {
       todoItems: '\u00c0 Faire',
       signInForAi: 'Vous devez \u00eatre connect\u00e9 pour utiliser les fonctionnalit\u00e9s IA. Veuillez rafra\u00eechir la page.',
       failedGrammar: 'Impossible de v\u00e9rifier la grammaire',
+      grammarUnavailableForLanguage:
+        'La vérification grammaticale n\u2019est pas disponible pour cette langue',
       editorMode: 'Mode Éditeur',
       conversationMode: 'Mode Conversation',
       publishedChapterNotice: 'Ce chapitre est publié et ne peut pas être modifié.',
@@ -7340,7 +7349,7 @@ export const translations: Record<Language, Translations> = {
       menuItem: 'In eine andere Sprache übersetzen',
       title: 'Übersetzen',
       instructions:
-        'Übersetze deine Geschichte in eine andere Sprache. Die Übersetzung machst du selbst, oder jemand, dem du vertraust: Biography Library übersetzt nie für dich, weil nur wer geschrieben hat weiß, was gemeint war. Du kannst von einer Kopie des Originaltexts ausgehen und Absatz für Absatz neu schreiben, oder eine bereits übersetzte Datei importieren, wie beim normalen Import. Die Übersetzung ist eine zweite Ausgabe derselben Geschichte: du bearbeitest sie, wann du willst, sie durchläuft dieselbe Prüfung wie das Original vor der Veröffentlichung und erscheint neben dem Original. Wenn du ein automatisches Übersetzungsprogramm nutzt, lies alles sorgfältig nach: der veröffentlichte Text trägt deinen Namen.',
+        'Übersetze deine Geschichte in eine andere Sprache. Die Übersetzung machst du selbst, oder jemand, dem du vertraust: Biography Library übersetzt nie für dich, weil nur wer geschrieben hat, weiß, was gemeint war. Du kannst von einer Kopie des Originaltexts ausgehen und Absatz für Absatz neu schreiben, oder eine bereits übersetzte Datei importieren, wie beim normalen Import. Die Übersetzung ist eine zweite Ausgabe derselben Geschichte: du bearbeitest sie, wann du willst, sie durchläuft dieselbe Prüfung wie das Original vor der Veröffentlichung und erscheint neben dem Original. Wenn du ein automatisches Übersetzungsprogramm nutzt, lies alles sorgfältig nach: Der veröffentlichte Text trägt deinen Namen.',
       existingTitle: 'Bereits vorhandene Ausgaben',
       open: 'Öffnen',
       originalRevised: 'Original nach der Übersetzung überarbeitet',
@@ -7359,6 +7368,7 @@ export const translations: Record<Language, Translations> = {
       originalUnpublishedNote:
         'Das Original ist derzeit nicht veröffentlicht: du kannst die Übersetzung schreiben, aber nicht einreichen, bis das Original wieder veröffentlicht ist',
       identicalSections: '{count} Abschnitte sind noch mit dem Original identisch',
+      identicalSectionOne: '1 Abschnitt ist noch mit dem Original identisch',
       managedByOriginal: 'Vom Original verwaltet',
       photosDeferred:
         'Die Fotos sind die des Originals; Bildunterschriften in dieser Sprache kommen später',
@@ -7372,7 +7382,7 @@ export const translations: Record<Language, Translations> = {
       errorOriginalIsEdition: 'Nur ein Original lässt sich übersetzen, keine andere Übersetzung.',
       errorFrozen: 'Diese Geschichte ist eingefroren und lässt sich nicht übersetzen.',
       errorOriginalNotPublished: 'Du kannst eine Übersetzung beginnen, wenn deine Geschichte veröffentlicht ist.',
-      errorLanguageAlreadyPresent: 'Eine Fassung in dieser Sprache gibt es bereits.',
+      errorLanguageAlreadyPresent: 'Eine Ausgabe in dieser Sprache gibt es bereits.',
       errorGeneric: 'Die Übersetzung konnte nicht erstellt werden. Bitte erneut versuchen.',
       statusDraft: 'Entwurf',
       statusPublished: 'Veröffentlicht',
@@ -7759,6 +7769,7 @@ export const translations: Record<Language, Translations> = {
       todoItems: 'Aufgaben',
       signInForAi: 'Sie m\u00fcssen angemeldet sein, um KI-Funktionen zu nutzen. Bitte laden Sie die Seite neu.',
       failedGrammar: 'Grammatikpr\u00fcfung fehlgeschlagen',
+      grammarUnavailableForLanguage: 'Die Grammatikprüfung ist für diese Sprache nicht verfügbar',
       editorMode: 'Editor-Modus',
       conversationMode: 'Konversationsmodus',
       publishedChapterNotice: 'Dieses Kapitel ist veröffentlicht und kann nicht bearbeitet werden.',
