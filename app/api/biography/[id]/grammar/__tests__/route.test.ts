@@ -167,6 +167,41 @@ describe('POST /api/biography/[id]/grammar: lunghezza del testo', () => {
   });
 });
 
+describe('POST /api/biography/[id]/grammar: lingua', () => {
+  it('422 language_not_supported se la lingua del testo non è tra le quattro', async () => {
+    const res = await call({ ...validBody, language: 'pt-BR' });
+    expect(res.status).toBe(422);
+    expect(await res.json()).toMatchObject({ error: 'language_not_supported' });
+    expect(chat).not.toHaveBeenCalled();
+  });
+
+  it('accetta un tag con regione delle quattro lingue e usa uiLanguage per i messaggi', async () => {
+    checkAuthorTokenCap.mockResolvedValue({
+      allowed: false,
+      period: 'week',
+      limit: 1000,
+      used: 1200,
+      resetsAt: '2026-10-04T22:00:00.000Z',
+    });
+    const res = await call({
+      ...validBody,
+      language: 'de-CH',
+      uiLanguage: 'it',
+    });
+    expect(res.status).toBe(429);
+    const body = await res.json();
+    expect(body.message).toContain('questa settimana');
+    expect(chat).not.toHaveBeenCalled();
+  });
+
+  it('senza language resta il predefinito en e la chiamata procede', async () => {
+    const { language: _omit, ...rest } = validBody;
+    const res = await call(rest);
+    expect(res.status).toBe(200);
+    expect(chat).toHaveBeenCalled();
+  });
+});
+
 describe('POST /api/biography/[id]/grammar: modelli, parametri, limiti', () => {
   it('chiama Apertus per primo, poi Gemma e Mistral, con i parametri di sempre e scopo grammar', async () => {
     const res = await call(validBody);

@@ -49,6 +49,7 @@ import {
 } from '@/lib/editor/single-document';
 import { INITIAL_AI_STATE, type AiPanelState } from '@/lib/ai-constants';
 import { checkGrammar, AiLimitError } from '@/lib/grammar-service';
+import { grammarLanguageForTag } from '@/lib/ai/grammar';
 import {
   REOPEN_SECTION_PAYLOAD,
   buildEditorSavePayload,
@@ -1160,6 +1161,7 @@ export default function BiographyEditorPage() {
       ? titleRef.current.trim() || t.biography.untitled
       : section?.title;
     if (!plain || !sectionTitle) return;
+    if (recordLanguageTag && !grammarLanguageForTag(recordLanguageTag)) return;
 
     if (!session) {
       setAiState({
@@ -1183,7 +1185,8 @@ export default function BiographyEditorPage() {
         id,
         sectionTitle,
         plain,
-        recordLanguageTag ?? language
+        recordLanguageTag ?? 'en',
+        language
       );
       setAiUsageRefresh((n) => n + 1);
       setAiState((prev) => ({
@@ -1388,6 +1391,7 @@ export default function BiographyEditorPage() {
 
   const handleFinalVersionGrammarCheck = useCallback(async () => {
     if (!finalVersion.trim()) return;
+    if (recordLanguageTag && !grammarLanguageForTag(recordLanguageTag)) return;
     if (!session) {
       setAiState({
         type: 'grammar',
@@ -1408,7 +1412,8 @@ export default function BiographyEditorPage() {
         id,
         'Final Biography',
         finalVersion,
-        recordLanguageTag ?? language
+        recordLanguageTag ?? 'en',
+        language
       );
       setAiUsageRefresh((n) => n + 1);
       setAiState((prev) => ({ ...prev, loading: false, suggestions }));
@@ -2323,6 +2328,15 @@ export default function BiographyEditorPage() {
                   }
                   editorFontSize={editorFontSize}
                   onRevertToDraft={biographyStatus === 'final_version' ? handleRevertToDraft : undefined}
+                  aiEnabled={aiEnabled}
+                  aiLoading={aiState.loading}
+                  aiUsageRefresh={aiUsageRefresh}
+                  onGrammarCheck={handleFinalVersionGrammarCheck}
+                  grammarUnavailable={
+                    recordLanguageTag && !grammarLanguageForTag(recordLanguageTag)
+                      ? t.editor.grammarUnavailableForLanguage
+                      : null
+                  }
                 />
                     ) : (
                 <GuidedSectionWorkspace
@@ -2353,6 +2367,11 @@ export default function BiographyEditorPage() {
                       : undefined
                   }
                   onGrammarCheck={handleGrammarCheck}
+                  grammarUnavailable={
+                    recordLanguageTag && !grammarLanguageForTag(recordLanguageTag)
+                      ? t.editor.grammarUnavailableForLanguage
+                      : null
+                  }
                 />
               )}
 

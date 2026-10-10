@@ -40,7 +40,8 @@ export async function checkGrammar(
   biographyId: string,
   sectionTitle: string,
   content: string,
-  language: string = 'en'
+  language: string = 'en',
+  uiLanguage?: string
 ): Promise<AiSuggestion[]> {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), CLIENT_TIMEOUT_MS);
@@ -50,7 +51,12 @@ export async function checkGrammar(
     res = await fetchWithAgentAuth(`/api/biography/${encodeURIComponent(biographyId)}/grammar`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ sectionTitle, content, language }),
+      body: JSON.stringify({
+        sectionTitle,
+        content,
+        language,
+        ...(uiLanguage ? { uiLanguage } : {}),
+      }),
       signal: controller.signal,
     });
   } catch (err) {
