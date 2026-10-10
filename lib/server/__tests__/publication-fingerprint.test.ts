@@ -154,6 +154,74 @@ describe('impronta letta dal database', () => {
   it('per una scheda che non esiste restituisce null', async () => {
     expect(await computePublicFingerprint(seed().client, 'nope')).toBeNull();
   });
+
+  it('le parti del libro dell\'edizione non cambiano l\'impronta dell\'originale', async () => {
+    const db = createFakeDb({
+      biographies: [
+        {
+          id: 'orig',
+          user_id: 'u1',
+          status: 'published',
+          title: 'Originale',
+          author_name: 'Anna',
+          content: { childhood: { text: 'Testo' } },
+          final_version: 'Testo originale',
+          biography_mode: 'sections',
+        },
+        {
+          id: 'ed',
+          user_id: 'u1',
+          status: 'draft',
+          title: 'Edition',
+          author_name: 'Anna',
+          translation_of: 'orig',
+          content: { childhood: { text: 'Text' } },
+          final_version: 'Translated text',
+          biography_mode: 'sections',
+        },
+      ],
+      biography_sections: [
+        { biography_id: 'orig', section_key: 'childhood', content: 'Testo' },
+        { biography_id: 'ed', section_key: 'childhood', content: 'Text' },
+      ],
+      biography_book_structure: [
+        {
+          biography_id: 'orig',
+          dedication_enabled: true,
+          dedication_content: 'SENTINEL-ORIG-DEDICA',
+          epigraph_enabled: true,
+          epigraph_content: 'SENTINEL-ORIG-EPIGRAFE',
+          preface_enabled: true,
+          preface_content: 'SENTINEL-ORIG-PREFAZIONE',
+          epilogue_enabled: true,
+          epilogue_content: 'SENTINEL-ORIG-EPILOGO',
+          acknowledgements_enabled: true,
+          acknowledgements_content: 'SENTINEL-ORIG-RINGRAZIAMENTI',
+          specific_credits_enabled: true,
+          specific_credits_content: 'SENTINEL-ORIG-CREDITI',
+        },
+        {
+          biography_id: 'ed',
+          dedication_enabled: true,
+          dedication_content: 'SENTINEL-ED-DEDICA',
+        },
+      ],
+      biography_media: [{ biography_id: 'orig', layout: 'cover', caption: '', display_order: 0 }],
+    });
+    const originalBefore = await computePublicFingerprint(db.client, 'orig');
+    const editionBefore = await computePublicFingerprint(db.client, 'ed');
+    expect(originalBefore).not.toBe(editionBefore);
+
+    const editionRow = db.tables.biography_book_structure.find(
+      (r) => (r as { biography_id: string }).biography_id === 'ed'
+    ) as Record<string, unknown>;
+    editionRow.dedication_content = 'SENTINEL-ED-DEDICA-CAMBIATA';
+    editionRow.epigraph_enabled = true;
+    editionRow.epigraph_content = 'SENTINEL-ED-EPIGRAFE';
+
+    expect(await computePublicFingerprint(db.client, 'orig')).toBe(originalBefore);
+    expect(await computePublicFingerprint(db.client, 'ed')).not.toBe(editionBefore);
+  });
 });
 
 describe('confronto prima di pubblicare', () => {

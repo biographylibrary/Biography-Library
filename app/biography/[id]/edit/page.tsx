@@ -30,6 +30,11 @@ import { TextLanguageField } from '@/components/editor/TextLanguageField';
 import { textLanguageIdentity } from '@/lib/text-languages';
 import { countIdenticalSections } from '@/lib/edition-text-compare';
 import { originalIsNewerThanEditionAlignment } from '@/lib/edition-drift';
+import { aiWritingToolsAvailableForBiography } from '@/lib/edition-ai';
+import {
+  missingBookStructurePartsComparedToOriginal,
+  type BookStructureReminderSnapshot,
+} from '@/lib/edition-book-structure-reminder';
 import { deleteBiography } from '@/lib/biographies';
 import { isPdfScriptCovered } from '@/lib/pdf/covered-scripts';
 import { FinalVersionEditor } from '@/components/editor/FinalVersionEditor';
@@ -50,6 +55,20 @@ import {
 import { INITIAL_AI_STATE, type AiPanelState } from '@/lib/ai-constants';
 import { checkGrammar, AiLimitError } from '@/lib/grammar-service';
 import { grammarLanguageForTag } from '@/lib/ai/grammar';
+
+const BOOK_STRUCTURE_REMINDER_COLUMNS =
+  'include_author_copyright_page, dedication_enabled, dedication_content, epigraph_enabled, epigraph_content, preface_enabled, preface_content, epilogue_enabled, epilogue_content, acknowledgements_enabled, acknowledgements_content, specific_credits_enabled, specific_credits_content';
+
+async function loadBookStructureReminderSnapshot(
+  biographyId: string
+): Promise<BookStructureReminderSnapshot | null> {
+  const { data } = await supabase
+    .from('biography_book_structure')
+    .select(BOOK_STRUCTURE_REMINDER_COLUMNS)
+    .eq('biography_id', biographyId)
+    .maybeSingle();
+  return (data as BookStructureReminderSnapshot | null) ?? null;
+}
 import {
   REOPEN_SECTION_PAYLOAD,
   buildEditorSavePayload,
@@ -207,6 +226,10 @@ export default function BiographyEditorPage() {
     content: BiographyContent | null;
   } | null>(null);
   const [identicalSectionCount, setIdenticalSectionCount] = useState(0);
+  const [originalBookStructure, setOriginalBookStructure] =
+    useState<BookStructureReminderSnapshot | null>(null);
+  const [editionBookStructure, setEditionBookStructure] =
+    useState<BookStructureReminderSnapshot | null>(null);
   const [publishedAt, setPublishedAt] = useState<string | null>(null);
   const [revisedAt, setRevisedAt] = useState<string | null>(null);
   const [globalNotesCount, setGlobalNotesCount] = useState(0);
@@ -594,9 +617,17 @@ export default function BiographyEditorPage() {
             setOriginalMeta(null);
             setIdenticalSectionCount(0);
           }
+          const [originalStructure, editionStructure] = await Promise.all([
+            loadBookStructureReminderSnapshot(translationOfId),
+            loadBookStructureReminderSnapshot(id),
+          ]);
+          setOriginalBookStructure(originalStructure);
+          setEditionBookStructure(editionStructure);
         } else {
           setOriginalMeta(null);
           setIdenticalSectionCount(0);
+          setOriginalBookStructure(null);
+          setEditionBookStructure(null);
         }
 
         let resolvedAuthorName = data.author_name ?? '';
@@ -1152,6 +1183,7 @@ export default function BiographyEditorPage() {
   );
 
   const handleGrammarCheck = useCallback(async () => {
+    if (!aiWritingToolsAvailableForBiography({ translationOf })) return;
     const onSheet = biographyModeRef.current === 'freeflow';
     const plain = onSheet
       ? stripHtmlTags(contentFreeflowRef.current).trim()
@@ -1208,7 +1240,7 @@ export default function BiographyEditorPage() {
         error: message,
       }));
     }
-  }, [id, activeSection, session, language, recordLanguageTag, t]);
+  }, [id, activeSection, session, language, recordLanguageTag, translationOf, t]);
 
   const handleAcceptSuggestion = useCallback(
     (suggestionId: string) => {
@@ -1390,6 +1422,7 @@ export default function BiographyEditorPage() {
   }, [id]);
 
   const handleFinalVersionGrammarCheck = useCallback(async () => {
+    if (!aiWritingToolsAvailableForBiography({ translationOf })) return;
     if (!finalVersion.trim()) return;
     if (recordLanguageTag && !grammarLanguageForTag(recordLanguageTag)) return;
     if (!session) {
@@ -1425,7 +1458,7 @@ export default function BiographyEditorPage() {
       }
       setAiState((prev) => ({ ...prev, loading: false, error: err.message || t.editor.failedGrammar }));
     }
-  }, [id, finalVersion, session, language, recordLanguageTag, t]);
+  }, [id, finalVersion, session, language, recordLanguageTag, translationOf, t]);
 
   /** Fuori dagli stati di lavoro il testo è in sola lettura: lo si dice invece di lasciar fallire il salvataggio. */
   const notifyTextLocked = useCallback(() => {
@@ -1877,10 +1910,14 @@ export default function BiographyEditorPage() {
 
 
   const showEchoBubble = false;
+  const aiToolsOnThisSheet = aiEnabled && aiWritingToolsAvailableForBiography({ translationOf });
+  const missingBookStructureParts = translationOf
+    ? missingBookStructurePartsComparedToOriginal(originalBookStructure, editionBookStructure)
+    : [];
 
   return (
     <EchoShell
-      biographyId={id}
+      biographyId={translationOf ? undefined : id}
       sectionKey={activeSection}
       biographyMode={biographyMode}
       showBubble={showEchoBubble}
@@ -1916,6 +1953,7 @@ export default function BiographyEditorPage() {
           })}
           identicalSectionCount={identicalSectionCount}
           onAligned={(at) => setOriginalVersionAt(at)}
+          missingBookStructureParts={missingBookStructureParts}
         />
       )}
 
@@ -2328,7 +2366,7 @@ export default function BiographyEditorPage() {
                   }
                   editorFontSize={editorFontSize}
                   onRevertToDraft={biographyStatus === 'final_version' ? handleRevertToDraft : undefined}
-                  aiEnabled={aiEnabled}
+                  aiEnabled={aiToolsOnThisSheet}
                   aiLoading={aiState.loading}
                   aiUsageRefresh={aiUsageRefresh}
                   onGrammarCheck={handleFinalVersionGrammarCheck}
@@ -2343,6 +2381,7 @@ export default function BiographyEditorPage() {
                   biographyId={id}
                   activeSection="freeflow"
                   documentMode
+                  showEcho={!translationOf}
                   sectionText={contentFreeflow}
                   onSectionTextChange={handleFreeflowChange}
                   editorFontSize={editorFontSize}
@@ -2353,7 +2392,7 @@ export default function BiographyEditorPage() {
                     isSectionOrFreeflowRevisionLocked ||
                     reviewQueueLocksEditor
                   }
-                  aiEnabled={aiEnabled}
+                  aiEnabled={aiToolsOnThisSheet}
                   aiUsageRefresh={aiUsageRefresh}
                   aiLoading={aiState.loading}
                   highlightChange={echoChangeHighlight}
@@ -2480,7 +2519,12 @@ export default function BiographyEditorPage() {
         biographyId={id}
         userId={user.id}
         open={showBookStructurePanel}
-        onOpenChange={setShowBookStructurePanel}
+        onOpenChange={(open) => {
+          setShowBookStructurePanel(open);
+          if (!open && translationOf) {
+            void loadBookStructureReminderSnapshot(id).then(setEditionBookStructure);
+          }
+        }}
       />
 
       <PermanenceDialog
@@ -2677,7 +2721,7 @@ export default function BiographyEditorPage() {
         />
       )}
       <EditorOnboardingTour
-        active={tourActive && !isLoading}
+        active={tourActive && !isLoading && !translationOf}
         writingPath={tourWritingPath}
         biographyMode={biographyMode}
         biographyType={biographyType}

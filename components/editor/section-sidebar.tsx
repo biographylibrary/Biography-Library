@@ -477,7 +477,7 @@ export function SectionSidebar({
           <span className="truncate min-w-0 flex-1 text-left">{t.photos.panelTitle}</span>
         </button>
         )}
-        {!isEdition && biographyId && userId && (
+        {biographyId && userId && (
           <button
             type="button"
             data-tour-id="book-structure-btn"
