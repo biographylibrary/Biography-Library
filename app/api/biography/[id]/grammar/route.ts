@@ -26,6 +26,7 @@ import {
   recordMinuteHit,
 } from '@/lib/ai/grammar-limits';
 import { checkAuthorTokenCap, tokenCapResponseBody } from '@/lib/ai/token-caps';
+import { isEditionBiography } from '@/lib/edition-ai';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -64,7 +65,11 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
 
   const [{ data: profile }, { data: bio }] = await Promise.all([
     service.from('profiles').select('role, account_status').eq('id', userId).maybeSingle(),
-    service.from('biographies').select('user_id, is_frozen').eq('id', biographyId).maybeSingle(),
+    service
+      .from('biographies')
+      .select('user_id, is_frozen, translation_of')
+      .eq('id', biographyId)
+      .maybeSingle(),
   ]);
   if (!bio) {
     return NextResponse.json({ error: 'Not found' }, { status: 404 });
@@ -72,7 +77,11 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
   const role = (profile as { role?: string } | null)?.role as UserRole | undefined;
   const isStaff = isPlatformStaffRole(role);
   const accountActive = (profile as { account_status?: string } | null)?.account_status === 'active';
-  const bioRow = bio as { user_id: string; is_frozen: boolean };
+  const bioRow = bio as {
+    user_id: string;
+    is_frozen: boolean;
+    translation_of?: string | null;
+  };
 
   if (!isStaff) {
     if (bioRow.user_id !== userId) {
@@ -84,6 +93,13 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
     if (bioRow.is_frozen) {
       return NextResponse.json({ error: 'biography_frozen' }, { status: 403 });
     }
+  }
+
+  if (isEditionBiography(bioRow.translation_of)) {
+    return NextResponse.json(
+      { error: 'grammar_not_available_for_edition' },
+      { status: 403 }
+    );
   }
 
   const languageRaw = typeof body.language === 'string' ? body.language : null;

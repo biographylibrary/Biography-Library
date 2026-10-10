@@ -68,7 +68,7 @@ beforeEach(() => {
   vi.clearAllMocks();
   getAuthenticatedUser.mockResolvedValue({ user: { id: 'owner-1' } });
   tables.profiles = { role: 'user', account_status: 'active' };
-  tables.biographies = { user_id: 'owner-1', is_frozen: false };
+  tables.biographies = { user_id: 'owner-1', is_frozen: false, translation_of: null };
   isOverMinuteLimit.mockResolvedValue(false);
   checkAuthorTokenCap.mockResolvedValue({ allowed: true });
   checkAndIncrementUsage.mockResolvedValue({ allowed: true });
@@ -78,6 +78,42 @@ beforeEach(() => {
       { id: '2', original: 'uguale', suggestion: 'uguale  ', explanation: 'identico: da scartare' },
     ]),
     modelUsed: 'swiss-ai/Apertus-v1.5-70B',
+  });
+});
+
+describe('POST /api/biography/[id]/grammar: edizioni', () => {
+  it('proprietario su edizione: 403 grammar_not_available_for_edition senza uso né modello', async () => {
+    tables.biographies = {
+      user_id: 'owner-1',
+      is_frozen: false,
+      translation_of: 'orig-1',
+    };
+    const res = await call(validBody);
+    expect(res.status).toBe(403);
+    expect(await res.json()).toEqual({ error: 'grammar_not_available_for_edition' });
+    expect(chat).not.toHaveBeenCalled();
+    expect(checkAndIncrementUsage).not.toHaveBeenCalled();
+    expect(recordMinuteHit).not.toHaveBeenCalled();
+  });
+
+  it('staff su edizione altrui: stesso 403, senza modello né conteggio', async () => {
+    tables.profiles = { role: 'reviewer', account_status: 'active' };
+    tables.biographies = {
+      user_id: 'someone-else',
+      is_frozen: false,
+      translation_of: 'orig-1',
+    };
+    const res = await call(validBody);
+    expect(res.status).toBe(403);
+    expect(await res.json()).toEqual({ error: 'grammar_not_available_for_edition' });
+    expect(chat).not.toHaveBeenCalled();
+    expect(checkAndIncrementUsage).not.toHaveBeenCalled();
+  });
+
+  it('originale invariato: procede come prima', async () => {
+    const res = await call(validBody);
+    expect(res.status).toBe(200);
+    expect(chat).toHaveBeenCalled();
   });
 });
 
