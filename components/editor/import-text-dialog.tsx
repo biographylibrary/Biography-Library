@@ -33,7 +33,6 @@ import { saveOriginalCoverJpeg } from '@/lib/editor/save-original-cover';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/lib/auth-context';
 import { useTranslation } from '@/lib/i18n/i18n-context';
-import { type BiographyContent } from '@/lib/editor-constants';
 import { storedToSafeHtml } from '@/lib/archive-markdown';
 
 const MAX_PDF_BYTES = 30 * 1024 * 1024;
@@ -51,19 +50,17 @@ interface ImportTextDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   biographyId: string;
-  currentSectionKey: string;
-  currentSectionContent: string;
   currentFreeflowContent: string;
-  sectionContents?: BiographyContent;
-  onImportedToSection: (sectionKey: string, newContent: string) => void;
   onImportedToFreeflow: (newContent: string) => void;
-  onImportMultipleSections?: (
-    sections: Array<{ title: string; content: string; sectionKey?: string }>
-  ) => void;
-  biographyMode?: 'sections' | 'freeflow';
+  /** `edition`: titolo e frasi per testo già tradotto; scrive solo nell'edizione aperta. */
+  variant?: 'original' | 'edition';
 }
 
 type ConflictAction = 'replace' | 'append';
+
+function nfcText(value: string): string {
+  return value.normalize('NFC');
+}
 
 export function ImportTextDialog({
   open,
@@ -71,6 +68,7 @@ export function ImportTextDialog({
   biographyId,
   currentFreeflowContent,
   onImportedToFreeflow,
+  variant = 'original',
 }: ImportTextDialogProps) {
   const { t, language } = useTranslation();
   const { user } = useAuth();
@@ -258,7 +256,7 @@ export function ImportTextDialog({
 
   const applySingleImport = useCallback(
     (action: ConflictAction) => {
-      const incomingText = incomingMarkdown();
+      const incomingText = nfcText(incomingMarkdown());
       if (!htmlHasText(incomingText)) {
         resetDialog();
         onOpenChange(false);
@@ -267,7 +265,7 @@ export function ImportTextDialog({
       const newValue =
         action === 'replace' || !htmlHasText(currentFreeflowContent)
           ? incomingText
-          : appendMarkdown(currentFreeflowContent, incomingText);
+          : nfcText(appendMarkdown(currentFreeflowContent, incomingText));
       onImportedToFreeflow(newValue);
       resetDialog();
       onOpenChange(false);
@@ -348,14 +346,16 @@ export function ImportTextDialog({
           <DialogHeader className="px-6 pt-6 pb-4 border-b border-border/50 shrink-0">
             <DialogTitle className="flex items-center gap-2 text-lg">
               <Upload className="h-5 w-5 text-primary" />
-              {t.importDialog.titleFreeflow}
+              {variant === 'edition' ? t.translate.importTitle : t.importDialog.titleFreeflow}
             </DialogTitle>
           </DialogHeader>
 
           <div className="flex-1 overflow-y-auto px-6 py-4 space-y-5">
             <div className="rounded-md px-4 py-3.5" style={{ backgroundColor: '#C4DAEB' }}>
               <p className="text-sm leading-snug text-foreground">
-                {t.editor.importNoticeFreeflowMode}
+                {variant === 'edition'
+                  ? t.translate.importDescription
+                  : t.editor.importNoticeFreeflowMode}
               </p>
             </div>
 

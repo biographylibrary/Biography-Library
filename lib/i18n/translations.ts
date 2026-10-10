@@ -1734,6 +1734,46 @@ export interface Translations {
     confirmPublication: string;
     heldForOriginal: string;
     originalNotPublished: string;
+    translationIdentical: string;
+  };
+  translate: {
+    menuItem: string;
+    title: string;
+    instructions: string;
+    existingTitle: string;
+    open: string;
+    originalRevised: string;
+    startCopy: string;
+    startBlank: string;
+    startImport: string;
+    create: string;
+    creating: string;
+    notPublishedHint: string;
+    languageLabel: string;
+    bannerWriting: string;
+    bannerOpenOriginal: string;
+    driftMessage: string;
+    driftConfirm: string;
+    originalUnpublishedNote: string;
+    identicalSections: string;
+    managedByOriginal: string;
+    photosDeferred: string;
+    deleteEdition: string;
+    deleteEditionConfirm: string;
+    deleteEditionConfirmBody: string;
+    errorInvalidLanguage: string;
+    errorNotFound: string;
+    errorForbidden: string;
+    errorOriginalIsEdition: string;
+    errorFrozen: string;
+    errorOriginalNotPublished: string;
+    errorLanguageAlreadyPresent: string;
+    errorGeneric: string;
+    statusDraft: string;
+    statusPublished: string;
+    statusOther: string;
+    importTitle: string;
+    importDescription: string;
   };
 }
 
@@ -1767,6 +1807,51 @@ export const translations: Record<Language, Translations> = {
       confirmPublication: 'Confirm and run screening',
       heldForOriginal: 'Screening passed. The translation will be published when the original is published.',
       originalNotPublished: 'You can send the translation once the original is published.',
+      translationIdentical: 'The text is identical to the original: write the translation before sending it.',
+    },
+    translate: {
+      menuItem: 'Translate into another language',
+      title: 'Translate',
+      instructions:
+        'Translate your story into another language. You do the translation, or someone you trust: Biography Library never translates for you, because only the person who wrote it knows what they meant. You can start from a copy of the original text and rewrite it paragraph by paragraph, or import a file that is already translated, as with a normal import. The translation is a second edition of the same story: you edit it whenever you want, it goes through the same check as the original before it is published, and it appears beside the original. If you use an automatic translation program, reread everything carefully: the published text carries your name.',
+      existingTitle: 'Existing editions',
+      open: 'Open',
+      originalRevised: 'Original revised after the translation',
+      startCopy: 'Start from a copy of the original',
+      startBlank: 'Start from a blank page',
+      startImport: 'Import a file that is already translated',
+      create: 'Create the translation',
+      creating: 'Creating…',
+      notPublishedHint: 'You can start a translation when your story is published',
+      languageLabel: 'Language',
+      bannerWriting: 'You are writing the {language} translation of “{title}”',
+      bannerOpenOriginal: 'Open the original',
+      driftMessage:
+        'The original was revised after this translation was last aligned. Check whether the translation needs updating.',
+      driftConfirm: 'I have checked; it is aligned',
+      originalUnpublishedNote:
+        'The original is not published at the moment: you can write the translation, but you cannot send it until the original is published again',
+      identicalSections: '{count} sections are still identical to the original',
+      managedByOriginal: 'Managed by the original',
+      photosDeferred:
+        'Photos are those of the original; captions in this language will be written later',
+      deleteEdition: 'Delete this translation',
+      deleteEditionConfirm: 'Delete this translation?',
+      deleteEditionConfirmBody:
+        'The draft translation will be deleted. The original and its photos are not touched.',
+      errorInvalidLanguage: 'That language is not accepted for the text.',
+      errorNotFound: 'The original story was not found.',
+      errorForbidden: 'You cannot create a translation of this story.',
+      errorOriginalIsEdition: 'You can only translate an original, not another translation.',
+      errorFrozen: 'This story is frozen and cannot be translated.',
+      errorOriginalNotPublished: 'You can start a translation when your story is published.',
+      errorLanguageAlreadyPresent: 'A version in this language already exists.',
+      errorGeneric: 'Could not create the translation. Please try again.',
+      statusDraft: 'Draft',
+      statusPublished: 'Published',
+      statusOther: 'In progress',
+      importTitle: 'Import translated text',
+      importDescription: 'Upload a file or paste text that is already translated',
     },
     nav: {
       demoBiographies: 'Demo biographies',
@@ -3563,6 +3648,51 @@ export const translations: Record<Language, Translations> = {
       confirmPublication: 'Conferma e avvia il controllo',
       heldForOriginal: 'Il controllo è passato. La traduzione sarà pubblicata quando lo sarà l\'originale.',
       originalNotPublished: 'La traduzione si invia quando l\'originale è pubblicato.',
+      translationIdentical: 'Il testo è identico all\'originale: scrivi la traduzione prima di inviarla.',
+    },
+    translate: {
+      menuItem: 'Traduci in un\'altra lingua',
+      title: 'Traduci',
+      instructions:
+        'Traduci la tua storia in un\'altra lingua. La traduzione la fai tu, o qualcuno di cui ti fidi: Biography Library non traduce al posto tuo, perché solo chi ha scritto sa che cosa voleva dire. Puoi partire da una copia del testo originale e riscriverla paragrafo per paragrafo, oppure importare un file già tradotto, come per l\'importazione normale. La traduzione è una seconda edizione della stessa storia: la modifichi quando vuoi, passa lo stesso controllo dell\'originale prima di essere pubblicata e compare accanto all\'originale. Se usi un programma di traduzione automatica, rileggi tutto con attenzione: il testo pubblicato porta il tuo nome.',
+      existingTitle: 'Edizioni già presenti',
+      open: 'Apri',
+      originalRevised: 'Originale rivisto dopo la traduzione',
+      startCopy: 'Parti da una copia dell\'originale',
+      startBlank: 'Parti da un foglio vuoto',
+      startImport: 'Importa un file già tradotto',
+      create: 'Crea la traduzione',
+      creating: 'Creazione…',
+      notPublishedHint: 'Potrai iniziare una traduzione quando la tua storia sarà pubblicata',
+      languageLabel: 'Lingua',
+      bannerWriting: 'Stai scrivendo la traduzione in {language} di «{title}»',
+      bannerOpenOriginal: 'Apri l\'originale',
+      driftMessage:
+        'L\'originale è stato rivisto dopo l\'ultimo allineamento di questa traduzione. Controlla se la traduzione va aggiornata.',
+      driftConfirm: 'Ho controllato, è allineata',
+      originalUnpublishedNote:
+        'L\'originale non è al momento pubblicato: puoi scrivere la traduzione, ma non puoi inviarla finché l\'originale non è di nuovo pubblicato',
+      identicalSections: '{count} sezioni sono ancora uguali all\'originale',
+      managedByOriginal: 'Gestito dall\'originale',
+      photosDeferred:
+        'Le foto sono quelle dell\'originale; le didascalie in questa lingua si scriveranno in un secondo momento',
+      deleteEdition: 'Elimina questa traduzione',
+      deleteEditionConfirm: 'Eliminare questa traduzione?',
+      deleteEditionConfirmBody:
+        'La bozza di traduzione sarà eliminata. L\'originale e le sue foto non vengono toccati.',
+      errorInvalidLanguage: 'Questa lingua non è accettata per il testo.',
+      errorNotFound: 'La storia originale non è stata trovata.',
+      errorForbidden: 'Non puoi creare una traduzione di questa storia.',
+      errorOriginalIsEdition: 'Si traduce solo un originale, non un\'altra traduzione.',
+      errorFrozen: 'Questa storia è congelata e non si può tradurre.',
+      errorOriginalNotPublished: 'Potrai iniziare una traduzione quando la tua storia sarà pubblicata.',
+      errorLanguageAlreadyPresent: 'Esiste già una versione in questa lingua.',
+      errorGeneric: 'Non è stato possibile creare la traduzione. Riprova.',
+      statusDraft: 'Bozza',
+      statusPublished: 'Pubblicata',
+      statusOther: 'In corso',
+      importTitle: 'Importa testo già tradotto',
+      importDescription: 'Carica un file o incolla un testo già tradotto',
     },
     nav: {
       demoBiographies: 'Biografie demo',
@@ -5361,6 +5491,51 @@ export const translations: Record<Language, Translations> = {
       confirmPublication: 'Confirmer et lancer le contrôle',
       heldForOriginal: 'Le contrôle est passé. La traduction sera publiée lorsque l\'original le sera.',
       originalNotPublished: 'La traduction s\'envoie quand l\'original est publié.',
+      translationIdentical: 'Le texte est identique à l\'original : écrivez la traduction avant de l\'envoyer.',
+    },
+    translate: {
+      menuItem: 'Traduire dans une autre langue',
+      title: 'Traduire',
+      instructions:
+        'Traduisez votre histoire dans une autre langue. C\'est vous qui traduisez, ou quelqu\'un en qui vous avez confiance : Biography Library ne traduit jamais à votre place, parce que seule la personne qui a écrit sait ce qu\'elle voulait dire. Vous pouvez partir d\'une copie du texte original et le réécrire paragraphe par paragraphe, ou importer un fichier déjà traduit, comme pour une importation normale. La traduction est une deuxième édition de la même histoire : vous la modifiez quand vous voulez, elle passe le même contrôle que l\'original avant d\'être publiée et apparaît à côté de l\'original. Si vous utilisez un programme de traduction automatique, relisez tout avec attention : le texte publié porte votre nom.',
+      existingTitle: 'Éditions déjà présentes',
+      open: 'Ouvrir',
+      originalRevised: 'Original révisé après la traduction',
+      startCopy: 'Partir d\'une copie de l\'original',
+      startBlank: 'Partir d\'une page blanche',
+      startImport: 'Importer un fichier déjà traduit',
+      create: 'Créer la traduction',
+      creating: 'Création…',
+      notPublishedHint: 'Vous pourrez commencer une traduction lorsque votre histoire sera publiée',
+      languageLabel: 'Langue',
+      bannerWriting: 'Vous écrivez la traduction en {language} de «{title}»',
+      bannerOpenOriginal: 'Ouvrir l\'original',
+      driftMessage:
+        'L\'original a été révisé après le dernier alignement de cette traduction. Vérifiez si la traduction doit être mise à jour.',
+      driftConfirm: 'J\'ai vérifié, c\'est aligné',
+      originalUnpublishedNote:
+        'L\'original n\'est pas publié pour le moment : vous pouvez écrire la traduction, mais vous ne pouvez pas l\'envoyer tant que l\'original n\'est pas de nouveau publié',
+      identicalSections: '{count} sections sont encore identiques à l\'original',
+      managedByOriginal: 'Géré par l\'original',
+      photosDeferred:
+        'Les photos sont celles de l\'original ; les légendes dans cette langue s\'écriront plus tard',
+      deleteEdition: 'Supprimer cette traduction',
+      deleteEditionConfirm: 'Supprimer cette traduction ?',
+      deleteEditionConfirmBody:
+        'Le brouillon de traduction sera supprimé. L\'original et ses photos ne sont pas touchés.',
+      errorInvalidLanguage: 'Cette langue n\'est pas acceptée pour le texte.',
+      errorNotFound: 'L\'histoire originale est introuvable.',
+      errorForbidden: 'Vous ne pouvez pas créer une traduction de cette histoire.',
+      errorOriginalIsEdition: 'On ne traduit qu\'un original, pas une autre traduction.',
+      errorFrozen: 'Cette histoire est gelée et ne peut pas être traduite.',
+      errorOriginalNotPublished: 'Vous pourrez commencer une traduction lorsque votre histoire sera publiée.',
+      errorLanguageAlreadyPresent: 'Une version dans cette langue existe déjà.',
+      errorGeneric: 'Impossible de créer la traduction. Réessayez.',
+      statusDraft: 'Brouillon',
+      statusPublished: 'Publiée',
+      statusOther: 'En cours',
+      importTitle: 'Importer un texte déjà traduit',
+      importDescription: 'Téléversez un fichier ou collez un texte déjà traduit',
     },
     nav: {
       demoBiographies: 'Biographies démo',
@@ -7159,6 +7334,51 @@ export const translations: Record<Language, Translations> = {
       confirmPublication: 'Bestätigen und Prüfung starten',
       heldForOriginal: 'Die Prüfung ist bestanden. Die Übersetzung wird veröffentlicht, wenn das Original veröffentlicht ist.',
       originalNotPublished: 'Die Übersetzung wird eingereicht, wenn das Original veröffentlicht ist.',
+      translationIdentical: 'Der Text ist mit dem Original identisch: schreibe die Übersetzung, bevor du sie einreichst.',
+    },
+    translate: {
+      menuItem: 'In eine andere Sprache übersetzen',
+      title: 'Übersetzen',
+      instructions:
+        'Übersetze deine Geschichte in eine andere Sprache. Die Übersetzung machst du selbst, oder jemand, dem du vertraust: Biography Library übersetzt nie für dich, weil nur wer geschrieben hat weiß, was gemeint war. Du kannst von einer Kopie des Originaltexts ausgehen und Absatz für Absatz neu schreiben, oder eine bereits übersetzte Datei importieren, wie beim normalen Import. Die Übersetzung ist eine zweite Ausgabe derselben Geschichte: du bearbeitest sie, wann du willst, sie durchläuft dieselbe Prüfung wie das Original vor der Veröffentlichung und erscheint neben dem Original. Wenn du ein automatisches Übersetzungsprogramm nutzt, lies alles sorgfältig nach: der veröffentlichte Text trägt deinen Namen.',
+      existingTitle: 'Bereits vorhandene Ausgaben',
+      open: 'Öffnen',
+      originalRevised: 'Original nach der Übersetzung überarbeitet',
+      startCopy: 'Von einer Kopie des Originals ausgehen',
+      startBlank: 'Von einem leeren Blatt ausgehen',
+      startImport: 'Eine bereits übersetzte Datei importieren',
+      create: 'Übersetzung erstellen',
+      creating: 'Wird erstellt…',
+      notPublishedHint: 'Du kannst eine Übersetzung beginnen, wenn deine Geschichte veröffentlicht ist',
+      languageLabel: 'Sprache',
+      bannerWriting: 'Du schreibst die {language}-Übersetzung von „{title}“',
+      bannerOpenOriginal: 'Original öffnen',
+      driftMessage:
+        'Das Original wurde nach der letzten Ausrichtung dieser Übersetzung überarbeitet. Prüfe, ob die Übersetzung aktualisiert werden muss.',
+      driftConfirm: 'Ich habe geprüft, sie ist ausgerichtet',
+      originalUnpublishedNote:
+        'Das Original ist derzeit nicht veröffentlicht: du kannst die Übersetzung schreiben, aber nicht einreichen, bis das Original wieder veröffentlicht ist',
+      identicalSections: '{count} Abschnitte sind noch mit dem Original identisch',
+      managedByOriginal: 'Vom Original verwaltet',
+      photosDeferred:
+        'Die Fotos sind die des Originals; Bildunterschriften in dieser Sprache kommen später',
+      deleteEdition: 'Diese Übersetzung löschen',
+      deleteEditionConfirm: 'Diese Übersetzung löschen?',
+      deleteEditionConfirmBody:
+        'Der Übersetzungsentwurf wird gelöscht. Das Original und seine Fotos bleiben unberührt.',
+      errorInvalidLanguage: 'Diese Sprache ist für den Text nicht zulässig.',
+      errorNotFound: 'Die Originalgeschichte wurde nicht gefunden.',
+      errorForbidden: 'Du kannst keine Übersetzung dieser Geschichte erstellen.',
+      errorOriginalIsEdition: 'Nur ein Original lässt sich übersetzen, keine andere Übersetzung.',
+      errorFrozen: 'Diese Geschichte ist eingefroren und lässt sich nicht übersetzen.',
+      errorOriginalNotPublished: 'Du kannst eine Übersetzung beginnen, wenn deine Geschichte veröffentlicht ist.',
+      errorLanguageAlreadyPresent: 'Eine Fassung in dieser Sprache gibt es bereits.',
+      errorGeneric: 'Die Übersetzung konnte nicht erstellt werden. Bitte erneut versuchen.',
+      statusDraft: 'Entwurf',
+      statusPublished: 'Veröffentlicht',
+      statusOther: 'In Bearbeitung',
+      importTitle: 'Bereits übersetzten Text importieren',
+      importDescription: 'Lade eine Datei hoch oder füge bereits übersetzten Text ein',
     },
     nav: {
       demoBiographies: 'Demo-Biografien',

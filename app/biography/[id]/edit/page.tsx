@@ -22,10 +22,15 @@ import { AiSuggestionsDialog } from '@/components/editor/ai-suggestions-panel';
 import { ShareLinkPanel } from '@/components/editor/share-link-panel';
 import { PhotoGalleryDialog } from '@/components/editor/PhotoGalleryDialog';
 import { ImportTextDialog } from '@/components/editor/import-text-dialog';
+import { TranslateDialog } from '@/components/editor/translate-dialog';
+import { EditionBanner } from '@/components/editor/edition-banner';
 import { FinalReviewDialog } from '@/components/editor/FinalReviewDialog';
 import { ReviewPublicationDialog } from '@/components/editor/ReviewPublicationDialog';
 import { TextLanguageField } from '@/components/editor/TextLanguageField';
 import { textLanguageIdentity } from '@/lib/text-languages';
+import { countIdenticalSections } from '@/lib/edition-text-compare';
+import { originalIsNewerThanEditionAlignment } from '@/lib/edition-drift';
+import { deleteBiography } from '@/lib/biographies';
 import { isPdfScriptCovered } from '@/lib/pdf/covered-scripts';
 import { FinalVersionEditor } from '@/components/editor/FinalVersionEditor';
 import { SubmitForReviewDialog } from '@/components/editor/SubmitForReviewDialog';
@@ -188,6 +193,21 @@ export default function BiographyEditorPage() {
   const [showBookStructurePanel, setShowBookStructurePanel] = useState(false);
   const [showPermanencePanel, setShowPermanencePanel] = useState(false);
   const [showImportDialog, setShowImportDialog] = useState(() => searchParams?.get('import') === '1');
+  const [showTranslateDialog, setShowTranslateDialog] = useState(false);
+  const [showDeleteEditionDialog, setShowDeleteEditionDialog] = useState(false);
+  const [deleteEditionBusy, setDeleteEditionBusy] = useState(false);
+  const [translationOf, setTranslationOf] = useState<string | null>(null);
+  const [originalVersionAt, setOriginalVersionAt] = useState<string | null>(null);
+  const [originalMeta, setOriginalMeta] = useState<{
+    title: string;
+    status: string | null;
+    revised_at: string | null;
+    published_at: string | null;
+    content: BiographyContent | null;
+  } | null>(null);
+  const [identicalSectionCount, setIdenticalSectionCount] = useState(0);
+  const [publishedAt, setPublishedAt] = useState<string | null>(null);
+  const [revisedAt, setRevisedAt] = useState<string | null>(null);
   const [globalNotesCount, setGlobalNotesCount] = useState(0);
   const [globalTodosCount, setGlobalTodosCount] = useState(0);
   const [editorFontSize, setEditorFontSize] = useState<number>(15);
@@ -490,6 +510,24 @@ export default function BiographyEditorPage() {
         setRecordScript(
           typeof data.record_script === 'string' ? data.record_script : 'Latn'
         );
+        const translationOfId =
+          typeof (data as { translation_of?: string | null }).translation_of === 'string'
+            ? (data as { translation_of: string }).translation_of
+            : null;
+        setTranslationOf(translationOfId);
+        setOriginalVersionAt(
+          typeof (data as { original_version_at?: string | null }).original_version_at === 'string'
+            ? (data as { original_version_at: string }).original_version_at
+            : null
+        );
+        setPublishedAt(
+          typeof data.published_at === 'string' ? data.published_at : null
+        );
+        setRevisedAt(
+          typeof (data as { revised_at?: string | null }).revised_at === 'string'
+            ? (data as { revised_at: string }).revised_at
+            : null
+        );
         setStatus(data.status || 'draft');
         setBiographyStatus(
           isBiographyPublicationStatus(data.status) ? data.status : 'draft'
@@ -525,6 +563,39 @@ export default function BiographyEditorPage() {
         if (sheet !== storedFlow || (data.biography_mode || 'sections') !== 'freeflow') {
           dirtyRef.current = true;
           setSaveStatus('unsaved');
+        }
+
+        if (translationOfId) {
+          const { data: original } = await supabase
+            .from('biographies')
+            .select('title, status, revised_at, published_at, content, record_language_tag')
+            .eq('id', translationOfId)
+            .maybeSingle();
+          if (original) {
+            const o = original as {
+              title?: string;
+              status?: string | null;
+              revised_at?: string | null;
+              published_at?: string | null;
+              content?: BiographyContent | null;
+            };
+            const originalContent =
+              o.content && typeof o.content === 'object' ? (o.content as BiographyContent) : null;
+            setOriginalMeta({
+              title: o.title ?? '',
+              status: o.status ?? null,
+              revised_at: o.revised_at ?? null,
+              published_at: o.published_at ?? null,
+              content: originalContent,
+            });
+            setIdenticalSectionCount(countIdenticalSections(loadedContent, originalContent));
+          } else {
+            setOriginalMeta(null);
+            setIdenticalSectionCount(0);
+          }
+        } else {
+          setOriginalMeta(null);
+          setIdenticalSectionCount(0);
         }
 
         let resolvedAuthorName = data.author_name ?? '';
@@ -1079,33 +1150,6 @@ export default function BiographyEditorPage() {
     [user, id, completedSections, status]
   );
 
-  const handleImportMultipleSections = useCallback(
-    (sections: Array<{ title: string; content: string; sectionKey?: string }>) => {
-      setContent((prev) => {
-        const updated = { ...prev };
-        sections.forEach((section) => {
-          const matchingSection = section.sectionKey
-            ? BIOGRAPHY_SECTIONS.find((s) => s.key === section.sectionKey)
-            : BIOGRAPHY_SECTIONS.find(
-                (s) => s.key === section.title || s.title === section.title
-              );
-          if (matchingSection) {
-            const currentData = getSectionData(prev, matchingSection.key);
-            const separator =
-              currentData.text && !currentData.text.endsWith('</p>') ? '<p></p>' : '';
-            updated[matchingSection.key] = {
-              ...currentData,
-              text: currentData.text + separator + section.content,
-            };
-          }
-        });
-        return updated;
-      });
-      markDirty();
-    },
-    [markDirty]
-  );
-
   const handleGrammarCheck = useCallback(async () => {
     const onSheet = biographyModeRef.current === 'freeflow';
     const plain = onSheet
@@ -1139,7 +1183,7 @@ export default function BiographyEditorPage() {
         id,
         sectionTitle,
         plain,
-        language
+        recordLanguageTag ?? language
       );
       setAiUsageRefresh((n) => n + 1);
       setAiState((prev) => ({
@@ -1161,7 +1205,7 @@ export default function BiographyEditorPage() {
         error: message,
       }));
     }
-  }, [id, activeSection, session, language, t]);
+  }, [id, activeSection, session, language, recordLanguageTag, t]);
 
   const handleAcceptSuggestion = useCallback(
     (suggestionId: string) => {
@@ -1360,7 +1404,12 @@ export default function BiographyEditorPage() {
       error: null,
     });
     try {
-      const suggestions = await checkGrammar(id, 'Final Biography', finalVersion, language);
+      const suggestions = await checkGrammar(
+        id,
+        'Final Biography',
+        finalVersion,
+        recordLanguageTag ?? language
+      );
       setAiUsageRefresh((n) => n + 1);
       setAiState((prev) => ({ ...prev, loading: false, suggestions }));
     } catch (err: any) {
@@ -1371,7 +1420,7 @@ export default function BiographyEditorPage() {
       }
       setAiState((prev) => ({ ...prev, loading: false, error: err.message || t.editor.failedGrammar }));
     }
-  }, [id, finalVersion, session, language, t]);
+  }, [id, finalVersion, session, language, recordLanguageTag, t]);
 
   /** Fuori dagli stati di lavoro il testo è in sola lettura: lo si dice invece di lasciar fallire il salvataggio. */
   const notifyTextLocked = useCallback(() => {
@@ -1630,6 +1679,8 @@ export default function BiographyEditorPage() {
         const msg =
           apiResult?.error === 'original_not_published'
             ? t.textLanguage.originalNotPublished
+            : apiResult?.error === 'translation_identical_to_original'
+            ? t.textLanguage.translationIdentical
             : typeof apiResult?.message === 'string'
             ? apiResult.message
             : apiResult?.error === 'drafts_required'
@@ -1695,6 +1746,7 @@ export default function BiographyEditorPage() {
     t.exportDialog.noCoverPhotoWarning,
     t.toast.requestFailed,
     t.textLanguage.originalNotPublished,
+    t.textLanguage.translationIdentical,
     watchScreeningJob,
   ]);
 
@@ -1734,10 +1786,13 @@ export default function BiographyEditorPage() {
       });
       const apiResult = await res.json().catch(() => ({}));
       if (!res.ok || res.status !== 202 || typeof (apiResult as { jobId?: string }).jobId !== 'string') {
+        const errCode = (apiResult as { error?: string }).error;
         const msg =
-          (apiResult as { error?: string }).error === 'original_not_published'
+          errCode === 'original_not_published'
             ? t.textLanguage.originalNotPublished
-            : t.toast.requestFailed;
+            : errCode === 'translation_identical_to_original'
+              ? t.textLanguage.translationIdentical
+              : t.toast.requestFailed;
         toast.error(msg);
         return;
       }
@@ -1754,7 +1809,15 @@ export default function BiographyEditorPage() {
     } finally {
       setPublicationActionLoading(null);
     }
-  }, [id, t.toast.requestFailed, t.textLanguage.originalNotPublished, textPublishConfirmed, user, watchScreeningJob]);
+  }, [
+    id,
+    t.toast.requestFailed,
+    t.textLanguage.originalNotPublished,
+    t.textLanguage.translationIdentical,
+    textPublishConfirmed,
+    user,
+    watchScreeningJob,
+  ]);
 
   const effectivelyLocked = isFrozen || biographyStatus === 'locked_pending_screening';
 
@@ -1807,7 +1870,6 @@ export default function BiographyEditorPage() {
     );
   }
 
-  const activeSectionData = getSectionData(content, activeSection);
 
   const showEchoBubble = false;
 
@@ -1835,6 +1897,23 @@ export default function BiographyEditorPage() {
         busy={licenseBusy}
       />
 
+      {translationOf && originalMeta && (
+        <EditionBanner
+          editionId={id}
+          languageTag={recordLanguageTag}
+          originalId={translationOf}
+          originalTitle={originalMeta.title}
+          originalStatus={originalMeta.status}
+          showDrift={originalIsNewerThanEditionAlignment({
+            originalVersionAt,
+            originalRevisedAt: originalMeta.revised_at,
+            originalPublishedAt: originalMeta.published_at,
+          })}
+          identicalSectionCount={identicalSectionCount}
+          onAligned={(at) => setOriginalVersionAt(at)}
+        />
+      )}
+
       {isFrozen && (
         <div className="shrink-0 bg-brand-blue/25 border-b border-brand-blue/50 px-4 py-2 flex items-center gap-3 dark:bg-brand-blue/15 dark:border-brand-blue/40">
           <SnowflakeIcon className="h-4 w-4 text-brand-ink dark:text-brand-beigeLight shrink-0" />
@@ -1844,7 +1923,7 @@ export default function BiographyEditorPage() {
         </div>
       )}
 
-      {!isFrozen && (
+      {!isFrozen && !translationOf && (
         <div className="shrink-0 border-b border-border/60 bg-background px-4 py-3">
           <div className="max-w-5xl mx-auto">
             <TextLanguageField
@@ -1852,6 +1931,14 @@ export default function BiographyEditorPage() {
               disabled={statusLocksText}
               onChange={(tag) => void handleTextLanguageChange(tag)}
             />
+          </div>
+        </div>
+      )}
+      {!isFrozen && translationOf && (
+        <div className="shrink-0 border-b border-border/60 bg-background px-4 py-2">
+          <div className="max-w-5xl mx-auto text-sm text-muted-foreground">
+            {t.translate.managedByOriginal}
+            {recordLanguageTag ? ` · ${recordLanguageTag}` : ''}
           </div>
         </div>
       )}
@@ -1917,7 +2004,7 @@ export default function BiographyEditorPage() {
         </div>
       )}
 
-      {biographyStatus === 'published' && !isFrozen && biography && (
+      {biographyStatus === 'published' && !isFrozen && biography && !translationOf && (
         <div className="shrink-0 border-b border-border/50 bg-card px-4 py-3">
           <div className="max-w-5xl mx-auto flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
             <div className="min-w-0 flex-1">
@@ -2203,6 +2290,13 @@ export default function BiographyEditorPage() {
             saveStatus={saveStatus}
             privacy={privacy}
             onPrivacyChange={handlePrivacyChange}
+            isEdition={Boolean(translationOf)}
+            canTranslate={!translationOf}
+            onToggleTranslate={() => setShowTranslateDialog(true)}
+            canDeleteEdition={
+              Boolean(translationOf) && biographyStatus === 'draft' && !publishedAt
+            }
+            onDeleteEdition={() => setShowDeleteEditionDialog(true)}
           />
         </aside>
 
@@ -2262,7 +2356,7 @@ export default function BiographyEditorPage() {
                 />
               )}
 
-              {!isFrozen && (
+              {!isFrozen && !translationOf && (
                 <div className="shrink-0">
                   <AuthorLicensePanel
                     visibility={privacy}
@@ -2273,6 +2367,11 @@ export default function BiographyEditorPage() {
                     }}
                     disabled={licenseBusy}
                   />
+                </div>
+              )}
+              {!isFrozen && translationOf && (
+                <div className="shrink-0 px-4 py-2 text-sm text-muted-foreground">
+                  {t.translate.managedByOriginal}
                 </div>
               )}
             </div>
@@ -2391,25 +2490,60 @@ export default function BiographyEditorPage() {
         open={showImportDialog}
         onOpenChange={setShowImportDialog}
         biographyId={id}
-        currentSectionKey={activeSection}
-        currentSectionContent={activeSectionData.text}
         currentFreeflowContent={contentFreeflow}
-        sectionContents={content}
-        biographyMode={biographyMode}
-        onImportedToSection={(sectionKey, newContent) => {
-          setContent((prev) => ({
-            ...prev,
-            [sectionKey]: { ...getSectionData(prev, sectionKey), text: newContent },
-          }));
-          markDirty();
-        }}
+        variant={translationOf ? 'edition' : 'original'}
         onImportedToFreeflow={(newContent) => {
           setContentFreeflow(newContent);
           setBiographyMode('freeflow');
           markDirty();
         }}
-        onImportMultipleSections={handleImportMultipleSections}
       />
+
+      {!translationOf && (
+        <TranslateDialog
+          open={showTranslateDialog}
+          onOpenChange={setShowTranslateDialog}
+          originalId={id}
+          originalStatus={biographyStatus}
+          originalLanguageTag={recordLanguageTag}
+          originalTitle={title}
+          originalRevisedAt={revisedAt}
+          originalPublishedAt={publishedAt}
+        />
+      )}
+
+      <AlertDialog open={showDeleteEditionDialog} onOpenChange={setShowDeleteEditionDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t.translate.deleteEditionConfirm}</AlertDialogTitle>
+            <AlertDialogDescription>{t.translate.deleteEditionConfirmBody}</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={deleteEditionBusy}>{t.common.cancel}</AlertDialogCancel>
+            <AlertDialogAction
+              disabled={deleteEditionBusy || !user}
+              className="bg-brand-wine hover:bg-brand-wine/90"
+              onClick={(e) => {
+                e.preventDefault();
+                if (!user || !translationOf) return;
+                setDeleteEditionBusy(true);
+                void (async () => {
+                  const { error } = await deleteBiography(id, user.id);
+                  setDeleteEditionBusy(false);
+                  if (error) {
+                    toast.error(t.toast.requestFailed);
+                    return;
+                  }
+                  setShowDeleteEditionDialog(false);
+                  router.push(`/biography/${translationOf}/edit`);
+                })();
+              }}
+            >
+              {t.translate.deleteEdition}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       <FinalReviewDialog
         open={showFinalReview}
