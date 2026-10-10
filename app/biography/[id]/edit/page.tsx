@@ -55,20 +55,6 @@ import {
 import { INITIAL_AI_STATE, type AiPanelState } from '@/lib/ai-constants';
 import { checkGrammar, AiLimitError } from '@/lib/grammar-service';
 import { grammarLanguageForTag } from '@/lib/ai/grammar';
-
-const BOOK_STRUCTURE_REMINDER_COLUMNS =
-  'include_author_copyright_page, dedication_enabled, dedication_content, epigraph_enabled, epigraph_content, preface_enabled, preface_content, epilogue_enabled, epilogue_content, acknowledgements_enabled, acknowledgements_content, specific_credits_enabled, specific_credits_content';
-
-async function loadBookStructureReminderSnapshot(
-  biographyId: string
-): Promise<BookStructureReminderSnapshot | null> {
-  const { data } = await supabase
-    .from('biography_book_structure')
-    .select(BOOK_STRUCTURE_REMINDER_COLUMNS)
-    .eq('biography_id', biographyId)
-    .maybeSingle();
-  return (data as BookStructureReminderSnapshot | null) ?? null;
-}
 import {
   REOPEN_SECTION_PAYLOAD,
   buildEditorSavePayload,
@@ -117,6 +103,20 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { getChapterCooldownState } from '@/lib/biography-chapter-cooldown';
+
+const BOOK_STRUCTURE_REMINDER_COLUMNS =
+  'include_author_copyright_page, dedication_enabled, dedication_content, epigraph_enabled, epigraph_content, preface_enabled, preface_content, epilogue_enabled, epilogue_content, acknowledgements_enabled, acknowledgements_content, specific_credits_enabled, specific_credits_content';
+
+async function loadBookStructureReminderSnapshot(
+  biographyId: string
+): Promise<BookStructureReminderSnapshot | null> {
+  const { data } = await supabase
+    .from('biography_book_structure')
+    .select(BOOK_STRUCTURE_REMINDER_COLUMNS)
+    .eq('biography_id', biographyId)
+    .maybeSingle();
+  return (data as BookStructureReminderSnapshot | null) ?? null;
+}
 
 type SaveStatus = 'saved' | 'saving' | 'unsaved' | 'error';
 
