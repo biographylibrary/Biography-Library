@@ -98,5 +98,37 @@ describe('threads/active route', () => {
     );
     const res = await GET(req);
     expect(res.status).toBe(403);
+    expect(getOrCreateThread).not.toHaveBeenCalled();
+  });
+
+  it('GET su edizione: 403 echo_not_available_for_edition senza creare thread', async () => {
+    verifyBiographyOwnership.mockResolvedValue({ ok: true, isEdition: true });
+    const { GET } = await import('@/app/api/agents/threads/active/route');
+    const req = new NextRequest(
+      'http://localhost/api/agents/threads/active?agentType=echo&biographyId=edition-1'
+    );
+    const res = await GET(req);
+    expect(res.status).toBe(403);
+    expect(await res.json()).toEqual({ error: 'echo_not_available_for_edition' });
+    expect(getOrCreateThread).not.toHaveBeenCalled();
+    expect(getActiveThread).not.toHaveBeenCalled();
+  });
+
+  it('GET su originale: crea il thread come prima', async () => {
+    verifyBiographyOwnership.mockResolvedValue({ ok: true, isEdition: false });
+    getActiveThread.mockResolvedValue(null);
+    getOrCreateThread.mockResolvedValue({
+      id: 'thread-orig',
+      user_id: 'user-1',
+      biography_id: 'bio-1',
+      agent_type: 'echo',
+    });
+    const { GET } = await import('@/app/api/agents/threads/active/route');
+    const req = new NextRequest(
+      'http://localhost/api/agents/threads/active?agentType=echo&biographyId=bio-1'
+    );
+    const res = await GET(req);
+    expect(res.status).toBe(200);
+    expect(getOrCreateThread).toHaveBeenCalled();
   });
 });

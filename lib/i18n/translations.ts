@@ -412,6 +412,8 @@ export interface Translations {
     exportModeSections: string;
     bookStructureTitle: string;
     bookStructureAuthorCopyrightPage: string;
+    /** Nome breve per elenchi (es. promemoria traduzione). */
+    bookStructureAuthorCopyrightPageShort: string;
     bookStructureFrontMatter: string;
     bookStructureBackMatter: string;
     bookStructureDedication: string;
@@ -1753,6 +1755,8 @@ export interface Translations {
     languageLabel: string;
     bannerWriting: string;
     bannerOpenOriginal: string;
+    bannerManualOnly: string;
+    bookStructureReminder: string;
     driftMessage: string;
     driftConfirm: string;
     originalUnpublishedNote: string;
@@ -1815,19 +1819,23 @@ export const translations: Record<Language, Translations> = {
       menuItem: 'Translate into another language',
       title: 'Translate',
       instructions:
-        'Translate your story into another language. You do the translation, or someone you trust: Biography Library never translates for you, because only the person who wrote it knows what they meant. You can start from a copy of the original text and rewrite it paragraph by paragraph, or import a file that is already translated, as with a normal import. The translation is a second edition of the same story: you edit it whenever you want, it goes through the same check as the original before it is published, and it appears beside the original. If you use an automatic translation program, reread everything carefully: the published text carries your name.',
+        'Translate your story into another language. You do the translation, or someone you trust: Biography Library does not translate for you and does not correct the translated text, because only the person who wrote it knows what they meant. The usual way is to import from a file a translation that is already ready and already reread, as with a normal import; alternatively you can start from a copy of the original or from a blank page and write or paste the text yourself. In the editor you can tidy it by hand: chapters, bold, italic and the other toolbar tools. There is neither the grammar check nor the assistant. The translation is a second edition of the same story: you edit it whenever you want, it goes through the same check as the original before it is published, and it appears beside the original. If you use an automatic translation program, reread everything carefully before importing: the published text carries your name.',
       existingTitle: 'Existing editions',
       open: 'Open',
       originalRevised: 'Original revised after the translation',
       startCopy: 'Start from a copy of the original',
       startBlank: 'Start from a blank page',
-      startImport: 'Import a file that is already translated',
+      startImport: 'Import a translation that is already ready',
       create: 'Create the translation',
       creating: 'Creating…',
       notPublishedHint: 'You can start a translation when your story is published',
       languageLabel: 'Language',
       bannerWriting: 'You are writing the {language} translation of “{title}”',
       bannerOpenOriginal: 'Open the original',
+      bannerManualOnly:
+        'Here the text is imported already translated and already reread, and tidied by hand: chapters, bold, italic and the other editor tools. In a translation there is neither the grammar check nor the assistant.',
+      bookStructureReminder:
+        'In the original these are filled in: {parts}. In this translation they are not yet.',
       driftMessage:
         'The original was revised after this translation was last aligned. Check whether the translation needs updating.',
       driftConfirm: 'I have checked; it is aligned',
@@ -1854,7 +1862,8 @@ export const translations: Record<Language, Translations> = {
       statusPublished: 'Published',
       statusOther: 'In progress',
       importTitle: 'Import translated text',
-      importDescription: 'Upload a file or paste text that is already translated',
+      importDescription:
+        'Upload a file or paste a text that is already translated and already reread. In the editor you tidy it by hand; there is neither the grammar check nor the assistant.',
     },
     nav: {
       demoBiographies: 'Demo biographies',
@@ -2257,6 +2266,7 @@ export const translations: Record<Language, Translations> = {
       bookStructureTitle: 'Book Structure',
       bookStructureAuthorCopyrightPage:
         'Include short author credits page before the title leaf (PDF). Full legal statement remains on back cover.',
+      bookStructureAuthorCopyrightPageShort: 'Author copyright page',
       bookStructureFrontMatter: 'Front matter',
       bookStructureBackMatter: 'Back matter',
       bookStructureDedication: 'Dedication',
@@ -3658,19 +3668,23 @@ export const translations: Record<Language, Translations> = {
       menuItem: 'Traduci in un\'altra lingua',
       title: 'Traduci',
       instructions:
-        'Traduci la tua storia in un\'altra lingua. La traduzione la fai tu, o qualcuno di cui ti fidi: Biography Library non traduce al posto tuo, perché solo chi ha scritto sa che cosa voleva dire. Puoi partire da una copia del testo originale e riscriverla paragrafo per paragrafo, oppure importare un file già tradotto, come per l\'importazione normale. La traduzione è una seconda edizione della stessa storia: la modifichi quando vuoi, passa lo stesso controllo dell\'originale prima di essere pubblicata e compare accanto all\'originale. Se usi un programma di traduzione automatica, rileggi tutto con attenzione: il testo pubblicato porta il tuo nome.',
+        'Traduci la tua storia in un\'altra lingua. La traduzione la fai tu, o qualcuno di cui ti fidi: Biography Library non traduce al posto tuo e non corregge il testo tradotto, perché solo chi ha scritto sa che cosa voleva dire. Il modo normale è importare da un file una traduzione già pronta e già riletta, come per l\'importazione normale; in alternativa puoi partire da una copia dell\'originale o da un foglio vuoto e scrivere o incollare tu il testo. Nell\'editor potrai sistemarlo a mano: capitoli, grassetto, corsivo e le altre funzioni della barra degli strumenti. Non ci sono né il controllo grammaticale né l\'assistente. La traduzione è una seconda edizione della stessa storia: la modifichi quando vuoi, passa lo stesso controllo dell\'originale prima di essere pubblicata e compare accanto all\'originale. Se usi un programma di traduzione automatica, rileggi tutto con attenzione prima di importare: il testo pubblicato porta il tuo nome.',
       existingTitle: 'Edizioni già presenti',
       open: 'Apri',
       originalRevised: 'Originale rivisto dopo la traduzione',
       startCopy: 'Parti da una copia dell\'originale',
       startBlank: 'Parti da un foglio vuoto',
-      startImport: 'Importa un file già tradotto',
+      startImport: 'Importa una traduzione già pronta',
       create: 'Crea la traduzione',
       creating: 'Creazione…',
       notPublishedHint: 'Potrai iniziare una traduzione quando la tua storia sarà pubblicata',
       languageLabel: 'Lingua',
       bannerWriting: 'Stai scrivendo la traduzione in {language} di «{title}»',
       bannerOpenOriginal: 'Apri l\'originale',
+      bannerManualOnly:
+        'Qui il testo si importa già tradotto e già riletto e si sistema a mano: capitoli, grassetto, corsivo e le altre funzioni dell\'editor. In una traduzione non ci sono né il controllo grammaticale né l\'assistente.',
+      bookStructureReminder:
+        'Nell\'originale sono compilati: {parts}. In questa traduzione non lo sono ancora.',
       driftMessage:
         'L\'originale è stato rivisto dopo l\'ultimo allineamento di questa traduzione. Controlla se la traduzione va aggiornata.',
       driftConfirm: 'Ho controllato, è allineata',
@@ -3697,7 +3711,8 @@ export const translations: Record<Language, Translations> = {
       statusPublished: 'Pubblicata',
       statusOther: 'In corso',
       importTitle: 'Importa testo già tradotto',
-      importDescription: 'Carica un file o incolla un testo già tradotto',
+      importDescription:
+        'Carica un file o incolla un testo già tradotto e già riletto. Nell\'editor lo sistemi a mano; non ci sono né il controllo grammaticale né l\'assistente.',
     },
     nav: {
       demoBiographies: 'Biografie demo',
@@ -4100,6 +4115,7 @@ export const translations: Record<Language, Translations> = {
       bookStructureTitle: 'Struttura del libro',
       bookStructureAuthorCopyrightPage:
         'Includi una breve pagina crediti autore prima del frontespizio (PDF). Il testo legale completo resta sulla quarta copertina.',
+      bookStructureAuthorCopyrightPageShort: 'Pagina del copyright dell\'autore',
       bookStructureFrontMatter: 'Pagine d\'apertura',
       bookStructureBackMatter: 'Pagine di chiusura',
       bookStructureDedication: 'Dedica',
@@ -5503,19 +5519,23 @@ export const translations: Record<Language, Translations> = {
       menuItem: 'Traduire dans une autre langue',
       title: 'Traduire',
       instructions:
-        'Traduisez votre histoire dans une autre langue. C\'est vous qui traduisez, ou quelqu\'un en qui vous avez confiance : Biography Library ne traduit jamais à votre place, parce que seule la personne qui a écrit sait ce qu\'elle voulait dire. Vous pouvez partir d\'une copie du texte original et le réécrire paragraphe par paragraphe, ou importer un fichier déjà traduit, comme pour une importation normale. La traduction est une deuxième édition de la même histoire : vous la modifiez quand vous voulez, elle passe le même contrôle que l\'original avant d\'être publiée et apparaît à côté de l\'original. Si vous utilisez un programme de traduction automatique, relisez tout avec attention : le texte publié porte votre nom.',
+        'Traduisez votre histoire dans une autre langue. C\'est vous qui traduisez, ou quelqu\'un en qui vous avez confiance : Biography Library ne traduit pas à votre place et ne corrige pas le texte traduit, parce que seule la personne qui a écrit sait ce qu\'elle voulait dire. Le mode habituel est d\'importer depuis un fichier une traduction déjà prête et déjà relue, comme pour une importation normale ; autrement vous pouvez partir d\'une copie de l\'original ou d\'une page blanche et écrire ou coller le texte vous-même. Dans l\'éditeur vous pourrez le mettre en ordre à la main : chapitres, gras, italique et les autres outils de la barre. Il n\'y a ni le contrôle grammatical ni l\'assistant. La traduction est une deuxième édition de la même histoire : vous la modifiez quand vous voulez, elle passe le même contrôle que l\'original avant d\'être publiée et apparaît à côté de l\'original. Si vous utilisez un programme de traduction automatique, relisez tout avec attention avant d\'importer : le texte publié porte votre nom.',
       existingTitle: 'Éditions déjà présentes',
       open: 'Ouvrir',
       originalRevised: 'Original révisé après la traduction',
       startCopy: 'Partir d\'une copie de l\'original',
       startBlank: 'Partir d\'une page blanche',
-      startImport: 'Importer un fichier déjà traduit',
+      startImport: 'Importer une traduction déjà prête',
       create: 'Créer la traduction',
       creating: 'Création…',
       notPublishedHint: 'Vous pourrez commencer une traduction lorsque votre histoire sera publiée',
       languageLabel: 'Langue',
       bannerWriting: 'Vous écrivez la traduction en {language} de «{title}»',
       bannerOpenOriginal: 'Ouvrir l\'original',
+      bannerManualOnly:
+        'Ici le texte s\'importe déjà traduit et déjà relu, et se met en ordre à la main : chapitres, gras, italique et les autres outils de l\'éditeur. Dans une traduction il n\'y a ni le contrôle grammatical ni l\'assistant.',
+      bookStructureReminder:
+        'Dans l\'original sont remplis : {parts}. Dans cette traduction, pas encore.',
       driftMessage:
         'L\'original a été révisé après le dernier alignement de cette traduction. Vérifiez si la traduction doit être mise à jour.',
       driftConfirm: 'J\'ai vérifié, c\'est aligné',
@@ -5542,7 +5562,8 @@ export const translations: Record<Language, Translations> = {
       statusPublished: 'Publiée',
       statusOther: 'En cours',
       importTitle: 'Importer un texte déjà traduit',
-      importDescription: 'Téléversez un fichier ou collez un texte déjà traduit',
+      importDescription:
+        'Téléversez un fichier ou collez un texte déjà traduit et déjà relu. Dans l\'éditeur vous le mettez en ordre à la main ; il n\'y a ni le contrôle grammatical ni l\'assistant.',
     },
     nav: {
       demoBiographies: 'Biographies démo',
@@ -5946,6 +5967,7 @@ export const translations: Record<Language, Translations> = {
       bookStructureTitle: 'Structure du livre',
       bookStructureAuthorCopyrightPage:
         'Inclure une courte page de crédits auteur avant le titre (PDF). Le texte légal complet reste en quatrième de couverture.',
+      bookStructureAuthorCopyrightPageShort: 'Page de copyright de l\'auteur',
       bookStructureFrontMatter: 'Pages liminaires',
       bookStructureBackMatter: 'Pages annexes',
       bookStructureDedication: 'Dédicace',
@@ -7349,19 +7371,23 @@ export const translations: Record<Language, Translations> = {
       menuItem: 'In eine andere Sprache übersetzen',
       title: 'Übersetzen',
       instructions:
-        'Übersetze deine Geschichte in eine andere Sprache. Die Übersetzung machst du selbst, oder jemand, dem du vertraust: Biography Library übersetzt nie für dich, weil nur wer geschrieben hat, weiß, was gemeint war. Du kannst von einer Kopie des Originaltexts ausgehen und Absatz für Absatz neu schreiben, oder eine bereits übersetzte Datei importieren, wie beim normalen Import. Die Übersetzung ist eine zweite Ausgabe derselben Geschichte: du bearbeitest sie, wann du willst, sie durchläuft dieselbe Prüfung wie das Original vor der Veröffentlichung und erscheint neben dem Original. Wenn du ein automatisches Übersetzungsprogramm nutzt, lies alles sorgfältig nach: Der veröffentlichte Text trägt deinen Namen.',
+        'Übersetze deine Geschichte in eine andere Sprache. Die Übersetzung machst du selbst, oder jemand, dem du vertraust: Biography Library übersetzt nicht für dich und korrigiert den übersetzten Text nicht, weil nur wer geschrieben hat, weiß, was gemeint war. Der übliche Weg ist, aus einer Datei eine bereits fertige und bereits nachgelesene Übersetzung zu importieren, wie beim normalen Import; alternativ kannst du von einer Kopie des Originals oder von einem leeren Blatt ausgehen und den Text selbst schreiben oder einfügen. Im Editor kannst du ihn von Hand richten: Kapitel, Fett, Kursiv und die anderen Werkzeuge der Leiste. Es gibt weder die Grammatikprüfung noch den Assistenten. Die Übersetzung ist eine zweite Ausgabe derselben Geschichte: du bearbeitest sie, wann du willst, sie durchläuft dieselbe Prüfung wie das Original vor der Veröffentlichung und erscheint neben dem Original. Wenn du ein automatisches Übersetzungsprogramm nutzt, lies alles sorgfältig nach, bevor du importierst: Der veröffentlichte Text trägt deinen Namen.',
       existingTitle: 'Bereits vorhandene Ausgaben',
       open: 'Öffnen',
       originalRevised: 'Original nach der Übersetzung überarbeitet',
       startCopy: 'Von einer Kopie des Originals ausgehen',
       startBlank: 'Von einem leeren Blatt ausgehen',
-      startImport: 'Eine bereits übersetzte Datei importieren',
+      startImport: 'Eine bereits fertige Übersetzung importieren',
       create: 'Übersetzung erstellen',
       creating: 'Wird erstellt…',
       notPublishedHint: 'Du kannst eine Übersetzung beginnen, wenn deine Geschichte veröffentlicht ist',
       languageLabel: 'Sprache',
       bannerWriting: 'Du schreibst die {language}-Übersetzung von „{title}“',
       bannerOpenOriginal: 'Original öffnen',
+      bannerManualOnly:
+        'Hier wird der Text bereits übersetzt und bereits nachgelesen importiert und von Hand gerichtet: Kapitel, Fett, Kursiv und die anderen Editor-Werkzeuge. In einer Übersetzung gibt es weder die Grammatikprüfung noch den Assistenten.',
+      bookStructureReminder:
+        'Im Original sind ausgefüllt: {parts}. In dieser Übersetzung noch nicht.',
       driftMessage:
         'Das Original wurde nach der letzten Ausrichtung dieser Übersetzung überarbeitet. Prüfe, ob die Übersetzung aktualisiert werden muss.',
       driftConfirm: 'Ich habe geprüft, sie ist ausgerichtet',
@@ -7388,7 +7414,8 @@ export const translations: Record<Language, Translations> = {
       statusPublished: 'Veröffentlicht',
       statusOther: 'In Bearbeitung',
       importTitle: 'Bereits übersetzten Text importieren',
-      importDescription: 'Lade eine Datei hoch oder füge bereits übersetzten Text ein',
+      importDescription:
+        'Lade eine Datei hoch oder füge einen bereits übersetzten und bereits nachgelesenen Text ein. Im Editor richtest du ihn von Hand; es gibt weder die Grammatikprüfung noch den Assistenten.',
     },
     nav: {
       demoBiographies: 'Demo-Biografien',
@@ -7791,6 +7818,7 @@ export const translations: Record<Language, Translations> = {
       bookStructureTitle: 'Buchstruktur',
       bookStructureAuthorCopyrightPage:
         'Kurze Autoren-/Copyright-Seite vor dem Titelblatt einfügen (PDF). Der vollständige Rechtstext bleibt auf der Rückseite.',
+      bookStructureAuthorCopyrightPageShort: 'Copyright-Seite des Autors',
       bookStructureFrontMatter: 'Vorspann',
       bookStructureBackMatter: 'Nachspann',
       bookStructureDedication: 'Widmung',

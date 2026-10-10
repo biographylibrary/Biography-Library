@@ -174,6 +174,7 @@ Models are chosen with `AGENT_MODEL_*` (see `lib/agents/models.ts`); the grammar
 - `POST /api/biography/create-edition` — owner only; body `{ originalId, languageTag, startFrom: 'copy' | 'blank' }`. Creates a draft row with `translation_of`, no UM id, no pioneer flag, no chapter cooldown / provisional window. Text and structure are written in the same INSERT (`copy` or `blank`); there is no mid-copy step to roll back. Concurrent same-language inserts map unique-index violations to `409 language_already_present`. Visibility and license (`visibility`, `rights_*`) are copied from the original and kept in sync by a database trigger; authors cannot diverge them on an edition row.
 - `POST /api/biography/edition-aligned` — owner only on a row with `translation_of`; sets `original_version_at` to the current `COALESCE(revised_at, published_at)` of the original.
 - Submit paths (`approve-final-pdf`, `approve-text`, `review/submit`) refuse an edition whose plain text still matches the original (`409 translation_identical_to_original`) and still require the original to be `published`.
+- AI writing tools never run on an edition (`translation_of` set): grammar answers `403 grammar_not_available_for_edition`; Echo (threads/active, chat/stream via `prepareAgentTurn`, apply-draft) answers `403 echo_not_available_for_edition`. Publication screening still applies to editions.
 
 ### Grammar check (`POST /api/biography/[id]/grammar`, Node runtime)
 
@@ -182,6 +183,8 @@ Browser (lib/grammar-service.ts, fetchWithAgentAuth)
   → auth (Bearer JWT) → load profile + biography (service role)
   → same rule as the RLS UPDATE policy on biographies:
       owner + active account + not frozen, or staff
+  → if translation_of is set → 403 grammar_not_available_for_edition
+      (all roles, including staff; before language check, usage, or model call)
   → text in the body (authors check unsaved text); > 30,000 characters after stripping
       HTML → 413 with a message in four languages (no silent truncation)
   → per-minute limit (ai_rate_limits), token cap, daily/weekly counters (ai_usage_tracking)

@@ -50,6 +50,12 @@ export async function POST(req: NextRequest) {
   if (!owned.ok) {
     return NextResponse.json({ error: 'Biography not found' }, { status: 404 });
   }
+  if (owned.isEdition) {
+    return NextResponse.json(
+      { error: 'echo_not_available_for_edition' },
+      { status: 403 }
+    );
+  }
 
   const result = await appendDraftToBiography(
     serviceClient,

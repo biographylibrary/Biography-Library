@@ -297,20 +297,26 @@ export async function verifyBiographyOwnership(
   ok: boolean;
   biography_mode?: string;
   status?: string;
+  isEdition?: boolean;
   narrative?: BiographyNarrativeContext;
 }> {
   const { data } = await serviceClient
     .from('biographies')
-    .select('user_id, biography_mode, status, biography_type, subject_name, title, author_name')
+    .select(
+      'user_id, biography_mode, status, biography_type, subject_name, title, author_name, translation_of'
+    )
     .eq('id', biographyId)
     .maybeSingle();
 
   if (!data) return { ok: false };
   if ((data as { user_id?: string }).user_id !== userId) return { ok: false };
+  const translationOf = (data as { translation_of?: string | null }).translation_of;
   return {
     ok: true,
     biography_mode: (data as { biography_mode?: string }).biography_mode,
     status: (data as { status?: string }).status,
+    isEdition:
+      typeof translationOf === 'string' && translationOf.length > 0,
     narrative: buildBiographyNarrativeContext(data as Parameters<typeof buildBiographyNarrativeContext>[0]),
   };
 }

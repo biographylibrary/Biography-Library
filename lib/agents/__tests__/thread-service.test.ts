@@ -11,6 +11,7 @@ function makeOwnershipClient(
     subject_name?: string | null;
     title?: string;
     author_name?: string | null;
+    translation_of?: string | null;
   } | null
 ) {
   const maybeSingle = vi.fn().mockResolvedValue({ data: row });
@@ -33,6 +34,7 @@ describe('verifyBiographyOwnership', () => {
       ok: true,
       biography_mode: 'sections',
       status: 'draft',
+      isEdition: false,
       narrative: {
         biographyType: 'autobiography',
         subjectName: '',
@@ -55,11 +57,22 @@ describe('verifyBiographyOwnership', () => {
     const result = await verifyBiographyOwnership(client, 'bio-1', 'user-1');
     expect(result.ok).toBe(true);
     if (!result.ok) return;
+    expect(result.isEdition).toBe(false);
     expect(result.narrative).toEqual({
       biographyType: 'memorial',
       subjectName: 'Francesco',
       writerName: 'Maria',
     });
+  });
+
+  it('marks isEdition when translation_of is set', async () => {
+    const client = makeOwnershipClient({
+      user_id: 'user-1',
+      status: 'draft',
+      translation_of: 'orig-1',
+    });
+    const result = await verifyBiographyOwnership(client, 'edition-1', 'user-1');
+    expect(result).toMatchObject({ ok: true, isEdition: true });
   });
 
   it('returns ok false when biography is missing', async () => {

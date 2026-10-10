@@ -29,6 +29,8 @@ interface GuidedSectionWorkspaceProps {
   isCompleted?: boolean;
   /** One sheet: no preset section title above the text. */
   documentMode?: boolean;
+  /** False sulle edizioni: nessun pannello Echo sotto il foglio. */
+  showEcho?: boolean;
   highlightChange?: { id: number; text: string } | null;
   undoLastChange?: { label: string; hint: string; onUndo: () => void };
 }
@@ -49,6 +51,7 @@ export function GuidedSectionWorkspace({
   onMarkComplete,
   isCompleted = false,
   documentMode = false,
+  showEcho = true,
   highlightChange,
   undoLastChange,
 }: GuidedSectionWorkspaceProps) {
@@ -56,10 +59,11 @@ export function GuidedSectionWorkspace({
   const [echoOpen, setEchoOpen] = useState(true);
 
   useEffect(() => {
+    if (!showEcho) return;
     const open = () => setEchoOpen(true);
     window.addEventListener(OPEN_ECHO_PANEL_EVENT, open);
     return () => window.removeEventListener(OPEN_ECHO_PANEL_EVENT, open);
-  }, []);
+  }, [showEcho]);
 
   const sectionTitle =
     t.sectionTitles[activeSection as keyof typeof t.sectionTitles] ||
@@ -149,21 +153,23 @@ export function GuidedSectionWorkspace({
         />
       </div>
 
-      <div
-        data-tour-id="echo-panel"
-        className={cn(
-          'shrink-0 flex flex-col',
-          echoOpen && 'h-[min(42vh,340px)] min-h-[220px] lg:h-[min(52vh,640px)] lg:min-h-[360px]'
-        )}
-      >
-        {echoBar}
-        <EchoChat
-          className={cn('min-h-0', echoOpen ? 'flex-1' : 'hidden')}
-          headerLayout="horizontal"
-          showOrb
-          fontSize={editorFontSize ?? 15}
-        />
-      </div>
+      {showEcho && (
+        <div
+          data-tour-id="echo-panel"
+          className={cn(
+            'shrink-0 flex flex-col',
+            echoOpen && 'h-[min(42vh,340px)] min-h-[220px] lg:h-[min(52vh,640px)] lg:min-h-[360px]'
+          )}
+        >
+          {echoBar}
+          <EchoChat
+            className={cn('min-h-0', echoOpen ? 'flex-1' : 'hidden')}
+            headerLayout="horizontal"
+            showOrb
+            fontSize={editorFontSize ?? 15}
+          />
+        </div>
+      )}
     </div>
   );
 }

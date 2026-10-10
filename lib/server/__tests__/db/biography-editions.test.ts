@@ -206,6 +206,34 @@ describe('edizioni', () => {
   });
 });
 
+describe('struttura del libro sulle edizioni', () => {
+  it('l\'autore autenticato inserisce e aggiorna biography_book_structure sulla propria edizione', async () => {
+    const [edition] = await asService<{ id: string }>(
+      `insert into biographies (user_id, title, translation_of, record_language_tag, record_script, record_direction, status)
+       values ($1, 'Traduzione struttura', $2, 'es', 'Latn', 'ltr', 'draft')
+       returning id`,
+      [U.author, BIO.published]
+    );
+    const inserted = await asAuthor(
+      `insert into biography_book_structure (biography_id, user_id, dedication_enabled, dedication_content)
+       values ($1, $2, true, 'Dedica tradotta')
+       returning biography_id, dedication_content`,
+      [edition.id, U.author]
+    );
+    expect(inserted).toEqual([
+      { biography_id: edition.id, dedication_content: 'Dedica tradotta' },
+    ]);
+    const updated = await asAuthor(
+      `update biography_book_structure
+       set epigraph_enabled = true, epigraph_content = 'Epigrafe tradotta'
+       where biography_id = $1
+       returning epigraph_content`,
+      [edition.id]
+    );
+    expect(updated).toEqual([{ epigraph_content: 'Epigrafe tradotta' }]);
+  });
+});
+
 describe('didascalie di edizione', () => {
   const edition = '20000000-0000-0000-0000-0000000000e1';
 
