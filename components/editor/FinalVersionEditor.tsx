@@ -25,6 +25,11 @@ interface FinalVersionEditorProps {
   /** Override the primary button label (e.g. “Start PDF review”). */
   primaryButtonLabel?: string;
   primaryActionPending?: boolean;
+  aiEnabled?: boolean;
+  aiLoading?: boolean;
+  aiUsageRefresh?: number;
+  onGrammarCheck?: () => void;
+  grammarUnavailable?: string | null;
 }
 
 export function FinalVersionEditor({
@@ -38,6 +43,11 @@ export function FinalVersionEditor({
   hidePrimaryActions = false,
   primaryButtonLabel,
   primaryActionPending = false,
+  aiEnabled,
+  aiLoading,
+  aiUsageRefresh,
+  onGrammarCheck,
+  grammarUnavailable = null,
 }: FinalVersionEditorProps) {
   const { language } = useTranslation();
 
@@ -132,6 +142,7 @@ export function FinalVersionEditor({
             <RichTextEditor
               content={content}
               onChange={onContentChange}
+              biographyId={biographyId}
               placeholder={
                 language === 'it' ? 'La tua versione finale apparirà qui...' :
                 language === 'fr' ? 'Votre version finale apparaîtra ici...' :
@@ -139,6 +150,18 @@ export function FinalVersionEditor({
                 'Your final version will appear here...'
               }
               editorFontSize={editorFontSize}
+              aiTools={
+                aiEnabled
+                  ? {
+                      aiEnabled: true,
+                      aiLoading,
+                      hasText: content.replace(/<[^>]*>/g, '').replace(/&nbsp;/g, ' ').trim().length > 0,
+                      onGrammarCheck,
+                      grammarUnavailable,
+                    }
+                  : undefined
+              }
+              aiUsageRefresh={aiUsageRefresh}
             />
           )}
         </Card>

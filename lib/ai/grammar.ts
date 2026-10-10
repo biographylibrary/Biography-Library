@@ -12,6 +12,20 @@ const LANGUAGE_NAMES: Record<string, string> = {
   de: 'German',
 };
 
+export type GrammarLanguageCode = keyof typeof LANGUAGE_NAMES;
+
+/**
+ * Lingua del testo ammessi al controllo grammaticale: solo it/en/fr/de.
+ * Usa la parte prima del trattino (es. de-CH → de); altrimenti null.
+ */
+export function grammarLanguageForTag(
+  tag: string | null | undefined
+): GrammarLanguageCode | null {
+  if (typeof tag !== 'string') return null;
+  const base = tag.trim().split('-')[0]?.toLowerCase() ?? '';
+  return base in LANGUAGE_NAMES ? (base as GrammarLanguageCode) : null;
+}
+
 const JSON_ONLY_PREFIX =
   'You must respond with valid JSON only. Do not add any explanation, preamble, or text outside the JSON structure. Do not wrap the JSON in markdown code fences.\n\n';
 
@@ -80,7 +94,8 @@ export function extractJson(text: string): string {
 }
 
 function getLangName(lang: string): string {
-  return LANGUAGE_NAMES[lang] || 'English';
+  const code = grammarLanguageForTag(lang);
+  return code ? LANGUAGE_NAMES[code] : LANGUAGE_NAMES.en;
 }
 
 export function buildGrammarPrompt(sectionTitle: string, content: string, language: string) {

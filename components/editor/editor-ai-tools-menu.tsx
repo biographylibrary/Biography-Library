@@ -17,6 +17,8 @@ export interface EditorAiToolsMenuProps {
   aiLoading?: boolean;
   hasText?: boolean;
   onGrammarCheck?: () => void;
+  /** Se valorizzato, il controllo grammaticale è disattivato e mostra questa frase. */
+  grammarUnavailable?: string | null;
   className?: string;
   buttonClassName?: string;
 }
@@ -26,12 +28,15 @@ export function EditorAiToolsMenu({
   aiLoading = false,
   hasText = false,
   onGrammarCheck,
+  grammarUnavailable = null,
   className,
   buttonClassName,
 }: EditorAiToolsMenuProps) {
   const { t } = useTranslation();
 
   if (!aiEnabled) return null;
+
+  const grammarDisabled = aiLoading || !hasText || Boolean(grammarUnavailable);
 
   return (
     <IconHint label={t.echo.aiToolsMenu} maxWidth={639}>
@@ -54,11 +59,12 @@ export function EditorAiToolsMenu({
       <DropdownMenuContent align="start">
         {onGrammarCheck && (
           <DropdownMenuItem
-            disabled={aiLoading || !hasText}
-            onClick={onGrammarCheck}
+            disabled={grammarDisabled}
+            title={grammarUnavailable ?? undefined}
+            onClick={grammarUnavailable ? undefined : onGrammarCheck}
           >
             <SpellCheck className="h-3.5 w-3.5 mr-2" />
-            {t.editor.checkGrammar}
+            {grammarUnavailable || t.editor.checkGrammar}
           </DropdownMenuItem>
         )}
       </DropdownMenuContent>
