@@ -7,6 +7,10 @@ import { createHash } from 'crypto';
 import { nfc } from '@/lib/nfc';
 import { toCanonical } from '@/lib/um-id';
 import {
+  formatBookPartsArchiveMarkdown,
+  type BookPart,
+} from '@/lib/book-parts';
+import {
   buildPermanencePlainText,
   type PermanenceExportBiography,
   type PermanenceExportEvent,
@@ -50,6 +54,7 @@ export function buildBiographyMarkdown(input: {
   relations: PermanenceExportRelation[];
   bodyMarkdown: string;
   umIdBaseUrl?: string | null;
+  bookParts?: { front: BookPart[]; back: BookPart[] } | null;
 }): string {
   const headerBio: PermanenceExportBiography = {
     ...input.bio,
@@ -65,8 +70,16 @@ export function buildBiographyMarkdown(input: {
     undefined,
     input.umIdBaseUrl
   );
+  const tag = input.bio.record_language_tag;
+  const front = input.bookParts?.front?.length
+    ? formatBookPartsArchiveMarkdown(input.bookParts.front, tag)
+    : '';
   const body = nfc(input.bodyMarkdown.trim());
-  return body ? `${header}${body}\n` : header;
+  const back = input.bookParts?.back?.length
+    ? formatBookPartsArchiveMarkdown(input.bookParts.back, tag)
+    : '';
+  const segments = [front, body, back].filter((s) => s.length > 0);
+  return segments.length ? `${header}${segments.join('\n\n')}\n` : header;
 }
 
 export function buildRecordArchiveFiles(input: {

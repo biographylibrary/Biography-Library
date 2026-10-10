@@ -19,6 +19,12 @@ import { Download, Loader as Loader2, Info, TriangleAlert as AlertTriangle, X, R
 import { BIOGRAPHY_SECTIONS } from '@/lib/editor-constants';
 import { generateBiographyPDF, checkBiographyPdfReadiness, getPdfReadinessMessage, type PdfReadinessIssue } from '@/lib/pdf-export';
 import { exportAsPlainText, exportAsDOCX } from '@/lib/export-utils';
+import {
+  BOOK_STRUCTURE_SELECT,
+  selectBookParts,
+  type BookPart,
+  type BookStructureRow,
+} from '@/lib/book-parts';
 import { downloadPermanencePlainText } from '@/lib/permanence-text-export';
 import { fetchUmIdBaseUrl } from '@/lib/um-id-url-client';
 import type { PermanenceExportBiography } from '@/lib/permanence-text-export';
@@ -300,12 +306,25 @@ export function AdvancedExportDialog({
     // Indirizzo di risoluzione a runtime: UM_ID_BASE_URL non sta nel pacchetto.
     const umIdBaseUrl = await fetchUmIdBaseUrl();
 
+    let bookParts: { front: BookPart[]; back: BookPart[] } | undefined;
+    try {
+      const { data: structure } = await supabase
+        .from('biography_book_structure')
+        .select(BOOK_STRUCTURE_SELECT)
+        .eq('biography_id', biography.id)
+        .maybeSingle();
+      bookParts = selectBookParts(structure as BookStructureRow | null);
+    } catch {
+      bookParts = undefined;
+    }
+
     await downloadPermanencePlainText(
       merged,
       (events as any[]) ?? [],
       (relations as any[]) ?? [],
       sectionBodies,
-      umIdBaseUrl
+      umIdBaseUrl,
+      bookParts
     );
   };
 

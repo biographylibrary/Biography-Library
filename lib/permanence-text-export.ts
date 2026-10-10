@@ -14,6 +14,10 @@ import { formatUmYear, formatDateWithUmYear, toJDN, umYearFromDate } from '@/lib
 import { toCanonical } from '@/lib/um-id';
 import { stripHtmlTags } from '@/lib/export-utils';
 import { type UiLang } from '@/lib/person-events';
+import { uiLangFromTag } from '@/lib/text-ui-lang';
+import { formatBookPartsPlainText, type BookPart } from '@/lib/book-parts';
+
+export { uiLangFromTag } from '@/lib/text-ui-lang';
 
 const UNKNOWN: Record<UiLang, string> = {
   en: 'UNKNOWN',
@@ -114,12 +118,6 @@ export type PermanenceExportBiography = {
   biography_mode?: string | null;
   content?: Record<string, { text: string }>;
 };
-
-function uiLangFromTag(tag: string | null | undefined): UiLang {
-  const base = (tag ?? 'en').split('-')[0]?.toLowerCase();
-  if (base === 'it' || base === 'fr' || base === 'de') return base;
-  return 'en';
-}
 
 function unknownWord(lang: UiLang): string {
   return `${UNKNOWN[lang]} | UNKNOWN`;
@@ -258,18 +256,27 @@ export function buildColophonLines(
 
 /**
  * Costruisce il documento testo semplice completo (intestazione + corpo).
+ * Con `bookParts`, le parti front vanno dopo `---` e prima del corpo; le back dopo.
+ * Senza parti (assenti o vuote) l'output è identico a prima.
  */
 export function buildPermanencePlainText(
   bio: PermanenceExportBiography,
   events: PermanenceExportEvent[],
   relations: PermanenceExportRelation[] = [],
   sectionBodies?: string[],
-  umIdBaseUrl?: string | null
+  umIdBaseUrl?: string | null,
+  bookParts?: { front: BookPart[]; back: BookPart[] } | null
 ): string {
   const lines = buildPermanenceHeaderLines(bio, events, relations, umIdBaseUrl);
   lines.push('---');
+  const tag = bio.record_language_tag;
+  const front =
+    bookParts?.front?.length ? formatBookPartsPlainText(bookParts.front, tag) : '';
   const body = nfc(buildBodyText(bio, sectionBodies).trim());
-  if (body) lines.push(body);
+  const back =
+    bookParts?.back?.length ? formatBookPartsPlainText(bookParts.back, tag) : '';
+  const segments = [front, body, back].filter((s) => s.length > 0);
+  if (segments.length) lines.push(segments.join('\n\n'));
   return lines.join('\n') + '\n';
 }
 
@@ -278,9 +285,17 @@ export async function downloadPermanencePlainText(
   events: PermanenceExportEvent[],
   relations: PermanenceExportRelation[] = [],
   sectionBodies?: string[],
-  umIdBaseUrl?: string | null
+  umIdBaseUrl?: string | null,
+  bookParts?: { front: BookPart[]; back: BookPart[] } | null
 ): Promise<void> {
-  const text = buildPermanencePlainText(bio, events, relations, sectionBodies, umIdBaseUrl);
+  const text = buildPermanencePlainText(
+    bio,
+    events,
+    relations,
+    sectionBodies,
+    umIdBaseUrl,
+    bookParts
+  );
   const date = new Date().toISOString().split('T')[0];
   const base = (bio.name_as_written || bio.title || 'biography')
     .replace(/[^a-z0-9]+/gi, '-')

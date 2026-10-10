@@ -314,7 +314,8 @@ function buildTitleAndNames(input: PublicTextInput): string | null {
   return sectionBlock('title_and_names', labeledLines(lines));
 }
 
-function buildBookParts(input: PublicTextInput): string[] {
+/** Blocchi screening delle parti del libro (esportato per i test di allineamento). */
+export function buildBookParts(input: PublicTextInput): string[] {
   const bs = input.bookStructure;
   if (!bs) return [];
   const out: string[] = [];

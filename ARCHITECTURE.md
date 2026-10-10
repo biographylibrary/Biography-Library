@@ -143,7 +143,7 @@ A single continuous rich-text field (`content_freeflow` on the `biographies` row
 
 ### Book structure (both modes)
 
-`biography_book_structure` holds optional front and back matter (dedication, epigraph, preface, epilogue, acknowledgements). Enabled/disabled per field. The `BookStructurePanel` component manages this data and it is rendered in the PDF regardless of editor mode.
+`biography_book_structure` holds optional front and back matter (dedication, epigraph, preface, epilogue, acknowledgements, specific_credits), each with content and an `*_enabled` toggle. `BookStructurePanel` edits it; RLS stays owner-only. Readers get selected parts via `GET /api/biography/[id]/book-parts` after `verifyBiographyViewAccess` (public path uses `biography_public_read_allowed`). Pure selection and titles live in `lib/book-parts.ts`. The six parts appear in the PDF, screening/fingerprint, reading page, archive `biography.md`, and permanence TXT/DOCX; the optional author copyright page stays PDF-only. Edition archive packages (sub-step D) should pass that edition’s rows into the same `buildBiographyMarkdown`.
 
 ---
 
