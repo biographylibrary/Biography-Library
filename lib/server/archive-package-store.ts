@@ -124,6 +124,7 @@ export async function syncArchivePackage(
     relations: bundle.relations,
     bodyMarkdown: bodyMarkdown(bundle.bio as Parameters<typeof bodyMarkdown>[0]),
     umIdBaseUrl: umIdBaseUrl(),
+    bookParts: bundle.bookParts,
   });
   const metadata = {
     um_id: canonical,

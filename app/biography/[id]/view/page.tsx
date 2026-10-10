@@ -24,8 +24,10 @@ import { BiographySectionBody } from '@/components/biography/BiographySectionBod
 import { BiographyContentRightsNotice } from '@/components/biography/BiographyContentRightsNotice';
 import { BiographyLanguageBadges } from '@/components/biography/BiographyLanguageBadges';
 import { BiographyViewGallery } from '@/components/biography/BiographyViewGallery';
+import { BookParts } from '@/components/biography/BookParts';
 import { PermanentIdentifier } from '@/components/biography/PermanentIdentifier';
 import { PioneerBadge } from '@/components/biography/PioneerBadge';
+import type { BookPart } from '@/lib/book-parts';
 import { formatDateWithUmYear } from '@/lib/um';
 import { resolveRecordLanguageTag } from '@/lib/record-language';
 import { isPdfScriptCovered } from '@/lib/pdf/covered-scripts';
@@ -116,6 +118,8 @@ export default function BiographyViewPage() {
   const [pdfReady, setPdfReady] = useState<boolean | null>(null);
   const [coverImageUrl, setCoverImageUrl] = useState<string | null>(null);
   const [resolvedBiographyId, setResolvedBiographyId] = useState<string | null>(null);
+  const [bookFront, setBookFront] = useState<BookPart[]>([]);
+  const [bookBack, setBookBack] = useState<BookPart[]>([]);
 
   const showRightsNotice =
     !!biography &&
@@ -366,6 +370,57 @@ export default function BiographyViewPage() {
       setCurrentUserId(data.session?.user?.id ?? null);
     });
   }, []);
+
+  useEffect(() => {
+    if (!resolvedBiographyId || !biography) {
+      setBookFront([]);
+      setBookBack([]);
+      return;
+    }
+    let cancelled = false;
+    const loadParts = async () => {
+      try {
+        const qs =
+          loadedViaShareToken && token
+            ? `?shareToken=${encodeURIComponent(token)}`
+            : '';
+        const headers: Record<string, string> = {};
+        const { data: sessionData } = await supabase.auth.getSession();
+        const accessToken = sessionData.session?.access_token;
+        if (accessToken) headers.Authorization = `Bearer ${accessToken}`;
+        const res = await fetch(
+          `/api/biography/${encodeURIComponent(resolvedBiographyId)}/book-parts${qs}`,
+          { headers }
+        );
+        if (!res.ok) {
+          if (!cancelled) {
+            setBookFront([]);
+            setBookBack([]);
+          }
+          return;
+        }
+        const data = (await res.json()) as { front?: BookPart[]; back?: BookPart[] };
+        if (!cancelled) {
+          setBookFront(data.front ?? []);
+          setBookBack(data.back ?? []);
+        }
+      } catch (err) {
+        logger.warn('Book parts load failed', {
+          feature: 'book-parts',
+          biographyId: resolvedBiographyId,
+          error: err instanceof Error ? err.message : String(err),
+        });
+        if (!cancelled) {
+          setBookFront([]);
+          setBookBack([]);
+        }
+      }
+    };
+    void loadParts();
+    return () => {
+      cancelled = true;
+    };
+  }, [resolvedBiographyId, biography, loadedViaShareToken, token]);
 
   useEffect(() => {
     if (
@@ -655,6 +710,8 @@ export default function BiographyViewPage() {
               )}
           </div>
 
+          <BookParts position="front" parts={bookFront} languageTag={textTag} />
+
           {shouldRenderFreeflowBody(biography, orderedSections.length) &&
           biography.content_freeflow?.trim() ? (
             <section className="mb-12">
@@ -683,6 +740,8 @@ export default function BiographyViewPage() {
               );
             })
           )}
+
+          <BookParts position="back" parts={bookBack} languageTag={textTag} />
         </article>
 
         <footer className="mt-16 pt-8 border-t border-border text-center text-sm text-muted-foreground">

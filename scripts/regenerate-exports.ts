@@ -7,6 +7,10 @@
  * Uso:
  *   npm run exports:regenerate -- --dry-run
  *   npm run exports:regenerate -- --apply
+ *   npm run exports:regenerate -- --apply --text-only
+ *
+ * Con --text-only (solo insieme a --apply o --dry-run) rigenera TXT e DOCX
+ * e salta il PDF. Senza --text-only il comportamento resta quello di sempre.
  *
  * Richiede .env.local con NEXT_PUBLIC_SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY,
  * UM_ID_BASE_URL.
@@ -38,6 +42,7 @@ loadEnv();
 
 const dryRun = process.argv.includes('--dry-run');
 const apply = process.argv.includes('--apply');
+const textOnly = process.argv.includes('--text-only');
 
 if (dryRun === apply) {
   console.error('Pass exactly one of --dry-run or --apply');
@@ -102,6 +107,7 @@ async function main(): Promise<void> {
 
   console.log(`UM_ID_BASE_URL=${baseUrl}`);
   console.log(`Found ${rows.length} biographies with existing export artifacts`);
+  if (textOnly) console.log('Mode: text-only (TXT/DOCX; skip PDF)');
   console.log('');
 
   for (const row of rows) {
@@ -133,7 +139,7 @@ async function main(): Promise<void> {
     const label = row.slug || row.id;
     try {
       await generateAndStorePermanenceTextExports(supabase, row.id);
-      if (row.final_pdf_url) {
+      if (!textOnly && row.final_pdf_url) {
         const lang = resolveRecordLanguageTag(row);
         const artifacts = await generateUploadFinalPdf(supabase, row.id, lang);
         const update: Record<string, string | null> = {

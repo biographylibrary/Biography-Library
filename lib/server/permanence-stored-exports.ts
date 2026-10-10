@@ -1,4 +1,10 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
+import {
+  BOOK_STRUCTURE_SELECT,
+  selectBookParts,
+  type BookPart,
+  type BookStructureRow,
+} from '@/lib/book-parts';
 import { buildUtf8DocxBuffer } from '@/lib/export-server';
 import {
   buildPermanencePlainText,
@@ -37,17 +43,24 @@ export type PermanenceExportBundle = {
   bio: PermanenceExportBiography;
   events: PermanenceExportEvent[];
   relations: PermanenceExportRelation[];
+  bookParts: { front: BookPart[]; back: BookPart[] };
 };
 
 export async function loadPermanenceExportBundle(
   svc: AnyClient,
   biographyId: string
 ): Promise<PermanenceExportBundle | null> {
-  const [{ data: row, error }, { data: events }, { data: relations }] = await Promise.all([
-    svc.from('biographies').select(BIO_SELECT).eq('id', biographyId).maybeSingle(),
-    svc.from('person_events').select('*').eq('biography_id', biographyId),
-    svc.from('person_relations').select('*').eq('biography_id', biographyId),
-  ]);
+  const [{ data: row, error }, { data: events }, { data: relations }, { data: structure }] =
+    await Promise.all([
+      svc.from('biographies').select(BIO_SELECT).eq('id', biographyId).maybeSingle(),
+      svc.from('person_events').select('*').eq('biography_id', biographyId),
+      svc.from('person_relations').select('*').eq('biography_id', biographyId),
+      svc
+        .from('biography_book_structure')
+        .select(BOOK_STRUCTURE_SELECT)
+        .eq('biography_id', biographyId)
+        .maybeSingle(),
+    ]);
 
   if (error || !row) return null;
 
@@ -55,6 +68,7 @@ export async function loadPermanenceExportBundle(
     bio: row as unknown as PermanenceExportBiography,
     events: (events as PermanenceExportEvent[]) ?? [],
     relations: (relations as PermanenceExportRelation[]) ?? [],
+    bookParts: selectBookParts(structure as BookStructureRow | null),
   };
 }
 
@@ -64,7 +78,8 @@ export function buildPermanenceStoredText(bundle: PermanenceExportBundle): strin
     bundle.events,
     bundle.relations,
     undefined,
-    umIdBaseUrl()
+    umIdBaseUrl(),
+    bundle.bookParts
   );
 }
 
