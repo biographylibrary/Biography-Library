@@ -57,7 +57,6 @@ export async function verifyBiographyViewAccess(
     if (error || !rows?.length) {
       return { ok: false, status: 403 };
     }
-    const row = rows[0] as BiographyViewRow;
     const { data: full } = await serviceClient
       .from('biographies')
       .select(BIO_ACCESS_SELECT)
@@ -88,7 +87,13 @@ export async function verifyBiographyViewAccess(
   const row = bio as BiographyViewRow;
 
   if (row.visibility === 'public' && row.status === 'published') {
-    return { ok: true, biography: row, accessType: 'public' };
+    const { data: allowed, error: rpcError } = await serviceClient.rpc(
+      'biography_public_read_allowed',
+      { p_id: biographyId }
+    );
+    if (!rpcError && allowed === true) {
+      return { ok: true, biography: row, accessType: 'public' };
+    }
   }
 
   if (userId) {
