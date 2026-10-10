@@ -11,6 +11,7 @@ import {
   GRAMMAR_MODEL_PARAMS,
   buildGrammarPrompt,
   extractJson,
+  grammarLanguageForTag,
   grammarModelChain,
   grammarTooLongMessage,
   sanitizeGrammarSuggestions,
@@ -85,7 +86,12 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
     }
   }
 
-  const language = typeof body.language === 'string' ? body.language : 'en';
+  const languageRaw = typeof body.language === 'string' ? body.language : null;
+  const language =
+    languageRaw === null ? 'en' : grammarLanguageForTag(languageRaw);
+  if (language === null) {
+    return NextResponse.json({ error: 'language_not_supported' }, { status: 422 });
+  }
   const uiLanguage = typeof body.uiLanguage === 'string' ? body.uiLanguage : language;
   const sectionTitle = typeof body.sectionTitle === 'string' ? body.sectionTitle.trim() : '';
   const rawContent = typeof body.content === 'string' ? body.content : '';

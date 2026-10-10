@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { Check, ChevronDown, StickyNote, Images, Upload, Download, Lock, BookOpen, FileCheck, Landmark, Link2, User, CloudOff, Loader as Loader2, Users, Globe, Plus } from 'lucide-react';
+import { Check, ChevronDown, StickyNote, Images, Upload, Download, Lock, BookOpen, FileCheck, Landmark, Link2, User, CloudOff, Loader as Loader2, Users, Globe, Plus, Languages, Trash2 } from 'lucide-react';
 import {
   type BiographyContent,
 } from '@/lib/editor-constants';
@@ -72,6 +72,12 @@ interface SectionSidebarProps {
   saveStatus: SaveStatus;
   privacy: Privacy;
   onPrivacyChange: (privacy: Privacy) => void;
+  /** Originale: mostra «Traduci». Edizione: nasconde o rende sola lettura gli strumenti di scheda. */
+  isEdition?: boolean;
+  canTranslate?: boolean;
+  onToggleTranslate?: () => void;
+  canDeleteEdition?: boolean;
+  onDeleteEdition?: () => void;
 }
 
 export function SectionSidebar({
@@ -109,6 +115,11 @@ export function SectionSidebar({
   saveStatus,
   privacy,
   onPrivacyChange,
+  isEdition = false,
+  canTranslate = false,
+  onToggleTranslate,
+  canDeleteEdition = false,
+  onDeleteEdition,
 }: SectionSidebarProps) {
   const { t } = useTranslation();
   const [toolsOpen, setToolsOpen] = useState(false);
@@ -378,7 +389,18 @@ export function SectionSidebar({
         </button>
         {toolsVisible && (
         <>
-        {!isFrozen && (
+        {canTranslate && onToggleTranslate && (
+          <button
+            type="button"
+            data-tour-id="translate-btn"
+            onClick={onToggleTranslate}
+            className="w-full flex items-center gap-2 px-3 py-1 lg:py-2 rounded-lg text-sm text-muted-foreground hover:bg-muted/50 hover:text-foreground transition-colors"
+          >
+            <Languages className="h-4 w-4 shrink-0" />
+            <span className="truncate min-w-0 flex-1 text-left">{t.translate.menuItem}</span>
+          </button>
+        )}
+        {!isEdition && !isFrozen && (
           <button
             type="button"
             data-tour-id="privacy-btn"
@@ -389,7 +411,13 @@ export function SectionSidebar({
             <span className="truncate min-w-0 flex-1 text-left">{privacyLabels[privacy]}</span>
           </button>
         )}
-        {biographyId && (
+        {isEdition && (
+          <div className="w-full flex items-center gap-2 px-3 py-1 lg:py-2 rounded-lg text-sm text-muted-foreground/70">
+            <CurrentPrivacyIcon className="h-4 w-4 shrink-0" />
+            <span className="truncate min-w-0 flex-1 text-left">{t.translate.managedByOriginal}</span>
+          </div>
+        )}
+        {!isEdition && biographyId && (
           <button
             type="button"
             data-tour-id="permanence-btn"
@@ -407,6 +435,7 @@ export function SectionSidebar({
             </span>
           </button>
         )}
+        {!isEdition && (
         <button
           type="button"
           data-tour-id="notes-btn"
@@ -426,6 +455,13 @@ export function SectionSidebar({
             </span>
           )}
         </button>
+        )}
+        {isEdition ? (
+          <div className="w-full flex items-start gap-2 px-3 py-1 lg:py-2 rounded-lg text-sm text-muted-foreground/80">
+            <Images className="h-4 w-4 shrink-0 mt-0.5" />
+            <span className="text-left leading-snug">{t.translate.photosDeferred}</span>
+          </div>
+        ) : (
         <button
           type="button"
           data-tour-id="photos-btn"
@@ -440,7 +476,8 @@ export function SectionSidebar({
           <Images className="h-4 w-4 shrink-0" />
           <span className="truncate min-w-0 flex-1 text-left">{t.photos.panelTitle}</span>
         </button>
-        {biographyId && userId && (
+        )}
+        {!isEdition && biographyId && userId && (
           <button
             type="button"
             data-tour-id="book-structure-btn"
@@ -470,6 +507,17 @@ export function SectionSidebar({
           <FileCheck className="h-4 w-4 shrink-0" />
           <span className="truncate min-w-0 flex-1 text-left">{t.editor.reviewPublication.menuItem}</span>
         </button>
+        {canDeleteEdition && onDeleteEdition && (
+          <button
+            type="button"
+            data-tour-id="delete-edition-btn"
+            onClick={onDeleteEdition}
+            className="w-full flex items-center gap-2 px-3 py-1 lg:py-2 rounded-lg text-sm text-brand-wine hover:bg-brand-wine/10 transition-colors"
+          >
+            <Trash2 className="h-4 w-4 shrink-0" />
+            <span className="truncate min-w-0 flex-1 text-left">{t.translate.deleteEdition}</span>
+          </button>
+        )}
         </>
         )}
       </div>

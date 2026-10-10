@@ -474,15 +474,22 @@ export async function createTestDb(
     '20261008220000_analysis_jobs.sql',
     '20261009143000_biography_editions.sql',
     '20261009150000_drop_content_language_after_release.sql',
+    '20261010120000_edition_original_version_at.sql',
   ];
   const files = all.filter((file) => !options.skip?.includes(file) && (!options.only || options.only.includes(file)));
   // La seconda migrazione legge translation_of, aggiunta dalla prima. Chi usa only o skip
   // e non applica le edizioni non deve eseguire il ritiro della colonna per sbaglio.
   const editionsFile = all.find((file) => file.startsWith('20261009143000_'));
   const dropFile = all.find((file) => file.startsWith('20261009150000_'));
-  const applicable = editionsFile && dropFile && !files.includes(editionsFile)
-    ? files.filter((file) => file !== dropFile)
-    : files;
+  const originalVersionFile = all.find((file) => file.startsWith('20261010120000_'));
+  // Senza le edizioni non si applicano il ritiro di content_language né original_version_at
+  // (che riparte dal corpo di biographies_server_owned_columns fissato dalle edizioni).
+  let applicable = files;
+  if (editionsFile && !files.includes(editionsFile)) {
+    applicable = applicable.filter(
+      (file) => file !== dropFile && file !== originalVersionFile
+    );
+  }
   // L'ultima fissa il percorso di ricerca di funzioni create da 20260930120000 e 20260930120150:
   // senza una delle due non ha nulla su cui lavorare (i controlli negativi che ne tolgono una tolgono anche lei).
   const pathFix = all.find((f) => f.includes('_helper_functions_search_path')) ?? '';

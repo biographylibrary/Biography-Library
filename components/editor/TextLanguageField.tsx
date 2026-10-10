@@ -27,14 +27,22 @@ interface TextLanguageFieldProps {
   value: string | null;
   disabled?: boolean;
   onChange: (tag: string) => void;
+  /** Se impostato, solo queste basi compaiono nell'elenco. */
+  allowedBases?: readonly string[];
 }
 
-export function TextLanguageField({ value, disabled, onChange }: TextLanguageFieldProps) {
+export function TextLanguageField({
+  value,
+  disabled,
+  onChange,
+  allowedBases,
+}: TextLanguageFieldProps) {
   const { t, language } = useTranslation();
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState('');
   const [regionDraft, setRegionDraft] = useState<string | null>(null);
-  const canonical = canonicalizeTextLanguage(value) ?? 'en';
+  const bases = allowedBases ?? TEXT_LANGUAGE_BASES;
+  const canonical = canonicalizeTextLanguage(value) ?? bases[0] ?? 'en';
   const base = canonical.split('-')[0] ?? canonical;
   const region = canonical.includes('-') ? canonical.split('-')[1] ?? '' : '';
   const regionValue = regionDraft ?? region;
@@ -43,7 +51,7 @@ export function TextLanguageField({ value, disabled, onChange }: TextLanguageFie
 
   const options = useMemo(() => {
     const q = query.trim().toLowerCase();
-    const ranked = TEXT_LANGUAGE_BASES.map((code) => {
+    const ranked = bases.map((code) => {
       const names = textLanguageLabels(code, language);
       return { code, ...names };
     });
@@ -54,7 +62,7 @@ export function TextLanguageField({ value, disabled, onChange }: TextLanguageFie
         return blob.includes(q) || row.code.startsWith(q);
       })
       .slice(0, 40);
-  }, [language, query]);
+  }, [language, query, bases]);
 
   const apply = (nextBase: string, nextRegion: string) => {
     const composed = nextRegion.trim()

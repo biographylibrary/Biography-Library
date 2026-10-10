@@ -79,7 +79,7 @@ Roles stored in `profiles.role`: `user` → `reviewer` → `admin` → `super_ad
 | Table | Purpose |
 |---|---|
 | `profiles` | Extends `auth.users`; stores role, ui_font_size, ai_features preference |
-| `biographies` | One row per edition. Originals have `translation_of` null; a translation points at its original (no chains). Text language is `record_language_tag` (BCP 47). `content_language` è stata eliminata da `20261009150000`. |
+| `biographies` | One row per edition. Originals have `translation_of` null; a translation points at its original (no chains). Text language is `record_language_tag` (BCP 47). `content_language` è stata eliminata da `20261009150000`. On editions only, `original_version_at` holds the original's version timestamp (`COALESCE(revised_at, published_at)`) at last alignment; server-owned, not exposed by `biography_flat` (still 78 columns). |
 | `biography_sections` | One row per (biography, section_key). Stores content, draft version, status, revision history array |
 | `biography_book_structure` | Front/back matter (dedication, epigraph, preface, epilogue, acknowledgements, specific_credits as JSONB) |
 | `biography_media` | Photos of the original: file_url, layout, display_order, caption. Editions do not copy the files. |
@@ -168,6 +168,12 @@ The search for the passage (`placeDraftInDocument`, used by both the check and t
 If a proposal failed and none succeeded afterwards in the same turn, the app itself appends a plain notice that the text has not been changed (`draftNotApplied` in `lib/agents/run-agent-turn.ts`, four languages). The model's own wording is left as written, because it often narrates a change as done when the tool answered with an error; the last word is the app's.
 
 Models are chosen with `AGENT_MODEL_*` (see `lib/agents/models.ts`); the grammar chain uses `INFOMANIAK_AI_MODEL_GRAMMAR`, then `_PRIMARY`, then `_FALLBACK`. Credentials are never in the client bundle.
+
+### Author translations (editions)
+
+- `POST /api/biography/create-edition` — owner only; body `{ originalId, languageTag, startFrom: 'copy' | 'blank' }`. Creates a draft row with `translation_of`, no UM id, no pioneer flag, no chapter cooldown / provisional window. Text and structure are written in the same INSERT (`copy` or `blank`); there is no mid-copy step to roll back. Concurrent same-language inserts map unique-index violations to `409 language_already_present`. Visibility and license (`visibility`, `rights_*`) are copied from the original and kept in sync by a database trigger; authors cannot diverge them on an edition row.
+- `POST /api/biography/edition-aligned` — owner only on a row with `translation_of`; sets `original_version_at` to the current `COALESCE(revised_at, published_at)` of the original.
+- Submit paths (`approve-final-pdf`, `approve-text`, `review/submit`) refuse an edition whose plain text still matches the original (`409 translation_identical_to_original`) and still require the original to be `published`.
 
 ### Grammar check (`POST /api/biography/[id]/grammar`, Node runtime)
 
