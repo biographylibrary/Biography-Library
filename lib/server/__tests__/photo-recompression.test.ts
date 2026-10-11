@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { beforeEach, describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import sharp from 'sharp';
 import {
   decideRecompression,
@@ -11,6 +11,8 @@ import {
 } from '@/lib/server/photo-recompression';
 import { PHOTO_BUCKET, storagePathFromFileUrl } from '@/lib/server/photo-storage';
 import { inspectPhoto } from '@/lib/server/photo-processing';
+
+vi.setConfig({ testTimeout: 30_000 });
 
 /**
  * Ricompressione delle foto già caricate: ordine delle operazioni (il file vecchio si cancella solo

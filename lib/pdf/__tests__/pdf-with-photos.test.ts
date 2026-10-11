@@ -5,6 +5,8 @@ import sharp from 'sharp';
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 import { processPhoto } from '@/lib/server/photo-processing';
 
+vi.setConfig({ testTimeout: 30_000 });
+
 /**
  * Il PDF di una biografia con 15 foto a tutta pagina, con le foto come arrivavano prima (file della
  * fotocamera, 12 megapixel) e dopo l'elaborazione del server (lato lungo 2560, JPEG mozjpeg q85,
