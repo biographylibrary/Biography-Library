@@ -82,6 +82,29 @@ function shouldRenderFreeflowBody(
   return !!bio.content_freeflow?.trim() && sectionCount === 0;
 }
 
+async function fetchCoverPhotoUrl(
+  biographyId: string,
+  shareToken: string | null
+): Promise<string | null> {
+  try {
+    const url = new URL(
+      `/api/biography/${biographyId}/cover-photo`,
+      typeof window !== 'undefined' ? window.location.origin : 'http://localhost'
+    );
+    if (shareToken) url.searchParams.set('shareToken', shareToken);
+    const { data: sessionData } = await supabase.auth.getSession();
+    const headers: Record<string, string> = {};
+    const token = sessionData.session?.access_token;
+    if (token) headers.Authorization = `Bearer ${token}`;
+    const res = await fetch(url.toString(), { headers });
+    if (!res.ok) return null;
+    const body = (await res.json()) as { url?: string | null };
+    return typeof body.url === 'string' && body.url.trim() ? body.url : null;
+  } catch {
+    return null;
+  }
+}
+
 function formatDate(dateStr: string, locale?: string): string {
   return new Date(dateStr).toLocaleDateString(locale, {
     day: 'numeric',
@@ -306,9 +329,23 @@ export default function BiographyViewPage() {
       setLoadedViaShareToken(viaToken);
 
       if (!hasServerPdfFor(data)) {
-        checkBiographyPdfReadiness(resolvedId).then((result) => {
-          setPdfReady(result.ok);
-        });
+        if (data.translation_of) {
+          // Edizione: la cover via rotta server (RLS client non legge biography_media).
+          // Non segnalare «copertina mancante» solo per le policy.
+          void (async () => {
+            const readiness = await checkBiographyPdfReadiness(resolvedId);
+            const coverUrl = await fetchCoverPhotoUrl(resolvedId, token);
+            const issues = readiness.issues.filter(
+              (i) => i !== 'missing-cover' && i !== 'cover-unreachable'
+            );
+            if (!coverUrl) issues.push('missing-cover');
+            setPdfReady(issues.length === 0);
+          })();
+        } else {
+          checkBiographyPdfReadiness(resolvedId).then((result) => {
+            setPdfReady(result.ok);
+          });
+        }
       } else {
         setPdfReady(true);
       }
@@ -316,6 +353,8 @@ export default function BiographyViewPage() {
       const listing = data.listing_cover_url?.trim();
       if (listing) {
         setCoverImageUrl(listing);
+      } else if (data.translation_of) {
+        void fetchCoverPhotoUrl(resolvedId, token).then(setCoverImageUrl);
       } else {
         getCoverPhotoDisplayUrl(resolvedId).then(setCoverImageUrl);
       }
@@ -462,14 +501,26 @@ export default function BiographyViewPage() {
     if (!biography || pdfLoading || hasServerPdf) return;
     setPdfLoading(true);
     try {
-      const readiness = await checkBiographyPdfReadiness(biography.id, true);
+      let readiness = await checkBiographyPdfReadiness(biography.id, true);
+      if (biography.translation_of) {
+        // Stesso allineamento del load: niente falso «manca la copertina» per le policy.
+        const coverUrl = await fetchCoverPhotoUrl(biography.id, token);
+        const issues = readiness.issues.filter(
+          (i) => i !== 'missing-cover' && i !== 'cover-unreachable'
+        );
+        if (!coverUrl) issues.push('missing-cover');
+        readiness = { ok: issues.length === 0, issues };
+      }
       if (!readiness.ok) {
         setPdfReady(false);
         const hasCoverIssue =
           readiness.issues.includes('missing-cover') ||
           readiness.issues.includes('cover-unreachable');
+        const coverMsg = biography.translation_of
+          ? t.translate.coverMissingOnOriginal
+          : t.exportDialog.noCoverPhotoWarning;
         toast({
-          title: hasCoverIssue ? t.exportDialog.noCoverPhotoWarning : t.exportDialog.exportError,
+          title: hasCoverIssue ? coverMsg : t.exportDialog.exportError,
           variant: 'destructive',
         });
         return;
@@ -478,9 +529,12 @@ export default function BiographyViewPage() {
       await generateBiographyPDF(getBiographyExportData());
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : '';
+      const coverMsg = biography.translation_of
+        ? t.translate.coverMissingOnOriginal
+        : t.exportDialog.noCoverPhotoWarning;
       const msg =
         message === 'MISSING_COVER_PHOTO' || message === 'MISSING_BIOGRAPHY_ID'
-          ? t.exportDialog.noCoverPhotoWarning
+          ? coverMsg
           : message === 'FONT_LOAD_FAILED'
             ? t.exportDialog.fontLoadError
             : t.exportDialog.exportError;
@@ -560,7 +614,11 @@ export default function BiographyViewPage() {
                 disabled={pdfLoading || pdfReady === false}
                 className="gap-2"
                 title={
-                  pdfReady === false ? t.exportDialog.noCoverPhotoWarning : undefined
+                  pdfReady === false
+                    ? biography.translation_of
+                      ? t.translate.coverMissingOnOriginal
+                      : t.exportDialog.noCoverPhotoWarning
+                    : undefined
                 }
               >
                 {pdfLoading ? (

@@ -1763,6 +1763,9 @@ export interface Translations {
     identicalSections: string;
     identicalSectionOne: string;
     managedByOriginal: string;
+    coverMissingOnOriginal: string;
+    noticeTitle: string;
+    noticeUnderstood: string;
     photosDeferred: string;
     deleteEdition: string;
     deleteEditionConfirm: string;
@@ -1840,10 +1843,14 @@ export const translations: Record<Language, Translations> = {
         'The original was revised after this translation was last aligned. Check whether the translation needs updating.',
       driftConfirm: 'I have checked; it is aligned',
       originalUnpublishedNote:
-        'The original is not published at the moment: you can write the translation, but you cannot send it until the original is published again',
+        'The original is not published: you can write, but you can only submit the translation when it is published again.',
       identicalSections: '{count} sections are still identical to the original',
       identicalSectionOne: '1 section is still identical to the original',
       managedByOriginal: 'Managed by the original',
+      coverMissingOnOriginal:
+        'This translation uses the cover of the original, but the original has none. Add one in the original story, then come back here.',
+      noticeTitle: 'You are writing a translation',
+      noticeUnderstood: 'Got it',
       photosDeferred:
         'Photos are those of the original; captions in this language will be written later',
       deleteEdition: 'Delete this translation',
@@ -3689,10 +3696,14 @@ export const translations: Record<Language, Translations> = {
         'L\'originale è stato rivisto dopo l\'ultimo allineamento di questa traduzione. Controlla se la traduzione va aggiornata.',
       driftConfirm: 'Ho controllato, è allineata',
       originalUnpublishedNote:
-        'L\'originale non è al momento pubblicato: puoi scrivere la traduzione, ma non puoi inviarla finché l\'originale non è di nuovo pubblicato',
+        'L\'originale non è pubblicato: puoi scrivere, ma potrai inviare la traduzione solo quando lo sarà di nuovo.',
       identicalSections: '{count} sezioni sono ancora uguali all\'originale',
       identicalSectionOne: '1 sezione è ancora uguale all\'originale',
       managedByOriginal: 'Gestito dall\'originale',
+      coverMissingOnOriginal:
+        'Questa traduzione usa la copertina dell\'originale, ma l\'originale non ne ha una. Aggiungila nella storia originale, poi torna qui.',
+      noticeTitle: 'Stai scrivendo una traduzione',
+      noticeUnderstood: 'Ho capito',
       photosDeferred:
         'Le foto sono quelle dell\'originale; le didascalie in questa lingua si scriveranno in un secondo momento',
       deleteEdition: 'Elimina questa traduzione',
@@ -5540,10 +5551,14 @@ export const translations: Record<Language, Translations> = {
         'L\'original a été révisé après le dernier alignement de cette traduction. Vérifiez si la traduction doit être mise à jour.',
       driftConfirm: 'J\'ai vérifié, c\'est aligné',
       originalUnpublishedNote:
-        'L\'original n\'est pas publié pour le moment : vous pouvez écrire la traduction, mais vous ne pouvez pas l\'envoyer tant que l\'original n\'est pas de nouveau publié',
+        'L\'original n\'est pas publié : vous pouvez écrire, mais vous ne pourrez envoyer la traduction que lorsqu\'il le sera de nouveau.',
       identicalSections: '{count} sections sont encore identiques à l\'original',
       identicalSectionOne: '1 section est encore identique à l\'original',
       managedByOriginal: 'Géré par l\'original',
+      coverMissingOnOriginal:
+        'Cette traduction utilise la couverture de l\'original, mais l\'original n\'en a pas. Ajoutez-en une dans l\'histoire originale, puis revenez ici.',
+      noticeTitle: 'Vous écrivez une traduction',
+      noticeUnderstood: 'Compris',
       photosDeferred:
         'Les photos sont celles de l\'original ; les légendes dans cette langue s\'écriront plus tard',
       deleteEdition: 'Supprimer cette traduction',
@@ -7392,10 +7407,14 @@ export const translations: Record<Language, Translations> = {
         'Das Original wurde nach der letzten Ausrichtung dieser Übersetzung überarbeitet. Prüfe, ob die Übersetzung aktualisiert werden muss.',
       driftConfirm: 'Ich habe geprüft, sie ist ausgerichtet',
       originalUnpublishedNote:
-        'Das Original ist derzeit nicht veröffentlicht: du kannst die Übersetzung schreiben, aber nicht einreichen, bis das Original wieder veröffentlicht ist',
+        'Das Original ist nicht veröffentlicht: du kannst schreiben, aber die Übersetzung erst einreichen, wenn es wieder veröffentlicht ist.',
       identicalSections: '{count} Abschnitte sind noch mit dem Original identisch',
       identicalSectionOne: '1 Abschnitt ist noch mit dem Original identisch',
       managedByOriginal: 'Vom Original verwaltet',
+      coverMissingOnOriginal:
+        'Diese Übersetzung verwendet das Titelbild des Originals, aber das Original hat keines. Füge eines in der Originalgeschichte hinzu und kehre dann hierher zurück.',
+      noticeTitle: 'Du schreibst eine Übersetzung',
+      noticeUnderstood: 'Verstanden',
       photosDeferred:
         'Die Fotos sind die des Originals; Bildunterschriften in dieser Sprache kommen später',
       deleteEdition: 'Diese Übersetzung löschen',
