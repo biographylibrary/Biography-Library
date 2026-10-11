@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import Link from 'next/link';
 import { useAnalysisJob } from '@/hooks/use-analysis-job';
 import {
   Dialog,
@@ -29,6 +30,7 @@ import { downloadPermanencePlainText } from '@/lib/permanence-text-export';
 import { fetchUmIdBaseUrl } from '@/lib/um-id-url-client';
 import type { PermanenceExportBiography } from '@/lib/permanence-text-export';
 import { resolveRecordLanguageTag } from '@/lib/record-language';
+import { resolveEditionIdentity, type EditionIdentityClient } from '@/lib/edition-identity';
 import {
   isPdfDraftLimitReached,
   PDF_DRAFT_MAX_ITERATION,
@@ -68,6 +70,10 @@ interface AdvancedExportDialogProps {
   isPublished?: boolean;
   /** When under review, show notice and block PDF generation until status changes. */
   biographyStatus?: string;
+  /** Edizione: messaggio di copertina diverso (usa la cover dell'originale). */
+  isEdition?: boolean;
+  /** Id dell'originale, per il collegamento «Apri l'originale» accanto all'avviso di copertina. */
+  originalId?: string | null;
 }
 
 type ExportFormat = 'pdf-b5-standard' | 'txt' | 'docx';
@@ -107,8 +113,13 @@ export function AdvancedExportDialog({
   biography,
   isPublished = false,
   biographyStatus,
+  isEdition = false,
+  originalId = null,
 }: AdvancedExportDialogProps) {
   const { t, language } = useTranslation();
+  const coverWarning = isEdition
+    ? t.translate.coverMissingOnOriginal
+    : t.exportDialog.noCoverPhotoWarning;
   const [format, setFormat] = useState<ExportFormat>('pdf-b5-standard');
   const [contentSelection, setContentSelection] = useState<ContentSelection>('all');
   const [selectedSections, setSelectedSections] = useState<string[]>([]);
@@ -281,8 +292,12 @@ export function AdvancedExportDialog({
       supabase.from('person_relations').select('*').eq('biography_id', biography.id),
     ]);
 
+    const identityUmId = biography.id
+      ? await resolveEditionIdentity(supabase as unknown as EditionIdentityClient, biography.id)
+      : null;
+
     const merged: PermanenceExportBiography = {
-      um_id: row?.um_id ?? null,
+      um_id: identityUmId,
       schema_version: row?.schema_version ?? 2,
       record_language_tag: row?.record_language_tag ?? contentLanguage ?? null,
       record_script: row?.record_script ?? 'Latn',
@@ -466,7 +481,7 @@ export function AdvancedExportDialog({
       if (error?.message === 'MISSING_COVER_PHOTO' || error?.message === 'MISSING_BIOGRAPHY_ID') {
         setReadinessStatus('not-ready');
         setReadinessIssues(['missing-cover']);
-        setExportError(t.exportDialog.noCoverPhotoWarning);
+        setExportError(coverWarning);
       } else if (error?.message === 'FONT_LOAD_FAILED') {
         setExportError(t.exportDialog.fontLoadError);
       } else {
@@ -602,7 +617,7 @@ export function AdvancedExportDialog({
       setPreviewUrl(url);
     } catch (error: any) {
       if (error?.message === 'MISSING_COVER_PHOTO' || error?.message === 'MISSING_BIOGRAPHY_ID') {
-        setExportError(t.exportDialog.noCoverPhotoWarning);
+        setExportError(coverWarning);
       } else if (error?.message === 'FONT_LOAD_FAILED') {
         setExportError(t.exportDialog.fontLoadError);
       } else {
@@ -665,7 +680,20 @@ export function AdvancedExportDialog({
                 <p key={issue} className="text-sm text-brand-ink dark:text-brand-beigeLight leading-relaxed">
                   {issue === 'unsupported-script'
                     ? t.umId.unsupportedScript
-                    : getPdfReadinessMessage(issue, t.exportDialog.noCoverPhotoWarning)}
+                    : getPdfReadinessMessage(issue, coverWarning)}
+                  {isEdition &&
+                    originalId &&
+                    (issue === 'missing-cover' || issue === 'cover-unreachable') && (
+                      <>
+                        {' '}
+                        <Link
+                          href={`/biography/${originalId}/edit`}
+                          className="underline font-medium"
+                        >
+                          {t.translate.bannerOpenOriginal}
+                        </Link>
+                      </>
+                    )}
                 </p>
               ))}
             </div>
@@ -687,7 +715,7 @@ export function AdvancedExportDialog({
           </div>
         )}
 
-        {exportError && exportError !== t.exportDialog.noCoverPhotoWarning && exportError !== t.exportDialog.fontLoadError && (
+        {exportError && exportError !== coverWarning && exportError !== t.exportDialog.fontLoadError && (
           <div className="flex items-start gap-3 rounded-lg bg-brand-wine/10 border border-brand-wine/35 px-4 py-3">
             <AlertTriangle className="h-4 w-4 mt-0.5 shrink-0 text-brand-wine" />
             <p className="text-sm text-brand-wineDark dark:text-brand-beigeLight leading-relaxed flex-1">{exportError}</p>

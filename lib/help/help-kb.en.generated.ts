@@ -2,7 +2,7 @@
 
 export const HELP_KB_EN = `# Biography Library — Platform Knowledge Base
 
-Version: 1.8 — 2026-09-26
+Version: 1.9 — 2026-10-11
 
 Reference language: English. Echo, Help, and platform assistants answer in the user's language using these facts. Update this file whenever product rules or UX change, then run \`npm run kb:sync\`.
 
@@ -38,7 +38,7 @@ One page, like a word processor. There are no fixed life chapters and no separat
 
 ## ai_tools
 
-Editor AI tools sit in the formatting bar, not in a top bar: Check Grammar (typos/syntax, meaning preserved), Need Help? (contextual assistance), Summarise, Review (clarity/flow feedback). The AI usage counter is in that same bar, above the character count, at the height of the formatting buttons. It shows daily (40) and weekly (200) limits; heavy actions count as 2. Reset daily midnight UTC, weekly Monday UTC. AI never invents facts or publishes automatically.
+Editor AI tools sit in the formatting bar, not in a top bar: Check Grammar (typos/syntax, meaning preserved), Need Help? (contextual assistance), Summarise, Review (clarity/flow feedback). The AI usage counter is in that same bar, above the character count, at the height of the formatting buttons. It shows daily (40) and weekly (200) limits; heavy actions count as 2. Reset daily midnight UTC, weekly Monday UTC. AI never invents facts or publishes automatically. In a translation there are no AI tools at all: no grammar check and no Echo.
 
 ## conversation_mode
 
@@ -63,6 +63,18 @@ Book Structure panel (left sidebar): optional front matter (Dedication, Epigraph
 ## import_export
 
 Import text is always visible, just above Export. Paste or upload .txt, .rtf, or .docx onto the one page. A digital PDF whose text can be selected is also accepted, up to 30 MB. Ask first whether to keep the original cover. If yes, that picture is page 1 of the generated PDF. When its shape differs from the book page (176×250 mm), do not stretch it: center it on a beige border, the same color as the back cover. If the shape already matches, it fills the page. Bold, italics, and titles are kept only when the PDF font still records them. Headings become chapters in the side list. Text without headings stays whole; chapters are not invented. The inside is set again as text, not copied as a photograph of the pages. If the PDF is only a photograph or a scan, say so clearly and do not promise handwriting recognition. If the page already has text, a question asks whether to replace it or add the new text at the end. Nothing is chosen in advance. Export is PDF, Word, and plain text of the whole page. Print-ready B5 PDF uses the cover and an optional photo gallery. Pre-flight check is available before the final PDF. Exported PDF and text are yours to print, share, or publish elsewhere.
+
+## translations
+
+An author can translate a published biography into any other language. The translation is written by the author, or by someone the author trusts: Biography Library has no automatic translation and does not correct or rewrite translated text. A translation can be started only when the original story is published, and a story can have one translation per language.
+
+To start one, open the Tools menu and choose Translate into another language. The language field starts empty: type a language name or code and choose it. Then choose how to start: import a file that is already translated and proofread (the normal way, same as the normal import), start from a copy of the original to rewrite paragraph by paragraph, or start from a blank page. A translation that is still identical to the original cannot be sent for review.
+
+A translation is a second edition of the same story. It is edited in the same editor, with the formatting bar and the chapters, but there is no grammar check and no Echo: only the author works on the translated text. The bar at the top of the editor says which story and language you are translating and links to the original; its How it works button repeats these rules. Visibility and licence are always those of the original and cannot be changed on the translation. If the original is revised after the translation was last checked, a notice asks the author to check the translation and confirm that it is aligned.
+
+Dedication, epigraph, preface, epilogue, acknowledgements, credits and the author copyright page of a translation are written in its own Book Structure panel; a reminder at the top lists the parts that are filled in the original and still empty in the translation. The translation uses the cover and the photos of the original, with the translated title and text. Photo captions of a translation are separate from the original's: a photo without a translated caption is shown without any caption, and the original's caption is never used in its place. At the moment captions cannot yet be written in a translation, so its photos appear without captions.
+
+A translation goes through the same checks as the original: it is sent for review, the whole text is screened, and then it appears next to the original; it cannot be sent while the original is not published. A translation does not get a UM identifier of its own: the identifier on its pages and files is the original's, and the resolver shows the original together with its editions. Deleting a translation (Tools, Delete this translation) does not touch the original or its photos.
 
 ## rights_chapters
 

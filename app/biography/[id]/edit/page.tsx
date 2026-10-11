@@ -230,6 +230,9 @@ export default function BiographyEditorPage() {
     useState<BookStructureReminderSnapshot | null>(null);
   const [editionBookStructure, setEditionBookStructure] =
     useState<BookStructureReminderSnapshot | null>(null);
+  const coverPhotoWarning = translationOf
+    ? t.translate.coverMissingOnOriginal
+    : t.exportDialog.noCoverPhotoWarning;
   const [publishedAt, setPublishedAt] = useState<string | null>(null);
   const [revisedAt, setRevisedAt] = useState<string | null>(null);
   const [globalNotesCount, setGlobalNotesCount] = useState(0);
@@ -1526,7 +1529,7 @@ export default function BiographyEditorPage() {
         const issueMessages = readiness.issues.map((issue) =>
           issue === 'unsupported-script'
             ? t.umId.unsupportedScript
-            : getPdfReadinessMessage(issue, t.exportDialog.noCoverPhotoWarning)
+            : getPdfReadinessMessage(issue, coverPhotoWarning)
         );
         setSubmitReadinessError(issueMessages.join(' '));
         return;
@@ -1576,7 +1579,7 @@ export default function BiographyEditorPage() {
     } finally {
       setIsSubmittingForReview(false);
     }
-  }, [id, user, t, biographyStatus, watchScreeningJob]);
+  }, [id, user, t, biographyStatus, watchScreeningJob, coverPhotoWarning]);
 
   const handleOpenSubmitDialog = useCallback(async () => {
     setSubmitPreflightError(null);
@@ -1585,7 +1588,7 @@ export default function BiographyEditorPage() {
       const preflight = await checkPdfPreflight(id);
       if (!preflight.ready) {
         setSubmitPreflightError(
-          t.exportDialog.noCoverPhotoWarning ?? 'A cover photo is required before submission.'
+          coverPhotoWarning ?? 'A cover photo is required before submission.'
         );
         return;
       }
@@ -1595,7 +1598,7 @@ export default function BiographyEditorPage() {
     } finally {
       setIsPreflightChecking(false);
     }
-  }, [id, t]);
+  }, [id, coverPhotoWarning]);
 
   const handlePrepareFreeflowFinal = useCallback(async () => {
     const text = storedToArchiveMarkdown(contentFreeflowRef.current);
@@ -1657,7 +1660,7 @@ export default function BiographyEditorPage() {
           typeof payload?.message === 'string'
             ? payload.message
             : payload?.error === 'missing_cover'
-              ? t.exportDialog.noCoverPhotoWarning
+              ? coverPhotoWarning
               : t.toast.requestFailed;
         setPublicationActionError(msg);
         toast.error(msg);
@@ -1695,7 +1698,7 @@ export default function BiographyEditorPage() {
     } finally {
       setPublicationActionLoading(null);
     }
-  }, [user, id, t.exportDialog.noCoverPhotoWarning, t.toast.requestFailed, language]);
+  }, [user, id, coverPhotoWarning, t.toast.requestFailed, language]);
 
   const handleApproveFinalPdf = useCallback(async () => {
     if (!user?.id) return;
@@ -1724,7 +1727,7 @@ export default function BiographyEditorPage() {
             : apiResult?.error === 'drafts_required'
               ? t.editor.reviewPublication.approveDisabledHint
               : apiResult?.error === 'missing_cover'
-                ? t.exportDialog.noCoverPhotoWarning
+                ? coverPhotoWarning
                 : apiResult?.error === 'final_pdf_failed'
                   ? (typeof apiResult?.message === 'string' ? apiResult.message : t.toast.requestFailed)
                   : t.toast.requestFailed;
@@ -1781,7 +1784,7 @@ export default function BiographyEditorPage() {
     user,
     id,
     t.editor.reviewPublication.approveDisabledHint,
-    t.exportDialog.noCoverPhotoWarning,
+    coverPhotoWarning,
     t.toast.requestFailed,
     t.textLanguage.originalNotPublished,
     t.textLanguage.translationIdentical,
@@ -1954,6 +1957,11 @@ export default function BiographyEditorPage() {
           identicalSectionCount={identicalSectionCount}
           onAligned={(at) => setOriginalVersionAt(at)}
           missingBookStructureParts={missingBookStructureParts}
+          onOpenBookStructure={() =>
+            statusLocksText
+              ? notifyTextLocked()
+              : setShowBookStructurePanel(!showBookStructurePanel)
+          }
         />
       )}
 
@@ -1974,14 +1982,6 @@ export default function BiographyEditorPage() {
               disabled={statusLocksText}
               onChange={(tag) => void handleTextLanguageChange(tag)}
             />
-          </div>
-        </div>
-      )}
-      {!isFrozen && translationOf && (
-        <div className="shrink-0 border-b border-border/60 bg-background px-4 py-2">
-          <div className="max-w-5xl mx-auto text-sm text-muted-foreground">
-            {t.translate.managedByOriginal}
-            {recordLanguageTag ? ` · ${recordLanguageTag}` : ''}
           </div>
         </div>
       )}
@@ -2427,11 +2427,6 @@ export default function BiographyEditorPage() {
                   />
                 </div>
               )}
-              {!isFrozen && translationOf && (
-                <div className="shrink-0 px-4 py-2 text-sm text-muted-foreground">
-                  {t.translate.managedByOriginal}
-                </div>
-              )}
             </div>
           </div>
 
@@ -2502,6 +2497,8 @@ export default function BiographyEditorPage() {
           }}
           isPublished={biographyStatus === 'published'}
           biographyStatus={biographyStatus}
+          isEdition={Boolean(translationOf)}
+          originalId={translationOf}
         />
       )}
 

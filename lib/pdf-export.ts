@@ -24,6 +24,8 @@ import {
   type PermanenceExportEvent,
   type PermanenceExportRelation,
 } from '@/lib/permanence-text-export';
+import { resolveMediaOwnerId, type MediaOwnerClient } from '@/lib/edition-media-owner';
+import { resolveEditionIdentity, type EditionIdentityClient } from '@/lib/edition-identity';
 
 type PdfSupabase = SupabaseClient<any, any, any>;
 import { storedToPlainText, storedToSafeHtml } from '@/lib/archive-markdown';
@@ -507,7 +509,7 @@ async function fetchPermanencePdfData(biographyId: string): Promise<{
   relations: PermanenceExportRelation[];
 }> {
   const client = getPdfSupabase();
-  const [{ data: row }, { data: events }, { data: relations }] = await Promise.all([
+  const [{ data: row }, { data: events }, { data: relations }, identityUmId] = await Promise.all([
     client
       .from('biographies')
       .select(
@@ -517,14 +519,20 @@ async function fetchPermanencePdfData(biographyId: string): Promise<{
       .maybeSingle(),
     client.from('person_events').select('*').eq('biography_id', biographyId),
     client.from('person_relations').select('*').eq('biography_id', biographyId),
+    resolveEditionIdentity(client as unknown as EditionIdentityClient, biographyId),
   ]);
 
   if (!row) {
     return { bio: null, events: [], relations: [] };
   }
 
+  const bio = {
+    ...(row as PermanenceExportBiography),
+    um_id: identityUmId,
+  };
+
   return {
-    bio: row as PermanenceExportBiography,
+    bio,
     events: (events as PermanenceExportEvent[]) ?? [],
     relations: (relations as PermanenceExportRelation[]) ?? [],
   };
@@ -882,10 +890,12 @@ async function resolveSignedUrl(fileUrl: string): Promise<string> {
 
 /** Signed URL for the cover image (web display), or null if none. Prefer composite `cover`, then `cover_a5`. */
 export async function getCoverPhotoDisplayUrl(biographyId: string): Promise<string | null> {
-  const { data } = await getPdfSupabase()
+  const client = getPdfSupabase();
+  const mediaOwnerId = await resolveMediaOwnerId(client as unknown as MediaOwnerClient, biographyId);
+  const { data } = await client
     .from('biography_media')
     .select('file_url, layout')
-    .eq('biography_id', biographyId)
+    .eq('biography_id', mediaOwnerId)
     .in('layout', ['cover', 'cover_a5'])
     .order('layout', { ascending: true })
     .limit(2);
@@ -907,15 +917,49 @@ interface GalleryPhoto {
   display_order: number;
 }
 
-async function fetchGalleryPhotos(biographyId: string): Promise<GalleryPhoto[]> {
-  const { data } = await getPdfSupabase()
+/**
+ * Galleria dal proprietario dei media. Per le edizioni le didascalie vengono solo da
+ * `biography_edition_captions` (mai da `biography_media.caption` dell'originale).
+ */
+/** Exported for unit tests (edition captions vs original media captions). */
+export async function fetchGalleryPhotos(
+  sheetBiographyId: string,
+  mediaOwnerId: string
+): Promise<GalleryPhoto[]> {
+  const client = getPdfSupabase();
+  const { data } = await client
     .from('biography_media')
     .select('id, file_url, caption, layout, display_order')
-    .eq('biography_id', biographyId)
+    .eq('biography_id', mediaOwnerId)
     .in('layout', ['full-page', 'two-vertical', 'two-horizontal', 'three-mixed'])
     .order('display_order', { ascending: true });
 
-  return (data as GalleryPhoto[] | null) ?? [];
+  const rows = (data as GalleryPhoto[] | null) ?? [];
+  if (sheetBiographyId === mediaOwnerId) {
+    return rows.map((r) => ({
+      ...r,
+      caption: r.caption?.trim() ? r.caption.trim() : null,
+    }));
+  }
+
+  const editionCaptions = new Map<string, string>();
+  if (rows.length > 0) {
+    const { data: caps } = await client
+      .from('biography_edition_captions')
+      .select('media_id, caption')
+      .eq('biography_id', sheetBiographyId);
+    for (const row of caps ?? []) {
+      const c = row as { media_id?: string; caption?: string | null };
+      if (typeof c.media_id === 'string') {
+        editionCaptions.set(c.media_id, typeof c.caption === 'string' ? c.caption : '');
+      }
+    }
+  }
+
+  return rows.map((r) => ({
+    ...r,
+    caption: editionCaptions.get(r.id)?.trim() || null,
+  }));
 }
 
 async function fetchPhotoBase64(fileUrl: string): Promise<{ base64: string; format: string } | null> {
@@ -1425,10 +1469,12 @@ async function drawBackCover(
 export async function checkPdfPreflight(
   biographyId: string
 ): Promise<{ ready: boolean; reason: 'missing-cover' | 'ok' }> {
-  const { data } = await supabase
+  const client = getPdfSupabase();
+  const mediaOwnerId = await resolveMediaOwnerId(client as unknown as MediaOwnerClient, biographyId);
+  const { data } = await client
     .from('biography_media')
     .select('id')
-    .eq('biography_id', biographyId)
+    .eq('biography_id', mediaOwnerId)
     .in('layout', ['cover', 'cover_a5'])
     .limit(1)
     .maybeSingle();
@@ -1441,8 +1487,9 @@ export async function checkBiographyPdfReadiness(
   checkCoverReachability = false
 ): Promise<{ ok: boolean; issues: PdfReadinessIssue[] }> {
   const issues: PdfReadinessIssue[] = [];
+  const client = getPdfSupabase();
 
-  const { data: bio } = await supabase
+  const { data: bio } = await client
     .from('biographies')
     .select('title, author_name, subject_name, biography_type, biography_mode, content, content_freeflow')
     .eq('id', biographyId)
@@ -1473,10 +1520,11 @@ export async function checkBiographyPdfReadiness(
 
   if (!hasText) issues.push('missing-content');
 
-  const { data: coverRow } = await supabase
+  const mediaOwnerId = await resolveMediaOwnerId(client as unknown as MediaOwnerClient, biographyId);
+  const { data: coverRow } = await client
     .from('biography_media')
     .select('id, file_url')
-    .eq('biography_id', biographyId)
+    .eq('biography_id', mediaOwnerId)
     .in('layout', ['cover', 'cover_a5'])
     .limit(1)
     .maybeSingle();
@@ -1496,7 +1544,7 @@ export async function checkBiographyPdfReadiness(
   // Fail-open script check: separate query so a missing column never breaks PDF.
   // Covered by bundled Noto Serif: Latn, Cyrl, Grek. Emit only on positive unsupported read.
   try {
-    const { data: scriptRow, error: scriptError } = await supabase
+    const { data: scriptRow, error: scriptError } = await client
       .from('biographies')
       .select('record_script')
       .eq('id', biographyId)
@@ -1564,13 +1612,15 @@ export async function generateBiographyPDF(
     throw new Error('MISSING_BIOGRAPHY_ID');
   }
 
+  const mediaOwnerId = await resolveMediaOwnerId(getPdfSupabase() as unknown as MediaOwnerClient, biography.id);
+
   const [, bookStructure, coverComposite, coverA5, galleryPhotos, permanenceData] =
     await Promise.all([
       loadNotoSerifFonts(),
       biography.id ? fetchBookStructure(biography.id) : Promise.resolve(null),
-      fetchCoverCompositeOptional(biography.id),
-      fetchCoverA5Optional(biography.id),
-      fetchGalleryPhotos(biography.id),
+      fetchCoverCompositeOptional(mediaOwnerId),
+      fetchCoverA5Optional(mediaOwnerId),
+      fetchGalleryPhotos(biography.id, mediaOwnerId),
       fetchPermanencePdfData(biography.id),
     ]);
 

@@ -13,6 +13,7 @@ import {
   type PermanenceExportRelation,
 } from '@/lib/permanence-text-export';
 import { umIdBaseUrl } from '@/lib/um-id-url';
+import { resolveEditionIdentity, type EditionIdentityClient } from '@/lib/edition-identity';
 
 type AnyClient = SupabaseClient<any, any, any>;
 
@@ -64,8 +65,17 @@ export async function loadPermanenceExportBundle(
 
   if (error || !row) return null;
 
+  const identityUmId = await resolveEditionIdentity(
+    svc as unknown as EditionIdentityClient,
+    biographyId
+  );
+  const bio = {
+    ...(row as unknown as PermanenceExportBiography),
+    um_id: identityUmId,
+  };
+
   return {
-    bio: row as unknown as PermanenceExportBiography,
+    bio,
     events: (events as PermanenceExportEvent[]) ?? [],
     relations: (relations as PermanenceExportRelation[]) ?? [],
     bookParts: selectBookParts(structure as BookStructureRow | null),

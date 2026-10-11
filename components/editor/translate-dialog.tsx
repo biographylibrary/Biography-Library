@@ -115,6 +115,7 @@ export function TranslateDialog({
     if (open) {
       setError(null);
       setStartChoice('copy');
+      setLanguageTag(null);
       void loadEditions();
     }
   }, [open, loadEditions]);
@@ -128,8 +129,8 @@ export function TranslateDialog({
   }, [originalLanguageTag, editions]);
 
   useEffect(() => {
-    if (!languageTag || !availableBases.includes(languageTag.split('-')[0] ?? '')) {
-      setLanguageTag(availableBases[0] ?? null);
+    if (languageTag && !availableBases.includes(languageTag.split('-')[0] ?? '')) {
+      setLanguageTag(null);
     }
   }, [availableBases, languageTag]);
 

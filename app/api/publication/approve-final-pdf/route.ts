@@ -12,6 +12,7 @@ import { generateUploadFinalPdf } from '@/lib/server/final-pdf-artifacts';
 import { resolveRecordLanguageTag } from '@/lib/record-language';
 import { isPdfScriptCovered } from '@/lib/pdf/covered-scripts';
 import { editionIdenticalBlock, editionOriginalBlock } from '@/lib/server/edition-publish';
+import { biographyHasCoverPhoto } from '@/lib/server/edition-cover-check';
 
 type AnyClient = SupabaseClient<any, any, any>;
 
@@ -105,15 +106,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const { data: coverMedia } = await serviceClient
-      .from('biography_media')
-      .select('id')
-      .eq('biography_id', (bio as { translation_of?: string | null }).translation_of || biographyId)
-      .in('layout', ['cover', 'cover_a5'])
-      .limit(1)
-      .maybeSingle();
-
-    if (!coverMedia) {
+    if (!(await biographyHasCoverPhoto(serviceClient, biographyId))) {
       return NextResponse.json(
         { error: 'missing_cover', message: 'Cover photo required' },
         { status: 400 }

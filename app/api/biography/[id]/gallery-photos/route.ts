@@ -5,6 +5,7 @@ import {
   verifyBiographyViewAccess,
 } from '@/lib/server/biography-view-access';
 import { buildServiceClient } from '@/lib/server/review-submit-pipeline';
+import { resolveMediaOwnerId, type MediaOwnerClient } from '@/lib/edition-media-owner';
 
 const GALLERY_LAYOUTS = ['full-page', 'two-vertical', 'two-horizontal', 'three-mixed'] as const;
 
@@ -60,12 +61,29 @@ export async function GET(
       return NextResponse.json({ error: 'Access denied' }, { status: access.status });
     }
 
+    const mediaOwnerId = await resolveMediaOwnerId(service as unknown as MediaOwnerClient, biographyId);
+    const isEdition = mediaOwnerId !== biographyId;
+
     const { data: rows } = await service
       .from('biography_media')
       .select('id, file_url, caption, layout, display_order')
-      .eq('biography_id', biographyId)
+      .eq('biography_id', mediaOwnerId)
       .in('layout', [...GALLERY_LAYOUTS])
       .order('display_order', { ascending: true });
+
+    const editionCaptions = new Map<string, string>();
+    if (isEdition && (rows?.length ?? 0) > 0) {
+      const { data: caps } = await service
+        .from('biography_edition_captions')
+        .select('media_id, caption')
+        .eq('biography_id', biographyId);
+      for (const row of caps ?? []) {
+        const c = row as { media_id?: string; caption?: string | null };
+        if (typeof c.media_id === 'string') {
+          editionCaptions.set(c.media_id, typeof c.caption === 'string' ? c.caption : '');
+        }
+      }
+    }
 
     const photos = await Promise.all(
       (rows ?? []).map(async (row) => {
@@ -79,10 +97,13 @@ export async function GET(
         const { data: signed } = await service.storage
           .from('biography-photos')
           .createSignedUrl(storagePath, 3600);
+        const caption = isEdition
+          ? editionCaptions.get(r.id)?.trim() || null
+          : r.caption?.trim() || null;
         return {
           id: r.id,
           url: signed?.signedUrl ?? r.file_url,
-          caption: r.caption?.trim() || null,
+          caption,
           layout: r.layout,
         };
       })

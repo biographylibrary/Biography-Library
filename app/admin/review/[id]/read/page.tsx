@@ -8,7 +8,6 @@ import { supabase } from '@/lib/supabase';
 import { Button } from '@/components/ui/button';
 import { useTranslation } from '@/lib/i18n/i18n-context';
 import { BIOGRAPHY_SECTIONS, type BiographyContent } from '@/lib/editor-constants';
-import { getCoverPhotoDisplayUrl } from '@/lib/pdf-export';
 import { BiographySectionBody } from '@/components/biography/BiographySectionBody';
 
 function ReviewReadContent() {
@@ -68,7 +67,24 @@ function ReviewReadContent() {
     }
     setSectionRows(rows);
 
-    getCoverPhotoDisplayUrl(id).then(setCoverUrl);
+    // Staff: biography_media non ha SELECT per ruolo; stessa rotta della galleria pubblica.
+    void (async () => {
+      try {
+        const { data: sessionData } = await supabase.auth.getSession();
+        const headers: Record<string, string> = {};
+        const token = sessionData.session?.access_token;
+        if (token) headers.Authorization = `Bearer ${token}`;
+        const res = await fetch(`/api/biography/${id}/cover-photo`, { headers });
+        if (!res.ok) {
+          setCoverUrl(null);
+          return;
+        }
+        const body = (await res.json()) as { url?: string | null };
+        setCoverUrl(typeof body.url === 'string' && body.url.trim() ? body.url : null);
+      } catch {
+        setCoverUrl(null);
+      }
+    })();
 
     setLoading(false);
   }, [id]);
