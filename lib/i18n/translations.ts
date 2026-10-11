@@ -1121,6 +1121,8 @@ export interface Translations {
     editionCaptionsLoading: string;
     editionCaptionsLanguageFallback: string;
     editionCaptionsReadOnly: string;
+    editionCaptionsCoverTitle: string;
+    editionCaptionsCoverNote: string;
   };
   admin: {
     freezeBiography: string;
@@ -3026,6 +3028,9 @@ export const translations: Record<Language, Translations> = {
       editionCaptionsLoading: 'Loading photos…',
       editionCaptionsLanguageFallback: 'this language',
       editionCaptionsReadOnly: 'Captions cannot be edited in the current state of this translation.',
+      editionCaptionsCoverTitle: 'Cover',
+      editionCaptionsCoverNote:
+        'This is the cover of the original: it stays the same in the translation and has no caption',
     },
     admin: {
       freezeBiography: 'Freeze biography',
@@ -4897,6 +4902,9 @@ export const translations: Record<Language, Translations> = {
       editionCaptionsLoading: 'Caricamento foto…',
       editionCaptionsLanguageFallback: 'questa lingua',
       editionCaptionsReadOnly: 'Le didascalie non si possono modificare nello stato attuale di questa traduzione.',
+      editionCaptionsCoverTitle: 'Copertina',
+      editionCaptionsCoverNote:
+        'È la copertina dell\'originale: resta la stessa nella traduzione e non ha didascalia',
     },
     admin: {
       freezeBiography: 'Congela biografia',
@@ -6769,6 +6777,9 @@ export const translations: Record<Language, Translations> = {
       editionCaptionsLoading: 'Chargement des photos…',
       editionCaptionsLanguageFallback: 'cette langue',
       editionCaptionsReadOnly: 'Les légendes ne peuvent pas être modifiées dans l\'état actuel de cette traduction.',
+      editionCaptionsCoverTitle: 'Couverture',
+      editionCaptionsCoverNote:
+        'C\'est la couverture de l\'original : elle reste la même dans la traduction et n\'a pas de légende',
     },
     admin: {
       freezeBiography: 'Geler la biographie',
@@ -8640,6 +8651,9 @@ export const translations: Record<Language, Translations> = {
       editionCaptionsLoading: 'Fotos werden geladen…',
       editionCaptionsLanguageFallback: 'dieser Sprache',
       editionCaptionsReadOnly: 'Bildunterschriften können im aktuellen Zustand dieser Übersetzung nicht bearbeitet werden.',
+      editionCaptionsCoverTitle: 'Titelbild',
+      editionCaptionsCoverNote:
+        'Das ist das Titelbild des Originals: Es bleibt in der Übersetzung gleich und hat keine Bildunterschrift',
     },
     admin: {
       freezeBiography: 'Biografie einfrieren',

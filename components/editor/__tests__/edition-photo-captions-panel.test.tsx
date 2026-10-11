@@ -7,7 +7,7 @@ import { translations } from '@/lib/i18n/translations';
 const upsertMock = vi.fn();
 const createSignedUrlMock = vi.fn();
 
-const photos = [
+const galleryPhotos = [
   {
     id: 'm1',
     file_url: 'https://example.com/storage/v1/object/public/biography-photos/u/a.jpg',
@@ -23,6 +23,9 @@ const photos = [
     display_order: 1,
   },
 ];
+
+let mediaResponses: Array<Record<string, unknown>> = [...galleryPhotos];
+let coverResponses: Array<Record<string, unknown>> = [];
 
 vi.mock('@/lib/i18n/i18n-context', () => ({
   useTranslation: () => ({
@@ -41,9 +44,17 @@ vi.mock('@/lib/supabase', () => ({
         return {
           select: () => ({
             eq: () => ({
-              in: () => ({
-                order: async () => ({ data: photos, error: null }),
-              }),
+              in: (_col: string, layouts: string[]) => {
+                const isCoverQuery =
+                  layouts.includes('cover') || layouts.includes('cover_a5');
+                const data = isCoverQuery ? coverResponses : mediaResponses;
+                if (isCoverQuery) {
+                  return Promise.resolve({ data, error: null });
+                }
+                return {
+                  order: async () => ({ data, error: null }),
+                };
+              },
             }),
           }),
         };
@@ -66,7 +77,7 @@ vi.mock('@/lib/supabase', () => ({
   },
 }));
 
-async function renderReady() {
+async function renderReady(expectedInputs = 2) {
   render(
     <EditionPhotoCaptionsPanel
       editionId="ed-1"
@@ -74,11 +85,21 @@ async function renderReady() {
       recordLanguageTag="es"
     />
   );
-  await waitFor(() => expect(screen.getAllByPlaceholderText(/Didascalia in/)).toHaveLength(2));
+  if (expectedInputs === 0) {
+    await waitFor(() =>
+      expect(screen.queryByText(translations.it.photos.editionCaptionsLoading)).toBeNull()
+    );
+    return null;
+  }
+  await waitFor(() =>
+    expect(screen.getAllByPlaceholderText(/Didascalia in/)).toHaveLength(expectedInputs)
+  );
   return screen.getAllByPlaceholderText(/Didascalia in/)[0] as HTMLInputElement;
 }
 
 beforeEach(() => {
+  mediaResponses = [...galleryPhotos];
+  coverResponses = [];
   upsertMock.mockReset();
   upsertMock.mockResolvedValue({ error: null });
   createSignedUrlMock.mockResolvedValue({
@@ -115,7 +136,7 @@ describe('EditionPhotoCaptionsPanel', () => {
 
   it('scrive con upsert dopo 600 ms col biography_id dell\'edizione', async () => {
     const input = await renderReady();
-    fireEvent.change(input, { target: { value: 'Hola' } });
+    fireEvent.change(input!, { target: { value: 'Hola' } });
     expect(upsertMock).not.toHaveBeenCalled();
     await act(async () => {
       await vi.advanceTimersByTimeAsync(600);
@@ -132,8 +153,8 @@ describe('EditionPhotoCaptionsPanel', () => {
     vi.useRealTimers();
     const input = await renderReady();
     vi.useFakeTimers();
-    fireEvent.change(input, { target: { value: 'Pronto' } });
-    fireEvent.blur(input);
+    fireEvent.change(input!, { target: { value: 'Pronto' } });
+    fireEvent.blur(input!);
     expect(upsertMock).toHaveBeenCalledTimes(1);
     expect(upsertMock.mock.calls[0][0].caption).toBe('Pronto');
   });
@@ -156,7 +177,7 @@ describe('EditionPhotoCaptionsPanel', () => {
 
   it('non scrive se il testo non cambia', async () => {
     const input = await renderReady();
-    fireEvent.blur(input);
+    fireEvent.blur(input!);
     await act(async () => {
       await vi.advanceTimersByTimeAsync(600);
     });
@@ -166,12 +187,12 @@ describe('EditionPhotoCaptionsPanel', () => {
   it('con upsert fallito mostra l\'errore e non perde il testo', async () => {
     upsertMock.mockResolvedValue({ error: { code: 'XX', message: 'fail' } });
     const input = await renderReady();
-    fireEvent.change(input, { target: { value: 'Resta' } });
-    fireEvent.blur(input);
+    fireEvent.change(input!, { target: { value: 'Resta' } });
+    fireEvent.blur(input!);
     await waitFor(() =>
       expect(screen.getByText(translations.it.photos.editionCaptionsSaveFailed)).toBeTruthy()
     );
-    expect(input.value).toBe('Resta');
+    expect(input!.value).toBe('Resta');
   });
 
   it('con 42501 mostra il messaggio di blocco', async () => {
@@ -179,8 +200,8 @@ describe('EditionPhotoCaptionsPanel', () => {
       error: { code: '42501', message: 'author_text_locked' },
     });
     const input = await renderReady();
-    fireEvent.change(input, { target: { value: 'Lock' } });
-    fireEvent.blur(input);
+    fireEvent.change(input!, { target: { value: 'Lock' } });
+    fireEvent.blur(input!);
     await waitFor(() =>
       expect(screen.getAllByText(translations.it.photos.editionCaptionsLocked).length).toBeGreaterThan(0)
     );
@@ -217,19 +238,19 @@ describe('EditionPhotoCaptionsPanel', () => {
     });
 
     const input = await renderReady();
-    fireEvent.change(input, { target: { value: 'abc' } });
+    fireEvent.change(input!, { target: { value: 'abc' } });
     await act(async () => {
       await vi.advanceTimersByTimeAsync(600);
     });
     await waitFor(() => expect(upsertMock).toHaveBeenCalledTimes(1));
 
-    fireEvent.change(input, { target: { value: 'abcd' } });
-    expect(input.value).toBe('abcd');
+    fireEvent.change(input!, { target: { value: 'abcd' } });
+    expect(input!.value).toBe('abcd');
 
     await act(async () => {
       resolveFirst({ error: null });
     });
-    expect(input.value).toBe('abcd');
+    expect(input!.value).toBe('abcd');
 
     await act(async () => {
       await vi.advanceTimersByTimeAsync(600);
@@ -250,13 +271,13 @@ describe('EditionPhotoCaptionsPanel', () => {
     });
 
     const input = await renderReady();
-    fireEvent.change(input, { target: { value: 'uno' } });
+    fireEvent.change(input!, { target: { value: 'uno' } });
     await act(async () => {
       await vi.advanceTimersByTimeAsync(600);
     });
     await waitFor(() => expect(upsertMock).toHaveBeenCalledTimes(1));
 
-    fireEvent.change(input, { target: { value: 'due' } });
+    fireEvent.change(input!, { target: { value: 'due' } });
     await act(async () => {
       await vi.advanceTimersByTimeAsync(600);
     });
@@ -278,18 +299,78 @@ describe('EditionPhotoCaptionsPanel', () => {
     });
 
     const input = await renderReady();
-    fireEvent.change(input, { target: { value: 'vecchio' } });
+    fireEvent.change(input!, { target: { value: 'vecchio' } });
     await act(async () => {
       await vi.advanceTimersByTimeAsync(600);
     });
     await waitFor(() => expect(upsertMock).toHaveBeenCalledTimes(1));
 
-    fireEvent.change(input, { target: { value: 'nuovo' } });
-    expect(input.value).toBe('nuovo');
+    fireEvent.change(input!, { target: { value: 'nuovo' } });
+    expect(input!.value).toBe('nuovo');
 
     await act(async () => {
       resolveFirst({ error: { code: 'XX', message: 'fail' } });
     });
-    expect(input.value).toBe('nuovo');
+    expect(input!.value).toBe('nuovo');
+  });
+
+  it('con riga cover mostra anteprima e nota, senza campo in più', async () => {
+    coverResponses = [
+      {
+        id: 'c1',
+        file_url: 'https://example.com/storage/v1/object/public/biography-photos/u/cover.jpg',
+        layout: 'cover',
+      },
+    ];
+    await renderReady(2);
+    expect(screen.getByTestId('edition-cover-preview')).toBeTruthy();
+    expect(screen.getByText(translations.it.photos.editionCaptionsCoverNote)).toBeTruthy();
+    expect(screen.getByText(translations.it.photos.editionCaptionsCoverTitle)).toBeTruthy();
+    expect(screen.getAllByPlaceholderText(/Didascalia in/)).toHaveLength(2);
+    const coverImg = screen
+      .getByTestId('edition-cover-preview')
+      .querySelector('img[data-cover-layout="cover"]');
+    expect(coverImg).toBeTruthy();
+  });
+
+  it('senza riga cover non mostra anteprima né nota', async () => {
+    coverResponses = [];
+    await renderReady(2);
+    expect(screen.queryByTestId('edition-cover-preview')).toBeNull();
+    expect(screen.queryByText(translations.it.photos.editionCaptionsCoverNote)).toBeNull();
+  });
+
+  it('con solo cover_a5 mostra quella', async () => {
+    coverResponses = [
+      {
+        id: 'a5',
+        file_url: 'https://example.com/storage/v1/object/public/biography-photos/u/a5.jpg',
+        layout: 'cover_a5',
+      },
+    ];
+    await renderReady(2);
+    const coverImg = screen
+      .getByTestId('edition-cover-preview')
+      .querySelector('img[data-cover-layout="cover_a5"]');
+    expect(coverImg).toBeTruthy();
+  });
+
+  it('con cover e cover_a5 preferisce cover', async () => {
+    coverResponses = [
+      {
+        id: 'a5',
+        file_url: 'https://example.com/storage/v1/object/public/biography-photos/u/a5.jpg',
+        layout: 'cover_a5',
+      },
+      {
+        id: 'c1',
+        file_url: 'https://example.com/storage/v1/object/public/biography-photos/u/cover.jpg',
+        layout: 'cover',
+      },
+    ];
+    await renderReady(2);
+    const preview = screen.getByTestId('edition-cover-preview');
+    expect(preview.querySelector('img[data-cover-layout="cover"]')).toBeTruthy();
+    expect(preview.querySelector('img[data-cover-layout="cover_a5"]')).toBeNull();
   });
 });

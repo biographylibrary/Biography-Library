@@ -69,6 +69,11 @@ export function EditionPhotoCaptionsPanel({
   const { t, language } = useTranslation();
   const copy = t.photos;
   const [photos, setPhotos] = useState<GalleryPhoto[]>([]);
+  const [cover, setCover] = useState<{
+    file_url: string;
+    previewUrl?: string;
+    layout: string;
+  } | null>(null);
   const [rows, setRows] = useState<Record<string, RowUi>>({});
   const [loading, setLoading] = useState(true);
   const [textLocked, setTextLocked] = useState(false);
@@ -246,24 +251,36 @@ export function EditionPhotoCaptionsPanel({
     let cancelled = false;
     (async () => {
       setLoading(true);
-      const { data: mediaRows } = await supabase
-        .from('biography_media')
-        .select('id, file_url, caption, layout, display_order')
-        .eq('biography_id', originalId)
-        .in('layout', [...GALLERY_PHOTO_LAYOUTS])
-        .order('display_order', { ascending: true });
+      const [{ data: mediaRows }, { data: coverRows }, { data: captionRows }] =
+        await Promise.all([
+          supabase
+            .from('biography_media')
+            .select('id, file_url, caption, layout, display_order')
+            .eq('biography_id', originalId)
+            .in('layout', [...GALLERY_PHOTO_LAYOUTS])
+            .order('display_order', { ascending: true }),
+          supabase
+            .from('biography_media')
+            .select('id, file_url, layout')
+            .eq('biography_id', originalId)
+            .in('layout', ['cover', 'cover_a5']),
+          supabase
+            .from('biography_edition_captions')
+            .select('media_id, caption')
+            .eq('biography_id', editionId),
+        ]);
 
       if (cancelled) return;
       const gallery = ((mediaRows as GalleryPhoto[] | null) ?? []).filter((row) =>
         (GALLERY_PHOTO_LAYOUTS as readonly string[]).includes(row.layout ?? '')
       );
+      const coverList =
+        (coverRows as { id: string; file_url: string; layout: string }[] | null) ?? [];
+      const preferCover =
+        coverList.find((r) => r.layout === 'cover') ??
+        coverList.find((r) => r.layout === 'cover_a5') ??
+        null;
 
-      const { data: captionRows } = await supabase
-        .from('biography_edition_captions')
-        .select('media_id, caption')
-        .eq('biography_id', editionId);
-
-      if (cancelled) return;
       const captions = (captionRows as EditionCaptionRow[] | null) ?? [];
       const byMedia = new Map(captions.map((c) => [c.media_id, c.caption ?? '']));
 
@@ -275,12 +292,28 @@ export function EditionPhotoCaptionsPanel({
         })
       );
 
+      let coverPreview: {
+        file_url: string;
+        previewUrl?: string;
+        layout: string;
+      } | null = null;
+      if (preferCover) {
+        const path = storagePathFromUrl(preferCover.file_url);
+        const previewUrl = await getSignedUrl(path);
+        coverPreview = {
+          file_url: preferCover.file_url,
+          previewUrl,
+          layout: preferCover.layout,
+        };
+      }
+
       if (cancelled) return;
       const nextRows: Record<string, RowUi> = {};
       for (const photo of withPreview) {
         const saved = byMedia.get(photo.id) ?? '';
         nextRows[photo.id] = { draft: saved, saved, status: '' };
       }
+      setCover(coverPreview);
       setPhotos(withPreview);
       setRows(nextRows);
       setLoading(false);
@@ -330,6 +363,21 @@ export function EditionPhotoCaptionsPanel({
 
   return (
     <div className="space-y-4">
+      {cover ? (
+        <div className="flex gap-3 min-w-0" data-testid="edition-cover-preview">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={cover.previewUrl || cover.file_url}
+            alt=""
+            className="h-20 w-auto max-w-[5rem] shrink-0 rounded object-cover bg-muted"
+            data-cover-layout={cover.layout}
+          />
+          <div className="min-w-0 flex-1 space-y-1">
+            <p className="text-sm font-medium text-foreground">{copy.editionCaptionsCoverTitle}</p>
+            <p className="text-sm text-muted-foreground">{copy.editionCaptionsCoverNote}</p>
+          </div>
+        </div>
+      ) : null}
       <p className="text-sm text-foreground">
         {copy.editionCaptionsProgress
           .replace('{n}', String(progress.translated))
