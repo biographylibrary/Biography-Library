@@ -14,6 +14,7 @@ import { useOnboardingGate } from '@/components/onboarding/OnboardingGateProvide
 import {
   EDITOR_SIDEBAR_STATE_EVENT,
   EDITOR_SIDEBAR_TOGGLE_EVENT,
+  isMobileEditorLayout,
 } from '@/lib/onboarding/tour-mobile';
 import type { WritingPath } from '@/lib/onboarding/types';
 import { GlobalNotesPanel } from '@/components/editor/GlobalNotesPanel';
@@ -21,14 +22,21 @@ import { BookStructureDialog } from '@/components/editor/BookStructureDialog';
 import { AiSuggestionsDialog } from '@/components/editor/ai-suggestions-panel';
 import { ShareLinkPanel } from '@/components/editor/share-link-panel';
 import { PhotoGalleryDialog } from '@/components/editor/PhotoGalleryDialog';
+import { EditionPhotoCaptionsDialog } from '@/components/editor/EditionPhotoCaptionsDialog';
 import { ImportTextDialog } from '@/components/editor/import-text-dialog';
 import { TranslateDialog } from '@/components/editor/translate-dialog';
 import { EditionBanner } from '@/components/editor/edition-banner';
 import { EditionNoticeDialog } from '@/components/editor/edition-notice-dialog';
+import { GALLERY_PHOTO_LAYOUTS } from '@/lib/biography-media-constants';
+import { editionCaptionProgress } from '@/lib/edition-photo-captions';
 import { FinalReviewDialog } from '@/components/editor/FinalReviewDialog';
 import { ReviewPublicationDialog } from '@/components/editor/ReviewPublicationDialog';
-import { TextLanguageField } from '@/components/editor/TextLanguageField';
-import { textLanguageIdentity } from '@/lib/text-languages';
+import { TextLanguageDialog } from '@/components/editor/TextLanguageDialog';
+import { textLanguageIdentity, textLanguageLabels } from '@/lib/text-languages';
+import {
+  dispatchOpenEditorTools,
+  openLanguageTools,
+} from '@/lib/editor/open-language-tools';
 import { countIdenticalSections } from '@/lib/edition-text-compare';
 import { originalIsNewerThanEditionAlignment } from '@/lib/edition-drift';
 import { aiWritingToolsAvailableForBiography } from '@/lib/edition-ai';
@@ -117,6 +125,30 @@ async function loadBookStructureReminderSnapshot(
     .eq('biography_id', biographyId)
     .maybeSingle();
   return (data as BookStructureReminderSnapshot | null) ?? null;
+}
+
+async function loadEditionCaptionReminderSnapshot(
+  originalId: string,
+  editionId: string
+): Promise<{ missing: number; total: number } | null> {
+  const [{ data: photos }, { data: captions }] = await Promise.all([
+    supabase
+      .from('biography_media')
+      .select('id, caption, layout')
+      .eq('biography_id', originalId)
+      .in('layout', [...GALLERY_PHOTO_LAYOUTS])
+      .order('display_order', { ascending: true }),
+    supabase
+      .from('biography_edition_captions')
+      .select('media_id, caption')
+      .eq('biography_id', editionId),
+  ]);
+  const progress = editionCaptionProgress(
+    (photos as { id: string; caption?: string | null }[] | null) ?? [],
+    (captions as { media_id: string; caption?: string | null }[] | null) ?? []
+  );
+  if (progress.total === 0 || progress.missingMediaIds.length === 0) return null;
+  return { missing: progress.missingMediaIds.length, total: progress.total };
 }
 
 type SaveStatus = 'saved' | 'saving' | 'unsaved' | 'error';
@@ -211,6 +243,8 @@ export default function BiographyEditorPage() {
   }, [showMobileSidebar]);
   const [showGlobalNotesPanel, setShowGlobalNotesPanel] = useState(false);
   const [showPhotosPanel, setShowPhotosPanel] = useState(false);
+  const [showTextLanguagePanel, setShowTextLanguagePanel] = useState(false);
+  const languageToolsHighlightTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [showBookStructurePanel, setShowBookStructurePanel] = useState(false);
   const [showPermanencePanel, setShowPermanencePanel] = useState(false);
   const [showImportDialog, setShowImportDialog] = useState(() => searchParams?.get('import') === '1');
@@ -234,6 +268,10 @@ export default function BiographyEditorPage() {
     useState<BookStructureReminderSnapshot | null>(null);
   const [editionBookStructure, setEditionBookStructure] =
     useState<BookStructureReminderSnapshot | null>(null);
+  const [missingPhotoCaptionsReminder, setMissingPhotoCaptionsReminder] = useState<{
+    missing: number;
+    total: number;
+  } | null>(null);
   const coverPhotoWarning = translationOf
     ? t.translate.coverMissingOnOriginal
     : t.exportDialog.noCoverPhotoWarning;
@@ -625,18 +663,21 @@ export default function BiographyEditorPage() {
             setOriginalMeta(null);
             setIdenticalSectionCount(0);
           }
-          const [originalStructure, editionStructure] = await Promise.all([
+          const [originalStructure, editionStructure, captionReminder] = await Promise.all([
             loadBookStructureReminderSnapshot(translationOfId),
             loadBookStructureReminderSnapshot(id),
+            loadEditionCaptionReminderSnapshot(translationOfId, id),
           ]);
           setOriginalBookStructure(originalStructure);
           setEditionBookStructure(editionStructure);
+          setMissingPhotoCaptionsReminder(captionReminder);
           setEditionExtrasReady(true);
         } else {
           setOriginalMeta(null);
           setIdenticalSectionCount(0);
           setOriginalBookStructure(null);
           setEditionBookStructure(null);
+          setMissingPhotoCaptionsReminder(null);
           setEditionExtrasReady(false);
           editionNoticeShownForIdRef.current = null;
           setShowEditionNoticeDialog(false);
@@ -1820,6 +1861,46 @@ export default function BiographyEditorPage() {
     setRecordScript(identity.script);
   }, [biographyStatus, id, isFrozen, t.toast.requestFailed]);
 
+  const openLanguageToolsFromToolbar = useCallback(() => {
+    if (languageToolsHighlightTimerRef.current) {
+      clearTimeout(languageToolsHighlightTimerRef.current);
+      languageToolsHighlightTimerRef.current = null;
+    }
+    const selectors = [
+      '[data-tour-id="text-language-btn"]',
+      '[data-tour-id="translate-btn"]',
+    ];
+    void openLanguageTools({
+      isMobileLayout: isMobileEditorLayout(),
+      openMobileSidebar: () => setShowMobileSidebar(true),
+      expandTools: () => dispatchOpenEditorTools(),
+      highlightSelectors: selectors,
+      scrollIntoView: (selector) => {
+        document.querySelector(selector)?.scrollIntoView({ block: 'nearest' });
+      },
+      highlight: (sels) => {
+        const nodes = sels
+          .map((s) => document.querySelector(s))
+          .filter((n): n is Element => Boolean(n));
+        const reduced =
+          typeof window !== 'undefined' &&
+          window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        for (const node of nodes) {
+          node.classList.add('ring-2', 'ring-primary', 'ring-offset-2');
+          if (!reduced) {
+            node.classList.add('transition-shadow');
+          }
+        }
+        languageToolsHighlightTimerRef.current = setTimeout(() => {
+          for (const node of nodes) {
+            node.classList.remove('ring-2', 'ring-primary', 'ring-offset-2', 'transition-shadow');
+          }
+          languageToolsHighlightTimerRef.current = null;
+        }, 2000);
+      },
+    });
+  }, []);
+
   const handleApproveText = useCallback(async () => {
     if (!user?.id || !textPublishConfirmed) return;
     setPublicationActionLoading('approve');
@@ -1987,11 +2068,15 @@ export default function BiographyEditorPage() {
           identicalSectionCount={identicalSectionCount}
           originalStatus={originalMeta.status}
           missingBookStructureParts={missingBookStructureParts}
+          missingPhotoCaptions={missingPhotoCaptionsReminder}
           onAligned={(at) => setOriginalVersionAt(at)}
           onOpenBookStructure={() =>
             statusLocksText
               ? notifyTextLocked()
               : setShowBookStructurePanel(true)
+          }
+          onOpenPhotoCaptions={() =>
+            statusLocksText ? notifyTextLocked() : setShowPhotosPanel(true)
           }
         />
       )}
@@ -2002,18 +2087,6 @@ export default function BiographyEditorPage() {
           <p className="text-xs text-brand-ink dark:text-brand-beigeLight">
             {t.admin.frozenBannerMessage}
           </p>
-        </div>
-      )}
-
-      {!isFrozen && !translationOf && (
-        <div className="shrink-0 border-b border-border/60 bg-background px-4 py-3">
-          <div className="max-w-5xl mx-auto">
-            <TextLanguageField
-              value={recordLanguageTag}
-              disabled={statusLocksText}
-              onChange={(tag) => void handleTextLanguageChange(tag)}
-            />
-          </div>
         </div>
       )}
 
@@ -2367,6 +2440,12 @@ export default function BiographyEditorPage() {
             isEdition={Boolean(translationOf)}
             canTranslate={!translationOf}
             onToggleTranslate={() => setShowTranslateDialog(true)}
+            onToggleTextLanguage={
+              !translationOf && !isFrozen
+                ? () => setShowTextLanguagePanel(true)
+                : undefined
+            }
+            showTextLanguagePanel={showTextLanguagePanel}
             canDeleteEdition={
               Boolean(translationOf) && biographyStatus === 'draft' && !publishedAt
             }
@@ -2417,6 +2496,14 @@ export default function BiographyEditorPage() {
                   onSectionTextChange={handleFreeflowChange}
                   editorFontSize={editorFontSize}
                   onEditorFontSizeChange={setEditorFontSize}
+                  onOpenLanguage={
+                    !translationOf && !isFrozen ? openLanguageToolsFromToolbar : undefined
+                  }
+                  textLanguageName={
+                    recordLanguageTag
+                      ? textLanguageLabels(recordLanguageTag, language).inUi
+                      : undefined
+                  }
                   isPublished={
                     (biographyStatus as string) === 'published' ||
                     isFrozen ||
@@ -2570,12 +2657,36 @@ export default function BiographyEditorPage() {
         }}
       />
 
-      <PhotoGalleryDialog
-        biographyId={id}
-        userId={user.id}
-        open={showPhotosPanel}
-        onOpenChange={setShowPhotosPanel}
-      />
+      {!translationOf ? (
+        <PhotoGalleryDialog
+          biographyId={id}
+          userId={user.id}
+          open={showPhotosPanel}
+          onOpenChange={setShowPhotosPanel}
+        />
+      ) : (
+        <EditionPhotoCaptionsDialog
+          open={showPhotosPanel}
+          onOpenChange={setShowPhotosPanel}
+          editionId={id}
+          originalId={translationOf}
+          recordLanguageTag={recordLanguageTag}
+          readOnly={statusLocksText || isFrozen}
+          readOnlyReason={
+            statusLocksText || isFrozen ? t.photos.editionCaptionsReadOnly : undefined
+          }
+        />
+      )}
+
+      {!translationOf && !isFrozen && (
+        <TextLanguageDialog
+          open={showTextLanguagePanel}
+          onOpenChange={setShowTextLanguagePanel}
+          value={recordLanguageTag ?? ''}
+          disabled={statusLocksText}
+          onChange={(tag) => void handleTextLanguageChange(tag)}
+        />
+      )}
 
       <ImportTextDialog
         open={showImportDialog}

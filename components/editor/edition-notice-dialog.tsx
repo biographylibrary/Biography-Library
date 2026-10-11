@@ -24,8 +24,11 @@ export interface EditionNoticeDialogProps {
   identicalSectionCount: number;
   originalStatus: string | null;
   missingBookStructureParts: BookStructureReminderPart[];
+  /** Captions still missing on the edition (from snapshot at editor open). */
+  missingPhotoCaptions?: { missing: number; total: number } | null;
   onAligned: (originalVersionAt: string) => void;
   onOpenBookStructure?: () => void;
+  onOpenPhotoCaptions?: () => void;
 }
 
 export function EditionNoticeDialog({
@@ -36,8 +39,10 @@ export function EditionNoticeDialog({
   identicalSectionCount,
   originalStatus,
   missingBookStructureParts,
+  missingPhotoCaptions = null,
   onAligned,
   onOpenBookStructure,
+  onOpenPhotoCaptions,
 }: EditionNoticeDialogProps) {
   const { t } = useTranslation();
   const copy = t.translate;
@@ -57,6 +62,9 @@ export function EditionNoticeDialog({
     .join(', ');
 
   const showBookStructure = missingBookStructureParts.length > 0;
+  const showPhotoCaptions = Boolean(
+    missingPhotoCaptions && missingPhotoCaptions.missing > 0 && missingPhotoCaptions.total > 0
+  );
   const showUnpublished = Boolean(originalStatus && originalStatus !== 'published');
   const showIdentical = identicalSectionCount > 0;
 
@@ -115,6 +123,28 @@ export function EditionNoticeDialog({
                       }}
                     >
                       {t.editor.bookStructureTitle}
+                    </Button>
+                  )}
+                </div>
+              )}
+              {showPhotoCaptions && missingPhotoCaptions && (
+                <div className="space-y-2">
+                  <p>
+                    {copy.photoCaptionsReminder
+                      .replace('{missing}', String(missingPhotoCaptions.missing))
+                      .replace('{total}', String(missingPhotoCaptions.total))}
+                  </p>
+                  {onOpenPhotoCaptions && (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        onOpenChange(false);
+                        onOpenPhotoCaptions();
+                      }}
+                    >
+                      {t.photos.editionCaptionsTitle}
                     </Button>
                   )}
                 </div>

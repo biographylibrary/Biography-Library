@@ -70,6 +70,9 @@ interface RichTextToolbarProps {
   biographyId?: string;
   editorFontSize?: number;
   onEditorFontSizeChange?: (size: number) => void;
+  /** Opens Tools → language of the text (originals only). */
+  onOpenLanguage?: () => void;
+  textLanguageName?: string;
   aiTools?: Omit<EditorAiToolsMenuProps, 'className' | 'buttonClassName'>;
   aiUsageRefresh?: number;
   countsOnly?: boolean;
@@ -81,6 +84,8 @@ export function RichTextToolbar({
   biographyId,
   editorFontSize = 16,
   onEditorFontSizeChange,
+  onOpenLanguage,
+  textLanguageName,
   aiTools,
   aiUsageRefresh,
   countsOnly = false,
@@ -385,6 +390,24 @@ export function RichTextToolbar({
             currentSize={editorFontSize}
             onSizeChange={onEditorFontSizeChange}
           />
+          {onOpenLanguage && (
+            <button
+              type="button"
+              data-tour-id="toolbar-language-btn"
+              onClick={onOpenLanguage}
+              className="h-8 shrink-0 px-2 text-[11px] md:text-xs text-muted-foreground hover:text-foreground hover:bg-muted/50 rounded-md transition-colors"
+              aria-label={t.textLanguage.toolbarAria.replace(
+                '{name}',
+                textLanguageName?.trim() || t.textLanguage.label
+              )}
+              title={t.textLanguage.toolbarAria.replace(
+                '{name}',
+                textLanguageName?.trim() || t.textLanguage.label
+              )}
+            >
+              {t.textLanguage.toolbarButton}
+            </button>
+          )}
         </>
       )}
 

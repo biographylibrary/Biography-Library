@@ -1108,6 +1108,19 @@ export interface Translations {
     viewGrid: string;
     viewDetail: string;
     gridEditHint: string;
+    editionCaptionsTitle: string;
+    editionCaptionsProgress: string;
+    editionCaptionsRule: string;
+    editionCaptionsOriginalPrefix: string;
+    editionCaptionsOriginalEmpty: string;
+    editionCaptionsPlaceholder: string;
+    editionCaptionsSaved: string;
+    editionCaptionsSaveFailed: string;
+    editionCaptionsLocked: string;
+    editionCaptionsEmpty: string;
+    editionCaptionsLoading: string;
+    editionCaptionsLanguageFallback: string;
+    editionCaptionsReadOnly: string;
   };
   admin: {
     freezeBiography: string;
@@ -1738,6 +1751,8 @@ export interface Translations {
     heldForOriginal: string;
     originalNotPublished: string;
     translationIdentical: string;
+    toolbarButton: string;
+    toolbarAria: string;
   };
   translate: {
     menuItem: string;
@@ -1766,7 +1781,7 @@ export interface Translations {
     coverMissingOnOriginal: string;
     noticeTitle: string;
     noticeUnderstood: string;
-    photosDeferred: string;
+    photoCaptionsReminder: string;
     deleteEdition: string;
     deleteEditionConfirm: string;
     deleteEditionConfirmBody: string;
@@ -1804,6 +1819,8 @@ export const translations: Record<Language, Translations> = {
     },
     textLanguage: {
       label: 'Language of the text',
+      toolbarButton: 'Language',
+      toolbarAria: 'Language of the text: {name}',
       hint: 'The language this biography is written in. It is not the language of the menus.',
       interfaceLabel: 'Interface language',
       searchPlaceholder: 'Search by name or code',
@@ -1851,8 +1868,8 @@ export const translations: Record<Language, Translations> = {
         'This translation uses the cover of the original, but the original has none. Add one in the original story, then come back here.',
       noticeTitle: 'You are writing a translation',
       noticeUnderstood: 'Got it',
-      photosDeferred:
-        'Photos are those of the original; captions in this language will be written later',
+      photoCaptionsReminder:
+        'Photo captions still to translate: {missing} of {total}',
       deleteEdition: 'Delete this translation',
       deleteEditionConfirm: 'Delete this translation?',
       deleteEditionConfirmBody:
@@ -2995,6 +3012,20 @@ export const translations: Record<Language, Translations> = {
       viewGrid: 'Thumbnail view',
       viewDetail: 'Detailed view',
       gridEditHint: 'Drag to reorder. Click a photo to edit caption and layout.',
+      editionCaptionsTitle: 'Photo captions',
+      editionCaptionsProgress: 'Translated {n} of {m} captions from the original',
+      editionCaptionsRule:
+        'A photo without a translated caption is shown without any caption: the original caption is never used in its place.',
+      editionCaptionsOriginalPrefix: 'Original:',
+      editionCaptionsOriginalEmpty: 'The original has no caption',
+      editionCaptionsPlaceholder: 'Caption in {language}',
+      editionCaptionsSaved: 'Saved',
+      editionCaptionsSaveFailed: 'Not saved, try again',
+      editionCaptionsLocked: 'The translation can no longer be edited in this state',
+      editionCaptionsEmpty: 'The original has no gallery photos yet.',
+      editionCaptionsLoading: 'Loading photos…',
+      editionCaptionsLanguageFallback: 'this language',
+      editionCaptionsReadOnly: 'Captions cannot be edited in the current state of this translation.',
     },
     admin: {
       freezeBiography: 'Freeze biography',
@@ -3657,6 +3688,8 @@ export const translations: Record<Language, Translations> = {
     },
     textLanguage: {
       label: 'Lingua del testo',
+      toolbarButton: 'Lingua',
+      toolbarAria: 'Lingua del testo: {name}',
       hint: 'La lingua in cui è scritta questa biografia. Non è la lingua dei menu.',
       interfaceLabel: 'Lingua dell\'interfaccia',
       searchPlaceholder: 'Cerca per nome o codice',
@@ -3704,8 +3737,8 @@ export const translations: Record<Language, Translations> = {
         'Questa traduzione usa la copertina dell\'originale, ma l\'originale non ne ha una. Aggiungila nella storia originale, poi torna qui.',
       noticeTitle: 'Stai scrivendo una traduzione',
       noticeUnderstood: 'Ho capito',
-      photosDeferred:
-        'Le foto sono quelle dell\'originale; le didascalie in questa lingua si scriveranno in un secondo momento',
+      photoCaptionsReminder:
+        'Didascalie delle foto da tradurre: {missing} su {total}',
       deleteEdition: 'Elimina questa traduzione',
       deleteEditionConfirm: 'Eliminare questa traduzione?',
       deleteEditionConfirmBody:
@@ -4850,6 +4883,20 @@ export const translations: Record<Language, Translations> = {
       viewGrid: 'Vista miniature',
       viewDetail: 'Vista dettagliata',
       gridEditHint: 'Trascina per riordinare. Clicca una foto per didascalia e layout.',
+      editionCaptionsTitle: 'Didascalie delle foto',
+      editionCaptionsProgress: 'Tradotte {n} su {m} didascalie dell\'originale',
+      editionCaptionsRule:
+        'Una foto senza didascalia tradotta si vede senza didascalia: la didascalia dell\'originale non si usa mai al suo posto.',
+      editionCaptionsOriginalPrefix: 'Originale:',
+      editionCaptionsOriginalEmpty: 'L\'originale non ha didascalia',
+      editionCaptionsPlaceholder: 'Didascalia in {language}',
+      editionCaptionsSaved: 'Salvato',
+      editionCaptionsSaveFailed: 'Non salvato, riprova',
+      editionCaptionsLocked: 'La traduzione non è più modificabile in questo stato',
+      editionCaptionsEmpty: 'L\'originale non ha ancora foto di galleria.',
+      editionCaptionsLoading: 'Caricamento foto…',
+      editionCaptionsLanguageFallback: 'questa lingua',
+      editionCaptionsReadOnly: 'Le didascalie non si possono modificare nello stato attuale di questa traduzione.',
     },
     admin: {
       freezeBiography: 'Congela biografia',
@@ -5512,6 +5559,8 @@ export const translations: Record<Language, Translations> = {
     },
     textLanguage: {
       label: 'Langue du texte',
+      toolbarButton: 'Langue',
+      toolbarAria: 'Langue du texte : {name}',
       hint: 'La langue dans laquelle cette biographie est écrite. Ce n\'est pas la langue des menus.',
       interfaceLabel: 'Langue de l\'interface',
       searchPlaceholder: 'Chercher par nom ou code',
@@ -5559,8 +5608,8 @@ export const translations: Record<Language, Translations> = {
         'Cette traduction utilise la couverture de l\'original, mais l\'original n\'en a pas. Ajoutez-en une dans l\'histoire originale, puis revenez ici.',
       noticeTitle: 'Vous écrivez une traduction',
       noticeUnderstood: 'Compris',
-      photosDeferred:
-        'Les photos sont celles de l\'original ; les légendes dans cette langue s\'écriront plus tard',
+      photoCaptionsReminder:
+        'Légendes des photos à traduire : {missing} sur {total}',
       deleteEdition: 'Supprimer cette traduction',
       deleteEditionConfirm: 'Supprimer cette traduction ?',
       deleteEditionConfirmBody:
@@ -6706,6 +6755,20 @@ export const translations: Record<Language, Translations> = {
       viewGrid: 'Vue miniatures',
       viewDetail: 'Vue détaillée',
       gridEditHint: 'Glissez pour réordonner. Cliquez sur une photo pour la légende et la mise en page.',
+      editionCaptionsTitle: 'Légendes des photos',
+      editionCaptionsProgress: 'Traduites {n} sur {m} légendes de l\'original',
+      editionCaptionsRule:
+        'Une photo sans légende traduite apparaît sans légende : celle de l\'original n\'est jamais utilisée à sa place.',
+      editionCaptionsOriginalPrefix: 'Original :',
+      editionCaptionsOriginalEmpty: 'L\'original n\'a pas de légende',
+      editionCaptionsPlaceholder: 'Légende en {language}',
+      editionCaptionsSaved: 'Enregistré',
+      editionCaptionsSaveFailed: 'Non enregistré, réessayez',
+      editionCaptionsLocked: 'La traduction n\'est plus modifiable dans cet état',
+      editionCaptionsEmpty: 'L\'original n\'a pas encore de photos de galerie.',
+      editionCaptionsLoading: 'Chargement des photos…',
+      editionCaptionsLanguageFallback: 'cette langue',
+      editionCaptionsReadOnly: 'Les légendes ne peuvent pas être modifiées dans l\'état actuel de cette traduction.',
     },
     admin: {
       freezeBiography: 'Geler la biographie',
@@ -7368,6 +7431,8 @@ export const translations: Record<Language, Translations> = {
     },
     textLanguage: {
       label: 'Sprache des Textes',
+      toolbarButton: 'Sprache',
+      toolbarAria: 'Sprache des Textes: {name}',
       hint: 'Die Sprache, in der diese Biografie geschrieben ist. Das ist nicht die Sprache der Menüs.',
       interfaceLabel: 'Sprache der Oberfläche',
       searchPlaceholder: 'Nach Name oder Code suchen',
@@ -7415,8 +7480,8 @@ export const translations: Record<Language, Translations> = {
         'Diese Übersetzung verwendet das Titelbild des Originals, aber das Original hat keines. Füge eines in der Originalgeschichte hinzu und kehre dann hierher zurück.',
       noticeTitle: 'Du schreibst eine Übersetzung',
       noticeUnderstood: 'Verstanden',
-      photosDeferred:
-        'Die Fotos sind die des Originals; Bildunterschriften in dieser Sprache kommen später',
+      photoCaptionsReminder:
+        'Bildunterschriften noch zu übersetzen: {missing} von {total}',
       deleteEdition: 'Diese Übersetzung löschen',
       deleteEditionConfirm: 'Diese Übersetzung löschen?',
       deleteEditionConfirmBody:
@@ -8561,6 +8626,20 @@ export const translations: Record<Language, Translations> = {
       viewGrid: 'Miniaturansicht',
       viewDetail: 'Detailansicht',
       gridEditHint: 'Ziehen zum Sortieren. Foto anklicken für Bildunterschrift und Layout.',
+      editionCaptionsTitle: 'Bildunterschriften',
+      editionCaptionsProgress: '{n} von {m} Bildunterschriften des Originals übersetzt',
+      editionCaptionsRule:
+        'Ein Foto ohne übersetzte Bildunterschrift erscheint ohne Bildunterschrift: die des Originals wird nie an ihrer Stelle verwendet.',
+      editionCaptionsOriginalPrefix: 'Original:',
+      editionCaptionsOriginalEmpty: 'Das Original hat keine Bildunterschrift',
+      editionCaptionsPlaceholder: 'Bildunterschrift auf {language}',
+      editionCaptionsSaved: 'Gespeichert',
+      editionCaptionsSaveFailed: 'Nicht gespeichert, erneut versuchen',
+      editionCaptionsLocked: 'Die Übersetzung ist in diesem Zustand nicht mehr änderbar',
+      editionCaptionsEmpty: 'Das Original hat noch keine Galeriefotos.',
+      editionCaptionsLoading: 'Fotos werden geladen…',
+      editionCaptionsLanguageFallback: 'dieser Sprache',
+      editionCaptionsReadOnly: 'Bildunterschriften können im aktuellen Zustand dieser Übersetzung nicht bearbeitet werden.',
     },
     admin: {
       freezeBiography: 'Biografie einfrieren',

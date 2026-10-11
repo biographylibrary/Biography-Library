@@ -10,6 +10,8 @@ interface EditorPeekProps {
   biographyId?: string;
   editorFontSize?: number;
   onEditorFontSizeChange?: (size: number) => void;
+  onOpenLanguage?: () => void;
+  textLanguageName?: string;
   isPublished?: boolean;
   aiEnabled?: boolean;
   aiLoading?: boolean;
@@ -31,6 +33,8 @@ export function EditorPeek({
   biographyId,
   editorFontSize = 16,
   onEditorFontSizeChange,
+  onOpenLanguage,
+  textLanguageName,
   isPublished = false,
   aiEnabled,
   aiLoading,
@@ -60,6 +64,8 @@ export function EditorPeek({
         biographyId={biographyId}
         editorFontSize={editorFontSize}
         onEditorFontSizeChange={onEditorFontSizeChange}
+        onOpenLanguage={onOpenLanguage}
+        textLanguageName={textLanguageName}
         isPublished={isPublished}
         aiTools={aiTools}
         aiUsageRefresh={aiUsageRefresh}

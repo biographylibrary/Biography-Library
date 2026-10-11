@@ -3,7 +3,10 @@ import { getAuthenticatedUser } from '@/lib/server/onboarding-api-auth';
 import { buildServiceClient } from '@/lib/server/service-client';
 import { resolveBiographyId } from '@/lib/server/biography-view-access';
 import { buildMediaInsertPayload } from '@/lib/editor/write-payloads';
-import { MAX_BIOGRAPHY_GALLERY_PHOTOS } from '@/lib/biography-media-constants';
+import {
+  GALLERY_PHOTO_LAYOUTS,
+  MAX_BIOGRAPHY_GALLERY_PHOTOS,
+} from '@/lib/biography-media-constants';
 import { canAuthorWriteText } from '@/lib/publication-state';
 import { PHOTO_BUCKET, storagePathFromFileUrl } from '@/lib/server/photo-storage';
 import {
@@ -18,7 +21,6 @@ export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
 const BUCKET = PHOTO_BUCKET;
-const GALLERY_LAYOUTS = ['full-page', 'two-vertical', 'two-horizontal', 'three-mixed'] as const;
 const COVER_LAYOUTS = ['cover', 'cover_a5'] as const;
 /** Margine per i campi del modulo e la separazione delle parti, oltre al file. */
 const MULTIPART_OVERHEAD_BYTES = 1024 * 1024;
@@ -92,7 +94,7 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
   );
   const isCover = layouts.length > 0 && layouts.every((l) => (COVER_LAYOUTS as readonly string[]).includes(l));
   const isGallery =
-    layouts.length === 1 && (GALLERY_LAYOUTS as readonly string[]).includes(layouts[0]);
+    layouts.length === 1 && (GALLERY_PHOTO_LAYOUTS as readonly string[]).includes(layouts[0]);
   if (!isCover && !isGallery) {
     return fail(400, 'invalid_layout');
   }

@@ -6,8 +6,7 @@ import {
 } from '@/lib/server/biography-view-access';
 import { buildServiceClient } from '@/lib/server/review-submit-pipeline';
 import { resolveMediaOwnerId, type MediaOwnerClient } from '@/lib/edition-media-owner';
-
-const GALLERY_LAYOUTS = ['full-page', 'two-vertical', 'two-horizontal', 'three-mixed'] as const;
+import { GALLERY_PHOTO_LAYOUTS } from '@/lib/biography-media-constants';
 
 function storagePathFromFileUrl(fileUrl: string): string {
   try {
@@ -68,7 +67,7 @@ export async function GET(
       .from('biography_media')
       .select('id, file_url, caption, layout, display_order')
       .eq('biography_id', mediaOwnerId)
-      .in('layout', [...GALLERY_LAYOUTS])
+      .in('layout', [...GALLERY_PHOTO_LAYOUTS])
       .order('display_order', { ascending: true });
 
     const editionCaptions = new Map<string, string>();

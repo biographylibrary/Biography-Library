@@ -26,6 +26,7 @@ import {
 } from '@/lib/permanence-text-export';
 import { resolveMediaOwnerId, type MediaOwnerClient } from '@/lib/edition-media-owner';
 import { resolveEditionIdentity, type EditionIdentityClient } from '@/lib/edition-identity';
+import { GALLERY_PHOTO_LAYOUTS } from '@/lib/biography-media-constants';
 
 type PdfSupabase = SupabaseClient<any, any, any>;
 import { storedToPlainText, storedToSafeHtml } from '@/lib/archive-markdown';
@@ -949,7 +950,7 @@ export async function fetchGalleryPhotos(
     .from('biography_media')
     .select('id, file_url, caption, layout, display_order')
     .eq('biography_id', mediaOwnerId)
-    .in('layout', ['full-page', 'two-vertical', 'two-horizontal', 'three-mixed'])
+    .in('layout', [...GALLERY_PHOTO_LAYOUTS])
     .order('display_order', { ascending: true });
 
   const rows = (data as GalleryPhoto[] | null) ?? [];
