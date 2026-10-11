@@ -52,17 +52,27 @@ describe('EditionBanner', () => {
     expect(screen.queryByText(copy.originalUnpublishedNote)).toBeNull();
   });
 
-  it('truncates only the title from sm breakpoint classes', () => {
+  it('uses line-clamp below sm, sm:py-2, and no max-h below sm', () => {
     const longTitle =
-      'A very long original biography title that should be truncated without cutting the writing phrase';
+      'Una vita lunga e difficile raccontata dai figli, dai nipoti e da chi la conobbe davvero negli anni della guerra';
     const { container } = render(
       <EditionBanner languageTag="fr" originalId="orig-1" originalTitle={longTitle} />
     );
+    const bar = container.querySelector('.border-brand-blue\\/40');
+    expect(bar).toBeTruthy();
+    expect(bar?.className).toMatch(/\bpy-1\.5\b/);
+    expect(bar?.className).toMatch(/\bsm:py-2\b/);
+    expect(bar?.className).toMatch(/\bsm:max-h-11\b/);
+    expect(bar?.className).not.toMatch(/max-h-\[4\.75rem\]/);
+    expect(bar?.className).not.toMatch(/(?:^|\s)max-h-/);
+
+    const phrase = bar?.querySelector('p');
+    expect(phrase?.className).toMatch(/\bline-clamp-2\b/);
+    expect(phrase?.className).toMatch(/\bsm:line-clamp-none\b/);
+    expect(phrase?.className).toMatch(/sm:(?:!)?flex\b/);
+
     const titleEl = screen.getByTitle(longTitle);
     expect(titleEl.className).toMatch(/sm:truncate/);
-    expect(titleEl.textContent).toBe(longTitle);
     expect(within(container).getByRole('link')).toBeTruthy();
-    expect(container.querySelector('.min-h-11')).toBeNull();
-    expect(container.querySelector('.sm\\:max-h-11')).toBeTruthy();
   });
 });

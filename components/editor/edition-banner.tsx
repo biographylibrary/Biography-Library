@@ -12,8 +12,8 @@ interface EditionBannerProps {
 
 /**
  * Barra in cima all'editor di un'edizione: solo la frase e «Apri l'originale».
- * Da sm (640px) una riga ≤44px; sotto, fino a due righe / 76px a 375px.
- * Solo il titolo dell'originale può essere troncato (da sm in su).
+ * Da sm (640px): una riga, sm:py-2, sm:max-h-11 (≤44px); solo il titolo troncato.
+ * Sotto sm: py-1.5, frase line-clamp-2 (senza max-h sul contenitore), link sempre dentro.
  */
 export function EditionBanner({
   languageTag,
@@ -31,8 +31,12 @@ export function EditionBanner({
 
   return (
     <div className="mx-4 mt-3 mb-1">
-      <div className="flex max-h-[4.75rem] flex-col gap-1 rounded-lg border border-brand-blue/40 bg-brand-blue/15 px-3 py-2 text-sm text-brand-ink dark:text-brand-beigeLight sm:max-h-11 sm:flex-row sm:items-center sm:gap-3 sm:overflow-hidden sm:py-0">
-        <p className="min-w-0 flex-1 leading-snug sm:flex sm:items-baseline sm:overflow-hidden sm:leading-none">
+      <div className="flex flex-col gap-1 rounded-lg border border-brand-blue/40 bg-brand-blue/15 px-3 py-1.5 text-sm text-brand-ink dark:text-brand-beigeLight sm:max-h-11 sm:flex-row sm:items-center sm:gap-3 sm:overflow-hidden sm:py-2">
+        {/*
+          line-clamp-2 sotto sm; da sm in su line-clamp-none poi sm:!flex così
+          display:flex vince su display:block di line-clamp-none nel CSS generato.
+        */}
+        <p className="min-w-0 flex-1 leading-snug line-clamp-2 sm:line-clamp-none sm:!flex sm:items-baseline sm:overflow-hidden sm:leading-none">
           <span className="shrink-0">{prefix}</span>
           <span className="min-w-0 sm:truncate" title={title}>
             {title}
