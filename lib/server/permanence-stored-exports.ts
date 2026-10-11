@@ -19,6 +19,7 @@ type AnyClient = SupabaseClient<any, any, any>;
 
 const BIO_SELECT = [
   'um_id',
+  'translation_of',
   'schema_version',
   'record_language_tag',
   'record_script',
@@ -39,6 +40,14 @@ const BIO_SELECT = [
   'content',
   'status',
 ].join(', ');
+
+/** Errore se l'identificativo dell'originale di un'edizione non si riesce a leggere. */
+export class EditionIdentityUnavailableError extends Error {
+  constructor(message = 'edition_identity_unavailable') {
+    super(message);
+    this.name = 'EditionIdentityUnavailableError';
+  }
+}
 
 export type PermanenceExportBundle = {
   bio: PermanenceExportBiography;
@@ -65,13 +74,29 @@ export async function loadPermanenceExportBundle(
 
   if (error || !row) return null;
 
-  const identityUmId = await resolveEditionIdentity(
-    svc as unknown as EditionIdentityClient,
-    biographyId
-  );
-  const bio = {
-    ...(row as unknown as PermanenceExportBiography),
-    um_id: identityUmId,
+  const base = row as unknown as PermanenceExportBiography & {
+    translation_of?: string | null;
+  };
+  const translationOf =
+    typeof base.translation_of === 'string' && base.translation_of.trim()
+      ? base.translation_of
+      : null;
+
+  let umId = base.um_id ?? null;
+  if (translationOf) {
+    const identity = await resolveEditionIdentity(
+      svc as unknown as EditionIdentityClient,
+      biographyId
+    );
+    if (identity.failed) {
+      throw new EditionIdentityUnavailableError();
+    }
+    umId = identity.umId;
+  }
+
+  const bio: PermanenceExportBiography = {
+    ...base,
+    um_id: umId,
   };
 
   return {

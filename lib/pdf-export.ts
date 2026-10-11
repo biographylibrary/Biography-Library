@@ -503,32 +503,50 @@ function drawPermanenceTextPage(
   }
 }
 
-async function fetchPermanencePdfData(biographyId: string): Promise<{
+/** Esportata per i test: um_id dalla riga per gli originali; per le edizioni dall'originale. */
+export async function fetchPermanencePdfData(biographyId: string): Promise<{
   bio: PermanenceExportBiography | null;
   events: PermanenceExportEvent[];
   relations: PermanenceExportRelation[];
 }> {
   const client = getPdfSupabase();
-  const [{ data: row }, { data: events }, { data: relations }, identityUmId] = await Promise.all([
+  const [{ data: row }, { data: events }, { data: relations }] = await Promise.all([
     client
       .from('biographies')
       .select(
-        'um_id, schema_version, record_language_tag, record_script, record_direction, record_language_endonym, name_as_written, name_romanized, title, author_name, subject_name, biography_type, published_at_iso, published_um_year, rights_statement_uri'
+        'um_id, translation_of, schema_version, record_language_tag, record_script, record_direction, record_language_endonym, name_as_written, name_romanized, title, author_name, subject_name, biography_type, published_at_iso, published_um_year, rights_statement_uri'
       )
       .eq('id', biographyId)
       .maybeSingle(),
     client.from('person_events').select('*').eq('biography_id', biographyId),
     client.from('person_relations').select('*').eq('biography_id', biographyId),
-    resolveEditionIdentity(client as unknown as EditionIdentityClient, biographyId),
   ]);
 
   if (!row) {
     return { bio: null, events: [], relations: [] };
   }
 
-  const bio = {
-    ...(row as PermanenceExportBiography),
-    um_id: identityUmId,
+  const base = row as PermanenceExportBiography & { translation_of?: string | null };
+  const translationOf =
+    typeof base.translation_of === 'string' && base.translation_of.trim()
+      ? base.translation_of
+      : null;
+
+  let umId = base.um_id ?? null;
+  if (translationOf) {
+    const identity = await resolveEditionIdentity(
+      client as unknown as EditionIdentityClient,
+      biographyId
+    );
+    if (identity.failed) {
+      throw new Error('edition_identity_unavailable');
+    }
+    umId = identity.umId;
+  }
+
+  const bio: PermanenceExportBiography = {
+    ...base,
+    um_id: umId,
   };
 
   return {

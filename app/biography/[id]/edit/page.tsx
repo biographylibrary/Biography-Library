@@ -24,6 +24,7 @@ import { PhotoGalleryDialog } from '@/components/editor/PhotoGalleryDialog';
 import { ImportTextDialog } from '@/components/editor/import-text-dialog';
 import { TranslateDialog } from '@/components/editor/translate-dialog';
 import { EditionBanner } from '@/components/editor/edition-banner';
+import { EditionNoticeDialog } from '@/components/editor/edition-notice-dialog';
 import { FinalReviewDialog } from '@/components/editor/FinalReviewDialog';
 import { ReviewPublicationDialog } from '@/components/editor/ReviewPublicationDialog';
 import { TextLanguageField } from '@/components/editor/TextLanguageField';
@@ -216,6 +217,9 @@ export default function BiographyEditorPage() {
   const [showTranslateDialog, setShowTranslateDialog] = useState(false);
   const [showDeleteEditionDialog, setShowDeleteEditionDialog] = useState(false);
   const [deleteEditionBusy, setDeleteEditionBusy] = useState(false);
+  const [showEditionNoticeDialog, setShowEditionNoticeDialog] = useState(false);
+  const editionNoticeShownForIdRef = useRef<string | null>(null);
+  const [editionExtrasReady, setEditionExtrasReady] = useState(false);
   const [translationOf, setTranslationOf] = useState<string | null>(null);
   const [originalVersionAt, setOriginalVersionAt] = useState<string | null>(null);
   const [originalMeta, setOriginalMeta] = useState<{
@@ -593,6 +597,7 @@ export default function BiographyEditorPage() {
         }
 
         if (translationOfId) {
+          setEditionExtrasReady(false);
           const { data: original } = await supabase
             .from('biographies')
             .select('title, status, revised_at, published_at, content, record_language_tag')
@@ -626,11 +631,15 @@ export default function BiographyEditorPage() {
           ]);
           setOriginalBookStructure(originalStructure);
           setEditionBookStructure(editionStructure);
+          setEditionExtrasReady(true);
         } else {
           setOriginalMeta(null);
           setIdenticalSectionCount(0);
           setOriginalBookStructure(null);
           setEditionBookStructure(null);
+          setEditionExtrasReady(false);
+          editionNoticeShownForIdRef.current = null;
+          setShowEditionNoticeDialog(false);
         }
 
         let resolvedAuthorName = data.author_name ?? '';
@@ -1869,6 +1878,21 @@ export default function BiographyEditorPage() {
    */
   const statusLocksText = !canAuthorWriteText(biographyStatus, false);
 
+  useEffect(() => {
+    if (!translationOf || !originalMeta || !editionExtrasReady) return;
+    if (isFrozen || statusLocksText) return;
+    if (editionNoticeShownForIdRef.current === id) return;
+    editionNoticeShownForIdRef.current = id;
+    setShowEditionNoticeDialog(true);
+  }, [
+    translationOf,
+    originalMeta,
+    editionExtrasReady,
+    isFrozen,
+    statusLocksText,
+    id,
+  ]);
+
   /** Passaggi da correggere chiesti dal revisore: modifica limitata alle sezioni indicate (stato draft). */
   const isRevisionMode =
     revisionPassages.length > 0 && !revisionBannerDismissed && biographyStatus === 'draft';
@@ -1944,23 +1968,30 @@ export default function BiographyEditorPage() {
 
       {translationOf && originalMeta && (
         <EditionBanner
-          editionId={id}
           languageTag={recordLanguageTag}
           originalId={translationOf}
           originalTitle={originalMeta.title}
-          originalStatus={originalMeta.status}
+        />
+      )}
+
+      {translationOf && originalMeta && (
+        <EditionNoticeDialog
+          open={showEditionNoticeDialog}
+          onOpenChange={setShowEditionNoticeDialog}
+          editionId={id}
           showDrift={originalIsNewerThanEditionAlignment({
             originalVersionAt,
             originalRevisedAt: originalMeta.revised_at,
             originalPublishedAt: originalMeta.published_at,
           })}
           identicalSectionCount={identicalSectionCount}
-          onAligned={(at) => setOriginalVersionAt(at)}
+          originalStatus={originalMeta.status}
           missingBookStructureParts={missingBookStructureParts}
+          onAligned={(at) => setOriginalVersionAt(at)}
           onOpenBookStructure={() =>
             statusLocksText
               ? notifyTextLocked()
-              : setShowBookStructurePanel(!showBookStructurePanel)
+              : setShowBookStructurePanel(true)
           }
         />
       )}

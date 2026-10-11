@@ -177,7 +177,7 @@ Models are chosen with `AGENT_MODEL_*` (see `lib/agents/models.ts`); the grammar
 - AI writing tools never run on an edition (`translation_of` set): grammar answers `403 grammar_not_available_for_edition`; Echo (threads/active, chat/stream via `prepareAgentTurn`, apply-draft) answers `403 echo_not_available_for_edition`. Publication screening still applies to editions.
 - **Cover and photos:** every show/print/check path resolves media with `resolveMediaOwnerId` (`lib/edition-media-owner.ts`) so an edition reads `biography_media` of the original. Captions for an edition come only from `biography_edition_captions` (never the original's `caption`). Non-owners get the cover via `GET /api/biography/[id]/cover-photo` (same `verifyBiographyViewAccess` as `gallery-photos`); owners still use `getCoverPhotoDisplayUrl` under existing RLS. Cover checks on submit/PDF routes use `biographyHasCoverPhoto` (`lib/server/edition-cover-check.ts`).
 - **UM identity in outputs:** `resolveEditionIdentity` supplies the original's `um_id` for permanence headers, colophon and stored exports of an edition; the edition row keeps `um_id` null.
-- **Editor banner:** `components/editor/edition-banner.tsx` is a compact bar (link to original + How it works popover); reminders appear only when needed.
+- **Editor banner:** `components/editor/edition-banner.tsx` is a short bar (writing phrase + link to original). On each edition editor load, `EditionNoticeDialog` shows the rules and any reminders (book structure, drift, unpublished original, identical sections).
 
 ### Grammar check (`POST /api/biography/[id]/grammar`, Node runtime)
 

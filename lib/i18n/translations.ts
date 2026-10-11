@@ -1753,12 +1753,10 @@ export interface Translations {
     creating: string;
     notPublishedHint: string;
     languageLabel: string;
-    bannerCompact: string;
+    bannerWriting: string;
     bannerOpenOriginal: string;
     bannerManualOnly: string;
-    howItWorks: string;
     bookStructureReminder: string;
-    bookStructureReminderShort: string;
     driftMessage: string;
     driftConfirm: string;
     originalUnpublishedNote: string;
@@ -1766,6 +1764,8 @@ export interface Translations {
     identicalSectionOne: string;
     managedByOriginal: string;
     coverMissingOnOriginal: string;
+    noticeTitle: string;
+    noticeUnderstood: string;
     photosDeferred: string;
     deleteEdition: string;
     deleteEditionConfirm: string;
@@ -1833,14 +1833,12 @@ export const translations: Record<Language, Translations> = {
       creating: 'Creating…',
       notPublishedHint: 'You can start a translation when your story is published',
       languageLabel: 'Language',
-      bannerCompact: 'Translation in {language} of “{title}”',
+      bannerWriting: 'You are writing the {language} translation of “{title}”',
       bannerOpenOriginal: 'Open the original',
       bannerManualOnly:
         'Here the text is imported already translated and already reread, and tidied by hand: chapters, bold, italic and the other editor tools. In a translation there is neither the grammar check nor the assistant.',
-      howItWorks: 'How it works',
       bookStructureReminder:
         'In the original these are filled in: {parts}. In this translation they are not yet.',
-      bookStructureReminderShort: 'To translate: {parts}.',
       driftMessage:
         'The original was revised after this translation was last aligned. Check whether the translation needs updating.',
       driftConfirm: 'I have checked; it is aligned',
@@ -1851,6 +1849,8 @@ export const translations: Record<Language, Translations> = {
       managedByOriginal: 'Managed by the original',
       coverMissingOnOriginal:
         'This translation uses the cover of the original, but the original has none. Add one in the original story, then come back here.',
+      noticeTitle: 'You are writing a translation',
+      noticeUnderstood: 'Got it',
       photosDeferred:
         'Photos are those of the original; captions in this language will be written later',
       deleteEdition: 'Delete this translation',
@@ -3686,14 +3686,12 @@ export const translations: Record<Language, Translations> = {
       creating: 'Creazione…',
       notPublishedHint: 'Potrai iniziare una traduzione quando la tua storia sarà pubblicata',
       languageLabel: 'Lingua',
-      bannerCompact: 'Traduzione in {language} di «{title}»',
+      bannerWriting: 'Stai scrivendo la traduzione in {language} di «{title}»',
       bannerOpenOriginal: 'Apri l\'originale',
       bannerManualOnly:
         'Qui il testo si importa già tradotto e già riletto e si sistema a mano: capitoli, grassetto, corsivo e le altre funzioni dell\'editor. In una traduzione non ci sono né il controllo grammaticale né l\'assistente.',
-      howItWorks: 'Come funziona',
       bookStructureReminder:
         'Nell\'originale sono compilati: {parts}. In questa traduzione non lo sono ancora.',
-      bookStructureReminderShort: 'Da tradurre: {parts}.',
       driftMessage:
         'L\'originale è stato rivisto dopo l\'ultimo allineamento di questa traduzione. Controlla se la traduzione va aggiornata.',
       driftConfirm: 'Ho controllato, è allineata',
@@ -3704,6 +3702,8 @@ export const translations: Record<Language, Translations> = {
       managedByOriginal: 'Gestito dall\'originale',
       coverMissingOnOriginal:
         'Questa traduzione usa la copertina dell\'originale, ma l\'originale non ne ha una. Aggiungila nella storia originale, poi torna qui.',
+      noticeTitle: 'Stai scrivendo una traduzione',
+      noticeUnderstood: 'Ho capito',
       photosDeferred:
         'Le foto sono quelle dell\'originale; le didascalie in questa lingua si scriveranno in un secondo momento',
       deleteEdition: 'Elimina questa traduzione',
@@ -5541,14 +5541,12 @@ export const translations: Record<Language, Translations> = {
       creating: 'Création…',
       notPublishedHint: 'Vous pourrez commencer une traduction lorsque votre histoire sera publiée',
       languageLabel: 'Langue',
-      bannerCompact: 'Traduction en {language} de «{title}»',
+      bannerWriting: 'Vous écrivez la traduction en {language} de «{title}»',
       bannerOpenOriginal: 'Ouvrir l\'original',
       bannerManualOnly:
         'Ici le texte s\'importe déjà traduit et déjà relu, et se met en ordre à la main : chapitres, gras, italique et les autres outils de l\'éditeur. Dans une traduction il n\'y a ni le contrôle grammatical ni l\'assistant.',
-      howItWorks: 'Comment ça fonctionne',
       bookStructureReminder:
         'Dans l\'original sont remplis : {parts}. Dans cette traduction, pas encore.',
-      bookStructureReminderShort: 'À traduire : {parts}.',
       driftMessage:
         'L\'original a été révisé après le dernier alignement de cette traduction. Vérifiez si la traduction doit être mise à jour.',
       driftConfirm: 'J\'ai vérifié, c\'est aligné',
@@ -5559,6 +5557,8 @@ export const translations: Record<Language, Translations> = {
       managedByOriginal: 'Géré par l\'original',
       coverMissingOnOriginal:
         'Cette traduction utilise la couverture de l\'original, mais l\'original n\'en a pas. Ajoutez-en une dans l\'histoire originale, puis revenez ici.',
+      noticeTitle: 'Vous écrivez une traduction',
+      noticeUnderstood: 'Compris',
       photosDeferred:
         'Les photos sont celles de l\'original ; les légendes dans cette langue s\'écriront plus tard',
       deleteEdition: 'Supprimer cette traduction',
@@ -7397,14 +7397,12 @@ export const translations: Record<Language, Translations> = {
       creating: 'Wird erstellt…',
       notPublishedHint: 'Du kannst eine Übersetzung beginnen, wenn deine Geschichte veröffentlicht ist',
       languageLabel: 'Sprache',
-      bannerCompact: 'Übersetzung in {language} von „{title}“',
+      bannerWriting: 'Du schreibst die {language}-Übersetzung von „{title}“',
       bannerOpenOriginal: 'Original öffnen',
       bannerManualOnly:
         'Hier wird der Text bereits übersetzt und bereits nachgelesen importiert und von Hand gerichtet: Kapitel, Fett, Kursiv und die anderen Editor-Werkzeuge. In einer Übersetzung gibt es weder die Grammatikprüfung noch den Assistenten.',
-      howItWorks: 'So funktioniert es',
       bookStructureReminder:
         'Im Original sind ausgefüllt: {parts}. In dieser Übersetzung noch nicht.',
-      bookStructureReminderShort: 'Zu übersetzen: {parts}.',
       driftMessage:
         'Das Original wurde nach der letzten Ausrichtung dieser Übersetzung überarbeitet. Prüfe, ob die Übersetzung aktualisiert werden muss.',
       driftConfirm: 'Ich habe geprüft, sie ist ausgerichtet',
@@ -7415,6 +7413,8 @@ export const translations: Record<Language, Translations> = {
       managedByOriginal: 'Vom Original verwaltet',
       coverMissingOnOriginal:
         'Diese Übersetzung verwendet das Titelbild des Originals, aber das Original hat keines. Füge eines in der Originalgeschichte hinzu und kehre dann hierher zurück.',
+      noticeTitle: 'Du schreibst eine Übersetzung',
+      noticeUnderstood: 'Verstanden',
       photosDeferred:
         'Die Fotos sind die des Originals; Bildunterschriften in dieser Sprache kommen später',
       deleteEdition: 'Diese Übersetzung löschen',

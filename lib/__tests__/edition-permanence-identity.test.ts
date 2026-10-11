@@ -120,10 +120,10 @@ describe('edition permanence identity — originali', () => {
       const identity = await resolveEditionIdentity(client, bioId);
       const expectedOwn =
         typeof row.um_id === 'string' && row.um_id.trim() ? row.um_id : null;
-      expect(identity).toBe(expectedOwn);
+      expect(identity).toEqual({ umId: expectedOwn, failed: false, isEdition: false });
 
       const bio = baseBio({ ...bioOverrides, um_id: expectedOwn });
-      const bioViaIdentity = { ...bio, um_id: identity };
+      const bioViaIdentity = { ...bio, um_id: identity.umId };
       expectPermanenceByteIdentical(bio, bioViaIdentity);
 
       if (expectedOwn) {
@@ -151,11 +151,11 @@ describe('edition permanence identity — edizioni', () => {
     expect(editionBio.um_id).toBeNull();
 
     const identity = await resolveEditionIdentity(client, 'ed-1');
-    expect(identity).toBe(VALID_UM);
+    expect(identity).toEqual({ umId: VALID_UM, failed: false, isEdition: true });
     // L'oggetto bio dell'edizione non viene mutato.
     expect(editionBio.um_id).toBeNull();
 
-    const forPermanence = { ...editionBio, um_id: identity };
+    const forPermanence = { ...editionBio, um_id: identity.umId };
     expect(editionBio.um_id).toBeNull();
 
     const header = buildPermanenceHeaderLines(forPermanence, []).join('\n');
@@ -184,10 +184,10 @@ describe('edition permanence identity — edizioni', () => {
       published_um_year: null,
     });
     const identity = await resolveEditionIdentity(client, 'ed-2');
-    expect(identity).toBeNull();
+    expect(identity).toEqual({ umId: null, failed: false, isEdition: true });
     expect(editionBio.um_id).toBeNull();
 
-    const forPermanence = { ...editionBio, um_id: identity };
+    const forPermanence = { ...editionBio, um_id: identity.umId };
     const plain = buildPermanencePlainText(forPermanence, [], [], undefined, UM_BASE);
     expect(plain).toContain('sconosciuto | UNKNOWN');
     expect(plain).not.toContain(CANONICAL_UM);

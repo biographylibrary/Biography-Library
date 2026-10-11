@@ -292,12 +292,21 @@ export function AdvancedExportDialog({
       supabase.from('person_relations').select('*').eq('biography_id', biography.id),
     ]);
 
-    const identityUmId = biography.id
-      ? await resolveEditionIdentity(supabase as unknown as EditionIdentityClient, biography.id)
-      : null;
+    let umId: string | null =
+      typeof row?.um_id === 'string' && row.um_id.trim() ? row.um_id : null;
+    if (isEdition && biography.id) {
+      const identity = await resolveEditionIdentity(
+        supabase as unknown as EditionIdentityClient,
+        biography.id
+      );
+      if (identity.failed) {
+        throw new Error('edition_identity_unavailable');
+      }
+      umId = identity.umId;
+    }
 
     const merged: PermanenceExportBiography = {
-      um_id: identityUmId,
+      um_id: umId,
       schema_version: row?.schema_version ?? 2,
       record_language_tag: row?.record_language_tag ?? contentLanguage ?? null,
       record_script: row?.record_script ?? 'Latn',
