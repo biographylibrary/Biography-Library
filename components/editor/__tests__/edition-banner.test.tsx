@@ -52,21 +52,29 @@ describe('EditionBanner', () => {
     expect(screen.queryByText(copy.originalUnpublishedNote)).toBeNull();
   });
 
-  it('uses line-clamp below sm, sm:py-2, and no max-h below sm', () => {
+  it('è una banda a tutta larghezza con filetto inferiore border-border/50', () => {
     const longTitle =
       'Una vita lunga e difficile raccontata dai figli, dai nipoti e da chi la conobbe davvero negli anni della guerra';
     const { container } = render(
       <EditionBanner languageTag="fr" originalId="orig-1" originalTitle={longTitle} />
     );
-    const bar = container.querySelector('.border-brand-blue\\/40');
-    expect(bar).toBeTruthy();
-    expect(bar?.className).toMatch(/\bpy-1\.5\b/);
-    expect(bar?.className).toMatch(/\bsm:py-2\b/);
-    expect(bar?.className).toMatch(/\bsm:max-h-11\b/);
-    expect(bar?.className).not.toMatch(/max-h-\[4\.75rem\]/);
-    expect(bar?.className).not.toMatch(/(?:^|\s)max-h-/);
+    const band = container.firstElementChild as HTMLElement | null;
+    expect(band).toBeTruthy();
+    expect(band?.className).toMatch(/\bborder-b\b/);
+    expect(band?.className).toMatch(/border-border\/50/);
+    expect(band?.className).toMatch(/\bpy-1\.5\b/);
+    expect(band?.className).toMatch(/\bsm:py-2\b/);
+    expect(band?.className).toMatch(/\bshrink-0\b/);
+    expect(band?.className).not.toMatch(/\brounded-lg\b/);
+    expect(band?.className).not.toMatch(/(?:^|\s)border(?:\s|$)/);
+    expect(band?.className).not.toMatch(/\bmx-4\b/);
+    expect(band?.className).not.toMatch(/\bmt-3\b/);
+    expect(band?.className).not.toMatch(/\bmb-1\b/);
 
-    const phrase = bar?.querySelector('p');
+    const inner = band?.querySelector('.sm\\:max-h-11') ?? band?.children[0];
+    expect(inner?.className).toMatch(/\bsm:max-h-11\b/);
+
+    const phrase = band?.querySelector('p');
     expect(phrase?.className).toMatch(/\bline-clamp-2\b/);
     expect(phrase?.className).toMatch(/\bsm:line-clamp-none\b/);
     expect(phrase?.className).toMatch(/sm:(?:!)?flex\b/);

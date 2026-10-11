@@ -116,6 +116,19 @@ export function textLanguageLabels(
   return { own, inUi };
 }
 
+/**
+ * Label for a language option or trigger button.
+ * If the UI name and the own-language name match (case-insensitive), show once:
+ * «italiano (Italia) (it-IT)». Otherwise: «inglese — English (en)».
+ */
+export function textLanguageOptionLabel(tag: string, uiLanguage: string): string {
+  const { own, inUi } = textLanguageLabels(tag, uiLanguage);
+  if (inUi.toLowerCase() === own.toLowerCase()) {
+    return `${inUi} (${tag})`;
+  }
+  return `${inUi} — ${own} (${tag})`;
+}
+
 function safeDisplayName(locale: string, tag: string): string {
   try {
     return new Intl.DisplayNames([locale], { type: 'language' }).of(tag) ?? tag;

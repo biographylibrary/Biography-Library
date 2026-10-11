@@ -5,6 +5,7 @@ import {
   textLanguageIdentity,
   textLanguageLabels,
   textLanguageMatchesQuery,
+  textLanguageOptionLabel,
 } from '@/lib/text-languages';
 import { isPdfScriptCovered } from '@/lib/pdf/covered-scripts';
 
@@ -40,5 +41,15 @@ describe('lingua del testo', () => {
     expect(textLanguageMatchesQuery('es', 'spagnolo', ['it', 'en', 'fr', 'de'])).toBe(true);
     expect(textLanguageMatchesQuery('es', 'español', ['it'])).toBe(true);
     expect(textLanguageMatchesQuery('es', 'es', ['en'])).toBe(true);
+  });
+
+  it('textLanguageOptionLabel: un nome solo se inUi e own coincidono', () => {
+    expect(textLanguageOptionLabel('it-IT', 'it')).toBe('italiano (Italia) (it-IT)');
+    expect(textLanguageOptionLabel('it', 'it')).toBe('italiano (it)');
+    expect(textLanguageOptionLabel('en', 'it')).toBe('inglese — English (en)');
+    // ICU Node: fr-CA in francese ha inUi === own («français canadien»).
+    expect(textLanguageOptionLabel('fr-CA', 'fr')).toBe('français canadien (fr-CA)');
+    expect(textLanguageOptionLabel('en', 'it')).toContain('—');
+    expect(textLanguageOptionLabel('it', 'it')).not.toContain('—');
   });
 });
