@@ -75,12 +75,48 @@ export function EditionPhotoCaptionsPanel({
   const rowsRef = useRef(rows);
   rowsRef.current = rows;
   const timersRef = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
-  const saveGenRef = useRef<Record<string, number>>({});
+  const inFlightRef = useRef<Record<string, boolean>>({});
+  const pendingRef = useRef<Record<string, string | undefined>>({});
   const textLockedRef = useRef(false);
 
   const languageName = recordLanguageTag
     ? textLanguageLabels(recordLanguageTag, language).inUi
     : copy.editionCaptionsLanguageFallback;
+
+  const applySaved = useCallback((mediaId: string, savedText: string) => {
+    const draft = rowsRef.current[mediaId]?.draft ?? savedText;
+    const nextStatus: RowUi['status'] = draft === savedText ? 'saved' : '';
+    const nextRow: RowUi = {
+      draft,
+      saved: savedText,
+      status: nextStatus,
+    };
+    rowsRef.current = { ...rowsRef.current, [mediaId]: nextRow };
+    setRows((prev) => {
+      const prevRow = prev[mediaId];
+      if (!prevRow) return prev;
+      return {
+        ...prev,
+        [mediaId]: {
+          draft: prevRow.draft,
+          saved: savedText,
+          status: prevRow.draft === savedText ? 'saved' : '',
+        },
+      };
+    });
+  }, []);
+
+  const applyStatus = useCallback((mediaId: string, status: RowUi['status']) => {
+    const prevRow = rowsRef.current[mediaId];
+    if (!prevRow) return;
+    const nextRow = { ...prevRow, status };
+    rowsRef.current = { ...rowsRef.current, [mediaId]: nextRow };
+    setRows((prev) => {
+      const row = prev[mediaId];
+      if (!row) return prev;
+      return { ...prev, [mediaId]: { ...row, status } };
+    });
+  }, []);
 
   const persist = useCallback(
     async (mediaId: string, caption: string) => {
@@ -89,47 +125,82 @@ export function EditionPhotoCaptionsPanel({
       if (!current) return;
       if (caption === current.saved) return;
 
-      const gen = (saveGenRef.current[mediaId] ?? 0) + 1;
-      saveGenRef.current[mediaId] = gen;
-      const updatedAt = new Date().toISOString();
-      const { error } = await supabase.from('biography_edition_captions').upsert(
-        {
-          biography_id: editionId,
-          media_id: mediaId,
-          caption,
-          updated_at: updatedAt,
-        },
-        { onConflict: 'biography_id,media_id' }
-      );
-
-      if (saveGenRef.current[mediaId] !== gen) return;
-
-      if (error) {
-        if (isAuthorTextLockedError(error)) {
-          textLockedRef.current = true;
-          setTextLocked(true);
-          setRows((prev) => {
-            const next: Record<string, RowUi> = {};
-            for (const [id, row] of Object.entries(prev)) {
-              next[id] = { ...row, status: 'locked' };
-            }
-            return next;
-          });
-          return;
-        }
-        setRows((prev) => ({
-          ...prev,
-          [mediaId]: { ...prev[mediaId], status: 'error' },
-        }));
+      if (inFlightRef.current[mediaId]) {
+        pendingRef.current[mediaId] = caption;
         return;
       }
 
-      setRows((prev) => ({
-        ...prev,
-        [mediaId]: { draft: caption, saved: caption, status: 'saved' },
-      }));
+      inFlightRef.current[mediaId] = true;
+      let toSend = caption;
+      try {
+        while (!textLockedRef.current) {
+          const row = rowsRef.current[mediaId];
+          if (!row || toSend === row.saved) {
+            const pending = pendingRef.current[mediaId];
+            delete pendingRef.current[mediaId];
+            if (pending !== undefined && pending !== rowsRef.current[mediaId]?.saved) {
+              toSend = pending;
+              continue;
+            }
+            break;
+          }
+
+          const updatedAt = new Date().toISOString();
+          const { error } = await supabase.from('biography_edition_captions').upsert(
+            {
+              biography_id: editionId,
+              media_id: mediaId,
+              caption: toSend,
+              updated_at: updatedAt,
+            },
+            { onConflict: 'biography_id,media_id' }
+          );
+
+          if (error) {
+            if (isAuthorTextLockedError(error)) {
+              textLockedRef.current = true;
+              setTextLocked(true);
+              setRows((prev) => {
+                const next: Record<string, RowUi> = {};
+                for (const [id, r] of Object.entries(prev)) {
+                  next[id] = { ...r, status: 'locked' };
+                }
+                rowsRef.current = next;
+                return next;
+              });
+              delete pendingRef.current[mediaId];
+              break;
+            }
+            applyStatus(mediaId, 'error');
+            const pending = pendingRef.current[mediaId];
+            delete pendingRef.current[mediaId];
+            if (pending !== undefined && pending !== toSend) {
+              toSend = pending;
+              continue;
+            }
+            break;
+          }
+
+          applySaved(mediaId, toSend);
+
+          const pending = pendingRef.current[mediaId];
+          delete pendingRef.current[mediaId];
+          if (pending !== undefined && pending !== toSend) {
+            toSend = pending;
+            continue;
+          }
+          break;
+        }
+      } finally {
+        inFlightRef.current[mediaId] = false;
+        const leftover = pendingRef.current[mediaId];
+        if (leftover !== undefined && !textLockedRef.current && !readOnly) {
+          delete pendingRef.current[mediaId];
+          void persist(mediaId, leftover);
+        }
+      }
     },
-    [editionId, readOnly]
+    [applySaved, applyStatus, editionId, readOnly]
   );
 
   const flushMedia = useCallback(
@@ -236,14 +307,18 @@ export function EditionPhotoCaptionsPanel({
 
   const onDraftChange = (mediaId: string, value: string) => {
     if (readOnly || textLockedRef.current) return;
-    setRows((prev) => ({
-      ...prev,
-      [mediaId]: {
-        draft: value,
-        saved: prev[mediaId]?.saved ?? '',
-        status: prev[mediaId]?.status === 'locked' ? 'locked' : '',
-      },
-    }));
+    setRows((prev) => {
+      const next = {
+        ...prev,
+        [mediaId]: {
+          draft: value,
+          saved: prev[mediaId]?.saved ?? '',
+          status: prev[mediaId]?.status === 'locked' ? ('locked' as const) : ('' as const),
+        },
+      };
+      rowsRef.current = next;
+      return next;
+    });
     schedulePersist(mediaId);
   };
 

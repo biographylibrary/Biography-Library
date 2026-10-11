@@ -145,4 +145,42 @@ describe('EditionNoticeDialog', () => {
     expect(onOpenChange).toHaveBeenCalledWith(false);
     expect(onOpenBookStructure).toHaveBeenCalled();
   });
+
+  it('il pulsante didascalie chiude il messaggio e apre il pannello', async () => {
+    const user = userEvent.setup();
+    const onOpenChange = vi.fn();
+    const onOpenPhotoCaptions = vi.fn();
+    render(
+      <EditionNoticeDialog
+        {...baseProps}
+        onOpenChange={onOpenChange}
+        missingPhotoCaptions={{ missing: 2, total: 5 }}
+        onOpenPhotoCaptions={onOpenPhotoCaptions}
+      />
+    );
+    await user.click(
+      screen.getByRole('button', { name: translations.en.photos.editionCaptionsTitle })
+    );
+    expect(onOpenChange).toHaveBeenCalledWith(false);
+    expect(onOpenPhotoCaptions).toHaveBeenCalledTimes(1);
+  });
+
+  it('senza onOpenPhotoCaptions non c\'è il pulsante didascalie', () => {
+    render(
+      <EditionNoticeDialog
+        {...baseProps}
+        missingPhotoCaptions={{ missing: 2, total: 5 }}
+      />
+    );
+    expect(
+      screen.queryByRole('button', { name: translations.en.photos.editionCaptionsTitle })
+    ).toBeNull();
+    expect(
+      screen.getByText(
+        translations.en.translate.photoCaptionsReminder
+          .replace('{missing}', '2')
+          .replace('{total}', '5')
+      )
+    ).toBeTruthy();
+  });
 });

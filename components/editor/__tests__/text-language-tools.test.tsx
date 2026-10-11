@@ -146,6 +146,19 @@ describe('text language in Tools', () => {
     expect(document.querySelector('[data-tour-id="text-language-btn"]')).toBeNull();
   });
 
+  it('non mostra la voce a scheda congelata', () => {
+    render(
+      <SectionSidebar
+        {...sidebarBase}
+        isEdition={false}
+        isFrozen
+        onToggleTextLanguage={vi.fn()}
+      />
+    );
+    fireEvent.click(screen.getByText(translations.it.editor.tools));
+    expect(document.querySelector('[data-tour-id="text-language-btn"]')).toBeNull();
+  });
+
   it('nelle edizioni la voce Foto è un pulsante attivo e non c\'è photosDeferred', () => {
     const onPhotos = vi.fn();
     render(

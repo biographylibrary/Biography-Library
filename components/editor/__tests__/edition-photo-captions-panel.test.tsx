@@ -66,6 +66,18 @@ vi.mock('@/lib/supabase', () => ({
   },
 }));
 
+async function renderReady() {
+  render(
+    <EditionPhotoCaptionsPanel
+      editionId="ed-1"
+      originalId="orig-1"
+      recordLanguageTag="es"
+    />
+  );
+  await waitFor(() => expect(screen.getAllByPlaceholderText(/Didascalia in/)).toHaveLength(2));
+  return screen.getAllByPlaceholderText(/Didascalia in/)[0] as HTMLInputElement;
+}
+
 beforeEach(() => {
   upsertMock.mockReset();
   upsertMock.mockResolvedValue({ error: null });
@@ -102,15 +114,7 @@ describe('EditionPhotoCaptionsPanel', () => {
   });
 
   it('scrive con upsert dopo 600 ms col biography_id dell\'edizione', async () => {
-    render(
-      <EditionPhotoCaptionsPanel
-        editionId="ed-1"
-        originalId="orig-1"
-        recordLanguageTag="es"
-      />
-    );
-    await waitFor(() => expect(screen.getAllByPlaceholderText(/Didascalia in/)).toHaveLength(2));
-    const input = screen.getAllByPlaceholderText(/Didascalia in/)[0] as HTMLInputElement;
+    const input = await renderReady();
     fireEvent.change(input, { target: { value: 'Hola' } });
     expect(upsertMock).not.toHaveBeenCalled();
     await act(async () => {
@@ -125,18 +129,12 @@ describe('EditionPhotoCaptionsPanel', () => {
   });
 
   it('scrive subito all\'uscita dal campo', async () => {
-    render(
-      <EditionPhotoCaptionsPanel
-        editionId="ed-1"
-        originalId="orig-1"
-        recordLanguageTag="es"
-      />
-    );
-    await waitFor(() => expect(screen.getAllByPlaceholderText(/Didascalia in/)).toHaveLength(2));
-    const input = screen.getAllByPlaceholderText(/Didascalia in/)[0] as HTMLInputElement;
+    vi.useRealTimers();
+    const input = await renderReady();
+    vi.useFakeTimers();
     fireEvent.change(input, { target: { value: 'Pronto' } });
     fireEvent.blur(input);
-    await waitFor(() => expect(upsertMock).toHaveBeenCalled());
+    expect(upsertMock).toHaveBeenCalledTimes(1);
     expect(upsertMock.mock.calls[0][0].caption).toBe('Pronto');
   });
 
@@ -157,15 +155,7 @@ describe('EditionPhotoCaptionsPanel', () => {
   });
 
   it('non scrive se il testo non cambia', async () => {
-    render(
-      <EditionPhotoCaptionsPanel
-        editionId="ed-1"
-        originalId="orig-1"
-        recordLanguageTag="es"
-      />
-    );
-    await waitFor(() => expect(screen.getAllByPlaceholderText(/Didascalia in/)).toHaveLength(2));
-    const input = screen.getAllByPlaceholderText(/Didascalia in/)[0] as HTMLInputElement;
+    const input = await renderReady();
     fireEvent.blur(input);
     await act(async () => {
       await vi.advanceTimersByTimeAsync(600);
@@ -175,15 +165,7 @@ describe('EditionPhotoCaptionsPanel', () => {
 
   it('con upsert fallito mostra l\'errore e non perde il testo', async () => {
     upsertMock.mockResolvedValue({ error: { code: 'XX', message: 'fail' } });
-    render(
-      <EditionPhotoCaptionsPanel
-        editionId="ed-1"
-        originalId="orig-1"
-        recordLanguageTag="es"
-      />
-    );
-    await waitFor(() => expect(screen.getAllByPlaceholderText(/Didascalia in/)).toHaveLength(2));
-    const input = screen.getAllByPlaceholderText(/Didascalia in/)[0] as HTMLInputElement;
+    const input = await renderReady();
     fireEvent.change(input, { target: { value: 'Resta' } });
     fireEvent.blur(input);
     await waitFor(() =>
@@ -196,15 +178,7 @@ describe('EditionPhotoCaptionsPanel', () => {
     upsertMock.mockResolvedValue({
       error: { code: '42501', message: 'author_text_locked' },
     });
-    render(
-      <EditionPhotoCaptionsPanel
-        editionId="ed-1"
-        originalId="orig-1"
-        recordLanguageTag="es"
-      />
-    );
-    await waitFor(() => expect(screen.getAllByPlaceholderText(/Didascalia in/)).toHaveLength(2));
-    const input = screen.getAllByPlaceholderText(/Didascalia in/)[0] as HTMLInputElement;
+    const input = await renderReady();
     fireEvent.change(input, { target: { value: 'Lock' } });
     fireEvent.blur(input);
     await waitFor(() =>
@@ -223,9 +197,99 @@ describe('EditionPhotoCaptionsPanel', () => {
       />
     );
     await waitFor(() => expect(screen.getAllByPlaceholderText(/Didascalia in/)).toHaveLength(2));
-    for (const input of screen.getAllByPlaceholderText(/Didascalia in/)) {
-      expect((input as HTMLInputElement).disabled).toBe(true);
+    for (const el of screen.getAllByPlaceholderText(/Didascalia in/)) {
+      expect((el as HTMLInputElement).disabled).toBe(true);
     }
     expect(screen.getByText(translations.it.photos.editionCaptionsReadOnly)).toBeTruthy();
+  });
+
+  it('non perde battute mentre un salvataggio è in corso', async () => {
+    let resolveFirst!: (value: { error: null }) => void;
+    let call = 0;
+    upsertMock.mockImplementation(() => {
+      call += 1;
+      if (call === 1) {
+        return new Promise<{ error: null }>((resolve) => {
+          resolveFirst = resolve;
+        });
+      }
+      return Promise.resolve({ error: null });
+    });
+
+    const input = await renderReady();
+    fireEvent.change(input, { target: { value: 'abc' } });
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(600);
+    });
+    await waitFor(() => expect(upsertMock).toHaveBeenCalledTimes(1));
+
+    fireEvent.change(input, { target: { value: 'abcd' } });
+    expect(input.value).toBe('abcd');
+
+    await act(async () => {
+      resolveFirst({ error: null });
+    });
+    expect(input.value).toBe('abcd');
+
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(600);
+    });
+    await waitFor(() => expect(upsertMock).toHaveBeenCalledTimes(2));
+    expect(upsertMock.mock.calls[upsertMock.mock.calls.length - 1][0].caption).toBe('abcd');
+  });
+
+  it('per la stessa foto non parte una seconda richiesta finché la prima è in volo', async () => {
+    let resolveFirst!: (value: { error: null }) => void;
+    upsertMock.mockImplementation(() => {
+      if (upsertMock.mock.calls.length === 1) {
+        return new Promise<{ error: null }>((resolve) => {
+          resolveFirst = resolve;
+        });
+      }
+      return Promise.resolve({ error: null });
+    });
+
+    const input = await renderReady();
+    fireEvent.change(input, { target: { value: 'uno' } });
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(600);
+    });
+    await waitFor(() => expect(upsertMock).toHaveBeenCalledTimes(1));
+
+    fireEvent.change(input, { target: { value: 'due' } });
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(600);
+    });
+    expect(upsertMock).toHaveBeenCalledTimes(1);
+
+    await act(async () => {
+      resolveFirst({ error: null });
+    });
+    await waitFor(() => expect(upsertMock).toHaveBeenCalledTimes(2));
+    expect(upsertMock.mock.calls[1][0].caption).toBe('due');
+  });
+
+  it('richiesta fallita con testo più recente già nel campo: conserva il testo più recente', async () => {
+    let resolveFirst!: (value: { error: { code: string; message: string } }) => void;
+    upsertMock.mockImplementation(() => {
+      return new Promise((resolve) => {
+        resolveFirst = resolve;
+      });
+    });
+
+    const input = await renderReady();
+    fireEvent.change(input, { target: { value: 'vecchio' } });
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(600);
+    });
+    await waitFor(() => expect(upsertMock).toHaveBeenCalledTimes(1));
+
+    fireEvent.change(input, { target: { value: 'nuovo' } });
+    expect(input.value).toBe('nuovo');
+
+    await act(async () => {
+      resolveFirst({ error: { code: 'XX', message: 'fail' } });
+    });
+    expect(input.value).toBe('nuovo');
   });
 });
