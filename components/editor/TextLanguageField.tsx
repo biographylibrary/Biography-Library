@@ -77,7 +77,7 @@ export function TextLanguageField({
         <p className="text-sm font-medium text-foreground">{copy.label}</p>
         <p className="text-xs text-muted-foreground">{copy.hint}</p>
       </div>
-      <Popover open={open} onOpenChange={setOpen}>
+      <Popover modal open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>
           <Button
             type="button"
