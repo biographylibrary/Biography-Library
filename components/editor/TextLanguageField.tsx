@@ -18,6 +18,7 @@ import {
   TEXT_LANGUAGE_BASES,
   canonicalizeTextLanguage,
   textLanguageLabels,
+  textLanguageOptionLabel,
 } from '@/lib/text-languages';
 import { cn } from '@/lib/utils';
 
@@ -46,7 +47,6 @@ export function TextLanguageField({
   const base = canonical.split('-')[0] ?? canonical;
   const region = canonical.includes('-') ? canonical.split('-')[1] ?? '' : '';
   const regionValue = regionDraft ?? region;
-  const labels = textLanguageLabels(canonical, language);
   const copy = t.textLanguage;
 
   const options = useMemo(() => {
@@ -87,7 +87,7 @@ export function TextLanguageField({
             aria-label={copy.label}
           >
             <span className="truncate text-left">
-              {labels.inUi} — {labels.own} ({canonical})
+              {textLanguageOptionLabel(canonical, language)}
             </span>
             <ChevronsUpDown className="h-4 w-4 shrink-0 opacity-60" />
           </Button>
@@ -114,7 +114,7 @@ export function TextLanguageField({
                   >
                     <Check className={cn('mr-2 h-4 w-4', row.code === base ? 'opacity-100' : 'opacity-0')} />
                     <span className="truncate">
-                      {row.inUi} — {row.own} ({row.code})
+                      {textLanguageOptionLabel(row.code, language)}
                     </span>
                   </CommandItem>
                 ))}

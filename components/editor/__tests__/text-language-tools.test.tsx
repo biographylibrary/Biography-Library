@@ -133,6 +133,24 @@ describe('text language in Tools', () => {
     expect(onToggle).toHaveBeenCalled();
   });
 
+  it('icone diverse: BookA per Lingua del testo, Languages per Traduci', () => {
+    render(
+      <SectionSidebar
+        {...sidebarBase}
+        isEdition={false}
+        isFrozen={false}
+        canTranslate
+        onToggleTranslate={vi.fn()}
+        onToggleTextLanguage={vi.fn()}
+      />
+    );
+    fireEvent.click(screen.getByText(translations.it.editor.tools));
+    const langBtn = document.querySelector('[data-tour-id="text-language-btn"]');
+    const translateBtn = document.querySelector('[data-tour-id="translate-btn"]');
+    expect(langBtn?.querySelector('svg.lucide-book-a')).toBeTruthy();
+    expect(translateBtn?.querySelector('svg.lucide-languages')).toBeTruthy();
+  });
+
   it('non mostra la voce per un\'edizione', () => {
     render(
       <SectionSidebar

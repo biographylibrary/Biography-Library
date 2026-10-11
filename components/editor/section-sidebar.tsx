@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { Check, ChevronDown, StickyNote, Images, Upload, Download, Lock, BookOpen, FileCheck, Landmark, Link2, User, CloudOff, Loader as Loader2, Users, Globe, Plus, Languages, Trash2 } from 'lucide-react';
+import { Check, ChevronDown, StickyNote, Images, Upload, Download, Lock, BookOpen, FileCheck, Landmark, Link2, User, CloudOff, Loader as Loader2, Users, Globe, Plus, Languages, BookA, Trash2 } from 'lucide-react';
 import {
   type BiographyContent,
 } from '@/lib/editor-constants';
@@ -407,7 +407,7 @@ export function SectionSidebar({
                 : 'text-muted-foreground hover:bg-muted/50 hover:text-foreground'
             )}
           >
-            <Languages className="h-4 w-4 shrink-0" />
+            <BookA className="h-4 w-4 shrink-0" />
             <span className="truncate min-w-0 flex-1 text-left">{t.textLanguage.label}</span>
           </button>
         )}

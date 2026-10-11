@@ -1,6 +1,6 @@
 'use client';
 
-import { Languages } from 'lucide-react';
+import { BookA } from 'lucide-react';
 import { EditorSidebarDialog } from './EditorSidebarDialog';
 import { TextLanguageField } from './TextLanguageField';
 import { useTranslation } from '@/lib/i18n/i18n-context';
@@ -27,7 +27,7 @@ export function TextLanguageDialog({
       open={open}
       onOpenChange={onOpenChange}
       title={t.textLanguage.label}
-      icon={<Languages className="h-5 w-5 text-primary" />}
+      icon={<BookA className="h-5 w-5 text-primary" />}
     >
       <TextLanguageField value={value} disabled={disabled} onChange={onChange} />
     </EditorSidebarDialog>
