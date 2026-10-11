@@ -30,6 +30,8 @@ interface RichTextEditorProps {
   biographyId?: string;
   editorFontSize?: number;
   onEditorFontSizeChange?: (size: number) => void;
+  onOpenLanguage?: () => void;
+  textLanguageName?: string;
   isPublished?: boolean;
   aiTools?: Omit<EditorAiToolsMenuProps, 'className' | 'buttonClassName'>;
   aiUsageRefresh?: number;
@@ -46,6 +48,8 @@ export function RichTextEditor({
   biographyId,
   editorFontSize = 16,
   onEditorFontSizeChange,
+  onOpenLanguage,
+  textLanguageName,
   isPublished = false,
   aiTools,
   aiUsageRefresh,
@@ -187,6 +191,8 @@ export function RichTextEditor({
         biographyId={biographyId}
         editorFontSize={editorFontSize}
         onEditorFontSizeChange={onEditorFontSizeChange}
+        onOpenLanguage={onOpenLanguage}
+        textLanguageName={textLanguageName}
         aiTools={aiTools}
         aiUsageRefresh={aiUsageRefresh}
         countsOnly={readOnly}

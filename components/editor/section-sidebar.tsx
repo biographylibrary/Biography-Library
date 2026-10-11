@@ -76,6 +76,9 @@ interface SectionSidebarProps {
   isEdition?: boolean;
   canTranslate?: boolean;
   onToggleTranslate?: () => void;
+  /** Originals only: opens the text-language dialog. */
+  onToggleTextLanguage?: () => void;
+  showTextLanguagePanel?: boolean;
   canDeleteEdition?: boolean;
   onDeleteEdition?: () => void;
 }
@@ -118,6 +121,8 @@ export function SectionSidebar({
   isEdition = false,
   canTranslate = false,
   onToggleTranslate,
+  onToggleTextLanguage,
+  showTextLanguagePanel = false,
   canDeleteEdition = false,
   onDeleteEdition,
 }: SectionSidebarProps) {
@@ -135,7 +140,8 @@ export function SectionSidebar({
     showNotesPanel ||
     showPhotosPanel ||
     showBookStructurePanel ||
-    showReviewPublicationDialog;
+    showReviewPublicationDialog ||
+    showTextLanguagePanel;
 
   const totalCount = globalNotesCount + globalTodosCount;
   const [activeChapter, setActiveChapter] = useState<number | null>(null);
@@ -389,6 +395,22 @@ export function SectionSidebar({
         </button>
         {toolsVisible && (
         <>
+        {!isEdition && !isFrozen && onToggleTextLanguage && (
+          <button
+            type="button"
+            data-tour-id="text-language-btn"
+            onClick={onToggleTextLanguage}
+            className={cn(
+              'w-full flex items-center gap-2 px-3 py-1 lg:py-2 rounded-lg text-sm transition-colors',
+              showTextLanguagePanel
+                ? 'bg-primary/10 text-primary font-medium'
+                : 'text-muted-foreground hover:bg-muted/50 hover:text-foreground'
+            )}
+          >
+            <Languages className="h-4 w-4 shrink-0" />
+            <span className="truncate min-w-0 flex-1 text-left">{t.textLanguage.label}</span>
+          </button>
+        )}
         {canTranslate && onToggleTranslate && (
           <button
             type="button"

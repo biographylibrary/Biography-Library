@@ -19,6 +19,8 @@ interface GuidedSectionWorkspaceProps {
   onSectionTextChange: (html: string) => void;
   editorFontSize?: number;
   onEditorFontSizeChange?: (size: number) => void;
+  onOpenLanguage?: () => void;
+  textLanguageName?: string;
   isPublished?: boolean;
   aiEnabled?: boolean;
   aiUsageRefresh?: number;
@@ -42,6 +44,8 @@ export function GuidedSectionWorkspace({
   onSectionTextChange,
   editorFontSize,
   onEditorFontSizeChange,
+  onOpenLanguage,
+  textLanguageName,
   isPublished,
   aiEnabled,
   aiUsageRefresh,
@@ -142,6 +146,8 @@ export function GuidedSectionWorkspace({
           biographyId={biographyId}
           editorFontSize={editorFontSize}
           onEditorFontSizeChange={onEditorFontSizeChange}
+          onOpenLanguage={onOpenLanguage}
+          textLanguageName={textLanguageName}
           isPublished={isPublished}
           aiEnabled={aiEnabled}
           aiLoading={aiLoading}

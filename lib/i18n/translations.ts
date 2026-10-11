@@ -1738,6 +1738,8 @@ export interface Translations {
     heldForOriginal: string;
     originalNotPublished: string;
     translationIdentical: string;
+    toolbarButton: string;
+    toolbarAria: string;
   };
   translate: {
     menuItem: string;
@@ -1804,6 +1806,8 @@ export const translations: Record<Language, Translations> = {
     },
     textLanguage: {
       label: 'Language of the text',
+      toolbarButton: 'Language',
+      toolbarAria: 'Language of the text: {name}',
       hint: 'The language this biography is written in. It is not the language of the menus.',
       interfaceLabel: 'Interface language',
       searchPlaceholder: 'Search by name or code',
@@ -3657,6 +3661,8 @@ export const translations: Record<Language, Translations> = {
     },
     textLanguage: {
       label: 'Lingua del testo',
+      toolbarButton: 'Lingua',
+      toolbarAria: 'Lingua del testo: {name}',
       hint: 'La lingua in cui è scritta questa biografia. Non è la lingua dei menu.',
       interfaceLabel: 'Lingua dell\'interfaccia',
       searchPlaceholder: 'Cerca per nome o codice',
@@ -5512,6 +5518,8 @@ export const translations: Record<Language, Translations> = {
     },
     textLanguage: {
       label: 'Langue du texte',
+      toolbarButton: 'Langue',
+      toolbarAria: 'Langue du texte : {name}',
       hint: 'La langue dans laquelle cette biographie est écrite. Ce n\'est pas la langue des menus.',
       interfaceLabel: 'Langue de l\'interface',
       searchPlaceholder: 'Chercher par nom ou code',
@@ -7368,6 +7376,8 @@ export const translations: Record<Language, Translations> = {
     },
     textLanguage: {
       label: 'Sprache des Textes',
+      toolbarButton: 'Sprache',
+      toolbarAria: 'Sprache des Textes: {name}',
       hint: 'Die Sprache, in der diese Biografie geschrieben ist. Das ist nicht die Sprache der Menüs.',
       interfaceLabel: 'Sprache der Oberfläche',
       searchPlaceholder: 'Nach Name oder Code suchen',
