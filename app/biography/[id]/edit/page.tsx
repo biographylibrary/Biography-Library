@@ -22,10 +22,13 @@ import { BookStructureDialog } from '@/components/editor/BookStructureDialog';
 import { AiSuggestionsDialog } from '@/components/editor/ai-suggestions-panel';
 import { ShareLinkPanel } from '@/components/editor/share-link-panel';
 import { PhotoGalleryDialog } from '@/components/editor/PhotoGalleryDialog';
+import { EditionPhotoCaptionsDialog } from '@/components/editor/EditionPhotoCaptionsDialog';
 import { ImportTextDialog } from '@/components/editor/import-text-dialog';
 import { TranslateDialog } from '@/components/editor/translate-dialog';
 import { EditionBanner } from '@/components/editor/edition-banner';
 import { EditionNoticeDialog } from '@/components/editor/edition-notice-dialog';
+import { GALLERY_PHOTO_LAYOUTS } from '@/lib/biography-media-constants';
+import { editionCaptionProgress } from '@/lib/edition-photo-captions';
 import { FinalReviewDialog } from '@/components/editor/FinalReviewDialog';
 import { ReviewPublicationDialog } from '@/components/editor/ReviewPublicationDialog';
 import { TextLanguageDialog } from '@/components/editor/TextLanguageDialog';
@@ -122,6 +125,30 @@ async function loadBookStructureReminderSnapshot(
     .eq('biography_id', biographyId)
     .maybeSingle();
   return (data as BookStructureReminderSnapshot | null) ?? null;
+}
+
+async function loadEditionCaptionReminderSnapshot(
+  originalId: string,
+  editionId: string
+): Promise<{ missing: number; total: number } | null> {
+  const [{ data: photos }, { data: captions }] = await Promise.all([
+    supabase
+      .from('biography_media')
+      .select('id, caption, layout')
+      .eq('biography_id', originalId)
+      .in('layout', [...GALLERY_PHOTO_LAYOUTS])
+      .order('display_order', { ascending: true }),
+    supabase
+      .from('biography_edition_captions')
+      .select('media_id, caption')
+      .eq('biography_id', editionId),
+  ]);
+  const progress = editionCaptionProgress(
+    (photos as { id: string; caption?: string | null }[] | null) ?? [],
+    (captions as { media_id: string; caption?: string | null }[] | null) ?? []
+  );
+  if (progress.total === 0 || progress.missingMediaIds.length === 0) return null;
+  return { missing: progress.missingMediaIds.length, total: progress.total };
 }
 
 type SaveStatus = 'saved' | 'saving' | 'unsaved' | 'error';
@@ -241,6 +268,10 @@ export default function BiographyEditorPage() {
     useState<BookStructureReminderSnapshot | null>(null);
   const [editionBookStructure, setEditionBookStructure] =
     useState<BookStructureReminderSnapshot | null>(null);
+  const [missingPhotoCaptionsReminder, setMissingPhotoCaptionsReminder] = useState<{
+    missing: number;
+    total: number;
+  } | null>(null);
   const coverPhotoWarning = translationOf
     ? t.translate.coverMissingOnOriginal
     : t.exportDialog.noCoverPhotoWarning;
@@ -632,18 +663,21 @@ export default function BiographyEditorPage() {
             setOriginalMeta(null);
             setIdenticalSectionCount(0);
           }
-          const [originalStructure, editionStructure] = await Promise.all([
+          const [originalStructure, editionStructure, captionReminder] = await Promise.all([
             loadBookStructureReminderSnapshot(translationOfId),
             loadBookStructureReminderSnapshot(id),
+            loadEditionCaptionReminderSnapshot(translationOfId, id),
           ]);
           setOriginalBookStructure(originalStructure);
           setEditionBookStructure(editionStructure);
+          setMissingPhotoCaptionsReminder(captionReminder);
           setEditionExtrasReady(true);
         } else {
           setOriginalMeta(null);
           setIdenticalSectionCount(0);
           setOriginalBookStructure(null);
           setEditionBookStructure(null);
+          setMissingPhotoCaptionsReminder(null);
           setEditionExtrasReady(false);
           editionNoticeShownForIdRef.current = null;
           setShowEditionNoticeDialog(false);
@@ -2034,11 +2068,15 @@ export default function BiographyEditorPage() {
           identicalSectionCount={identicalSectionCount}
           originalStatus={originalMeta.status}
           missingBookStructureParts={missingBookStructureParts}
+          missingPhotoCaptions={missingPhotoCaptionsReminder}
           onAligned={(at) => setOriginalVersionAt(at)}
           onOpenBookStructure={() =>
             statusLocksText
               ? notifyTextLocked()
               : setShowBookStructurePanel(true)
+          }
+          onOpenPhotoCaptions={() =>
+            statusLocksText ? notifyTextLocked() : setShowPhotosPanel(true)
           }
         />
       )}
@@ -2619,12 +2657,26 @@ export default function BiographyEditorPage() {
         }}
       />
 
-      <PhotoGalleryDialog
-        biographyId={id}
-        userId={user.id}
-        open={showPhotosPanel}
-        onOpenChange={setShowPhotosPanel}
-      />
+      {!translationOf ? (
+        <PhotoGalleryDialog
+          biographyId={id}
+          userId={user.id}
+          open={showPhotosPanel}
+          onOpenChange={setShowPhotosPanel}
+        />
+      ) : (
+        <EditionPhotoCaptionsDialog
+          open={showPhotosPanel}
+          onOpenChange={setShowPhotosPanel}
+          editionId={id}
+          originalId={translationOf}
+          recordLanguageTag={recordLanguageTag}
+          readOnly={statusLocksText || isFrozen}
+          readOnlyReason={
+            statusLocksText || isFrozen ? t.photos.editionCaptionsReadOnly : undefined
+          }
+        />
+      )}
 
       {!translationOf && !isFrozen && (
         <TextLanguageDialog

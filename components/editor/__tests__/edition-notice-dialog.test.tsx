@@ -70,12 +70,30 @@ describe('EditionNoticeDialog', () => {
         identicalSectionCount={2}
         originalStatus="draft"
         missingBookStructureParts={['dedication']}
+        missingPhotoCaptions={{ missing: 2, total: 5 }}
       />
     );
     expect(screen.getByText(copy.driftMessage)).toBeTruthy();
     expect(screen.getByText(copy.originalUnpublishedNote)).toBeTruthy();
     expect(screen.getByText(copy.identicalSections.replace('{count}', '2'))).toBeTruthy();
     expect(screen.getByText(/In the original these are filled in:/)).toBeTruthy();
+    expect(
+      screen.getByText(
+        copy.photoCaptionsReminder.replace('{missing}', '2').replace('{total}', '5')
+      )
+    ).toBeTruthy();
+  });
+
+  it('nasconde il promemoria didascalie se non manca nulla', () => {
+    const copy = translations.en.translate;
+    render(
+      <EditionNoticeDialog
+        {...baseProps}
+        missingPhotoCaptions={null}
+      />
+    );
+    expect(screen.queryByText(/Photo captions still to translate/)).toBeNull();
+    expect(screen.queryByText(copy.photoCaptionsReminder.replace('{missing}', '0').replace('{total}', '0'))).toBeNull();
   });
 
   it('closes on Got it via onOpenChange(false)', async () => {

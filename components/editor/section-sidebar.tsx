@@ -478,12 +478,6 @@ export function SectionSidebar({
           )}
         </button>
         )}
-        {isEdition ? (
-          <div className="w-full flex items-start gap-2 px-3 py-1 lg:py-2 rounded-lg text-sm text-muted-foreground/80">
-            <Images className="h-4 w-4 shrink-0 mt-0.5" />
-            <span className="text-left leading-snug">{t.translate.photosDeferred}</span>
-          </div>
-        ) : (
         <button
           type="button"
           data-tour-id="photos-btn"
@@ -498,7 +492,6 @@ export function SectionSidebar({
           <Images className="h-4 w-4 shrink-0" />
           <span className="truncate min-w-0 flex-1 text-left">{t.photos.panelTitle}</span>
         </button>
-        )}
         {biographyId && userId && (
           <button
             type="button"

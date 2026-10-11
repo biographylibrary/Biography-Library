@@ -146,6 +146,25 @@ describe('text language in Tools', () => {
     expect(document.querySelector('[data-tour-id="text-language-btn"]')).toBeNull();
   });
 
+  it('nelle edizioni la voce Foto è un pulsante attivo e non c\'è photosDeferred', () => {
+    const onPhotos = vi.fn();
+    render(
+      <SectionSidebar
+        {...sidebarBase}
+        isEdition
+        isFrozen={false}
+        onTogglePhotosPanel={onPhotos}
+      />
+    );
+    fireEvent.click(screen.getByText(translations.it.editor.tools));
+    const btn = document.querySelector('[data-tour-id="photos-btn"]');
+    expect(btn).toBeTruthy();
+    expect(btn?.tagName).toBe('BUTTON');
+    fireEvent.click(btn!);
+    expect(onPhotos).toHaveBeenCalled();
+    expect(document.body.textContent).not.toMatch(/photosDeferred|secondo momento|will be written later/i);
+  });
+
   it('campo disattivato con statusLocksText (disabled)', () => {
     render(
       <TextLanguageDialog

@@ -2,7 +2,7 @@
 
 export const HELP_KB_EN = `# Biography Library — Platform Knowledge Base
 
-Version: 1.9 — 2026-10-11
+Version: 1.10 — 2026-10-11
 
 Reference language: English. Echo, Help, and platform assistants answer in the user's language using these facts. Update this file whenever product rules or UX change, then run \`npm run kb:sync\`.
 
@@ -72,7 +72,7 @@ To start one, open the Tools menu and choose Translate into another language. Th
 
 A translation is a second edition of the same story. It is edited in the same editor, with the formatting bar and the chapters, but there is no grammar check and no Echo: only the author works on the translated text. The bar at the top of the editor says which story and language you are translating and links to the original; each time you open a translation, a message recalls these rules and flags what needs attention (book-structure parts still to translate, a revised original, an unpublished original, sections still identical to the original). Visibility and licence are always those of the original and cannot be changed on the translation. If the original is revised after the translation was last checked, a notice asks the author to check the translation and confirm that it is aligned.
 
-Dedication, epigraph, preface, epilogue, acknowledgements, credits and the author copyright page of a translation are written in its own Book Structure panel; a reminder at the top lists the parts that are filled in the original and still empty in the translation. The translation uses the cover and the photos of the original, with the translated title and text. Photo captions of a translation are separate from the original's: a photo without a translated caption is shown without any caption, and the original's caption is never used in its place. At the moment captions cannot yet be written in a translation, so its photos appear without captions.
+Dedication, epigraph, preface, epilogue, acknowledgements, credits and the author copyright page of a translation are written in its own Book Structure panel. Reminders for book-structure parts still to translate and for photo captions still to translate appear in the message that opens with the translation, not in a bar at the top. The translation uses the cover and the photos of the original, with the translated title and text. Photo captions of a translation are written in Tools, Photos: for each photo of the original you see the original caption and write the translated one; a photo without a translated caption is shown without any caption, and the original's caption is never used in its place.
 
 A translation goes through the same checks as the original: it is sent for review, the whole text is screened, and then it appears next to the original; it cannot be sent while the original is not published. A translation does not get a UM identifier of its own: the identifier written in a translation's files (PDF header and colophon, exported texts) is the original's. Deleting a translation (Tools, Delete this translation) does not touch the original or its photos.
 

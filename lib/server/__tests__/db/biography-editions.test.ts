@@ -346,4 +346,83 @@ describe('didascalie di edizione', () => {
       ).toContain('author_text_locked');
     }
   );
+
+  it('upsert authenticated in bozza: inserisce, poi aggiorna senza seconda riga', async () => {
+    const mediaId = await editionWithPhoto('draft');
+    await asAuthor(
+      `insert into biography_edition_captions (biography_id, media_id, caption, updated_at)
+       values ($1, $2, 'prima', now())
+       on conflict (biography_id, media_id)
+       do update set caption = excluded.caption, updated_at = excluded.updated_at`,
+      [edition, mediaId]
+    );
+    await asAuthor(
+      `insert into biography_edition_captions (biography_id, media_id, caption, updated_at)
+       values ($1, $2, 'seconda', now())
+       on conflict (biography_id, media_id)
+       do update set caption = excluded.caption, updated_at = excluded.updated_at`,
+      [edition, mediaId]
+    );
+    const rows = await asAuthor(
+      `select caption from biography_edition_captions where biography_id = $1 and media_id = $2`,
+      [edition, mediaId]
+    );
+    expect(rows).toEqual([{ caption: 'seconda' }]);
+  });
+
+  it('upsert fallisce per foto di un\'altra scheda', async () => {
+    await editionWithPhoto('draft');
+    const [foreign] = await asService<{ id: string }>(
+      `insert into biography_media (biography_id, user_id, file_url) values ($1, $2, 'https://x/altra.jpg') returning id`,
+      [BIO.draft, U.author]
+    );
+    const err = await errorOf(() =>
+      asAuthor(
+        `insert into biography_edition_captions (biography_id, media_id, caption, updated_at)
+         values ($1, $2, 'no', now())
+         on conflict (biography_id, media_id)
+         do update set caption = excluded.caption, updated_at = excluded.updated_at`,
+        [edition, foreign.id]
+      )
+    );
+    expect(err).toContain('caption_media_not_on_original');
+  });
+
+  it('upsert fallisce se l\'edizione è congelata', async () => {
+    const mediaId = await editionWithPhoto('draft');
+    await asService(`update biographies set is_frozen = true where id = $1`, [edition]);
+    const err = await errorOf(() =>
+      asAuthor(
+        `insert into biography_edition_captions (biography_id, media_id, caption, updated_at)
+         values ($1, $2, 'no', now())
+         on conflict (biography_id, media_id)
+         do update set caption = excluded.caption, updated_at = excluded.updated_at`,
+        [edition, mediaId]
+      )
+    );
+    expect(err).toMatch(/policy|42501|author_text_locked|frozen/i);
+  });
+
+  it('upsert fallisce se chi scrive è un altro utente', async () => {
+    const mediaId = await editionWithPhoto('draft');
+    const err = await errorOf(() =>
+      asOther(
+        `insert into biography_edition_captions (biography_id, media_id, caption, updated_at)
+         values ($1, $2, 'no', now())
+         on conflict (biography_id, media_id)
+         do update set caption = excluded.caption, updated_at = excluded.updated_at`,
+        [edition, mediaId]
+      )
+    );
+    expect(err).toMatch(/policy|42501|violates row-level|author_text_locked/i);
+  });
+
+  it('l\'autore dell\'edizione legge le foto dell\'originale', async () => {
+    const mediaId = await editionWithPhoto('draft');
+    const rows = await asAuthor(
+      `select id from biography_media where biography_id = $1`,
+      [BIO.published]
+    );
+    expect(rows.map((r) => (r as { id: string }).id)).toContain(mediaId);
+  });
 });
