@@ -104,21 +104,52 @@ function PhotoMetaFields({
   const [localCaption, setLocalCaption] = useState(item.caption ?? '');
   const debouncedCaption = useDebounce(localCaption, 600);
 
+  const localCaptionRef = useRef(localCaption);
+  localCaptionRef.current = localCaption;
+  const itemCaptionRef = useRef(item.caption ?? '');
+  itemCaptionRef.current = item.caption ?? '';
+  const itemIdRef = useRef(item.id);
+  itemIdRef.current = item.id;
+  const onCaptionChangeRef = useRef(onCaptionChange);
+  onCaptionChangeRef.current = onCaptionChange;
+  /** Avoid double write when blur and unmount both flush the same draft. */
+  const lastFlushedDraftRef = useRef<string | null>(null);
+
+  const flushIfChanged = useCallback(() => {
+    const draft = localCaptionRef.current;
+    const saved = itemCaptionRef.current;
+    if (draft === saved) return;
+    if (lastFlushedDraftRef.current === draft) return;
+    lastFlushedDraftRef.current = draft;
+    onCaptionChangeRef.current(itemIdRef.current, draft);
+  }, []);
+
   useEffect(() => {
     setLocalCaption(item.caption ?? '');
+    lastFlushedDraftRef.current = null;
   }, [item.id, item.caption]);
 
   useEffect(() => {
+    // Skip while the debounce is still catching up (e.g. after an immediate blur flush
+    // updated item.caption while debouncedCaption is still the previous value).
+    if (debouncedCaption !== localCaptionRef.current) return;
     if (debouncedCaption !== (item.caption ?? '')) {
       onCaptionChange(item.id, debouncedCaption);
     }
   }, [debouncedCaption, item.caption, item.id, onCaptionChange]);
+
+  useEffect(() => {
+    return () => {
+      flushIfChanged();
+    };
+  }, [flushIfChanged]);
 
   return (
     <div className={cn('space-y-2', compact && 'pt-1')}>
       <Input
         value={localCaption}
         onChange={(e) => setLocalCaption(e.target.value)}
+        onBlur={flushIfChanged}
         placeholder={t.photos.captionPlaceholder}
         className="text-sm text-left not-italic"
       />
@@ -645,6 +676,7 @@ export function PhotoGalleryPanel({ biographyId, onClose, embedded }: PhotoGalle
                 />
                 <div className="flex-1 min-w-0">
                   <PhotoMetaFields
+                    key={selectedItem.id}
                     item={selectedItem}
                     onCaptionChange={handleCaptionChange}
                     onLayoutChange={handleLayoutChange}
