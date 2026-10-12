@@ -2082,7 +2082,7 @@ export default function BiographyEditorPage() {
       )}
 
       {isFrozen && (
-        <div className="shrink-0 tone-info border-b px-4 py-2 flex items-center gap-3">
+        <div className="shrink-0 notice-bar tone-info px-4 py-2 flex items-center gap-3">
           <SnowflakeIcon className="h-4 w-4 shrink-0" />
           <p className="text-xs">
             {t.admin.frozenBannerMessage}
@@ -2091,7 +2091,7 @@ export default function BiographyEditorPage() {
       )}
 
       {publicationActionError && (
-        <div className="shrink-0 tone-danger border-b px-4 py-2">
+        <div className="shrink-0 notice-bar tone-danger px-4 py-2">
           <div className="max-w-5xl mx-auto">
             <p className="text-xs">{publicationActionError}</p>
           </div>
@@ -2099,7 +2099,7 @@ export default function BiographyEditorPage() {
       )}
 
       {biographyStatus === 'pdf_draft' && !isFrozen && (
-        <div className="shrink-0 tone-warning border-b px-4 py-3">
+        <div className="shrink-0 notice-bar tone-warning px-4 py-3">
           <div className="max-w-5xl mx-auto flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
             <div>
               <p className="text-sm font-medium">
@@ -2141,7 +2141,7 @@ export default function BiographyEditorPage() {
 
       {aiScreeningResult === 'pending' &&
         (biographyStatus === 'under_review' || biographyStatus === 'locked_pending_screening') && (
-        <div className="shrink-0 tone-info border-b px-4 py-3">
+        <div className="shrink-0 notice-bar tone-info px-4 py-3">
           <div className="max-w-5xl mx-auto flex items-center gap-3">
             <Loader2 className="h-4 w-4 animate-spin shrink-0" />
             <p className="text-sm">
@@ -2194,7 +2194,7 @@ export default function BiographyEditorPage() {
       </AlertDialog>
 
       {aiScreeningResult === 'passed' && biographyStatus === 'published' && (
-        <div className="shrink-0 tone-success border-b px-4 py-3">
+        <div className="shrink-0 notice-bar tone-success px-4 py-3">
           <div className="max-w-5xl mx-auto flex items-start gap-3">
             <Sparkles className="h-4 w-4 shrink-0 mt-0.5" />
             <div className="flex-1">
@@ -2228,7 +2228,7 @@ export default function BiographyEditorPage() {
 
       {aiScreeningResult === 'flagged' &&
         (biographyStatus === 'under_review' || biographyStatus === 'locked_pending_screening') && (
-        <div className="shrink-0 tone-warning border-b px-4 py-3">
+        <div className="shrink-0 notice-bar tone-warning px-4 py-3">
           <div className="max-w-5xl mx-auto flex items-start gap-3">
             <TriangleAlert className="h-4 w-4 shrink-0 mt-0.5" />
             <div>
@@ -2251,7 +2251,7 @@ export default function BiographyEditorPage() {
 
       {(aiScreeningResult === 'ai_error' || aiScreeningResult === 'parse_error') &&
         (biographyStatus === 'under_review' || biographyStatus === 'locked_pending_screening') && (
-          <div className="shrink-0 tone-danger border-b px-4 py-3">
+          <div className="shrink-0 notice-bar tone-danger px-4 py-3">
             <div className="max-w-5xl mx-auto flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
               <div className="flex items-start gap-3">
                 <TriangleAlert className="h-4 w-4 shrink-0 mt-0.5" />
@@ -2309,7 +2309,7 @@ export default function BiographyEditorPage() {
         )}
 
       {isRevisionMode && (
-        <div className="shrink-0 tone-warning border-b px-4 py-3">
+        <div className="shrink-0 notice-bar tone-warning px-4 py-3">
           <div className="max-w-5xl mx-auto">
             <div className="flex items-start gap-3">
               <TriangleAlert className="h-4 w-4 shrink-0 mt-0.5" />

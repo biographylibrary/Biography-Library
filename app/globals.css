@@ -129,6 +129,10 @@
     border-color: hsl(var(--border));
     color: #121212;
   }
+  .notice-bar {
+    border-width: 0 0 1px;
+    border-radius: 0;
+  }
   .tone-info    { background-color: #C4DAEB; }
   .tone-success { background-color: #C8DFBE; }
   .tone-warning { background-color: rgb(221 207 136 / 0.6); }

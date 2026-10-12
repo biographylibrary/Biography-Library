@@ -422,7 +422,7 @@ export function ModerationDetailPanel({ report, onClose, onRefresh }: Moderation
                     {flaggedPassages.map((fp, i) => (
                       <div
                         key={i}
-                        className="border-l-4 border-brand-mustardDark tone-warning px-3 py-2.5 space-y-1"
+                        className="notice tone-warning px-3 py-2.5 space-y-1"
                       >
                         {fp.section_key && (
                           <p className="text-xs font-medium text-foreground">

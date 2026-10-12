@@ -116,7 +116,7 @@ function RichBlockEditor({ content, onChange, placeholder }: RichBlockEditorProp
   return (
     <div className="border border-border rounded-md overflow-hidden bg-background">
       {loadBlocked && (
-        <div role="alert" className="tone-warning border-b px-3 py-2 text-sm">
+        <div role="alert" className="notice-bar tone-warning px-3 py-2 text-sm">
           {t.editor.loadTextLostReadOnly}
         </div>
       )}

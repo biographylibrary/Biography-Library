@@ -76,7 +76,7 @@ export function ReportDeadlineBanner({
   }
 
   return (
-    <div className="shrink-0 tone-warning border-b px-4 py-3">
+    <div className="shrink-0 notice-bar tone-warning px-4 py-3">
       <div className="max-w-5xl mx-auto space-y-2">
         <p className="text-sm">{copy.hidden}</p>
         {status === 'revision_requested' && (
