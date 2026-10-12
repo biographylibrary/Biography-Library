@@ -134,7 +134,7 @@ function ReviewReadContent() {
           </div>
         )}
 
-        <article className="prose prose-gray dark:prose-invert max-w-none">
+        <article className="max-w-none">
           <div className="mb-10 pb-6 border-b border-border">
             <h1 className="text-3xl sm:text-4xl font-serif font-bold mb-2">{title}</h1>
             <p className="text-lg text-muted-foreground">

@@ -9,7 +9,7 @@ export function BiographyContentRightsNotice() {
   return (
     <aside
       aria-label={t.view.contentRightsNoticeAriaLabel}
-      className="mb-8 text-left text-sm text-muted-foreground bg-muted/30 border border-border rounded-lg px-4 py-3.5 not-prose"
+      className="mb-8 text-left text-sm text-muted-foreground bg-muted/30 border border-border rounded-lg px-4 py-3.5"
     >
       <div className="flex items-start gap-2.5">
         <Scale className="h-4 w-4 shrink-0 mt-0.5 text-muted-foreground" aria-hidden />

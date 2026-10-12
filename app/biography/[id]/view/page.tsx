@@ -693,7 +693,7 @@ export default function BiographyViewPage() {
           </div>
         )}
 
-        <article className="prose prose-gray dark:prose-invert max-w-none">
+        <article className="max-w-none">
           <div className="mb-12 pb-8 border-b border-border">
             {biography.is_pioneer && (
               <div className="mb-4">
@@ -732,7 +732,7 @@ export default function BiographyViewPage() {
                 copiedLabel={t.share.copied}
               />
             )}
-            <div className="mt-3 not-prose">
+            <div className="mt-3">
               <p className="mb-2 text-sm text-muted-foreground">
                 {t.textLanguage.label}: {textLabels.inUi} — {textLabels.own}
               </p>
@@ -745,7 +745,7 @@ export default function BiographyViewPage() {
             )}
             </div>
             {hasServerPdf && (
-              <p className="text-xs text-muted-foreground mt-2 not-prose">
+              <p className="text-xs text-muted-foreground mt-2">
                 {interpolate(t.view.pdfOriginalLanguage, {
                   language: textLabels.inUi,
                 })}
@@ -762,7 +762,7 @@ export default function BiographyViewPage() {
             {biography.status === 'published' &&
               !biography.export_txt_url &&
               !biography.export_docx_url && (
-                <p className="text-sm text-muted-foreground mt-3 not-prose">
+                <p className="text-sm text-muted-foreground mt-3">
                   {t.view.downloadsUnavailable}
                 </p>
               )}

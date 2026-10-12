@@ -488,7 +488,7 @@ export function ImportTextDialog({
                       {t.importDialog.preview}
                     </p>
                     <div
-                      className="prose prose-sm max-w-none text-sm [&_h1]:text-xl [&_h1]:font-serif [&_h2]:text-lg [&_h2]:font-serif [&_h3]:text-base [&_h3]:font-semibold"
+                      className="rich-text max-w-none text-sm [&_h1]:!text-xl [&_h1]:font-serif [&_h2]:!text-lg [&_h2]:font-serif [&_h3]:!text-base"
                       dangerouslySetInnerHTML={{ __html: previewHtml }}
                     />
                   </div>

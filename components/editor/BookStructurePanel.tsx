@@ -77,7 +77,7 @@ function RichBlockEditor({ content, onChange, placeholder }: RichBlockEditorProp
     content: archiveMarkdownToEditorHtml(content || ''),
     editorProps: {
       attributes: {
-        class: 'min-h-[120px] prose prose-sm max-w-none focus:outline-none px-3 py-2 text-sm',
+        class: 'min-h-[120px] max-w-none focus:outline-none px-3 py-2 text-sm',
       },
       handlePaste(view, event) {
         return handleArchivePasteEvent(view, event);

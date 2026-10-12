@@ -134,10 +134,7 @@ export function FinalVersionEditor({
       <div className="flex-1 min-h-0 overflow-y-auto p-6">
         <Card className="max-w-4xl mx-auto p-6">
           {isLocked ? (
-            <BiographySectionBody
-              text={content}
-              className="prose-sm"
-            />
+            <BiographySectionBody text={content} />
           ) : (
             <RichTextEditor
               content={content}
