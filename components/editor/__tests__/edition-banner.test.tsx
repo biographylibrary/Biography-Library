@@ -78,6 +78,9 @@ describe('EditionBanner', () => {
     expect(phrase?.className).toMatch(/\bline-clamp-2\b/);
     expect(phrase?.className).toMatch(/\bsm:line-clamp-none\b/);
     expect(phrase?.className).toMatch(/sm:(?:!)?flex\b/);
+    expect(phrase?.className).toMatch(/\bsm:leading-5\b/);
+    expect(phrase?.className).not.toMatch(/\bsm:leading-none\b/);
+    expect(band?.className.split(/\s+/).some((c) => c.startsWith('bg-'))).toBe(false);
 
     const titleEl = screen.getByTitle(longTitle);
     expect(titleEl.className).toMatch(/sm:truncate/);
