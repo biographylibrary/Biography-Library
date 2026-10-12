@@ -212,7 +212,7 @@ export function TranslateDialog({
                       <span className="font-medium">{name}</span>
                       <span className="text-muted-foreground">{statusLabel(edition.status, copy)}</span>
                       {drifted && (
-                        <span className="text-brand-mustardDark text-xs">{copy.originalRevised}</span>
+                        <span className="text-foreground text-xs">{copy.originalRevised}</span>
                       )}
                       <Button
                         type="button"
@@ -234,7 +234,7 @@ export function TranslateDialog({
           </div>
 
           {!canCreate ? (
-            <Alert className="bg-brand-mustardLight/40 border-brand-mustardDark/40">
+            <Alert variant="warning">
               <AlertDescription>{copy.notPublishedHint}</AlertDescription>
             </Alert>
           ) : (

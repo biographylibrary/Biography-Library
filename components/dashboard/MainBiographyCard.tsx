@@ -162,32 +162,32 @@ export function MainBiographyCard({ biography, userName, userId, onDeleteClick, 
   const getStatusBadgeConfig = (status: string) => {
     switch (status) {
       case 'sections_complete':
-        return { text: t.dashboard.sectionsComplete, className: 'bg-[#C8DFBE] text-[#121212]' };
+        return { text: t.dashboard.sectionsComplete, className: 'tone-success' };
       case 'final_version':
-        return { text: t.dashboard.finalVersion, className: 'bg-[#C8DFBE] text-[#121212]' };
+        return { text: t.dashboard.finalVersion, className: 'tone-success' };
       case 'published':
-        return { text: t.dashboard.statusPublished, className: 'bg-brand-blue text-brand-ink' };
+        return { text: t.dashboard.statusPublished, className: 'tone-info' };
       case 'under_review':
-        return { text: t.dashboard.statusUnderReview, className: 'bg-brand-mustardLight text-brand-ink' };
+        return { text: t.dashboard.statusUnderReview, className: 'tone-warning' };
       case 'pdf_draft':
-        return { text: t.dashboard.statusPdfDraft, className: 'bg-brand-mustardLight/80 text-brand-ink' };
+        return { text: t.dashboard.statusPdfDraft, className: 'tone-warning' };
       case 'locked_pending_screening':
         return {
           text: t.dashboard.statusLockedPendingScreening,
-          className: 'bg-brand-blue/35 text-brand-ink dark:bg-brand-blue/15 dark:text-brand-blue',
+          className: 'tone-info',
         };
       case 'removed':
-        return { text: t.dashboard.statusRemoved, className: 'bg-brand-wineDark text-brand-paper' };
+        return { text: t.dashboard.statusRemoved, className: 'tone-danger' };
       case 'suspended_pending_verification':
-        return { text: t.dashboard.statusSuspendedPendingVerification, className: 'bg-brand-wineDark text-brand-paper' };
+        return { text: t.dashboard.statusSuspendedPendingVerification, className: 'tone-danger' };
       case 'revision_requested':
-        return { text: t.dashboard.statusRevisionRequested, className: 'bg-brand-mustardLight text-brand-ink' };
+        return { text: t.dashboard.statusRevisionRequested, className: 'tone-warning' };
       case 'revision_pending_review':
-        return { text: t.dashboard.statusRevisionPendingReview, className: 'bg-brand-mustardLight text-brand-ink' };
+        return { text: t.dashboard.statusRevisionPendingReview, className: 'tone-warning' };
       case 'revision_overdue':
-        return { text: t.dashboard.statusRevisionOverdue, className: 'bg-brand-wineDark text-brand-paper' };
+        return { text: t.dashboard.statusRevisionOverdue, className: 'tone-danger' };
       default:
-        return { text: t.dashboard.draft, className: 'bg-[#DDCF88] text-[#121212]' };
+        return { text: t.dashboard.draft, className: 'tone-warning' };
     }
   };
 
@@ -263,9 +263,9 @@ export function MainBiographyCard({ biography, userName, userId, onDeleteClick, 
 
   const getPriorityBadgeClass = (priority: string) => {
     const map: Record<string, string> = {
-      low: 'bg-[#C4DAEB] text-[#121212] dark:bg-[#C4DAEB] dark:text-[#121212]',
-      medium: 'bg-[#DDCF88] text-[#121212] dark:bg-[#DDCF88] dark:text-[#121212]',
-      high: 'bg-[#6D323E] text-white dark:bg-[#6D323E] dark:text-white',
+      low: 'tone-info',
+      medium: 'tone-warning',
+      high: 'tone-danger',
     };
     return map[priority] || map.medium;
   };

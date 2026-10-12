@@ -64,17 +64,17 @@ export function MemorialDeclarationForm({ values, onChange }: MemorialDeclaratio
 
   return (
     <div className="space-y-6">
-      <Alert className="border-brand-mustardDark/45 dark:border-brand-mustardDark/40 bg-brand-mustardLight/50 dark:bg-brand-mustardDark/15">
-        <Clock className="h-5 w-5 text-brand-ink dark:text-brand-mustardLight" />
-        <AlertTitle className="text-brand-ink dark:text-brand-beigeLight font-semibold">
+      <Alert variant="warning">
+        <Clock className="h-5 w-5" />
+        <AlertTitle className="font-semibold">
           {t.deceasedDeclaration.reviewPeriodTitle}
         </AlertTitle>
-        <AlertDescription className="text-sm text-brand-ink dark:text-brand-beigeLight space-y-2 mt-2">
+        <AlertDescription className="text-sm space-y-2 mt-2">
           <p>{t.deceasedDeclaration.reviewPeriodText}</p>
         </AlertDescription>
       </Alert>
 
-      <div className="space-y-3 border-l-4 border-brand-wine pl-4 bg-brand-wine/8 dark:bg-brand-wine/15 py-3">
+      <div className="space-y-3 border-l-4 border-brand-wine pl-4 py-3">
         <div className="flex items-start space-x-3">
           <Checkbox
             id="ob-deceased"
@@ -155,8 +155,8 @@ export function MemorialDeclarationForm({ values, onChange }: MemorialDeclaratio
         </div>
       </div>
 
-      <Alert className="border-brand-wine/40 bg-brand-wine/10">
-        <AlertTriangle className="h-5 w-5 text-brand-wine" />
+      <Alert variant="danger">
+        <AlertTriangle className="h-5 w-5" />
         <AlertDescription className="text-sm space-y-2">
           <p className="font-semibold">{t.deceasedDeclaration.legalWarningTitle}</p>
           <p>{t.deceasedDeclaration.legalWarningText}</p>

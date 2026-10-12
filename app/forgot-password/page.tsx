@@ -58,15 +58,15 @@ export default function ForgotPasswordPage() {
 
           {submitted ? (
             <div className="space-y-6">
-              <div className="flex flex-col items-center gap-3 p-6 rounded-xl bg-brand-greenLight/35 dark:bg-brand-greenLight/10 border border-brand-greenDark/35 dark:border-brand-greenDark/40 text-center">
-                <div className="w-12 h-12 rounded-full bg-brand-greenLight/50 dark:bg-brand-greenLight/15 flex items-center justify-center">
-                  <CheckCircle2 className="h-6 w-6 text-brand-greenDark dark:text-brand-greenLight" />
+              <div className="notice tone-success flex flex-col items-center gap-3 p-6 text-center">
+                <div className="w-12 h-12 rounded-full bg-black/5 dark:bg-white/10 flex items-center justify-center">
+                  <CheckCircle2 className="h-6 w-6" />
                 </div>
                 <div>
-                  <p className="font-semibold text-brand-ink dark:text-brand-beigeLight">
+                  <p className="font-semibold">
                     {t.auth.forgotPasswordSuccess}
                   </p>
-                  <p className="text-sm text-brand-greenDark dark:text-brand-beigeLight/90 mt-1">
+                  <p className="text-sm mt-1">
                     {t.auth.forgotPasswordSuccessDetail}
                   </p>
                 </div>

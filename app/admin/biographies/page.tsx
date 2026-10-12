@@ -27,17 +27,16 @@ type SortFilter = 'newest' | 'oldest' | 'recently_published' | 'most_views';
 
 function StatusBadge({ status, t }: { status: string; t: any }) {
   const map: Record<string, string> = {
-    draft: 'bg-brand-beigeBg text-brand-ink border-brand-greenDark/25 dark:bg-brand-ink/35 dark:text-brand-beigeLight dark:border-brand-greenDark/40',
-    published: 'bg-[#C8DFBE] text-[#121212] border-brand-greenDark/35 dark:bg-[#C8DFBE]/20 dark:text-[#C8DFBE] dark:border-brand-greenDark/45',
-    under_review: 'bg-[#DDCF88] text-[#121212] border-brand-mustardDark/50 dark:bg-[#DDCF88]/20 dark:text-[#DDCF88] dark:border-brand-mustardDark/40',
-    pdf_draft: 'bg-[#DDCF88]/90 text-[#121212] border-brand-mustardDark/45 dark:bg-[#DDCF88]/25 dark:text-[#DDCF88] dark:border-brand-mustardDark/35',
-    locked_pending_screening:
-      'bg-[#C4DAEB] text-[#121212] border-brand-blue/40 dark:bg-[#C4DAEB]/20 dark:text-[#C4DAEB] dark:border-brand-blue/35',
-    removed: 'bg-[#6D323E] text-white border-brand-wine/35 dark:bg-[#6D323E] dark:text-white dark:border-brand-wine/45',
-    suspended_pending_verification: 'bg-[#6D323E] text-white border-brand-wine/35 dark:bg-[#6D323E] dark:text-white dark:border-brand-wine/45',
-    revision_requested: 'bg-[#DDCF88] text-[#121212] border-brand-mustardDark/50 dark:bg-[#DDCF88]/20 dark:text-[#DDCF88] dark:border-brand-mustardDark/40',
-    revision_pending_review: 'bg-[#DDCF88] text-[#121212] border-brand-mustardDark/50 dark:bg-[#DDCF88]/20 dark:text-[#DDCF88] dark:border-brand-mustardDark/40',
-    revision_overdue: 'bg-[#6D323E] text-white border-brand-wine/35 dark:bg-[#6D323E] dark:text-white dark:border-brand-wine/45',
+    draft: 'bg-brand-beigeBg text-brand-ink border-brand-greenDark/25 dark:bg-brand-ink/30 dark:text-brand-beigeLight dark:border-brand-greenDark/40',
+    published: 'tone-success',
+    under_review: 'tone-warning',
+    pdf_draft: 'tone-warning',
+    locked_pending_screening: 'tone-info',
+    removed: 'tone-danger',
+    suspended_pending_verification: 'tone-danger',
+    revision_requested: 'tone-warning',
+    revision_pending_review: 'tone-warning',
+    revision_overdue: 'tone-danger',
   };
   const labels: Record<string, string> = {
     draft: t.admin.bioStatusDraft,
@@ -204,8 +203,8 @@ function AdminBiographiesContent() {
   return (
     <>
         <div className="flex items-center gap-3 mb-8">
-          <div className="p-2.5 rounded-xl bg-[#C4DAEB] dark:bg-[#C4DAEB]/20 shrink-0">
-            <BookOpen className="h-5 w-5 text-[#121212] dark:text-[#FDFBF7]" />
+          <div className="p-2.5 rounded-xl tone-info shrink-0">
+            <BookOpen className="h-5 w-5" />
           </div>
           <div>
             <h1 className="text-2xl font-serif font-semibold tracking-tight text-foreground">
@@ -278,7 +277,7 @@ function AdminBiographiesContent() {
         </div>
 
         {loadError && (
-          <div className="mb-4 p-4 rounded-xl bg-brand-wine/10 dark:bg-brand-wine/15 text-sm text-brand-wineDark dark:text-brand-mustardLight">
+          <div className="notice tone-danger mb-4 p-4 text-sm">
             {loadError}
           </div>
         )}

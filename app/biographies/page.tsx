@@ -32,8 +32,7 @@ import {
   Star,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-
-const BRAND_TEAL = '#14B8A6';
+import { brandHex } from '@/lib/ui-palette';
 
 function biographyHref(bio: PublishedBiography): string {
   return bio.slug
@@ -50,7 +49,7 @@ function GraphicCover({ title, authorName }: { title: string; authorName: string
   return (
     <div
       style={{
-        background: BRAND_TEAL,
+        background: brandHex.greenDark,
         width: '100%',
         aspectRatio: '176 / 250',
         display: 'flex',
@@ -165,12 +164,12 @@ function BiographyCard({ bio, t, featured }: BiographyCardProps) {
       href={href}
       className={cn(
         'group flex flex-col rounded-2xl border border-border bg-card hover:border-primary/30 hover:shadow-lg transition-all duration-200 overflow-hidden',
-        featured && 'ring-1 ring-amber-200 dark:ring-amber-800/60'
+        featured && 'ring-1 ring-border'
       )}
     >
       <div className="relative w-full overflow-hidden rounded-t-2xl" style={{ aspectRatio: '176 / 250' }}>
         {!cover.loaded ? (
-          <div className="w-full h-full" style={{ background: BRAND_TEAL }} />
+          <div className="w-full h-full" style={{ background: brandHex.greenDark }} />
         ) : showGraphic ? (
           <GraphicCover title={graphicTitle} authorName={graphicAuthor} />
         ) : (
@@ -188,7 +187,7 @@ function BiographyCard({ bio, t, featured }: BiographyCardProps) {
           </span>
         )}
         {featured && (
-          <span className="absolute top-2 right-2 flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full bg-[#DDCF88] text-[#121212]">
+          <span className="absolute top-2 right-2 flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full tone-warning">
             <Star className="h-3 w-3" />
             Featured
           </span>
@@ -210,7 +209,7 @@ function BiographyCard({ bio, t, featured }: BiographyCardProps) {
             {typeLabel}
           </span>
           {isWithinProvisionalWindow(bio.provisional_until) && (
-            <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-[#DDCF88] text-[#121212]">
+            <span className="text-xs font-medium px-2 py-0.5 rounded-full tone-warning">
               {t.publicBiographies.provisionalMark}
             </span>
           )}
@@ -396,7 +395,7 @@ function PublicBiographiesPage() {
           <>
             {filtered.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-24 gap-3">
-                <BookOpen className="h-10 w-10 text-muted-foreground/40" />
+                <BookOpen className="h-10 w-10 text-muted-foreground" />
                 <p className="font-medium text-foreground">{t.publicBiographies.noResults}</p>
                 <p className="text-sm text-muted-foreground">{t.publicBiographies.noResultsSubtitle}</p>
                 <Button

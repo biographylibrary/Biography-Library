@@ -12,12 +12,12 @@ import { describe, expect, it } from 'vitest';
 const ROOT = join(__dirname, '../..');
 
 /**
- * Misurato a fine commit 3 su questo ramo (app + components, esclusi __tests__).
- * 146 usi / 28 varianti. Claudio ne contava 149/30 a inizio giro: commit 1 toglie
- * bg-brand-blue/15 dalla banda; commit 2d toglie border-primary/35 dai badge lingua;
- * il residuo (−1) è differenza di conteggio (vedi resoconto PR).
+ * Commit 5 (rifiniture-avvisi-palette): portato a 0 — divieto assoluto.
  */
-const BASELINE = 146;
+const BASELINE = 0;
+
+/** Allowlist vuota: nessuna scala Tailwind standard ammessa in app/components. */
+export const ALLOWED_TAILWIND_SCALE: string[] = [];
 
 const VALID_OPACITY = new Set([0, 5, 10, 20, 25, 30, 40, 50, 60, 70, 75, 80, 90, 95, 100]);
 
@@ -59,6 +59,19 @@ const DEAD_OPACITY = new RegExp(
   'g'
 );
 
+const SCALE_HUES =
+  'amber|emerald|red|neutral|sky|slate|gray|zinc|stone|orange|yellow|lime|green|teal|cyan|blue|indigo|violet|purple|fuchsia|pink|rose';
+
+const SCALE_PREFIXES =
+  'bg|text|border|ring|divide|outline|fill|stroke|from|via|to|decoration|placeholder|accent|caret|shadow';
+
+/** Varianti dark:/hover: + prefix-(hue)-NUMBER(+ optional /opacity). */
+/** Qualsiasi catena di varianti (dark:, data-[state=open]:, peer-checked:, …). */
+const TAILWIND_SCALE = new RegExp(
+  `(?:^|[\\s"'\`])((?:[\\w\\[\\]=\\-.%/]+:)*(?:${SCALE_PREFIXES})-(?:${SCALE_HUES})-\\d{1,3}(?:/\\d{1,3})?)(?![\\w\\[/])`,
+  'g'
+);
+
 function walkTsx(dir: string, out: string[] = []): string[] {
   let entries: string[];
   try {
@@ -97,6 +110,24 @@ function collectDead(): Array<{ file: string; line: number; token: string; opaci
   return hits;
 }
 
+function collectScale(): Array<{ file: string; line: number; token: string }> {
+  const hits: Array<{ file: string; line: number; token: string }> = [];
+  for (const dir of ['app', 'components']) {
+    for (const file of walkTsx(join(ROOT, dir))) {
+      const text = readFileSync(file, 'utf8');
+      const rel = relative(ROOT, file).replace(/\\/g, '/');
+      text.split(/\n/).forEach((line, idx) => {
+        for (const m of Array.from(line.matchAll(TAILWIND_SCALE))) {
+          const token = m[1]!;
+          if (ALLOWED_TAILWIND_SCALE.includes(token)) continue;
+          hits.push({ file: rel, line: idx + 1, token });
+        }
+      });
+    }
+  }
+  return hits;
+}
+
 describe('dead opacity classes (Tailwind 3.3.3 scale)', () => {
   it('il conteggio delle classi fuori scala resta al BASELINE (non sale né scende senza aggiornarlo)', () => {
     const hits = collectDead();
@@ -113,5 +144,18 @@ describe('dead opacity classes (Tailwind 3.3.3 scale)', () => {
       );
     }
     expect(hits.length).toBe(BASELINE);
+  });
+});
+
+describe('banned Tailwind color scales in app/components', () => {
+  it('nessuna classe prefix-(hue)-NUMBER fuori allowlist', () => {
+    const hits = collectScale();
+    const detail = hits.map((h) => `${h.file}:${h.line} ${h.token}`).join('\n');
+    if (hits.length > 0) {
+      expect.fail(
+        `Scale Tailwind vietate (${hits.length}). Usa brand-* / tone-* / semantic tokens.\n${detail}`
+      );
+    }
+    expect(hits.length).toBe(0);
   });
 });

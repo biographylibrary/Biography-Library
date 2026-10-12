@@ -129,23 +129,23 @@ export default function DashboardPage() {
     return (
       <div className="h-full bg-[#ECE9E4] dark:bg-[#1F2121] flex items-center justify-center px-4">
         <div className="w-full max-w-[400px] animate-in fade-in slide-in-from-bottom-4 duration-500">
-          <div className="flex flex-col items-center gap-4 p-6 rounded-xl bg-brand-blue/25 dark:bg-brand-blue/15 border border-brand-blue/50 dark:border-brand-blue/35 text-center">
-            <div className="w-14 h-14 rounded-full bg-brand-blue/40 dark:bg-brand-blue/20 flex items-center justify-center">
-              <Mail className="h-7 w-7 text-brand-ink dark:text-brand-blue" />
+          <div className="notice tone-info flex flex-col items-center gap-4 p-6 text-center">
+            <div className="w-14 h-14 rounded-full bg-black/5 dark:bg-white/10 flex items-center justify-center">
+              <Mail className="h-7 w-7" />
             </div>
             <div className="space-y-2">
-              <h2 className="text-xl font-serif font-semibold text-brand-ink dark:text-brand-beigeLight">
+              <h2 className="text-xl font-serif font-semibold">
                 {t.auth.emailNotVerified}
               </h2>
-              <p className="text-sm text-brand-ink/90 dark:text-brand-beigeLight/90">
+              <p className="text-sm">
                 {t.auth.emailNotVerifiedDetail}
               </p>
-              <p className="text-xs text-brand-greenDark dark:text-brand-blue/90">
+              <p className="text-xs">
                 {t.auth.verifyEmailDetail}
               </p>
             </div>
             {resendSuccess ? (
-              <div className="flex items-center gap-2 text-sm text-brand-greenDark dark:text-brand-greenLight font-medium">
+              <div className="flex items-center gap-2 text-sm font-medium">
                 <CheckCircle2 className="h-4 w-4" />
                 {t.auth.resendVerificationSuccess}
               </div>
@@ -155,7 +155,6 @@ export default function DashboardPage() {
                 size="sm"
                 onClick={handleResendVerification}
                 disabled={resendLoading}
-                className="border-brand-blue/60 dark:border-brand-blue/45 text-brand-ink dark:text-brand-blue hover:bg-brand-blue/30 dark:hover:bg-brand-blue/20"
               >
                 {resendLoading ? (
                   <>

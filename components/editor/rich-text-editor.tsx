@@ -181,7 +181,7 @@ export function RichTextEditor({
       {loadBlocked && (
         <div
           role="alert"
-          className="shrink-0 border-b border-amber-700/40 bg-amber-50 px-3 py-2 text-sm text-amber-950"
+          className="shrink-0 notice-bar tone-warning px-3 py-2 text-sm"
         >
           {t.editor.loadTextLostReadOnly}
         </div>

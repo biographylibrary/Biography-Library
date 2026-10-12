@@ -1,7 +1,16 @@
 /**
- * Official UI colors (single source of truth with tailwind.config `brand.*`).
- * Use `brand-*` Tailwind classes for alerts, banners, dialogs, badges — do not introduce
- * amber/sky/emerald/red/orange Tailwind scales for these surfaces.
+ * Palette ufficiale e classi per avvisi / chip.
+ *
+ * Regole:
+ * 1. Un avviso = `notice tone-<tipo>` (info|success|warning|danger). Un chip = `tone-<tipo>`
+ *    più forma, o Badge con variante tone. Niente altre combinazioni bg/border/text-brand-* per questi usi.
+ * 2. Bordo avviso = sempre `border-border` (1px, senza opacità), mai colorato.
+ * 3. Testo avviso = brand-ink in chiaro, brand-beigeLight in scuro (da `.tone-*`). Vietati
+ *    `text-muted-foreground` e testi colorati dentro un avviso; gerarchia solo con la dimensione.
+ * 4. Colori chiari (blue, greenLight, mustard*, beigeLight, paper) non come testo/icone su fondo
+ *    chiaro; solo con `dark:` o su fondo scuro. Su chiaro: ink, wine, wineDark, greenDark.
+ * 5. Opacità Tailwind ammesse: 5, 10, 20, 25, 30, 40, 50, 60, 70, 75, 80, 90, 95. Mai 8, 12, 15, 35, 45, 55, 65.
+ * 6. Niente scale Tailwind (amber, emerald, red, …) né esadecimali fuori palette nei componenti UI.
  */
 export const brandHex = {
   ink: '#121212',
@@ -17,13 +26,18 @@ export const brandHex = {
   wineDark: '#6D323E',
 } as const;
 
-/** Precomposed class strings for common callout types (optional import; prefer `brand-*` in className). */
+/** Classi per riquadri di avviso (fondo + bordo neutro + testo). */
 export const uiCallout = {
-  warning:
-    'bg-brand-mustardLight/45 border border-brand-mustardDark/40 text-brand-ink dark:bg-brand-mustardDark/20 dark:border-brand-mustardDark/50 dark:text-brand-beigeLight',
-  info: 'bg-brand-blue/25 border border-brand-blue/60 text-brand-ink dark:bg-brand-blue/15 dark:border-brand-blue/45 dark:text-brand-beigeLight',
-  success:
-    'bg-brand-greenLight/45 border border-brand-greenLight text-brand-greenDark dark:bg-brand-greenLight/15 dark:border-brand-greenDark/50 dark:text-brand-greenLight',
-  danger:
-    'bg-brand-wine/10 border border-brand-wine/35 text-brand-wineDark dark:bg-brand-wine/20 dark:border-brand-wine/45 dark:text-brand-beigeLight',
+  warning: 'notice tone-warning',
+  info: 'notice tone-info',
+  success: 'notice tone-success',
+  danger: 'notice tone-danger',
+} as const;
+
+/** Classi tone senza raggio notice — per chip / badge. */
+export const uiTone = {
+  warning: 'tone-warning',
+  info: 'tone-info',
+  success: 'tone-success',
+  danger: 'tone-danger',
 } as const;

@@ -111,7 +111,7 @@ export function EchoDraftInsertPrompt({
       </div>
 
       {sectionMismatchWarning && (
-        <div className="flex items-start gap-1.5 text-xs text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/30 rounded px-2 py-1.5">
+        <div className="notice tone-warning flex items-start gap-1.5 text-xs px-2 py-1.5">
           <AlertTriangle className="h-3.5 w-3.5 shrink-0 mt-0.5" />
           <span>{sectionMismatchWarning}</span>
         </div>

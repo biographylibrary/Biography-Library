@@ -8,18 +8,18 @@ interface ReportTypeBadgeProps {
 }
 
 const TYPE_STYLES: Record<string, string> = {
-  level1_content: 'bg-[#6D323E] text-white dark:bg-[#6D323E] dark:text-white',
-  level2_content: 'bg-[#DDCF88] text-[#121212] dark:bg-[#DDCF88]/20 dark:text-[#DDCF88]',
-  level3_content: 'bg-[#C4DAEB] text-[#121212] dark:bg-[#C4DAEB]/20 dark:text-[#C4DAEB]',
-  user_report: 'bg-[#DDCF88] text-[#121212] dark:bg-[#DDCF88]/20 dark:text-[#DDCF88]',
-  living_person: 'bg-[#DDCF88] text-[#121212] dark:bg-[#DDCF88]/20 dark:text-[#DDCF88]',
-  right_to_oblivion: 'bg-[#DDCF88] text-[#121212] dark:bg-[#DDCF88]/20 dark:text-[#DDCF88]',
-  impersonation: 'bg-[#DDCF88] text-[#121212] dark:bg-[#DDCF88]/20 dark:text-[#DDCF88]',
-  copyright: 'bg-[#DDCF88] text-[#121212] dark:bg-[#DDCF88]/20 dark:text-[#DDCF88]',
-  illegal_content: 'bg-[#6D323E] text-white dark:bg-[#6D323E] dark:text-white',
-  sensitive_personal_data: 'bg-[#DDCF88] text-[#121212] dark:bg-[#DDCF88]/20 dark:text-[#DDCF88]',
-  defamation: 'bg-[#DDCF88] text-[#121212] dark:bg-[#DDCF88]/20 dark:text-[#DDCF88]',
-  other: 'bg-brand-beigeBg text-brand-greenDark dark:bg-brand-ink/35 dark:text-brand-beigeLight',
+  level1_content: 'tone-danger',
+  level2_content: 'tone-warning',
+  level3_content: 'tone-info',
+  user_report: 'tone-warning',
+  living_person: 'tone-warning',
+  right_to_oblivion: 'tone-warning',
+  impersonation: 'tone-warning',
+  copyright: 'tone-warning',
+  illegal_content: 'tone-danger',
+  sensitive_personal_data: 'tone-warning',
+  defamation: 'tone-warning',
+  other: 'bg-brand-beigeBg text-brand-ink dark:bg-brand-ink/30 dark:text-brand-beigeLight',
 };
 
 function getTypeLabel(type: ReportType, t: ReturnType<typeof useTranslation>['t']): string {

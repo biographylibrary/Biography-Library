@@ -64,16 +64,16 @@ const REVIEW_LANG_CODES = ['en', 'it', 'fr', 'de'] as const;
 const ROLE_ORDER: UserRole[] = ['user', 'reviewer', 'admin', 'super_admin'];
 
 function getRoleBadge(role: UserRole, label: string) {
-  const base = 'text-xs font-semibold px-2 py-0.5 rounded-full border';
+  const base = 'text-xs font-semibold px-2 py-0.5 rounded-full';
   switch (role) {
     case 'super_admin':
-      return <span className={`${base} bg-[#6D323E] text-white border-brand-wine/35 dark:bg-[#6D323E] dark:text-white dark:border-brand-wine/45`}>{label}</span>;
+      return <span className={`${base} tone-danger`}>{label}</span>;
     case 'admin':
-      return <span className={`${base} bg-[#DDCF88] text-[#121212] border-brand-mustardDark/50 dark:bg-[#DDCF88]/20 dark:text-[#DDCF88] dark:border-brand-mustardDark/40`}>{label}</span>;
+      return <span className={`${base} tone-warning`}>{label}</span>;
     case 'reviewer':
-      return <span className={`${base} bg-[#C4DAEB] text-[#121212] border-brand-blue/55 dark:bg-[#C4DAEB]/20 dark:text-[#C4DAEB] dark:border-brand-blue/40`}>{label}</span>;
+      return <span className={`${base} tone-info`}>{label}</span>;
     default:
-      return <span className={`${base} bg-brand-beigeBg text-brand-ink border-brand-greenDark/25 dark:bg-brand-ink/35 dark:text-brand-beigeLight dark:border-brand-greenDark/40`}>{label}</span>;
+      return <span className={`${base} border border-border bg-brand-beigeBg text-brand-ink dark:bg-brand-ink/30 dark:text-brand-beigeLight`}>{label}</span>;
   }
 }
 
@@ -455,8 +455,8 @@ export default function AdminUsersPage() {
     <TooltipProvider>
       <>
           <div className="flex items-center gap-3 mb-2">
-            <div className="p-2.5 rounded-xl bg-[#C4DAEB] dark:bg-[#C4DAEB]/20 shrink-0">
-              <Users className="h-5 w-5 text-[#121212] dark:text-[#FDFBF7]" />
+            <div className="p-2.5 rounded-xl tone-info shrink-0">
+              <Users className="h-5 w-5" />
             </div>
             <div>
               <h1 className="text-2xl font-serif font-semibold tracking-tight text-foreground">
@@ -528,7 +528,7 @@ export default function AdminUsersPage() {
           )}
 
           {loadError && (
-            <div className="mb-4 p-4 rounded-xl bg-brand-wine/10 dark:bg-brand-wine/15 text-sm text-brand-wineDark dark:text-brand-mustardLight">
+            <div className="notice tone-danger mb-4 p-4 text-sm">
               {loadError}
             </div>
           )}
@@ -675,10 +675,10 @@ export default function AdminUsersPage() {
                                       type="button"
                                       disabled={busy || isSelf}
                                       onClick={() => void toggleReviewerLanguage(u.id, code, !active)}
-                                      className={`text-[10px] uppercase px-1.5 py-0.5 rounded border transition-colors ${
+                                      className={`text-[10px] uppercase px-1.5 py-0.5 rounded transition-colors ${
                                         active
-                                          ? 'bg-brand-blue/30 border-brand-blue/50 text-brand-ink'
-                                          : 'border-border text-muted-foreground hover:bg-muted/50'
+                                          ? 'tone-info'
+                                          : 'border border-border text-muted-foreground hover:bg-muted/50'
                                       } disabled:opacity-50`}
                                     >
                                       {code}
@@ -692,13 +692,12 @@ export default function AdminUsersPage() {
                           </td>
                           <td className="px-4 py-3 hidden xl:table-cell">
                             <Badge
-                              variant="outline"
-                              className={
+                              variant={
                                 u.account_status === 'suspended'
-                                  ? 'text-brand-wineDark border-brand-wine/40 bg-brand-wine/8'
+                                  ? 'danger'
                                   : u.account_status === 'waitlist'
-                                    ? 'text-brand-ink border-brand-mustardDark/50 bg-[#DDCF88]/35 dark:text-brand-beigeLight'
-                                    : 'border-border'
+                                    ? 'warning'
+                                    : 'outline'
                               }
                             >
                               {u.account_status === 'suspended'

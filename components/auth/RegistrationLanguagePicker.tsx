@@ -38,11 +38,11 @@ export function RegistrationLanguagePicker({
           </button>
         ))}
       </div>
-      <div className="rounded-lg border border-border bg-brand-blue/25 px-3 py-2.5 dark:bg-brand-blue/15">
-        <p className="text-sm font-semibold text-brand-ink dark:text-brand-beigeLight">
+      <div className="notice tone-info px-3 py-2.5">
+        <p className="text-sm font-semibold">
           {lockedCopy.registrationLanguageAlertTitle}
         </p>
-        <p className="mt-1 text-xs leading-relaxed text-brand-ink/90 dark:text-brand-beigeLight/90">
+        <p className="mt-1 text-xs leading-relaxed">
           {lockedCopy.registrationLanguageAlertMessage}
         </p>
       </div>

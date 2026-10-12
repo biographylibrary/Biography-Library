@@ -116,8 +116,8 @@ function OverviewContent() {
   return (
     <>
         <div className="flex items-center gap-3 mb-10">
-          <div className="p-2.5 rounded-xl bg-brand-blue/25 dark:bg-brand-blue/15 shrink-0">
-            <LayoutDashboard className="h-5 w-5 text-brand-ink dark:text-brand-blue" />
+          <div className="p-2.5 rounded-xl tone-info shrink-0">
+            <LayoutDashboard className="h-5 w-5" />
           </div>
           <div>
             <h1 className="text-2xl font-serif font-semibold tracking-tight text-foreground">
@@ -128,16 +128,16 @@ function OverviewContent() {
         </div>
 
         {stats.parseErrorCount !== null && stats.parseErrorCount > 0 && (
-          <div className="mb-8 flex items-start gap-3 rounded-xl border border-brand-mustardDark/45 bg-brand-mustardLight/50 dark:border-brand-mustardDark/40 dark:bg-brand-mustardDark/15 px-4 py-3.5">
-            <TriangleAlert className="h-5 w-5 text-brand-ink dark:text-brand-mustardLight shrink-0 mt-0.5" />
+          <div className="notice tone-warning mb-8 flex items-start gap-3 px-4 py-3.5">
+            <TriangleAlert className="h-5 w-5 shrink-0 mt-0.5" />
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-brand-ink dark:text-brand-beigeLight">
+              <p className="text-sm font-medium">
                 {t.admin.overviewParseErrorBanner.replace('{count}', String(stats.parseErrorCount))}
               </p>
             </div>
             <Link
               href="/admin/biographies?screening=parse_error"
-              className="shrink-0 inline-flex items-center gap-1 text-xs font-medium text-brand-wineDark dark:text-brand-mustardLight hover:text-brand-ink dark:hover:text-brand-beigeLight transition-colors whitespace-nowrap"
+              className="shrink-0 inline-flex items-center gap-1 text-xs font-medium underline transition-colors whitespace-nowrap opacity-90 hover:opacity-100"
             >
               {t.admin.overviewViewAffected}
               <ArrowRight className="h-3.5 w-3.5" />
@@ -252,7 +252,7 @@ function OverviewContent() {
                   <ClipboardList className="h-4 w-4 text-brand-ink dark:text-brand-blue" />
                   {t.admin.quickActionReview}
                   {(stats.underReviewBiographies ?? 0) > 0 && (
-                    <span className="inline-flex items-center justify-center min-w-[1.25rem] h-5 px-1.5 rounded-full text-xs font-semibold bg-[#DDCF88] text-[#121212] tabular-nums">
+                    <span className="inline-flex items-center justify-center min-w-[1.25rem] h-5 px-1.5 rounded-full text-xs font-semibold tone-warning tabular-nums">
                       {stats.underReviewBiographies}
                     </span>
                   )}

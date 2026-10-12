@@ -35,14 +35,14 @@ function ModerationContent() {
   return (
     <>
         <div className="flex items-center gap-3 mb-8">
-          <div className="p-2.5 rounded-xl bg-[#C4DAEB] dark:bg-[#C4DAEB]/20 shrink-0">
-            <Shield className="h-5 w-5 text-[#121212] dark:text-[#FDFBF7]" />
+          <div className="p-2.5 rounded-xl tone-info shrink-0">
+            <Shield className="h-5 w-5" />
           </div>
           <div>
             <h1 className="text-2xl font-serif font-semibold tracking-tight text-foreground flex items-center gap-2">
               {t.admin.moderationTitle}
               {unassignedCount > 0 && (
-                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-[#6D323E] text-white dark:bg-[#6D323E] dark:text-white font-sans">
+                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold tone-danger font-sans">
                   {unassignedCount} {t.admin.moderationUnassignedBadge}
                 </span>
               )}

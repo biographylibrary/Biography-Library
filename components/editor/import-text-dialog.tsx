@@ -471,13 +471,13 @@ export function ImportTextDialog({
                   </div>
                 )}
                 {importWarnings.includes('tables') && (
-                  <Alert className="border-brand-mustardDark/40 bg-brand-mustardLight/20">
+                  <Alert variant="warning">
                     <AlertCircle className="h-4 w-4" />
                     <AlertDescription>{t.importDialog.tablesFlattenedNotice}</AlertDescription>
                   </Alert>
                 )}
                 {importWarnings.includes('images') && (
-                  <Alert className="border-brand-mustardDark/40 bg-brand-mustardLight/20">
+                  <Alert variant="warning">
                     <AlertCircle className="h-4 w-4" />
                     <AlertDescription>{t.importDialog.imagesIgnoredNotice}</AlertDescription>
                   </Alert>

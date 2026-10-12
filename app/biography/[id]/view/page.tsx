@@ -681,7 +681,7 @@ export default function BiographyViewPage() {
         )}
 
         {isWithinProvisionalWindow(biography.provisional_until) && (
-          <div className="mb-4 text-sm text-[#121212] bg-[#DDCF88] border border-[#DDCF88] rounded-lg px-4 py-2.5">
+          <div className="notice tone-warning mb-4 text-sm px-4 py-2.5">
             {t.view.provisionalMark}
           </div>
         )}

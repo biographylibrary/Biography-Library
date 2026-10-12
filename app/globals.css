@@ -119,6 +119,41 @@
   }
 }
 
+@layer components {
+  .notice {
+    border-radius: calc(var(--radius) - 2px);
+  }
+  .tone-info, .tone-success, .tone-warning, .tone-danger {
+    border-width: 1px;
+    border-style: solid;
+    border-color: hsl(var(--border));
+    color: #121212;
+  }
+  .notice-bar {
+    border-width: 0 0 1px;
+    border-radius: 0;
+  }
+  .tone-info    { background-color: #C4DAEB; }
+  .tone-success { background-color: #C8DFBE; }
+  .tone-warning { background-color: rgb(221 207 136 / 0.6); }
+  .tone-danger  { background-color: rgb(148 68 84 / 0.2); }
+
+  .dark .tone-info, .dark .tone-success, .dark .tone-warning, .dark .tone-danger {
+    color: #FDFBF7;
+  }
+  .dark .tone-info    { background-color: rgb(196 218 235 / 0.1); }
+  .dark .tone-success { background-color: rgb(200 223 190 / 0.1); }
+  .dark .tone-warning { background-color: rgb(221 207 136 / 0.1); }
+  .dark .tone-danger  { background-color: rgb(148 68 84 / 0.2); }
+
+  .tone-info .text-muted-foreground,
+  .tone-success .text-muted-foreground,
+  .tone-warning .text-muted-foreground,
+  .tone-danger .text-muted-foreground {
+    color: inherit;
+  }
+}
+
 @keyframes voiceBar {
   0% {
     height: 4px;
@@ -186,12 +221,12 @@
 
 /* Le parole appena cambiate da Echo: grassetto (sopra) e fondo giallo tenue, per qualche secondo. */
 .ProseMirror .echo-just-changed {
-  background-color: rgb(250 204 21 / 0.3);
+  background-color: rgb(221 207 136 / 0.6);
   border-radius: 2px;
 }
 
 .dark .ProseMirror .echo-just-changed {
-  background-color: rgb(250 204 21 / 0.22);
+  background-color: rgb(221 207 136 / 0.3);
 }
 
 .ProseMirror em,
@@ -218,7 +253,7 @@
 }
 
 .ProseMirror p.is-editor-empty:first-child::before {
-  @apply text-muted-foreground/50;
+  @apply text-muted-foreground;
   content: attr(data-placeholder);
   float: left;
   height: 0;

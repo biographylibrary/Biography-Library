@@ -210,7 +210,7 @@ function PhotoGridTile({
       onDragEnd={onDragEnd}
       className={cn(
         'group relative aspect-square rounded-lg overflow-hidden border bg-muted transition-all duration-150 cursor-pointer',
-        selected ? 'border-primary ring-1 ring-primary' : 'border-border hover:border-border',
+        selected ? 'border-primary ring-1 ring-primary' : 'border-border',
         dragging && 'opacity-50'
       )}
       onClick={() => onSelect(item.id)}
@@ -220,14 +220,14 @@ function PhotoGridTile({
         <img src={displayUrl} alt={item.file_name ?? ''} className="w-full h-full object-cover" />
       ) : (
         <div className="w-full h-full flex items-center justify-center">
-          <ImagePlus className="h-6 w-6 text-muted-foreground/40" />
+          <ImagePlus className="h-6 w-6 text-muted-foreground" />
         </div>
       )}
-      <span className="absolute top-1 left-1 min-w-[1.25rem] h-5 px-1 rounded bg-black/55 text-white text-[10px] font-semibold flex items-center justify-center">
+      <span className="absolute top-1 left-1 min-w-[1.25rem] h-5 px-1 rounded bg-black/50 text-white text-[10px] font-semibold flex items-center justify-center">
         {index + 1}
       </span>
       <div className="absolute top-1 right-1 flex gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
-        <div className="cursor-grab active:cursor-grabbing p-1 rounded bg-black/45 text-white">
+        <div className="cursor-grab active:cursor-grabbing p-1 rounded bg-black/50 text-white">
           <GripVertical className="h-3.5 w-3.5" />
         </div>
         <button
@@ -236,7 +236,7 @@ function PhotoGridTile({
             e.stopPropagation();
             onDelete(item);
           }}
-          className="p-1 rounded bg-black/45 text-white hover:bg-brand-wine/80"
+          className="p-1 rounded bg-black/50 text-white hover:bg-brand-wine/80"
           title={t.photos.deleteButton}
         >
           <Trash2 className="h-3.5 w-3.5" />
@@ -294,7 +294,7 @@ function PhotoCard({
           />
         ) : (
           <div className="w-full h-36 flex items-center justify-center">
-            <ImagePlus className="h-8 w-8 text-muted-foreground/40" />
+            <ImagePlus className="h-8 w-8 text-muted-foreground" />
           </div>
         )}
         <div className="absolute top-2 left-2 cursor-grab active:cursor-grabbing p-1 rounded bg-black/40 text-white opacity-0 group-hover:opacity-100 transition-opacity">
@@ -710,7 +710,7 @@ export function PhotoGalleryPanel({ biographyId, onClose, embedded }: PhotoGalle
   const panelBody = (
     <>
       {errorMsg && (
-        <div className="text-sm text-brand-wineDark dark:text-brand-beigeLight bg-brand-wine/10 dark:bg-brand-wine/20 rounded-lg px-3 py-2 border border-brand-wine/25">
+        <div className="notice tone-danger text-sm px-3 py-2">
           {errorMsg}
         </div>
       )}

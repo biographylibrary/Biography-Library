@@ -316,15 +316,15 @@ export function ModerationDetailPanel({ report, onClose, onRefresh }: Moderation
             {(lockWarning || conflictError) && (
               <div className="px-6 py-4 space-y-2">
                 {lockWarning && (
-                  <div className="flex items-start gap-3 rounded-lg border border-brand-mustardDark/45 bg-brand-mustardLight/45 dark:bg-brand-mustardDark/20 dark:border-brand-mustardDark/50 px-4 py-3">
-                    <AlertCircle className="h-4 w-4 text-brand-mustardDark dark:text-brand-mustardLight mt-0.5 shrink-0" />
-                    <p className="text-sm text-brand-ink dark:text-brand-beigeLight">{lockWarning}</p>
+                  <div className="notice tone-warning flex items-start gap-3 px-4 py-3">
+                    <AlertCircle className="h-4 w-4 mt-0.5 shrink-0" />
+                    <p className="text-sm">{lockWarning}</p>
                   </div>
                 )}
                 {conflictError && (
-                  <div className="flex items-start gap-3 rounded-lg border border-brand-wine/40 bg-brand-wine/10 dark:bg-brand-wine/20 dark:border-brand-wine/45 px-4 py-3">
-                    <AlertCircle className="h-4 w-4 text-brand-wine dark:text-brand-beigeLight mt-0.5 shrink-0" />
-                    <p className="text-sm text-brand-wineDark dark:text-brand-beigeLight">
+                  <div className="notice tone-danger flex items-start gap-3 px-4 py-3">
+                    <AlertCircle className="h-4 w-4 mt-0.5 shrink-0" />
+                    <p className="text-sm">
                       {t.admin.moderationConflictError}
                     </p>
                   </div>
@@ -385,8 +385,8 @@ export function ModerationDetailPanel({ report, onClose, onRefresh }: Moderation
               </div>
 
               {hasUserReportContent && (
-                <div className="space-y-2 rounded-lg border border-brand-mustardDark/45 bg-brand-mustardLight/40 dark:bg-brand-mustardDark/20 dark:border-brand-mustardDark/50 p-4">
-                  <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                <div className="notice tone-warning space-y-2 p-4">
+                  <p className="text-xs font-semibold uppercase tracking-wider opacity-80">
                     {t.admin.userReportDetails}
                   </p>
                   {report.reporter_email && (
@@ -422,7 +422,7 @@ export function ModerationDetailPanel({ report, onClose, onRefresh }: Moderation
                     {flaggedPassages.map((fp, i) => (
                       <div
                         key={i}
-                        className="rounded-lg border-l-4 border-brand-mustardDark bg-brand-mustardLight/50 dark:bg-brand-mustardDark/25 dark:border-brand-mustardLight px-3 py-2.5 space-y-1"
+                        className="notice tone-warning px-3 py-2.5 space-y-1"
                       >
                         {fp.section_key && (
                           <p className="text-xs font-medium text-foreground">

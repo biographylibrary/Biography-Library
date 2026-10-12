@@ -111,16 +111,16 @@ export function ModeSwitchWarningDialog({
           <>
             <DialogHeader>
               <div className="flex items-center gap-2 mb-1">
-                <div className="w-8 h-8 rounded-full bg-brand-mustardLight/80 dark:bg-brand-mustardDark/30 flex items-center justify-center flex-shrink-0">
-                  <AlertTriangle className="h-4 w-4 text-brand-mustardDark dark:text-brand-mustardLight" />
+                <div className="w-8 h-8 rounded-full tone-warning flex items-center justify-center flex-shrink-0">
+                  <AlertTriangle className="h-4 w-4" />
                 </div>
-                <DialogTitle className="text-brand-ink dark:text-brand-beigeLight">
+                <DialogTitle>
                   {t.modeSwitchWarning.step1Title}
                 </DialogTitle>
               </div>
             </DialogHeader>
 
-            <div className="rounded-lg bg-brand-mustardLight/45 border border-brand-mustardDark/40 p-4 text-xs text-brand-ink dark:bg-brand-mustardDark/20 dark:border-brand-mustardDark/50 dark:text-brand-beigeLight leading-relaxed break-words">
+            <div className="notice tone-warning p-4 text-xs leading-relaxed break-words">
               {interpolate(t.modeSwitchWarning.step1Message)}
             </div>
 
@@ -185,7 +185,7 @@ export function ModeSwitchWarningDialog({
           <>
             <DialogHeader>
               <div className="flex items-center gap-2 mb-1">
-                <div className="w-8 h-8 rounded-full bg-destructive/15 flex items-center justify-center flex-shrink-0">
+                <div className="w-8 h-8 rounded-full bg-destructive/10 flex items-center justify-center flex-shrink-0">
                   <AlertTriangle className="h-4 w-4 text-destructive" />
                 </div>
                 <DialogTitle className="text-destructive">

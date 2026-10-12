@@ -62,7 +62,7 @@ export function EchoAvatar({
               className={cn(
                 'text-xs block',
                 horizontal ? 'mt-0.5 truncate max-w-[min(100%,14rem)]' : 'text-center max-w-[200px] mt-0.5',
-                onDark ? 'text-brand-beigeLight/65' : 'text-muted-foreground'
+                onDark ? 'text-brand-beigeLight/60' : 'text-muted-foreground'
               )}
             >
               {statusText}

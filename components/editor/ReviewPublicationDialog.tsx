@@ -112,9 +112,9 @@ export function ReviewPublicationDialog({
         </DialogHeader>
 
         {(submitPreflightError || publicationActionError) && (
-          <div className="flex items-start gap-2.5 rounded-lg border border-brand-wine/40 bg-brand-wine/10 px-3 py-2.5">
-            <AlertTriangle className="h-4 w-4 mt-0.5 shrink-0 text-brand-wine" />
-            <p className="text-sm text-brand-wineDark dark:text-brand-beigeLight leading-relaxed">
+          <div className="notice tone-danger flex items-start gap-2.5 px-3 py-2.5">
+            <AlertTriangle className="h-4 w-4 mt-0.5 shrink-0" />
+            <p className="text-sm leading-relaxed">
               {submitPreflightError || publicationActionError}
             </p>
           </div>
@@ -212,7 +212,7 @@ export function ReviewPublicationDialog({
                   <p className="text-xs text-muted-foreground leading-relaxed">
                     {rp.stepSubmitDesc}
                   </p>
-                  <p className="text-xs text-muted-foreground/80 leading-relaxed border-l-2 border-border pl-2">
+                  <p className="text-xs text-muted-foreground leading-relaxed border-l-2 border-border pl-2">
                     {t.editor.publicationLegacySubmitHint}
                   </p>
                   <Button
@@ -367,11 +367,11 @@ export function ReviewPublicationDialog({
             )}
 
             {biographyStatus === 'published' && (
-              <li className="flex gap-3 rounded-lg border border-brand-greenDark/40 bg-brand-greenLight/20 p-4">
-                <Check className="h-5 w-5 shrink-0 text-brand-greenDark mt-0.5" />
+              <li className="notice tone-success flex gap-3 p-4">
+                <Check className="h-5 w-5 shrink-0 mt-0.5" />
                 <div className="flex-1 space-y-2 min-w-0">
                   <p className="font-medium text-sm">{rp.publishedTitle}</p>
-                  <p className="text-xs text-muted-foreground leading-relaxed">
+                  <p className="text-xs leading-relaxed opacity-90">
                     {rp.publishedDesc}
                   </p>
                   <Button

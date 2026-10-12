@@ -193,9 +193,9 @@ export function SectionSidebar({
     public: t.dashboard.public,
   };
   const saveStatusConfig: Record<SaveStatus, { icon: typeof Check; text: string; className: string }> = {
-    saved: { icon: Check, text: t.common.saved, className: 'text-[#5E685A] dark:text-[#C8DFBE]' },
+    saved: { icon: Check, text: t.common.saved, className: 'text-brand-greenDark dark:text-brand-greenLight' },
     saving: { icon: Loader2, text: t.common.saving, className: 'text-muted-foreground' },
-    unsaved: { icon: CloudOff, text: t.editor.unsaved, className: 'text-brand-mustardDark dark:text-brand-mustardLight' },
+    unsaved: { icon: CloudOff, text: t.editor.unsaved, className: 'text-foreground' },
     error: { icon: CloudOff, text: t.editor.saveFailed, className: 'text-destructive' },
   };
   const status = saveStatusConfig[saveStatus];
@@ -361,7 +361,7 @@ export function SectionSidebar({
           className={cn(
             'w-full flex items-center gap-2 px-3 py-1 lg:py-2 rounded-lg text-sm transition-colors',
             exportDisabled
-              ? 'text-muted-foreground/50 cursor-not-allowed'
+              ? 'text-muted-foreground cursor-not-allowed'
               : 'text-muted-foreground hover:bg-muted/50 hover:text-foreground'
           )}
         >
@@ -434,7 +434,7 @@ export function SectionSidebar({
           </button>
         )}
         {isEdition && (
-          <div className="w-full flex items-center gap-2 px-3 py-1 lg:py-2 rounded-lg text-sm text-muted-foreground/70">
+          <div className="w-full flex items-center gap-2 px-3 py-1 lg:py-2 rounded-lg text-sm text-muted-foreground">
             <CurrentPrivacyIcon className="h-4 w-4 shrink-0" />
             <span className="truncate min-w-0 flex-1 text-left">{t.translate.managedByOriginal}</span>
           </div>

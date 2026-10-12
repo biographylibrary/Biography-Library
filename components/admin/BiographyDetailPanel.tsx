@@ -65,19 +65,19 @@ interface BiographyDetailPanelProps {
 function StatusBadge({ status }: { status: string }) {
   const { t } = useTranslation();
   const map: Record<string, { label: string; className: string }> = {
-    draft: { label: t.admin.bioStatusDraft, className: 'bg-brand-beigeBg text-brand-ink border-brand-greenDark/25 dark:bg-brand-ink/35 dark:text-brand-beigeLight dark:border-brand-greenDark/40' },
-    published: { label: t.admin.bioStatusPublished, className: 'bg-[#C8DFBE] text-[#121212] border-[#C8DFBE] dark:bg-[#C8DFBE]/20 dark:text-[#C8DFBE] dark:border-[#5E685A]/50' },
-    under_review: { label: t.admin.bioStatusUnderReview, className: 'bg-[#DDCF88] text-[#121212] border-[#DDCF88] dark:bg-[#DDCF88]/20 dark:text-[#DDCF88] dark:border-[#DDCF88]/50' },
-    pdf_draft: { label: t.admin.bioStatusPdfDraft, className: 'bg-[#DDCF88]/90 text-[#121212] border-[#DDCF88] dark:bg-[#DDCF88]/25 dark:text-[#DDCF88] dark:border-[#DDCF88]/50' },
+    draft: { label: t.admin.bioStatusDraft, className: 'bg-brand-beigeBg text-brand-ink border-brand-greenDark/25 dark:bg-brand-ink/30 dark:text-brand-beigeLight dark:border-brand-greenDark/40' },
+    published: { label: t.admin.bioStatusPublished, className: 'tone-success' },
+    under_review: { label: t.admin.bioStatusUnderReview, className: 'tone-warning' },
+    pdf_draft: { label: t.admin.bioStatusPdfDraft, className: 'tone-warning' },
     locked_pending_screening: {
       label: t.admin.bioStatusLockedPendingScreening,
-      className: 'bg-[#C4DAEB] text-[#121212] border-[#C4DAEB] dark:bg-[#C4DAEB]/20 dark:text-[#C4DAEB] dark:border-brand-blue/40',
+      className: 'tone-info',
     },
-    removed: { label: t.admin.bioStatusRemoved, className: 'bg-[#6D323E] text-white border-[#6D323E] dark:bg-[#6D323E] dark:text-white dark:border-[#944454]/50' },
-    suspended_pending_verification: { label: t.admin.bioStatusSuspendedPendingVerification, className: 'bg-[#6D323E] text-white border-[#6D323E] dark:bg-[#6D323E] dark:text-white dark:border-[#944454]/50' },
-    revision_requested: { label: t.admin.bioStatusRevisionRequested, className: 'bg-[#DDCF88] text-[#121212] border-[#DDCF88] dark:bg-[#DDCF88]/20 dark:text-[#DDCF88] dark:border-[#DDCF88]/50' },
-    revision_pending_review: { label: t.admin.bioStatusRevisionPendingReview, className: 'bg-[#DDCF88] text-[#121212] border-[#DDCF88] dark:bg-[#DDCF88]/20 dark:text-[#DDCF88] dark:border-[#DDCF88]/50' },
-    revision_overdue: { label: t.admin.bioStatusRevisionOverdue, className: 'bg-[#6D323E] text-white border-[#6D323E] dark:bg-[#6D323E] dark:text-white dark:border-[#944454]/50' },
+    removed: { label: t.admin.bioStatusRemoved, className: 'tone-danger' },
+    suspended_pending_verification: { label: t.admin.bioStatusSuspendedPendingVerification, className: 'tone-danger' },
+    revision_requested: { label: t.admin.bioStatusRevisionRequested, className: 'tone-warning' },
+    revision_pending_review: { label: t.admin.bioStatusRevisionPendingReview, className: 'tone-warning' },
+    revision_overdue: { label: t.admin.bioStatusRevisionOverdue, className: 'tone-danger' },
   };
   const cfg = map[status] ?? map['draft'];
   return (
@@ -90,9 +90,9 @@ function StatusBadge({ status }: { status: string }) {
 function PrivacyBadge({ privacy }: { privacy: string }) {
   const { t } = useTranslation();
   const map: Record<string, { label: string; className: string }> = {
-    private: { label: t.admin.bioPrivatePrivacy, className: 'bg-brand-beigeBg text-brand-ink/90 border-brand-greenDark/20 dark:bg-brand-ink/30 dark:text-brand-beigeLight/90 dark:border-brand-greenDark/35' },
-    'link-only': { label: t.admin.bioFamilyPrivacy, className: 'bg-[#C4DAEB] text-[#121212] border-[#C4DAEB] dark:bg-[#C4DAEB]/20 dark:text-[#C4DAEB]' },
-    public: { label: t.admin.bioPublicPrivacy, className: 'bg-[#C8DFBE] text-[#121212] border-[#C8DFBE] dark:bg-[#C8DFBE]/20 dark:text-[#C8DFBE]' },
+    private: { label: t.admin.bioPrivatePrivacy, className: 'bg-brand-beigeBg text-brand-ink/90 border-brand-greenDark/20 dark:bg-brand-ink/30 dark:text-brand-beigeLight/90 dark:border-brand-greenDark/30' },
+    'link-only': { label: t.admin.bioFamilyPrivacy, className: 'tone-info' },
+    public: { label: t.admin.bioPublicPrivacy, className: 'tone-success' },
   };
   const cfg = map[privacy] ?? map['private'];
   return (
@@ -294,7 +294,7 @@ export function BiographyDetailPanel({ biography, onClose, onRefresh }: Biograph
                     <div className="flex items-center gap-2 flex-wrap">
                       <StatusBadge status={biography.status} />
                       {biography.is_frozen && (
-                        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold border bg-[#C4DAEB] text-[#121212] border-brand-blue/60 dark:bg-[#C4DAEB]/20 dark:text-[#C4DAEB] dark:border-brand-blue/40">
+                        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold tone-info">
                           <Snowflake className="h-3 w-3" />
                           {t.admin.bioStatusFrozen}
                         </span>
@@ -369,7 +369,7 @@ export function BiographyDetailPanel({ biography, onClose, onRefresh }: Biograph
                   {biography.status !== 'draft' && biography.status !== 'removed' && (
                     <Button
                       variant="outline"
-                      className="justify-start gap-2 border-brand-mustardDark/45 text-brand-ink hover:bg-brand-mustardLight/45 dark:border-brand-mustardDark/50 dark:text-brand-beigeLight dark:hover:bg-brand-mustardDark/25"
+                      className="justify-start gap-2 border-brand-mustardDark/40 text-brand-ink hover:bg-brand-mustardLight/40 dark:border-brand-mustardDark/50 dark:text-brand-beigeLight dark:hover:bg-brand-mustardDark/25"
                       onClick={() => setConfirmAction('set_draft')}
                       disabled={saving}
                     >
@@ -379,7 +379,7 @@ export function BiographyDetailPanel({ biography, onClose, onRefresh }: Biograph
                   {biography.status === 'draft' && (
                     <Button
                       variant="outline"
-                      className="justify-start gap-2 border-brand-mustardDark/45 text-brand-ink hover:bg-brand-mustardLight/45 dark:border-brand-mustardDark/50 dark:text-brand-beigeLight dark:hover:bg-brand-mustardDark/25"
+                      className="justify-start gap-2 border-brand-mustardDark/40 text-brand-ink hover:bg-brand-mustardLight/40 dark:border-brand-mustardDark/50 dark:text-brand-beigeLight dark:hover:bg-brand-mustardDark/25"
                       onClick={() => setConfirmAction('set_draft')}
                       disabled={true}
                       style={{ display: 'none' }}
@@ -390,7 +390,7 @@ export function BiographyDetailPanel({ biography, onClose, onRefresh }: Biograph
                   {biography.status !== 'removed' && (
                     <Button
                       variant="outline"
-                      className="justify-start gap-2 border-brand-wine/40 text-brand-wineDark hover:bg-brand-wine/10 dark:border-brand-wine/45 dark:text-brand-beigeLight dark:hover:bg-brand-wine/20"
+                      className="justify-start gap-2 border-brand-wine/40 text-brand-wineDark hover:bg-brand-wine/10 dark:border-brand-wine/40 dark:text-brand-beigeLight dark:hover:bg-brand-wine/20"
                       onClick={() => setConfirmAction('remove')}
                       disabled={saving}
                     >
@@ -400,7 +400,7 @@ export function BiographyDetailPanel({ biography, onClose, onRefresh }: Biograph
                   {biography.status === 'removed' && (
                     <Button
                       variant="outline"
-                      className="justify-start gap-2 border-brand-blue/60 text-brand-ink hover:bg-brand-blue/25 dark:border-brand-blue/45 dark:text-brand-beigeLight dark:hover:bg-brand-blue/15"
+                      className="justify-start gap-2 border-brand-blue/60 text-brand-ink hover:bg-brand-blue/25 dark:border-brand-blue/40 dark:text-brand-beigeLight dark:hover:bg-brand-blue/10"
                       onClick={() => setConfirmAction('restore')}
                       disabled={saving}
                     >
@@ -410,7 +410,7 @@ export function BiographyDetailPanel({ biography, onClose, onRefresh }: Biograph
                   {!biography.is_frozen && (
                     <Button
                       variant="outline"
-                      className="justify-start gap-2 border-brand-blue/60 text-brand-ink hover:bg-brand-blue/25 dark:border-brand-blue/45 dark:text-brand-beigeLight dark:hover:bg-brand-blue/15"
+                      className="justify-start gap-2 border-brand-blue/60 text-brand-ink hover:bg-brand-blue/25 dark:border-brand-blue/40 dark:text-brand-beigeLight dark:hover:bg-brand-blue/10"
                       onClick={() => setConfirmAction('freeze')}
                       disabled={saving}
                     >
@@ -421,7 +421,7 @@ export function BiographyDetailPanel({ biography, onClose, onRefresh }: Biograph
                   {biography.is_frozen && (
                     <Button
                       variant="outline"
-                      className="justify-start gap-2 border-brand-blue/60 text-brand-ink hover:bg-brand-blue/25 dark:border-brand-blue/45 dark:text-brand-beigeLight dark:hover:bg-brand-blue/15"
+                      className="justify-start gap-2 border-brand-blue/60 text-brand-ink hover:bg-brand-blue/25 dark:border-brand-blue/40 dark:text-brand-beigeLight dark:hover:bg-brand-blue/10"
                       onClick={() => setConfirmAction('unfreeze')}
                       disabled={saving}
                     >

@@ -33,7 +33,7 @@ type StepConfig = {
 
 const steps: StepConfig[] = [
   {
-    icon: <Lock className="h-6 w-6 text-brand-mustardDark dark:text-brand-mustardLight" />,
+    icon: <Lock className="h-6 w-6 text-foreground" />,
     title: {
       en: 'Your biography will become read-only',
       it: 'La tua biografia diventerà di sola lettura',
@@ -54,7 +54,7 @@ const steps: StepConfig[] = [
     },
   },
   {
-    icon: <Sparkles className="h-6 w-6 text-brand-blue dark:text-brand-beigeLight" />,
+    icon: <Sparkles className="h-6 w-6 text-foreground" />,
     title: {
       en: 'What happens next',
       it: 'Cosa succede dopo',
@@ -231,9 +231,9 @@ export function SubmitForReviewDialog({
         </DialogHeader>
 
         {readinessError && (
-          <div className="flex items-start gap-2.5 rounded-lg border border-brand-wine/40 bg-brand-wine/10 px-3 py-2.5">
-            <AlertTriangle className="h-4 w-4 mt-0.5 shrink-0 text-brand-wine" />
-            <p className="text-sm text-brand-wineDark dark:text-brand-beigeLight leading-relaxed">{readinessError}</p>
+          <div className="notice tone-danger flex items-start gap-2.5 px-3 py-2.5">
+            <AlertTriangle className="h-4 w-4 mt-0.5 shrink-0" />
+            <p className="text-sm leading-relaxed">{readinessError}</p>
           </div>
         )}
 
@@ -257,21 +257,11 @@ export function SubmitForReviewDialog({
 
           {current.warning && (
             <div className={[
-              'rounded-lg border p-3 flex items-start gap-2.5',
-              isLastStep
-                ? 'bg-brand-mustardLight/45 border-brand-mustardDark/40 dark:bg-brand-mustardDark/20 dark:border-brand-mustardDark/50'
-                : 'bg-brand-blue/25 border-brand-blue/55 dark:bg-brand-blue/15 dark:border-brand-blue/45',
+              'notice p-3 flex items-start gap-2.5',
+              isLastStep ? 'tone-warning' : 'tone-info',
             ].join(' ')}>
-              <AlertTriangle className={[
-                'h-4 w-4 mt-0.5 shrink-0',
-                isLastStep ? 'text-brand-mustardDark dark:text-brand-mustardLight' : 'text-brand-ink dark:text-brand-beigeLight',
-              ].join(' ')} />
-              <p className={[
-                'text-sm font-medium',
-                isLastStep
-                  ? 'text-brand-ink dark:text-brand-beigeLight'
-                  : 'text-brand-ink dark:text-brand-beigeLight',
-              ].join(' ')}>
+              <AlertTriangle className="h-4 w-4 mt-0.5 shrink-0" />
+              <p className="text-sm font-medium">
                 {label(current.warning, language)}
               </p>
             </div>

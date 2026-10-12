@@ -81,22 +81,22 @@ export function AiUsageIndicator({ refreshTrigger }: AiUsageIndicatorProps) {
           <Sparkles className={cn(
             'h-2.5 w-2.5 shrink-0 max-md:hidden',
             (dailyCritical || weeklyCritical) ? 'text-destructive' :
-            (dailyWarning || weeklyWarning) ? 'text-brand-mustardDark dark:text-brand-mustardLight' :
+            (dailyWarning || weeklyWarning) ? 'text-foreground' :
             'text-muted-foreground'
           )} />
           <span className={cn(
             'text-[10px] font-medium leading-none tabular-nums',
             dailyCritical ? 'text-destructive' :
-            dailyWarning ? 'text-brand-mustardDark dark:text-brand-mustardLight' :
+            dailyWarning ? 'text-foreground' :
             'text-muted-foreground'
           )}>
             {usage.daily_count}/{DAILY_LIMIT}
           </span>
-          <span className="text-[10px] leading-none text-muted-foreground/50">·</span>
+          <span className="text-[10px] leading-none text-muted-foreground">·</span>
           <span className={cn(
             'text-[10px] font-medium leading-none tabular-nums',
             weeklyCritical ? 'text-destructive' :
-            weeklyWarning ? 'text-brand-mustardDark dark:text-brand-mustardLight' :
+            weeklyWarning ? 'text-foreground' :
             'text-muted-foreground'
           )}>
             {usage.weekly_count}/{WEEKLY_LIMIT}
@@ -109,7 +109,7 @@ export function AiUsageIndicator({ refreshTrigger }: AiUsageIndicatorProps) {
           <div>
             <div className="flex justify-between text-xs mb-0.5">
               <span className="text-muted-foreground">{t.aiUsage.today}</span>
-              <span className={cn(dailyCritical ? 'text-destructive' : dailyWarning ? 'text-brand-mustardDark dark:text-brand-mustardLight' : '')}>
+              <span className={cn(dailyCritical ? 'text-destructive' : dailyWarning ? 'text-foreground' : '')}>
                 {usage.daily_count}/{DAILY_LIMIT}
               </span>
             </div>
@@ -128,7 +128,7 @@ export function AiUsageIndicator({ refreshTrigger }: AiUsageIndicatorProps) {
           <div>
             <div className="flex justify-between text-xs mb-0.5">
               <span className="text-muted-foreground">{t.aiUsage.thisWeek}</span>
-              <span className={cn(weeklyCritical ? 'text-destructive' : weeklyWarning ? 'text-brand-mustardDark dark:text-brand-mustardLight' : '')}>
+              <span className={cn(weeklyCritical ? 'text-destructive' : weeklyWarning ? 'text-foreground' : '')}>
                 {usage.weekly_count}/{WEEKLY_LIMIT}
               </span>
             </div>

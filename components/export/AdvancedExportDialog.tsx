@@ -674,7 +674,7 @@ export function AdvancedExportDialog({
         </DialogHeader>
 
         {reviewLocked && (
-          <div className="flex items-start gap-3 rounded-lg bg-brand-mustardLight/45 border border-brand-mustardDark/40 dark:bg-brand-mustardDark/20 dark:border-brand-mustardDark/50 px-4 py-3 text-sm text-brand-ink dark:text-brand-beigeLight">
+          <div className="notice tone-warning flex items-start gap-3 px-4 py-3 text-sm">
             <Info className="h-4 w-4 shrink-0 mt-0.5" />
             <p>{t.exportDialog.exportReviewLocked}</p>
           </div>
@@ -682,11 +682,11 @@ export function AdvancedExportDialog({
 
 
         {isPdfFormat && readinessStatus === 'not-ready' && readinessIssues.length > 0 && (
-          <div className="flex items-start gap-3 rounded-lg bg-brand-mustardLight/45 border border-brand-mustardDark/40 dark:bg-brand-mustardDark/20 dark:border-brand-mustardDark/50 px-4 py-3">
-            <AlertTriangle className="h-4 w-4 mt-0.5 shrink-0 text-brand-mustardDark dark:text-brand-mustardLight" />
+          <div className="notice tone-warning flex items-start gap-3 px-4 py-3">
+            <AlertTriangle className="h-4 w-4 mt-0.5 shrink-0" />
             <div className="flex-1 space-y-1">
               {readinessIssues.map((issue) => (
-                <p key={issue} className="text-sm text-brand-ink dark:text-brand-beigeLight leading-relaxed">
+                <p key={issue} className="text-sm leading-relaxed">
                   {issue === 'unsupported-script'
                     ? t.umId.unsupportedScript
                     : getPdfReadinessMessage(issue, coverWarning)}
@@ -709,7 +709,7 @@ export function AdvancedExportDialog({
             <button
               type="button"
               onClick={checkReadiness}
-              className="shrink-0 text-brand-mustardDark dark:text-brand-mustardLight hover:text-brand-ink dark:hover:text-brand-beigeLight transition-colors"
+              className="shrink-0 opacity-90 hover:opacity-100 transition-opacity"
               aria-label="Retry"
             >
               <RefreshCw className="h-4 w-4" />
@@ -718,28 +718,28 @@ export function AdvancedExportDialog({
         )}
 
         {exportError === t.exportDialog.fontLoadError && (
-          <div className="flex items-start gap-3 rounded-lg bg-brand-wine/10 border border-brand-wine/35 px-4 py-3">
-            <AlertTriangle className="h-4 w-4 mt-0.5 shrink-0 text-brand-wine" />
-            <p className="text-sm text-brand-wineDark dark:text-brand-beigeLight leading-relaxed flex-1">{t.exportDialog.fontLoadError}</p>
+          <div className="notice tone-danger flex items-start gap-3 px-4 py-3">
+            <AlertTriangle className="h-4 w-4 mt-0.5 shrink-0" />
+            <p className="text-sm leading-relaxed flex-1">{t.exportDialog.fontLoadError}</p>
           </div>
         )}
 
         {exportError && exportError !== coverWarning && exportError !== t.exportDialog.fontLoadError && (
-          <div className="flex items-start gap-3 rounded-lg bg-brand-wine/10 border border-brand-wine/35 px-4 py-3">
-            <AlertTriangle className="h-4 w-4 mt-0.5 shrink-0 text-brand-wine" />
-            <p className="text-sm text-brand-wineDark dark:text-brand-beigeLight leading-relaxed flex-1">{exportError}</p>
+          <div className="notice tone-danger flex items-start gap-3 px-4 py-3">
+            <AlertTriangle className="h-4 w-4 mt-0.5 shrink-0" />
+            <p className="text-sm leading-relaxed flex-1">{exportError}</p>
           </div>
         )}
 
         <div className="space-y-6 py-4">
             {!isPublished && isPdfFormat && (
-              <div className="flex items-start gap-3 rounded-lg bg-brand-mustardLight/45 border border-brand-mustardDark/40 dark:bg-brand-mustardDark/20 dark:border-brand-mustardDark/50 px-4 py-3">
-                <Info className="h-4 w-4 mt-0.5 shrink-0 text-brand-ink/85 dark:text-brand-mustardLight" />
+              <div className="notice tone-warning flex items-start gap-3 px-4 py-3">
+                <Info className="h-4 w-4 mt-0.5 shrink-0" />
                 <div className="flex-1 space-y-1">
-                  <p className="text-sm text-brand-ink dark:text-brand-beigeLight leading-relaxed">
+                  <p className="text-sm leading-relaxed">
                     {t.exportDialog.pdfDraftNotice}
                   </p>
-                  <p className="text-xs text-brand-ink/80 dark:text-brand-beigeLight/85 font-medium">
+                  <p className="text-xs font-medium">
                     {draftIteration == null
                       ? t.exportDialog.draftIterationNone
                       : t.exportDialog.draftIterationCurrent
@@ -750,17 +750,17 @@ export function AdvancedExportDialog({
               </div>
             )}
             {draftWarning && (
-              <div className="flex items-start gap-3 rounded-lg bg-brand-mustardLight/45 border border-brand-mustardDark/40 dark:bg-brand-mustardDark/20 dark:border-brand-mustardDark/50 px-4 py-3">
-                <AlertTriangle className="h-4 w-4 mt-0.5 shrink-0 text-brand-mustardDark dark:text-brand-mustardLight" />
-                <p className="text-sm text-brand-ink dark:text-brand-beigeLight leading-relaxed">
+              <div className="notice tone-warning flex items-start gap-3 px-4 py-3">
+                <AlertTriangle className="h-4 w-4 mt-0.5 shrink-0" />
+                <p className="text-sm leading-relaxed">
                   {t.exportDialog.draftIterationWarning.replace('{n}', String(draftIteration ?? 0))}
                 </p>
               </div>
             )}
             {draftLimitExceeded && (
-              <div className="flex items-start gap-3 rounded-lg bg-brand-wine/12 border border-brand-wine/40 px-4 py-3 dark:bg-brand-wine/20 dark:border-brand-wine/45">
-                <FileWarning className="h-4 w-4 mt-0.5 shrink-0 text-brand-wine dark:text-brand-beigeLight" />
-                <p className="text-sm text-brand-wineDark dark:text-brand-beigeLight leading-relaxed">
+              <div className="notice tone-danger flex items-start gap-3 px-4 py-3">
+                <FileWarning className="h-4 w-4 mt-0.5 shrink-0" />
+                <p className="text-sm leading-relaxed">
                   {t.exportDialog.draftLimitReached}
                 </p>
               </div>
@@ -807,7 +807,7 @@ export function AdvancedExportDialog({
                   </p>
                 )}
                 {hasSeverity3RedFlag && (
-                  <div className="rounded-md border border-brand-mustardDark/40 bg-brand-mustardLight/45 px-3 py-2 text-xs text-brand-ink dark:text-brand-beigeLight">
+                  <div className="notice tone-warning px-3 py-2 text-xs">
                     {t.exportDialog.draftAiSeverity3Block}
                   </div>
                 )}

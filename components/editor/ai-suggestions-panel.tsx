@@ -31,9 +31,9 @@ function SuggestionCard({
     <div
       className={cn(
         'rounded-lg border p-3 transition-colors',
-        suggestion.status === 'accepted' && 'border-brand-greenLight/50 bg-brand-greenLight/10',
-        suggestion.status === 'rejected' && 'border-muted bg-muted/30 opacity-50',
-        suggestion.status === 'pending' && 'border-border bg-card'
+        suggestion.status === 'accepted' && 'tone-success',
+        suggestion.status === 'rejected' && 'border border-muted bg-muted/30 opacity-50',
+        suggestion.status === 'pending' && 'border border-border bg-card'
       )}
     >
       {suggestion.original && (
@@ -41,7 +41,7 @@ function SuggestionCard({
           <span className="text-[11px] uppercase tracking-wider text-muted-foreground font-medium">
             {t.editor.original}
           </span>
-          <p className="text-sm text-foreground/80 mt-0.5 line-through decoration-red-400/50">
+          <p className="text-sm text-foreground/80 mt-0.5 line-through decoration-brand-wine/50">
             {suggestion.original}
           </p>
         </div>
