@@ -577,7 +577,7 @@ export default function BiographyViewPage() {
     return (
       <div className="h-full flex flex-col items-center justify-center gap-4 p-4">
         <Lock className="h-12 w-12 text-muted-foreground" />
-        <h1 className="text-2xl font-semibold">{t.view.accessDenied}</h1>
+        <h1 className="text-2xl">{t.view.accessDenied}</h1>
         <p className="text-muted-foreground text-center max-w-md">
           {error ? getErrorMessage(error) : t.view.notAvailable}
         </p>
@@ -594,7 +594,7 @@ export default function BiographyViewPage() {
         <div className="max-w-4xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <Logo height={40} />
-            <h1 className="text-lg font-serif font-semibold truncate max-w-[300px] sm:max-w-none">
+            <h1 className="text-lg font-serif truncate max-w-[300px] sm:max-w-none">
               {biography.title}
             </h1>
           </div>
@@ -701,7 +701,7 @@ export default function BiographyViewPage() {
                 <p className="mt-2 text-sm text-muted-foreground">{t.view.pioneerNote}</p>
               </div>
             )}
-            <h1 className="text-4xl font-serif font-bold mb-2">
+            <h1 className="text-4xl font-serif mb-2">
               {biography.biography_type === 'memorial'
                 ? memorialSubjectName(biography.subject_name, biography.title)
                 : biography.title}
@@ -784,7 +784,7 @@ export default function BiographyViewPage() {
               return (
                 <section key={section.key} className="mb-12">
                   <div className="flex items-baseline justify-between gap-4 mb-6">
-                    <h2 className="text-2xl font-serif font-semibold text-primary">
+                    <h2 className="text-2xl font-serif text-primary">
                       {sectionTitle}
                     </h2>
                     {section.sectionCreatedAt && (

@@ -74,7 +74,7 @@ export function TextLanguageField({
   return (
     <div className="space-y-2">
       <div className="space-y-1">
-        <p className="text-sm font-medium text-foreground">{copy.label}</p>
+        <p className="text-sm text-foreground">{copy.label}</p>
         <p className="text-xs text-muted-foreground">{copy.hint}</p>
       </div>
       <Popover modal open={open} onOpenChange={setOpen}>
@@ -124,7 +124,7 @@ export function TextLanguageField({
         </PopoverContent>
       </Popover>
       <div className="space-y-1">
-        <label className="text-xs font-medium text-muted-foreground" htmlFor="text-language-region">
+        <label className="text-xs text-muted-foreground" htmlFor="text-language-region">
           {copy.regionLabel}
         </label>
         <Input

@@ -141,7 +141,7 @@ function CollapsibleGroup({ title, children, defaultOpen = true }: CollapsibleGr
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
-        className="w-full flex items-center justify-between px-3 py-2.5 bg-muted/40 hover:bg-muted/60 transition-colors text-sm font-semibold text-foreground"
+        className="w-full flex items-center justify-between px-3 py-2.5 bg-muted/40 hover:bg-muted/60 transition-colors text-sm text-foreground"
       >
         <span>{title}</span>
         {open ? (
@@ -166,7 +166,7 @@ function Block({ label, enabled, onToggle, children }: BlockProps) {
   return (
     <div className="px-3 py-3 space-y-2">
       <div className="flex items-center justify-between">
-        <span className="text-sm font-medium text-foreground">{label}</span>
+        <span className="text-sm text-foreground">{label}</span>
         <Switch
           checked={enabled}
           onCheckedChange={onToggle}
@@ -282,14 +282,14 @@ export function BookStructurePanel({ biographyId, userId, hideTitle }: BookStruc
   return (
     <div className={hideTitle ? 'space-y-3' : 'space-y-3 px-2 pb-4'}>
       {!hideTitle && (
-        <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider px-1 pt-2">
+        <p className="text-xs text-muted-foreground uppercase tracking-wider px-1 pt-2">
           {t.editor.bookStructureTitle}
         </p>
       )}
 
       <div className="border border-border rounded-lg overflow-hidden px-3 py-3">
         <div className="flex items-center justify-between gap-3">
-          <span className="text-sm font-medium text-foreground leading-snug">
+          <span className="text-sm text-foreground leading-snug">
             {t.editor.bookStructureAuthorCopyrightPage}
           </span>
           <Switch

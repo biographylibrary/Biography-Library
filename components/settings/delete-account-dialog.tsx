@@ -71,7 +71,7 @@ export function DeleteAccountDialog({
               <AlertDialogDescription className="space-y-2">
                 <p>{t.deleteDialog.accountModal1Message}</p>
                 {biographyCount > 0 && (
-                  <p className="font-medium text-foreground">
+                  <p className="text-foreground">
                     {bioCountMessage}
                   </p>
                 )}
@@ -107,7 +107,7 @@ export function DeleteAccountDialog({
                   />
                   <Label
                     htmlFor="confirm-all-data"
-                    className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
+                    className="text-sm leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
                   >
                     {t.deleteDialog.checkboxAllData}
                   </Label>

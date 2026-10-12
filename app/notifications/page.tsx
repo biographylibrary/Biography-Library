@@ -89,7 +89,7 @@ export default function NotificationsPage() {
             <Bell className="h-5 w-5 text-muted-foreground" />
           </div>
           <div>
-            <h1 className="text-xl font-semibold tracking-tight">{t.notifications.title}</h1>
+            <h1 className="text-xl tracking-tight">{t.notifications.title}</h1>
             {unreadCount > 0 && (
               <p className="text-xs text-muted-foreground">{unreadCount} unread</p>
             )}
@@ -133,7 +133,7 @@ export default function NotificationsPage() {
               )}
               <div className={cn('flex items-start justify-between gap-3', !notification.is_read && 'pl-4')}>
                 <div className="flex-1 min-w-0">
-                  <p className={cn('text-sm leading-relaxed', !notification.is_read && 'font-medium')}>
+                  <p className={cn('text-sm leading-relaxed', !notification.is_read && '')}>
                     {notification.message}
                   </p>
                   <p className="text-xs text-muted-foreground mt-1">{formatTime(notification.created_at)}</p>

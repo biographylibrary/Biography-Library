@@ -36,7 +36,7 @@ export function EchoBubble() {
         <span className="relative inline-flex">
           <EchoOrb state={orbState} size="sm" />
           {pendingDraftCount > 0 && (
-            <span className="absolute -top-1 -right-1 min-w-[1.125rem] h-[1.125rem] px-1 rounded-full bg-primary text-primary-foreground text-[10px] font-semibold flex items-center justify-center">
+            <span className="absolute -top-1 -right-1 min-w-[1.125rem] h-[1.125rem] px-1 rounded-full bg-primary text-primary-foreground text-[10px] flex items-center justify-center">
               {pendingDraftCount}
             </span>
           )}
@@ -56,7 +56,7 @@ export function EchoBubble() {
             )}
           >
             <div className="flex items-center justify-between px-3 py-2 border-b shrink-0">
-              <span className="font-serif font-medium">Echo</span>
+              <span className="font-serif">Echo</span>
               <Button
                 type="button"
                 variant="ghost"

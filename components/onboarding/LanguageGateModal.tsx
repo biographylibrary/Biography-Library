@@ -65,7 +65,7 @@ export function LanguageGateModal({
                 }`}
               >
                 <span className="text-2xl">{languageFlags[lang]}</span>
-                <span className="font-medium">{languageNames[lang]}</span>
+                <span>{languageNames[lang]}</span>
               </button>
             ))}
           </div>

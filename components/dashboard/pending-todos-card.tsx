@@ -155,11 +155,11 @@ export function PendingTodosCard() {
                   <div className="space-y-2">
                     <div className="flex items-start justify-between gap-2">
                       <div className="flex-1 space-y-1">
-                        <p className="text-sm font-medium line-clamp-2">
+                        <p className="text-sm line-clamp-2">
                           {todo.description}
                         </p>
                         <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                          <span className="font-medium">{todo.biography_title}</span>
+                          <span>{todo.biography_title}</span>
                           <span>•</span>
                           <span>{getSectionTitle(todo.section)}</span>
                         </div>

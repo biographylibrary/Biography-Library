@@ -17,7 +17,7 @@ export function EchoSpeakingBanner({ onStopSpeaking }: EchoSpeakingBannerProps) 
     <div className="flex items-center justify-between gap-2 px-3 py-2 rounded-lg bg-primary/10 border border-border shrink-0">
       <div className="flex items-center gap-2 min-w-0">
         <Volume2 className="h-4 w-4 text-primary shrink-0 animate-pulse" />
-        <span className="text-xs font-medium text-primary truncate">{t.echo.speakingBanner}</span>
+        <span className="text-xs text-primary truncate">{t.echo.speakingBanner}</span>
       </div>
       <Button
         type="button"

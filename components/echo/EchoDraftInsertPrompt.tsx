@@ -72,7 +72,7 @@ export function EchoDraftInsertPrompt({
         aria-label={readyLabel}
         className="mt-3 rounded-lg border border-border bg-primary/5 px-3 py-2 flex flex-wrap items-center gap-2"
       >
-        <span className="text-xs font-medium text-primary truncate max-w-[40%]">{sectionTitle}</span>
+        <span className="text-xs text-primary truncate max-w-[40%]">{sectionTitle}</span>
         <span className="text-xs text-muted-foreground flex-1 min-w-[8rem]">{readyLabel}</span>
         <div className="flex items-center gap-2 w-full sm:w-auto">
           <Button type="button" size="sm" disabled={applying} onClick={onConfirm}>
@@ -105,7 +105,7 @@ export function EchoDraftInsertPrompt({
       <div className="flex items-start gap-2">
         <FileText className="h-4 w-4 text-primary shrink-0 mt-0.5" />
         <div className="min-w-0 space-y-0.5">
-          <p className="text-sm font-medium text-foreground">{cardTitle.replace('{section}', sectionTitle)}</p>
+          <p className="text-sm text-foreground">{cardTitle.replace('{section}', sectionTitle)}</p>
           <p className="text-xs text-muted-foreground">{cardSubtitle}</p>
         </div>
       </div>
@@ -119,7 +119,7 @@ export function EchoDraftInsertPrompt({
 
       {replacedText?.trim() && (
         <p className="text-xs text-muted-foreground rounded border border-border bg-background/40 px-2.5 py-1.5">
-          {replacedLabel && <span className="font-medium">{replacedLabel} </span>}
+          {replacedLabel && <span>{replacedLabel} </span>}
           <span className="line-through decoration-muted-foreground/60">{clipReplaced(replacedText)}</span>
         </p>
       )}

@@ -108,7 +108,7 @@ export function BiographyViewGallery({ biographyId, shareToken }: BiographyViewG
   return (
     <>
       <div className="mt-6">
-        <h2 className="text-sm font-medium text-foreground mb-3">{t.view.galleryPhotos}</h2>
+        <h2 className="text-sm text-foreground mb-3">{t.view.galleryPhotos}</h2>
         <ul className="flex flex-wrap gap-2 list-none p-0 m-0">
           {photos.map((photo, index) => (
             <li key={photo.id}>

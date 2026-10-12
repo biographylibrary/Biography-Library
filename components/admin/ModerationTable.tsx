@@ -73,12 +73,12 @@ export function ModerationTable({ reports, loading, error, onOpen }: ModerationT
       <Table>
         <TableHeader>
           <TableRow className="bg-muted/40">
-            <TableHead className="text-xs font-semibold text-muted-foreground w-28">{t.admin.colDate}</TableHead>
-            <TableHead className="text-xs font-semibold text-muted-foreground w-44">{t.admin.colType}</TableHead>
-            <TableHead className="text-xs font-semibold text-muted-foreground">{t.admin.colBiography}</TableHead>
-            <TableHead className="text-xs font-semibold text-muted-foreground w-28">{t.admin.colStatus}</TableHead>
-            <TableHead className="text-xs font-semibold text-muted-foreground">{t.admin.colAiSummary}</TableHead>
-            <TableHead className="text-xs font-semibold text-muted-foreground w-20 text-right">{t.admin.colActions}</TableHead>
+            <TableHead className="text-xs text-muted-foreground w-28">{t.admin.colDate}</TableHead>
+            <TableHead className="text-xs text-muted-foreground w-44">{t.admin.colType}</TableHead>
+            <TableHead className="text-xs text-muted-foreground">{t.admin.colBiography}</TableHead>
+            <TableHead className="text-xs text-muted-foreground w-28">{t.admin.colStatus}</TableHead>
+            <TableHead className="text-xs text-muted-foreground">{t.admin.colAiSummary}</TableHead>
+            <TableHead className="text-xs text-muted-foreground w-20 text-right">{t.admin.colActions}</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -97,7 +97,7 @@ export function ModerationTable({ reports, loading, error, onOpen }: ModerationT
                 </TableCell>
                 <TableCell>
                   <div className="flex flex-col gap-0.5 min-w-0">
-                    <span className="text-sm font-medium text-foreground truncate max-w-xs">
+                    <span className="text-sm text-foreground truncate max-w-xs">
                       {report.biography_title ?? t.admin.unknownBiography}
                     </span>
                     <span className="text-xs text-muted-foreground truncate max-w-xs">

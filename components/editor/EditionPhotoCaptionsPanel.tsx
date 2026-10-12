@@ -373,7 +373,7 @@ export function EditionPhotoCaptionsPanel({
             data-cover-layout={cover.layout}
           />
           <div className="min-w-0 flex-1 space-y-1">
-            <p className="text-sm font-medium text-foreground">{copy.editionCaptionsCoverTitle}</p>
+            <p className="text-sm text-foreground">{copy.editionCaptionsCoverTitle}</p>
             <p className="text-sm text-muted-foreground">{copy.editionCaptionsCoverNote}</p>
           </div>
         </div>
@@ -421,7 +421,7 @@ export function EditionPhotoCaptionsPanel({
                   />
                   <div className="min-w-0 flex-1 space-y-2">
                     <p className="text-xs leading-snug text-muted-foreground">
-                      <span className="font-medium text-foreground/80">
+                      <span className="text-foreground/80">
                         {copy.editionCaptionsOriginalPrefix}{' '}
                       </span>
                       {originalCaption

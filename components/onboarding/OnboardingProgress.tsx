@@ -14,7 +14,7 @@ export function OnboardingProgress({ currentStep }: OnboardingProgressProps) {
 
   return (
     <div className="w-full space-y-2">
-      <p className="text-xs text-muted-foreground font-medium">
+      <p className="text-xs text-muted-foreground">
         {t.onboardingWizard.stepProgress
           .replace('{current}', String(currentIndex + 1))
           .replace('{total}', String(WIZARD_STEP_ORDER.length))}

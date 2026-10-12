@@ -29,10 +29,10 @@ export function StatCard({ icon, label, value, secondary, accent = 'sky' }: Stat
           </div>
         </div>
         <div className="mt-4">
-          <p className="text-3xl font-bold text-foreground tabular-nums tracking-tight">
+          <p className="text-3xl text-foreground tabular-nums tracking-tight">
             {value === null ? '—' : value.toLocaleString()}
           </p>
-          <p className="text-sm font-medium text-foreground mt-1">{label}</p>
+          <p className="text-sm text-foreground mt-1">{label}</p>
           {secondary && (
             <p className="text-xs text-muted-foreground mt-1">{secondary}</p>
           )}

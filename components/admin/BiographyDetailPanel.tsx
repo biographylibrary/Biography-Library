@@ -81,7 +81,7 @@ function StatusBadge({ status }: { status: string }) {
   };
   const cfg = map[status] ?? map['draft'];
   return (
-    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold border ${cfg.className}`}>
+    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs border${cfg.className}`}>
       {cfg.label}
     </span>
   );
@@ -96,7 +96,7 @@ function PrivacyBadge({ privacy }: { privacy: string }) {
   };
   const cfg = map[privacy] ?? map['private'];
   return (
-    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold border ${cfg.className}`}>
+    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs border${cfg.className}`}>
       {cfg.label}
     </span>
   );
@@ -274,12 +274,12 @@ export function BiographyDetailPanel({ biography, onClose, onRefresh }: Biograph
           {biography && (
             <div className="space-y-6">
               <section>
-                <h3 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-3">
+                <h3 className="text-xs uppercase tracking-widest text-muted-foreground mb-3">
                   {t.admin.bioPanelSection1}
                 </h3>
                 <div className="rounded-xl border border-border bg-muted/20 px-4 divide-y divide-border">
                   <InfoRow label={t.admin.bioColTitle}>
-                    <span className="font-medium">{biography.title || '—'}</span>
+                    <span>{biography.title || '—'}</span>
                   </InfoRow>
                   <InfoRow label={t.admin.bioPanelAuthor}>
                     {biography.author_name || '—'}
@@ -294,7 +294,7 @@ export function BiographyDetailPanel({ biography, onClose, onRefresh }: Biograph
                     <div className="flex items-center gap-2 flex-wrap">
                       <StatusBadge status={biography.status} />
                       {biography.is_frozen && (
-                        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold tone-info">
+                        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs tone-info">
                           <Snowflake className="h-3 w-3" />
                           {t.admin.bioStatusFrozen}
                         </span>
@@ -319,7 +319,7 @@ export function BiographyDetailPanel({ biography, onClose, onRefresh }: Biograph
               <Separator />
 
               <section>
-                <h3 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-3">
+                <h3 className="text-xs uppercase tracking-widest text-muted-foreground mb-3">
                   {t.admin.bioPanelSection2}
                 </h3>
                 {sections.length === 0 ? (
@@ -328,7 +328,7 @@ export function BiographyDetailPanel({ biography, onClose, onRefresh }: Biograph
                   <div className="space-y-3">
                     {sections.map((s) => (
                       <div key={s.section_name} className="rounded-lg border border-border bg-muted/20 p-3">
-                        <p className="text-xs font-medium text-muted-foreground mb-1 uppercase tracking-wide">
+                        <p className="text-xs text-muted-foreground mb-1 uppercase tracking-wide">
                           {s.section_name}
                         </p>
                         <p className="text-sm text-foreground line-clamp-4 leading-relaxed">
@@ -352,7 +352,7 @@ export function BiographyDetailPanel({ biography, onClose, onRefresh }: Biograph
               <Separator />
 
               <section>
-                <h3 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-3">
+                <h3 className="text-xs uppercase tracking-widest text-muted-foreground mb-3">
                   {t.admin.bioPanelSection3}
                 </h3>
                 <div className="flex flex-col gap-2">

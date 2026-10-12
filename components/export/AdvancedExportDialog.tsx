@@ -697,7 +697,7 @@ export function AdvancedExportDialog({
                         {' '}
                         <Link
                           href={`/biography/${originalId}/edit`}
-                          className="underline font-medium"
+                          className="underline"
                         >
                           {t.translate.bannerOpenOriginal}
                         </Link>
@@ -739,7 +739,7 @@ export function AdvancedExportDialog({
                   <p className="text-sm leading-relaxed">
                     {t.exportDialog.pdfDraftNotice}
                   </p>
-                  <p className="text-xs font-medium">
+                  <p className="text-xs">
                     {draftIteration == null
                       ? t.exportDialog.draftIterationNone
                       : t.exportDialog.draftIterationCurrent
@@ -796,7 +796,7 @@ export function AdvancedExportDialog({
             {!isPublished && isPdfFormat && draftFeedback && (
               <div className="space-y-3 rounded-lg border border-border bg-card p-4">
                 <div className="flex items-center justify-between gap-2">
-                  <h4 className="text-sm font-semibold">{t.exportDialog.draftAiReviewTitle}</h4>
+                  <h4 className="text-sm">{t.exportDialog.draftAiReviewTitle}</h4>
                   <span className="text-xs text-muted-foreground">
                     {t.exportDialog.draftAiQuality.replace('{n}', String(draftFeedback.overall_quality))}
                   </span>
@@ -813,7 +813,7 @@ export function AdvancedExportDialog({
                 )}
                 {draftFeedback.strengths.length > 0 && (
                   <div className="space-y-1">
-                    <p className="text-xs font-medium text-muted-foreground">{t.exportDialog.draftAiStrengths}</p>
+                    <p className="text-xs text-muted-foreground">{t.exportDialog.draftAiStrengths}</p>
                     <ul className="space-y-1 text-sm">
                       {draftFeedback.strengths.map((s, i) => (
                         <li key={`${s}-${i}`} className="text-foreground">
@@ -825,7 +825,7 @@ export function AdvancedExportDialog({
                 )}
                 {draftFeedback.suggestions.length > 0 && (
                   <div className="space-y-2">
-                    <p className="text-xs font-medium text-muted-foreground">{t.exportDialog.draftAiSuggestions}</p>
+                    <p className="text-xs text-muted-foreground">{t.exportDialog.draftAiSuggestions}</p>
                     {(['narrative', 'completeness', 'clarity', 'style'] as const).map((type) => {
                       const items = draftFeedback.suggestions.filter((s) => s.type === type);
                       if (items.length === 0) return null;
@@ -871,7 +871,7 @@ export function AdvancedExportDialog({
             )}
 
             <div className="space-y-3">
-              <Label className="text-base font-semibold">{t.exportDialog.formatLabel}</Label>
+              <Label className="text-base">{t.exportDialog.formatLabel}</Label>
               <RadioGroup value={format} onValueChange={(v) => setFormat(v as ExportFormat)}>
                 {visibleFormats.map((fmt) => (
                   <div key={fmt.value} className="flex items-start space-x-2">
@@ -894,7 +894,7 @@ export function AdvancedExportDialog({
             <Separator />
 
             <div className="space-y-3">
-              <Label className="text-base font-semibold">{t.exportDialog.contentLabel}</Label>
+              <Label className="text-base">{t.exportDialog.contentLabel}</Label>
               <RadioGroup
                 value={contentSelection}
                 onValueChange={(v) => setContentSelection(v as ContentSelection)}
@@ -956,7 +956,7 @@ export function AdvancedExportDialog({
             <Separator />
 
             <div className="space-y-3">
-              <Label className="text-base font-semibold">{t.exportDialog.additionalOptions}</Label>
+              <Label className="text-base">{t.exportDialog.additionalOptions}</Label>
 
               {biography.biography_mode !== 'freeflow' && !isPdfFormat && (
                 <div className="flex items-center space-x-2">
@@ -998,7 +998,7 @@ export function AdvancedExportDialog({
         {previewUrl && (
           <div className="border border-border rounded-lg overflow-hidden flex flex-col" style={{ height: '420px' }}>
             <div className="flex items-center justify-between px-3 py-2 bg-muted/50 border-b border-border shrink-0">
-              <span className="text-xs font-medium text-muted-foreground">{t.exportDialog.pdfPreview}</span>
+              <span className="text-xs text-muted-foreground">{t.exportDialog.pdfPreview}</span>
               <button
                 type="button"
                 onClick={() => setPreviewUrl(null)}

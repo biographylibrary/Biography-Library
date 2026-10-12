@@ -186,7 +186,7 @@ export function TranslateDialog({
           <p className="text-sm leading-relaxed text-foreground">{copy.instructions}</p>
 
           <div className="space-y-2">
-            <h3 className="text-sm font-medium">{copy.existingTitle}</h3>
+            <h3 className="text-sm">{copy.existingTitle}</h3>
             {loadingList ? (
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
                 <Loader2 className="h-4 w-4 animate-spin" />
@@ -209,7 +209,7 @@ export function TranslateDialog({
                       key={edition.id}
                       className="flex flex-wrap items-center gap-2 rounded-lg border border-border px-3 py-2 text-sm"
                     >
-                      <span className="font-medium">{name}</span>
+                      <span>{name}</span>
                       <span className="text-muted-foreground">{statusLabel(edition.status, copy)}</span>
                       {drifted && (
                         <span className="text-foreground text-xs">{copy.originalRevised}</span>

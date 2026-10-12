@@ -97,7 +97,7 @@ export default function ResetPasswordPage() {
             <div className="flex items-center justify-center mb-6">
               <Logo height={64} />
             </div>
-            <h1 className="text-2xl font-serif font-semibold tracking-tight">
+            <h1 className="text-2xl font-serif tracking-tight">
               {t.auth.resetPasswordTitle}
             </h1>
             <p className="text-sm text-muted-foreground">
@@ -109,14 +109,14 @@ export default function ResetPasswordPage() {
             <div className="flex flex-col items-center gap-4 p-6 rounded-xl bg-destructive/10 border border-destructive/20 text-center">
               <AlertCircle className="h-8 w-8 text-destructive" />
               <div>
-                <p className="font-semibold text-destructive">{t.auth.resetPasswordInvalidLink}</p>
+                <p className="text-destructive">{t.auth.resetPasswordInvalidLink}</p>
                 <p className="text-sm text-muted-foreground mt-1">
                   {t.auth.resetPasswordInvalidLinkDetail}
                 </p>
               </div>
               <Link
                 href="/forgot-password"
-                className="text-sm text-primary hover:text-primary/80 transition-colors font-medium"
+                className="text-sm text-primary hover:text-primary/80 transition-colors"
               >
                 {t.auth.resetPasswordRequestNew}
               </Link>
@@ -133,7 +133,7 @@ export default function ResetPasswordPage() {
                   <CheckCircle2 className="h-6 w-6" />
                 </div>
                 <div>
-                  <p className="font-semibold">
+                  <p>
                     {t.auth.resetPasswordSuccess}
                   </p>
                   <p className="text-sm mt-1">
@@ -143,7 +143,7 @@ export default function ResetPasswordPage() {
               </div>
               <Link
                 href="/login"
-                className="flex items-center justify-center gap-2 text-sm text-primary hover:text-primary/80 transition-colors font-medium"
+                className="flex items-center justify-center gap-2 text-sm text-primary hover:text-primary/80 transition-colors"
               >
                 {t.auth.backToLogin}
               </Link>
@@ -187,7 +187,7 @@ export default function ResetPasswordPage() {
 
               <Button
                 type="submit"
-                className="w-full h-11 font-medium"
+                className="w-full h-11"
                 disabled={isLoading}
               >
                 {isLoading ? (

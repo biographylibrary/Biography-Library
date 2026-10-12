@@ -76,7 +76,7 @@ export function WaitlistHolding() {
             <Logo height={64} />
           </div>
           <div className="space-y-3 text-center">
-            <h1 className="text-2xl font-serif font-semibold tracking-tight">
+            <h1 className="text-2xl font-serif tracking-tight">
               {t.waitlist.holdingTitle}
             </h1>
             {dateLabel && <p className="text-base text-foreground">{dateLabel}</p>}

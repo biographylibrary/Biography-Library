@@ -49,7 +49,7 @@ export function EchoAvatar({
           {showName && (
             <span
               className={cn(
-                'font-serif font-medium tracking-tight block leading-none',
+                'font-serif tracking-tight block leading-none',
                 horizontal ? 'text-base' : 'text-lg',
                 onDark ? 'text-brand-beigeLight' : 'text-foreground'
               )}

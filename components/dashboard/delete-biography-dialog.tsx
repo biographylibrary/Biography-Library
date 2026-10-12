@@ -73,7 +73,7 @@ export function DeleteBiographyDialog({
               <AlertDialogDescription className="space-y-2">
                 <p>{t.deleteDialog.bioModal1Message}</p>
                 {biography && (
-                  <p className="font-medium text-foreground">
+                  <p className="text-foreground">
                     {biography.title || t.dashboard.untitledBiography}
                   </p>
                 )}
@@ -109,7 +109,7 @@ export function DeleteBiographyDialog({
                   />
                   <Label
                     htmlFor="confirm-irreversible"
-                    className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
+                    className="text-sm leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
                   >
                     {t.deleteDialog.checkboxIrreversible}
                   </Label>

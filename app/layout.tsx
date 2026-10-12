@@ -71,7 +71,7 @@ export default function RootLayout({
                   textAlign: 'center',
                 }}
               >
-                <p style={{ fontSize: '1.125rem', fontWeight: 600, marginBottom: '0.75rem' }}>
+                <p style={{ fontSize: '1.125rem', marginBottom: '0.75rem' }}>
                   Browser integrato Cursor
                 </p>
                 <p style={{ fontSize: '0.875rem', lineHeight: 1.5, marginBottom: '1rem', color: '#616161' }}>

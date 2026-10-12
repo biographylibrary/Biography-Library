@@ -97,7 +97,7 @@ export function PublishedBiographiesCard({ userId }: PublishedBiographiesCardPro
             className="flex items-center justify-between p-3 rounded-lg border border-border bg-card/50 hover:bg-muted/50 transition-colors"
           >
             <div className="flex-1 min-w-0">
-              <h4 className="font-semibold text-sm truncate">{bio.title}</h4>
+              <h4 className="text-sm truncate">{bio.title}</h4>
               <p className="text-xs text-muted-foreground">
                 {language === 'it' ? 'Pubblicato il ' :
                  language === 'fr' ? 'Publié le ' :

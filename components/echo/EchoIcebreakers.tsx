@@ -45,7 +45,7 @@ export function EchoIcebreakers({
                   type="button"
                   onClick={() => onSelect(item.text)}
                   className={cn(
-                    'text-sm text-muted-foreground italic font-light',
+                    'text-sm text-muted-foreground italic',
                     'hover:text-foreground/90 hover:underline underline-offset-2',
                     'transition-colors text-left max-w-full',
                     centered && 'text-center'
@@ -61,14 +61,14 @@ export function EchoIcebreakers({
 
       {guideItem && (
         <div className={cn('pt-1', centered && 'flex flex-col items-center')}>
-          <p className="text-xs text-muted-foreground not-italic font-medium">
+          <p className="text-xs text-muted-foreground not-italic">
             {guideHint}
           </p>
           <button
             type="button"
             onClick={onRecallUsageGuide}
             className={cn(
-              'mt-1 text-sm text-primary/90 font-medium not-italic',
+              'mt-1 text-sm text-primary/90 not-italic',
               'hover:text-primary hover:underline underline-offset-2',
               'transition-colors text-left max-w-full',
               centered && 'text-center'

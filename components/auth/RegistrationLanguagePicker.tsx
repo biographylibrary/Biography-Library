@@ -20,7 +20,7 @@ export function RegistrationLanguagePicker({
 
   return (
     <div className="space-y-3">
-      <p className="text-sm font-medium text-foreground">{label}</p>
+      <p className="text-sm text-foreground">{label}</p>
       <div className="grid grid-cols-2 gap-2">
         {LANGUAGES.map((lang) => (
           <button
@@ -30,7 +30,7 @@ export function RegistrationLanguagePicker({
             className={cn(
               'flex items-center gap-2 rounded-lg border px-3 py-2.5 text-sm transition-colors',
               value === lang
-                ? 'border-foreground bg-foreground font-semibold text-background'
+                ? 'border-foreground bg-foreground text-background'
                 : 'border-border bg-card hover:border-foreground/25',
             )}
           >
@@ -39,7 +39,7 @@ export function RegistrationLanguagePicker({
         ))}
       </div>
       <div className="notice tone-info px-3 py-2.5">
-        <p className="text-sm font-semibold">
+        <p className="text-sm">
           {lockedCopy.registrationLanguageAlertTitle}
         </p>
         <p className="mt-1 text-xs leading-relaxed">

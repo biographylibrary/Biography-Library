@@ -38,7 +38,7 @@ function SuggestionCard({
     >
       {suggestion.original && (
         <div className="mb-2">
-          <span className="text-[11px] uppercase tracking-wider text-muted-foreground font-medium">
+          <span className="text-[11px] uppercase tracking-wider text-muted-foreground">
             {t.editor.original}
           </span>
           <p className="text-sm text-foreground/80 mt-0.5 line-through decoration-brand-wine/50">
@@ -47,7 +47,7 @@ function SuggestionCard({
         </div>
       )}
       <div className="mb-2">
-        <span className="text-[11px] uppercase tracking-wider text-muted-foreground font-medium">
+        <span className="text-[11px] uppercase tracking-wider text-muted-foreground">
           {t.editor.suggestion}
         </span>
         <p className="text-sm text-foreground mt-0.5">{suggestion.suggestion}</p>
@@ -80,7 +80,7 @@ function SuggestionCard({
         </div>
       )}
       {suggestion.status === 'accepted' && (
-        <span className="text-xs text-brand-greenDark dark:text-brand-greenLight font-medium flex items-center gap-1">
+        <span className="text-xs text-brand-greenDark dark:text-brand-greenLight flex items-center gap-1">
           <Check className="h-3 w-3" /> {t.editor.applied}
         </span>
       )}
@@ -113,7 +113,7 @@ export function AiSuggestionsDialog({
       title={panelTitle}
       icon={<PanelIcon className="h-5 w-5 text-primary" />}
       headerExtra={
-        <span className="shrink-0 inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-medium bg-primary/10 text-primary">
+        <span className="shrink-0 inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] bg-primary/10 text-primary">
           AI
         </span>
       }
@@ -133,7 +133,7 @@ export function AiSuggestionsDialog({
           <div className="flex items-start gap-2">
             <AlertTriangle className="h-4 w-4 shrink-0 mt-0.5" />
             <div className="flex-1">
-              <p className="font-medium">{state.error}</p>
+              <p>{state.error}</p>
             </div>
           </div>
         </div>
@@ -144,7 +144,7 @@ export function AiSuggestionsDialog({
           {state.suggestions.length === 0 ? (
             <div className="text-center py-8">
               <Check className="h-8 w-8 text-brand-greenDark dark:text-brand-greenLight mx-auto mb-2" />
-              <p className="text-sm font-medium">{t.editor.lookingGood}</p>
+              <p className="text-sm">{t.editor.lookingGood}</p>
               <p className="text-xs text-muted-foreground mt-1">
                 {t.editor.noGrammarIssues}
               </p>

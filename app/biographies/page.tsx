@@ -65,7 +65,6 @@ function GraphicCover({ title, authorName }: { title: string; authorName: string
           fontFamily: "'Noto Serif', Georgia, serif",
           color: '#ffffff',
           fontSize: 'clamp(0.875rem, 2.5vw, 1.125rem)',
-          fontWeight: 600,
           lineHeight: 1.25,
           textAlign: 'center',
           wordBreak: 'break-word',
@@ -187,7 +186,7 @@ function BiographyCard({ bio, t, featured }: BiographyCardProps) {
           </span>
         )}
         {featured && (
-          <span className="absolute top-2 right-2 flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full tone-on-image tone-warning">
+          <span className="absolute top-2 right-2 flex items-center gap-1 text-xs px-2 py-0.5 rounded-full tone-on-image tone-warning">
             <Star className="h-3 w-3" />
             Featured
           </span>
@@ -205,11 +204,11 @@ function BiographyCard({ bio, t, featured }: BiographyCardProps) {
           <BiographyLanguageBadges
             originalLanguage={bio.record_language_tag || 'en'}
           />
-          <span className="text-xs font-medium text-muted-foreground">
+          <span className="text-xs text-muted-foreground">
             {typeLabel}
           </span>
           {isWithinProvisionalWindow(bio.provisional_until) && (
-            <span className="text-xs font-medium px-2 py-0.5 rounded-full tone-warning">
+            <span className="text-xs px-2 py-0.5 rounded-full tone-warning">
               {t.publicBiographies.provisionalMark}
             </span>
           )}
@@ -230,7 +229,7 @@ function BiographySection({ title, bios, t, featured }: SectionProps) {
   if (bios.length === 0) return null;
   return (
     <section className="mb-14">
-      <h2 className="text-xl font-serif font-semibold text-foreground mb-6 flex items-center gap-2">
+      <h2 className="text-xl font-serif text-foreground mb-6 flex items-center gap-2">
         {title}
         <span className="h-px flex-1 bg-border/60" />
       </h2>
@@ -333,7 +332,7 @@ function PublicBiographiesPage() {
     <div className="min-h-full bg-background">
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
         <div className="mb-10 space-y-2">
-          <h1 className="text-3xl font-serif font-semibold tracking-tight text-foreground">
+          <h1 className="text-3xl font-serif tracking-tight text-foreground">
             {t.publicBiographies.pageTitle}
           </h1>
           <p className="text-muted-foreground text-base">
@@ -396,7 +395,7 @@ function PublicBiographiesPage() {
             {filtered.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-24 gap-3">
                 <BookOpen className="h-10 w-10 text-muted-foreground" />
-                <p className="font-medium text-foreground">{t.publicBiographies.noResults}</p>
+                <p className="text-foreground">{t.publicBiographies.noResults}</p>
                 <p className="text-sm text-muted-foreground">{t.publicBiographies.noResultsSubtitle}</p>
                 <Button
                   variant="outline"

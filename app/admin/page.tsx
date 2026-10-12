@@ -120,7 +120,7 @@ function OverviewContent() {
             <LayoutDashboard className="h-5 w-5" />
           </div>
           <div>
-            <h1 className="text-2xl font-serif font-semibold tracking-tight text-foreground">
+            <h1 className="text-2xl font-serif tracking-tight text-foreground">
               {t.admin.overviewTitle}
             </h1>
             <p className="text-sm text-muted-foreground mt-0.5">{t.admin.overviewSubtitle}</p>
@@ -131,13 +131,13 @@ function OverviewContent() {
           <div className="notice tone-warning mb-8 flex items-start gap-3 px-4 py-3.5">
             <TriangleAlert className="h-5 w-5 shrink-0 mt-0.5" />
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium">
+              <p className="text-sm">
                 {t.admin.overviewParseErrorBanner.replace('{count}', String(stats.parseErrorCount))}
               </p>
             </div>
             <Link
               href="/admin/biographies?screening=parse_error"
-              className="shrink-0 inline-flex items-center gap-1 text-xs font-medium underline transition-colors whitespace-nowrap opacity-90 hover:opacity-100"
+              className="shrink-0 inline-flex items-center gap-1 text-xs underline transition-colors whitespace-nowrap opacity-90 hover:opacity-100"
             >
               {t.admin.overviewViewAffected}
               <ArrowRight className="h-3.5 w-3.5" />
@@ -148,7 +148,7 @@ function OverviewContent() {
         <div className="space-y-10">
           {!isReviewer && (
           <section>
-            <h2 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-4">
+            <h2 className="text-xs uppercase tracking-widest text-muted-foreground mb-4">
               {t.admin.sectionUsers}
             </h2>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -177,7 +177,7 @@ function OverviewContent() {
           )}
 
           <section>
-            <h2 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-4">
+            <h2 className="text-xs uppercase tracking-widest text-muted-foreground mb-4">
               {t.admin.sectionBiographies}
             </h2>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
@@ -209,7 +209,7 @@ function OverviewContent() {
           </section>
 
           <section>
-            <h2 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-4">
+            <h2 className="text-xs uppercase tracking-widest text-muted-foreground mb-4">
               {t.admin.sectionModeration}
             </h2>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -236,7 +236,7 @@ function OverviewContent() {
           </section>
 
           <section>
-            <h2 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-4">
+            <h2 className="text-xs uppercase tracking-widest text-muted-foreground mb-4">
               {t.admin.sectionQuickActions}
             </h2>
             <div className="flex flex-wrap gap-3">
@@ -252,7 +252,7 @@ function OverviewContent() {
                   <ClipboardList className="h-4 w-4 text-brand-ink dark:text-brand-blue" />
                   {t.admin.quickActionReview}
                   {(stats.underReviewBiographies ?? 0) > 0 && (
-                    <span className="inline-flex items-center justify-center min-w-[1.25rem] h-5 px-1.5 rounded-full text-xs font-semibold tone-warning tabular-nums">
+                    <span className="inline-flex items-center justify-center min-w-[1.25rem] h-5 px-1.5 rounded-full text-xs tone-warning tabular-nums">
                       {stats.underReviewBiographies}
                     </span>
                   )}

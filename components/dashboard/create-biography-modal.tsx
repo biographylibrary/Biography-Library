@@ -180,7 +180,7 @@ export function CreateBiographyModal({
                             isSelected ? 'text-primary' : 'text-muted-foreground'
                           )}
                         />
-                        <span className="text-xs font-medium">{option.label}</span>
+                        <span className="text-xs">{option.label}</span>
                         <span className="text-[10px] text-muted-foreground leading-tight">
                           {option.description}
                         </span>
@@ -226,7 +226,7 @@ export function CreateBiographyModal({
                   <PenLine className="h-5 w-5 text-primary" />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="font-semibold text-sm text-foreground">{t.writingModeOnboarding.writeHereTitle}</p>
+                  <p className="text-sm text-foreground">{t.writingModeOnboarding.writeHereTitle}</p>
                   <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">{t.writingModeOnboarding.writeHereDescription}</p>
 
                   {writeHereSubMode !== null && (
@@ -243,7 +243,7 @@ export function CreateBiographyModal({
                       >
                         <Columns className={cn('h-4 w-4 mt-0.5 flex-shrink-0', writeHereSubMode === 'sections' ? 'text-primary' : 'text-muted-foreground')} />
                         <div>
-                          <p className="text-xs font-semibold">{t.writingModeOnboarding.guidedChaptersLabel}</p>
+                          <p className="text-xs">{t.writingModeOnboarding.guidedChaptersLabel}</p>
                           <p className="text-[11px] text-muted-foreground mt-0.5 leading-relaxed">{t.writingModeOnboarding.guidedChaptersDescription}</p>
                         </div>
                       </button>
@@ -260,7 +260,7 @@ export function CreateBiographyModal({
                       >
                         <AlignLeft className={cn('h-4 w-4 mt-0.5 flex-shrink-0', writeHereSubMode === 'freeflow' ? 'text-primary' : 'text-muted-foreground')} />
                         <div>
-                          <p className="text-xs font-semibold">{t.writingModeOnboarding.freewritingLabel}</p>
+                          <p className="text-xs">{t.writingModeOnboarding.freewritingLabel}</p>
                           <p className="text-[11px] text-muted-foreground mt-0.5 leading-relaxed">{t.writingModeOnboarding.freewritingDescription}</p>
                         </div>
                       </button>
@@ -279,7 +279,7 @@ export function CreateBiographyModal({
                   <Upload className="h-5 w-5 text-muted-foreground" />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="font-semibold text-sm text-foreground">{t.writingModeOnboarding.importTitle}</p>
+                  <p className="text-sm text-foreground">{t.writingModeOnboarding.importTitle}</p>
                   <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">{t.writingModeOnboarding.importDescription}</p>
                 </div>
               </button>

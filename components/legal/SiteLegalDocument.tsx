@@ -30,7 +30,7 @@ function renderBlocks(blocks: LegalBlock[], hideTitle: boolean) {
     if (block.kind === 'title') {
       if (!hideTitle) {
         nodes.push(
-          <h1 key={index} className="text-3xl font-serif font-semibold tracking-tight">
+          <h1 key={index} className="text-3xl font-serif tracking-tight">
             {block.text}
           </h1>
         );
@@ -43,7 +43,7 @@ function renderBlocks(blocks: LegalBlock[], hideTitle: boolean) {
       );
     } else if (block.kind === 'heading') {
       nodes.push(
-        <h2 key={index} className="text-xl font-serif font-semibold tracking-tight pt-4">
+        <h2 key={index} className="text-xl font-serif tracking-tight pt-4">
           {block.text}
         </h2>
       );
