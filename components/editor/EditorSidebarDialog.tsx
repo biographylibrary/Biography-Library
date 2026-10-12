@@ -39,7 +39,7 @@ export function EditorSidebarDialog({
         className={editorSidebarDialogContentClass}
         style={editorSidebarDialogContentStyle}
       >
-        <DialogHeader className="px-6 pt-6 pb-4 border-b border-border/50 shrink-0">
+        <DialogHeader className="px-6 pt-6 pb-4 border-b border-border shrink-0">
           <div className="flex items-center justify-between gap-3">
             <DialogTitle className="flex items-center gap-2 text-lg m-0">
               {icon}

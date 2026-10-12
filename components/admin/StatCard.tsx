@@ -21,7 +21,7 @@ const accentMap = {
 
 export function StatCard({ icon, label, value, secondary, accent = 'sky' }: StatCardProps) {
   return (
-    <Card className="border-border/60 shadow-sm hover:shadow-md transition-shadow duration-200">
+    <Card className="border-border shadow-sm hover:shadow-md transition-shadow duration-200">
       <CardContent className="p-5">
         <div className="flex items-start justify-between gap-3">
           <div className={cn('p-2.5 rounded-xl shrink-0', accentMap[accent])}>

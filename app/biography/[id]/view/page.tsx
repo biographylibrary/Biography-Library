@@ -590,7 +590,7 @@ export default function BiographyViewPage() {
 
   return (
     <div className="min-h-full bg-background">
-      <header className="border-b border-border/50 bg-background/80 backdrop-blur-md sticky top-0 z-50">
+      <header className="border-b border-border bg-background/80 backdrop-blur-md sticky top-0 z-50">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <Logo height={40} />
@@ -687,7 +687,7 @@ export default function BiographyViewPage() {
         )}
 
         {biography.is_frozen && (
-          <div className="mb-4 flex items-center gap-2 text-sm text-muted-foreground bg-muted/40 border border-border/50 rounded-lg px-4 py-2.5">
+          <div className="mb-4 flex items-center gap-2 text-sm text-muted-foreground bg-muted/40 border border-border rounded-lg px-4 py-2.5">
             <Archive className="h-4 w-4 shrink-0" />
             <span>{t.view.archivedBanner}</span>
           </div>
@@ -788,7 +788,7 @@ export default function BiographyViewPage() {
                       {sectionTitle}
                     </h2>
                     {section.sectionCreatedAt && (
-                      <span className="shrink-0 text-xs text-muted-foreground border border-border/60 rounded-full px-2.5 py-0.5 whitespace-nowrap">
+                      <span className="shrink-0 text-xs text-muted-foreground border border-border rounded-full px-2.5 py-0.5 whitespace-nowrap">
                         {t.view.publishedOn} {formatDate(section.sectionCreatedAt)}
                       </span>
                     )}

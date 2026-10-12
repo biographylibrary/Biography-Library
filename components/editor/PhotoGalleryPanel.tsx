@@ -210,7 +210,7 @@ function PhotoGridTile({
       onDragEnd={onDragEnd}
       className={cn(
         'group relative aspect-square rounded-lg overflow-hidden border-2 bg-muted transition-all duration-150 cursor-pointer',
-        selected ? 'border-primary ring-2 ring-primary/20' : 'border-border/60 hover:border-border',
+        selected ? 'border-primary ring-2 ring-primary/20' : 'border-border hover:border-border',
         dragging && 'opacity-50'
       )}
       onClick={() => onSelect(item.id)}
@@ -280,7 +280,7 @@ function PhotoCard({
       onDrop={(e) => onDrop(e, item.id)}
       onDragEnd={onDragEnd}
       className={cn(
-        'group rounded-xl border border-border/60 bg-card overflow-hidden shadow-sm transition-all duration-150',
+        'group rounded-xl border border-border bg-card overflow-hidden shadow-sm transition-all duration-150',
         dragging && 'opacity-50'
       )}
     >
@@ -579,7 +579,7 @@ export function PhotoGalleryPanel({ biographyId, onClose, embedded }: PhotoGalle
   const uploadFooter = (
     <div
       className={cn(
-        embedded ? 'pt-2' : 'shrink-0 px-4 pb-4 pt-2 border-t border-border/50 bg-background',
+        embedded ? 'pt-2' : 'shrink-0 px-4 pb-4 pt-2 border-t border-border bg-background',
       )}
     >
       <input
@@ -666,13 +666,13 @@ export function PhotoGalleryPanel({ biographyId, onClose, embedded }: PhotoGalle
             ))}
           </div>
           {selectedItem && (
-            <div className="rounded-xl border border-border/60 bg-card p-3 space-y-3">
+            <div className="rounded-xl border border-border bg-card p-3 space-y-3">
               <div className="flex gap-3 items-start">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={selectedItem.previewUrl || selectedItem.file_url}
                   alt={selectedItem.file_name ?? ''}
-                  className="w-20 h-20 rounded-md object-cover border border-border/60 shrink-0"
+                  className="w-20 h-20 rounded-md object-cover border border-border shrink-0"
                 />
                 <div className="flex-1 min-w-0">
                   <PhotoMetaFields
@@ -727,7 +727,7 @@ export function PhotoGalleryPanel({ biographyId, onClose, embedded }: PhotoGalle
         </div>
       )}
 
-      <div className="space-y-3 rounded-xl border border-border/60 bg-muted/30 p-3">
+      <div className="space-y-3 rounded-xl border border-border bg-muted/30 p-3">
         <p className="text-xs font-semibold text-foreground">{t.photos.coverCompositeTitle}</p>
         <input
           ref={coverInputRef}
@@ -746,7 +746,7 @@ export function PhotoGalleryPanel({ biographyId, onClose, embedded }: PhotoGalle
             <img
               src={coverComposite.previewUrl || coverComposite.file_url}
               alt=""
-              className="w-24 h-32 object-cover rounded-md border border-border/60"
+              className="w-24 h-32 object-cover rounded-md border border-border"
             />
             <div className="flex flex-col gap-2">
               <Button
@@ -785,7 +785,7 @@ export function PhotoGalleryPanel({ biographyId, onClose, embedded }: PhotoGalle
         )}
       </div>
 
-      <div className="space-y-2 rounded-xl border border-border/60 bg-muted/30 p-3">
+      <div className="space-y-2 rounded-xl border border-border bg-muted/30 p-3">
         <p className="text-xs font-semibold text-foreground">{t.photos.customA5CoverLabel}</p>
         <p className="text-[11px] text-muted-foreground leading-snug">{t.photos.customA5CoverHint}</p>
         <input
@@ -805,7 +805,7 @@ export function PhotoGalleryPanel({ biographyId, onClose, embedded }: PhotoGalle
             <img
               src={coverA5Row.previewUrl || coverA5Row.file_url}
               alt=""
-              className="w-24 h-36 object-cover rounded-md border border-border/60"
+              className="w-24 h-36 object-cover rounded-md border border-border"
             />
             <div className="flex flex-col gap-2">
               <Button
@@ -887,7 +887,7 @@ export function PhotoGalleryPanel({ biographyId, onClose, embedded }: PhotoGalle
 
   return (
     <div className="flex flex-col flex-1 min-h-0 overflow-hidden">
-      <div className="px-4 py-3 border-b border-border/50 shrink-0 flex items-center justify-between gap-2 min-w-0">
+      <div className="px-4 py-3 border-b border-border shrink-0 flex items-center justify-between gap-2 min-w-0">
         <h3 className="text-sm font-semibold text-foreground truncate min-w-0 flex-1 pr-2">{t.photos.panelTitle}</h3>
         <div className="flex items-center gap-2 shrink-0">
           <span className="text-xs text-muted-foreground">{counterText}</span>

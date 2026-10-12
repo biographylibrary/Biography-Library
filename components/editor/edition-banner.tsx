@@ -12,7 +12,7 @@ interface EditionBannerProps {
 
 /**
  * Banda a tutta larghezza in cima all'editor di un'edizione: frase e «Apri l'originale».
- * Filetto inferiore come le altre righe dell'editor (border-b border-border/50).
+ * Filetto inferiore come le altre righe dell'editor (border-b border-border).
  * Da sm (640px): una riga, sm:py-2, sm:max-h-11 (≤44px), sm:leading-5 sul paragrafo
  * (20px, così le code di g/p/q non sono ritagliate da sm:overflow-hidden); solo il titolo troncato.
  * Sotto sm: py-1.5, frase line-clamp-2, link sempre dentro. Nessuno sfondo colorato.
@@ -32,7 +32,7 @@ export function EditionBanner({
   const prefix = prefixRaw.replace('{language}', langName);
 
   return (
-    <div className="shrink-0 border-b border-border/50 px-4 py-1.5 sm:py-2 text-sm text-brand-ink dark:text-brand-beigeLight">
+    <div className="shrink-0 border-b border-border px-4 py-1.5 sm:py-2 text-sm text-brand-ink dark:text-brand-beigeLight">
       <div className="flex flex-col gap-1 sm:max-h-11 sm:flex-row sm:items-center sm:gap-3 sm:overflow-hidden">
         {/*
           line-clamp-2 sotto sm; da sm in su line-clamp-none poi sm:!flex così

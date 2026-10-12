@@ -71,7 +71,6 @@ const config: Config = {
         'btn-primary-bg': '#EDEBE7',
         'btn-primary-border': '#121212',
         'btn-hover': '#C8DFBE',
-        'border-global': '#616161',
         'error': '#944454',
         'status-info': '#D3F1FF',
         'status-warning': '#FBDEC1',

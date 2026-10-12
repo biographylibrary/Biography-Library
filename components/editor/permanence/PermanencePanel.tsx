@@ -81,7 +81,7 @@ function EventBlock({
 }) {
   const p = t.permanence;
   return (
-    <div className="rounded-lg border border-border/60 p-3 space-y-3 bg-background/50">
+    <div className="rounded-lg border border-border p-3 space-y-3 bg-background/50">
       <h4 className="text-sm font-medium">{title}</h4>
       <EdtfDateFields
         value={form.date}
@@ -178,7 +178,7 @@ function RelationBlock({
 }) {
   const p = t.permanence;
   return (
-    <div className="rounded-lg border border-border/60 p-3 space-y-3 bg-background/50">
+    <div className="rounded-lg border border-border p-3 space-y-3 bg-background/50">
       <div className="flex items-center justify-between gap-2">
         <div className="grid sm:grid-cols-2 gap-3 flex-1 min-w-0">
           <div className="space-y-1.5">
@@ -559,7 +559,7 @@ export function PermanencePanel({
 
   if (loading) {
     return (
-      <div className="px-4 sm:px-6 py-4 border-b border-border/30 flex items-center gap-2 text-sm text-muted-foreground">
+      <div className="px-4 sm:px-6 py-4 border-b border-border flex items-center gap-2 text-sm text-muted-foreground">
         <Loader2 className="h-4 w-4 animate-spin" />
         {p.loading}
       </div>
@@ -653,7 +653,7 @@ export function PermanencePanel({
         {places.map((place, index) => (
           <div
             key={place.id ?? `place-${index}`}
-            className="rounded-lg border border-border/60 p-3 space-y-3 bg-background/50"
+            className="rounded-lg border border-border p-3 space-y-3 bg-background/50"
           >
             <div className="flex items-start gap-2">
               <div className="flex-1 min-w-0">
@@ -787,7 +787,7 @@ export function PermanencePanel({
       </div>
 
       {!disabled && (
-        <div className="shrink-0 border-t border-border/50 pt-3">
+        <div className="shrink-0 border-t border-border pt-3">
           <Button type="button" size="sm" onClick={() => void handleSave()} disabled={saving}>
             {saving ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
             {p.save}

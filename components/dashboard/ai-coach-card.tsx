@@ -285,7 +285,7 @@ export function AICoachCard({ biographies, userName, userId }: AICoachCardProps)
         </div>
       )}
 
-      <div className="bg-brand-paper/70 dark:bg-brand-ink/30 rounded-lg p-4 mb-4 border border-brand-beigeBg/80 dark:border-brand-greenDark/30">
+      <div className="bg-brand-paper/70 dark:bg-brand-ink/30 rounded-lg p-4 mb-4 border border-border">
         <p className="text-sm text-brand-ink dark:text-brand-beigeLight/90 mb-3">
           {suggestion.message}
         </p>

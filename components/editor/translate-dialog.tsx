@@ -175,7 +175,7 @@ export function TranslateDialog({
         className={editorSidebarDialogContentClass}
         style={editorSidebarDialogContentStyle}
       >
-        <DialogHeader className="px-6 pt-6 pb-4 border-b border-border/50 shrink-0">
+        <DialogHeader className="px-6 pt-6 pb-4 border-b border-border shrink-0">
           <DialogTitle className="flex items-center gap-2 text-lg">
             <Languages className="h-5 w-5 text-primary" />
             {copy.title}
@@ -207,7 +207,7 @@ export function TranslateDialog({
                   return (
                     <li
                       key={edition.id}
-                      className="flex flex-wrap items-center gap-2 rounded-lg border border-border/60 px-3 py-2 text-sm"
+                      className="flex flex-wrap items-center gap-2 rounded-lg border border-border px-3 py-2 text-sm"
                     >
                       <span className="font-medium">{name}</span>
                       <span className="text-muted-foreground">{statusLabel(edition.status, copy)}</span>
@@ -260,7 +260,7 @@ export function TranslateDialog({
                     key={value}
                     className={cn(
                       'flex items-start gap-2 rounded-lg border px-3 py-2 text-sm cursor-pointer',
-                      startChoice === value ? 'border-primary bg-primary/5' : 'border-border/60'
+                      startChoice === value ? 'border-primary bg-primary/5' : 'border-border'
                     )}
                   >
                     <input
@@ -284,7 +284,7 @@ export function TranslateDialog({
           )}
         </div>
 
-        <DialogFooter className="px-6 py-4 border-t border-border/50 shrink-0">
+        <DialogFooter className="px-6 py-4 border-t border-border shrink-0">
           <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
             {t.common.cancel}
           </Button>

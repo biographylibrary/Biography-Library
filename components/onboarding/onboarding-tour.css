@@ -2,7 +2,7 @@
 .driver-popover {
   background: var(--bg-surface, #fdfbf7) !important;
   color: var(--text-primary, #121212) !important;
-  border: 1px solid var(--border-global, #616161) !important;
+  border: 1px solid var(--border-global, #4D4D4D) !important;
   border-radius: var(--radius, 0.75rem) !important;
   box-shadow: 0 12px 40px rgba(18, 18, 18, 0.12) !important;
   max-width: min(22rem, calc(100vw - 2rem)) !important;
@@ -47,7 +47,7 @@
 .driver-popover-close-btn {
   background: transparent !important;
   color: var(--text-primary, #121212) !important;
-  border: 1px solid var(--border-global, #616161) !important;
+  border: 1px solid var(--border-global, #4D4D4D) !important;
 }
 
 .driver-popover-prev-btn:hover,

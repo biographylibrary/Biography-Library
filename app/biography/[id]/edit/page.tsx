@@ -2152,7 +2152,7 @@ export default function BiographyEditorPage() {
       )}
 
       {biographyStatus === 'published' && !isFrozen && biography && !translationOf && (
-        <div className="shrink-0 border-b border-border/50 bg-card px-4 py-3">
+        <div className="shrink-0 border-b border-border bg-card px-4 py-3">
           <div className="max-w-5xl mx-auto flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
             <div className="min-w-0 flex-1">
               <ChapterCooldownBanner biography={biography} compact />
@@ -2364,7 +2364,7 @@ export default function BiographyEditorPage() {
         <aside
           data-tour-id="section-list"
           className={cn(
-            'w-full lg:w-72 border-r border-border/50 bg-card shrink-0 flex flex-col h-full',
+            'w-full lg:w-72 border-r border-border bg-card shrink-0 flex flex-col h-full',
             'absolute lg:relative inset-y-0 left-0 z-30 lg:top-0',
             'transition-transform duration-200',
             showMobileSidebar

@@ -303,7 +303,7 @@ export function OnboardingWizard() {
               </CardContent>
             </Card>
           </div>
-          <Alert className="border-primary/20 bg-primary/5">
+          <Alert className="border-border bg-primary/5">
             <Info className="h-4 w-4" />
             <AlertDescription className="text-sm leading-relaxed">
               {t.onboardingWizard.accountModelInfo}

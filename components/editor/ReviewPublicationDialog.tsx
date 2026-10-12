@@ -147,7 +147,7 @@ export function ReviewPublicationDialog({
         ) : (
           <ol className="space-y-4 pt-2">
             {earlyDraftStatus && biographyMode === 'sections' && (
-              <li className="flex gap-3 rounded-lg border border-border/60 p-4">
+              <li className="flex gap-3 rounded-lg border border-border p-4">
                 <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary text-sm font-medium">
                   1
                 </div>
@@ -171,7 +171,7 @@ export function ReviewPublicationDialog({
             )}
 
             {earlyDraftStatus && biographyMode === 'freeflow' && (
-              <li className="flex gap-3 rounded-lg border border-border/60 p-4">
+              <li className="flex gap-3 rounded-lg border border-border p-4">
                 <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary text-sm font-medium">
                   1
                 </div>
@@ -199,7 +199,7 @@ export function ReviewPublicationDialog({
             )}
 
             {earlyDraftStatus && (
-              <li className="flex gap-3 rounded-lg border border-border/60 p-4">
+              <li className="flex gap-3 rounded-lg border border-border p-4">
                 <div
                   className={cn(
                     'flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary text-sm font-medium'
@@ -235,7 +235,7 @@ export function ReviewPublicationDialog({
             )}
 
             {biographyStatus === 'final_version' && !textOnlyPublication && (
-              <li className="flex gap-3 rounded-lg border border-border/60 p-4">
+              <li className="flex gap-3 rounded-lg border border-border p-4">
                 <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary text-sm font-medium">
                   1
                 </div>
@@ -263,7 +263,7 @@ export function ReviewPublicationDialog({
             )}
 
             {textOnlyPublication && biographyStatus === 'final_version' && (
-              <li className="flex gap-3 rounded-lg border border-border/60 p-4">
+              <li className="flex gap-3 rounded-lg border border-border p-4">
                 <div className="flex-1 space-y-2 min-w-0">
                   <p className="font-medium text-sm">{t.textLanguage.pdfUnavailableTitle}</p>
                   <p className="text-xs text-muted-foreground leading-relaxed">
@@ -298,7 +298,7 @@ export function ReviewPublicationDialog({
 
             {biographyStatus === 'pdf_draft' && (
               <>
-                <li className="flex gap-3 rounded-lg border border-border/60 p-4">
+                <li className="flex gap-3 rounded-lg border border-border p-4">
                   <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary text-sm font-medium">
                     1
                   </div>
@@ -324,7 +324,7 @@ export function ReviewPublicationDialog({
                     </Button>
                   </div>
                 </li>
-                <li className="flex gap-3 rounded-lg border border-border/60 p-4">
+                <li className="flex gap-3 rounded-lg border border-border p-4">
                   <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary text-sm font-medium">
                     2
                   </div>

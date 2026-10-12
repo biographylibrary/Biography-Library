@@ -52,7 +52,7 @@ describe('EditionBanner', () => {
     expect(screen.queryByText(copy.originalUnpublishedNote)).toBeNull();
   });
 
-  it('è una banda a tutta larghezza con filetto inferiore border-border/50', () => {
+  it('è una banda a tutta larghezza con filetto inferiore border-border', () => {
     const longTitle =
       'Una vita lunga e difficile raccontata dai figli, dai nipoti e da chi la conobbe davvero negli anni della guerra';
     const { container } = render(
@@ -61,7 +61,8 @@ describe('EditionBanner', () => {
     const band = container.firstElementChild as HTMLElement | null;
     expect(band).toBeTruthy();
     expect(band?.className).toMatch(/\bborder-b\b/);
-    expect(band?.className).toMatch(/border-border\/50/);
+    expect(band?.className).toMatch(/\bborder-border\b/);
+    expect(band?.className).not.toMatch(/border-border\/\d+/);
     expect(band?.className).toMatch(/\bpy-1\.5\b/);
     expect(band?.className).toMatch(/\bsm:py-2\b/);
     expect(band?.className).toMatch(/\bshrink-0\b/);

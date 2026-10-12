@@ -26,8 +26,8 @@
     --accent-foreground: 0 0% 7%;
     --destructive: 352 38% 42%;
     --destructive-foreground: 0 0% 98%;
-    --border: 0 0% 38%;
-    --input: 0 0% 38%;
+    --border: 0 0% 30%;
+    --input: 0 0% 30%;
     --ring: 0 0% 7%;
     --chart-1: 96 30% 82%;
     --chart-2: 32 84% 87%;
@@ -43,7 +43,7 @@
     --btn-primary-bg: #EDEBE7;
     --btn-primary-border: #121212;
     --btn-hover: #C8DFBE;
-    --border-global: #616161;
+    --border-global: hsl(var(--border));
     --error: #944454;
     --status-info: #C4DAEB;
     --status-warning: #EDE4B9;
@@ -70,8 +70,8 @@
     --accent-foreground: 180 4% 13%;
     --destructive: 352 38% 42%;
     --destructive-foreground: 0 0% 98%;
-    --border: 40 60% 93%;
-    --input: 40 60% 93%;
+    --border: 40 6% 52%;
+    --input: 40 6% 52%;
     --ring: 40 60% 98%;
     --chart-1: 96 30% 82%;
     --chart-2: 32 84% 87%;

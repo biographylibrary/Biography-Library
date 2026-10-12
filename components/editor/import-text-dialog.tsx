@@ -343,7 +343,7 @@ export function ImportTextDialog({
           className={editorSidebarDialogContentClass}
           style={editorSidebarDialogContentStyle}
         >
-          <DialogHeader className="px-6 pt-6 pb-4 border-b border-border/50 shrink-0">
+          <DialogHeader className="px-6 pt-6 pb-4 border-b border-border shrink-0">
             <DialogTitle className="flex items-center gap-2 text-lg">
               <Upload className="h-5 w-5 text-primary" />
               {variant === 'edition' ? t.translate.importTitle : t.importDialog.titleFreeflow}
@@ -365,7 +365,7 @@ export function ImportTextDialog({
                   className={`border-2 border-dashed rounded-lg p-6 text-center transition-colors cursor-pointer ${
                     dragActive
                       ? 'border-primary bg-primary/5'
-                      : 'border-muted-foreground/25 hover:border-muted-foreground/50'
+                      : 'border-border hover:border-muted-foreground/50'
                   }`}
                   onDragEnter={handleDrag}
                   onDragLeave={handleDrag}
@@ -444,7 +444,7 @@ export function ImportTextDialog({
                     <img
                       src={pdfOffer.previewUrl}
                       alt=""
-                      className="mx-auto max-h-64 rounded-md border border-border/60 bg-[#ECE9E4] object-contain"
+                      className="mx-auto max-h-64 rounded-md border border-border bg-[#ECE9E4] object-contain"
                     />
                     <p className="text-sm font-medium">{t.importDialog.keepCoverQuestion}</p>
                     <div className="flex flex-wrap gap-2">
@@ -483,7 +483,7 @@ export function ImportTextDialog({
                   </Alert>
                 )}
                 {parsedContent && htmlHasText(previewHtml) && (
-                  <div className="rounded-md border border-border/60 bg-muted/30 p-4 max-h-[240px] overflow-y-auto import-preview">
+                  <div className="rounded-md border border-border bg-muted/30 p-4 max-h-[240px] overflow-y-auto import-preview">
                     <p className="text-xs text-muted-foreground mb-2 font-medium">
                       {t.importDialog.preview}
                     </p>
@@ -519,7 +519,7 @@ export function ImportTextDialog({
             )}
           </div>
 
-          <DialogFooter className="px-6 py-4 border-t border-border/50">
+          <DialogFooter className="px-6 py-4 border-t border-border">
             <Button type="button" variant="outline" onClick={() => handleOpenChange(false)}>
               {t.common.cancel}
             </Button>

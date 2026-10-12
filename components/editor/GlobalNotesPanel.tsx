@@ -262,7 +262,7 @@ export function GlobalNotesPanel({
           className={editorSidebarDialogContentClass}
           style={editorSidebarDialogContentStyle}
         >
-          <DialogHeader className="px-6 pt-6 pb-4 border-b border-border/50 shrink-0">
+          <DialogHeader className="px-6 pt-6 pb-4 border-b border-border shrink-0">
             <DialogTitle className="flex items-center gap-2 text-lg">
               <StickyNote className="h-5 w-5 text-primary" />
               {t.notesAndTodos.globalTitle}

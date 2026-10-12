@@ -62,7 +62,7 @@ export default function OnboardingPage() {
 
   return (
     <div className="min-h-screen bg-[#EDEBE7] dark:bg-[#1F2121] px-4 py-6 sm:py-10 md:py-14">
-      <div className="w-full max-w-3xl mx-auto rounded-xl border border-border/60 bg-card shadow-sm p-4 sm:p-6 md:p-10">
+      <div className="w-full max-w-3xl mx-auto rounded-xl border border-border bg-card shadow-sm p-4 sm:p-6 md:p-10">
         <OnboardingWizard />
       </div>
     </div>

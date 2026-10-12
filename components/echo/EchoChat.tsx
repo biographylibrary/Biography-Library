@@ -235,7 +235,7 @@ export function EchoChat({
       )}
 
       {conversationOpen && compact && showOrb && (
-        <div className="flex items-center gap-2 px-1 py-1.5 shrink-0 border-b border-border/40">
+        <div className="flex items-center gap-2 px-1 py-1.5 shrink-0 border-b border-border">
           <EchoAvatar state={orbState} size="sm" />
           {orbStatusText && (
             <span className="text-xs text-muted-foreground truncate">{orbStatusText}</span>
@@ -251,7 +251,7 @@ export function EchoChat({
       {conversationOpen && !compact && pendingDraftCount > 0 && (
         <div
           className={cn(
-            'mb-2 px-3 py-1.5 rounded-lg bg-primary/10 border border-primary/25 text-xs text-primary shrink-0',
+            'mb-2 px-3 py-1.5 rounded-lg bg-primary/10 border border-border text-xs text-primary shrink-0',
             flushChrome ? 'mx-3' : 'mx-2'
           )}
         >
@@ -262,7 +262,7 @@ export function EchoChat({
       {conversationOpen && activeSectionLabel && !compact && (
         <div
           className={cn(
-            'mb-2 px-3 py-2 rounded-lg bg-muted/60 border border-border/50 text-xs text-muted-foreground shrink-0 flex items-center justify-between gap-2 min-w-0 overflow-hidden',
+            'mb-2 px-3 py-2 rounded-lg bg-muted/60 border border-border text-xs text-muted-foreground shrink-0 flex items-center justify-between gap-2 min-w-0 overflow-hidden',
             flushChrome ? 'mx-3' : 'mx-2'
           )}
         >
@@ -338,7 +338,7 @@ export function EchoChat({
                 ? 'ml-auto bg-brand-greenLight text-brand-greenDark dark:bg-brand-greenLight/25 dark:text-brand-greenLight'
                 : m.isUsageGuide
                   ? cn(
-                      'mr-auto border border-border/50 bg-primary/5 text-foreground',
+                      'mr-auto border border-border bg-primary/5 text-foreground',
                       highlightMessageId === m.id && 'bg-primary/10'
                     )
                   : 'mr-auto bg-muted text-foreground'
@@ -450,7 +450,7 @@ export function EchoChat({
 
       <div
         className={cn(
-          'border-t border-border/50 shrink-0 min-w-0',
+          'border-t border-border shrink-0 min-w-0',
           flushChrome ? 'grid grid-cols-[auto_1fr] items-stretch gap-1.5 px-2 py-2' : 'flex items-end gap-2',
           !flushChrome && (compact ? 'px-2 pt-2 mt-1' : 'px-2 pt-3 mt-2')
         )}

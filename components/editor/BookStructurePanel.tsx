@@ -137,7 +137,7 @@ interface CollapsibleGroupProps {
 function CollapsibleGroup({ title, children, defaultOpen = true }: CollapsibleGroupProps) {
   const [open, setOpen] = useState(defaultOpen);
   return (
-    <div className="border border-border/60 rounded-lg overflow-hidden">
+    <div className="border border-border rounded-lg overflow-hidden">
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
@@ -150,7 +150,7 @@ function CollapsibleGroup({ title, children, defaultOpen = true }: CollapsibleGr
           <ChevronRight className="h-4 w-4 text-muted-foreground" />
         )}
       </button>
-      {open && <div className="divide-y divide-border/40">{children}</div>}
+      {open && <div className="divide-y divide-border">{children}</div>}
     </div>
   );
 }
@@ -287,7 +287,7 @@ export function BookStructurePanel({ biographyId, userId, hideTitle }: BookStruc
         </p>
       )}
 
-      <div className="border border-border/60 rounded-lg overflow-hidden px-3 py-3">
+      <div className="border border-border rounded-lg overflow-hidden px-3 py-3">
         <div className="flex items-center justify-between gap-3">
           <span className="text-sm font-medium text-foreground leading-snug">
             {t.editor.bookStructureAuthorCopyrightPage}

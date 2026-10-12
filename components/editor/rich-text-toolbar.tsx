@@ -150,7 +150,7 @@ export function RichTextToolbar({
 
   if (countsOnly) {
     return (
-      <div className="flex h-8 items-center border-b border-border/30 bg-muted/30 px-3">
+      <div className="flex h-8 items-center border-b border-border bg-muted/30 px-3">
         {usageAndCount}
       </div>
     );
@@ -185,7 +185,7 @@ export function RichTextToolbar({
   );
 
   return (
-    <div className="flex flex-nowrap items-center gap-0.5 md:gap-1 px-1.5 md:px-3 py-1 border-b border-border/30 bg-muted/30 overflow-x-auto scrollbar-none">
+    <div className="flex flex-nowrap items-center gap-0.5 md:gap-1 px-1.5 md:px-3 py-1 border-b border-border bg-muted/30 overflow-x-auto scrollbar-none">
       {undoLastChange && (
         <Button
           type="button"

@@ -89,7 +89,7 @@ export function GuidedSectionWorkspace({
   return (
     <div className="flex flex-col h-full min-h-0">
       {!documentMode && (
-      <div className="flex items-center justify-between px-3 h-12 border-b border-border/50 shrink-0 gap-2">
+      <div className="flex items-center justify-between px-3 h-12 border-b border-border shrink-0 gap-2">
         <h2
           className="truncate flex-1 min-w-0 text-primary"
           style={{

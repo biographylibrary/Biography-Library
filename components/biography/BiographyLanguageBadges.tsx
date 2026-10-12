@@ -36,7 +36,7 @@ export function BiographyLanguageBadges({
       <span
         className={cn(
           pillClass,
-          'bg-primary/15 text-primary border border-primary/35'
+          'bg-primary/15 text-primary border border-border'
         )}
         title={t.publicBiographies.langOriginal}
       >

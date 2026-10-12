@@ -42,7 +42,7 @@ export default function UmIdentifierPage() {
                 </thead>
                 <tbody>
                   {UM_SPEC_VECTORS.map((row) => (
-                    <tr key={row.id} className="border-b border-border/40">
+                    <tr key={row.id} className="border-b border-border">
                       <td className="py-2 pr-4">{row.year}</td>
                       <td className="py-2 pr-4 font-mono">{row.body}</td>
                       <td className="py-2 font-mono">{row.id}</td>

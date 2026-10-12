@@ -51,7 +51,7 @@ function SettingsRow({
   return (
     <div
       className={cn(
-        'flex items-center justify-between gap-4 px-4 py-3.5 rounded-xl bg-card border border-border/60',
+        'flex items-center justify-between gap-4 px-4 py-3.5 rounded-xl bg-card border border-border',
         onClick && 'cursor-pointer hover:bg-muted/40 transition-colors'
       )}
       onClick={onClick}
@@ -208,7 +208,7 @@ export default function SettingsPage() {
         <section className="space-y-2">
           <SectionHeading>{t.accountSettings.language}</SectionHeading>
 
-          <div className="rounded-xl border border-border/60 bg-card px-4 py-3.5">
+          <div className="rounded-xl border border-border bg-card px-4 py-3.5">
             <div className="flex items-center gap-2.5">
               <Languages className="h-4 w-4 text-muted-foreground" />
               <span className="mr-1">{languageFlags[language]}</span>

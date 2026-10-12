@@ -277,7 +277,7 @@ export function BiographyDetailPanel({ biography, onClose, onRefresh }: Biograph
                 <h3 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-3">
                   {t.admin.bioPanelSection1}
                 </h3>
-                <div className="rounded-xl border border-border bg-muted/20 px-4 divide-y divide-border/60">
+                <div className="rounded-xl border border-border bg-muted/20 px-4 divide-y divide-border">
                   <InfoRow label={t.admin.bioColTitle}>
                     <span className="font-medium">{biography.title || '—'}</span>
                   </InfoRow>

@@ -40,7 +40,7 @@ export function AuthorLicensePanel({
     : t.rightsChoice.optionBySaTitle.replace(/^[^.]+\.\s*/, '');
 
   return (
-    <div className="px-4 sm:px-6 py-4 border-b border-border/30 bg-muted/10">
+    <div className="px-4 sm:px-6 py-4 border-b border-border bg-muted/10">
       <div className="flex items-start gap-2 mb-2">
         <Scale className="h-4 w-4 text-primary shrink-0 mt-0.5" />
         <div className="min-w-0 space-y-1">
