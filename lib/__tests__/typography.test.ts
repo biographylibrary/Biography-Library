@@ -61,15 +61,119 @@ function walkTsx(dir: string, out: string[] = []): string[] {
   return out;
 }
 
+/** Sostituisce ogni `${...}` (graffe bilanciate) con uno spazio — per cercare token nelle parti statiche. */
+function flattenTemplateExpr(body: string): string {
+  let out = '';
+  let i = 0;
+  while (i < body.length) {
+    if (body[i] === '$' && body[i + 1] === '{') {
+      let depth = 1;
+      let j = i + 2;
+      while (j < body.length && depth > 0) {
+        if (body[j] === '{') depth++;
+        else if (body[j] === '}') depth--;
+        j++;
+      }
+      out += ' ';
+      i = j;
+      continue;
+    }
+    out += body[i];
+    i++;
+  }
+  return out;
+}
+
+/**
+ * Template di classi: corpo tra backtick dopo `className={` o come argomento di `cn(`.
+ * Restituisce { body, line, snippet } (line 1-based sul file).
+ */
+function classTemplates(src: string): Array<{ body: string; line: number; snippet: string }> {
+  const hits: Array<{ body: string; line: number; snippet: string }> = [];
+  const lineAt = (idx: number) => src.slice(0, idx).split(/\n/).length;
+
+  const takeTemplateAt = (openBacktick: number) => {
+    let i = openBacktick + 1;
+    while (i < src.length) {
+      if (src[i] === '\\') {
+        i += 2;
+        continue;
+      }
+      if (src[i] === '`') {
+        const body = src.slice(openBacktick + 1, i);
+        const snippet = body.length > 80 ? `${body.slice(0, 80)}…` : body;
+        hits.push({ body, line: lineAt(openBacktick), snippet });
+        return i + 1;
+      }
+      if (src[i] === '$' && src[i + 1] === '{') {
+        let depth = 1;
+        i += 2;
+        while (i < src.length && depth > 0) {
+          if (src[i] === '{') depth++;
+          else if (src[i] === '}') depth--;
+          i++;
+        }
+        continue;
+      }
+      i++;
+    }
+    return openBacktick + 1;
+  };
+
+  let searchFrom = 0;
+  while (searchFrom < src.length) {
+    const cnIdx = src.indexOf('className={`', searchFrom);
+    const cnCall = src.indexOf('cn(', searchFrom);
+    let next = -1;
+    let kind: 'className' | 'cn' | null = null;
+    if (cnIdx >= 0 && (cnCall < 0 || cnIdx <= cnCall)) {
+      next = cnIdx;
+      kind = 'className';
+    } else if (cnCall >= 0) {
+      next = cnCall;
+      kind = 'cn';
+    }
+    if (next < 0 || !kind) break;
+
+    if (kind === 'className') {
+      const tick = next + 'className={'.length; // points at `
+      if (src[tick] === '`') searchFrom = takeTemplateAt(tick);
+      else searchFrom = next + 1;
+      continue;
+    }
+
+    // cn( … ) — raccogli template literal argomenti
+    let i = next + 3;
+    let depth = 1;
+    while (i < src.length && depth > 0) {
+      if (src[i] === '`') {
+        searchFrom = takeTemplateAt(i);
+        i = searchFrom;
+        continue;
+      }
+      if (src[i] === '(') depth++;
+      else if (src[i] === ')') depth--;
+      i++;
+    }
+    searchFrom = Math.max(searchFrom, i);
+  }
+  return hits;
+}
+
 /**
  * Letterali di classi: className / class: / argomenti di cn(...),
- * più qualsiasi stringa tra apici/virgolette che contiene già un token prose o font-WEIGHT
- * (copre cva e className multilinea).
+ * template (anche con `${...}`) appiattiti, e stringhe tra apici con token prose/font-WEIGHT.
  */
 function classLikeLiterals(src: string): string[] {
   const hits: string[] = [];
-  for (const m of Array.from(src.matchAll(/className\s*=\s*(["'`])([\s\S]*?)\1/g))) {
+  // className="..." / '...'  e className={`...`} (con { opzionale)
+  for (const m of Array.from(
+    src.matchAll(/className\s*=\s*(?:\{\s*)?(["'])([\s\S]*?)\1\s*\}?/g)
+  )) {
     hits.push(m[2]);
+  }
+  for (const tmpl of classTemplates(src)) {
+    hits.push(flattenTemplateExpr(tmpl.body));
   }
   for (const m of Array.from(src.matchAll(/\bclass\s*:\s*(["'`])([\s\S]*?)\1/g))) {
     hits.push(m[2]);
@@ -93,6 +197,11 @@ function classLikeLiterals(src: string): string[] {
     }
   }
   return hits;
+}
+
+/** `${...}` contiene una stringa letterale che comincia con spazio (caso legittimo). */
+function exprHasLeadingSpaceString(expr: string): boolean {
+  return /['"`]\s/.test(expr);
 }
 
 describe('typography: no dead weight / prose classes', () => {
@@ -125,6 +234,41 @@ describe('typography: no dead weight / prose classes', () => {
         PROSE_CLASS_RE.lastIndex = 0;
         for (const m of Array.from(lit.matchAll(PROSE_CLASS_RE))) {
           failures.push(`${rel} ${m[3] ?? m[2] ?? m[0]}`);
+        }
+      }
+    }
+    expect(failures, failures.join('\n')).toEqual([]);
+  });
+
+  it('nessun ${ incollato a una classe fissa nei template di className/cn', () => {
+    const failures: string[] = [];
+    for (const file of files) {
+      const rel = relative(ROOT, file).replace(/\\/g, '/');
+      const text = readFileSync(file, 'utf8');
+      for (const tmpl of classTemplates(text)) {
+        const body = tmpl.body;
+        let i = 0;
+        while (i < body.length) {
+          if (body[i] === '$' && body[i + 1] === '{') {
+            let depth = 1;
+            let j = i + 2;
+            while (j < body.length && depth > 0) {
+              if (body[j] === '{') depth++;
+              else if (body[j] === '}') depth--;
+              j++;
+            }
+            const expr = body.slice(i + 2, j - 1);
+            const prev = i > 0 ? body[i - 1] : '`';
+            if (prev !== ' ' && prev !== '`' && prev !== '(') {
+              if (!exprHasLeadingSpaceString(expr)) {
+                const frag = body.slice(Math.max(0, i - 24), Math.min(body.length, j + 8));
+                failures.push(`${rel}:${tmpl.line} …${frag}…`);
+              }
+            }
+            i = j;
+            continue;
+          }
+          i++;
         }
       }
     }

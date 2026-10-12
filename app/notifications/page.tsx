@@ -133,7 +133,7 @@ export default function NotificationsPage() {
               )}
               <div className={cn('flex items-start justify-between gap-3', !notification.is_read && 'pl-4')}>
                 <div className="flex-1 min-w-0">
-                  <p className={cn('text-sm leading-relaxed', !notification.is_read && '')}>
+                  <p className="text-sm leading-relaxed">
                     {notification.message}
                   </p>
                   <p className="text-xs text-muted-foreground mt-1">{formatTime(notification.created_at)}</p>

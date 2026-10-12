@@ -81,7 +81,7 @@ function StatusBadge({ status }: { status: string }) {
   };
   const cfg = map[status] ?? map['draft'];
   return (
-    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs border${cfg.className}`}>
+    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs border ${cfg.className}`}>
       {cfg.label}
     </span>
   );
@@ -96,7 +96,7 @@ function PrivacyBadge({ privacy }: { privacy: string }) {
   };
   const cfg = map[privacy] ?? map['private'];
   return (
-    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs border${cfg.className}`}>
+    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs border ${cfg.className}`}>
       {cfg.label}
     </span>
   );

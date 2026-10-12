@@ -29,7 +29,7 @@ export function ReportStatusBadge({ status }: ReportStatusBadgeProps) {
   const label = getStatusLabel(status, t);
 
   return (
-    <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs whitespace-nowrap${style}`}>
+    <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs whitespace-nowrap ${style}`}>
       {label}
     </span>
   );

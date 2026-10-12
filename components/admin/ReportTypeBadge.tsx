@@ -45,7 +45,7 @@ export function ReportTypeBadge({ type }: ReportTypeBadgeProps) {
   const label = getTypeLabel(type, t);
 
   return (
-    <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs whitespace-nowrap${style}`}>
+    <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs whitespace-nowrap ${style}`}>
       {label}
     </span>
   );

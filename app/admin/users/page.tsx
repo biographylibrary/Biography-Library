@@ -600,7 +600,7 @@ export default function AdminUsersPage() {
                                   aria-label={t.admin.usersGrantAccess}
                                 />
                               )}
-                              <div className={`h-8 w-8 rounded-full flex items-center justify-center text-white dark:text-[#121212] text-xs shrink-0${getAvatarColor(displayName)}`}>
+                              <div className={`h-8 w-8 rounded-full flex items-center justify-center text-white dark:text-[#121212] text-xs shrink-0 ${getAvatarColor(displayName)}`}>
                                 {initial}
                               </div>
                             </div>

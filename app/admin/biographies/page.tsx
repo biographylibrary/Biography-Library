@@ -52,7 +52,7 @@ function StatusBadge({ status, t }: { status: string; t: any }) {
   };
   const cls = map[status] ?? map['draft'];
   return (
-    <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs border whitespace-nowrap${cls}`}>
+    <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs border whitespace-nowrap ${cls}`}>
       {labels[status] ?? status}
     </span>
   );
