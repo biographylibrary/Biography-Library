@@ -119,6 +119,30 @@
   }
 }
 
+@layer components {
+  .notice {
+    border-radius: calc(var(--radius) - 2px);
+  }
+  .tone-info, .tone-success, .tone-warning, .tone-danger {
+    border-width: 1px;
+    border-style: solid;
+    border-color: hsl(var(--border));
+    color: #121212;
+  }
+  .tone-info    { background-color: #C4DAEB; }
+  .tone-success { background-color: #C8DFBE; }
+  .tone-warning { background-color: rgb(221 207 136 / 0.6); }
+  .tone-danger  { background-color: rgb(148 68 84 / 0.2); }
+
+  .dark .tone-info, .dark .tone-success, .dark .tone-warning, .dark .tone-danger {
+    color: #FDFBF7;
+  }
+  .dark .tone-info    { background-color: rgb(196 218 235 / 0.1); }
+  .dark .tone-success { background-color: rgb(200 223 190 / 0.1); }
+  .dark .tone-warning { background-color: rgb(221 207 136 / 0.1); }
+  .dark .tone-danger  { background-color: rgb(148 68 84 / 0.2); }
+}
+
 @keyframes voiceBar {
   0% {
     height: 4px;
