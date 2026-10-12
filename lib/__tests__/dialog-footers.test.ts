@@ -56,6 +56,22 @@ describe('dialog footers spacing', () => {
     expect(failures, failures.join('\n')).toEqual([]);
   });
 
+  it('sorgenti: AlertDialogCancel senza mt- / sm:mt- (non sommare al gap-2 del footer)', () => {
+    const src = readFileSync(join(ROOT, 'components/ui/alert-dialog.tsx'), 'utf8');
+    const cancelBlock = src.match(
+      /const AlertDialogCancel[\s\S]*?AlertDialogCancel\.displayName/
+    );
+    expect(cancelBlock, 'AlertDialogCancel non trovato').toBeTruthy();
+    const strings = Array.from(
+      cancelBlock![0].matchAll(/(['"])((?:\\.|(?!\1).)*)\1/g)
+    ).map((m) => m[2]);
+    const withMt = strings.filter((s) => /(?:^|\s)(?:sm:)?mt-/.test(s));
+    expect(
+      withMt,
+      `AlertDialogCancel: margine verticale indesiderato (${withMt.join(' | ')})`
+    ).toEqual([]);
+  });
+
   afterEach(() => cleanup());
 
   it('render: DialogFooter, AlertDialogFooter e SheetFooter espongono gap-2', () => {

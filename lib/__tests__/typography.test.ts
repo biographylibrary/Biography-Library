@@ -199,9 +199,28 @@ function classLikeLiterals(src: string): string[] {
   return hits;
 }
 
-/** `${...}` contiene una stringa letterale che comincia con spazio (caso legittimo). */
+/**
+ * `${...}` è legittimo solo se contiene un letterale (', ", `) che comincia con spazio:
+ * virgoletta di apertura subito seguita da spazio (non una chiusura dopo il contenuto).
+ */
 function exprHasLeadingSpaceString(expr: string): boolean {
-  return /['"`]\s/.test(expr);
+  let quote: "'" | '"' | '`' | null = null;
+  for (let i = 0; i < expr.length; i++) {
+    const ch = expr[i];
+    if (quote === null) {
+      if (ch === "'" || ch === '"' || ch === '`') {
+        quote = ch;
+        if (i + 1 < expr.length && expr[i + 1] === ' ') return true;
+      }
+      continue;
+    }
+    if (ch === '\\') {
+      i++;
+      continue;
+    }
+    if (ch === quote) quote = null;
+  }
+  return false;
 }
 
 describe('typography: no dead weight / prose classes', () => {
