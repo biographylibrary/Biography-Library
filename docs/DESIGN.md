@@ -146,11 +146,18 @@ Usati in layout e superfici (oltre a `brand`):
 | Variabile | Dark |
 |-----------|------|
 | `--bg-main` | `#1F2121` |
-| `--bg-surface` | `#656767` |
+| `--bg-surface` | `#313535` |
+| `--card` | `#313535` |
+| `--popover` | `#313535` |
+| `--muted` | `#404444` |
+| `--muted-foreground` | `#B8B8B8` |
 | `--text-primary` | `#FDFBF7` |
-| `--text-secondary` | `rgba(167, 169, 169, 0.7)` |
+| `--text-secondary` | `#B8B8B8` |
 | `--btn-primary-bg` | `#1F2121` |
 | `--btn-primary-border` | `#EDEBE7` |
+| `.tone-on-image` | Fondi pieni per chip sopra una foto (vedi `@layer components` in `globals.css`) |
+
+Scala scura: pagina `#1F2121`, scheda `#313535`, fondo riempito `#404444`. Il testo secondario arriva a circa 6,3:1 sulla scheda e la linea a circa 3,5:1. Le coppie di colori (testo, bordo, muted distinto da card, allineamento Tailwind) sono fissate da `lib/__tests__/theme-contrast.test.ts`.
 
 ---
 
