@@ -70,7 +70,7 @@ export function EchoDraftInsertPrompt({
       <div
         role="region"
         aria-label={readyLabel}
-        className="mt-3 rounded-lg border border-primary/30 bg-primary/5 px-3 py-2 flex flex-wrap items-center gap-2"
+        className="mt-3 rounded-lg border border-border bg-primary/5 px-3 py-2 flex flex-wrap items-center gap-2"
       >
         <span className="text-xs font-medium text-primary truncate max-w-[40%]">{sectionTitle}</span>
         <span className="text-xs text-muted-foreground flex-1 min-w-[8rem]">{readyLabel}</span>
@@ -100,7 +100,7 @@ export function EchoDraftInsertPrompt({
     <div
       role="region"
       aria-label={cardTitle}
-      className="mt-3 rounded-lg border border-primary/30 bg-primary/5 p-3 space-y-2.5"
+      className="mt-3 rounded-lg border border-border bg-primary/5 p-3 space-y-2.5"
     >
       <div className="flex items-start gap-2">
         <FileText className="h-4 w-4 text-primary shrink-0 mt-0.5" />
@@ -118,7 +118,7 @@ export function EchoDraftInsertPrompt({
       )}
 
       {replacedText?.trim() && (
-        <p className="text-xs text-muted-foreground rounded border border-border/40 bg-background/40 px-2.5 py-1.5">
+        <p className="text-xs text-muted-foreground rounded border border-border bg-background/40 px-2.5 py-1.5">
           {replacedLabel && <span className="font-medium">{replacedLabel} </span>}
           <span className="line-through decoration-muted-foreground/60">{clipReplaced(replacedText)}</span>
         </p>
@@ -126,7 +126,7 @@ export function EchoDraftInsertPrompt({
 
       <div
         className={cn(
-          'text-sm text-foreground/80 whitespace-pre-wrap rounded bg-background/60 px-2.5 py-2 border border-border/40 overflow-y-auto overscroll-contain',
+          'text-sm text-foreground/80 whitespace-pre-wrap rounded bg-background/60 px-2.5 py-2 border border-border overflow-y-auto overscroll-contain',
           previewExpanded ? PREVIEW_EXPANDED_MAX_H : PREVIEW_COLLAPSED_MAX_H
         )}
       >

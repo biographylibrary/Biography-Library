@@ -12,7 +12,7 @@ const ZEFIX_URL = 'https://www.zefix.ch/en/search/entity/list/firm/1735068';
 
 function CreditRow({ label, children }: { label: string; children: React.ReactNode }) {
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-[10rem_1fr] gap-1 sm:gap-4 py-2 border-b border-border/40 last:border-b-0">
+    <div className="grid grid-cols-1 sm:grid-cols-[10rem_1fr] gap-1 sm:gap-4 py-2 border-b border-border last:border-b-0">
       <dt className="text-sm font-medium text-muted-foreground">{label}</dt>
       <dd className="text-sm leading-relaxed">{children}</dd>
     </div>

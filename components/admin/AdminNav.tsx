@@ -64,7 +64,7 @@ export function AdminNav() {
     <nav className="border-b border-border bg-card/60 backdrop-blur-sm">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center gap-1 overflow-x-auto scrollbar-none">
-          <span className="hidden sm:inline text-xs text-muted-foreground pr-3 border-r border-border/60 mr-1 shrink-0">
+          <span className="hidden sm:inline text-xs text-muted-foreground pr-3 border-r border-border mr-1 shrink-0">
             {t.umId.yearWord} {formatUmYear(umYearFromDate(new Date()), 'short')}
           </span>
           {visible.map((item) => {

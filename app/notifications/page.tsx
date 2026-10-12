@@ -124,7 +124,7 @@ export default function NotificationsPage() {
               className={cn(
                 'relative rounded-xl border px-4 py-3.5 transition-colors',
                 notification.is_read
-                  ? 'border-border/50 bg-card'
+                  ? 'border-border bg-card'
                   : 'border-border bg-card shadow-sm'
               )}
             >

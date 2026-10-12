@@ -94,7 +94,7 @@ export function PublishedBiographiesCard({ userId }: PublishedBiographiesCardPro
         {publishedBiographies.map((bio) => (
           <div
             key={bio.id}
-            className="flex items-center justify-between p-3 rounded-lg border border-border/50 bg-card/50 hover:bg-muted/50 transition-colors"
+            className="flex items-center justify-between p-3 rounded-lg border border-border bg-card/50 hover:bg-muted/50 transition-colors"
           >
             <div className="flex-1 min-w-0">
               <h4 className="font-semibold text-sm truncate">{bio.title}</h4>

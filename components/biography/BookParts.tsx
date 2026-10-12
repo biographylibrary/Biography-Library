@@ -16,8 +16,8 @@ export function BookParts({ position, parts, languageTag }: BookPartsProps) {
     <div
       className={
         position === 'front'
-          ? 'mb-10 space-y-10 pb-10 border-b border-border/60'
-          : 'mt-12 space-y-10 pt-10 border-t border-border/60'
+          ? 'mb-10 space-y-10 pb-10 border-b border-border'
+          : 'mt-12 space-y-10 pt-10 border-t border-border'
       }
     >
       {parts.map((part) => {

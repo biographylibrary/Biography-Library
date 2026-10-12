@@ -28,7 +28,7 @@ export function RegistrationLanguagePicker({
             type="button"
             onClick={() => onChange(lang)}
             className={cn(
-              'flex items-center gap-2 rounded-lg border-2 px-3 py-2.5 text-sm transition-colors',
+              'flex items-center gap-2 rounded-lg border px-3 py-2.5 text-sm transition-colors',
               value === lang
                 ? 'border-foreground bg-foreground font-semibold text-background'
                 : 'border-border bg-card hover:border-foreground/25',

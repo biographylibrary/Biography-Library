@@ -58,9 +58,9 @@ export function LanguageGateModal({
                 key={lang}
                 type="button"
                 onClick={() => setSelectedLang(lang)}
-                className={`flex items-center gap-3 p-4 rounded-lg border-2 transition-colors ${
+                className={`flex items-center gap-3 p-4 rounded-lg border transition-colors ${
                   selectedLang === lang
-                    ? 'border-primary bg-primary/5'
+                    ? 'border-primary ring-1 ring-primary bg-primary/5'
                     : 'border-border hover:border-[#C4DAEB] hover:bg-[#C4DAEB]/20'
                 }`}
               >

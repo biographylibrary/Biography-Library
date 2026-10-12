@@ -135,7 +135,7 @@ Usati in layout e superfici (oltre a `brand`):
 | `btn-primary-bg` | `#EDEBE7` | |
 | `btn-primary-border` | `#121212` | |
 | `btn-hover` | `#C8DFBE` | |
-| `border-global` | `#616161` | |
+| `border-global` | `hsl(var(--border))` | Alias di `--border` (chiaro ≈ `#4D4D4D`) |
 | `error` | `#944454` | Allineato a `brand-wine` |
 | `status-info` | `#C4DAEB` | (= brand-blue in CSS vars) |
 | `status-warning` | `#EDE4B9` | |

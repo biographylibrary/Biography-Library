@@ -88,7 +88,7 @@ export function FinalVersionEditor({
 
   return (
     <div className="flex-1 flex flex-col min-h-0">
-      <div className="border-b border-border/50 px-6 py-4 bg-gradient-to-r from-primary/5 to-primary/10">
+      <div className="border-b border-border px-6 py-4 bg-gradient-to-r from-primary/5 to-primary/10">
         <div className="flex items-center justify-between gap-4 flex-wrap">
           <div className="min-w-0">
             <h2 className="text-2xl font-bold text-foreground flex items-center gap-2">
