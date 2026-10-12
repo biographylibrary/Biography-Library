@@ -42,7 +42,7 @@ export function EchoHeader({
       <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1 overflow-hidden">
         <Link
           href="/dashboard"
-          className="font-serif text-base sm:text-lg font-semibold shrink-0 truncate max-w-[7.5rem] sm:max-w-none"
+          className="font-serif text-base sm:text-lg shrink-0 truncate max-w-[7.5rem] sm:max-w-none"
         >
           Biography Library
         </Link>

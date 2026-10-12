@@ -44,7 +44,7 @@ export function AuthorLicensePanel({
       <div className="flex items-start gap-2 mb-2">
         <Scale className="h-4 w-4 text-primary shrink-0 mt-0.5" />
         <div className="min-w-0 space-y-1">
-          <h3 className="text-sm font-medium">{t.rightsChoice.currentLicense}</h3>
+          <h3 className="text-sm">{t.rightsChoice.currentLicense}</h3>
           <p className="text-sm text-muted-foreground leading-relaxed">{label}</p>
         </div>
       </div>

@@ -223,7 +223,7 @@ function PhotoGridTile({
           <ImagePlus className="h-6 w-6 text-muted-foreground" />
         </div>
       )}
-      <span className="absolute top-1 left-1 min-w-[1.25rem] h-5 px-1 rounded bg-black/50 text-white text-[10px] font-semibold flex items-center justify-center">
+      <span className="absolute top-1 left-1 min-w-[1.25rem] h-5 px-1 rounded bg-black/50 text-white text-[10px] flex items-center justify-center">
         {index + 1}
       </span>
       <div className="absolute top-1 right-1 flex gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -605,7 +605,7 @@ export function PhotoGalleryPanel({ biographyId, onClose, embedded }: PhotoGalle
     <>
       <div className="flex items-center justify-between gap-2 pt-1">
         <div className="min-w-0">
-          <p className="text-xs font-semibold text-foreground">{t.photos.galleryPhotosHeading}</p>
+          <p className="text-xs text-foreground">{t.photos.galleryPhotosHeading}</p>
           <p className="text-[11px] text-muted-foreground">{counterText}</p>
         </div>
         <div className="flex items-center gap-1 shrink-0">
@@ -728,7 +728,7 @@ export function PhotoGalleryPanel({ biographyId, onClose, embedded }: PhotoGalle
       )}
 
       <div className="space-y-3 rounded-xl border border-border bg-muted/30 p-3">
-        <p className="text-xs font-semibold text-foreground">{t.photos.coverCompositeTitle}</p>
+        <p className="text-xs text-foreground">{t.photos.coverCompositeTitle}</p>
         <input
           ref={coverInputRef}
           type="file"
@@ -786,7 +786,7 @@ export function PhotoGalleryPanel({ biographyId, onClose, embedded }: PhotoGalle
       </div>
 
       <div className="space-y-2 rounded-xl border border-border bg-muted/30 p-3">
-        <p className="text-xs font-semibold text-foreground">{t.photos.customA5CoverLabel}</p>
+        <p className="text-xs text-foreground">{t.photos.customA5CoverLabel}</p>
         <p className="text-[11px] text-muted-foreground leading-snug">{t.photos.customA5CoverHint}</p>
         <input
           ref={coverA5InputRef}
@@ -888,7 +888,7 @@ export function PhotoGalleryPanel({ biographyId, onClose, embedded }: PhotoGalle
   return (
     <div className="flex flex-col flex-1 min-h-0 overflow-hidden">
       <div className="px-4 py-3 border-b border-border shrink-0 flex items-center justify-between gap-2 min-w-0">
-        <h3 className="text-sm font-semibold text-foreground truncate min-w-0 flex-1 pr-2">{t.photos.panelTitle}</h3>
+        <h3 className="text-sm text-foreground truncate min-w-0 flex-1 pr-2">{t.photos.panelTitle}</h3>
         <div className="flex items-center gap-2 shrink-0">
           <span className="text-xs text-muted-foreground">{counterText}</span>
           {onClose && (

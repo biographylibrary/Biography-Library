@@ -29,7 +29,7 @@ import { cn } from '@/lib/utils';
 
 function SectionHeading({ children }: { children: React.ReactNode }) {
   return (
-    <h2 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground px-1 mb-2">
+    <h2 className="text-xs uppercase tracking-widest text-muted-foreground px-1 mb-2">
       {children}
     </h2>
   );
@@ -59,7 +59,7 @@ function SettingsRow({
       <div className="flex items-center gap-3 min-w-0">
         <span className="text-muted-foreground shrink-0">{icon}</span>
         <div className="min-w-0">
-          <p className="text-sm font-medium text-foreground leading-tight">{label}</p>
+          <p className="text-sm text-foreground leading-tight">{label}</p>
           {description && (
             <p className="text-xs text-muted-foreground mt-0.5 leading-tight">{description}</p>
           )}
@@ -147,7 +147,7 @@ export default function SettingsPage() {
     <main className="min-h-full bg-background">
       <div className="max-w-lg mx-auto px-4 py-10 space-y-8">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight text-foreground">
+          <h1 className="text-2xl tracking-tight text-foreground">
             {t.nav.settings}
           </h1>
           <p className="text-sm text-muted-foreground mt-1">
@@ -212,7 +212,7 @@ export default function SettingsPage() {
             <div className="flex items-center gap-2.5">
               <Languages className="h-4 w-4 text-muted-foreground" />
               <span className="mr-1">{languageFlags[language]}</span>
-              <span className="text-sm font-medium text-foreground">{languageNames[language]}</span>
+              <span className="text-sm text-foreground">{languageNames[language]}</span>
             </div>
             <p className="text-xs text-muted-foreground mt-2">{t.accountSettings.languageLockedHint}</p>
           </div>
@@ -239,7 +239,7 @@ export default function SettingsPage() {
             <div className="flex items-center gap-3">
               <UserX className="h-4 w-4 text-destructive shrink-0" />
               <div>
-                <p className="text-sm font-medium text-foreground leading-tight">
+                <p className="text-sm text-foreground leading-tight">
                   {t.deleteDialog.deleteAccountLink}
                 </p>
                 <p className="text-xs text-muted-foreground mt-0.5 leading-tight">

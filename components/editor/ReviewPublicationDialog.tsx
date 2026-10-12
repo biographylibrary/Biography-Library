@@ -148,11 +148,11 @@ export function ReviewPublicationDialog({
           <ol className="space-y-4 pt-2">
             {earlyDraftStatus && biographyMode === 'sections' && (
               <li className="flex gap-3 rounded-lg border border-border p-4">
-                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary text-sm font-medium">
+                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary text-sm">
                   1
                 </div>
                 <div className="flex-1 space-y-2 min-w-0">
-                  <p className="font-medium text-sm">{rp.stepChapterOrderTitle}</p>
+                  <p className="text-sm">{rp.stepChapterOrderTitle}</p>
                   <p className="text-xs text-muted-foreground leading-relaxed">
                     {rp.stepChapterOrderDesc}
                   </p>
@@ -172,11 +172,11 @@ export function ReviewPublicationDialog({
 
             {earlyDraftStatus && biographyMode === 'freeflow' && (
               <li className="flex gap-3 rounded-lg border border-border p-4">
-                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary text-sm font-medium">
+                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary text-sm">
                   1
                 </div>
                 <div className="flex-1 space-y-2 min-w-0">
-                  <p className="font-medium text-sm">{rp.stepFreeflowPrepareTitle}</p>
+                  <p className="text-sm">{rp.stepFreeflowPrepareTitle}</p>
                   <p className="text-xs text-muted-foreground leading-relaxed">
                     {rp.stepFreeflowPrepareDesc}
                   </p>
@@ -202,13 +202,13 @@ export function ReviewPublicationDialog({
               <li className="flex gap-3 rounded-lg border border-border p-4">
                 <div
                   className={cn(
-                    'flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary text-sm font-medium'
+                    'flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary text-sm'
                   )}
                 >
                   {biographyMode === 'sections' ? '2' : '2'}
                 </div>
                 <div className="flex-1 space-y-2 min-w-0">
-                  <p className="font-medium text-sm">{rp.stepSubmitTitle}</p>
+                  <p className="text-sm">{rp.stepSubmitTitle}</p>
                   <p className="text-xs text-muted-foreground leading-relaxed">
                     {rp.stepSubmitDesc}
                   </p>
@@ -236,11 +236,11 @@ export function ReviewPublicationDialog({
 
             {biographyStatus === 'final_version' && !textOnlyPublication && (
               <li className="flex gap-3 rounded-lg border border-border p-4">
-                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary text-sm font-medium">
+                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary text-sm">
                   1
                 </div>
                 <div className="flex-1 space-y-2 min-w-0">
-                  <p className="font-medium text-sm">{rp.stepPdfDraftTitle}</p>
+                  <p className="text-sm">{rp.stepPdfDraftTitle}</p>
                   <p className="text-xs text-muted-foreground leading-relaxed">
                     {rp.stepPdfDraftDesc}
                   </p>
@@ -265,7 +265,7 @@ export function ReviewPublicationDialog({
             {textOnlyPublication && biographyStatus === 'final_version' && (
               <li className="flex gap-3 rounded-lg border border-border p-4">
                 <div className="flex-1 space-y-2 min-w-0">
-                  <p className="font-medium text-sm">{t.textLanguage.pdfUnavailableTitle}</p>
+                  <p className="text-sm">{t.textLanguage.pdfUnavailableTitle}</p>
                   <p className="text-xs text-muted-foreground leading-relaxed">
                     {t.textLanguage.pdfUnavailableBody}
                   </p>
@@ -299,11 +299,11 @@ export function ReviewPublicationDialog({
             {biographyStatus === 'pdf_draft' && (
               <>
                 <li className="flex gap-3 rounded-lg border border-border p-4">
-                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary text-sm font-medium">
+                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary text-sm">
                     1
                   </div>
                   <div className="flex-1 space-y-2 min-w-0">
-                    <p className="font-medium text-sm">{rp.stepExportTitle}</p>
+                    <p className="text-sm">{rp.stepExportTitle}</p>
                     <p className="text-xs text-muted-foreground leading-relaxed">
                       {rp.stepExportDesc}
                     </p>
@@ -325,11 +325,11 @@ export function ReviewPublicationDialog({
                   </div>
                 </li>
                 <li className="flex gap-3 rounded-lg border border-border p-4">
-                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary text-sm font-medium">
+                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary text-sm">
                     2
                   </div>
                   <div className="flex-1 space-y-2 min-w-0">
-                    <p className="font-medium text-sm">{rp.stepApproveTitle}</p>
+                    <p className="text-sm">{rp.stepApproveTitle}</p>
                     <p className="text-xs text-muted-foreground leading-relaxed">
                       {rp.stepApproveDesc}
                     </p>
@@ -370,7 +370,7 @@ export function ReviewPublicationDialog({
               <li className="notice tone-success flex gap-3 p-4">
                 <Check className="h-5 w-5 shrink-0 mt-0.5" />
                 <div className="flex-1 space-y-2 min-w-0">
-                  <p className="font-medium text-sm">{rp.publishedTitle}</p>
+                  <p className="text-sm">{rp.publishedTitle}</p>
                   <p className="text-xs leading-relaxed opacity-90">
                     {rp.publishedDesc}
                   </p>

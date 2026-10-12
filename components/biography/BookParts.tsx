@@ -54,7 +54,7 @@ export function BookParts({ position, parts, languageTag }: BookPartsProps) {
           <section key={part.key} className="mb-2" aria-labelledby={headingId}>
             <h2
               id={headingId}
-              className="text-2xl font-serif font-semibold text-primary mb-6"
+              className="text-2xl font-serif text-primary mb-6"
             >
               {title}
             </h2>

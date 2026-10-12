@@ -91,7 +91,7 @@ export function FinalVersionEditor({
       <div className="border-b border-border px-6 py-4 bg-gradient-to-r from-primary/5 to-primary/10">
         <div className="flex items-center justify-between gap-4 flex-wrap">
           <div className="min-w-0">
-            <h2 className="text-2xl font-bold text-foreground flex items-center gap-2">
+            <h2 className="text-2xl text-foreground flex items-center gap-2">
               {isLocked && <Lock className="h-5 w-5 text-primary" />}
               {finalVersionTitle}
             </h2>
@@ -134,10 +134,7 @@ export function FinalVersionEditor({
       <div className="flex-1 min-h-0 overflow-y-auto p-6">
         <Card className="max-w-4xl mx-auto p-6">
           {isLocked ? (
-            <BiographySectionBody
-              text={content}
-              className="prose-sm"
-            />
+            <BiographySectionBody text={content} />
           ) : (
             <RichTextEditor
               content={content}

@@ -123,7 +123,7 @@ export default function VerifyEmailPage() {
                 <CheckCircle2 className="h-7 w-7" />
               </div>
               <div className="space-y-1">
-                <h2 className="text-xl font-serif font-semibold">
+                <h2 className="text-xl font-serif">
                   {t.auth.verifyEmailConfirmedTitle}
                 </h2>
                 <p className="text-sm">
@@ -138,7 +138,7 @@ export default function VerifyEmailPage() {
                 <AlertCircle className="h-7 w-7" />
               </div>
               <div>
-                <p className="font-semibold">{t.auth.verifyEmailFailedTitle}</p>
+                <p>{t.auth.verifyEmailFailedTitle}</p>
                 <p className="text-sm mt-1">
                   {t.auth.verifyEmailFailedDetail}
                 </p>
@@ -169,11 +169,11 @@ export default function VerifyEmailPage() {
                 <Mail className="h-8 w-8" style={{ color: brandHex.ink }} />
               </div>
               <div className="space-y-2">
-                <h2 className="text-xl font-serif font-semibold" style={{ color: brandHex.ink }}>
+                <h2 className="text-xl font-serif" style={{ color: brandHex.ink }}>
                   {t.auth.verifyEmailTitle}
                 </h2>
                 {emailForResend && (
-                  <p className="text-sm font-medium" style={{ color: brandHex.ink }}>
+                  <p className="text-sm" style={{ color: brandHex.ink }}>
                     {emailForResend}
                   </p>
                 )}
@@ -214,7 +214,7 @@ export default function VerifyEmailPage() {
                 </Button>
 
                 {resendSuccess ? (
-                  <div className="flex items-center justify-center gap-2 text-sm font-medium py-1" style={{ color: brandHex.ink }}>
+                  <div className="flex items-center justify-center gap-2 text-sm py-1" style={{ color: brandHex.ink }}>
                     <CheckCircle2 className="h-4 w-4" />
                     {t.auth.verifyEmailResendSuccessInline}
                   </div>
@@ -246,7 +246,7 @@ export default function VerifyEmailPage() {
           <p className="text-center text-sm text-muted-foreground mt-6">
             <Link
               href="/login"
-              className="font-medium transition-colors hover:opacity-80"
+              className="transition-colors hover:opacity-80"
               style={{ color: brandHex.wineDark }}
             >
               {t.auth.backToLogin}

@@ -52,7 +52,7 @@ export function AdminGuard({ children, requiredRole, redirectTo = '/dashboard' }
               <ShieldOff className="h-8 w-8" />
             </div>
           </div>
-          <h1 className="text-xl font-semibold text-foreground mb-2">{t.admin.guardAccessDenied}</h1>
+          <h1 className="text-xl text-foreground mb-2">{t.admin.guardAccessDenied}</h1>
           <p className="text-sm text-muted-foreground mb-5">
             {t.admin.guardAccessDeniedMessage}
           </p>

@@ -51,11 +51,11 @@ export function AiUsageIndicator({ refreshTrigger }: AiUsageIndicatorProps) {
           <TooltipTrigger asChild>
             <div className="flex items-center gap-1 leading-none cursor-default select-none shrink-0">
               <Sparkles className="h-2.5 w-2.5 shrink-0 text-muted-foreground max-md:hidden" />
-              <span className="text-[10px] font-medium leading-none text-muted-foreground">{t.aiUsage.unlimited}</span>
+              <span className="text-[10px] leading-none text-muted-foreground">{t.aiUsage.unlimited}</span>
             </div>
           </TooltipTrigger>
           <TooltipContent side="bottom" className="max-w-[200px]">
-            <p className="font-medium text-xs">{t.aiUsage.usageIndicatorTitle}</p>
+            <p className="text-xs">{t.aiUsage.usageIndicatorTitle}</p>
             <p className="text-xs text-muted-foreground mt-1">{t.aiUsage.unlimited}</p>
           </TooltipContent>
         </Tooltip>
@@ -85,7 +85,7 @@ export function AiUsageIndicator({ refreshTrigger }: AiUsageIndicatorProps) {
             'text-muted-foreground'
           )} />
           <span className={cn(
-            'text-[10px] font-medium leading-none tabular-nums',
+            'text-[10px] leading-none tabular-nums',
             dailyCritical ? 'text-destructive' :
             dailyWarning ? 'text-foreground' :
             'text-muted-foreground'
@@ -94,7 +94,7 @@ export function AiUsageIndicator({ refreshTrigger }: AiUsageIndicatorProps) {
           </span>
           <span className="text-[10px] leading-none text-muted-foreground">·</span>
           <span className={cn(
-            'text-[10px] font-medium leading-none tabular-nums',
+            'text-[10px] leading-none tabular-nums',
             weeklyCritical ? 'text-destructive' :
             weeklyWarning ? 'text-foreground' :
             'text-muted-foreground'
@@ -104,7 +104,7 @@ export function AiUsageIndicator({ refreshTrigger }: AiUsageIndicatorProps) {
         </div>
       </TooltipTrigger>
       <TooltipContent side="bottom" className="max-w-[200px]">
-        <p className="font-medium text-xs mb-1.5">{t.aiUsage.usageIndicatorTitle}</p>
+        <p className="text-xs mb-1.5">{t.aiUsage.usageIndicatorTitle}</p>
         <div className="space-y-1.5">
           <div>
             <div className="flex justify-between text-xs mb-0.5">

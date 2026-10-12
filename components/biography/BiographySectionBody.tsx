@@ -15,7 +15,7 @@ export function BiographySectionBody({ text, className }: BiographySectionBodyPr
   return (
     <div
       className={cn(
-        'prose prose-gray dark:prose-invert max-w-none leading-relaxed font-serif text-base',
+        'rich-text max-w-none leading-relaxed font-serif text-base',
         className
       )}
       dangerouslySetInnerHTML={{ __html: html }}

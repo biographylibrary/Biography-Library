@@ -241,7 +241,7 @@ export function EchoChat({
             <span className="text-xs text-muted-foreground truncate">{orbStatusText}</span>
           )}
           {pendingDraftCount > 0 && (
-            <span className="ml-auto text-[10px] font-medium uppercase tracking-wide text-primary bg-primary/10 px-1.5 py-0.5 rounded shrink-0">
+            <span className="ml-auto text-[10px] uppercase tracking-wide text-primary bg-primary/10 px-1.5 py-0.5 rounded shrink-0">
               {t.echo.insertDraftPendingBadge.replace('{count}', String(pendingDraftCount))}
             </span>
           )}

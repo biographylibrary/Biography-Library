@@ -303,7 +303,7 @@ export function SectionSidebar({
                 className={cn(
                   'w-full flex items-center gap-2.5 px-3 py-2 lg:py-2.5 text-left text-sm transition-colors',
                   activeChapter === chapter.index
-                    ? 'bg-primary/10 text-primary font-medium'
+                    ? 'bg-primary/10 text-primary'
                     : 'text-muted-foreground hover:bg-muted/50 hover:text-foreground'
                 )}
                 style={{
@@ -341,7 +341,7 @@ export function SectionSidebar({
           className={cn(
             'w-full flex items-center gap-2 px-3 py-1 lg:py-2 rounded-lg text-sm transition-colors',
             showImportDialog
-              ? 'bg-primary/10 text-primary font-medium'
+              ? 'bg-primary/10 text-primary'
               : 'text-muted-foreground hover:bg-muted/50 hover:text-foreground'
           )}
         >
@@ -375,7 +375,7 @@ export function SectionSidebar({
             className={cn(
               'w-full flex items-center gap-2 px-3 py-1 lg:py-2 rounded-lg text-sm transition-colors',
               shareLinkOpen
-                ? 'bg-primary/10 text-primary font-medium'
+                ? 'bg-primary/10 text-primary'
                 : 'text-muted-foreground hover:bg-muted/50 hover:text-foreground'
             )}
           >
@@ -403,7 +403,7 @@ export function SectionSidebar({
             className={cn(
               'w-full flex items-center gap-2 px-3 py-1 lg:py-2 rounded-lg text-sm transition-colors',
               showTextLanguagePanel
-                ? 'bg-primary/10 text-primary font-medium'
+                ? 'bg-primary/10 text-primary'
                 : 'text-muted-foreground hover:bg-muted/50 hover:text-foreground'
             )}
           >
@@ -447,7 +447,7 @@ export function SectionSidebar({
             className={cn(
               'w-full flex items-center gap-2 px-3 py-1 lg:py-2 rounded-lg text-sm transition-colors',
               showPermanencePanel
-                ? 'bg-primary/10 text-primary font-medium'
+                ? 'bg-primary/10 text-primary'
                 : 'text-muted-foreground hover:bg-muted/50 hover:text-foreground'
             )}
           >
@@ -465,14 +465,14 @@ export function SectionSidebar({
           className={cn(
             'w-full flex items-center gap-2 px-3 py-1 lg:py-2 rounded-lg text-sm transition-colors',
             showNotesPanel
-              ? 'bg-primary/10 text-primary font-medium'
+              ? 'bg-primary/10 text-primary'
               : 'text-muted-foreground hover:bg-muted/50 hover:text-foreground'
           )}
         >
           <StickyNote className="h-4 w-4 shrink-0" />
           <span className="truncate min-w-0 flex-1 text-left">{t.notesAndTodos.notesAndTodosMenuItem}</span>
           {totalCount > 0 && (
-            <span className="ml-auto text-xs font-medium bg-primary/20 text-foreground rounded-full px-2 py-0.5 shrink-0">
+            <span className="ml-auto text-xs bg-primary/20 text-foreground rounded-full px-2 py-0.5 shrink-0">
               {totalCount}
             </span>
           )}
@@ -485,7 +485,7 @@ export function SectionSidebar({
           className={cn(
             'w-full flex items-center gap-2 px-3 py-1 lg:py-2 rounded-lg text-sm transition-colors',
             showPhotosPanel
-              ? 'bg-primary/10 text-primary font-medium'
+              ? 'bg-primary/10 text-primary'
               : 'text-muted-foreground hover:bg-muted/50 hover:text-foreground'
           )}
         >
@@ -500,7 +500,7 @@ export function SectionSidebar({
             className={cn(
               'w-full flex items-center gap-2 px-3 py-1 lg:py-2 rounded-lg text-sm transition-colors',
               showBookStructurePanel
-                ? 'bg-primary/10 text-primary font-medium'
+                ? 'bg-primary/10 text-primary'
                 : 'text-muted-foreground hover:bg-muted/50 hover:text-foreground'
             )}
           >
@@ -515,7 +515,7 @@ export function SectionSidebar({
           className={cn(
             'w-full flex items-center gap-2 px-3 py-1 lg:py-2 rounded-lg text-sm transition-colors',
             showReviewPublicationDialog
-              ? 'bg-primary/10 text-primary font-medium'
+              ? 'bg-primary/10 text-primary'
               : 'text-muted-foreground hover:bg-muted/50 hover:text-foreground'
           )}
         >

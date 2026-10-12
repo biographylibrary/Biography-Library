@@ -122,7 +122,7 @@ function ReviewReadContent() {
               <span className="hidden sm:inline">{t.admin.reviewPageTitle}</span>
             </Link>
           </Button>
-          <span className="text-sm font-medium text-muted-foreground truncate">{title || '—'}</span>
+          <span className="text-sm text-muted-foreground truncate">{title || '—'}</span>
         </div>
       </header>
 
@@ -134,9 +134,9 @@ function ReviewReadContent() {
           </div>
         )}
 
-        <article className="prose prose-gray dark:prose-invert max-w-none">
+        <article className="max-w-none">
           <div className="mb-10 pb-6 border-b border-border">
-            <h1 className="text-3xl sm:text-4xl font-serif font-bold mb-2">{title}</h1>
+            <h1 className="text-3xl sm:text-4xl font-serif mb-2">{title}</h1>
             <p className="text-lg text-muted-foreground">
               {t.view.by} {authorName || '—'}
             </p>
@@ -157,7 +157,7 @@ function ReviewReadContent() {
                 t.sectionTitles[def.key as keyof typeof t.sectionTitles] || def.title;
               return (
                 <section key={def.key} className="mb-10">
-                  <h2 className="text-2xl font-serif font-semibold text-primary mb-4">{sectionTitle}</h2>
+                  <h2 className="text-2xl font-serif text-primary mb-4">{sectionTitle}</h2>
                   <BiographySectionBody text={text} />
                 </section>
               );

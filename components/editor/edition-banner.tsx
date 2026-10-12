@@ -47,7 +47,7 @@ export function EditionBanner({
         </p>
         <Link
           href={`/biography/${originalId}/edit`}
-          className="shrink-0 underline underline-offset-2 font-medium whitespace-nowrap"
+          className="shrink-0 underline underline-offset-2 whitespace-nowrap"
         >
           {copy.bannerOpenOriginal}
         </Link>

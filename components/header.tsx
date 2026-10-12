@@ -148,7 +148,7 @@ export function Header() {
           <Link href={homeHref} className="flex items-center">
             <Logo height={48} />
           </Link>
-          <span className="absolute left-full top-1/2 -translate-y-1/2 ml-2 text-[10px] font-medium tracking-widest text-muted-foreground">
+          <span className="absolute left-full top-1/2 -translate-y-1/2 ml-2 text-[10px] tracking-widest text-muted-foreground">
             BETA
           </span>
         </div>
@@ -179,11 +179,11 @@ export function Header() {
                   size="icon"
                   className="h-9 w-9 rounded-full p-0 hover:opacity-80 relative"
                 >
-                  <span className="flex items-center justify-center h-9 w-9 rounded-full bg-foreground text-background text-xs font-semibold select-none">
+                  <span className="flex items-center justify-center h-9 w-9 rounded-full bg-foreground text-background text-xs select-none">
                     {initials}
                   </span>
                   {unreadCount > 0 && (
-                    <span className="absolute -top-0.5 -right-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-brand-wine px-1 text-[10px] font-bold text-brand-paper leading-none">
+                    <span className="absolute -top-0.5 -right-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-brand-wine px-1 text-[10px] text-brand-paper leading-none">
                       {unreadCount > 99 ? '99+' : unreadCount}
                     </span>
                   )}
@@ -191,7 +191,7 @@ export function Header() {
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-64">
                 <DropdownMenuLabel className="font-normal py-2.5 px-3">
-                  <p className="text-sm font-semibold text-foreground truncate">
+                  <p className="text-sm text-foreground truncate">
                     {user.user_metadata?.name || user.email}
                   </p>
                   {user.user_metadata?.name && (
@@ -247,14 +247,14 @@ export function Header() {
                     <div className="relative">
                       <Bell className="h-4 w-4" />
                       {unreadCount > 0 && (
-                        <span className="absolute -top-1 -right-1 flex h-3 min-w-3 items-center justify-center rounded-full bg-brand-wine px-0.5 text-[9px] font-bold text-brand-paper leading-none">
+                        <span className="absolute -top-1 -right-1 flex h-3 min-w-3 items-center justify-center rounded-full bg-brand-wine px-0.5 text-[9px] text-brand-paper leading-none">
                           {unreadCount > 9 ? '9+' : unreadCount}
                         </span>
                       )}
                     </div>
                     <span>{t.nav.notifications}</span>
                     {unreadCount > 0 && (
-                      <span className="ml-auto text-xs font-semibold text-brand-wine dark:text-brand-mustardLight">{unreadCount}</span>
+                      <span className="ml-auto text-xs text-brand-wine dark:text-brand-mustardLight">{unreadCount}</span>
                     )}
                   </Link>
                 </DropdownMenuItem>

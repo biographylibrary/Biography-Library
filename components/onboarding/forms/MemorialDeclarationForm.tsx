@@ -42,7 +42,7 @@ export function MemorialDeclarationForm({ values, onChange }: MemorialDeclaratio
           href="/terms-of-service"
           target="_blank"
           rel="noopener noreferrer"
-          className="text-primary hover:underline font-medium"
+          className="text-primary hover:underline"
           onClick={(e) => e.stopPropagation()}
         >
           {t.deceasedDeclaration.checkbox5TermsLink}
@@ -52,7 +52,7 @@ export function MemorialDeclarationForm({ values, onChange }: MemorialDeclaratio
           href="/privacy-policy"
           target="_blank"
           rel="noopener noreferrer"
-          className="text-primary hover:underline font-medium"
+          className="text-primary hover:underline"
           onClick={(e) => e.stopPropagation()}
         >
           {t.deceasedDeclaration.checkbox5PrivacyLink}
@@ -66,7 +66,7 @@ export function MemorialDeclarationForm({ values, onChange }: MemorialDeclaratio
     <div className="space-y-6">
       <Alert variant="warning">
         <Clock className="h-5 w-5" />
-        <AlertTitle className="font-semibold">
+        <AlertTitle>
           {t.deceasedDeclaration.reviewPeriodTitle}
         </AlertTitle>
         <AlertDescription className="text-sm space-y-2 mt-2">
@@ -83,10 +83,10 @@ export function MemorialDeclarationForm({ values, onChange }: MemorialDeclaratio
             className="mt-1"
           />
           <div className="flex-1 space-y-1">
-            <Label htmlFor="ob-deceased" className="text-base font-semibold leading-relaxed cursor-pointer">
+            <Label htmlFor="ob-deceased" className="text-base leading-relaxed cursor-pointer">
               {t.deceasedDeclaration.checkbox1}
             </Label>
-            <p className="text-sm text-brand-wineDark dark:text-brand-mustardLight font-medium">
+            <p className="text-sm text-brand-wineDark dark:text-brand-mustardLight">
               {t.deceasedDeclaration.checkbox1Helper}
             </p>
           </div>
@@ -149,7 +149,7 @@ export function MemorialDeclarationForm({ values, onChange }: MemorialDeclaratio
           <Label htmlFor="ob-mem-terms" className="text-base font-normal leading-relaxed cursor-pointer">
             {renderCheckbox5Label()}
           </Label>
-          <p className="text-sm font-medium text-brand-wineDark dark:text-brand-mustardLight">
+          <p className="text-sm text-brand-wineDark dark:text-brand-mustardLight">
             {t.auth.mustAcceptTerms}
           </p>
         </div>
@@ -158,7 +158,7 @@ export function MemorialDeclarationForm({ values, onChange }: MemorialDeclaratio
       <Alert variant="danger">
         <AlertTriangle className="h-5 w-5" />
         <AlertDescription className="text-sm space-y-2">
-          <p className="font-semibold">{t.deceasedDeclaration.legalWarningTitle}</p>
+          <p>{t.deceasedDeclaration.legalWarningTitle}</p>
           <p>{t.deceasedDeclaration.legalWarningText}</p>
           <ul className="list-disc list-inside space-y-1 ml-2">
             <li>{t.deceasedDeclaration.legalWarningBullet1}</li>

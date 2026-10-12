@@ -72,20 +72,20 @@ function fmtDate(iso: string) {
 function SeverityBadge({ severity }: { severity: number }) {
   if (severity >= 3) {
     return (
-      <Badge variant="danger" className="text-xs font-medium">
+      <Badge variant="danger" className="text-xs">
         Severity {severity}
       </Badge>
     );
   }
   if (severity === 2) {
     return (
-      <Badge variant="warning" className="text-xs font-medium">
+      <Badge variant="warning" className="text-xs">
         Severity {severity}
       </Badge>
     );
   }
   return (
-    <Badge variant="warning" className="text-xs font-medium">
+    <Badge variant="warning" className="text-xs">
       Severity {severity}
     </Badge>
   );
@@ -451,7 +451,7 @@ function ReviewQueueContent() {
             <ClipboardList className="h-5 w-5" />
           </div>
           <div>
-            <h1 className="text-2xl font-serif font-semibold tracking-tight text-foreground">
+            <h1 className="text-2xl font-serif tracking-tight text-foreground">
               {t.admin.reviewPageTitle}
             </h1>
             <p className="text-sm text-muted-foreground mt-0.5">{t.admin.reviewPageSubtitle}</p>
@@ -476,7 +476,7 @@ function ReviewQueueContent() {
             <div className="p-5 rounded-2xl bg-muted/50">
               <Inbox className="h-10 w-10 text-muted-foreground" />
             </div>
-            <h2 className="text-lg font-semibold text-foreground">{t.admin.reviewEmpty}</h2>
+            <h2 className="text-lg text-foreground">{t.admin.reviewEmpty}</h2>
             <p className="text-sm text-muted-foreground max-w-sm">{t.admin.reviewEmptySubtitle}</p>
           </div>
         )}
@@ -487,14 +487,14 @@ function ReviewQueueContent() {
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-border bg-muted/40">
-                    <th className="px-4 py-3 text-left font-medium text-muted-foreground w-6" />
-                    <th className="px-4 py-3 text-left font-medium text-muted-foreground">{t.admin.reviewColTitle}</th>
-                    <th className="px-4 py-3 text-left font-medium text-muted-foreground hidden md:table-cell">{t.admin.reviewColAuthor}</th>
-                    <th className="px-4 py-3 text-left font-medium text-muted-foreground hidden lg:table-cell">{t.admin.reviewColLanguage}</th>
-                    <th className="px-4 py-3 text-left font-medium text-muted-foreground hidden lg:table-cell">{t.admin.reviewColType}</th>
-                    <th className="px-4 py-3 text-left font-medium text-muted-foreground hidden sm:table-cell">{t.admin.reviewColSubmitted}</th>
-                    <th className="px-4 py-3 text-center font-medium text-muted-foreground">{t.admin.reviewColRead}</th>
-                    <th className="px-4 py-3 text-right font-medium text-muted-foreground">{t.admin.reviewColActions}</th>
+                    <th className="px-4 py-3 text-left text-muted-foreground w-6" />
+                    <th className="px-4 py-3 text-left text-muted-foreground">{t.admin.reviewColTitle}</th>
+                    <th className="px-4 py-3 text-left text-muted-foreground hidden md:table-cell">{t.admin.reviewColAuthor}</th>
+                    <th className="px-4 py-3 text-left text-muted-foreground hidden lg:table-cell">{t.admin.reviewColLanguage}</th>
+                    <th className="px-4 py-3 text-left text-muted-foreground hidden lg:table-cell">{t.admin.reviewColType}</th>
+                    <th className="px-4 py-3 text-left text-muted-foreground hidden sm:table-cell">{t.admin.reviewColSubmitted}</th>
+                    <th className="px-4 py-3 text-center text-muted-foreground">{t.admin.reviewColRead}</th>
+                    <th className="px-4 py-3 text-right text-muted-foreground">{t.admin.reviewColActions}</th>
                   </tr>
                 </thead>
                 {loading ? (
@@ -544,7 +544,7 @@ function ReviewQueueContent() {
                             )}
                           </td>
                           <td className="px-4 py-3 max-w-[200px]">
-                            <span className="font-medium text-foreground truncate block">
+                            <span className="text-foreground truncate block">
                               {bio.title.slice(0, 50)}{bio.title.length > 50 ? '…' : ''}
                             </span>
                             {isAiReview && (
@@ -653,7 +653,7 @@ function ReviewQueueContent() {
                           <tr>
                             <td colSpan={8} className="px-6 pb-5 pt-2 bg-muted/10">
                               {decided && (
-                                <p className="text-xs text-brand-greenDark dark:text-brand-greenLight font-medium mb-3">
+                                <p className="text-xs text-brand-greenDark dark:text-brand-greenLight mb-3">
                                   {t.admin.reviewAllPassagesReviewed}
                                 </p>
                               )}
@@ -671,7 +671,7 @@ function ReviewQueueContent() {
                                       )}
                                     >
                                       <div className="flex items-center justify-between mb-2 gap-2 flex-wrap">
-                                        <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                                        <span className="text-xs text-muted-foreground uppercase tracking-wide">
                                           Section: {passage.section_key}
                                         </span>
                                         <SeverityBadge severity={passage.severity} />
@@ -684,7 +684,7 @@ function ReviewQueueContent() {
                                       </blockquote>
 
                                       <p className="text-xs text-muted-foreground mt-2">
-                                        <span className="font-medium text-foreground">{t.admin.reviewAiReason}:</span>{' '}
+                                        <span className="text-foreground">{t.admin.reviewAiReason}:</span>{' '}
                                         {passage.reason}
                                       </p>
 
@@ -714,7 +714,7 @@ function ReviewQueueContent() {
                                       {decision && (
                                         <div className="flex items-center gap-2 mt-3">
                                           <span className={cn(
-                                            'text-xs font-medium',
+                                            'text-xs',
                                             decision === 'approved' ? 'text-brand-greenDark dark:text-brand-greenLight' : 'text-brand-wine dark:text-brand-beigeLight'
                                           )}>
                                             {decision === 'approved' ? '✓ Approved' : '✗ Rejected'}
@@ -746,7 +746,7 @@ function ReviewQueueContent() {
                             <td colSpan={8} className="px-6 pb-5 pt-3 bg-muted/10">
                               <div className="max-w-xl space-y-3">
                                 <div className="space-y-1.5">
-                                  <Label htmlFor={`reason-${bio.id}`} className="text-sm font-medium">
+                                  <Label htmlFor={`reason-${bio.id}`} className="text-sm">
                                     {t.admin.reviewReasonLabel}
                                   </Label>
                                   <Textarea

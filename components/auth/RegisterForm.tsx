@@ -121,12 +121,12 @@ export function RegisterForm({ embedded = false }: { embedded?: boolean }) {
                 <Mail className="h-7 w-7" />
               </div>
               <div className="space-y-2">
-                <h2 className="text-xl font-serif font-semibold">
+                <h2 className="text-xl font-serif">
                   {t.auth.verifyEmailTitle}
                 </h2>
                 <p className="text-sm">
                   {t.auth.verifySentTo}{' '}
-                  <span className="font-semibold break-all">{pendingEmail}</span>.
+                  <span className="break-all">{pendingEmail}</span>.
                   <br />
                   {t.auth.verifyEmailLinkSent}
                 </p>
@@ -140,7 +140,7 @@ export function RegisterForm({ embedded = false }: { embedded?: boolean }) {
               </Button>
             </div>
             <p className="text-center text-sm text-muted-foreground mt-6">
-              <Link href="/login" className="font-medium text-primary hover:text-primary/80 transition-colors">
+              <Link href="/login" className="text-primary hover:text-primary/80 transition-colors">
                 {t.auth.backToLogin}
               </Link>
             </p>
@@ -166,12 +166,12 @@ export function RegisterForm({ embedded = false }: { embedded?: boolean }) {
                 <Mail className="h-7 w-7" />
               </div>
               <div className="space-y-2">
-                <h2 className="text-xl font-serif font-semibold">
+                <h2 className="text-xl font-serif">
                   {t.auth.verifyEmailTitle}
                 </h2>
                 <p className="text-sm">
                   {t.auth.verifySentTo}{' '}
-                  <span className="font-semibold break-all">{email}</span>.
+                  <span className="break-all">{email}</span>.
                   <br />
                   {t.auth.verifyEmailLinkSent}
                 </p>
@@ -181,7 +181,7 @@ export function RegisterForm({ embedded = false }: { embedded?: boolean }) {
               </div>
 
               {resendSuccess ? (
-                <div className="flex items-center gap-2 text-sm font-medium">
+                <div className="flex items-center gap-2 text-sm">
                   <CheckCircle2 className="h-4 w-4" />
                   {t.auth.resendVerificationSuccess}
                 </div>
@@ -207,7 +207,7 @@ export function RegisterForm({ embedded = false }: { embedded?: boolean }) {
             <p className="text-center text-sm text-muted-foreground mt-6">
               <Link
                 href="/login"
-                className="font-medium text-primary hover:text-primary/80 transition-colors"
+                className="text-primary hover:text-primary/80 transition-colors"
               >
                 {t.auth.backToLogin}
               </Link>
@@ -290,7 +290,7 @@ export function RegisterForm({ embedded = false }: { embedded?: boolean }) {
 
             <Button
               type="submit"
-              className="w-full h-11 font-medium"
+              className="w-full h-11"
               disabled={isLoading}
             >
               {isLoading ? (
@@ -321,7 +321,7 @@ export function RegisterForm({ embedded = false }: { embedded?: boolean }) {
             <div className="flex items-center justify-center mb-6">
               <Logo height={64} />
             </div>
-            <h1 className="text-2xl font-serif font-semibold tracking-tight">{t.auth.createYourAccount}</h1>
+            <h1 className="text-2xl font-serif tracking-tight">{t.auth.createYourAccount}</h1>
           </div>
 
           {form}
@@ -330,7 +330,7 @@ export function RegisterForm({ embedded = false }: { embedded?: boolean }) {
             {t.auth.alreadyHaveAccount}{' '}
             <Link
               href="/login"
-              className="font-medium text-primary hover:text-primary/80 transition-colors"
+              className="text-primary hover:text-primary/80 transition-colors"
             >
               {t.auth.signIn}
             </Link>

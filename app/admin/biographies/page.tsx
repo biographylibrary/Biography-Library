@@ -52,7 +52,7 @@ function StatusBadge({ status, t }: { status: string; t: any }) {
   };
   const cls = map[status] ?? map['draft'];
   return (
-    <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold border whitespace-nowrap ${cls}`}>
+    <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs border whitespace-nowrap ${cls}`}>
       {labels[status] ?? status}
     </span>
   );
@@ -207,7 +207,7 @@ function AdminBiographiesContent() {
             <BookOpen className="h-5 w-5" />
           </div>
           <div>
-            <h1 className="text-2xl font-serif font-semibold tracking-tight text-foreground">
+            <h1 className="text-2xl font-serif tracking-tight text-foreground">
               {t.admin.bioPageTitle}
             </h1>
             <p className="text-sm text-muted-foreground mt-0.5">{t.admin.bioPageSubtitle}</p>
@@ -287,16 +287,16 @@ function AdminBiographiesContent() {
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-border bg-muted/40">
-                  <th className="px-4 py-3 text-left font-medium text-muted-foreground">{t.admin.bioColTitle}</th>
-                  <th className="px-4 py-3 text-left font-medium text-muted-foreground hidden md:table-cell">{t.admin.bioColAuthor}</th>
-                  <th className="px-4 py-3 text-left font-medium text-muted-foreground hidden lg:table-cell">{t.admin.bioColType}</th>
-                  <th className="px-4 py-3 text-left font-medium text-muted-foreground">{t.admin.bioColStatus}</th>
-                  <th className="px-4 py-3 text-right font-medium text-muted-foreground hidden sm:table-cell">
+                  <th className="px-4 py-3 text-left text-muted-foreground">{t.admin.bioColTitle}</th>
+                  <th className="px-4 py-3 text-left text-muted-foreground hidden md:table-cell">{t.admin.bioColAuthor}</th>
+                  <th className="px-4 py-3 text-left text-muted-foreground hidden lg:table-cell">{t.admin.bioColType}</th>
+                  <th className="px-4 py-3 text-left text-muted-foreground">{t.admin.bioColStatus}</th>
+                  <th className="px-4 py-3 text-right text-muted-foreground hidden sm:table-cell">
                     {t.admin.bioColViews}
                   </th>
-                  <th className="px-4 py-3 text-left font-medium text-muted-foreground hidden sm:table-cell">{t.admin.bioColCreated}</th>
-                  <th className="px-4 py-3 text-left font-medium text-muted-foreground hidden xl:table-cell">{t.admin.bioColPublished}</th>
-                  <th className="px-4 py-3 text-right font-medium text-muted-foreground">{t.admin.bioColActions}</th>
+                  <th className="px-4 py-3 text-left text-muted-foreground hidden sm:table-cell">{t.admin.bioColCreated}</th>
+                  <th className="px-4 py-3 text-left text-muted-foreground hidden xl:table-cell">{t.admin.bioColPublished}</th>
+                  <th className="px-4 py-3 text-right text-muted-foreground">{t.admin.bioColActions}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">
@@ -323,7 +323,7 @@ function AdminBiographiesContent() {
                   pageItems.map((bio) => (
                     <tr key={bio.id} className="hover:bg-muted/30 transition-colors">
                       <td className="px-4 py-3 max-w-[200px]">
-                        <span className="font-medium text-foreground truncate block">
+                        <span className="text-foreground truncate block">
                           {bio.title.slice(0, 40)}{bio.title.length > 40 ? '…' : ''}
                         </span>
                       </td>

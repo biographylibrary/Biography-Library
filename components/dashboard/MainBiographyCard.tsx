@@ -283,7 +283,7 @@ export function MainBiographyCard({ biography, userName, userId, onDeleteClick, 
         <div className="flex justify-center mb-6">
           <Logo height={100} />
         </div>
-        <h3 className="text-2xl sm:text-3xl font-medium mb-2">{t.dashboard.noBiographies}</h3>
+        <h3 className="text-2xl sm:text-3xl mb-2">{t.dashboard.noBiographies}</h3>
         <p className="text-sm text-muted-foreground max-w-md mx-auto mb-6">
           {t.dashboard.noBiographiesSubtitle}
         </p>
@@ -310,7 +310,7 @@ export function MainBiographyCard({ biography, userName, userId, onDeleteClick, 
           <div className="hidden sm:block"><Logo height={100} /></div>
           <div className="block sm:hidden"><Logo height={70} /></div>
         </div>
-        <h1 className="text-2xl sm:text-3xl font-bold text-center">
+        <h1 className="text-2xl sm:text-3xl text-center">
           {greeting}, {userName}!
         </h1>
       </div>
@@ -319,7 +319,7 @@ export function MainBiographyCard({ biography, userName, userId, onDeleteClick, 
         <div>
           <div className="relative flex items-center justify-center gap-2 mb-3 w-full">
             <BookOpen className="h-5 w-5 shrink-0" />
-            <h2 className="text-lg font-semibold leading-5 text-center break-words line-clamp-4">
+            <h2 className="text-lg leading-5 text-center break-words line-clamp-4">
               {biography.title || t.dashboard.untitledBiography}
             </h2>
             {!showSectionProgressBlock && onDeleteClick && (

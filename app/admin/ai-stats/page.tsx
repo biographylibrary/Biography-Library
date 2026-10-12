@@ -73,8 +73,8 @@ function fmtDateTime(iso: string | null) {
 function StatCard({ label, value, sub }: { label: string; value: string | number; sub?: string }) {
   return (
     <div className="rounded-xl border border-border bg-card p-5 shadow-sm">
-      <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-2">{label}</p>
-      <p className="text-3xl font-semibold text-foreground tabular-nums">{value}</p>
+      <p className="text-xs text-muted-foreground uppercase tracking-wider mb-2">{label}</p>
+      <p className="text-3xl text-foreground tabular-nums">{value}</p>
       {sub && <p className="text-xs text-muted-foreground mt-1">{sub}</p>}
     </div>
   );
@@ -82,7 +82,7 @@ function StatCard({ label, value, sub }: { label: string; value: string | number
 
 function SectionHeading({ children }: { children: React.ReactNode }) {
   return (
-    <h2 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-3">
+    <h2 className="text-xs uppercase tracking-widest text-muted-foreground mb-3">
       {children}
     </h2>
   );
@@ -227,7 +227,7 @@ function AiStatsContent() {
               <BrainCircuit className="h-5 w-5" />
             </div>
             <div>
-              <h1 className="text-2xl font-serif font-semibold tracking-tight text-foreground">
+              <h1 className="text-2xl font-serif tracking-tight text-foreground">
                 {t.admin.aiStatsPageTitle}
               </h1>
               <p className="text-sm text-muted-foreground mt-0.5">{t.admin.aiStatsPageSubtitle}</p>
@@ -308,7 +308,7 @@ function AiStatsContent() {
                         style={{ width: `${Math.round((a.count / maxActionCount) * 100)}%` }}
                       />
                     </div>
-                    <span className="text-sm font-semibold tabular-nums text-foreground w-12 text-right">
+                    <span className="text-sm tabular-nums text-foreground w-12 text-right">
                       {a.count.toLocaleString()}
                     </span>
                   </div>
@@ -325,10 +325,10 @@ function AiStatsContent() {
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-border bg-muted/40">
-                    <th className="px-4 py-3 text-left font-medium text-muted-foreground">{t.admin.aiStatsColName}</th>
-                    <th className="px-4 py-3 text-left font-medium text-muted-foreground hidden sm:table-cell">{t.admin.aiStatsColEmail}</th>
-                    <th className="px-4 py-3 text-right font-medium text-muted-foreground">{t.admin.aiStatsColTotalRequests}</th>
-                    <th className="px-4 py-3 text-right font-medium text-muted-foreground hidden md:table-cell">{t.admin.aiStatsColLastUsed}</th>
+                    <th className="px-4 py-3 text-left text-muted-foreground">{t.admin.aiStatsColName}</th>
+                    <th className="px-4 py-3 text-left text-muted-foreground hidden sm:table-cell">{t.admin.aiStatsColEmail}</th>
+                    <th className="px-4 py-3 text-right text-muted-foreground">{t.admin.aiStatsColTotalRequests}</th>
+                    <th className="px-4 py-3 text-right text-muted-foreground hidden md:table-cell">{t.admin.aiStatsColLastUsed}</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-border">
@@ -353,11 +353,11 @@ function AiStatsContent() {
                         <td className="px-4 py-3">
                           <div className="flex items-center gap-2">
                             <span className="text-xs tabular-nums text-muted-foreground w-5">{i + 1}.</span>
-                            <span className="font-medium text-foreground">{u.name}</span>
+                            <span className="text-foreground">{u.name}</span>
                           </div>
                         </td>
                         <td className="px-4 py-3 hidden sm:table-cell text-muted-foreground text-xs">{u.email}</td>
-                        <td className="px-4 py-3 text-right font-semibold tabular-nums">{u.total.toLocaleString()}</td>
+                        <td className="px-4 py-3 text-right tabular-nums">{u.total.toLocaleString()}</td>
                         <td className="px-4 py-3 hidden md:table-cell text-right text-xs text-muted-foreground">
                           {u.last_used ? fmtDateTime(u.last_used) : t.admin.aiStatsNever}
                         </td>
@@ -377,9 +377,9 @@ function AiStatsContent() {
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-border bg-muted/40">
-                    <th className="px-4 py-3 text-left font-medium text-muted-foreground">{t.admin.aiStatsColDate}</th>
-                    <th className="px-4 py-3 text-right font-medium text-muted-foreground">{t.admin.aiStatsColCount}</th>
-                    <th className="px-4 py-3 text-right font-medium text-muted-foreground">{t.admin.aiStatsColUniqueUsers}</th>
+                    <th className="px-4 py-3 text-left text-muted-foreground">{t.admin.aiStatsColDate}</th>
+                    <th className="px-4 py-3 text-right text-muted-foreground">{t.admin.aiStatsColCount}</th>
+                    <th className="px-4 py-3 text-right text-muted-foreground">{t.admin.aiStatsColUniqueUsers}</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-border">
@@ -406,7 +406,7 @@ function AiStatsContent() {
                         <td className="px-4 py-2.5 text-foreground">
                           {fmtDate(d.date + 'T00:00:00Z')}
                         </td>
-                        <td className="px-4 py-2.5 text-right tabular-nums font-medium">
+                        <td className="px-4 py-2.5 text-right tabular-nums">
                           {d.total > 0 ? d.total.toLocaleString() : <span className="text-muted-foreground">0</span>}
                         </td>
                         <td className="px-4 py-2.5 text-right tabular-nums text-muted-foreground">

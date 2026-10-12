@@ -38,7 +38,7 @@ export function PermanentIdentifier({
   } catch {
     // Identificativo malformato in archivio: si mostra com'è, senza collegamento.
     return (
-      <p className="text-xs text-muted-foreground mt-2 not-prose">
+      <p className="text-xs text-muted-foreground mt-2">
         <span className="mr-1.5">{label}:</span>
         <span className="font-mono tracking-wide select-text">{umId.toUpperCase()}</span>
       </p>
@@ -56,7 +56,7 @@ export function PermanentIdentifier({
   };
 
   return (
-    <p className="text-xs text-muted-foreground mt-2 not-prose flex items-center flex-wrap gap-x-1.5 gap-y-1">
+    <p className="text-xs text-muted-foreground mt-2 flex items-center flex-wrap gap-x-1.5 gap-y-1">
       <span>{label}:</span>
       <a
         href={`/id/${canonical}`}

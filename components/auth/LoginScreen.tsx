@@ -89,7 +89,7 @@ export function LoginScreen() {
             <div className="flex items-center justify-center mb-6">
               <Logo height={64} />
             </div>
-            <h1 className="text-2xl font-serif font-semibold tracking-tight">{t.auth.welcomeBack}</h1>
+            <h1 className="text-2xl font-serif tracking-tight">{t.auth.welcomeBack}</h1>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-4">
@@ -136,7 +136,7 @@ export function LoginScreen() {
               />
             </div>
 
-            <Button type="submit" className="w-full h-11 font-medium" disabled={isLoading}>
+            <Button type="submit" className="w-full h-11" disabled={isLoading}>
               {isLoading ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -152,7 +152,7 @@ export function LoginScreen() {
             {t.auth.dontHaveAccount}{' '}
             <Link
               href="/"
-              className="font-medium text-primary hover:text-primary/80 transition-colors"
+              className="text-primary hover:text-primary/80 transition-colors"
             >
               {t.auth.createOne}
             </Link>

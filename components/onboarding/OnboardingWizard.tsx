@@ -272,7 +272,7 @@ export function OnboardingWizard() {
       {step === 'biography_type' && (
         <div className="space-y-6 animate-in fade-in duration-300">
           <div className="space-y-1 text-center px-1">
-            <h1 className="text-2xl sm:text-3xl font-serif font-semibold">{t.biographyType.title}</h1>
+            <h1 className="text-2xl sm:text-3xl font-serif">{t.biographyType.title}</h1>
             <p className="text-muted-foreground">{t.onboardingWizard.typeSubtitle}</p>
           </div>
           <div className="grid md:grid-cols-2 gap-4">
@@ -285,7 +285,7 @@ export function OnboardingWizard() {
             >
               <CardContent className="p-6 space-y-4">
                 <User className="h-8 w-8 text-primary" />
-                <h3 className="font-semibold text-lg">{t.biographyType.autobiography}</h3>
+                <h3 className="text-lg">{t.biographyType.autobiography}</h3>
                 <p className="text-sm text-muted-foreground">{t.biographyType.autobiographyDescription}</p>
               </CardContent>
             </Card>
@@ -298,7 +298,7 @@ export function OnboardingWizard() {
             >
               <CardContent className="p-6 space-y-4">
                 <Flame className="h-8 w-8 text-primary" />
-                <h3 className="font-semibold text-lg">{t.biographyType.deceased}</h3>
+                <h3 className="text-lg">{t.biographyType.deceased}</h3>
                 <p className="text-sm text-muted-foreground">{t.biographyType.deceasedDescription}</p>
               </CardContent>
             </Card>
@@ -315,7 +315,7 @@ export function OnboardingWizard() {
       {step === 'legal' && biographyType && (
         <div className="space-y-4 animate-in fade-in duration-300">
           <div className="space-y-1">
-            <h1 className="text-2xl font-serif font-semibold">
+            <h1 className="text-2xl font-serif">
               {biographyType === 'autobiography' ? t.declaration.title : t.deceasedDeclaration.title}
             </h1>
             <p className="text-muted-foreground text-sm">{t.onboardingWizard.legalSubtitle}</p>
@@ -335,7 +335,7 @@ export function OnboardingWizard() {
       {step === 'details' && (
         <div className="space-y-6 animate-in fade-in duration-300">
           <div className="space-y-1">
-            <h1 className="text-2xl font-serif font-semibold">{t.biography.newBiography}</h1>
+            <h1 className="text-2xl font-serif">{t.biography.newBiography}</h1>
             <p className="text-muted-foreground text-sm">
               {biographyType === 'memorial'
                 ? t.biography.memorialDetailsSubtitle
@@ -389,7 +389,7 @@ export function OnboardingWizard() {
                     )}
                   >
                     <Icon className={cn('h-5 w-5', selected ? 'text-brand-ink dark:text-brand-beigeLight' : 'text-muted-foreground')} />
-                    <span className="text-xs font-medium">{option.label}</span>
+                    <span className="text-xs">{option.label}</span>
                     <span className="text-[10px] text-muted-foreground">{option.description}</span>
                   </button>
                 );

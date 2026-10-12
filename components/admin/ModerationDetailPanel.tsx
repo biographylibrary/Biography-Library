@@ -287,7 +287,7 @@ export function ModerationDetailPanel({ report, onClose, onRefresh }: Moderation
         >
           <SheetHeader className="px-6 pt-6 pb-4 border-b border-border shrink-0">
             <div className="flex items-center justify-between">
-              <SheetTitle className="text-base font-semibold text-foreground">
+              <SheetTitle className="text-base text-foreground">
                 {t.admin.panelReportInfo}
               </SheetTitle>
               <ReportStatusBadge status={report.status} />
@@ -334,13 +334,13 @@ export function ModerationDetailPanel({ report, onClose, onRefresh }: Moderation
 
             {/* SECTION 1 – Biography Info */}
             <section className="px-6 py-5 space-y-3">
-              <h3 className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              <h3 className="flex items-center gap-2 text-xs uppercase tracking-wider text-muted-foreground">
                 <BookOpen className="h-3.5 w-3.5" />
                 {t.admin.panelBiographyInfo}
               </h3>
 
               <div className="space-y-1">
-                <p className="text-sm font-semibold text-foreground leading-snug">
+                <p className="text-sm text-foreground leading-snug">
                   {report.biography_title ?? t.admin.unknownBiography}
                 </p>
                 <p className="text-xs text-muted-foreground">
@@ -351,7 +351,7 @@ export function ModerationDetailPanel({ report, onClose, onRefresh }: Moderation
               {report.biography_status && (
                 <div className="flex items-center gap-2">
                   <span className="text-xs text-muted-foreground">{t.admin.biographyStatus}:</span>
-                  <span className="text-xs font-medium text-foreground">
+                  <span className="text-xs text-foreground">
                     {BIOGRAPHY_STATUS_LABELS[report.biography_status] ?? report.biography_status}
                   </span>
                 </div>
@@ -370,7 +370,7 @@ export function ModerationDetailPanel({ report, onClose, onRefresh }: Moderation
 
             {/* SECTION 2 – Report Info */}
             <section className="px-6 py-5 space-y-4">
-              <h3 className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              <h3 className="flex items-center gap-2 text-xs uppercase tracking-wider text-muted-foreground">
                 <AlertTriangle className="h-3.5 w-3.5" />
                 {t.admin.panelReportInfo}
               </h3>
@@ -379,27 +379,27 @@ export function ModerationDetailPanel({ report, onClose, onRefresh }: Moderation
                 <ReportTypeBadge type={report.report_type} />
                 {report.ai_violation_level != null && (
                   <span className="text-xs text-muted-foreground">
-                    {t.admin.aiViolationLevel}: <span className="font-semibold text-foreground">{report.ai_violation_level}</span>
+                    {t.admin.aiViolationLevel}: <span className="text-foreground">{report.ai_violation_level}</span>
                   </span>
                 )}
               </div>
 
               {hasUserReportContent && (
                 <div className="notice tone-warning space-y-2 p-4">
-                  <p className="text-xs font-semibold uppercase tracking-wider opacity-80">
+                  <p className="text-xs uppercase tracking-wider opacity-80">
                     {t.admin.userReportDetails}
                   </p>
                   {report.reporter_email && (
                     <p className="text-xs">
-                      <span className="font-medium text-muted-foreground">{t.admin.reporterEmail}:</span>{' '}
+                      <span className="text-muted-foreground">{t.admin.reporterEmail}:</span>{' '}
                       <span className="text-foreground">{report.reporter_email}</span>
                     </p>
                   )}
                   <p className="text-xs text-muted-foreground">
-                    <span className="font-medium">{t.admin.reportedAt}:</span>{' '}
+                    <span>{t.admin.reportedAt}:</span>{' '}
                     <span className="text-foreground">{formatReportDate(report.created_at)}</span>
                   </p>
-                  <p className="text-xs font-medium text-muted-foreground">{t.admin.reporterDetails}:</p>
+                  <p className="text-xs text-muted-foreground">{t.admin.reporterDetails}:</p>
                   <p className="text-sm text-foreground leading-relaxed whitespace-pre-wrap">
                     {report.description?.trim() ? report.description : t.admin.noReportDescription}
                   </p>
@@ -408,7 +408,7 @@ export function ModerationDetailPanel({ report, onClose, onRefresh }: Moderation
 
               {report.ai_analysis?.summary && (
                 <div className="space-y-1.5">
-                  <p className="text-xs font-medium text-muted-foreground">{t.admin.aiSummaryFull}</p>
+                  <p className="text-xs text-muted-foreground">{t.admin.aiSummaryFull}</p>
                   <p className="text-sm text-foreground leading-relaxed bg-muted/40 rounded-lg p-3">
                     {report.ai_analysis.summary}
                   </p>
@@ -417,7 +417,7 @@ export function ModerationDetailPanel({ report, onClose, onRefresh }: Moderation
 
               {flaggedPassages.length > 0 && (
               <div className="space-y-2">
-                <p className="text-xs font-medium text-muted-foreground">{t.admin.flaggedPassages}</p>
+                <p className="text-xs text-muted-foreground">{t.admin.flaggedPassages}</p>
                 <div className="space-y-2">
                     {flaggedPassages.map((fp, i) => (
                       <div
@@ -425,7 +425,7 @@ export function ModerationDetailPanel({ report, onClose, onRefresh }: Moderation
                         className="notice tone-warning px-3 py-2.5 space-y-1"
                       >
                         {fp.section_key && (
-                          <p className="text-xs font-medium text-foreground">
+                          <p className="text-xs text-foreground">
                             {t.sectionTitles[fp.section_key as keyof typeof t.sectionTitles] ||
                               fp.section_key}
                           </p>
@@ -435,12 +435,12 @@ export function ModerationDetailPanel({ report, onClose, onRefresh }: Moderation
                         </p>
                         {fp.reason && (
                           <p className="text-xs text-muted-foreground">
-                            <span className="font-medium">{t.admin.flaggedPassageReason}:</span> {fp.reason}
+                            <span>{t.admin.flaggedPassageReason}:</span> {fp.reason}
                           </p>
                         )}
                         {fp.level != null && (
                           <p className="text-xs text-muted-foreground">
-                            <span className="font-medium">{t.admin.flaggedPassageLevel}:</span> {fp.level}
+                            <span>{t.admin.flaggedPassageLevel}:</span> {fp.level}
                           </p>
                         )}
                       </div>
@@ -453,14 +453,14 @@ export function ModerationDetailPanel({ report, onClose, onRefresh }: Moderation
 
             {/* SECTION 3 – Moderator Actions */}
             <section className="px-6 py-5 space-y-3">
-              <h3 className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              <h3 className="flex items-center gap-2 text-xs uppercase tracking-wider text-muted-foreground">
                 <MessageSquare className="h-3.5 w-3.5" />
                 {t.admin.panelActions}
               </h3>
 
               {isDecided && (
                 <p className="text-xs text-muted-foreground italic">
-                  Decision: <span className="font-medium text-foreground">{report.decision}</span>
+                  Decision: <span className="text-foreground">{report.decision}</span>
                 </p>
               )}
 
@@ -538,7 +538,7 @@ export function ModerationDetailPanel({ report, onClose, onRefresh }: Moderation
 
             {/* SECTION 4 – Internal Notes */}
             <section className="px-6 py-5 space-y-3">
-              <h3 className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              <h3 className="flex items-center gap-2 text-xs uppercase tracking-wider text-muted-foreground">
                 <FileText className="h-3.5 w-3.5" />
                 {t.admin.panelInternalNotes}
               </h3>

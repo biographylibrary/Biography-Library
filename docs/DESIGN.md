@@ -34,18 +34,19 @@ Ultimo aggiornamento: giugno 2026.
 
 ### Font
 
-- **Sans (UI + body):** Noto Sans — Google Fonts, peso 400.
-- **Serif (titoli):** Noto Serif — Google Fonts, peso 400 (anche italic).
+- **Sans (UI + body):** Noto Sans — Google Fonts, pesi 400 e 700 (anche italic).
+- **Serif (titoli e testo ricco):** Noto Serif — Google Fonts, pesi 400 e 700 (anche italic).
 
 Import in `app/globals.css`:
 
 ```css
-@import url('https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400&family=Noto+Serif:ital,wght@0,400;1,400&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans:ital,wght@0,400;0,700;1,400;1,700&family=Noto+Serif:ital,wght@0,400;0,700;1,400;1,700&display=swap');
 ```
 
 ### Regole globali
 
-- `*, *::before, *::after { font-weight: 400 !important; }` — niente bold di default.
+- `*, *::before, *::after { font-weight: 400 !important; }` — l’interfaccia è a peso 400 ovunque.
+- Il grassetto (peso 700) vale solo negli ambiti `.ProseMirror` (editor), `.rich-text` (lettura del testo dell’autore) e `.echo-reply` (risposte di Echo), fissati da `lib/__tests__/typography.test.ts`.
 - `body`: `font-sans`, `background-color: var(--bg-main)`, `color: var(--text-primary)`.
 - `h1`–`h6`: `font-serif`.
 
@@ -161,13 +162,13 @@ Scala scura: pagina `#1F2121`, scheda `#313535`, fondo riempito `#404444`. Il te
 
 ---
 
-## 5. Editor rich text (TipTap / ProseMirror)
+## 5. Testo ricco: editor e lettura
 
-Stili in `app/globals.css` (classe `.ProseMirror`):
+Stili in `app/globals.css` per `:is(.ProseMirror, .rich-text)` (area editor TipTap e sola lettura del testo dell’autore). Solo l’editor ha in più `outline` / `min-height`, placeholder e `.echo-just-changed`.
 
 | Elemento | Stile |
 |----------|--------|
-| Area | `min-height: 300px`, no outline |
+| Area (solo `.ProseMirror`) | `min-height: 300px`, no outline |
 | `h1` | `text-3xl font-serif`, margini verticali |
 | `h2` | `text-2xl font-serif` |
 | `h3` | `text-xl font-serif` |
@@ -176,8 +177,10 @@ Stili in `app/globals.css` (classe `.ProseMirror`):
 | `blockquote` | bordo sinistro `border-primary`, italic, `text-muted-foreground` |
 | `hr` | `border-t-2 border-border` |
 | Link | `text-primary underline` |
-| `strong` | peso 400 (no bold visivo) |
+| `strong` | peso 700 (negli ambiti del grassetto) |
 | Placeholder | `text-muted-foreground/50` su primo paragrafo vuoto |
+
+La pagina di lettura usa `.rich-text`; `prose` e `not-prose` non esistono (il plugin typography non è installato).
 
 ---
 

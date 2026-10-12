@@ -39,10 +39,10 @@ function ModerationContent() {
             <Shield className="h-5 w-5" />
           </div>
           <div>
-            <h1 className="text-2xl font-serif font-semibold tracking-tight text-foreground flex items-center gap-2">
+            <h1 className="text-2xl font-serif tracking-tight text-foreground flex items-center gap-2">
               {t.admin.moderationTitle}
               {unassignedCount > 0 && (
-                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold tone-danger font-sans">
+                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs tone-danger font-sans">
                   {unassignedCount} {t.admin.moderationUnassignedBadge}
                 </span>
               )}

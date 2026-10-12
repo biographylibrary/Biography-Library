@@ -23,3 +23,6 @@ alwaysApply: true
 
 ## Diff minimo
 - Cambia solo ciò che serve al task; non refactorare codice non correlato.
+
+## Tipografia (pesi e testo ricco)
+- Pesi del carattere: niente `font-medium`, `font-semibold`, `font-bold` e simili, né `fontWeight` in linea: l’interfaccia è a peso 400 per la regola globale. Il grassetto esiste solo in `.ProseMirror`, `.rich-text`, `.echo-reply`. Niente classi `prose*` (plugin non installato): per il testo dell’autore in sola lettura si usa `BiographySectionBody`.

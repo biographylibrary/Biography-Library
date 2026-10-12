@@ -20,7 +20,7 @@ export function WaitlistLanding() {
             <div className="flex items-center justify-center mb-4">
               <Logo height={64} />
             </div>
-            <h1 className="text-2xl font-serif font-semibold tracking-tight">
+            <h1 className="text-2xl font-serif tracking-tight">
               {t.waitlist.landingTitle}
             </h1>
             <p className="text-sm text-muted-foreground leading-relaxed">{t.waitlist.landingLead}</p>
@@ -28,7 +28,7 @@ export function WaitlistLanding() {
           </div>
           <RegisterForm embedded />
           <p className="text-center text-sm text-muted-foreground">
-            <Link href="/login" className="font-medium text-primary hover:text-primary/80 transition-colors">
+            <Link href="/login" className="text-primary hover:text-primary/80 transition-colors">
               {t.waitlist.alreadyHaveAccess}
             </Link>
           </p>

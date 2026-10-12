@@ -13,7 +13,7 @@ const ZEFIX_URL = 'https://www.zefix.ch/en/search/entity/list/firm/1735068';
 function CreditRow({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div className="grid grid-cols-1 sm:grid-cols-[10rem_1fr] gap-1 sm:gap-4 py-2 border-b border-border last:border-b-0">
-      <dt className="text-sm font-medium text-muted-foreground">{label}</dt>
+      <dt className="text-sm text-muted-foreground">{label}</dt>
       <dd className="text-sm leading-relaxed">{children}</dd>
     </div>
   );
@@ -27,7 +27,7 @@ export default function CreditsPage() {
   return (
     <main className="max-w-2xl mx-auto px-4 py-12 sm:py-16 space-y-10">
       <header className="space-y-2">
-        <h1 className="text-3xl font-serif font-semibold tracking-tight">{t.footer.credits}</h1>
+        <h1 className="text-3xl font-serif tracking-tight">{t.footer.credits}</h1>
         <p className="text-lg text-muted-foreground leading-relaxed">{c.orgHeading}</p>
       </header>
 
@@ -74,7 +74,7 @@ export default function CreditsPage() {
       </dl>
 
       <section className="space-y-3">
-        <h2 className="text-xl font-serif font-semibold tracking-tight">{c.umHeading}</h2>
+        <h2 className="text-xl font-serif tracking-tight">{c.umHeading}</h2>
         <p className="text-base leading-relaxed">{t.umId.creditsLead}</p>
         <p className="text-base leading-relaxed">
           {t.umId.yearWord} {um}

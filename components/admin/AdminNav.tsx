@@ -80,7 +80,7 @@ export function AdminNav() {
                 target={item.external ? '_blank' : undefined}
                 rel={item.external ? 'noopener noreferrer' : undefined}
                 className={cn(
-                  'flex items-center gap-2 px-3 py-3.5 text-sm font-medium whitespace-nowrap border-b-2 transition-colors',
+                  'flex items-center gap-2 px-3 py-3.5 text-sm whitespace-nowrap border-b-2 transition-colors',
                   isActive
                     ? 'border-black dark:border-foreground text-foreground'
                     : 'border-transparent text-muted-foreground hover:text-foreground hover:border-border'
@@ -89,7 +89,7 @@ export function AdminNav() {
                 {item.icon}
                 {item.label}
                 {item.badge !== undefined && (
-                  <span className="inline-flex items-center justify-center min-w-[1.25rem] h-5 px-1.5 rounded-full text-xs font-semibold tabular-nums tone-warning">
+                  <span className="inline-flex items-center justify-center min-w-[1.25rem] h-5 px-1.5 rounded-full text-xs tabular-nums tone-warning">
                     {item.badge}
                   </span>
                 )}

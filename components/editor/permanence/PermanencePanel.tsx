@@ -82,7 +82,7 @@ function EventBlock({
   const p = t.permanence;
   return (
     <div className="rounded-lg border border-border p-3 space-y-3 bg-background/50">
-      <h4 className="text-sm font-medium">{title}</h4>
+      <h4 className="text-sm">{title}</h4>
       <EdtfDateFields
         value={form.date}
         asGivenFree={form.dateAsGivenFree}
@@ -572,7 +572,7 @@ export function PermanencePanel({
       {!hideTitle && (
         <div className="flex items-start gap-2">
           <Landmark className="h-4 w-4 text-primary shrink-0 mt-0.5" />
-          <h3 className="text-sm font-medium">{isAutobiography ? p.titleSelf : p.title}</h3>
+          <h3 className="text-sm">{isAutobiography ? p.titleSelf : p.title}</h3>
         </div>
       )}
       <p className="text-sm text-muted-foreground leading-relaxed">
@@ -645,7 +645,7 @@ export function PermanencePanel({
 
       <div className="space-y-3">
         <div className="space-y-1">
-          <h4 className="text-sm font-medium">{p.placesTitle}</h4>
+          <h4 className="text-sm">{p.placesTitle}</h4>
           <p className="text-xs text-muted-foreground leading-relaxed">
             {isAutobiography ? p.placesHintSelf : p.placesHint}
           </p>
@@ -749,7 +749,7 @@ export function PermanencePanel({
 
       <div className="space-y-3">
         <div className="space-y-1">
-          <h4 className="text-sm font-medium">
+          <h4 className="text-sm">
             {isAutobiography ? p.relationsTitleSelf : p.relationsTitle}
           </h4>
           <p className="text-xs text-muted-foreground leading-relaxed">{p.relationsHint}</p>

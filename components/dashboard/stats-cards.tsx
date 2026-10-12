@@ -48,7 +48,7 @@ export function StatsCards({ biographies }: StatsCardsProps) {
               <Icon className={`h-5 w-5 ${stat.color}`} />
             </div>
             <div>
-              <p className="text-2xl font-semibold">{stat.value}</p>
+              <p className="text-2xl">{stat.value}</p>
               <p className="text-xs text-muted-foreground">{stat.label}</p>
             </div>
           </div>

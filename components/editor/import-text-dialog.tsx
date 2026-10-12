@@ -382,7 +382,7 @@ export function ImportTextDialog({
                     className="hidden"
                   />
                   <Upload className="mx-auto h-10 w-10 text-muted-foreground mb-3" />
-                  <p className="text-sm font-medium mb-1">{t.importDialog.dragFile}</p>
+                  <p className="text-sm mb-1">{t.importDialog.dragFile}</p>
                   <p className="text-xs text-muted-foreground">{t.importDialog.formats}</p>
                   {loading && (
                     <div className="mt-3 flex items-center justify-center gap-2 text-sm text-muted-foreground">
@@ -446,7 +446,7 @@ export function ImportTextDialog({
                       alt=""
                       className="mx-auto max-h-64 rounded-md border border-border bg-[#ECE9E4] object-contain"
                     />
-                    <p className="text-sm font-medium">{t.importDialog.keepCoverQuestion}</p>
+                    <p className="text-sm">{t.importDialog.keepCoverQuestion}</p>
                     <div className="flex flex-wrap gap-2">
                       <Button
                         type="button"
@@ -484,11 +484,11 @@ export function ImportTextDialog({
                 )}
                 {parsedContent && htmlHasText(previewHtml) && (
                   <div className="rounded-md border border-border bg-muted/30 p-4 max-h-[240px] overflow-y-auto import-preview">
-                    <p className="text-xs text-muted-foreground mb-2 font-medium">
+                    <p className="text-xs text-muted-foreground mb-2">
                       {t.importDialog.preview}
                     </p>
                     <div
-                      className="prose prose-sm max-w-none text-sm [&_h1]:text-xl [&_h1]:font-serif [&_h2]:text-lg [&_h2]:font-serif [&_h3]:text-base [&_h3]:font-semibold"
+                      className="rich-text max-w-none text-sm [&_h1]:!text-xl [&_h1]:font-serif [&_h2]:!text-lg [&_h2]:font-serif [&_h3]:!text-base"
                       dangerouslySetInnerHTML={{ __html: previewHtml }}
                     />
                   </div>

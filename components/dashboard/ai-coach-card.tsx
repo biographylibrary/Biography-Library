@@ -235,12 +235,12 @@ export function AICoachCard({ biographies, userName, userId }: AICoachCardProps)
           <Sparkles className="h-5 w-5" />
         </div>
         <div className="flex-1">
-          <h3 className="text-lg font-semibold text-brand-ink dark:text-brand-beigeLight">
+          <h3 className="text-lg text-brand-ink dark:text-brand-beigeLight">
             {getTimeBasedGreeting()}, {userName}!
           </h3>
           {totalWords > 0 && (
             <div className="flex flex-wrap items-center gap-2 mt-1 text-sm text-brand-greenDark dark:text-brand-beigeLight/80">
-              <span className="font-medium text-brand-ink dark:text-brand-blue">
+              <span className="text-brand-ink dark:text-brand-blue">
                 {totalWords} {t.coach.wordsWritten}
               </span>
               <span className="text-brand-greenDark/50">•</span>

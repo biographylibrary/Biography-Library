@@ -62,7 +62,7 @@ export function BiographyCard({ biography, onEdit, onDelete }: BiographyCardProp
         <div className="flex items-start justify-between mb-3 gap-2 min-w-0">
           <div className="flex items-center gap-2 min-w-0 flex-1">
             <BookOpen className="h-4 w-4 text-primary shrink-0" />
-            <h3 className="font-medium text-sm truncate min-w-0">
+            <h3 className="text-sm truncate min-w-0">
               {biography.title || t.biography.untitled}
             </h3>
           </div>
@@ -84,11 +84,11 @@ export function BiographyCard({ biography, onEdit, onDelete }: BiographyCardProp
         </p>
 
         <div className="flex items-center gap-2 flex-wrap mb-4">
-          <span className={cn('inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full font-medium', privacy.className)}>
+          <span className={cn('inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full', privacy.className)}>
             <PrivacyIcon className="h-3 w-3" />
             {privacy.label}
           </span>
-          <span className={cn('inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full font-medium', status.className)}>
+          <span className={cn('inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full', status.className)}>
             {isUnderReview && <Clock className="h-3 w-3" />}
             {status.label}
           </span>

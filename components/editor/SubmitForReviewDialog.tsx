@@ -205,7 +205,7 @@ export function SubmitForReviewDialog({
       <DialogContent className="max-w-lg">
         <DialogHeader>
           <div className="flex items-center justify-between mb-1">
-            <span className="text-xs text-muted-foreground font-medium tracking-wide">
+            <span className="text-xs text-muted-foreground tracking-wide">
               {label(stepLabel, language)} {step + 1} {label(ofLabel, language)} {STEP_COUNT}
             </span>
             <div className="flex gap-1">
@@ -261,7 +261,7 @@ export function SubmitForReviewDialog({
               isLastStep ? 'tone-warning' : 'tone-info',
             ].join(' ')}>
               <AlertTriangle className="h-4 w-4 mt-0.5 shrink-0" />
-              <p className="text-sm font-medium">
+              <p className="text-sm">
                 {label(current.warning, language)}
               </p>
             </div>

@@ -60,7 +60,7 @@ export function ChapterCooldownBanner({
     >
       <Clock className="h-4 w-4 shrink-0 mt-0.5" />
       <div className="space-y-0.5">
-        <p className="font-medium">
+        <p>
           {t.dashboard.nextChapterCooldownDays.replace(
             '{days}',
             String(cooldown.daysRemaining)

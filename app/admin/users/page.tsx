@@ -64,7 +64,7 @@ const REVIEW_LANG_CODES = ['en', 'it', 'fr', 'de'] as const;
 const ROLE_ORDER: UserRole[] = ['user', 'reviewer', 'admin', 'super_admin'];
 
 function getRoleBadge(role: UserRole, label: string) {
-  const base = 'text-xs font-semibold px-2 py-0.5 rounded-full';
+  const base = 'text-xs px-2 py-0.5 rounded-full';
   switch (role) {
     case 'super_admin':
       return <span className={`${base} tone-danger`}>{label}</span>;
@@ -459,7 +459,7 @@ export default function AdminUsersPage() {
               <Users className="h-5 w-5" />
             </div>
             <div>
-              <h1 className="text-2xl font-serif font-semibold tracking-tight text-foreground">
+              <h1 className="text-2xl font-serif tracking-tight text-foreground">
                 {t.admin.usersTitle}
               </h1>
               <p className="text-sm text-muted-foreground mt-0.5">{t.admin.usersSubtitle}</p>
@@ -538,19 +538,19 @@ export default function AdminUsersPage() {
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-border bg-muted/40">
-                    <th className="px-4 py-3 text-left font-medium text-muted-foreground w-10">
+                    <th className="px-4 py-3 text-left text-muted-foreground w-10">
                       {statusFilter === 'waitlist' ? (
                         <span className="sr-only">{t.admin.usersGrantAccess}</span>
                       ) : null}
                     </th>
-                    <th className="px-4 py-3 text-left font-medium text-muted-foreground">{t.admin.usersColName}</th>
-                    <th className="px-4 py-3 text-left font-medium text-muted-foreground hidden md:table-cell">{t.admin.usersColEmail}</th>
-                    <th className="px-4 py-3 text-left font-medium text-muted-foreground">{t.admin.usersColRole}</th>
-                    <th className="px-4 py-3 text-left font-medium text-muted-foreground hidden lg:table-cell">{t.admin.usersReviewerLanguages}</th>
-                    <th className="px-4 py-3 text-left font-medium text-muted-foreground hidden xl:table-cell">{t.admin.usersColStatus}</th>
-                    <th className="px-4 py-3 text-left font-medium text-muted-foreground hidden lg:table-cell">{t.admin.usersColJoined}</th>
-                    <th className="px-4 py-3 text-center font-medium text-muted-foreground hidden sm:table-cell">{t.admin.usersColBiographies}</th>
-                    <th className="px-4 py-3 text-right font-medium text-muted-foreground">{t.admin.usersColActions}</th>
+                    <th className="px-4 py-3 text-left text-muted-foreground">{t.admin.usersColName}</th>
+                    <th className="px-4 py-3 text-left text-muted-foreground hidden md:table-cell">{t.admin.usersColEmail}</th>
+                    <th className="px-4 py-3 text-left text-muted-foreground">{t.admin.usersColRole}</th>
+                    <th className="px-4 py-3 text-left text-muted-foreground hidden lg:table-cell">{t.admin.usersReviewerLanguages}</th>
+                    <th className="px-4 py-3 text-left text-muted-foreground hidden xl:table-cell">{t.admin.usersColStatus}</th>
+                    <th className="px-4 py-3 text-left text-muted-foreground hidden lg:table-cell">{t.admin.usersColJoined}</th>
+                    <th className="px-4 py-3 text-center text-muted-foreground hidden sm:table-cell">{t.admin.usersColBiographies}</th>
+                    <th className="px-4 py-3 text-right text-muted-foreground">{t.admin.usersColActions}</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-border">
@@ -600,13 +600,13 @@ export default function AdminUsersPage() {
                                   aria-label={t.admin.usersGrantAccess}
                                 />
                               )}
-                              <div className={`h-8 w-8 rounded-full flex items-center justify-center text-white dark:text-[#121212] text-xs font-bold shrink-0 ${getAvatarColor(displayName)}`}>
+                              <div className={`h-8 w-8 rounded-full flex items-center justify-center text-white dark:text-[#121212] text-xs shrink-0 ${getAvatarColor(displayName)}`}>
                                 {initial}
                               </div>
                             </div>
                           </td>
                           <td className="px-4 py-3">
-                            <div className="font-medium text-foreground truncate max-w-[160px]">
+                            <div className="text-foreground truncate max-w-[160px]">
                               {u.full_name || <span className="text-muted-foreground italic">—</span>}
                             </div>
                             <div className="text-xs text-muted-foreground truncate max-w-[160px] md:hidden">
@@ -711,7 +711,7 @@ export default function AdminUsersPage() {
                             {formatDate(u.created_at)}
                           </td>
                           <td className="px-4 py-3 text-center hidden sm:table-cell">
-                            <span className="text-sm font-medium text-foreground tabular-nums">{u.biography_count}</span>
+                            <span className="text-sm text-foreground tabular-nums">{u.biography_count}</span>
                           </td>
                           <td className="px-4 py-3 text-right">
                             <div className="flex flex-col items-end gap-1.5 min-w-[7rem]">

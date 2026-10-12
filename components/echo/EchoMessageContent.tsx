@@ -32,7 +32,7 @@ export function EchoMessageContent({ content }: { content: string }) {
   const lines = content.split('\n');
 
   return (
-    <>
+    <span className="echo-reply">
       {lines.map((line, index) => {
         const listMatch = line.match(/^\s*[\*\-]\s+(.*)$/);
         const display = listMatch ? `• ${listMatch[1]}` : line;
@@ -44,6 +44,6 @@ export function EchoMessageContent({ content }: { content: string }) {
           </span>
         );
       })}
-    </>
+    </span>
   );
 }

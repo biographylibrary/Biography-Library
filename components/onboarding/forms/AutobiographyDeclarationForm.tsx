@@ -41,7 +41,7 @@ export function AutobiographyDeclarationForm({ values, onChange }: Autobiography
           href="/terms-of-service"
           target="_blank"
           rel="noopener noreferrer"
-          className="text-primary hover:underline font-medium"
+          className="text-primary hover:underline"
           onClick={(e) => e.stopPropagation()}
         >
           {t.declaration.checkbox3TermsLink}
@@ -51,7 +51,7 @@ export function AutobiographyDeclarationForm({ values, onChange }: Autobiography
           href="/privacy-policy"
           target="_blank"
           rel="noopener noreferrer"
-          className="text-primary hover:underline font-medium"
+          className="text-primary hover:underline"
           onClick={(e) => e.stopPropagation()}
         >
           {t.declaration.checkbox3PrivacyLink}
@@ -103,7 +103,7 @@ export function AutobiographyDeclarationForm({ values, onChange }: Autobiography
           <Label htmlFor="ob-terms" className="text-base font-normal leading-relaxed cursor-pointer">
             {renderCheckbox3Label()}
           </Label>
-          <p className="text-sm font-medium text-brand-wineDark dark:text-brand-mustardLight">
+          <p className="text-sm text-brand-wineDark dark:text-brand-mustardLight">
             {t.auth.mustAcceptTerms}
           </p>
         </div>
@@ -128,7 +128,7 @@ export function AutobiographyDeclarationForm({ values, onChange }: Autobiography
         <Info className="h-5 w-5" />
         <AlertDescription className="text-sm space-y-4">
           <div className="space-y-2">
-            <p className="font-semibold flex items-center gap-2">
+            <p className="flex items-center gap-2">
               <CheckCircle2 className="h-4 w-4" />
               {t.declaration.canWriteTitle}
             </p>
@@ -139,7 +139,7 @@ export function AutobiographyDeclarationForm({ values, onChange }: Autobiography
             </ul>
           </div>
           <div className="space-y-2">
-            <p className="font-semibold flex items-center gap-2">
+            <p className="flex items-center gap-2">
               <XCircle className="h-4 w-4" />
               {t.declaration.cannotWriteTitle}
             </p>

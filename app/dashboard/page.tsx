@@ -134,7 +134,7 @@ export default function DashboardPage() {
               <Mail className="h-7 w-7" />
             </div>
             <div className="space-y-2">
-              <h2 className="text-xl font-serif font-semibold">
+              <h2 className="text-xl font-serif">
                 {t.auth.emailNotVerified}
               </h2>
               <p className="text-sm">
@@ -145,7 +145,7 @@ export default function DashboardPage() {
               </p>
             </div>
             {resendSuccess ? (
-              <div className="flex items-center gap-2 text-sm font-medium">
+              <div className="flex items-center gap-2 text-sm">
                 <CheckCircle2 className="h-4 w-4" />
                 {t.auth.resendVerificationSuccess}
               </div>

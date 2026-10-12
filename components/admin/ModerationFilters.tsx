@@ -27,7 +27,7 @@ export function ModerationFilters({ filters, onChange }: ModerationFiltersProps)
   return (
     <div className="flex flex-wrap gap-3 items-center">
       <div className="flex items-center gap-2">
-        <span className="text-xs font-medium text-muted-foreground">{t.admin.filterStatus}</span>
+        <span className="text-xs text-muted-foreground">{t.admin.filterStatus}</span>
         <Select value={filters.status} onValueChange={setStatus}>
           <SelectTrigger className="h-8 w-36 text-xs">
             <SelectValue />
@@ -43,7 +43,7 @@ export function ModerationFilters({ filters, onChange }: ModerationFiltersProps)
       </div>
 
       <div className="flex items-center gap-2">
-        <span className="text-xs font-medium text-muted-foreground">{t.admin.filterType}</span>
+        <span className="text-xs text-muted-foreground">{t.admin.filterType}</span>
         <Select value={filters.type} onValueChange={setType}>
           <SelectTrigger className="h-8 w-44 text-xs">
             <SelectValue />
@@ -67,7 +67,7 @@ export function ModerationFilters({ filters, onChange }: ModerationFiltersProps)
       </div>
 
       <div className="flex items-center gap-2">
-        <span className="text-xs font-medium text-muted-foreground">{t.admin.filterSort}</span>
+        <span className="text-xs text-muted-foreground">{t.admin.filterSort}</span>
         <Select value={filters.sort} onValueChange={setSort}>
           <SelectTrigger className="h-8 w-40 text-xs">
             <SelectValue />

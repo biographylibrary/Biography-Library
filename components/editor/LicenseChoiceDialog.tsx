@@ -93,7 +93,7 @@ export function LicenseChoiceDialog({
               >
                 <RadioGroupItem value={LICENSE_BY_NC_SA_4} id="license-by-nc-sa" className="mt-1" />
                 <div className="min-w-0 space-y-1.5">
-                  <span className="text-sm font-medium leading-snug block">
+                  <span className="text-sm leading-snug block">
                     {t.rightsChoice.optionByNcSaTitle}
                   </span>
                   <p className="text-sm text-muted-foreground leading-relaxed">
@@ -112,7 +112,7 @@ export function LicenseChoiceDialog({
               >
                 <RadioGroupItem value={LICENSE_BY_SA_4} id="license-by-sa" className="mt-1" />
                 <div className="min-w-0 space-y-1.5">
-                  <span className="text-sm font-medium leading-snug block">
+                  <span className="text-sm leading-snug block">
                     {t.rightsChoice.optionBySaTitle}
                   </span>
                   <p className="text-sm text-muted-foreground leading-relaxed">
@@ -141,7 +141,7 @@ export function LicenseChoiceDialog({
         {mode === 'upgrade' && (
           <>
             <div className="rounded-lg border border-border p-4 space-y-2">
-              <p className="text-sm font-medium">{t.rightsChoice.optionBySaTitle}</p>
+              <p className="text-sm">{t.rightsChoice.optionBySaTitle}</p>
               <p className="text-sm text-muted-foreground leading-relaxed">
                 {t.rightsChoice.optionBySaBody}
               </p>

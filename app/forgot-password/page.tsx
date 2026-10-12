@@ -48,7 +48,7 @@ export default function ForgotPasswordPage() {
             <div className="flex items-center justify-center mb-6">
               <Logo height={64} />
             </div>
-            <h1 className="text-2xl font-serif font-semibold tracking-tight">
+            <h1 className="text-2xl font-serif tracking-tight">
               {t.auth.forgotPasswordTitle}
             </h1>
             <p className="text-sm text-muted-foreground">
@@ -63,7 +63,7 @@ export default function ForgotPasswordPage() {
                   <CheckCircle2 className="h-6 w-6" />
                 </div>
                 <div>
-                  <p className="font-semibold">
+                  <p>
                     {t.auth.forgotPasswordSuccess}
                   </p>
                   <p className="text-sm mt-1">
@@ -73,7 +73,7 @@ export default function ForgotPasswordPage() {
               </div>
               <Link
                 href="/login"
-                className="flex items-center justify-center gap-2 text-sm text-primary hover:text-primary/80 transition-colors font-medium"
+                className="flex items-center justify-center gap-2 text-sm text-primary hover:text-primary/80 transition-colors"
               >
                 {t.auth.backToLogin}
               </Link>
@@ -104,7 +104,7 @@ export default function ForgotPasswordPage() {
 
                 <Button
                   type="submit"
-                  className="w-full h-11 font-medium"
+                  className="w-full h-11"
                   disabled={isLoading}
                 >
                   {isLoading ? (
@@ -124,7 +124,7 @@ export default function ForgotPasswordPage() {
               <p className="text-center text-sm text-muted-foreground mt-6">
                 <Link
                   href="/login"
-                  className="font-medium text-primary hover:text-primary/80 transition-colors"
+                  className="text-primary hover:text-primary/80 transition-colors"
                 >
                   {t.auth.backToLogin}
                 </Link>

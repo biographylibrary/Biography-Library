@@ -2102,7 +2102,7 @@ export default function BiographyEditorPage() {
         <div className="shrink-0 notice-bar tone-warning px-4 py-3">
           <div className="max-w-5xl mx-auto flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
             <div>
-              <p className="text-sm font-medium">
+              <p className="text-sm">
                 {t.editor.publicationPdfDraftHint}
               </p>
               <p className="text-xs mt-1">
@@ -2198,7 +2198,7 @@ export default function BiographyEditorPage() {
           <div className="max-w-5xl mx-auto flex items-start gap-3">
             <Sparkles className="h-4 w-4 shrink-0 mt-0.5" />
             <div className="flex-1">
-              <p className="text-sm font-medium">
+              <p className="text-sm">
                 {language === 'it' ? 'Il testo ha superato la revisione automatica.' :
                  language === 'fr' ? 'Le texte a passé la révision automatique.' :
                  language === 'de' ? 'Der Text hat die automatische Prüfung bestanden.' :
@@ -2232,7 +2232,7 @@ export default function BiographyEditorPage() {
           <div className="max-w-5xl mx-auto flex items-start gap-3">
             <TriangleAlert className="h-4 w-4 shrink-0 mt-0.5" />
             <div>
-              <p className="text-sm font-medium">
+              <p className="text-sm">
                 {language === 'it' ? 'Alcuni passaggi richiedono revisione umana.' :
                  language === 'fr' ? 'Certains passages nécessitent une révision humaine.' :
                  language === 'de' ? 'Einige Passagen erfordern eine manuelle Prüfung.' :
@@ -2256,7 +2256,7 @@ export default function BiographyEditorPage() {
               <div className="flex items-start gap-3">
                 <TriangleAlert className="h-4 w-4 shrink-0 mt-0.5" />
                 <div>
-                  <p className="text-sm font-medium">
+                  <p className="text-sm">
                     {aiScreeningResult === 'parse_error'
                       ? language === 'it'
                         ? 'La risposta dell’analisi automatica non è stata letta correttamente. È stata avviata una revisione umana.'
@@ -2314,7 +2314,7 @@ export default function BiographyEditorPage() {
             <div className="flex items-start gap-3">
               <TriangleAlert className="h-4 w-4 shrink-0 mt-0.5" />
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium mb-2">
+                <p className="text-sm mb-2">
                   {t.editor.revisionRequired}
                 </p>
                 <ul className="space-y-1 mb-2">
@@ -2322,7 +2322,7 @@ export default function BiographyEditorPage() {
                     <li key={i} className="flex items-start gap-2 text-xs">
                       <Lock className="h-3 w-3 shrink-0 mt-0.5" />
                       <span>
-                        <span className="font-medium">
+                        <span>
                           {t.sectionTitles[p.section_key as keyof typeof t.sectionTitles] ||
                             p.section_key}
                         </span>
@@ -2334,7 +2334,7 @@ export default function BiographyEditorPage() {
                 </ul>
                 {revisionNote && (
                   <p className="text-xs">
-                    <span className="font-medium">{t.editor.revisionReviewerNote}:</span>{' '}
+                    <span>{t.editor.revisionReviewerNote}:</span>{' '}
                     {revisionNote}
                   </p>
                 )}
@@ -2813,7 +2813,7 @@ export default function BiographyEditorPage() {
           </DialogHeader>
           <div className="flex items-center gap-2 text-sm text-muted-foreground bg-muted/50 rounded-md px-3 py-2">
             <span>{t.aiUsage.resetsAt}:</span>
-            <span className="font-medium text-foreground">
+            <span className="text-foreground">
               {aiLimitError
                 ? new Date(aiLimitError.resetAt).toLocaleString(undefined, {
                     weekday: 'short',
