@@ -168,9 +168,9 @@ export function CreateBiographyModal({
                         type="button"
                         onClick={() => setPrivacy(option.value)}
                         className={cn(
-                          'flex flex-col items-center gap-2 p-3 rounded-lg border-2 transition-all text-center',
+                          'flex flex-col items-center gap-2 p-3 rounded-lg border transition-all text-center',
                           isSelected
-                            ? 'border-primary bg-primary/5'
+                            ? 'border-primary ring-1 ring-primary bg-primary/5'
                             : 'border-border hover:border-primary/30'
                         )}
                       >
@@ -220,7 +220,7 @@ export function CreateBiographyModal({
               <button
                 type="button"
                 onClick={() => setWriteHereSubMode(writeHereSubMode === null ? 'sections' : null)}
-                className="w-full text-left flex items-start gap-4 p-4 rounded-xl border-2 border-border hover:border-primary/40 transition-all group"
+                className="w-full text-left flex items-start gap-4 p-4 rounded-xl border border-border hover:border-primary/40 transition-all group"
               >
                 <div className="mt-0.5 flex-shrink-0 w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
                   <PenLine className="h-5 w-5 text-primary" />
@@ -235,9 +235,9 @@ export function CreateBiographyModal({
                         type="button"
                         onClick={() => setWriteHereSubMode('sections')}
                         className={cn(
-                          'w-full text-left flex items-start gap-3 p-3 rounded-lg border-2 transition-all',
+                          'w-full text-left flex items-start gap-3 p-3 rounded-lg border transition-all',
                           writeHereSubMode === 'sections'
-                            ? 'border-primary bg-primary/5'
+                            ? 'border-primary ring-1 ring-primary bg-primary/5'
                             : 'border-border hover:border-primary/30'
                         )}
                       >
@@ -252,9 +252,9 @@ export function CreateBiographyModal({
                         type="button"
                         onClick={() => setWriteHereSubMode('freeflow')}
                         className={cn(
-                          'w-full text-left flex items-start gap-3 p-3 rounded-lg border-2 transition-all',
+                          'w-full text-left flex items-start gap-3 p-3 rounded-lg border transition-all',
                           writeHereSubMode === 'freeflow'
-                            ? 'border-primary bg-primary/5'
+                            ? 'border-primary ring-1 ring-primary bg-primary/5'
                             : 'border-border hover:border-primary/30'
                         )}
                       >
@@ -273,7 +273,7 @@ export function CreateBiographyModal({
                 type="button"
                 onClick={() => handleSubmit('import')}
                 disabled={isCreating}
-                className="w-full text-left flex items-start gap-4 p-4 rounded-xl border-2 border-border hover:border-primary/40 transition-all"
+                className="w-full text-left flex items-start gap-4 p-4 rounded-xl border border-border hover:border-primary/40 transition-all"
               >
                 <div className="mt-0.5 flex-shrink-0 w-10 h-10 rounded-lg bg-muted flex items-center justify-center">
                   <Upload className="h-5 w-5 text-muted-foreground" />

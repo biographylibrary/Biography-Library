@@ -46,7 +46,7 @@ const EMPTY_AUTO: AutobiographyDeclarationValues = {
 };
 
 const SELECTED_CHOICE_CLASS =
-  'border-foreground !bg-brand-blue shadow-md dark:border-foreground dark:!bg-brand-blue';
+  'border-foreground ring-1 ring-foreground !bg-brand-blue shadow-md dark:border-foreground dark:!bg-brand-blue';
 const UNSELECTED_CHOICE_CLASS =
   'border-border bg-card hover:border-foreground/30 hover:bg-brand-blue/40';
 
@@ -278,7 +278,7 @@ export function OnboardingWizard() {
           <div className="grid md:grid-cols-2 gap-4">
             <Card
               className={cn(
-                'border-2 cursor-pointer transition-all hover:shadow-md',
+                'border cursor-pointer transition-all hover:shadow-md',
                 biographyType === 'autobiography' ? SELECTED_CHOICE_CLASS : UNSELECTED_CHOICE_CLASS
               )}
               onClick={() => setBiographyType('autobiography')}
@@ -291,7 +291,7 @@ export function OnboardingWizard() {
             </Card>
             <Card
               className={cn(
-                'border-2 cursor-pointer transition-all hover:shadow-md',
+                'border cursor-pointer transition-all hover:shadow-md',
                 biographyType === 'memorial' ? SELECTED_CHOICE_CLASS : UNSELECTED_CHOICE_CLASS
               )}
               onClick={() => setBiographyType('memorial')}
@@ -384,7 +384,7 @@ export function OnboardingWizard() {
                     type="button"
                     onClick={() => setPrivacy(option.value)}
                     className={cn(
-                      'flex flex-col items-center gap-2 p-3 rounded-lg border-2 transition-all text-center',
+                      'flex flex-col items-center gap-2 p-3 rounded-lg border transition-all text-center',
                       selected ? SELECTED_CHOICE_CLASS : UNSELECTED_CHOICE_CLASS
                     )}
                   >

@@ -209,8 +209,8 @@ function PhotoGridTile({
       onDrop={(e) => onDrop(e, item.id)}
       onDragEnd={onDragEnd}
       className={cn(
-        'group relative aspect-square rounded-lg overflow-hidden border-2 bg-muted transition-all duration-150 cursor-pointer',
-        selected ? 'border-primary ring-2 ring-primary/20' : 'border-border hover:border-border',
+        'group relative aspect-square rounded-lg overflow-hidden border bg-muted transition-all duration-150 cursor-pointer',
+        selected ? 'border-primary ring-1 ring-primary' : 'border-border hover:border-border',
         dragging && 'opacity-50'
       )}
       onClick={() => onSelect(item.id)}

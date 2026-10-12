@@ -61,6 +61,64 @@ const ALLOWED_TINTED: ReadonlyArray<{ fileSuffix: string; classFragment: string 
   },
 ];
 
+/**
+ * border-2 / border-l-2 / border-l-4 / border-b-2 ammessi solo qui (famiglia B).
+ * Ogni voce ha un commento sul perché resta da due (o più) pixel.
+ */
+const ALLOWED_BORDER_THICK: ReadonlyArray<{ fileSuffix: string; reason: string }> = [
+  {
+    fileSuffix: 'components/onboarding/OnboardingGateProvider.tsx',
+    reason: 'cerchio di caricamento (spinner)',
+  },
+  {
+    fileSuffix: 'components/ui/switch.tsx',
+    reason: 'interruttore (border-transparent)',
+  },
+  {
+    fileSuffix: 'components/ui/slider.tsx',
+    reason: 'cursore dello slider',
+  },
+  {
+    fileSuffix: 'components/editor/FinalReviewDialog.tsx',
+    reason: 'Card in evidenza e pallino di conferma',
+  },
+  {
+    fileSuffix: 'components/editor/import-text-dialog.tsx',
+    reason: 'zona di rilascio tratteggiata',
+  },
+  {
+    fileSuffix: 'components/admin/AdminNav.tsx',
+    reason: 'scheda attiva (border-b-2)',
+  },
+  {
+    fileSuffix: 'app/admin/review/page.tsx',
+    reason: 'barra d accento a sinistra (border-l-2)',
+  },
+  {
+    fileSuffix: 'components/onboarding/forms/MemorialDeclarationForm.tsx',
+    reason: 'barra d accento a sinistra (border-l-4)',
+  },
+  {
+    fileSuffix: 'components/admin/ModerationDetailPanel.tsx',
+    reason: 'barra d accento a sinistra (border-l-4)',
+  },
+  {
+    fileSuffix: 'components/editor/ReviewPublicationDialog.tsx',
+    reason: 'barre d accento a sinistra (border-l-2)',
+  },
+  {
+    fileSuffix: 'components/export/AdvancedExportDialog.tsx',
+    reason: 'barra d accento a sinistra (border-l-2)',
+  },
+  {
+    fileSuffix: 'app/globals.css',
+    reason: 'stili ProseMirror: blockquote border-l-4, hr border-t-2 (contenuto editor, famiglia B)',
+  },
+];
+
+const THICK_BORDER =
+  /(?:^|[\s"'`])((?:[\w\[\]\-./]+:)*border(?:-[trblxy])?-[24])\b/g;
+
 function isHoverFocusVariant(token: string): boolean {
   const variants = token.split(':').slice(0, -1);
   return variants.some((v) => v === 'hover' || v === 'focus' || v === 'group-hover');
@@ -119,5 +177,19 @@ describe('line consistency (neutral borders)', () => {
     expect(cfg).toMatch(/input:\s*'hsl\(var\(--input\)\)'/);
     expect(cfg).not.toMatch(/['"]border-global['"]\s*:/);
     expect(cfg).not.toMatch(/border-global['"]?\s*:\s*['"]#[0-9A-Fa-f]+['"]/);
+  });
+
+  it('border-2 / border-l-2 / border-l-4 / border-b-2 solo nei file eccezione (famiglia B)', () => {
+    const hits: string[] = [];
+    for (const file of sourceFiles()) {
+      const rel = relative(ROOT, file).replace(/\\/g, '/');
+      const text = readFileSync(file, 'utf8');
+      for (const m of Array.from(text.matchAll(THICK_BORDER))) {
+        const token = m[1]!;
+        const ok = ALLOWED_BORDER_THICK.some((a) => rel.endsWith(a.fileSuffix));
+        if (!ok) hits.push(`${rel}: ${token}`);
+      }
+    }
+    expect(hits, hits.join('\n')).toEqual([]);
   });
 });
