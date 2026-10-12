@@ -176,53 +176,55 @@
   min-height: 300px;
 }
 
-.ProseMirror h1 {
+:is(.ProseMirror, .rich-text) h1 {
   @apply text-3xl font-serif mb-4 mt-6;
   font-weight: 400;
 }
 
-.ProseMirror h2 {
+:is(.ProseMirror, .rich-text) h2 {
   @apply text-2xl font-serif mb-3 mt-5;
   font-weight: 400;
 }
 
-.ProseMirror h3 {
+:is(.ProseMirror, .rich-text) h3 {
   @apply text-xl font-serif mb-2 mt-4;
   font-weight: 400;
 }
 
-.ProseMirror p {
+:is(.ProseMirror, .rich-text) p {
   @apply mb-3 leading-relaxed;
 }
 
-.ProseMirror ul {
+:is(.ProseMirror, .rich-text) ul {
   @apply list-disc pl-6 mb-3;
 }
 
-.ProseMirror ol {
+:is(.ProseMirror, .rich-text) ol {
   @apply list-decimal pl-6 mb-3;
 }
 
-.ProseMirror li {
+:is(.ProseMirror, .rich-text) li {
   @apply mb-1;
 }
 
-.ProseMirror blockquote {
+:is(.ProseMirror, .rich-text) blockquote {
   @apply border-l-4 border-primary pl-4 py-2 my-4 italic text-muted-foreground;
 }
 
-.ProseMirror hr {
+:is(.ProseMirror, .rich-text) hr {
   @apply my-6 border-t-2 border-border;
 }
 
-.ProseMirror a {
+:is(.ProseMirror, .rich-text) a {
   @apply text-primary underline;
 }
 
-.ProseMirror strong,
-.ProseMirror b,
-.ProseMirror strong *,
-.ProseMirror b *,
+/* Grassetto ammesso solo nel testo scritto dall'autore (editor), nella sua lettura e nelle risposte di Echo. Altrove l'interfaccia resta a peso 400 (regola globale in cima al file). */
+:is(.ProseMirror, .rich-text, .echo-reply) :is(strong, b),
+:is(.ProseMirror, .rich-text, .echo-reply) :is(strong, b) * {
+  font-weight: 700 !important;
+}
+
 .ProseMirror .echo-just-changed {
   font-weight: 700 !important;
 }
@@ -237,26 +239,26 @@
   background-color: rgb(221 207 136 / 0.3);
 }
 
-.ProseMirror em,
-.ProseMirror i,
-.ProseMirror em *,
-.ProseMirror i * {
+:is(.ProseMirror, .rich-text) em,
+:is(.ProseMirror, .rich-text) i,
+:is(.ProseMirror, .rich-text) em *,
+:is(.ProseMirror, .rich-text) i * {
   font-style: italic !important;
 }
 
-.ProseMirror u {
+:is(.ProseMirror, .rich-text) u {
   @apply underline;
 }
 
-.ProseMirror s {
+:is(.ProseMirror, .rich-text) s {
   @apply line-through;
 }
 
-.ProseMirror sup {
+:is(.ProseMirror, .rich-text) sup {
   @apply text-xs align-super;
 }
 
-.ProseMirror sub {
+:is(.ProseMirror, .rich-text) sub {
   @apply text-xs align-sub;
 }
 
