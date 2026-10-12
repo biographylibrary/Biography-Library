@@ -46,6 +46,7 @@ const TEXT_PAIRS: Array<[string, string]> = [
   ['muted-foreground', 'muted'],
   ['muted-foreground', 'background'],
   ['muted-foreground', 'card'],
+  ['muted-foreground', 'popover'],
   ['accent-foreground', 'accent'],
   ['destructive-foreground', 'destructive'],
 ];
@@ -53,6 +54,7 @@ const TEXT_PAIRS: Array<[string, string]> = [
 const BORDER_PAIRS: Array<[string, string]> = [
   ['border', 'background'],
   ['border', 'card'],
+  ['border', 'popover'],
   ['input', 'background'],
 ];
 
@@ -92,6 +94,15 @@ describe('theme token contrast (WCAG)', () => {
         }
       }
       expect(failures, failures.join('\n')).toEqual([]);
+    });
+
+    it(`${label}: --popover uguale a --card (tolleranza 1)`, () => {
+      const popover = readToken(block, 'popover');
+      const card = readToken(block, 'card');
+      expect(
+        channelsWithin(popover, card, 1),
+        `popover ${JSON.stringify(popover)} vs card ${JSON.stringify(card)}`
+      ).toBe(true);
     });
   }
 
