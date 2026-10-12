@@ -56,7 +56,7 @@ export function BiographyCard({ biography, onEdit, onDelete }: BiographyCardProp
       'group relative rounded-xl border bg-card hover:bg-card/80 transition-all duration-200',
       isUnderReview
         ? 'border-brand-mustardDark/50 dark:border-brand-mustardDark/40'
-        : 'border-border hover:border-border'
+        : 'border-border'
     )}>
       <div className="p-5">
         <div className="flex items-start justify-between mb-3 gap-2 min-w-0">

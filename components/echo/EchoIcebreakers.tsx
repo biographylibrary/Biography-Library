@@ -37,7 +37,7 @@ export function EchoIcebreakers({
     >
       {dynamicItems.length > 0 && (
         <>
-          <p className="text-xs text-muted-foreground/60 italic">{hint}</p>
+          <p className="text-xs text-muted-foreground italic">{hint}</p>
           <ul className={cn('space-y-1.5', centered && 'flex flex-col items-center')}>
             {dynamicItems.map((item) => (
               <li key={item.text}>
@@ -45,7 +45,7 @@ export function EchoIcebreakers({
                   type="button"
                   onClick={() => onSelect(item.text)}
                   className={cn(
-                    'text-sm text-muted-foreground/75 italic font-light',
+                    'text-sm text-muted-foreground italic font-light',
                     'hover:text-foreground/90 hover:underline underline-offset-2',
                     'transition-colors text-left max-w-full',
                     centered && 'text-center'
@@ -61,7 +61,7 @@ export function EchoIcebreakers({
 
       {guideItem && (
         <div className={cn('pt-1', centered && 'flex flex-col items-center')}>
-          <p className="text-xs text-muted-foreground/80 not-italic font-medium">
+          <p className="text-xs text-muted-foreground not-italic font-medium">
             {guideHint}
           </p>
           <button

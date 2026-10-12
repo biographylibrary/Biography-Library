@@ -185,7 +185,7 @@ export function ModeSwitchWarningDialog({
           <>
             <DialogHeader>
               <div className="flex items-center gap-2 mb-1">
-                <div className="w-8 h-8 rounded-full bg-destructive/15 flex items-center justify-center flex-shrink-0">
+                <div className="w-8 h-8 rounded-full bg-destructive/10 flex items-center justify-center flex-shrink-0">
                   <AlertTriangle className="h-4 w-4 text-destructive" />
                 </div>
                 <DialogTitle className="text-destructive">

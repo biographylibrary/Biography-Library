@@ -466,7 +466,7 @@ function ReviewQueueContent() {
 
         {!loading && noLanguages && (
           <div className="flex flex-col items-center justify-center py-24 gap-4 text-center">
-            <Inbox className="h-12 w-12 text-muted-foreground/50" />
+            <Inbox className="h-12 w-12 text-muted-foreground" />
             <p className="text-sm text-muted-foreground max-w-md">{t.admin.reviewNoLanguages}</p>
           </div>
         )}
@@ -588,7 +588,7 @@ function ReviewQueueContent() {
                                 <Button
                                   size="sm"
                                   variant="outline"
-                                  className="h-8 text-xs gap-1.5 border-brand-greenDark/45 text-brand-greenDark hover:bg-brand-greenLight/40 hover:text-brand-ink dark:border-brand-greenLight dark:text-brand-greenLight dark:hover:bg-brand-greenLight/15"
+                                  className="h-8 text-xs gap-1.5 border-brand-greenDark/40 text-brand-greenDark hover:bg-brand-greenLight/40 hover:text-brand-ink dark:border-brand-greenLight dark:text-brand-greenLight dark:hover:bg-brand-greenLight/10"
                                   disabled={actionLoading === bio.id}
                                   onClick={() => handleApprove(bio)}
                                 >
@@ -598,7 +598,7 @@ function ReviewQueueContent() {
                                 <Button
                                   size="sm"
                                   variant="outline"
-                                  className="h-8 text-xs gap-1.5 border-brand-wine/45 text-brand-wineDark hover:bg-brand-wine/10 hover:text-brand-wineDark dark:border-brand-wine/50 dark:text-brand-beigeLight dark:hover:bg-brand-wine/20"
+                                  className="h-8 text-xs gap-1.5 border-brand-wine/40 text-brand-wineDark hover:bg-brand-wine/10 hover:text-brand-wineDark dark:border-brand-wine/50 dark:text-brand-beigeLight dark:hover:bg-brand-wine/20"
                                   disabled={actionLoading === bio.id}
                                   onClick={() =>
                                     rejectOpenId === bio.id ? cancelReject() : handleOpenReject(bio)
@@ -614,7 +614,7 @@ function ReviewQueueContent() {
                                   <Button
                                     size="sm"
                                     variant="outline"
-                                    className="h-8 text-xs gap-1.5 border-brand-greenDark/45 text-brand-greenDark hover:bg-brand-greenLight/40 hover:text-brand-ink dark:border-brand-greenLight dark:text-brand-greenLight dark:hover:bg-brand-greenLight/15"
+                                    className="h-8 text-xs gap-1.5 border-brand-greenDark/40 text-brand-greenDark hover:bg-brand-greenLight/40 hover:text-brand-ink dark:border-brand-greenLight dark:text-brand-greenLight dark:hover:bg-brand-greenLight/10"
                                     disabled={actionLoading === bio.id}
                                     onClick={() => handleApproveFromExpanded(bio)}
                                   >
@@ -626,7 +626,7 @@ function ReviewQueueContent() {
                                   <Button
                                     size="sm"
                                     variant="outline"
-                                    className="h-8 text-xs gap-1.5 border-brand-wine/45 text-brand-wineDark hover:bg-brand-wine/10 hover:text-brand-wineDark dark:border-brand-wine/50 dark:text-brand-beigeLight dark:hover:bg-brand-wine/20"
+                                    className="h-8 text-xs gap-1.5 border-brand-wine/40 text-brand-wineDark hover:bg-brand-wine/10 hover:text-brand-wineDark dark:border-brand-wine/50 dark:text-brand-beigeLight dark:hover:bg-brand-wine/20"
                                     disabled={actionLoading === bio.id}
                                     onClick={() =>
                                       rejectOpenId === bio.id ? cancelReject() : handleOpenReject(bio)
@@ -693,7 +693,7 @@ function ReviewQueueContent() {
                                           <Button
                                             size="sm"
                                             variant="outline"
-                                            className="h-7 text-xs gap-1.5 border-brand-greenDark/45 text-brand-greenDark hover:bg-brand-greenLight/40 hover:text-brand-ink dark:border-brand-greenLight dark:text-brand-greenLight dark:hover:bg-brand-greenLight/15"
+                                            className="h-7 text-xs gap-1.5 border-brand-greenDark/40 text-brand-greenDark hover:bg-brand-greenLight/40 hover:text-brand-ink dark:border-brand-greenLight dark:text-brand-greenLight dark:hover:bg-brand-greenLight/10"
                                             onClick={() => setPassageDecision(bio.id, idx, 'approved')}
                                           >
                                             <CheckCircle className="h-3 w-3" />
@@ -702,7 +702,7 @@ function ReviewQueueContent() {
                                           <Button
                                             size="sm"
                                             variant="outline"
-                                            className="h-7 text-xs gap-1.5 border-brand-wine/45 text-brand-wineDark hover:bg-brand-wine/10 hover:text-brand-wineDark dark:border-brand-wine/50 dark:text-brand-beigeLight dark:hover:bg-brand-wine/20"
+                                            className="h-7 text-xs gap-1.5 border-brand-wine/40 text-brand-wineDark hover:bg-brand-wine/10 hover:text-brand-wineDark dark:border-brand-wine/50 dark:text-brand-beigeLight dark:hover:bg-brand-wine/20"
                                             onClick={() => setPassageDecision(bio.id, idx, 'rejected')}
                                           >
                                             <XCircle className="h-3 w-3" />

@@ -133,10 +133,10 @@ export function AICoachCard({ biographies, userName, userId }: AICoachCardProps)
 
     const milestones = [];
     if (totalWords >= 100) {
-      milestones.push({ icon: PartyPopper, label: t.coach.firstHundredWords, color: 'text-brand-blue' });
+      milestones.push({ icon: PartyPopper, label: t.coach.firstHundredWords, color: 'text-brand-ink dark:text-brand-beigeLight' });
     }
     if (completedSections >= 1) {
-      milestones.push({ icon: Star, label: t.coach.firstSectionComplete, color: 'text-brand-mustardDark' });
+      milestones.push({ icon: Star, label: t.coach.firstSectionComplete, color: 'text-brand-ink dark:text-brand-beigeLight' });
     }
     if (completedBios >= 1) {
       milestones.push({ icon: Trophy, label: t.coach.biographyComplete, color: 'text-brand-greenDark dark:text-brand-greenLight' });
@@ -229,7 +229,7 @@ export function AICoachCard({ biographies, userName, userId }: AICoachCardProps)
   const suggestion = getSmartSuggestion();
 
   return (
-    <Card className="p-6 bg-gradient-to-br from-brand-blue/25 to-brand-greenLight/25 dark:from-brand-blue/15 dark:to-brand-greenLight/10 border-brand-blue/45 dark:border-brand-blue/35">
+    <Card className="p-6 bg-gradient-to-br from-brand-blue/25 to-brand-greenLight/25 dark:from-brand-blue/10 dark:to-brand-greenLight/10 border-brand-blue/40 dark:border-brand-blue/30">
       <div className="flex items-start gap-3 mb-4">
         <div className="flex items-center justify-center h-10 w-10 rounded-full bg-brand-blue text-brand-ink flex-shrink-0 dark:text-brand-beigeLight">
           <Sparkles className="h-5 w-5" />

@@ -24,14 +24,14 @@ export function StatsCards({ biographies }: StatsCardsProps) {
       value: biographies.filter((b) => b.status !== 'sections_complete').length,
       icon: FileText,
       color: 'text-text-primary dark:text-dark-text-primary',
-      bg: 'bg-status-warning',
+      bg: 'tone-warning',
     },
     {
       label: t.dashboard.sectionsComplete,
       value: biographies.filter((b) => b.status === 'sections_complete').length,
       icon: CheckCircle,
       color: 'text-text-primary dark:text-dark-text-primary',
-      bg: 'bg-status-success',
+      bg: 'tone-success',
     },
   ];
 

@@ -134,7 +134,7 @@ export function Header() {
               type="button"
               size="icon"
               data-tour-id="mobile-sidebar-toggle"
-              className="lg:hidden h-9 w-9 rounded-lg bg-black text-white hover:bg-neutral-900 hover:text-white"
+              className="lg:hidden h-9 w-9 rounded-lg bg-brand-ink text-brand-paper hover:bg-brand-ink/90 hover:text-brand-paper"
               onClick={() => window.dispatchEvent(new Event(EDITOR_SIDEBAR_TOGGLE_EVENT))}
               aria-label={editorSidebarOpen ? t.common.close : t.onboardingTour.mobileMenuTitle}
             >

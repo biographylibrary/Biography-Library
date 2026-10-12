@@ -212,7 +212,7 @@ export function ReviewPublicationDialog({
                   <p className="text-xs text-muted-foreground leading-relaxed">
                     {rp.stepSubmitDesc}
                   </p>
-                  <p className="text-xs text-muted-foreground/80 leading-relaxed border-l-2 border-border pl-2">
+                  <p className="text-xs text-muted-foreground leading-relaxed border-l-2 border-border pl-2">
                     {t.editor.publicationLegacySubmitHint}
                   </p>
                   <Button

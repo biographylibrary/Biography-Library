@@ -32,8 +32,7 @@ import {
   Star,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-
-const BRAND_TEAL = '#14B8A6';
+import { brandHex } from '@/lib/ui-palette';
 
 function biographyHref(bio: PublishedBiography): string {
   return bio.slug
@@ -50,7 +49,7 @@ function GraphicCover({ title, authorName }: { title: string; authorName: string
   return (
     <div
       style={{
-        background: BRAND_TEAL,
+        background: brandHex.greenDark,
         width: '100%',
         aspectRatio: '176 / 250',
         display: 'flex',
@@ -170,7 +169,7 @@ function BiographyCard({ bio, t, featured }: BiographyCardProps) {
     >
       <div className="relative w-full overflow-hidden rounded-t-2xl" style={{ aspectRatio: '176 / 250' }}>
         {!cover.loaded ? (
-          <div className="w-full h-full" style={{ background: BRAND_TEAL }} />
+          <div className="w-full h-full" style={{ background: brandHex.greenDark }} />
         ) : showGraphic ? (
           <GraphicCover title={graphicTitle} authorName={graphicAuthor} />
         ) : (
@@ -396,7 +395,7 @@ function PublicBiographiesPage() {
           <>
             {filtered.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-24 gap-3">
-                <BookOpen className="h-10 w-10 text-muted-foreground/40" />
+                <BookOpen className="h-10 w-10 text-muted-foreground" />
                 <p className="font-medium text-foreground">{t.publicBiographies.noResults}</p>
                 <p className="text-sm text-muted-foreground">{t.publicBiographies.noResultsSubtitle}</p>
                 <Button

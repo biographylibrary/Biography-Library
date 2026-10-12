@@ -90,7 +90,7 @@ function StatusBadge({ status }: { status: string }) {
 function PrivacyBadge({ privacy }: { privacy: string }) {
   const { t } = useTranslation();
   const map: Record<string, { label: string; className: string }> = {
-    private: { label: t.admin.bioPrivatePrivacy, className: 'bg-brand-beigeBg text-brand-ink/90 border-brand-greenDark/20 dark:bg-brand-ink/30 dark:text-brand-beigeLight/90 dark:border-brand-greenDark/35' },
+    private: { label: t.admin.bioPrivatePrivacy, className: 'bg-brand-beigeBg text-brand-ink/90 border-brand-greenDark/20 dark:bg-brand-ink/30 dark:text-brand-beigeLight/90 dark:border-brand-greenDark/30' },
     'link-only': { label: t.admin.bioFamilyPrivacy, className: 'tone-info' },
     public: { label: t.admin.bioPublicPrivacy, className: 'tone-success' },
   };
@@ -369,7 +369,7 @@ export function BiographyDetailPanel({ biography, onClose, onRefresh }: Biograph
                   {biography.status !== 'draft' && biography.status !== 'removed' && (
                     <Button
                       variant="outline"
-                      className="justify-start gap-2 border-brand-mustardDark/45 text-brand-ink hover:bg-brand-mustardLight/45 dark:border-brand-mustardDark/50 dark:text-brand-beigeLight dark:hover:bg-brand-mustardDark/25"
+                      className="justify-start gap-2 border-brand-mustardDark/40 text-brand-ink hover:bg-brand-mustardLight/40 dark:border-brand-mustardDark/50 dark:text-brand-beigeLight dark:hover:bg-brand-mustardDark/25"
                       onClick={() => setConfirmAction('set_draft')}
                       disabled={saving}
                     >
@@ -379,7 +379,7 @@ export function BiographyDetailPanel({ biography, onClose, onRefresh }: Biograph
                   {biography.status === 'draft' && (
                     <Button
                       variant="outline"
-                      className="justify-start gap-2 border-brand-mustardDark/45 text-brand-ink hover:bg-brand-mustardLight/45 dark:border-brand-mustardDark/50 dark:text-brand-beigeLight dark:hover:bg-brand-mustardDark/25"
+                      className="justify-start gap-2 border-brand-mustardDark/40 text-brand-ink hover:bg-brand-mustardLight/40 dark:border-brand-mustardDark/50 dark:text-brand-beigeLight dark:hover:bg-brand-mustardDark/25"
                       onClick={() => setConfirmAction('set_draft')}
                       disabled={true}
                       style={{ display: 'none' }}
@@ -390,7 +390,7 @@ export function BiographyDetailPanel({ biography, onClose, onRefresh }: Biograph
                   {biography.status !== 'removed' && (
                     <Button
                       variant="outline"
-                      className="justify-start gap-2 border-brand-wine/40 text-brand-wineDark hover:bg-brand-wine/10 dark:border-brand-wine/45 dark:text-brand-beigeLight dark:hover:bg-brand-wine/20"
+                      className="justify-start gap-2 border-brand-wine/40 text-brand-wineDark hover:bg-brand-wine/10 dark:border-brand-wine/40 dark:text-brand-beigeLight dark:hover:bg-brand-wine/20"
                       onClick={() => setConfirmAction('remove')}
                       disabled={saving}
                     >
@@ -400,7 +400,7 @@ export function BiographyDetailPanel({ biography, onClose, onRefresh }: Biograph
                   {biography.status === 'removed' && (
                     <Button
                       variant="outline"
-                      className="justify-start gap-2 border-brand-blue/60 text-brand-ink hover:bg-brand-blue/25 dark:border-brand-blue/45 dark:text-brand-beigeLight dark:hover:bg-brand-blue/15"
+                      className="justify-start gap-2 border-brand-blue/60 text-brand-ink hover:bg-brand-blue/25 dark:border-brand-blue/40 dark:text-brand-beigeLight dark:hover:bg-brand-blue/10"
                       onClick={() => setConfirmAction('restore')}
                       disabled={saving}
                     >
@@ -410,7 +410,7 @@ export function BiographyDetailPanel({ biography, onClose, onRefresh }: Biograph
                   {!biography.is_frozen && (
                     <Button
                       variant="outline"
-                      className="justify-start gap-2 border-brand-blue/60 text-brand-ink hover:bg-brand-blue/25 dark:border-brand-blue/45 dark:text-brand-beigeLight dark:hover:bg-brand-blue/15"
+                      className="justify-start gap-2 border-brand-blue/60 text-brand-ink hover:bg-brand-blue/25 dark:border-brand-blue/40 dark:text-brand-beigeLight dark:hover:bg-brand-blue/10"
                       onClick={() => setConfirmAction('freeze')}
                       disabled={saving}
                     >
@@ -421,7 +421,7 @@ export function BiographyDetailPanel({ biography, onClose, onRefresh }: Biograph
                   {biography.is_frozen && (
                     <Button
                       variant="outline"
-                      className="justify-start gap-2 border-brand-blue/60 text-brand-ink hover:bg-brand-blue/25 dark:border-brand-blue/45 dark:text-brand-beigeLight dark:hover:bg-brand-blue/15"
+                      className="justify-start gap-2 border-brand-blue/60 text-brand-ink hover:bg-brand-blue/25 dark:border-brand-blue/40 dark:text-brand-beigeLight dark:hover:bg-brand-blue/10"
                       onClick={() => setConfirmAction('unfreeze')}
                       disabled={saving}
                     >

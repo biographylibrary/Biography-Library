@@ -116,7 +116,7 @@ export function GuidedSectionWorkspace({
                 'text-brand-ink border-brand-ink',
                 'active:bg-brand-blue active:border-brand-blue/60 active:text-brand-ink',
                 'dark:text-brand-beigeLight dark:border-brand-beigeLight/30',
-                'dark:active:bg-brand-blue/30 dark:active:border-brand-blue/45',
+                'dark:active:bg-brand-blue/30 dark:active:border-brand-blue/40',
                 isCompleted && 'border-primary/60 text-primary'
               )}
               onClick={onMarkComplete}

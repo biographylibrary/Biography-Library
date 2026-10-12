@@ -11,6 +11,7 @@ import { Logo } from '@/components/logo';
 import { Loader as Loader2, Mail, CircleCheck as CheckCircle2, CircleAlert as AlertCircle, RefreshCw } from 'lucide-react';
 import { ThemeToggle } from '@/components/theme-toggle';
 import { postLoginPath } from '@/lib/waitlist';
+import { brandHex } from '@/lib/ui-palette';
 
 export default function VerifyEmailPage() {
   const [resendLoading, setResendLoading] = useState(false);
@@ -163,31 +164,31 @@ export default function VerifyEmailPage() {
               )}
             </div>
           ) : (
-            <div className="flex flex-col items-center gap-5 p-7 rounded-xl border text-center shadow-sm" style={{ backgroundColor: '#C4DAEB', borderColor: '#a8c9e0' }}>
-              <div className="w-16 h-16 rounded-full flex items-center justify-center" style={{ backgroundColor: '#a8c9e0' }}>
-                <Mail className="h-8 w-8" style={{ color: '#121212' }} />
+            <div className="flex flex-col items-center gap-5 p-7 rounded-xl border border-brand-blue text-center shadow-sm bg-brand-blue">
+              <div className="w-16 h-16 rounded-full flex items-center justify-center bg-brand-blue">
+                <Mail className="h-8 w-8" style={{ color: brandHex.ink }} />
               </div>
               <div className="space-y-2">
-                <h2 className="text-xl font-serif font-semibold" style={{ color: '#121212' }}>
+                <h2 className="text-xl font-serif font-semibold" style={{ color: brandHex.ink }}>
                   {t.auth.verifyEmailTitle}
                 </h2>
                 {emailForResend && (
-                  <p className="text-sm font-medium" style={{ color: '#121212' }}>
+                  <p className="text-sm font-medium" style={{ color: brandHex.ink }}>
                     {emailForResend}
                   </p>
                 )}
-                <p className="text-sm" style={{ color: '#121212' }}>
+                <p className="text-sm" style={{ color: brandHex.ink }}>
                   {t.auth.verifyEmailLinkSent}
                 </p>
-                <p className="text-xs mt-1" style={{ color: '#121212' }}>
+                <p className="text-xs mt-1" style={{ color: brandHex.ink }}>
                   {t.auth.verifyEmailAutoUpdate}
                 </p>
               </div>
 
               <div className="w-full flex items-center gap-2">
-                <div className="h-px flex-1" style={{ backgroundColor: '#a8c9e0' }} />
-                <Loader2 className="h-3.5 w-3.5 animate-spin shrink-0" style={{ color: '#121212' }} />
-                <div className="h-px flex-1" style={{ backgroundColor: '#a8c9e0' }} />
+                <div className="h-px flex-1 bg-brand-blue" />
+                <Loader2 className="h-3.5 w-3.5 animate-spin shrink-0" style={{ color: brandHex.ink }} />
+                <div className="h-px flex-1 bg-brand-blue" />
               </div>
 
               <div className="flex flex-col gap-2 w-full">
@@ -196,8 +197,8 @@ export default function VerifyEmailPage() {
                   size="sm"
                   onClick={handleManualCheck}
                   disabled={checkingStatus}
-                  className="border-[#a8c9e0] hover:bg-[#a8c9e0]/40"
-                  style={{ color: '#121212' }}
+                  className="border-brand-blue hover:bg-brand-blue/40"
+                  style={{ color: brandHex.ink }}
                 >
                   {checkingStatus ? (
                     <>
@@ -213,7 +214,7 @@ export default function VerifyEmailPage() {
                 </Button>
 
                 {resendSuccess ? (
-                  <div className="flex items-center justify-center gap-2 text-sm font-medium py-1" style={{ color: '#121212' }}>
+                  <div className="flex items-center justify-center gap-2 text-sm font-medium py-1" style={{ color: brandHex.ink }}>
                     <CheckCircle2 className="h-4 w-4" />
                     {t.auth.verifyEmailResendSuccessInline}
                   </div>
@@ -223,8 +224,8 @@ export default function VerifyEmailPage() {
                     size="sm"
                     onClick={handleResend}
                     disabled={resendLoading || !emailForResend || resendCooldown > 0}
-                    className="hover:bg-[#a8c9e0]/40 text-xs"
-                    style={{ color: '#6D323E' }}
+                    className="hover:bg-brand-blue/40 text-xs"
+                    style={{ color: brandHex.wineDark }}
                   >
                     {resendLoading ? (
                       <>
@@ -246,7 +247,7 @@ export default function VerifyEmailPage() {
             <Link
               href="/login"
               className="font-medium transition-colors hover:opacity-80"
-              style={{ color: '#6D323E' }}
+              style={{ color: brandHex.wineDark }}
             >
               {t.auth.backToLogin}
             </Link>
