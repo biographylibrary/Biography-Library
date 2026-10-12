@@ -66,8 +66,9 @@ const SCALE_PREFIXES =
   'bg|text|border|ring|divide|outline|fill|stroke|from|via|to|decoration|placeholder|accent|caret|shadow';
 
 /** Varianti dark:/hover: + prefix-(hue)-NUMBER(+ optional /opacity). */
+/** Qualsiasi catena di varianti (dark:, data-[state=open]:, peer-checked:, …). */
 const TAILWIND_SCALE = new RegExp(
-  `(?:^|[\\s"'\`])((?:(?:dark|hover|focus|active|disabled|group-hover|focus-visible|sm|md|lg|xl|2xl):)*(?:${SCALE_PREFIXES})-(?:${SCALE_HUES})-\\d{1,3}(?:/\\d{1,3})?)(?![\\w\\[/])`,
+  `(?:^|[\\s"'\`])((?:[\\w\\[\\]=\\-.%/]+:)*(?:${SCALE_PREFIXES})-(?:${SCALE_HUES})-\\d{1,3}(?:/\\d{1,3})?)(?![\\w\\[/])`,
   'g'
 );
 

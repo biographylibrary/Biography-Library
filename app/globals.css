@@ -145,6 +145,13 @@
   .dark .tone-success { background-color: rgb(200 223 190 / 0.1); }
   .dark .tone-warning { background-color: rgb(221 207 136 / 0.1); }
   .dark .tone-danger  { background-color: rgb(148 68 84 / 0.2); }
+
+  .tone-info .text-muted-foreground,
+  .tone-success .text-muted-foreground,
+  .tone-warning .text-muted-foreground,
+  .tone-danger .text-muted-foreground {
+    color: inherit;
+  }
 }
 
 @keyframes voiceBar {

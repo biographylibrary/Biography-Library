@@ -201,12 +201,12 @@ describe('notice tone contrast (WCAG)', () => {
   });
 
   it('i soli colori di testo in .tone-* sono brand-ink (#121212) e brand-beigeLight (#FDFBF7)', () => {
-    // Solo la proprietà `color` (non background-color); light vs dark separati.
+    // Solo la proprietà `color` sulle regole `.tone-*` (non discendenti come `.tone-info .text-muted-foreground`).
     const lightColorDecls = Array.from(
-      css.matchAll(/(?<!\.dark )\.tone-[^{]+\{[^}]*(?<![\w-])color:\s*([^;]+);/g)
+      css.matchAll(/(?<!\.dark )\.tone-[a-z]+(?:,\s*\.tone-[a-z]+)*\s*\{[^}]*(?<![\w-])color:\s*([^;]+);/g)
     ).map((m) => m[1].trim().toUpperCase());
     const darkColorDecls = Array.from(
-      css.matchAll(/\.dark \.tone-[^{]+\{[^}]*(?<![\w-])color:\s*([^;]+);/g)
+      css.matchAll(/\.dark \.tone-[a-z]+(?:,\s*\.dark \.tone-[a-z]+)*\s*\{[^}]*(?<![\w-])color:\s*([^;]+);/g)
     ).map((m) => m[1].trim().toUpperCase());
     expect(lightColorDecls.length).toBeGreaterThan(0);
     expect(darkColorDecls.length).toBeGreaterThan(0);
@@ -216,5 +216,21 @@ describe('notice tone contrast (WCAG)', () => {
     for (const c of darkColorDecls) {
       expect(c).toBe('#FDFBF7');
     }
+  });
+
+  it('la regola condivisa .tone-* dichiara border-width: 1px e border-color: hsl(var(--border))', () => {
+    const m = css.match(
+      /\.tone-info,\s*\.tone-success,\s*\.tone-warning,\s*\.tone-danger\s*\{([^}]*)\}/
+    );
+    expect(m).toBeTruthy();
+    const block = m![1];
+    expect(block).toMatch(/border-width:\s*1px/);
+    expect(block).toMatch(/border-color:\s*hsl\(var\(--border\)\)/);
+  });
+
+  it('dentro .tone-* il testo .text-muted-foreground eredita il colore (color: inherit)', () => {
+    expect(css).toMatch(
+      /\.tone-info \.text-muted-foreground,\s*\.tone-success \.text-muted-foreground,\s*\.tone-warning \.text-muted-foreground,\s*\.tone-danger \.text-muted-foreground\s*\{[^}]*color:\s*inherit/
+    );
   });
 });
