@@ -146,6 +146,14 @@
   .dark .tone-warning { background-color: rgb(221 207 136 / 0.1); }
   .dark .tone-danger  { background-color: rgb(148 68 84 / 0.2); }
 
+  /* Chip posti sopra una foto: fondo pieno, perché la foto sotto può essere chiara. */
+  .tone-on-image.tone-warning { background-color: #EDE4B9; }
+  .tone-on-image.tone-danger  { background-color: #EADADD; }
+  .dark .tone-on-image.tone-info    { background-color: #404647; }
+  .dark .tone-on-image.tone-success { background-color: #404643; }
+  .dark .tone-on-image.tone-warning { background-color: #42443D; }
+  .dark .tone-on-image.tone-danger  { background-color: #45383B; }
+
   .tone-info .text-muted-foreground,
   .tone-success .text-muted-foreground,
   .tone-warning .text-muted-foreground,

@@ -187,7 +187,7 @@ function BiographyCard({ bio, t, featured }: BiographyCardProps) {
           </span>
         )}
         {featured && (
-          <span className="absolute top-2 right-2 flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full tone-warning">
+          <span className="absolute top-2 right-2 flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full tone-on-image tone-warning">
             <Star className="h-3 w-3" />
             Featured
           </span>
