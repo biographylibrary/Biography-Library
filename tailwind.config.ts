@@ -73,9 +73,9 @@ const config: Config = {
         'btn-hover': '#C8DFBE',
         'error': '#944454',
         'dark-bg-main': '#1F2121',
-        'dark-bg-surface': '#656767',
+        'dark-bg-surface': '#313535',
         'dark-text-primary': '#FDFBF7',
-        'dark-text-secondary': 'rgba(167, 169, 169, 0.7)',
+        'dark-text-secondary': '#B8B8B8',
         'dark-btn-primary-bg': '#1F2121',
         'dark-btn-primary-border': '#EDEBE7',
         /** Official product palette — use for alerts, banners, callouts, badges (no random Tailwind hues). */

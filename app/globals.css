@@ -19,7 +19,7 @@
     --primary: 0 0% 7%;
     --primary-foreground: 40 60% 98%;
     --secondary: 0 0% 38%;
-    --secondary-foreground: 0 0% 7%;
+    --secondary-foreground: 40 60% 98%;
     --muted: 40 18% 91%;
     --muted-foreground: 0 0% 38%;
     --accent: 96 30% 82%;
@@ -56,16 +56,16 @@
   .dark {
     --background: 180 4% 13%;
     --foreground: 40 60% 98%;
-    --card: 0 0% 40%;
+    --card: 180 3% 20%;
     --card-foreground: 40 60% 98%;
-    --popover: 0 0% 40%;
+    --popover: 180 3% 20%;
     --popover-foreground: 40 60% 98%;
     --primary: 40 60% 98%;
     --primary-foreground: 180 4% 13%;
     --secondary: 180 2% 66%;
-    --secondary-foreground: 40 60% 98%;
-    --muted: 0 0% 40%;
-    --muted-foreground: 0 0% 66%;
+    --secondary-foreground: 180 4% 13%;
+    --muted: 180 3% 26%;
+    --muted-foreground: 0 0% 72%;
     --accent: 96 30% 82%;
     --accent-foreground: 180 4% 13%;
     --destructive: 352 38% 42%;
@@ -80,9 +80,9 @@
     --chart-5: 40 60% 98%;
 
     --bg-main: #1F2121;
-    --bg-surface: #656767;
+    --bg-surface: #313535;
     --text-primary: #FDFBF7;
-    --text-secondary: rgba(167, 169, 169, 0.7);
+    --text-secondary: #B8B8B8;
     --btn-primary-bg: #1F2121;
     --btn-primary-border: #EDEBE7;
     --btn-hover: #C8DFBE;
@@ -145,6 +145,14 @@
   .dark .tone-success { background-color: rgb(200 223 190 / 0.1); }
   .dark .tone-warning { background-color: rgb(221 207 136 / 0.1); }
   .dark .tone-danger  { background-color: rgb(148 68 84 / 0.2); }
+
+  /* Chip posti sopra una foto: fondo pieno, perché la foto sotto può essere chiara. */
+  .tone-on-image.tone-warning { background-color: #EDE4B9; }
+  .tone-on-image.tone-danger  { background-color: #EADADD; }
+  .dark .tone-on-image.tone-info    { background-color: #404647; }
+  .dark .tone-on-image.tone-success { background-color: #404643; }
+  .dark .tone-on-image.tone-warning { background-color: #42443D; }
+  .dark .tone-on-image.tone-danger  { background-color: #45383B; }
 
   .tone-info .text-muted-foreground,
   .tone-success .text-muted-foreground,
