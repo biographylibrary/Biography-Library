@@ -87,8 +87,8 @@ export function LicenseChoiceDialog({
                 htmlFor="license-by-nc-sa"
                 className={`flex gap-3 rounded-lg border p-4 cursor-pointer transition-colors ${
                   selected === LICENSE_BY_NC_SA_4
-                    ? 'border-brand-greenDark bg-brand-greenLight/20'
-                    : 'border-border hover:border-muted-foreground/40'
+                    ? 'tone-success'
+                    : 'border border-border hover:border-muted-foreground/40'
                 }`}
               >
                 <RadioGroupItem value={LICENSE_BY_NC_SA_4} id="license-by-nc-sa" className="mt-1" />
@@ -106,8 +106,8 @@ export function LicenseChoiceDialog({
                 htmlFor="license-by-sa"
                 className={`flex gap-3 rounded-lg border p-4 cursor-pointer transition-colors ${
                   selected === LICENSE_BY_SA_4
-                    ? 'border-brand-greenDark bg-brand-greenLight/20'
-                    : 'border-border hover:border-muted-foreground/40'
+                    ? 'tone-success'
+                    : 'border border-border hover:border-muted-foreground/40'
                 }`}
               >
                 <RadioGroupItem value={LICENSE_BY_SA_4} id="license-by-sa" className="mt-1" />

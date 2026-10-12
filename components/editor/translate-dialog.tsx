@@ -234,7 +234,7 @@ export function TranslateDialog({
           </div>
 
           {!canCreate ? (
-            <Alert className="bg-brand-mustardLight/40 border-brand-mustardDark/40">
+            <Alert variant="warning">
               <AlertDescription>{copy.notPublishedHint}</AlertDescription>
             </Alert>
           ) : (

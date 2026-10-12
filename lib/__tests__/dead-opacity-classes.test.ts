@@ -12,12 +12,10 @@ import { describe, expect, it } from 'vitest';
 const ROOT = join(__dirname, '../..');
 
 /**
- * Misurato a fine commit 3 su questo ramo (app + components, esclusi __tests__).
- * 146 usi / 28 varianti. Claudio ne contava 149/30 a inizio giro: commit 1 toglie
- * bg-brand-blue/15 dalla banda; commit 2d toglie border-primary/35 dai badge lingua;
- * il residuo (−1) è differenza di conteggio (vedi resoconto PR).
+ * Aggiornato dopo la migrazione degli avvisi a notice/tone (commit 4 di
+ * rifiniture-avvisi-palette): da 146 a 31. Il commit successivo porta a 0.
  */
-const BASELINE = 146;
+const BASELINE = 31;
 
 const VALID_OPACITY = new Set([0, 5, 10, 20, 25, 30, 40, 50, 60, 70, 75, 80, 90, 95, 100]);
 

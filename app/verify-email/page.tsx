@@ -117,28 +117,28 @@ export default function VerifyEmailPage() {
           </div>
 
           {confirmed ? (
-            <div className="flex flex-col items-center gap-4 p-6 rounded-xl bg-brand-greenLight/35 dark:bg-brand-greenLight/10 border border-brand-greenDark/35 dark:border-brand-greenDark/40 text-center">
-              <div className="w-14 h-14 rounded-full bg-brand-greenLight/50 dark:bg-brand-greenLight/15 flex items-center justify-center">
-                <CheckCircle2 className="h-7 w-7 text-brand-greenDark dark:text-brand-greenLight" />
+            <div className="notice tone-success flex flex-col items-center gap-4 p-6 text-center">
+              <div className="w-14 h-14 rounded-full bg-black/5 dark:bg-white/10 flex items-center justify-center">
+                <CheckCircle2 className="h-7 w-7" />
               </div>
               <div className="space-y-1">
-                <h2 className="text-xl font-serif font-semibold text-brand-ink dark:text-brand-beigeLight">
+                <h2 className="text-xl font-serif font-semibold">
                   {t.auth.verifyEmailConfirmedTitle}
                 </h2>
-                <p className="text-sm text-brand-greenDark dark:text-brand-beigeLight/90">
+                <p className="text-sm">
                   {t.auth.verifyEmailConfirmedDetail}
                 </p>
               </div>
-              <Loader2 className="h-4 w-4 animate-spin text-brand-greenDark dark:text-brand-greenLight" />
+              <Loader2 className="h-4 w-4 animate-spin" />
             </div>
           ) : verifyError ? (
-            <div className="flex flex-col items-center gap-4 p-6 rounded-xl bg-destructive/10 border border-destructive/20 text-center">
-              <div className="w-14 h-14 rounded-full bg-destructive/10 flex items-center justify-center">
-                <AlertCircle className="h-7 w-7 text-destructive" />
+            <div className="notice tone-danger flex flex-col items-center gap-4 p-6 text-center">
+              <div className="w-14 h-14 rounded-full bg-black/5 dark:bg-white/10 flex items-center justify-center">
+                <AlertCircle className="h-7 w-7" />
               </div>
               <div>
-                <p className="font-semibold text-destructive">{t.auth.verifyEmailFailedTitle}</p>
-                <p className="text-sm text-muted-foreground mt-1">
+                <p className="font-semibold">{t.auth.verifyEmailFailedTitle}</p>
+                <p className="text-sm mt-1">
                   {t.auth.verifyEmailFailedDetail}
                 </p>
               </div>

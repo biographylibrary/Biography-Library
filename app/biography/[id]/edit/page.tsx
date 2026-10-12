@@ -2082,30 +2082,30 @@ export default function BiographyEditorPage() {
       )}
 
       {isFrozen && (
-        <div className="shrink-0 bg-brand-blue/25 border-b border-brand-blue/50 px-4 py-2 flex items-center gap-3 dark:bg-brand-blue/15 dark:border-brand-blue/40">
-          <SnowflakeIcon className="h-4 w-4 text-brand-ink dark:text-brand-beigeLight shrink-0" />
-          <p className="text-xs text-brand-ink dark:text-brand-beigeLight">
+        <div className="shrink-0 tone-info border-b px-4 py-2 flex items-center gap-3">
+          <SnowflakeIcon className="h-4 w-4 shrink-0" />
+          <p className="text-xs">
             {t.admin.frozenBannerMessage}
           </p>
         </div>
       )}
 
       {publicationActionError && (
-        <div className="shrink-0 bg-brand-wine/10 border-b border-brand-wine/35 px-4 py-2">
+        <div className="shrink-0 tone-danger border-b px-4 py-2">
           <div className="max-w-5xl mx-auto">
-            <p className="text-xs text-brand-wineDark dark:text-brand-mustardLight">{publicationActionError}</p>
+            <p className="text-xs">{publicationActionError}</p>
           </div>
         </div>
       )}
 
       {biographyStatus === 'pdf_draft' && !isFrozen && (
-        <div className="shrink-0 bg-brand-mustardLight/40 border-b border-brand-mustardDark/35 px-4 py-3 dark:bg-brand-mustardDark/15 dark:border-brand-mustardDark/45">
+        <div className="shrink-0 tone-warning border-b px-4 py-3">
           <div className="max-w-5xl mx-auto flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
             <div>
-              <p className="text-sm font-medium text-brand-ink dark:text-brand-beigeLight">
+              <p className="text-sm font-medium">
                 {t.editor.publicationPdfDraftHint}
               </p>
-              <p className="text-xs text-brand-ink/80 dark:text-brand-beigeLight/85 mt-1">
+              <p className="text-xs mt-1">
                 {t.editor.reviewPublication.draftProgress.replace(
                   '{count}',
                   String(pdfDraftIteration ?? 0)
@@ -2141,10 +2141,10 @@ export default function BiographyEditorPage() {
 
       {aiScreeningResult === 'pending' &&
         (biographyStatus === 'under_review' || biographyStatus === 'locked_pending_screening') && (
-        <div className="shrink-0 bg-brand-blue/25 border-b border-brand-blue/50 px-4 py-3 dark:bg-brand-blue/15 dark:border-brand-blue/40">
+        <div className="shrink-0 tone-info border-b px-4 py-3">
           <div className="max-w-5xl mx-auto flex items-center gap-3">
-            <Loader2 className="h-4 w-4 text-brand-ink dark:text-brand-beigeLight animate-spin shrink-0" />
-            <p className="text-sm text-brand-ink dark:text-brand-beigeLight">
+            <Loader2 className="h-4 w-4 animate-spin shrink-0" />
+            <p className="text-sm">
               {t.editor.reviewPublication.screeningPendingHint}
             </p>
           </div>
@@ -2194,17 +2194,17 @@ export default function BiographyEditorPage() {
       </AlertDialog>
 
       {aiScreeningResult === 'passed' && biographyStatus === 'published' && (
-        <div className="shrink-0 bg-brand-greenLight/45 border-b border-brand-greenLight px-4 py-3 dark:bg-brand-greenLight/15 dark:border-brand-greenDark/40">
+        <div className="shrink-0 tone-success border-b px-4 py-3">
           <div className="max-w-5xl mx-auto flex items-start gap-3">
-            <Sparkles className="h-4 w-4 text-brand-greenDark dark:text-brand-greenLight shrink-0 mt-0.5" />
+            <Sparkles className="h-4 w-4 shrink-0 mt-0.5" />
             <div className="flex-1">
-              <p className="text-sm font-medium text-brand-greenDark dark:text-brand-greenLight">
+              <p className="text-sm font-medium">
                 {language === 'it' ? 'Il testo ha superato la revisione automatica.' :
                  language === 'fr' ? 'Le texte a passé la révision automatique.' :
                  language === 'de' ? 'Der Text hat die automatische Prüfung bestanden.' :
                  'Your text passed the automatic screening.'}
               </p>
-              <p className="text-xs text-brand-greenDark/90 dark:text-brand-greenLight/90 mt-1">
+              <p className="text-xs mt-1">
                 {language === 'it' ? 'Ora puoi generare la bozza PDF dalla finestra di esportazione.' :
                  language === 'fr' ? 'Vous pouvez maintenant générer le brouillon PDF depuis la fenêtre d\'exportation.' :
                  language === 'de' ? 'Sie können jetzt den PDF-Entwurf im Export-Dialog erstellen.' :
@@ -2214,7 +2214,7 @@ export default function BiographyEditorPage() {
             <Button
               size="sm"
               variant="outline"
-              className="shrink-0 h-8 text-xs border-brand-greenDark/50 text-brand-greenDark hover:bg-brand-greenLight/50 dark:border-brand-greenLight dark:text-brand-greenLight"
+              className="shrink-0 h-8 text-xs"
               onClick={() => setShowExportDialog(true)}
             >
               {language === 'it' ? 'Genera PDF' :
@@ -2228,17 +2228,17 @@ export default function BiographyEditorPage() {
 
       {aiScreeningResult === 'flagged' &&
         (biographyStatus === 'under_review' || biographyStatus === 'locked_pending_screening') && (
-        <div className="shrink-0 bg-brand-mustardLight/45 border-b border-brand-mustardDark/40 px-4 py-3 dark:bg-brand-mustardDark/20 dark:border-brand-mustardDark/50">
+        <div className="shrink-0 tone-warning border-b px-4 py-3">
           <div className="max-w-5xl mx-auto flex items-start gap-3">
-            <TriangleAlert className="h-4 w-4 text-brand-mustardDark dark:text-brand-mustardLight shrink-0 mt-0.5" />
+            <TriangleAlert className="h-4 w-4 shrink-0 mt-0.5" />
             <div>
-              <p className="text-sm font-medium text-brand-ink dark:text-brand-beigeLight">
+              <p className="text-sm font-medium">
                 {language === 'it' ? 'Alcuni passaggi richiedono revisione umana.' :
                  language === 'fr' ? 'Certains passages nécessitent une révision humaine.' :
                  language === 'de' ? 'Einige Passagen erfordern eine manuelle Prüfung.' :
                  'Some passages require human review before proceeding.'}
               </p>
-              <p className="text-xs text-brand-ink/80 dark:text-brand-beigeLight/85 mt-1">
+              <p className="text-xs mt-1">
                 {language === 'it' ? 'Riceverai una notifica quando la revisione sarà completata.' :
                  language === 'fr' ? 'Vous serez notifié lorsque la révision sera terminée.' :
                  language === 'de' ? 'Sie werden benachrichtigt, wenn die Überprüfung abgeschlossen ist.' :
@@ -2251,12 +2251,12 @@ export default function BiographyEditorPage() {
 
       {(aiScreeningResult === 'ai_error' || aiScreeningResult === 'parse_error') &&
         (biographyStatus === 'under_review' || biographyStatus === 'locked_pending_screening') && (
-          <div className="shrink-0 bg-brand-wine/10 border-b border-brand-wine/35 px-4 py-3 dark:bg-brand-wine/20 dark:border-brand-wine/45">
+          <div className="shrink-0 tone-danger border-b px-4 py-3">
             <div className="max-w-5xl mx-auto flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
               <div className="flex items-start gap-3">
-                <TriangleAlert className="h-4 w-4 text-brand-wine dark:text-brand-beigeLight shrink-0 mt-0.5" />
+                <TriangleAlert className="h-4 w-4 shrink-0 mt-0.5" />
                 <div>
-                  <p className="text-sm font-medium text-brand-wineDark dark:text-brand-beigeLight">
+                  <p className="text-sm font-medium">
                     {aiScreeningResult === 'parse_error'
                       ? language === 'it'
                         ? 'La risposta dell’analisi automatica non è stata letta correttamente. È stata avviata una revisione umana.'
@@ -2273,7 +2273,7 @@ export default function BiographyEditorPage() {
                             ? 'Die automatische Analyse ist fehlgeschlagen (Dienst vorübergehend nicht verfügbar). Eine manuelle Prüfung wurde eingeleitet.'
                             : 'Automatic screening could not complete (service issue). Your biography was sent for human review.'}
                   </p>
-                  <p className="text-xs text-brand-wineDark/90 dark:text-brand-beigeLight/85 mt-1">
+                  <p className="text-xs mt-1">
                     {language === 'it'
                       ? 'Puoi riprovare l’analisi automatica tra qualche minuto, oppure attendere il moderatore.'
                       : language === 'fr'
@@ -2288,7 +2288,7 @@ export default function BiographyEditorPage() {
                 type="button"
                 variant="outline"
                 size="sm"
-                className="shrink-0 border-brand-wine/50 text-brand-wineDark hover:bg-brand-wine/10 dark:border-brand-beigeLight/40 dark:text-brand-beigeLight"
+                className="shrink-0"
                 disabled={isSubmittingForReview}
                 onClick={() => void handleSubmitForReview()}
               >
@@ -2309,17 +2309,17 @@ export default function BiographyEditorPage() {
         )}
 
       {isRevisionMode && (
-        <div className="shrink-0 border-b border-brand-mustardDark/40 bg-brand-mustardLight/45 px-4 py-3 dark:border-brand-mustardDark/50 dark:bg-brand-mustardDark/20">
+        <div className="shrink-0 tone-warning border-b px-4 py-3">
           <div className="max-w-5xl mx-auto">
             <div className="flex items-start gap-3">
-              <TriangleAlert className="h-4 w-4 text-brand-mustardDark dark:text-brand-mustardLight shrink-0 mt-0.5" />
+              <TriangleAlert className="h-4 w-4 shrink-0 mt-0.5" />
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-brand-ink dark:text-brand-beigeLight mb-2">
+                <p className="text-sm font-medium mb-2">
                   {t.editor.revisionRequired}
                 </p>
                 <ul className="space-y-1 mb-2">
                   {revisionPassages.map((p, i) => (
-                    <li key={i} className="flex items-start gap-2 text-xs text-brand-ink/85 dark:text-brand-beigeLight/85">
+                    <li key={i} className="flex items-start gap-2 text-xs">
                       <Lock className="h-3 w-3 shrink-0 mt-0.5" />
                       <span>
                         <span className="font-medium">
@@ -2333,7 +2333,7 @@ export default function BiographyEditorPage() {
                   ))}
                 </ul>
                 {revisionNote && (
-                  <p className="text-xs text-brand-ink/85 dark:text-brand-beigeLight/85">
+                  <p className="text-xs">
                     <span className="font-medium">{t.editor.revisionReviewerNote}:</span>{' '}
                     {revisionNote}
                   </p>
@@ -2343,7 +2343,7 @@ export default function BiographyEditorPage() {
                 <button
                   type="button"
                   onClick={() => setRevisionBannerDismissed(true)}
-                  className="text-xs text-brand-mustardDark dark:text-brand-mustardLight hover:text-brand-ink dark:hover:text-brand-beigeLight transition-colors underline"
+                  className="text-xs underline transition-colors opacity-90 hover:opacity-100"
                 >
                   {t.editor.revisionDismiss}
                 </button>

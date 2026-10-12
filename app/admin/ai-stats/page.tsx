@@ -223,8 +223,8 @@ function AiStatsContent() {
     <div className="max-w-5xl mx-auto">
         <div className="flex items-start justify-between gap-4 mb-8 flex-wrap">
           <div className="flex items-center gap-3">
-            <div className="p-2.5 rounded-xl bg-[#C4DAEB] dark:bg-[#C4DAEB]/20 shrink-0">
-              <BrainCircuit className="h-5 w-5 text-[#121212] dark:text-[#FDFBF7]" />
+            <div className="p-2.5 rounded-xl tone-info shrink-0">
+              <BrainCircuit className="h-5 w-5" />
             </div>
             <div>
               <h1 className="text-2xl font-serif font-semibold tracking-tight text-foreground">
@@ -247,13 +247,13 @@ function AiStatsContent() {
           </Select>
         </div>
 
-        <div className="flex items-center gap-2 px-4 py-3 rounded-xl bg-brand-blue/25 dark:bg-brand-blue/10 border border-brand-blue/45 dark:border-brand-blue/35 text-brand-ink dark:text-brand-blue text-sm mb-8">
+        <div className="notice tone-info flex items-center gap-2 px-4 py-3 text-sm mb-8">
           <Info className="h-4 w-4 shrink-0" />
           <span>{t.admin.aiStatsDataNote}</span>
         </div>
 
         {error && (
-          <div className="mb-6 p-4 rounded-xl bg-brand-wine/10 dark:bg-brand-wine/15 text-sm text-brand-wineDark dark:text-brand-mustardLight">
+          <div className="notice tone-danger mb-6 p-4 text-sm">
             {error}
           </div>
         )}

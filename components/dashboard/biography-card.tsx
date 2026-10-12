@@ -16,27 +16,27 @@ export function BiographyCard({ biography, onEdit, onDelete }: BiographyCardProp
   const { t } = useTranslation();
 
   const privacyConfig: Record<string, { icon: typeof Lock; label: string; className: string }> = {
-    private: { icon: Lock, label: t.dashboard.private, className: 'text-brand-ink bg-brand-beigeBg/80 dark:bg-brand-ink/30 dark:text-brand-beigeLight' },
-    'link-only': { icon: Users, label: t.dashboard.family, className: 'text-brand-ink bg-brand-blue/35 dark:bg-brand-blue/15 dark:text-brand-blue' },
-    public: { icon: Globe, label: t.dashboard.public, className: 'text-brand-greenDark bg-brand-greenLight/45 dark:bg-brand-greenLight/15 dark:text-brand-greenLight' },
+    private: { icon: Lock, label: t.dashboard.private, className: 'bg-brand-beigeBg/80 text-brand-ink dark:bg-brand-ink/30 dark:text-brand-beigeLight' },
+    'link-only': { icon: Users, label: t.dashboard.family, className: 'tone-info' },
+    public: { icon: Globe, label: t.dashboard.public, className: 'tone-success' },
   };
 
   const statusConfig: Record<string, { label: string; className: string }> = {
-    draft: { label: t.dashboard.draft, className: 'text-[#121212] bg-[#DDCF88] dark:bg-[#DDCF88]/20 dark:text-[#DDCF88]' },
-    sections_complete: { label: t.dashboard.sectionsComplete, className: 'text-brand-ink bg-brand-blue/30 dark:bg-brand-blue/15 dark:text-brand-blue' },
-    final_version: { label: t.dashboard.finalVersion, className: 'text-brand-ink bg-brand-mustardLight/60 dark:bg-brand-mustardDark/25 dark:text-brand-mustardLight' },
-    under_review: { label: t.dashboard.statusUnderReview, className: 'text-[#121212] bg-[#DDCF88] dark:bg-[#DDCF88]/20 dark:text-[#DDCF88]' },
-    pdf_draft: { label: t.dashboard.statusPdfDraft, className: 'text-[#121212] bg-[#DDCF88]/90 dark:bg-[#DDCF88]/20 dark:text-[#DDCF88]' },
+    draft: { label: t.dashboard.draft, className: 'tone-warning' },
+    sections_complete: { label: t.dashboard.sectionsComplete, className: 'tone-info' },
+    final_version: { label: t.dashboard.finalVersion, className: 'tone-warning' },
+    under_review: { label: t.dashboard.statusUnderReview, className: 'tone-warning' },
+    pdf_draft: { label: t.dashboard.statusPdfDraft, className: 'tone-warning' },
     locked_pending_screening: {
       label: t.dashboard.statusLockedPendingScreening,
-      className: 'text-brand-ink bg-brand-blue/30 dark:bg-brand-blue/15 dark:text-brand-blue',
+      className: 'tone-info',
     },
-    published: { label: t.dashboard.statusPublished, className: 'text-brand-greenDark bg-brand-greenLight/45 dark:bg-brand-greenLight/15 dark:text-brand-greenLight' },
-    removed: { label: t.dashboard.statusRemoved, className: 'text-brand-paper bg-brand-wineDark' },
-    suspended_pending_verification: { label: t.dashboard.statusSuspendedPendingVerification, className: 'text-brand-paper bg-brand-wineDark' },
-    revision_requested: { label: t.dashboard.statusRevisionRequested, className: 'text-[#121212] bg-[#DDCF88] dark:bg-[#DDCF88]/20 dark:text-[#DDCF88]' },
-    revision_pending_review: { label: t.dashboard.statusRevisionPendingReview, className: 'text-[#121212] bg-[#DDCF88] dark:bg-[#DDCF88]/20 dark:text-[#DDCF88]' },
-    revision_overdue: { label: t.dashboard.statusRevisionOverdue, className: 'text-brand-paper bg-brand-wineDark' },
+    published: { label: t.dashboard.statusPublished, className: 'tone-success' },
+    removed: { label: t.dashboard.statusRemoved, className: 'tone-danger' },
+    suspended_pending_verification: { label: t.dashboard.statusSuspendedPendingVerification, className: 'tone-danger' },
+    revision_requested: { label: t.dashboard.statusRevisionRequested, className: 'tone-warning' },
+    revision_pending_review: { label: t.dashboard.statusRevisionPendingReview, className: 'tone-warning' },
+    revision_overdue: { label: t.dashboard.statusRevisionOverdue, className: 'tone-danger' },
   };
 
   const isUnderReview = biography.status === 'under_review';

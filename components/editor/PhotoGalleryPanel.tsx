@@ -710,7 +710,7 @@ export function PhotoGalleryPanel({ biographyId, onClose, embedded }: PhotoGalle
   const panelBody = (
     <>
       {errorMsg && (
-        <div className="text-sm text-brand-wineDark dark:text-brand-beigeLight bg-brand-wine/10 dark:bg-brand-wine/20 rounded-lg px-3 py-2 border border-brand-wine/25">
+        <div className="notice tone-danger text-sm px-3 py-2">
           {errorMsg}
         </div>
       )}

@@ -69,13 +69,10 @@ export function PendingTodosCard() {
     return isPast(new Date(dueDate)) && !isToday(new Date(dueDate));
   };
 
-  const getPriorityColor = (priority: string) => {
-    const colors = {
-      low: 'text-brand-greenDark dark:text-brand-beigeLight/75',
-      medium: 'text-[#121212] dark:text-[#DDCF88]',
-      high: 'text-brand-wine dark:text-brand-mustardLight',
-    };
-    return colors[priority as keyof typeof colors] || colors.medium;
+  const getPriorityVariant = (priority: string): 'info' | 'warning' | 'danger' => {
+    if (priority === 'low') return 'info';
+    if (priority === 'high') return 'danger';
+    return 'warning';
   };
 
   const getSectionTitle = (sectionKey: string) => {
@@ -151,7 +148,7 @@ export function PendingTodosCard() {
                   key={todo.id}
                   className={cn(
                     'p-3 cursor-pointer hover:bg-muted/50 transition-colors',
-                    isOverdue && 'border-brand-wine/45 bg-brand-wine/8 dark:bg-brand-wine/15'
+                    isOverdue && 'tone-danger'
                   )}
                   onClick={() => handleNavigate(todo.biography_id, todo.section)}
                 >
@@ -182,8 +179,8 @@ export function PendingTodosCard() {
 
                     <div className="flex items-center gap-2 flex-wrap">
                       <Badge
-                        variant="outline"
-                        className={cn('text-xs', getPriorityColor(todo.priority))}
+                        variant={getPriorityVariant(todo.priority)}
+                        className="text-xs"
                       >
                         {todo.priority === 'low' && 'Bassa'}
                         {todo.priority === 'medium' && 'Media'}
@@ -195,7 +192,7 @@ export function PendingTodosCard() {
                           variant="outline"
                           className={cn(
                             'gap-1 text-xs',
-                            isOverdue && 'border-brand-wine text-brand-wineDark bg-brand-wine/10 dark:bg-brand-wine/20 dark:text-brand-mustardLight'
+                            isOverdue && 'tone-danger'
                           )}
                         >
                           <CalendarIcon className="h-3 w-3" />

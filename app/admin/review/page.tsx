@@ -72,20 +72,20 @@ function fmtDate(iso: string) {
 function SeverityBadge({ severity }: { severity: number }) {
   if (severity >= 3) {
     return (
-      <Badge className="bg-brand-wine/15 text-brand-wineDark border border-brand-wine/35 dark:bg-brand-wine/25 dark:text-brand-beigeLight dark:border-brand-wine/45 text-xs font-medium">
+      <Badge variant="danger" className="text-xs font-medium">
         Severity {severity}
       </Badge>
     );
   }
   if (severity === 2) {
     return (
-      <Badge className="bg-brand-mustardLight/70 text-brand-ink border border-brand-mustardDark/45 dark:bg-brand-mustardDark/25 dark:text-brand-beigeLight dark:border-brand-mustardDark/50 text-xs font-medium">
+      <Badge variant="warning" className="text-xs font-medium">
         Severity {severity}
       </Badge>
     );
   }
   return (
-    <Badge className="bg-brand-mustardLight/45 text-brand-ink border border-brand-mustardDark/40 dark:bg-brand-mustardDark/20 dark:text-brand-mustardLight dark:border-brand-mustardDark/45 text-xs font-medium">
+    <Badge variant="warning" className="text-xs font-medium">
       Severity {severity}
     </Badge>
   );
@@ -447,8 +447,8 @@ function ReviewQueueContent() {
   return (
     <>
         <div className="flex items-center gap-3 mb-8">
-          <div className="p-2.5 rounded-xl bg-[#DDCF88]/30 dark:bg-[#DDCF88]/20 shrink-0">
-            <ClipboardList className="h-5 w-5 text-[#121212] dark:text-[#FDFBF7]" />
+          <div className="p-2.5 rounded-xl tone-warning shrink-0">
+            <ClipboardList className="h-5 w-5" />
           </div>
           <div>
             <h1 className="text-2xl font-serif font-semibold tracking-tight text-foreground">
@@ -459,7 +459,7 @@ function ReviewQueueContent() {
         </div>
 
         {loadError && (
-          <div className="mb-4 p-4 rounded-xl bg-brand-wine/10 border border-brand-wine/25 text-sm text-brand-wineDark dark:bg-brand-wine/20 dark:border-brand-wine/35 dark:text-brand-beigeLight">
+          <div className="notice tone-danger mb-4 p-4 text-sm">
             {loadError}
           </div>
         )}
@@ -665,9 +665,9 @@ function ReviewQueueContent() {
                                       key={idx}
                                       className={cn(
                                         'rounded-lg border p-4 transition-colors',
-                                        decision === 'approved' && 'border-brand-greenLight bg-brand-greenLight/35 dark:border-brand-greenDark/50 dark:bg-brand-greenLight/10',
-                                        decision === 'rejected' && 'border-brand-wine/35 bg-brand-wine/8 dark:border-brand-wine/45 dark:bg-brand-wine/15',
-                                        !decision && 'border-border bg-background'
+                                        decision === 'approved' && 'tone-success',
+                                        decision === 'rejected' && 'tone-danger',
+                                        !decision && 'border border-border bg-background'
                                       )}
                                     >
                                       <div className="flex items-center justify-between mb-2 gap-2 flex-wrap">

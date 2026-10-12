@@ -89,12 +89,7 @@ export function AdminNav() {
                 {item.icon}
                 {item.label}
                 {item.badge !== undefined && (
-                  <span className={cn(
-                    'inline-flex items-center justify-center min-w-[1.25rem] h-5 px-1.5 rounded-full text-xs font-semibold tabular-nums',
-                    isActive
-                      ? 'bg-[#DDCF88] text-[#121212]'
-                      : 'bg-[#DDCF88] text-[#121212]'
-                  )}>
+                  <span className="inline-flex items-center justify-center min-w-[1.25rem] h-5 px-1.5 rounded-full text-xs font-semibold tabular-nums tone-warning">
                     {item.badge}
                   </span>
                 )}

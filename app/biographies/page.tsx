@@ -165,7 +165,7 @@ function BiographyCard({ bio, t, featured }: BiographyCardProps) {
       href={href}
       className={cn(
         'group flex flex-col rounded-2xl border border-border bg-card hover:border-primary/30 hover:shadow-lg transition-all duration-200 overflow-hidden',
-        featured && 'ring-1 ring-amber-200 dark:ring-amber-800/60'
+        featured && 'ring-1 ring-border'
       )}
     >
       <div className="relative w-full overflow-hidden rounded-t-2xl" style={{ aspectRatio: '176 / 250' }}>
@@ -188,7 +188,7 @@ function BiographyCard({ bio, t, featured }: BiographyCardProps) {
           </span>
         )}
         {featured && (
-          <span className="absolute top-2 right-2 flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full bg-[#DDCF88] text-[#121212]">
+          <span className="absolute top-2 right-2 flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full tone-warning">
             <Star className="h-3 w-3" />
             Featured
           </span>
@@ -210,7 +210,7 @@ function BiographyCard({ bio, t, featured }: BiographyCardProps) {
             {typeLabel}
           </span>
           {isWithinProvisionalWindow(bio.provisional_until) && (
-            <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-[#DDCF88] text-[#121212]">
+            <span className="text-xs font-medium px-2 py-0.5 rounded-full tone-warning">
               {t.publicBiographies.provisionalMark}
             </span>
           )}
