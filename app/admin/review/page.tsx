@@ -548,7 +548,7 @@ function ReviewQueueContent() {
                               {bio.title.slice(0, 50)}{bio.title.length > 50 ? '…' : ''}
                             </span>
                             {isAiReview && (
-                              <span className="text-xs text-brand-mustardDark dark:text-brand-mustardLight mt-0.5 block">
+                              <span className="text-xs text-foreground mt-0.5 block">
                                 {passages.length} {t.admin.reviewFlaggedPassages}
                               </span>
                             )}
@@ -801,7 +801,7 @@ function ReviewQueueContent() {
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle className="flex items-center gap-2">
-              <AlertTriangle className="h-5 w-5 text-brand-mustardDark dark:text-brand-mustardLight" />
+              <AlertTriangle className="h-5 w-5 text-foreground" />
               {t.admin.reviewConflictTitle}
             </AlertDialogTitle>
             <AlertDialogDescription>

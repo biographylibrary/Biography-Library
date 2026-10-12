@@ -33,7 +33,7 @@ type StepConfig = {
 
 const steps: StepConfig[] = [
   {
-    icon: <Lock className="h-6 w-6 text-brand-mustardDark dark:text-brand-mustardLight" />,
+    icon: <Lock className="h-6 w-6 text-foreground" />,
     title: {
       en: 'Your biography will become read-only',
       it: 'La tua biografia diventerà di sola lettura',
@@ -54,7 +54,7 @@ const steps: StepConfig[] = [
     },
   },
   {
-    icon: <Sparkles className="h-6 w-6 text-brand-blue dark:text-brand-beigeLight" />,
+    icon: <Sparkles className="h-6 w-6 text-foreground" />,
     title: {
       en: 'What happens next',
       it: 'Cosa succede dopo',

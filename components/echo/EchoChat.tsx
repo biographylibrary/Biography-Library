@@ -335,7 +335,7 @@ export function EchoChat({
             className={cn(
               'rounded-lg px-3 py-2 max-w-[90%] scroll-mt-1 text-[length:var(--writing-size)] max-sm:!text-[length:calc(var(--writing-size)*0.85)]',
               m.role === 'user'
-                ? 'ml-auto bg-brand-greenLight text-brand-greenDark dark:bg-brand-greenLight/25 dark:text-brand-greenLight'
+                ? 'ml-auto bg-brand-greenLight text-brand-ink dark:bg-brand-greenLight/25 dark:text-brand-greenLight'
                 : m.isUsageGuide
                   ? cn(
                       'mr-auto border border-border bg-primary/5 text-foreground',

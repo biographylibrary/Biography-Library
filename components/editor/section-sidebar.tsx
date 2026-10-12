@@ -193,9 +193,9 @@ export function SectionSidebar({
     public: t.dashboard.public,
   };
   const saveStatusConfig: Record<SaveStatus, { icon: typeof Check; text: string; className: string }> = {
-    saved: { icon: Check, text: t.common.saved, className: 'text-[#5E685A] dark:text-[#C8DFBE]' },
+    saved: { icon: Check, text: t.common.saved, className: 'text-brand-greenDark dark:text-brand-greenLight' },
     saving: { icon: Loader2, text: t.common.saving, className: 'text-muted-foreground' },
-    unsaved: { icon: CloudOff, text: t.editor.unsaved, className: 'text-brand-mustardDark dark:text-brand-mustardLight' },
+    unsaved: { icon: CloudOff, text: t.editor.unsaved, className: 'text-foreground' },
     error: { icon: CloudOff, text: t.editor.saveFailed, className: 'text-destructive' },
   };
   const status = saveStatusConfig[saveStatus];

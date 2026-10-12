@@ -67,4 +67,27 @@ describe('notice-bar e uso di tone-*', () => {
     }
     expect(hits, hits.join('\n')).toEqual([]);
   });
+
+  it('nessun text-brand chiaro (blue/greenLight/mustard*) senza prefisso dark:', () => {
+    // Classi vietate su fondo chiaro senza dark: (regola 4).
+    const LIGHT_TEXT =
+      /(?:^|[\s"'`])((?:[\w\[\]=\-.%/]+:)*text-(?:brand-(?:blue|greenLight|mustardLight|mustardDark)|\[#[Cc]4[Dd][Aa][Ee][Bb]\]|\[#[Cc]8[Dd][Ff][Bb][Ee]\]|\[#[Ee][Dd][Ee]4[Bb]9\]|\[#[Dd][Dd][Cc][Ff]88\]))(?=[\s"'`]|$)/g;
+    const hits: string[] = [];
+    for (const dir of ['app', 'components']) {
+      for (const file of walkTsx(join(ROOT, dir))) {
+        const rel = relative(ROOT, file).replace(/\\/g, '/');
+        readFileSync(file, 'utf8')
+          .split(/\n/)
+          .forEach((line, idx) => {
+            for (const m of Array.from(line.matchAll(LIGHT_TEXT))) {
+              const token = m[1]!;
+              const variants = token.split(':').slice(0, -1);
+              if (variants.includes('dark')) continue;
+              hits.push(`${rel}:${idx + 1} ${token}`);
+            }
+          });
+      }
+    }
+    expect(hits, hits.join('\n')).toEqual([]);
+  });
 });

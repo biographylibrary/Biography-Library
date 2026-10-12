@@ -231,7 +231,7 @@ export function AICoachCard({ biographies, userName, userId }: AICoachCardProps)
   return (
     <Card className="p-6 bg-gradient-to-br from-brand-blue/25 to-brand-greenLight/25 dark:from-brand-blue/10 dark:to-brand-greenLight/10 border-brand-blue/40 dark:border-brand-blue/30">
       <div className="flex items-start gap-3 mb-4">
-        <div className="flex items-center justify-center h-10 w-10 rounded-full bg-brand-blue text-brand-ink flex-shrink-0 dark:text-brand-beigeLight">
+        <div className="flex items-center justify-center h-10 w-10 rounded-full bg-brand-blue text-brand-ink flex-shrink-0">
           <Sparkles className="h-5 w-5" />
         </div>
         <div className="flex-1">
