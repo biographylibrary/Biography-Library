@@ -4,6 +4,7 @@ import { useEffect, useState, useMemo, useCallback } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { BookOpen, Search, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useTranslation } from '@/lib/i18n/i18n-context';
+import { countLabel } from '@/lib/i18n/count-label';
 import { supabase } from '@/lib/supabase';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -64,7 +65,7 @@ function fmtDate(iso: string | null) {
 }
 
 function AdminBiographiesContent() {
-  const { t } = useTranslation();
+  const { t, language } = useTranslation();
   const searchParams = useSearchParams();
   const [biographies, setBiographies] = useState<AdminBiographyRow[]>([]);
   const [loading, setLoading] = useState(false);
@@ -272,7 +273,12 @@ function AdminBiographiesContent() {
           </Select>
 
           <span className="text-sm text-muted-foreground ml-auto tabular-nums">
-            {filtered.length} {filtered.length === 1 ? 'biography' : 'biographies'}
+            {countLabel(
+              language,
+              filtered.length,
+              t.admin.bioCountOne,
+              t.admin.bioCountOther
+            )}
           </span>
         </div>
 

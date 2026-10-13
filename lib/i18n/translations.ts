@@ -258,6 +258,8 @@ export interface Translations {
     description: string;
     exportReviewLocked: string;
     pdfPreview: string;
+    previewAction: string;
+    previewGenerating: string;
     pdfNotice: string;
     formatLabel: string;
     contentLabel: string;
@@ -1424,6 +1426,10 @@ export interface Translations {
     bioSortOldest: string;
     bioSortRecentlyPublished: string;
     bioSortMostViews: string;
+    bioCountOne: string;
+    bioCountOther: string;
+    usersCountOne: string;
+    usersCountOther: string;
     bioColTitle: string;
     bioColAuthor: string;
     bioColType: string;
@@ -1497,6 +1503,7 @@ export interface Translations {
     typeMemorial: string;
     provisionalMark: string;
     pioneer: string;
+    featured: string;
     langAll: string;
     chaptersCount: string;
     publishedOn: string;
@@ -2009,6 +2016,7 @@ export const translations: Record<Language, Translations> = {
       language: 'Language',
       languageLockedHint: 'Chosen at registration and cannot be changed.',
     },
+    /* accountSettings appearance keys: commit 2 */
     dashboard: {
       title: 'My Biographies',
       createBiography: 'Create New Biography',
@@ -2134,6 +2142,8 @@ export const translations: Record<Language, Translations> = {
       description: 'Choose the format. The whole page is exported.',
       exportReviewLocked: 'Export is paused while the biography is being reviewed. You can download it again when the review is finished.',
       pdfPreview: 'PDF preview',
+      previewAction: 'Preview',
+      previewGenerating: 'Generating preview...',
       pdfNotice: 'PDF export is only available once the biography has been completed and approved. You can export in TXT, RTF, and DOCX formats in the meantime.',
       formatLabel: 'Export format',
       contentLabel: 'Content selection',
@@ -3336,6 +3346,10 @@ export const translations: Record<Language, Translations> = {
       bioSortOldest: 'Oldest first',
       bioSortRecentlyPublished: 'Recently published',
       bioSortMostViews: 'Most views',
+      bioCountOne: '{count} biography',
+      bioCountOther: '{count} biographies',
+      usersCountOne: '{count} user',
+      usersCountOther: '{count} users',
       bioColTitle: 'Title',
       bioColAuthor: 'Author',
       bioColType: 'Type',
@@ -3409,6 +3423,7 @@ export const translations: Record<Language, Translations> = {
       typeMemorial: 'Memorial',
       provisionalMark: 'In the first 30 days',
       pioneer: 'Pioneer',
+      featured: 'Featured',
       langAll: 'All languages',
       chaptersCount: 'Chapters',
       publishedOn: 'Published',
@@ -4006,6 +4021,8 @@ export const translations: Record<Language, Translations> = {
       description: 'Scegli il formato. Esce tutto il foglio.',
       exportReviewLocked: 'L\'esportazione è in pausa finché la biografia è in revisione. Potrai scaricarla di nuovo quando il controllo è finito.',
       pdfPreview: 'Anteprima PDF',
+      previewAction: 'Anteprima',
+      previewGenerating: 'Creazione dell\'anteprima...',
       pdfNotice: 'L\'esportazione in PDF è disponibile solo una volta che la biografia è stata completata e approvata. Per ora puoi esportare nei formati TXT, RTF e DOCX.',
       formatLabel: 'Formato di esportazione',
       contentLabel: 'Selezione contenuto',
@@ -5210,6 +5227,10 @@ export const translations: Record<Language, Translations> = {
       bioSortOldest: 'Meno recenti',
       bioSortRecentlyPublished: 'Pubblicati di recente',
       bioSortMostViews: 'Più visualizzate',
+      bioCountOne: '{count} biografia',
+      bioCountOther: '{count} biografie',
+      usersCountOne: '{count} utente',
+      usersCountOther: '{count} utenti',
       bioColTitle: 'Titolo',
       bioColAuthor: 'Autore',
       bioColType: 'Tipo',
@@ -5283,6 +5304,7 @@ export const translations: Record<Language, Translations> = {
       typeMemorial: 'Memoriale',
       provisionalMark: 'Nei primi 30 giorni',
       pioneer: 'Pioniere',
+      featured: 'In evidenza',
       langAll: 'Tutte le lingue',
       chaptersCount: 'Capitoli',
       publishedOn: 'Pubblicato',
@@ -5880,6 +5902,8 @@ export const translations: Record<Language, Translations> = {
       description: 'Choisissez le format. Toute la page est exportée.',
       exportReviewLocked: 'L\'export est en pause pendant la révision. Vous pourrez le télécharger à nouveau quand le contrôle sera terminé.',
       pdfPreview: 'Aperçu PDF',
+      previewAction: 'Aperçu',
+      previewGenerating: 'Création de l\'aperçu...',
       pdfNotice: "L'exportation en PDF n'est disponible qu'une fois la biographie terminée et approuvée. Vous pouvez exporter aux formats TXT, RTF et DOCX en attendant.",
       formatLabel: "Format d'exportation",
       contentLabel: 'Sélection du contenu',
@@ -7085,6 +7109,10 @@ export const translations: Record<Language, Translations> = {
       bioSortOldest: 'Plus anciennes',
       bioSortRecentlyPublished: 'Récemment publiées',
       bioSortMostViews: 'Plus vues',
+      bioCountOne: '{count} biographie',
+      bioCountOther: '{count} biographies',
+      usersCountOne: '{count} utilisateur',
+      usersCountOther: '{count} utilisateurs',
       bioColTitle: 'Titre',
       bioColAuthor: 'Auteur',
       bioColType: 'Type',
@@ -7158,6 +7186,7 @@ export const translations: Record<Language, Translations> = {
       typeMemorial: 'Mémorial',
       provisionalMark: 'Dans les 30 premiers jours',
       pioneer: 'Pionnier',
+      featured: 'À la une',
       langAll: 'Toutes les langues',
       chaptersCount: 'Chapitres',
       publishedOn: 'Publié',
@@ -7755,6 +7784,8 @@ export const translations: Record<Language, Translations> = {
       description: 'Wählen Sie das Format. Die ganze Seite wird exportiert.',
       exportReviewLocked: 'Der Export pausiert, solange die Biografie geprüft wird. Sie können ihn wieder laden, wenn die Prüfung fertig ist.',
       pdfPreview: 'PDF-Vorschau',
+      previewAction: 'Vorschau',
+      previewGenerating: 'Vorschau wird erstellt...',
       pdfNotice: 'Der PDF-Export ist erst verfügbar, wenn die Biografie abgeschlossen und genehmigt wurde. In der Zwischenzeit können Sie in den Formaten TXT, RTF und DOCX exportieren.',
       formatLabel: 'Exportformat',
       contentLabel: 'Inhaltsauswahl',
@@ -8959,6 +8990,10 @@ export const translations: Record<Language, Translations> = {
       bioSortOldest: 'Älteste zuerst',
       bioSortRecentlyPublished: 'Zuletzt veröffentlicht',
       bioSortMostViews: 'Meiste Aufrufe',
+      bioCountOne: '{count} Biografie',
+      bioCountOther: '{count} Biografien',
+      usersCountOne: '{count} Benutzer',
+      usersCountOther: '{count} Benutzer',
       bioColTitle: 'Titel',
       bioColAuthor: 'Autor',
       bioColType: 'Typ',
@@ -9032,6 +9067,7 @@ export const translations: Record<Language, Translations> = {
       typeMemorial: 'Gedenkschrift',
       provisionalMark: 'In den ersten 30 Tagen',
       pioneer: 'Pionier',
+      featured: 'Ausgewählt',
       langAll: 'Alle Sprachen',
       chaptersCount: 'Kapitel',
       publishedOn: 'Veröffentlicht',

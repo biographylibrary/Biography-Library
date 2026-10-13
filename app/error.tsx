@@ -2,6 +2,7 @@
 
 import { useEffect } from 'react';
 import { Button } from '@/components/ui/button';
+import { useTranslation } from '@/lib/i18n/i18n-context';
 import { logger } from '@/lib/logger';
 
 export default function Error({
@@ -11,6 +12,8 @@ export default function Error({
   error: Error & { digest?: string };
   reset: () => void;
 }) {
+  const { t } = useTranslation();
+
   useEffect(() => {
     console.error('[App Error]', error);
     logger.critical('Unhandled app error', {
@@ -25,14 +28,14 @@ export default function Error({
 
   return (
     <div className="flex flex-col items-center justify-center h-full gap-6 p-8 text-center">
-      <h2 className="text-2xl">Something went wrong</h2>
+      <h2 className="text-2xl">{t.errors.title}</h2>
       <p className="text-muted-foreground max-w-md">
-        An unexpected error occurred. Your work has been saved automatically.
+        {t.errors.description}
       </p>
       <div className="flex gap-3">
-        <Button onClick={reset}>Try again</Button>
+        <Button onClick={reset}>{t.errors.tryAgain}</Button>
         <Button variant="outline" onClick={() => (window.location.href = '/dashboard')}>
-          Go to Dashboard
+          {t.errors.goToDashboard}
         </Button>
       </div>
     </div>
