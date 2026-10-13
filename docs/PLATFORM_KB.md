@@ -1,6 +1,6 @@
 # Biography Library — Platform Knowledge Base
 
-Version: 1.11 — 2026-10-12
+Version: 1.12 — 2026-10-14
 
 Reference language: English. Echo, Help, and platform assistants answer in the user's language using these facts. Update this file whenever product rules or UX change, then run `npm run kb:sync`.
 
@@ -73,6 +73,10 @@ A translation is a second edition of the same story. It is edited in the same ed
 Dedication, epigraph, preface, epilogue, acknowledgements, credits and the author copyright page of a translation are written in its own Book Structure panel. Reminders for book-structure parts still to translate and for photo captions still to translate appear in the message that opens with the translation, not in a bar at the top. The translation uses the cover and the photos of the original, with the translated title and text. Photo captions of a translation are written in Tools, Photos: above the photos you see the cover of the original, the same in the translation and without a caption; for each gallery photo of the original you see the original caption and write the translated one; a photo without a translated caption is shown without any caption, and the original's caption is never used in its place.
 
 A translation goes through the same checks as the original: it is sent for review, the whole text is screened, and then it appears next to the original; it cannot be sent while the original is not published. A translation does not get a UM identifier of its own: the identifier written in a translation's files (PDF header and colophon, exported texts) is the original's. Deleting a translation (Tools, Delete this translation) does not touch the original or its photos.
+
+Readers find translations in two places. In the public catalogue a story that has translations is shown once, as a single card, with the languages it is available in (for example EN, IT, FR). The language filter lists the languages that really exist in the catalogue, not a fixed list, and the search also finds the title of a translation: in that case the card shows that translation's title and opens it. On the reading page of a story that has published translations, a line "Read in" lists every available language, each written in its own language (for example Deutsch, français), with the original marked; the version being read is shown in bold and the others are links. Nothing changes language by itself: the address you share always opens the version it points to, and the choice of language belongs to the reader. Each language version also tells search engines about the others, so that a search in French can lead to the French text.
+
+The record card in the files of a translation (PDF header, exported TXT and DOCX, archive Markdown) carries the identifier of the work, the language and the publication date of the translation, and the life facts of the original: birth, death, places of life and relations belong only to the original, so the card of a translation reads them from there. The fixed labels of the card (event, date, place, source, and the standard names of events, sources, relations and the calendar) are written in the translation's language; what the author wrote in their own words, such as a relation labelled "paternal grandmother", names, places and dates as given, stays exactly as written. When a translation is published, the archive copy of the story is deposited again as a new version that contains the original and one file for each published translation (biography.<language>.md); a translation never has a package of its own, and earlier versions are never rewritten.
 
 ## rights_chapters
 
