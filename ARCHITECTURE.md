@@ -30,6 +30,9 @@ lib/
   section-status-service    Draft version state machine
   section-completion-service Mark sections done/undone
   biographies.ts            Biography CRUD helpers
+  work-languages.ts         Pure helpers: work versions, language/search match, display pick
+  edition-alternates.ts     Pure canonical + hreflang URL builder
+  edition-view-metadata.ts  Anon-client resolution for view alternates
 supabase/
   functions/                Edge Functions (Deno)
   migrations/               Ordered SQL migrations
@@ -48,7 +51,8 @@ The project uses **Next.js 13 App Router**. Pages are React Server Components by
 | `/` | Marketing / landing |
 | `/dashboard` | User's biography list |
 | `/biography/[id]/edit` | Full editor — server shell hands off to client component tree |
-| `/biography/[id]/view` | Public reader; validates share token for link-only biographies |
+| `/biography/[id]/view` | Public reader; validates share token for link-only biographies. Server `layout.tsx` sets `alternates` (canonical + hreflang) via anon client; client page owns the body. |
+| `/biographies` | Public catalogue: one card per work (original), language filter/search across editions |
 | `/admin/review` | Human moderation queue (reviewer role+) |
 | `/admin/moderation` | Report management |
 | `/admin/users` | User management (admin role+) |
@@ -178,6 +182,9 @@ Models are chosen with `AGENT_MODEL_*` (see `lib/agents/models.ts`); the grammar
 - **Cover and photos:** every show/print/check path resolves media with `resolveMediaOwnerId` (`lib/edition-media-owner.ts`) so an edition reads `biography_media` of the original. Captions for an edition come only from `biography_edition_captions` (never the original's `caption`). Non-owners get the cover via `GET /api/biography/[id]/cover-photo` (same `verifyBiographyViewAccess` as `gallery-photos`); owners still use `getCoverPhotoDisplayUrl` under existing RLS. Cover checks on submit/PDF routes use `biographyHasCoverPhoto` (`lib/server/edition-cover-check.ts`).
 - **UM identity in outputs:** `resolveEditionIdentity` supplies the original's `um_id` for permanence headers, colophon and stored exports of an edition; the edition row keeps `um_id` null.
 - **Editor banner:** `components/editor/edition-banner.tsx` is a short bar (writing phrase + link to original). On each edition editor load, `EditionNoticeDialog` shows the rules and any reminders (book structure, drift, unpublished original, identical sections).
+- **Catalogue (one card per work):** `app/biographies/page.tsx` still lists only originals (`fetchFeaturedBiographies` / `fetchMostReadBiographies` / `fetchDiscoverBiographies` / `fetchPublishedBiographies` keep `translation_of IS NULL`). Sibling editions are loaded once with `fetchPublicEditionsOf`; language menu options come from `fetchPublicLanguageTags` + `languageOptions` in `lib/work-languages.ts`. Filter/search use `workMatchesLanguage` / `workMatchesSearch`; the card title and href follow `pickDisplayVersion`. Cover, author, type, pioneer and view counts stay on the original. Editions never appear as their own cards and never get a UM id.
+- **«Leggi in»:** `components/view/read-in-switcher.tsx` on the public reading page (published + public, not opened via share token) lists public versions of the work as text links.
+- **Server alternates:** `lib/edition-alternates.ts` (`buildEditionAlternates`, `siteOrigin`) is pure. `lib/edition-view-metadata.ts` (`resolveEditionViewAlternates`) loads the row and the published+public group through a caller-supplied client. `app/biography/[id]/view/layout.tsx` exports `dynamic = 'force-dynamic'` and `generateMetadata` with an **anon** Supabase client (`persistSession: false`, `autoRefreshToken: false`) and `fetch` with `cache: 'no-store'` so a newly published edition appears in hreflang without waiting for Next’s fetch cache. The service-role key is never used here: if the row is not publicly readable, metadata is `{}`. Metadata sets only `alternates` (canonical + `languages` including `x-default` on the original when there are at least two public versions)—no title, description, or robots.
 
 ### Grammar check (`POST /api/biography/[id]/grammar`, Node runtime)
 
