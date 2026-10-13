@@ -3,14 +3,14 @@
 Documento di riferimento per UI web, editor e export PDF.  
 **Fonte di verità nel codice:** `tailwind.config.ts`, `app/globals.css`, `lib/ui-palette.ts`, `lib/pdf-export.ts`.
 
-Ultimo aggiornamento: giugno 2026.
+Ultimo aggiornamento: ottobre 2026.
 
 ---
 
 ## 1. Principi
 
-- **Stile sobrio e leggibile:** toni beige/grigio, testo nero `#121212`, nessun peso bold globale (tutto a `font-weight: 400`).
-- **Tipografia:** sans per UI e corpo; serif per titoli (`h1`–`h6`) e contenuto editor/PDF narrativo.
+- **Stile sobrio e leggibile:** toni beige/grigio, testo nero `#121212`, nessun peso bold globale (tutto a `font-weight: 400`); il grassetto (700) esiste solo nel testo scritto dall'autore (`.ProseMirror` e `.rich-text`) e nelle risposte di Echo (`.echo-reply`).
+- **Tipografia:** sans (Noto Sans) per interfaccia e corpo; serif (Noto Serif) per i titoli (h1 a h6) e per il testo di lettura delle biografie e del PDF narrativo; nell'editor il corpo del testo è in sans e i titoli in serif.
 - **Palette chiusa:** per alert, banner, dialog, badge usare solo token `brand-*` — non introdurre scale Tailwind generiche (`amber`, `sky`, `emerald`, `red`, …).
 - **shadcn/ui + Radix:** componenti in `components/ui/`; non aggiungere altre librerie UI (vedi README).
 - **Dark mode:** supportato via `class` su `<html>` (`next-themes`).
