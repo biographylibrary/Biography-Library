@@ -135,10 +135,10 @@ export default function SettingsPage() {
   const isDark = mounted && resolvedTheme === 'dark';
 
   const fontSizeLabels: Record<string, string> = {
-    small: 'Small (90%)',
-    normal: 'Normal (100%)',
-    large: 'Large (115%)',
-    'extra-large': 'Extra-large (130%)',
+    small: t.accountSettings.fontSizeSmall,
+    normal: t.accountSettings.fontSizeNormal,
+    large: t.accountSettings.fontSizeLarge,
+    'extra-large': t.accountSettings.fontSizeExtraLarge,
   };
 
   if (!user) return null;
@@ -156,7 +156,7 @@ export default function SettingsPage() {
         </div>
 
         <section className="space-y-2">
-          <SectionHeading>Appearance</SectionHeading>
+          <SectionHeading>{t.accountSettings.appearance}</SectionHeading>
 
           <SettingsRow
             icon={isDark ? <Moon className="h-4 w-4" /> : <Sun className="h-4 w-4" />}
@@ -170,7 +170,7 @@ export default function SettingsPage() {
 
           <SettingsRow
             icon={<Type className="h-4 w-4" />}
-            label="Font size"
+            label={t.accountSettings.fontSize}
             description={fontSizeLabels[fontSize]}
           >
             <FontSizeControl
@@ -221,7 +221,7 @@ export default function SettingsPage() {
         <Separator />
 
         <section className="space-y-2">
-          <SectionHeading>Account</SectionHeading>
+          <SectionHeading>{t.accountSettings.account}</SectionHeading>
 
           <SettingsRow
             icon={<LogOut className="h-4 w-4" />}
@@ -233,7 +233,7 @@ export default function SettingsPage() {
         </section>
 
         <section className="space-y-2">
-          <SectionHeading>Danger zone</SectionHeading>
+          <SectionHeading>{t.accountSettings.dangerZone}</SectionHeading>
 
           <div className="rounded-xl border border-destructive/30 bg-destructive/5 px-4 py-3.5 flex items-center justify-between gap-4">
             <div className="flex items-center gap-3">

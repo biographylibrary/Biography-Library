@@ -132,6 +132,14 @@ export interface Translations {
   accountSettings: {
     language: string;
     languageLockedHint: string;
+    appearance: string;
+    fontSize: string;
+    fontSizeSmall: string;
+    fontSizeNormal: string;
+    fontSizeLarge: string;
+    fontSizeExtraLarge: string;
+    account: string;
+    dangerZone: string;
   };
   dashboard: {
     title: string;
@@ -2015,8 +2023,15 @@ export const translations: Record<Language, Translations> = {
     accountSettings: {
       language: 'Language',
       languageLockedHint: 'Chosen at registration and cannot be changed.',
+      appearance: 'Appearance',
+      fontSize: 'Font size',
+      fontSizeSmall: 'Small (90%)',
+      fontSizeNormal: 'Normal (100%)',
+      fontSizeLarge: 'Large (115%)',
+      fontSizeExtraLarge: 'Extra-large (130%)',
+      account: 'Account',
+      dangerZone: 'Danger zone',
     },
-    /* accountSettings appearance keys: commit 2 */
     dashboard: {
       title: 'My Biographies',
       createBiography: 'Create New Biography',
@@ -3895,6 +3910,14 @@ export const translations: Record<Language, Translations> = {
     accountSettings: {
       language: 'Lingua',
       languageLockedHint: 'Scelta in registrazione e non modificabile.',
+      appearance: 'Aspetto',
+      fontSize: 'Dimensione del carattere',
+      fontSizeSmall: 'Piccolo (90%)',
+      fontSizeNormal: 'Normale (100%)',
+      fontSizeLarge: 'Grande (115%)',
+      fontSizeExtraLarge: 'Extra-grande (130%)',
+      account: 'Account',
+      dangerZone: 'Zona pericolosa',
     },
     dashboard: {
       title: 'Le Mie Biografie',
@@ -5776,6 +5799,14 @@ export const translations: Record<Language, Translations> = {
     accountSettings: {
       language: 'Langue',
       languageLockedHint: 'Choisie \u00e0 l\u2019inscription et non modifiable.',
+      appearance: 'Apparence',
+      fontSize: 'Taille de la police',
+      fontSizeSmall: 'Petit (90 %)',
+      fontSizeNormal: 'Normal (100 %)',
+      fontSizeLarge: 'Grand (115 %)',
+      fontSizeExtraLarge: 'Très grand (130 %)',
+      account: 'Compte',
+      dangerZone: 'Zone de danger',
     },
     dashboard: {
       title: 'Mes Biographies',
@@ -7658,6 +7689,14 @@ export const translations: Record<Language, Translations> = {
     accountSettings: {
       language: 'Sprache',
       languageLockedHint: 'Bei der Registrierung gew\u00e4hlt und nicht \u00e4nderbar.',
+      appearance: 'Darstellung',
+      fontSize: 'Schriftgröße',
+      fontSizeSmall: 'Klein (90 %)',
+      fontSizeNormal: 'Normal (100 %)',
+      fontSizeLarge: 'Groß (115 %)',
+      fontSizeExtraLarge: 'Sehr groß (130 %)',
+      account: 'Konto',
+      dangerZone: 'Gefahrenzone',
     },
     dashboard: {
       title: 'Meine Biografien',
