@@ -9,7 +9,12 @@ vi.mock('@/lib/server/review-submit-pipeline', () => ({ buildServiceClient: () =
 vi.mock('@/lib/agents/purge-agent-memory', () => ({ purgeAgentMemoryForBiography: (...a: unknown[]) => purge(...(a as [])) }));
 vi.mock('@/lib/server/email/publication-helpers', () => ({ notifyAuthorPublicationEmail: vi.fn(async () => undefined) }));
 vi.mock('@/lib/server/moderation-register', () => ({ writeModerationMessage: vi.fn(async () => undefined) }));
-vi.mock('@/lib/server/archive-package-store', () => ({ syncArchivePackage: vi.fn(async () => undefined) }));
+const { syncArchivePackage } = vi.hoisted(() => ({
+  syncArchivePackage: vi.fn(async () => undefined),
+}));
+vi.mock('@/lib/server/archive-package-store', () => ({
+  syncArchivePackage: (...a: unknown[]) => syncArchivePackage(...(a as [])),
+}));
 
 import { serverSubmitDecision } from '@/lib/server/moderation-decide-pipeline';
 import { computePublicFingerprint, recordScreening } from '@/lib/server/publication-fingerprint';
@@ -50,6 +55,8 @@ const decide = (bioPatch: Record<string, unknown> | null, decision = 'publish') 
 beforeEach(() => {
   seed();
   purge.mockClear();
+  syncArchivePackage.mockClear();
+  syncArchivePackage.mockImplementation(async () => undefined);
 });
 
 describe('decisione di moderazione: pubblicazione', () => {
@@ -121,6 +128,74 @@ describe('edizione commemorativa ripubblicata', () => {
     expect(edition?.status).toBe('published');
     expect(edition?.revised_at).toEqual(expect.any(String));
     expect(edition?.provisional_until ?? null).toBeNull();
+  });
+});
+
+describe('deposito archivio per edizioni', () => {
+  it('prima pubblicazione staff deposita edition_published sull\'originale', async () => {
+    db = createFakeDb({
+      biographies: [
+        {
+          id: 'orig',
+          user_id: 'author-1',
+          status: 'published',
+          title: 'Originale',
+          final_version: 'Testo esaminato',
+          biography_type: 'autobiography',
+        },
+        {
+          id: 'b1',
+          user_id: 'author-1',
+          status: 'under_review',
+          title: 'T',
+          final_version: 'Testo esaminato',
+          biography_type: 'autobiography',
+          translation_of: 'orig',
+          published_at: null,
+        },
+      ],
+      moderation_reports: [{ id: 'r1', biography_id: 'b1', status: 'assigned', reviewed_by: null }],
+    });
+    await screened();
+    const r = await decide({ status: 'published', published_at: '2026-10-01T00:00:00Z' });
+    expect(r.error).toBeNull();
+    expect(syncArchivePackage).toHaveBeenCalledWith(
+      expect.anything(),
+      'orig',
+      'edition_published'
+    );
+  });
+
+  it('ripubblicazione staff deposita edition_published; deposito fallito non blocca', async () => {
+    syncArchivePackage.mockRejectedValueOnce(new Error('archive_boom'));
+    db = createFakeDb({
+      biographies: [
+        {
+          id: 'orig',
+          user_id: 'author-1',
+          status: 'published',
+          title: 'Originale',
+          final_version: 'Testo esaminato',
+          biography_type: 'autobiography',
+        },
+        {
+          id: 'b1',
+          user_id: 'author-1',
+          status: 'revision_pending_review',
+          title: 'T',
+          final_version: 'Testo esaminato',
+          biography_type: 'autobiography',
+          translation_of: 'orig',
+          published_at: '2026-01-01T00:00:00Z',
+        },
+      ],
+      moderation_reports: [{ id: 'r1', biography_id: 'b1', status: 'assigned', reviewed_by: null }],
+    });
+    await screened();
+    const r = await decide({ status: 'published', published_at: '2026-10-01T00:00:00Z' });
+    expect(r.error).toBeNull();
+    expect(db.tables.biographies.find((b) => b.id === 'b1')?.status).toBe('published');
+    expect(syncArchivePackage).toHaveBeenCalled();
   });
 });
 

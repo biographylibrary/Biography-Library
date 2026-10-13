@@ -164,6 +164,23 @@ create table public.biographies (
   is_pioneer boolean not null default false
 );
 
+-- Stato produzione prima della migrazione edition_published (4 motivi).
+create table public.archive_package_versions (
+  id uuid primary key default gen_random_uuid(),
+  biography_id uuid not null references public.biographies(id) on delete cascade,
+  um_id text not null,
+  version_number integer not null check (version_number >= 1),
+  generated_at timestamptz not null,
+  manifest_sha256 text not null,
+  reason text not null,
+  status text not null default 'stored' check (status in ('stored', 'destroyed')),
+  created_at timestamptz not null default now(),
+  unique (biography_id, version_number),
+  constraint archive_package_versions_reason_check
+    check (reason in ('publication', 'provisional_expired', 'republication', 'data_protection'))
+);
+alter table public.archive_package_versions enable row level security;
+
 create table public.moderation_reports (
   id uuid primary key default gen_random_uuid(),
   biography_id uuid references public.biographies(id),
@@ -431,6 +448,7 @@ export async function reseed(db: PGlite): Promise<void> {
       if to_regclass('public.biography_source_html_legacy') is not null then delete from public.biography_source_html_legacy; end if;
       if to_regclass('public.biography_edition_captions') is not null then delete from public.biography_edition_captions; end if;
     end $$;
+    delete from public.archive_package_versions;
     delete from public.biography_media;
     delete from public.biography_sections;
     delete from public.biography_book_structure;
@@ -475,6 +493,7 @@ export async function createTestDb(
     '20261009143000_biography_editions.sql',
     '20261009150000_drop_content_language_after_release.sql',
     '20261010120000_edition_original_version_at.sql',
+    '20261013140000_archive_reason_edition_published.sql',
   ];
   const files = all.filter((file) => !options.skip?.includes(file) && (!options.only || options.only.includes(file)));
   // La seconda migrazione legge translation_of, aggiunta dalla prima. Chi usa only o skip

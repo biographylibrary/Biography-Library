@@ -713,6 +713,12 @@ export async function runReviewSubmitScreening(
       provisional_until?: string | null;
       translation_of?: string | null;
     } | null;
+    // Valori prima della pubblicazione: il client finto muta la riga in loco.
+    const priorPublishedAt = prior?.published_at ?? null;
+    const priorTranslationOf =
+      typeof prior?.translation_of === 'string' && prior.translation_of.trim()
+        ? prior.translation_of
+        : null;
 
     if (prior?.translation_of) {
       const { editionMayPublish } = await import('@/lib/server/edition-publish');
@@ -776,10 +782,18 @@ export async function runReviewSubmitScreening(
       throw new Error(`publish_failed: ${published.error}`);
     }
 
-    if (!prior?.translation_of) {
+    if (!priorTranslationOf) {
       try {
         const { syncArchivePackage } = await import('@/lib/server/archive-package-store');
         await syncArchivePackage(serviceClient, biographyId, 'publication');
+      } catch (err) {
+        console.error('[review-submit-pipeline] archive package failed (non-blocking):', err);
+      }
+    } else if (!priorPublishedAt) {
+      // Prima pubblicazione automatica di un'edizione: nuova versione del pacchetto dell'originale.
+      try {
+        const { syncArchivePackage } = await import('@/lib/server/archive-package-store');
+        await syncArchivePackage(serviceClient, priorTranslationOf, 'edition_published');
       } catch (err) {
         console.error('[review-submit-pipeline] archive package failed (non-blocking):', err);
       }

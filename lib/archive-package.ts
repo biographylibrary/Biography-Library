@@ -22,8 +22,59 @@ export { RECORD_SCHEMA_VERSION };
 
 export const UM_SPEC_VERSION = '1.0';
 
-export type ArchiveReason = 'publication' | 'provisional_expired' | 'republication' | 'data_protection';
+export type ArchiveReason =
+  | 'publication'
+  | 'provisional_expired'
+  | 'republication'
+  | 'data_protection'
+  | 'edition_published';
 export type ArchiveVersionStatus = 'stored' | 'destroyed';
+
+const EDITION_TAG_PATH = /^[A-Za-z0-9]+(-[A-Za-z0-9]+)*$/;
+
+/** Percorso Markdown di un'edizione nel pacchetto; mai biography.md. */
+export function editionMarkdownPath(tag: string): string {
+  if (!EDITION_TAG_PATH.test(tag)) {
+    throw new Error('invalid_edition_language_tag');
+  }
+  const path = `biography.${tag}.md`;
+  if (path === 'biography.md') {
+    throw new Error('edition_path_collision');
+  }
+  return path;
+}
+
+export type ArchiveEditionCaption = { path: string; caption: string };
+
+export type ArchiveEditionMeta = {
+  language_tag: string;
+  file: string;
+  published_at: string | null;
+  captions: ArchiveEditionCaption[];
+};
+
+/**
+ * Chiave `editions` di metadata.json: presente solo se c'è almeno un'edizione.
+ * Ordinata per language_tag. caption vuota se manca la didascalia dell'edizione.
+ */
+export function buildArchiveEditionsMeta(
+  editions: Array<{
+    language_tag: string;
+    published_at: string | null;
+    captions: ArchiveEditionCaption[];
+  }>
+): ArchiveEditionMeta[] | undefined {
+  if (editions.length === 0) return undefined;
+  return editions
+    .slice()
+    .sort((a, b) => a.language_tag.localeCompare(b.language_tag))
+    .map((ed) => ({
+      language_tag: ed.language_tag,
+      file: editionMarkdownPath(ed.language_tag),
+      published_at: ed.published_at,
+      captions: ed.captions.map((c) => ({ path: c.path, caption: c.caption })),
+    }));
+}
 
 export type ArchiveVersionEntry = {
   version: number;
@@ -145,6 +196,12 @@ export function decideArchiveDeposit(input: {
     if (windowOpen || input.provisionalUntil == null) return { deposit: false, version: next };
     if (input.existingVersions.length > 0) return { deposit: false, version: next };
     return { deposit: true, version: 1 };
+  }
+
+  if (input.reason === 'edition_published') {
+    if (windowOpen) return { deposit: false, version: next };
+    if (input.existingVersions.length === 0) return { deposit: false, version: next };
+    return { deposit: true, version: next };
   }
 
   if (windowOpen) return { deposit: false, version: next };

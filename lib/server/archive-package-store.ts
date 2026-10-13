@@ -1,12 +1,14 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 import {
   archiveFolder,
+  buildArchiveEditionsMeta,
   buildBiographyMarkdown,
   buildRecordArchiveFiles,
   RECORD_SCHEMA_VERSION,
   buildIndexJson,
   buildManifestText,
   decideArchiveDeposit,
+  editionMarkdownPath,
   sha256Hex,
   type ArchiveFile,
   type ArchiveReason,
@@ -21,6 +23,13 @@ import { toCanonical } from '@/lib/um-id';
 type AnyClient = SupabaseClient<any, any, any>;
 
 const BUCKET = 'archive';
+
+export class ArchiveVersionConflictError extends Error {
+  constructor(message = 'archive_version_conflict') {
+    super(message);
+    this.name = 'ArchiveVersionConflictError';
+  }
+}
 
 function bodyMarkdown(bio: {
   final_version?: string | null;
@@ -43,9 +52,14 @@ function bodyMarkdown(bio: {
 
 async function downloadMedia(
   rows: { id: string; file_url: string; file_name: string | null; caption: string | null }[]
-): Promise<{ files: ArchiveFile[]; captions: { path: string; caption: string }[] }> {
+): Promise<{
+  files: ArchiveFile[];
+  captions: { path: string; caption: string }[];
+  mediaPaths: { id: string; path: string }[];
+}> {
   const files: ArchiveFile[] = [];
   const captions: { path: string; caption: string }[] = [];
+  const mediaPaths: { id: string; path: string }[] = [];
   for (const row of rows) {
     if (!row.file_url) continue;
     try {
@@ -56,13 +70,53 @@ async function downloadMedia(
       const path = `media/${row.id}-${safeName}`;
       files.push({ path, bytes });
       captions.push({ path, caption: row.caption || '' });
+      mediaPaths.push({ id: row.id, path });
     } catch {
       continue;
     }
   }
-  return { files, captions };
+  return { files, captions, mediaPaths };
 }
 
+type PublishedEditionRow = {
+  id: string;
+  record_language_tag: string | null;
+  published_at: string | null;
+};
+
+async function loadPublishedEditions(svc: AnyClient, originalId: string): Promise<PublishedEditionRow[]> {
+  const { data, error } = await svc
+    .from('biographies')
+    .select('id, record_language_tag, published_at')
+    .eq('translation_of', originalId)
+    .eq('status', 'published')
+    .order('record_language_tag', { ascending: true });
+  if (error) throw new Error(error.message);
+  return ((data ?? []) as PublishedEditionRow[]).filter(
+    (row) => typeof row.record_language_tag === 'string' && row.record_language_tag.trim()
+  );
+}
+
+async function loadEditionCaptions(
+  svc: AnyClient,
+  editionId: string
+): Promise<Map<string, string>> {
+  const { data, error } = await svc
+    .from('biography_edition_captions')
+    .select('media_id, caption')
+    .eq('biography_id', editionId);
+  if (error) throw new Error(error.message);
+  const map = new Map<string, string>();
+  for (const row of (data ?? []) as { media_id: string; caption: string | null }[]) {
+    map.set(row.media_id, row.caption ?? '');
+  }
+  return map;
+}
+
+/**
+ * Deposita una versione del pacchetto dell'ORIGINALE.
+ * Per `edition_published` il chiamante passa sempre l'id dell'originale.
+ */
 export async function syncArchivePackage(
   svc: AnyClient,
   biographyId: string,
@@ -116,6 +170,41 @@ export async function syncArchivePackage(
     (mediaRows ?? []) as { id: string; file_url: string; file_name: string | null; caption: string | null }[]
   );
 
+  const publishedEditions = await loadPublishedEditions(svc, biographyId);
+  const editionFiles: ArchiveFile[] = [];
+  const editionMetas: NonNullable<ReturnType<typeof buildArchiveEditionsMeta>> = [];
+
+  for (const edition of publishedEditions) {
+    const tag = edition.record_language_tag!.trim();
+    const editionBundle = await loadPermanenceExportBundle(svc, edition.id);
+    if (!editionBundle) {
+      throw new Error(`edition_bundle_unavailable:${edition.id}`);
+    }
+    const md = buildBiographyMarkdown({
+      bio: editionBundle.bio,
+      events: editionBundle.events,
+      relations: editionBundle.relations,
+      bodyMarkdown: bodyMarkdown(editionBundle.bio as Parameters<typeof bodyMarkdown>[0]),
+      umIdBaseUrl: umIdBaseUrl(),
+      bookParts: editionBundle.bookParts,
+    });
+    const file = editionMarkdownPath(tag);
+    editionFiles.push({ path: file, bytes: Buffer.from(md, 'utf8') });
+
+    const captionMap = await loadEditionCaptions(svc, edition.id);
+    editionMetas.push({
+      language_tag: tag,
+      file,
+      published_at: edition.published_at,
+      captions: media.mediaPaths.map(({ id, path }) => ({
+        path,
+        caption: captionMap.has(id) ? captionMap.get(id)! : '',
+      })),
+    });
+  }
+
+  // generatedAt dopo la lettura delle edizioni (identità dei byte senza edizioni invariata
+  // a parità di istante: senza edizioni il punto è subito dopo media + elenco vuoto).
   const generatedAt = new Date().toISOString();
   const canonical = toCanonical(bio.um_id as string);
   const biographyMd = buildBiographyMarkdown({
@@ -126,7 +215,8 @@ export async function syncArchivePackage(
     umIdBaseUrl: umIdBaseUrl(),
     bookParts: bundle.bookParts,
   });
-  const metadata = {
+  const editionsMeta = buildArchiveEditionsMeta(editionMetas);
+  const metadata: Record<string, unknown> = {
     um_id: canonical,
     version: decision.version,
     generated_at: generatedAt,
@@ -136,6 +226,9 @@ export async function syncArchivePackage(
     provisional_until: provisionalUntil,
     captions: media.captions,
   };
+  if (editionsMeta) {
+    metadata.editions = editionsMeta;
+  }
   const recordFiles = buildRecordArchiveFiles({
     bio: bundle.bio,
     events: bundle.events,
@@ -144,6 +237,7 @@ export async function syncArchivePackage(
   });
   const files: ArchiveFile[] = [
     { path: 'biography.md', bytes: Buffer.from(biographyMd, 'utf8') },
+    ...editionFiles,
     ...recordFiles,
     { path: 'metadata.json', bytes: Buffer.from(`${JSON.stringify(metadata, null, 2)}\n`, 'utf8') },
     ...media.files,
@@ -154,6 +248,24 @@ export async function syncArchivePackage(
   });
   const manifestHash = sha256Hex(manifest);
   const versionDir = `${canonical}/v${decision.version}`;
+
+  // Guardia contro depositi concorrenti: restringe la corsa, non la elimina (vedi PROGETTO.md).
+  const { data: recheckRows, error: recheckErr } = await svc
+    .from('archive_package_versions')
+    .select('version_number')
+    .eq('biography_id', biographyId);
+  if (recheckErr) throw new Error(recheckErr.message);
+  const recheckVersions = ((recheckRows ?? []) as { version_number: number }[]).map(
+    (row) => row.version_number
+  );
+  if (recheckVersions.some((n) => n >= decision.version)) {
+    throw new ArchiveVersionConflictError();
+  }
+  const { data: listed, error: listErr } = await svc.storage.from(BUCKET).list(versionDir);
+  if (listErr) throw new Error(listErr.message);
+  if ((listed ?? []).length > 0) {
+    throw new ArchiveVersionConflictError();
+  }
 
   for (const file of files) {
     const { error: upErr } = await svc.storage.from(BUCKET).upload(`${versionDir}/${file.path}`, file.bytes, {
@@ -215,17 +327,68 @@ export async function syncArchivePackage(
 export async function syncDueArchivePackages(svc: AnyClient): Promise<{ checked: number; deposited: number }> {
   const { data, error } = await svc
     .from('biographies')
-    .select('id, biography_type')
+    .select('id, biography_type, translation_of, published_at')
     .eq('status', 'published');
   if (error) throw new Error(error.message);
+
+  const rows = (data ?? []) as {
+    id: string;
+    biography_type: string | null;
+    translation_of: string | null;
+    published_at: string | null;
+  }[];
+  const originals = rows.filter((row) => !row.translation_of);
+  const editions = rows.filter(
+    (row) => typeof row.translation_of === 'string' && row.translation_of.trim()
+  );
+
+  let checked = 0;
   let deposited = 0;
-  for (const row of data ?? []) {
+
+  for (const row of originals) {
+    checked += 1;
     const reason: ArchiveReason =
       row.biography_type === 'memorial' ? 'provisional_expired' : 'publication';
-    const result = await syncArchivePackage(svc, row.id as string, reason);
+    const result = await syncArchivePackage(svc, row.id, reason);
     if (result.deposited) deposited += 1;
   }
-  return { checked: (data ?? []).length, deposited };
+
+  // Passata di sicurezza: edizioni pubblicate dopo l'ultima versione del pacchetto.
+  const originalsWithVersions = new Set<string>();
+  const latestGenerated = new Map<string, string>();
+  for (const original of originals) {
+    const { data: versions, error: vErr } = await svc
+      .from('archive_package_versions')
+      .select('version_number, generated_at')
+      .eq('biography_id', original.id);
+    if (vErr) throw new Error(vErr.message);
+    const list = (versions ?? []) as { version_number: number; generated_at: string }[];
+    if (list.length === 0) continue;
+    originalsWithVersions.add(original.id);
+    const latest = list.reduce((a, b) => (a.version_number >= b.version_number ? a : b));
+    latestGenerated.set(original.id, latest.generated_at);
+  }
+
+  const pendingOriginals = new Set<string>();
+  for (const edition of editions) {
+    const originalId = edition.translation_of!;
+    if (!originalsWithVersions.has(originalId)) continue;
+    const publishedAt = edition.published_at;
+    if (!publishedAt) continue;
+    const generatedAt = latestGenerated.get(originalId);
+    if (!generatedAt) continue;
+    if (new Date(publishedAt).getTime() > new Date(generatedAt).getTime()) {
+      pendingOriginals.add(originalId);
+    }
+  }
+
+  for (const originalId of Array.from(pendingOriginals)) {
+    checked += 1;
+    const result = await syncArchivePackage(svc, originalId, 'edition_published');
+    if (result.deposited) deposited += 1;
+  }
+
+  return { checked, deposited };
 }
 
 export { archiveFolder };

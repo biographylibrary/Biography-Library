@@ -1,7 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import {
+  buildArchiveEditionsMeta,
   buildManifestText,
   decideArchiveDeposit,
+  editionMarkdownPath,
   sha256Hex,
 } from '@/lib/archive-package';
 
@@ -74,5 +76,63 @@ describe('archive package', () => {
         reason: 'republication',
       }).deposit
     ).toBe(true);
+  });
+
+  it('edition_published: deposita solo con versioni esistenti e finestra chiusa', () => {
+    const now = new Date('2026-10-01T00:00:00.000Z');
+    expect(
+      decideArchiveDeposit({
+        biographyType: 'autobiography',
+        provisionalUntil: null,
+        now,
+        existingVersions: [1],
+        reason: 'edition_published',
+      })
+    ).toEqual({ deposit: true, version: 2 });
+    expect(
+      decideArchiveDeposit({
+        biographyType: 'autobiography',
+        provisionalUntil: null,
+        now,
+        existingVersions: [],
+        reason: 'edition_published',
+      }).deposit
+    ).toBe(false);
+    expect(
+      decideArchiveDeposit({
+        biographyType: 'memorial',
+        provisionalUntil: '2026-10-24T00:00:00.000Z',
+        now: new Date('2026-10-01T00:00:00.000Z'),
+        existingVersions: [1],
+        reason: 'edition_published',
+      }).deposit
+    ).toBe(false);
+  });
+
+  it('editionMarkdownPath: biography.<tag>.md; rifiuta caratteri strani', () => {
+    expect(editionMarkdownPath('it')).toBe('biography.it.md');
+    expect(editionMarkdownPath('pt-BR')).toBe('biography.pt-BR.md');
+    expect(() => editionMarkdownPath('../x')).toThrow(/invalid_edition_language_tag/);
+    expect(() => editionMarkdownPath('')).toThrow(/invalid_edition_language_tag/);
+    expect(editionMarkdownPath('it')).not.toBe('biography.md');
+  });
+
+  it('buildArchiveEditionsMeta: assente senza edizioni; ordinato; caption vuota se manca', () => {
+    expect(buildArchiveEditionsMeta([])).toBeUndefined();
+    const meta = buildArchiveEditionsMeta([
+      {
+        language_tag: 'pt-BR',
+        published_at: '2026-10-02T00:00:00.000Z',
+        captions: [{ path: 'media/a.jpg', caption: '' }],
+      },
+      {
+        language_tag: 'it',
+        published_at: '2026-10-01T00:00:00.000Z',
+        captions: [{ path: 'media/a.jpg', caption: 'foto' }],
+      },
+    ]);
+    expect(meta!.map((e) => e.language_tag)).toEqual(['it', 'pt-BR']);
+    expect(meta![0]!.file).toBe('biography.it.md');
+    expect(meta![1]!.captions[0]!.caption).toBe('');
   });
 });
