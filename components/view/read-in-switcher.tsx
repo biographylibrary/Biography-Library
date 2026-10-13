@@ -122,7 +122,7 @@ export function ReadInSwitcher({
               lang={version.tag}
               hrefLang={version.tag}
               title={titleAttr}
-              className="text-primary hover:text-primary/80 transition-colors"
+              className="text-primary underline underline-offset-2 hover:text-primary/80 transition-colors"
             >
               {ownName}
               {originalMark}

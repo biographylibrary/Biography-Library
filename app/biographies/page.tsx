@@ -46,6 +46,7 @@ import {
   type WorkVersion,
 } from '@/lib/work-languages';
 import { textLanguageLabels } from '@/lib/text-languages';
+import { mergeEditionsByOriginal } from '@/lib/catalog-editions';
 
 function biographyHref(version: { id: string; slug: string | null }): string {
   return version.slug
@@ -153,9 +154,9 @@ function AvailableLanguageChips({
             key={base}
             className="text-xs px-2 py-0.5 rounded-full bg-primary/10 text-primary border border-border"
             title={labels.inUi}
-            aria-label={labels.inUi}
           >
             {base.toUpperCase()}
+            <span className="sr-only"> ({labels.inUi})</span>
           </span>
         );
       })}
@@ -163,9 +164,12 @@ function AvailableLanguageChips({
         <span
           className="text-xs px-2 py-0.5 rounded-full bg-primary/10 text-primary border border-border"
           title={interpolate(t.publicBiographies.moreLanguagesAria, { count: String(extra) })}
-          aria-label={interpolate(t.publicBiographies.moreLanguagesAria, { count: String(extra) })}
         >
           +{extra}
+          <span className="sr-only">
+            {' '}
+            ({interpolate(t.publicBiographies.moreLanguagesAria, { count: String(extra) })})
+          </span>
         </span>
       )}
     </div>
@@ -288,6 +292,7 @@ function BiographyCard({
           ) : (
             <BiographyLanguageBadges
               originalLanguage={bio.record_language_tag || 'en'}
+              isOriginal
             />
           )}
           <span className="text-xs text-muted-foreground">
@@ -393,12 +398,17 @@ function PublicBiographiesPage() {
   const [editionsByOriginal, setEditionsByOriginal] = useState<Record<string, PublicEditionRow[]>>(
     {}
   );
-  const [languageMenu, setLanguageMenu] = useState<Array<{ value: string; label: string }>>([]);
+  const [languageTags, setLanguageTags] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState('');
   const [langFilter, setLangFilter] = useState<string>('all');
   const [typeFilter, setTypeFilter] = useState<string>('all');
+
+  const languageMenu = useMemo(
+    () => languageOptions(languageTags, language),
+    [languageTags, language]
+  );
 
   useEffect(() => {
     const load = async () => {
@@ -449,32 +459,23 @@ function PublicBiographiesPage() {
       setMostRead(mostReadData);
       setDiscover(discoverData);
       setEditionsByOriginal(byOriginal);
-      setLanguageMenu(languageOptions(tags, language));
+      setLanguageTags(tags);
       setIsLoading(false);
     };
 
     load();
-  }, [t.publicBiographies.errorLoading, language]);
+  }, [t.publicBiographies.errorLoading]);
 
   useEffect(() => {
     if (!search && langFilter === 'all' && typeFilter === 'all') return;
     const load = async () => {
       const { data } = await fetchPublishedBiographies();
       const list = data ?? [];
-      setAllBios(list);
       const ids = list.map((b) => b.id);
       const editionsRes = await fetchPublicEditionsOf(ids);
-      setEditionsByOriginal((prev) => {
-        const next = { ...prev };
-        for (const row of editionsRes.data ?? []) {
-          const key = row.translation_of;
-          if (!next[key]) next[key] = [];
-          if (!next[key]!.some((e) => e.id === row.id)) {
-            next[key]!.push(row);
-          }
-        }
-        return next;
-      });
+      // Stesso blocco sincrono: niente filtro a metà con allBios già pieno e edizioni vecchie.
+      setAllBios(list);
+      setEditionsByOriginal((prev) => mergeEditionsByOriginal(prev, editionsRes.data ?? []));
     };
     load();
   }, [search, langFilter, typeFilter]);

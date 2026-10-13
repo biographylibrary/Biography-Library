@@ -6,6 +6,12 @@ All notable changes are recorded here. Dates match migration timestamps where ap
 
 ## [Unreleased]
 
+### Editions — archive and life facts (2026-10-13)
+
+- **Life facts on edition exports** — events and relations come from the original; standard labels follow the edition language (`lib/edition-life-facts.ts`).
+- **Archive packages include published editions** — `biography.<tag>.md` and optional `metadata.editions`; deposit reason `edition_published` (migration `20261013140000_archive_reason_edition_published.sql`).
+- **Catalogue / Leggi in polish** — language badge distinguishes original vs edition; Read-in contrast; filter flicker and UI-language reload fixed; minority language name fallbacks; French `originalEdition` → «original».
+
 ### Photos (2026-10-06)
 
 - **Photo upload moved to the server** — `POST /api/biography/[id]/media` validates, compresses with `sharp` (EXIF orientation applied, sRGB, all metadata and GPS removed, long side 2560 px gallery / 3100 px covers, mozjpeg q85 progressive) and writes with the service role. The browser no longer writes to the `biography-photos` bucket.

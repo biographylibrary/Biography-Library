@@ -38,6 +38,27 @@ za zh zu
 /** Lingue oltre ISO 639-1 che un autore può voler usare. */
 const MINORITY = ['fur', 'gsw', 'lij', 'lmo', 'nap', 'vec'] as const;
 
+/** Nomi di ripiego quando Intl.DisplayNames non conosce il codice (o restituisce il codice stesso). */
+const FALLBACK_OWN: Record<string, string> = {
+  lij: 'Lìgure',
+  lmo: 'Lombard',
+  fur: 'Furlan',
+  nap: 'Napulitano',
+  vec: 'Vèneto',
+  gsw: 'Schwiizerdütsch',
+  rm: 'Rumantsch',
+};
+
+const FALLBACK_IN_UI: Record<string, Record<'en' | 'it' | 'fr' | 'de', string>> = {
+  lij: { it: 'ligure', en: 'Ligurian', fr: 'ligure', de: 'Ligurisch' },
+  lmo: { it: 'lombardo', en: 'Lombard', fr: 'lombard', de: 'Lombardisch' },
+  fur: { it: 'friulano', en: 'Friulian', fr: 'frioulan', de: 'Friaulisch' },
+  nap: { it: 'napoletano', en: 'Neapolitan', fr: 'napolitain', de: 'Neapolitanisch' },
+  vec: { it: 'veneto', en: 'Venetian', fr: 'vénitien', de: 'Venetisch' },
+  gsw: { it: 'svizzero tedesco', en: 'Swiss German', fr: 'suisse allemand', de: 'Schweizerdeutsch' },
+  rm: { it: 'romancio', en: 'Romansh', fr: 'romanche', de: 'Rätoromanisch' },
+};
+
 const BASES = new Set<string>([...ISO_639_1, ...MINORITY]);
 
 export const TEXT_LANGUAGE_BASES: readonly string[] = Array.from(BASES).sort();
@@ -104,6 +125,7 @@ export function textLanguageIdentity(input: string | null | undefined): TextLang
   } catch {
     endonym = tag;
   }
+  endonym = applyLanguageNameFallback(tag, tag, endonym);
   return { tag, script, direction, endonym };
 }
 
@@ -129,12 +151,41 @@ export function textLanguageOptionLabel(tag: string, uiLanguage: string): string
   return `${inUi} — ${own} (${tag})`;
 }
 
-function safeDisplayName(locale: string, tag: string): string {
-  try {
-    return new Intl.DisplayNames([locale], { type: 'language' }).of(tag) ?? tag;
-  } catch {
-    return tag;
+function languageBaseCode(tag: string): string {
+  return tag.split('-')[0]?.toLowerCase() ?? tag.toLowerCase();
+}
+
+function applyLanguageNameFallback(locale: string, tag: string, resolved: string): string {
+  const base = languageBaseCode(tag);
+  const normalized = (resolved || '').trim();
+  const looksLikeCode =
+    !normalized ||
+    normalized.toLowerCase() === tag.toLowerCase() ||
+    normalized.toLowerCase() === base;
+  if (!looksLikeCode) return normalized;
+
+  const localeBase = languageBaseCode(locale);
+  if (localeBase === base && FALLBACK_OWN[base]) {
+    return FALLBACK_OWN[base]!;
   }
+  if (
+    (localeBase === 'en' || localeBase === 'it' || localeBase === 'fr' || localeBase === 'de') &&
+    FALLBACK_IN_UI[base]
+  ) {
+    return FALLBACK_IN_UI[base]![localeBase];
+  }
+  if (FALLBACK_OWN[base]) return FALLBACK_OWN[base]!;
+  return normalized || tag;
+}
+
+function safeDisplayName(locale: string, tag: string): string {
+  let resolved = tag;
+  try {
+    resolved = new Intl.DisplayNames([locale], { type: 'language' }).of(tag) ?? tag;
+  } catch {
+    resolved = tag;
+  }
+  return applyLanguageNameFallback(locale, tag, resolved);
 }
 
 /** Vero se il nome cercato, in una delle quattro lingue dell'interfaccia, nella lingua stessa o come codice, corrisponde. */
