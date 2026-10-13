@@ -710,7 +710,7 @@ export function AdvancedExportDialog({
               type="button"
               onClick={checkReadiness}
               className="shrink-0 opacity-90 hover:opacity-100 transition-opacity"
-              aria-label="Retry"
+              aria-label={t.errors.tryAgain}
             >
               <RefreshCw className="h-4 w-4" />
             </button>
@@ -1011,7 +1011,7 @@ export function AdvancedExportDialog({
             <iframe
               src={previewUrl}
               className="flex-1 w-full"
-              title="PDF Preview"
+              title={t.exportDialog.pdfPreview}
             />
           </div>
         )}
@@ -1046,12 +1046,12 @@ export function AdvancedExportDialog({
               {isPreviewing ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Generating...
+                  {t.exportDialog.previewGenerating}
                 </>
               ) : (
                 <>
                   <Eye className="mr-2 h-4 w-4" />
-                  Preview
+                  {t.exportDialog.previewAction}
                 </>
               )}
             </Button>

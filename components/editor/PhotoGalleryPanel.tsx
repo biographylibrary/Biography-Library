@@ -223,7 +223,7 @@ function PhotoGridTile({
           <ImagePlus className="h-6 w-6 text-muted-foreground" />
         </div>
       )}
-      <span className="absolute top-1 left-1 min-w-[1.25rem] h-5 px-1 rounded bg-black/50 text-white text-[10px] flex items-center justify-center">
+      <span className="absolute top-1 left-1 min-w-[1.25rem] h-5 px-1 rounded bg-black/70 text-white text-xs flex items-center justify-center">
         {index + 1}
       </span>
       <div className="absolute top-1 right-1 flex gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">

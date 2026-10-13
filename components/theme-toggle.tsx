@@ -4,9 +4,11 @@ import { Moon, Sun } from 'lucide-react';
 import { useTheme } from 'next-themes';
 import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
+import { useTranslation } from '@/lib/i18n/i18n-context';
 
 export function ThemeToggle() {
   const { resolvedTheme, setTheme } = useTheme();
+  const { t } = useTranslation();
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -27,7 +29,7 @@ export function ThemeToggle() {
       ) : (
         <Moon className="h-[1.2rem] w-[1.2rem]" />
       )}
-      <span className="sr-only">Toggle theme</span>
+      <span className="sr-only">{t.nav.darkMode}</span>
     </Button>
   );
 }

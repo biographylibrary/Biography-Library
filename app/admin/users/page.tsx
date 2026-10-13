@@ -4,6 +4,7 @@ import { useEffect, useState, useMemo, useCallback } from 'react';
 import { Users, Search, ChevronLeft, ChevronRight, Ban, RotateCcw, Trash2 } from 'lucide-react';
 import { useAuth } from '@/lib/auth-context';
 import { useTranslation } from '@/lib/i18n/i18n-context';
+import { countLabel } from '@/lib/i18n/count-label';
 import { supabase } from '@/lib/supabase';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
@@ -87,7 +88,7 @@ function formatDate(iso: string) {
 
 export default function AdminUsersPage() {
   const { user, role, loading } = useAuth();
-  const { t } = useTranslation();
+  const { t, language } = useTranslation();
   const { toast } = useToast();
 
   const [users, setUsers] = useState<UserRow[]>([]);
@@ -494,7 +495,12 @@ export default function AdminUsersPage() {
               </SelectContent>
             </Select>
             <span className="text-sm text-muted-foreground sm:ml-auto tabular-nums">
-              {filtered.length} user{filtered.length !== 1 ? 's' : ''}
+              {countLabel(
+                language,
+                filtered.length,
+                t.admin.usersCountOne,
+                t.admin.usersCountOther
+              )}
             </span>
           </div>
 

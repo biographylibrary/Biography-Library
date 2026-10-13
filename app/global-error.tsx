@@ -1,5 +1,6 @@
 'use client';
 
+// Stays in English: root error boundary has no i18n providers.
 import { useEffect } from 'react';
 import { logger } from '@/lib/logger';
 

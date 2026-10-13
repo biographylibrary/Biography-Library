@@ -271,4 +271,18 @@ describe('PhotoGalleryPanel captions (grid)', () => {
     });
     expect(updateCalls.filter((c) => 'caption' in c)).toHaveLength(0);
   });
+
+  it('numero d’ordine sulla prima miniatura: bg-black/70 e text-xs', async () => {
+    const { container } = await renderPanelReady();
+    const firstTile = galleryTiles(container)[0]!;
+    const orderBadge = Array.from(firstTile.querySelectorAll('span')).find(
+      (el) => el.textContent?.trim() === '1'
+    );
+    expect(orderBadge).toBeTruthy();
+    const cls = orderBadge!.className;
+    expect(cls).toContain('bg-black/70');
+    expect(cls).toContain('text-xs');
+    expect(cls).not.toContain('bg-black/50');
+    expect(cls).not.toContain('text-[10px]');
+  });
 });
