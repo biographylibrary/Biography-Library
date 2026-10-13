@@ -27,6 +27,7 @@ import { BiographyViewGallery } from '@/components/biography/BiographyViewGaller
 import { BookParts } from '@/components/biography/BookParts';
 import { PermanentIdentifier } from '@/components/biography/PermanentIdentifier';
 import { PioneerBadge } from '@/components/biography/PioneerBadge';
+import { ReadInSwitcher } from '@/components/view/read-in-switcher';
 import type { BookPart } from '@/lib/book-parts';
 import { formatDateWithUmYear } from '@/lib/um';
 import { resolveRecordLanguageTag } from '@/lib/record-language';
@@ -154,43 +155,6 @@ export default function BiographyViewPage() {
   const sectionTitlePack = t.sectionTitles;
   const textTag = resolveRecordLanguageTag(biography);
   const textLabels = textLanguageLabels(textTag, uiLanguage);
-
-  useEffect(() => {
-    if (!biography || biography.status !== 'published' || biography.visibility !== 'public') return;
-    const root = biography.translation_of || biography.id;
-    let cancelled = false;
-    const links: HTMLLinkElement[] = [];
-    void (async () => {
-      const { data } = await supabase
-        .from('biographies')
-        .select('id, slug, record_language_tag, translation_of')
-        .or(`id.eq.${root},translation_of.eq.${root}`)
-        .eq('status', 'published')
-        .eq('visibility', 'public');
-      if (cancelled || !data) return;
-      for (const row of data as Array<{ id: string; slug: string | null; record_language_tag: string | null; translation_of: string | null }>) {
-        const href = `${window.location.origin}/biography/${row.slug || row.id}/view`;
-        const link = document.createElement('link');
-        link.rel = 'alternate';
-        link.hreflang = row.record_language_tag || 'und';
-        link.href = href;
-        document.head.appendChild(link);
-        links.push(link);
-        if (!row.translation_of) {
-          const fallback = document.createElement('link');
-          fallback.rel = 'alternate';
-          fallback.hreflang = 'x-default';
-          fallback.href = href;
-          document.head.appendChild(fallback);
-          links.push(fallback);
-        }
-      }
-    })();
-    return () => {
-      cancelled = true;
-      for (const link of links) link.remove();
-    };
-  }, [biography]);
 
   useEffect(() => {
     const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -740,6 +704,17 @@ export default function BiographyViewPage() {
                 originalLanguage={textTag}
                 size="md"
               />
+              {!loadedViaShareToken &&
+                biography.status === 'published' &&
+                biography.visibility === 'public' && (
+                  <ReadInSwitcher
+                    biographyId={biography.id}
+                    translationOf={biography.translation_of ?? null}
+                    title={biography.title}
+                    subjectName={biography.subject_name}
+                    recordLanguageTag={textTag}
+                  />
+                )}
             {!hasServerPdf && !isPdfScriptCovered(biography.record_script) && (
               <p className="mt-3 text-sm text-muted-foreground">{t.textLanguage.pdfUnavailableBody}</p>
             )}
