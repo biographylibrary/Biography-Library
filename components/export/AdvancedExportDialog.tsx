@@ -31,6 +31,7 @@ import { fetchUmIdBaseUrl } from '@/lib/um-id-url-client';
 import type { PermanenceExportBiography } from '@/lib/permanence-text-export';
 import { resolveRecordLanguageTag } from '@/lib/record-language';
 import { resolveEditionIdentity, type EditionIdentityClient } from '@/lib/edition-identity';
+import { loadLifeFactsForExport } from '@/lib/edition-life-facts';
 import {
   isPdfDraftLimitReached,
   PDF_DRAFT_MAX_ITERATION,
@@ -280,17 +281,13 @@ export function AdvancedExportDialog({
       return;
     }
 
-    const [{ data: row }, { data: events }, { data: relations }] = await Promise.all([
-      supabase
-        .from('biographies')
-        .select(
-          'um_id, schema_version, record_language_tag, record_script, record_direction, record_language_endonym, name_as_written, name_romanized, title, author_name, subject_name, biography_type, published_at_iso, published_um_year, rights_statement_uri, content_freeflow, final_version, biography_mode, content'
-        )
-        .eq('id', biography.id)
-        .maybeSingle(),
-      supabase.from('person_events').select('*').eq('biography_id', biography.id),
-      supabase.from('person_relations').select('*').eq('biography_id', biography.id),
-    ]);
+    const { data: row } = await supabase
+      .from('biographies')
+      .select(
+        'um_id, schema_version, record_language_tag, record_script, record_direction, record_language_endonym, name_as_written, name_romanized, title, author_name, subject_name, biography_type, published_at_iso, published_um_year, rights_statement_uri, content_freeflow, final_version, biography_mode, content'
+      )
+      .eq('id', biography.id)
+      .maybeSingle();
 
     let umId: string | null =
       typeof row?.um_id === 'string' && row.um_id.trim() ? row.um_id : null;
@@ -304,6 +301,16 @@ export function AdvancedExportDialog({
       }
       umId = identity.umId;
     }
+
+    const translationOf =
+      isEdition && typeof originalId === 'string' && originalId.trim()
+        ? originalId
+        : null;
+    const { events, relations } = await loadLifeFactsForExport(supabase as never, {
+      id: biography.id,
+      translation_of: translationOf,
+      record_language_tag: row?.record_language_tag ?? contentLanguage ?? null,
+    });
 
     const merged: PermanenceExportBiography = {
       um_id: umId,
