@@ -71,7 +71,7 @@ function SettingsRow({
 }
 
 export default function SettingsPage() {
-  const { user, fontSize, setFontSize, signOut } = useAuth();
+  const { user, loading, fontSize, setFontSize, signOut } = useAuth();
   const { language, t } = useTranslation();
   const { refreshOnboarding } = useOnboardingGate();
   const { resolvedTheme, setTheme } = useTheme();
@@ -87,6 +87,7 @@ export default function SettingsPage() {
   }, []);
 
   useEffect(() => {
+    if (loading) return;
     if (!user) {
       router.replace('/login');
       return;
@@ -112,7 +113,7 @@ export default function SettingsPage() {
     };
 
     fetchBiographyCount();
-  }, [user, router]);
+  }, [user, loading, router]);
 
   const handleDeleteAccount = async () => {
     if (!user) return;

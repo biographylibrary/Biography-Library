@@ -4,6 +4,8 @@ import { act, cleanup, render, screen } from '@testing-library/react';
 import { translations } from '@/lib/i18n/translations';
 
 const replaceMock = vi.fn();
+const pushMock = vi.fn();
+const routerMock = { replace: replaceMock, push: pushMock };
 const authState = {
   user: {
     id: 'u1',
@@ -77,10 +79,7 @@ vi.mock('@/components/onboarding/OnboardingGateProvider', () => ({
 }));
 
 vi.mock('next/navigation', () => ({
-  useRouter: () => ({
-    replace: replaceMock,
-    push: vi.fn(),
-  }),
+  useRouter: () => routerMock,
 }));
 
 vi.mock('@/lib/supabase', () => ({
@@ -121,6 +120,7 @@ beforeEach(() => {
 
 afterEach(() => {
   cleanup();
+  vi.useRealTimers();
 });
 
 describe('SettingsPage i18n labels', () => {
@@ -141,5 +141,48 @@ describe('SettingsPage i18n labels', () => {
     expect(screen.queryByText('Danger zone')).toBeNull();
     expect(screen.queryByText('Small (90%)')).toBeNull();
     expect(screen.queryByText('Extra-large (130%)')).toBeNull();
+  });
+});
+
+describe('SettingsPage auth loading gate', () => {
+  it('loading vero e user vuoto: router.replace non è chiamato, nemmeno dopo i timer', async () => {
+    vi.useFakeTimers();
+    authState.user = null;
+    authState.loading = true;
+
+    await act(async () => {
+      render(<SettingsPage />);
+    });
+    expect(replaceMock).not.toHaveBeenCalled();
+
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(5000);
+    });
+    expect(replaceMock).not.toHaveBeenCalled();
+
+    vi.useRealTimers();
+  });
+
+  it('loading falso e user vuoto: router.replace(/login) una volta', async () => {
+    authState.user = null;
+    authState.loading = false;
+
+    await act(async () => {
+      render(<SettingsPage />);
+    });
+
+    expect(replaceMock).toHaveBeenCalledTimes(1);
+    expect(replaceMock).toHaveBeenCalledWith('/login');
+  });
+
+  it('loading falso e user presente: nessun replace e mostra il nome', async () => {
+    authState.loading = false;
+
+    await act(async () => {
+      render(<SettingsPage />);
+    });
+
+    expect(replaceMock).not.toHaveBeenCalled();
+    expect(screen.getByText('Maria Rossi')).toBeTruthy();
   });
 });
