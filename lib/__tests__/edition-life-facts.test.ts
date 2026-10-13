@@ -4,6 +4,7 @@ import {
   lifeFactsSourceId,
 } from '@/lib/edition-life-facts';
 import { buildRecordCard } from '@/lib/record-schema';
+import { CALENDAR_LABELS } from '@/lib/person-events';
 import type {
   PermanenceExportBiography,
   PermanenceExportEvent,
@@ -18,6 +19,7 @@ function birthIt(): PermanenceExportEvent {
     event_label: 'nascita',
     date_edtf: '1948-03-14',
     date_as_given: '14 marzo 1948',
+    calendar_code: 'gregorian',
     calendar_label: 'gregoriano',
     date_start_iso: '1948-03-14',
     date_start_jdn: 2432635,
@@ -66,6 +68,7 @@ describe('adaptLifeFactsForEdition', () => {
     });
     expect(out.events[0]!.event_label).toBe('birth');
     expect(out.events[0]!.asserted_by_label).toBe('the person');
+    expect(out.events[0]!.calendar_label).toBe(CALENDAR_LABELS.gregorian.en);
     expect(out.relations[0]!.relation_label).toBe('parent');
     expect(out.relations[1]!.relation_label).toBe('nonna paterna');
     expect(out.events[0]!.date_edtf).toBe('1948-03-14');
@@ -83,6 +86,7 @@ describe('adaptLifeFactsForEdition', () => {
       editionTag: 'it-CH',
     });
     expect(out.events[0]!.event_label).toBe('nascita');
+    expect(out.events[0]!.calendar_label).toBe('gregoriano');
     expect(out.relations[0]!.relation_label).toBe('genitore');
     expect(out.events).not.toBe(events);
     expect(out.relations).not.toBe(relations);
@@ -122,8 +126,18 @@ describe('adaptLifeFactsForEdition', () => {
       originalTag: 'it',
       editionTag: 'en',
     }).events[0]!;
-    const { event_label: _el, asserted_by_label: _ab, ...restOut } = out;
-    const { event_label: _el2, asserted_by_label: _ab2, ...restIn } = ev;
+    const {
+      event_label: _el,
+      asserted_by_label: _ab,
+      calendar_label: _cl,
+      ...restOut
+    } = out;
+    const {
+      event_label: _el2,
+      asserted_by_label: _ab2,
+      calendar_label: _cl2,
+      ...restIn
+    } = ev;
     expect(restOut).toEqual(restIn);
   });
 
@@ -136,6 +150,70 @@ describe('adaptLifeFactsForEdition', () => {
     });
     expect(out.relations[0]!.relation_label).toBe('nonna paterna');
     expect(out.relations[0]!.relation_label).not.toBe('other');
+  });
+
+  it('calendario: it→en, en→de, fr→it; personalizzata e codice assente/diverso restano', () => {
+    const itToEn = adaptLifeFactsForEdition({
+      events: [birthIt()],
+      relations: [],
+      originalTag: 'it',
+      editionTag: 'en',
+    });
+    expect(itToEn.events[0]!.calendar_label).toBe(CALENDAR_LABELS.gregorian.en);
+
+    const enToDe = adaptLifeFactsForEdition({
+      events: [
+        {
+          ...birthIt(),
+          calendar_label: CALENDAR_LABELS.gregorian.en,
+          event_label: 'birth',
+          asserted_by_label: 'the person',
+        },
+      ],
+      relations: [],
+      originalTag: 'en',
+      editionTag: 'de',
+    });
+    expect(enToDe.events[0]!.calendar_label).toBe(CALENDAR_LABELS.gregorian.de);
+
+    const frToIt = adaptLifeFactsForEdition({
+      events: [
+        {
+          ...birthIt(),
+          calendar_label: CALENDAR_LABELS.gregorian.fr,
+          event_label: 'naissance',
+          asserted_by_label: 'la personne elle-même',
+        },
+      ],
+      relations: [],
+      originalTag: 'fr',
+      editionTag: 'it',
+    });
+    expect(frToIt.events[0]!.calendar_label).toBe(CALENDAR_LABELS.gregorian.it);
+
+    const custom = adaptLifeFactsForEdition({
+      events: [{ ...birthIt(), calendar_label: 'calendario civile' }],
+      relations: [],
+      originalTag: 'it',
+      editionTag: 'en',
+    });
+    expect(custom.events[0]!.calendar_label).toBe('calendario civile');
+
+    const noCode = adaptLifeFactsForEdition({
+      events: [{ ...birthIt(), calendar_code: null }],
+      relations: [],
+      originalTag: 'it',
+      editionTag: 'en',
+    });
+    expect(noCode.events[0]!.calendar_label).toBe('gregoriano');
+
+    const otherCode = adaptLifeFactsForEdition({
+      events: [{ ...birthIt(), calendar_code: 'julian', calendar_label: 'gregoriano' }],
+      relations: [],
+      originalTag: 'it',
+      editionTag: 'en',
+    });
+    expect(otherCode.events[0]!.calendar_label).toBe('gregoriano');
   });
 });
 

@@ -17,7 +17,7 @@ import {
   syncDueArchivePackages,
 } from '@/lib/server/archive-package-store';
 import type { PermanenceExportBiography } from '@/lib/permanence-text-export';
-import { EVENT_LABELS } from '@/lib/person-events';
+import { ASSERTED_BY_LABELS, EVENT_LABELS } from '@/lib/person-events';
 import { RELATION_CODE_LABELS } from '@/lib/person-relations';
 
 const VALID_UM = 'um0000k3nq7fx2mvp4';
@@ -30,6 +30,7 @@ const ORIGINAL_EVENTS = [
     event_label: 'nascita',
     date_edtf: '1948-03-14',
     date_as_given: '14 marzo 1948',
+    calendar_code: 'gregorian',
     calendar_label: 'gregoriano',
     date_start_iso: '1948-03-14',
     date_start_jdn: 2432635,
@@ -922,12 +923,17 @@ describe('syncArchivePackage — contenuto biography.<lingua>.md', () => {
     expect(deMd).toContain('Ein Leben auf Deutsch.');
     expect(deMd).toContain(EVENT_LABELS.birth.de);
     expect(deMd).not.toContain('nascita');
+    expect(deMd).toContain('(gregorianisch)');
+    expect(deMd).not.toContain('(gregoriano)');
+    expect(deMd).toContain(ASSERTED_BY_LABELS.self.de);
+    expect(deMd).not.toContain('la persona stessa');
     expect(deMd).toContain(RELATION_CODE_LABELS.parent.de);
     expect(deMd).toContain('nonna paterna');
     expect(deMd).toContain('Roma');
     expect(deMd).toContain('1948-03-14');
 
     expect(itMd).toContain('nascita');
+    expect(itMd).toContain('(gregoriano)');
     expect(itMd).toContain('Una vita.');
     expect(itMd).not.toContain(EVENT_LABELS.birth.de);
   });

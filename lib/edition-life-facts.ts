@@ -6,6 +6,7 @@
 
 import {
   ASSERTED_BY_LABELS,
+  CALENDAR_LABELS,
   EVENT_LABELS,
   type AssertedByCode,
   type LifeEventType,
@@ -63,7 +64,7 @@ function isRelationCode(value: string | null | undefined): value is RelationCode
 
 /**
  * Copia eventi e relazioni; se le lingue UI differiscono, sostituisce solo le
- * etichette standard (event_label, asserted_by_label, relation_label).
+ * etichette standard (event_label, asserted_by_label, calendar_label, relation_label).
  * Testo dell'autore e ogni altro campo restano invariati.
  */
 export function adaptLifeFactsForEdition(input: {
@@ -94,6 +95,12 @@ export function adaptLifeFactsForEdition(input: {
       const standardFrom = ASSERTED_BY_LABELS[ev.asserted_by][from];
       if (labelEqualsStandard(ev.asserted_by_label, standardFrom)) {
         next.asserted_by_label = ASSERTED_BY_LABELS[ev.asserted_by][to];
+      }
+    }
+    if (ev.calendar_code === 'gregorian') {
+      const standardFrom = CALENDAR_LABELS.gregorian[from];
+      if (labelEqualsStandard(ev.calendar_label, standardFrom)) {
+        next.calendar_label = CALENDAR_LABELS.gregorian[to];
       }
     }
     return next;

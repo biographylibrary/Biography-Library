@@ -8,7 +8,7 @@ All notable changes are recorded here. Dates match migration timestamps where ap
 
 ### Editions — archive and life facts (2026-10-13)
 
-- **Life facts on edition exports** — events and relations come from the original; standard labels follow the edition language (`lib/edition-life-facts.ts`).
+- **Life facts on edition exports** — events and relations come from the original; standard labels follow the edition language (`lib/edition-life-facts.ts`). The calendar label (e.g. gregoriano → Gregorian) follows the edition language too.
 - **Archive packages include published editions** — `biography.<tag>.md` and optional `metadata.editions`; deposit reason `edition_published` (migration `20261013140000_archive_reason_edition_published.sql`).
 - **Catalogue / Leggi in polish** — language badge distinguishes original vs edition; Read-in contrast; filter flicker and UI-language reload fixed; minority language name fallbacks; French `originalEdition` → «original».
 
