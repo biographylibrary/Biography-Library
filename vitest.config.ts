@@ -15,6 +15,7 @@ export default defineConfig({
       'app/api/**/__tests__/**/*.test.ts',
       'shared/**/__tests__/**/*.test.ts',
       'components/**/__tests__/**/*.test.{ts,tsx}',
+      'hooks/**/__tests__/**/*.test.{ts,tsx}',
     ],
   },
 });

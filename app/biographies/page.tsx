@@ -5,11 +5,7 @@ import Link from 'next/link';
 import { useTranslation } from '@/lib/i18n/i18n-context';
 import {
   fetchPublishedBiographies,
-  fetchFeaturedBiographies,
-  fetchMostReadBiographies,
-  fetchDiscoverBiographies,
   fetchPublicEditionsOf,
-  fetchPublicLanguageTags,
   type PublishedBiography,
   type PublicEditionRow,
 } from '@/lib/biographies';
@@ -39,7 +35,6 @@ import { brandHex } from '@/lib/ui-palette';
 import {
   buildWorkVersions,
   languageBase,
-  languageOptions,
   pickDisplayVersion,
   workMatchesLanguage,
   workMatchesSearch,
@@ -47,6 +42,7 @@ import {
 } from '@/lib/work-languages';
 import { textLanguageLabels } from '@/lib/text-languages';
 import { mergeEditionsByOriginal } from '@/lib/catalog-editions';
+import { usePublicCatalogInitialLoad } from '@/hooks/use-public-catalog-initial-load';
 
 function biographyHref(version: { id: string; slug: string | null }): string {
   return version.slug
@@ -392,79 +388,23 @@ export default function BiographiesPage() {
 function PublicBiographiesPage() {
   const { t, language } = useTranslation();
   const [allBios, setAllBios] = useState<PublishedBiography[]>([]);
-  const [featured, setFeatured] = useState<PublishedBiography[]>([]);
-  const [mostRead, setMostRead] = useState<PublishedBiography[]>([]);
-  const [discover, setDiscover] = useState<PublishedBiography[]>([]);
-  const [editionsByOriginal, setEditionsByOriginal] = useState<Record<string, PublicEditionRow[]>>(
-    {}
-  );
-  const [languageTags, setLanguageTags] = useState<string[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState('');
   const [langFilter, setLangFilter] = useState<string>('all');
   const [typeFilter, setTypeFilter] = useState<string>('all');
 
-  const languageMenu = useMemo(
-    () => languageOptions(languageTags, language),
-    [languageTags, language]
-  );
-
-  useEffect(() => {
-    const load = async () => {
-      setIsLoading(true);
-
-      const [featuredRes, mostReadRes, tagsRes] = await Promise.all([
-        fetchFeaturedBiographies(),
-        fetchMostReadBiographies(),
-        fetchPublicLanguageTags(),
-      ]);
-
-      if (featuredRes.error || mostReadRes.error) {
-        setError(featuredRes.error ?? mostReadRes.error ?? t.publicBiographies.errorLoading);
-        setIsLoading(false);
-        return;
-      }
-
-      const featuredData = featuredRes.data ?? [];
-      const mostReadData = mostReadRes.data ?? [];
-
-      const shownIds = [
-        ...featuredData.map((b) => b.id),
-        ...mostReadData.map((b) => b.id),
-      ];
-      const uniqueShownIds = shownIds.filter((id, i, arr) => arr.indexOf(id) === i);
-
-      const discoverRes = await fetchDiscoverBiographies(uniqueShownIds);
-      const discoverData = discoverRes.data ?? [];
-
-      const allShownIds = [
-        ...uniqueShownIds,
-        ...discoverData.map((b) => b.id),
-      ].filter((id, i, arr) => arr.indexOf(id) === i);
-
-      const editionsRes = await fetchPublicEditionsOf(allShownIds);
-      const byOriginal: Record<string, PublicEditionRow[]> = {};
-      for (const row of editionsRes.data ?? []) {
-        const key = row.translation_of;
-        if (!byOriginal[key]) byOriginal[key] = [];
-        byOriginal[key]!.push(row);
-      }
-
-      const tags = (tagsRes.data ?? [])
-        .map((r) => r.record_language_tag)
-        .filter((tag): tag is string => !!tag?.trim());
-
-      setFeatured(featuredData);
-      setMostRead(mostReadData);
-      setDiscover(discoverData);
-      setEditionsByOriginal(byOriginal);
-      setLanguageTags(tags);
-      setIsLoading(false);
-    };
-
-    load();
-  }, [t.publicBiographies.errorLoading]);
+  const {
+    featured,
+    mostRead,
+    discover,
+    editionsByOriginal,
+    setEditionsByOriginal,
+    languageMenu,
+    isLoading,
+    error,
+  } = usePublicCatalogInitialLoad({
+    errorLoadingMessage: t.publicBiographies.errorLoading,
+    language,
+  });
 
   useEffect(() => {
     if (!search && langFilter === 'all' && typeFilter === 'all') return;
@@ -478,7 +418,7 @@ function PublicBiographiesPage() {
       setEditionsByOriginal((prev) => mergeEditionsByOriginal(prev, editionsRes.data ?? []));
     };
     load();
-  }, [search, langFilter, typeFilter]);
+  }, [search, langFilter, typeFilter, setEditionsByOriginal]);
 
   const isSearchActive = search.trim() !== '' || langFilter !== 'all' || typeFilter !== 'all';
 
