@@ -19,6 +19,7 @@ export function LoginScreen() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [signedInHere, setSignedInHere] = useState(false);
   const { signIn, user, loading, profileReady, accountStatus, role } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -29,15 +30,16 @@ export function LoginScreen() {
       : returnToParam;
   const signedOut = searchParams.get('signedOut') === '1';
   const sessionExpired = searchParams.get('session_expired') === '1';
+  const redirectAllowed = signedInHere || (!signedOut && !sessionExpired);
   const { t } = useTranslation();
 
   useEffect(() => {
-    if (!loading && profileReady && user && !signedOut && !sessionExpired) {
+    if (!loading && profileReady && user && redirectAllowed) {
       router.push(returnTo && returnTo.startsWith('/') && accountStatus !== 'waitlist'
         ? returnTo
         : postLoginPath({ accountStatus, role }));
     }
-  }, [user, loading, profileReady, router, returnTo, signedOut, sessionExpired, accountStatus, role]);
+  }, [user, loading, profileReady, router, returnTo, redirectAllowed, accountStatus, role, signedInHere]);
 
   useEffect(() => {
     try {
@@ -66,10 +68,11 @@ export function LoginScreen() {
       setIsLoading(false);
       return;
     }
+    setSignedInHere(true);
     markBetaLoginNotice();
   };
 
-  if (loading || !profileReady || (user && !signedOut && !sessionExpired)) {
+  if (loading || !profileReady || (user && redirectAllowed)) {
     return (
       <div className="h-full flex items-center justify-center bg-background">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
