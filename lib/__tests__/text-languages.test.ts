@@ -52,4 +52,40 @@ describe('lingua del testo', () => {
     expect(textLanguageOptionLabel('en', 'it')).toContain('—');
     expect(textLanguageOptionLabel('it', 'it')).not.toContain('—');
   });
+
+  it('ripiego nomi per lingue minori e romancio quando Intl restituisce il codice', () => {
+    // own: Intl a volte conosce già un nome; il ripiego evita solo il codice grezzo.
+    expect(textLanguageLabels('lij', 'lij').own.toLowerCase()).not.toBe('lij');
+    expect(textLanguageLabels('lij', 'it').inUi).toBe('ligure');
+    expect(textLanguageLabels('lij', 'en').inUi).toBe('Ligurian');
+    expect(textLanguageLabels('lmo', 'it').inUi).toBe('lombardo');
+    expect(textLanguageLabels('fur', 'de').inUi).toBe('Friaulisch');
+    expect(textLanguageLabels('nap', 'fr').inUi).toBe('napolitain');
+    expect(textLanguageLabels('vec', 'it').inUi).toBe('veneto');
+    expect(textLanguageLabels('gsw', 'en').inUi).toBe('Swiss German');
+    expect(textLanguageLabels('rm', 'rm').own.toLowerCase()).not.toBe('rm');
+    expect(textLanguageLabels('rm', 'it').inUi).toBe('romancio');
+    expect(textLanguageOptionLabel('lij', 'it')).not.toMatch(/lij \(lij\)/i);
+  });
+
+  it('ripiego forzato: se Intl restituisce il codice, si usa la tabella', () => {
+    const RealDisplayNames = Intl.DisplayNames;
+    const Stub = class {
+      of(code: string) {
+        return code;
+      }
+    };
+    Object.defineProperty(Intl, 'DisplayNames', { value: Stub, configurable: true });
+    try {
+      expect(textLanguageLabels('lij', 'lij').own).toBe('Lìgure');
+      expect(textLanguageLabels('lij', 'en').inUi).toBe('Ligurian');
+      expect(textLanguageLabels('rm', 'de').inUi).toBe('Rätoromanisch');
+      expect(textLanguageLabels('gsw', 'gsw').own).toBe('Schwiizerdütsch');
+    } finally {
+      Object.defineProperty(Intl, 'DisplayNames', {
+        value: RealDisplayNames,
+        configurable: true,
+      });
+    }
+  });
 });

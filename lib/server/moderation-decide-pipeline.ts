@@ -192,6 +192,7 @@ export async function serverSubmitDecision(params: {
   if (!updated) return { error: null, conflict: true };
 
   let republication = false;
+  let translationOf: string | null = null;
   if (bioPatch && Object.keys(bioPatch).length > 0) {
     const patch: Record<string, unknown> = { ...bioPatch };
     if (patch.status === 'published') {
@@ -207,15 +208,19 @@ export async function serverSubmitDecision(params: {
         provisional_until?: string | null;
         translation_of?: string | null;
       } | null;
-      if (row?.translation_of) {
+      translationOf =
+        typeof row?.translation_of === 'string' && row.translation_of.trim()
+          ? row.translation_of
+          : null;
+      if (translationOf) {
         const { editionMayPublish } = await import('@/lib/server/edition-publish');
         const { data: original } = await service
           .from('biographies')
           .select('status')
-          .eq('id', row.translation_of)
+          .eq('id', translationOf)
           .maybeSingle();
         if (!editionMayPublish({
-          translationOf: row.translation_of,
+          translationOf,
           originalStatus: (original as { status?: string } | null)?.status ?? null,
         })) {
           return { error: 'original_not_published', conflict: false };
@@ -223,13 +228,13 @@ export async function serverSubmitDecision(params: {
       }
       if (row?.status === 'revision_pending_review') {
         delete patch.published_at;
-        if (row.translation_of) {
+        if (translationOf) {
           patch.revised_at = now;
         } else {
           Object.assign(patch, republicationClock(row.biography_type, now));
         }
         republication = true;
-      } else if (!row?.translation_of && row?.biography_type === 'memorial' && !row.provisional_until && typeof patch.published_at === 'string') {
+      } else if (!translationOf && row?.biography_type === 'memorial' && !row.provisional_until && typeof patch.published_at === 'string') {
         const until = provisionalUntilOnFirstPublish('memorial', patch.published_at);
         if (until) patch.provisional_until = until;
       }
@@ -260,7 +265,14 @@ export async function serverSubmitDecision(params: {
         console.error('[moderation-decide] purgeAgentMemory failed (non-blocking)', err);
       }
     }
-    if (republication) {
+    if (patch.status === 'published' && translationOf) {
+      try {
+        const { syncArchivePackage } = await import('@/lib/server/archive-package-store');
+        await syncArchivePackage(service, translationOf, 'edition_published');
+      } catch (err) {
+        console.error('[moderation-decide] archive package failed (non-blocking)', err);
+      }
+    } else if (republication) {
       try {
         const { syncArchivePackage } = await import('@/lib/server/archive-package-store');
         await syncArchivePackage(service, biographyId, 'republication');

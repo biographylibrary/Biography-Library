@@ -26,6 +26,7 @@ import {
 } from '@/lib/permanence-text-export';
 import { resolveMediaOwnerId, type MediaOwnerClient } from '@/lib/edition-media-owner';
 import { resolveEditionIdentity, type EditionIdentityClient } from '@/lib/edition-identity';
+import { loadLifeFactsForExport } from '@/lib/edition-life-facts';
 import { GALLERY_PHOTO_LAYOUTS } from '@/lib/biography-media-constants';
 
 type PdfSupabase = SupabaseClient<any, any, any>;
@@ -511,17 +512,13 @@ export async function fetchPermanencePdfData(biographyId: string): Promise<{
   relations: PermanenceExportRelation[];
 }> {
   const client = getPdfSupabase();
-  const [{ data: row }, { data: events }, { data: relations }] = await Promise.all([
-    client
-      .from('biographies')
-      .select(
-        'um_id, translation_of, schema_version, record_language_tag, record_script, record_direction, record_language_endonym, name_as_written, name_romanized, title, author_name, subject_name, biography_type, published_at_iso, published_um_year, rights_statement_uri'
-      )
-      .eq('id', biographyId)
-      .maybeSingle(),
-    client.from('person_events').select('*').eq('biography_id', biographyId),
-    client.from('person_relations').select('*').eq('biography_id', biographyId),
-  ]);
+  const { data: row } = await client
+    .from('biographies')
+    .select(
+      'um_id, translation_of, schema_version, record_language_tag, record_script, record_direction, record_language_endonym, name_as_written, name_romanized, title, author_name, subject_name, biography_type, published_at_iso, published_um_year, rights_statement_uri'
+    )
+    .eq('id', biographyId)
+    .maybeSingle();
 
   if (!row) {
     return { bio: null, events: [], relations: [] };
@@ -545,6 +542,12 @@ export async function fetchPermanencePdfData(biographyId: string): Promise<{
     umId = identity.umId;
   }
 
+  const { events, relations } = await loadLifeFactsForExport(client as never, {
+    id: biographyId,
+    translation_of: translationOf,
+    record_language_tag: base.record_language_tag,
+  });
+
   const bio: PermanenceExportBiography = {
     ...base,
     um_id: umId,
@@ -552,8 +555,8 @@ export async function fetchPermanencePdfData(biographyId: string): Promise<{
 
   return {
     bio,
-    events: (events as PermanenceExportEvent[]) ?? [],
-    relations: (relations as PermanenceExportRelation[]) ?? [],
+    events,
+    relations,
   };
 }
 

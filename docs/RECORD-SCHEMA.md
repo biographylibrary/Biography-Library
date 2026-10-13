@@ -49,3 +49,7 @@ DIRITTI | RIGHTS: https://creativecommons.org/licenses/by-nc-sa/4.0/
 ```
 
 Nel pacchetto d’archivio la scheda sta in `record.txt` (queste righe) e in `record.json` (gli stessi fatti con un nome per ciascuno). Non sta dentro il testo della biografia.
+
+## Traduzioni
+
+La scheda di una traduzione porta l’identificativo dell’opera, la lingua della traduzione, la data di pubblicazione della traduzione e i fatti di vita dell’originale. Le etichette fisse (nascita, fonte, genitore e simili) sono nella lingua della traduzione; ciò che l’autore ha scritto con parole proprie resta com’è. La versione dello schema non cambia, perché non si aggiunge né si riordina nessuna riga.

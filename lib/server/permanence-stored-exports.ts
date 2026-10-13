@@ -14,6 +14,13 @@ import {
 } from '@/lib/permanence-text-export';
 import { umIdBaseUrl } from '@/lib/um-id-url';
 import { resolveEditionIdentity, type EditionIdentityClient } from '@/lib/edition-identity';
+import {
+  EditionLifeFactsUnavailableError,
+  loadLifeFactsForExport,
+  type LifeFactsClient,
+} from '@/lib/edition-life-facts';
+
+export { EditionLifeFactsUnavailableError };
 
 type AnyClient = SupabaseClient<any, any, any>;
 
@@ -60,17 +67,14 @@ export async function loadPermanenceExportBundle(
   svc: AnyClient,
   biographyId: string
 ): Promise<PermanenceExportBundle | null> {
-  const [{ data: row, error }, { data: events }, { data: relations }, { data: structure }] =
-    await Promise.all([
-      svc.from('biographies').select(BIO_SELECT).eq('id', biographyId).maybeSingle(),
-      svc.from('person_events').select('*').eq('biography_id', biographyId),
-      svc.from('person_relations').select('*').eq('biography_id', biographyId),
-      svc
-        .from('biography_book_structure')
-        .select(BOOK_STRUCTURE_SELECT)
-        .eq('biography_id', biographyId)
-        .maybeSingle(),
-    ]);
+  const [{ data: row, error }, { data: structure }] = await Promise.all([
+    svc.from('biographies').select(BIO_SELECT).eq('id', biographyId).maybeSingle(),
+    svc
+      .from('biography_book_structure')
+      .select(BOOK_STRUCTURE_SELECT)
+      .eq('biography_id', biographyId)
+      .maybeSingle(),
+  ]);
 
   if (error || !row) return null;
 
@@ -94,6 +98,12 @@ export async function loadPermanenceExportBundle(
     umId = identity.umId;
   }
 
+  const { events, relations } = await loadLifeFactsForExport(svc as unknown as LifeFactsClient, {
+    id: biographyId,
+    translation_of: translationOf,
+    record_language_tag: base.record_language_tag,
+  });
+
   const bio: PermanenceExportBiography = {
     ...base,
     um_id: umId,
@@ -101,8 +111,8 @@ export async function loadPermanenceExportBundle(
 
   return {
     bio,
-    events: (events as PermanenceExportEvent[]) ?? [],
-    relations: (relations as PermanenceExportRelation[]) ?? [],
+    events,
+    relations,
     bookParts: selectBookParts(structure as BookStructureRow | null),
   };
 }

@@ -70,11 +70,25 @@ Nessuno strumento di IA lavora sul testo di un'edizione: né il controllo gramma
 
 Nel catalogo pubblico una storia con più edizioni resta una sola scheda (sempre costruita sull'originale): filtro e ricerca considerano le lingue delle edizioni; la scheda mostra titolo e collegamento della versione scelta (`pickDisplayVersion`) e, se ci sono almeno due versioni, le etichette «Disponibile in». Le sezioni in evidenza / più letti / da scoprire non cambiano ordine né conteggi. Sulla pagina di lettura, per schede pubblicate e pubbliche aperte senza token di condivisione, il selettore «Leggi in» elenca le versioni pubbliche. I collegamenti `hreflang` e `canonical` li genera il layout server (`app/biography/[id]/view/layout.tsx`) con client anonimo e `cache: 'no-store'`; niente reindirizzamento automatico in base alla lingua del browser.
 
+### Blocco 5, sottopasso E: fatti di vita nelle uscite di un'edizione — fatto
+
+Le uscite di un'edizione (scheda, TXT, DOCX, PDF, Markdown d'archivio) leggono eventi e relazioni dall'originale (`loadLifeFactsForExport`) e adattano solo le etichette standard (`event_label`, `asserted_by_label`, `relation_label`) alla lingua UI dell'edizione. Il testo scritto dall'autore con parole proprie resta com'è. Nome, titolo, data di pubblicazione e diritti restano della riga edizione; l'identificativo UM resta quello dell'originale.
+
+### Blocco 5, sottopasso D: edizioni nel pacchetto d'archivio — fatto
+
+Il pacchetto è uno solo per opera, `archive/{UM}/v{N}/`. Accanto a `biography.md` ci sono `biography.<lingua>.md` per ogni edizione pubblicata. `metadata.json` ha la chiave `editions` solo se c'è almeno un'edizione. `record.txt` e `record.json` restano quelli dell'originale. Nuova ragione di deposito `edition_published` (migrazione `20261013140000_archive_reason_edition_published.sql`, da applicare a mano in produzione prima dell'unione).
+
+Quando parte un deposito: prima pubblicazione automatica di un'edizione; ogni pubblicazione o ripubblicazione decisa dallo staff di un'edizione; cron di sicurezza se un'edizione pubblicata ha `published_at` successivo al `generated_at` dell'ultima versione. La ripubblicazione automatica di un'edizione (screening con `published_at` già valorizzato) non deposita. I pacchetti già depositati non si riscrivono.
+
+**Debito — corsa residua fra cron e pubblicazione:** la guardia `archive_version_conflict` restringe i depositi concorrenti (rilegge le versioni e controlla che la cartella `vN` sia vuota prima di scrivere), ma non elimina del tutto la corsa.
+
 Restano (in prosa):
 
-- **D — archivio:** nel pacchetto dell'originale, accanto a `biography.md`, un file `biography.<lingua>.md` per ogni edizione pubblicata, costruito con la stessa `buildBiographyMarkdown` sulle parti di quell'edizione.
-- **E — lingua di eventi e relazioni:** dichiarare e mostrare in quale lingua sono scritti eventi e relazioni (oggi restano solo sull'originale, senza etichetta di lingua propria).
 - **Ritiro di un'edizione pubblicata:** percorso per togliere dal pubblico un'edizione già online senza toccare l'originale (oggi non c'è).
+- **Sitemap:** sitemap XML delle biografie pubbliche e delle loro edizioni (oggi i motori si affidano ai collegamenti interni e agli `hreflang`).
+- **Metadati propri della pagina di lettura:** titolo, descrizione e simili oltre agli `alternates` già generati dal layout server.
+
+**Debiti di scala della 133 (catalogo):** `fetchPublicLanguageTags` legge una riga per ogni scheda pubblica (il commento dice distinct ma non lo è) e ha il tetto di mille righe di PostgREST; `fetchPublicEditionsOf` con molti identificativi allunga l'indirizzo della richiesta.
 
 ### Blocco 1: strumenti di intelligenza artificiale (30 settembre 2026, ramo `blocco-1-strumenti-ai`)
 

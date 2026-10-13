@@ -702,6 +702,7 @@ export default function BiographyViewPage() {
               </p>
               <BiographyLanguageBadges
                 originalLanguage={textTag}
+                isOriginal={!biography.translation_of}
                 size="md"
               />
               {!loadedViaShareToken &&

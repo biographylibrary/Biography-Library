@@ -6363,7 +6363,7 @@ export const translations: Record<Language, Translations> = {
       galleryPhotoCounter: 'Photo {current} sur {total}',
       galleryOpenPhoto: 'Voir la photo : {caption}',
       readIn: 'Lire en',
-      originalEdition: 'originale',
+      originalEdition: 'original',
     },
     footer: {
       hostedInSwitzerland: 'Biography Library - H\u00e9berg\u00e9 en Suisse',
