@@ -78,6 +78,7 @@ export type PermanenceExportEvent = {
   event_label: string;
   date_edtf: string | null;
   date_as_given: string | null;
+  calendar_code?: string | null;
   calendar_label: string | null;
   date_start_iso: string | null;
   date_start_jdn: number | null;

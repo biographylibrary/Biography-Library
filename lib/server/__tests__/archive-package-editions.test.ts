@@ -11,12 +11,50 @@ import {
   editionMarkdownPath,
   sha256Hex,
 } from '@/lib/archive-package';
-import { syncArchivePackage, syncDueArchivePackages } from '@/lib/server/archive-package-store';
+import {
+  ArchiveVersionConflictError,
+  syncArchivePackage,
+  syncDueArchivePackages,
+} from '@/lib/server/archive-package-store';
 import type { PermanenceExportBiography } from '@/lib/permanence-text-export';
+import { ASSERTED_BY_LABELS, EVENT_LABELS } from '@/lib/person-events';
+import { RELATION_CODE_LABELS } from '@/lib/person-relations';
 
 const VALID_UM = 'um0000k3nq7fx2mvp4';
 const CANONICAL = 'UM-0000-K3NQ-7FX2-MVP4';
 const FIXED_ISO = '2026-10-13T12:00:00.000Z';
+
+const ORIGINAL_EVENTS = [
+  {
+    event_type: 'birth',
+    event_label: 'nascita',
+    date_edtf: '1948-03-14',
+    date_as_given: '14 marzo 1948',
+    calendar_code: 'gregorian',
+    calendar_label: 'gregoriano',
+    date_start_iso: '1948-03-14',
+    date_start_jdn: 2432635,
+    place_name_as_given: 'Roma',
+    place_lat: 41.9,
+    place_lon: 12.5,
+    asserted_by: 'self',
+    asserted_by_label: 'la persona stessa',
+    confidence: 'certain',
+  },
+];
+
+const ORIGINAL_RELATIONS = [
+  {
+    relation_code: 'parent',
+    relation_label: 'genitore',
+    related_name_as_written: 'Anna',
+  },
+  {
+    relation_code: 'other',
+    relation_label: 'nonna paterna',
+    related_name_as_written: 'Maria',
+  },
+];
 
 function baseBio(overrides: Partial<PermanenceExportBiography> = {}): PermanenceExportBiography {
   return {
@@ -48,6 +86,8 @@ type EditionSpec = {
   published_at: string;
   fail?: boolean;
   bio?: PermanenceExportBiography;
+  /** Default: input.originalId */
+  translation_of?: string;
 };
 
 function makeClient(input: {
@@ -57,6 +97,13 @@ function makeClient(input: {
   media?: Array<{ id: string; file_url: string; file_name: string | null; caption: string | null }>;
   editionCaptions?: Record<string, Array<{ media_id: string; caption: string }>>;
   listNonEmpty?: boolean;
+  listNonEmptyByBio?: Record<string, boolean>;
+  /** On 2nd versions select for these ids, return a conflicting version_number */
+  conflictOnRecheckIds?: string[];
+  /** Extra published originals (same shape as originalId) for syncDue scenarios */
+  extraOriginals?: string[];
+  eventsByBio?: Record<string, unknown[]>;
+  relationsByBio?: Record<string, unknown[]>;
   /** For syncDueArchivePackages scenarios */
   dueRows?: Array<Record<string, unknown>>;
   versionsByBio?: Record<string, Array<Record<string, unknown>>>;
@@ -65,9 +112,12 @@ function makeClient(input: {
   const uploaded: Array<{ path: string; bytes: Buffer }> = [];
   const versions = [...input.versions];
   const editions = input.editions ?? [];
+  const versionsSelectCalls: Record<string, number> = {};
+  const inserted: Array<Record<string, unknown>> = [];
+  const extraOriginals = new Set(input.extraOriginals ?? []);
 
   const bioRowFor = (id: string) => {
-    if (id === input.originalId) {
+    if (id === input.originalId || extraOriginals.has(id)) {
       return {
         ...baseBio(),
         id,
@@ -91,7 +141,8 @@ function makeClient(input: {
           content_freeflow: `Body ${ed.record_language_tag}`,
         })),
       id,
-      translation_of: input.originalId,
+      um_id: null,
+      translation_of: ed.translation_of ?? input.originalId,
       status: 'published',
       published_at: ed.published_at,
     };
@@ -100,6 +151,7 @@ function makeClient(input: {
   return {
     uploaded,
     versions,
+    inserted,
     client: {
       from(table: string) {
         if (table === 'biographies') {
@@ -120,23 +172,26 @@ function makeClient(input: {
                         ...editions.map((e) => ({
                           id: e.id,
                           biography_type: 'autobiography',
-                          translation_of: input.originalId,
+                          translation_of: e.translation_of ?? input.originalId,
                           published_at: e.published_at,
                         })),
                       ];
                     return Promise.resolve({ data: rows, error: null });
                   }
                   if (col === 'translation_of') {
+                    const originalId = value;
                     return {
                       eq(_c: string, _v: string) {
                         return {
                           async order() {
                             return {
-                              data: editions.map((e) => ({
-                                id: e.id,
-                                record_language_tag: e.record_language_tag,
-                                published_at: e.published_at,
-                              })),
+                              data: editions
+                                .filter((e) => (e.translation_of ?? input.originalId) === originalId)
+                                .map((e) => ({
+                                  id: e.id,
+                                  record_language_tag: e.record_language_tag,
+                                  published_at: e.published_at,
+                                })),
                               error: null,
                             };
                           },
@@ -171,15 +226,35 @@ function makeClient(input: {
             select() {
               return {
                 async eq(_c: string, bioId: string) {
+                  versionsSelectCalls[bioId] = (versionsSelectCalls[bioId] ?? 0) + 1;
+                  const call = versionsSelectCalls[bioId]!;
                   const list = input.versionsByBio
-                    ? input.versionsByBio[bioId] ?? []
-                    : versions;
+                    ? [...(input.versionsByBio[bioId] ?? [])]
+                    : bioId === input.originalId
+                      ? [...versions]
+                      : [];
+                  if (call >= 2 && input.conflictOnRecheckIds?.includes(bioId)) {
+                    const maxExisting =
+                      list.length === 0
+                        ? 0
+                        : Math.max(...list.map((v) => Number(v.version_number) || 0));
+                    return {
+                      data: [...list, { version_number: maxExisting + 1 }],
+                      error: null,
+                    };
+                  }
                   return { data: list, error: null };
                 },
               };
             },
             async insert(row: Record<string, unknown>) {
               versions.push(row);
+              inserted.push(row);
+              if (input.versionsByBio && typeof row.biography_id === 'string') {
+                const id = row.biography_id;
+                if (!input.versionsByBio[id]) input.versionsByBio[id] = [];
+                input.versionsByBio[id]!.push(row);
+              }
               return { error: null };
             },
           };
@@ -213,8 +288,12 @@ function makeClient(input: {
           return {
             select() {
               return {
-                async eq() {
-                  return { data: [], error: null };
+                async eq(_c: string, bioId: string) {
+                  const rows =
+                    table === 'person_events'
+                      ? (input.eventsByBio?.[bioId] ?? [])
+                      : (input.relationsByBio?.[bioId] ?? []);
+                  return { data: rows, error: null };
                 },
               };
             },
@@ -244,9 +323,23 @@ function makeClient(input: {
               uploaded.push({ path, bytes: Buffer.from(bytes) });
               return { error: null };
             },
-            async list() {
+            async list(versionDir: string) {
+              // versionDir like UM-.../v1 — extract um folder owner via path prefix match
+              let nonEmpty = !!input.listNonEmpty;
+              if (input.listNonEmptyByBio) {
+                nonEmpty = false;
+                for (const [bioId, flag] of Object.entries(input.listNonEmptyByBio)) {
+                  if (!flag) continue;
+                  // All bios share VALID_UM in these tests; use explicit flag when set.
+                  if (bioId === input.originalId || extraOriginals.has(bioId)) {
+                    nonEmpty = true;
+                    break;
+                  }
+                }
+              }
+              void versionDir;
               return {
-                data: input.listNonEmpty ? [{ name: 'x' }] : [],
+                data: nonEmpty ? [{ name: 'x' }] : [],
                 error: null,
               };
             },
@@ -571,11 +664,277 @@ describe('syncDueArchivePackages — edizioni mancanti', () => {
 
     const result = await syncDueArchivePackages(wrapped as never);
     expect(result.checked).toBe(4);
+    expect(result.failed).toEqual([]);
     expect(trackSyncIds).toEqual([
       'orig-pending',
       'orig-included',
       'orig-no-ver',
       'orig-pending',
     ]);
+  });
+
+  it('un originale che fallisce non ferma il deposito degli altri', async () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date(FIXED_ISO));
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async () => ({
+        ok: true,
+        arrayBuffer: async () => new ArrayBuffer(4),
+      }))
+    );
+
+    const versionsByBio: Record<string, Array<Record<string, unknown>>> = {
+      'orig-fail': [],
+      'orig-ok': [],
+    };
+    const { client, uploaded, inserted } = makeClient({
+      originalId: 'orig-fail',
+      versions: [],
+      extraOriginals: ['orig-ok'],
+      dueRows: [
+        {
+          id: 'orig-fail',
+          biography_type: 'autobiography',
+          translation_of: null,
+          published_at: '2026-09-01T00:00:00.000Z',
+        },
+        {
+          id: 'orig-ok',
+          biography_type: 'autobiography',
+          translation_of: null,
+          published_at: '2026-09-01T00:00:00.000Z',
+        },
+      ],
+      versionsByBio,
+      conflictOnRecheckIds: ['orig-fail'],
+    });
+
+    const result = await syncDueArchivePackages(client as never);
+    expect(result.failed).toEqual(['orig-fail']);
+    expect(result.deposited).toBe(1);
+    expect(inserted.some((r) => r.biography_id === 'orig-ok')).toBe(true);
+    expect(inserted.some((r) => r.biography_id === 'orig-fail')).toBe(false);
+    expect(uploaded.some((u) => u.path.includes('/v1/'))).toBe(true);
+
+    vi.useRealTimers();
+    vi.unstubAllGlobals();
+  });
+
+  it('edizione pendente il cui pacchetto non si carica: gli altri originali partono comunque', async () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date(FIXED_ISO));
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async () => ({
+        ok: true,
+        arrayBuffer: async () => new ArrayBuffer(4),
+      }))
+    );
+
+    const versionsByBio: Record<string, Array<Record<string, unknown>>> = {
+      'orig-bad-ed': [
+        { version_number: 1, generated_at: '2026-09-02T00:00:00.000Z' },
+      ],
+      'orig-good-ed': [
+        { version_number: 1, generated_at: '2026-09-02T00:00:00.000Z' },
+      ],
+    };
+    const { client, inserted } = makeClient({
+      originalId: 'orig-bad-ed',
+      versions: [],
+      extraOriginals: ['orig-good-ed'],
+      dueRows: [
+        {
+          id: 'orig-bad-ed',
+          biography_type: 'autobiography',
+          translation_of: null,
+          published_at: '2026-09-01T00:00:00.000Z',
+        },
+        {
+          id: 'orig-good-ed',
+          biography_type: 'autobiography',
+          translation_of: null,
+          published_at: '2026-09-01T00:00:00.000Z',
+        },
+        {
+          id: 'ed-bad',
+          biography_type: 'autobiography',
+          translation_of: 'orig-bad-ed',
+          published_at: '2026-10-10T00:00:00.000Z',
+        },
+        {
+          id: 'ed-good',
+          biography_type: 'autobiography',
+          translation_of: 'orig-good-ed',
+          published_at: '2026-10-10T00:00:00.000Z',
+        },
+      ],
+      versionsByBio,
+      editions: [
+        {
+          id: 'ed-bad',
+          record_language_tag: 'fr',
+          published_at: '2026-10-10T00:00:00.000Z',
+          translation_of: 'orig-bad-ed',
+          fail: true,
+        },
+        {
+          id: 'ed-good',
+          record_language_tag: 'de',
+          published_at: '2026-10-10T00:00:00.000Z',
+          translation_of: 'orig-good-ed',
+          bio: baseBio({
+            um_id: null,
+            record_language_tag: 'de',
+            record_language_endonym: 'Deutsch',
+            title: 'Maria Rossi (DE)',
+            name_as_written: 'Maria Rossi',
+            author_name: 'Maria Rossi',
+            published_at_iso: '2026-10-02',
+            content_freeflow: 'Ein Leben auf Deutsch.',
+          }),
+        },
+      ],
+    });
+
+    const result = await syncDueArchivePackages(client as never);
+    expect(result.failed).toEqual(['orig-bad-ed']);
+    expect(result.deposited).toBeGreaterThanOrEqual(1);
+    expect(inserted.some((r) => r.biography_id === 'orig-good-ed')).toBe(true);
+    expect(inserted.some((r) => r.biography_id === 'orig-bad-ed')).toBe(false);
+
+    vi.useRealTimers();
+    vi.unstubAllGlobals();
+  });
+});
+
+describe('syncArchivePackage — guardie di integrità', () => {
+  beforeEach(() => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date(FIXED_ISO));
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async () => ({
+        ok: true,
+        arrayBuffer: async () => new ArrayBuffer(4),
+      }))
+    );
+  });
+  afterEach(() => {
+    vi.useRealTimers();
+    vi.unstubAllGlobals();
+  });
+
+  it('rilettura versioni con numero ≥ N: ArchiveVersionConflictError, nessun upload né insert', async () => {
+    const { client, uploaded, inserted } = makeClient({
+      originalId: 'orig-1',
+      versions: [],
+      conflictOnRecheckIds: ['orig-1'],
+    });
+
+    await expect(
+      syncArchivePackage(client as never, 'orig-1', 'publication')
+    ).rejects.toBeInstanceOf(ArchiveVersionConflictError);
+    expect(uploaded).toHaveLength(0);
+    expect(inserted).toHaveLength(0);
+  });
+
+  it('cartella vN non vuota: ArchiveVersionConflictError, nessun upload né insert', async () => {
+    const { client, uploaded, inserted } = makeClient({
+      originalId: 'orig-1',
+      versions: [],
+      listNonEmpty: true,
+    });
+
+    await expect(
+      syncArchivePackage(client as never, 'orig-1', 'publication')
+    ).rejects.toBeInstanceOf(ArchiveVersionConflictError);
+    expect(uploaded).toHaveLength(0);
+    expect(inserted).toHaveLength(0);
+  });
+});
+
+describe('syncArchivePackage — contenuto biography.<lingua>.md', () => {
+  beforeEach(() => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date(FIXED_ISO));
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async () => ({
+        ok: true,
+        arrayBuffer: async () => new ArrayBuffer(4),
+      }))
+    );
+  });
+  afterEach(() => {
+    vi.useRealTimers();
+    vi.unstubAllGlobals();
+  });
+
+  it('biography.de.md usa dati edizione, UM originale ed etichette adattate; biography.md resta italiano', async () => {
+    const deBio = baseBio({
+      um_id: null,
+      record_language_tag: 'de',
+      record_language_endonym: 'Deutsch',
+      title: 'Maria Rossi (DE)',
+      name_as_written: 'Maria Rossi (DE)',
+      author_name: 'Autorin DE',
+      published_at_iso: '2026-10-02',
+      content_freeflow: 'Ein Leben auf Deutsch.',
+    });
+    const { client, uploaded } = makeClient({
+      originalId: 'orig-1',
+      versions: [
+        {
+          version_number: 1,
+          generated_at: '2026-09-01T00:00:00.000Z',
+          manifest_sha256: 'a'.repeat(64),
+          reason: 'publication',
+          status: 'stored',
+        },
+      ],
+      editions: [
+        {
+          id: 'ed-de',
+          record_language_tag: 'de',
+          published_at: '2026-10-02T00:00:00.000Z',
+          bio: deBio,
+        },
+      ],
+      eventsByBio: { 'orig-1': ORIGINAL_EVENTS },
+      relationsByBio: { 'orig-1': ORIGINAL_RELATIONS },
+    });
+
+    await syncArchivePackage(client as never, 'orig-1', 'edition_published');
+
+    const deMd = uploaded
+      .find((u) => u.path.endsWith(editionMarkdownPath('de')))!
+      .bytes.toString('utf8');
+    const itMd = uploaded.find((u) => u.path.endsWith('/biography.md'))!.bytes.toString('utf8');
+
+    expect(deMd).toContain(CANONICAL);
+    expect(deMd).toMatch(/\bde\b/);
+    expect(deMd).toContain('Deutsch');
+    expect(deMd).toContain('2026-10-02');
+    expect(deMd).not.toContain('2026-09-01');
+    // NAME nella scheda = name_as_written (o title in fallback); entrambi impostati sull'edizione.
+    expect(deMd).toContain('Maria Rossi (DE)');
+    expect(deMd).toContain('Ein Leben auf Deutsch.');
+    expect(deMd).toContain(EVENT_LABELS.birth.de);
+    expect(deMd).not.toContain('nascita');
+    expect(deMd).toContain('(gregorianisch)');
+    expect(deMd).not.toContain('(gregoriano)');
+    expect(deMd).toContain(ASSERTED_BY_LABELS.self.de);
+    expect(deMd).not.toContain('la persona stessa');
+    expect(deMd).toContain(RELATION_CODE_LABELS.parent.de);
+    expect(deMd).toContain('nonna paterna');
+    expect(deMd).toContain('Roma');
+    expect(deMd).toContain('1948-03-14');
+
+    expect(itMd).toContain('nascita');
+    expect(itMd).toContain('(gregoriano)');
+    expect(itMd).toContain('Una vita.');
+    expect(itMd).not.toContain(EVENT_LABELS.birth.de);
   });
 });

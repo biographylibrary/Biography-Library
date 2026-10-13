@@ -13,6 +13,9 @@ export async function POST(req: NextRequest) {
 
   try {
     const result = await syncDueArchivePackages(buildServiceClient());
+    if (result.failed.length > 0) {
+      return NextResponse.json(result, { status: 500 });
+    }
     return NextResponse.json(result);
   } catch (err) {
     const message = err instanceof Error ? err.message : 'archive package failed';

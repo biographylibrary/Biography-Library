@@ -102,6 +102,14 @@ export const ASSERTED_BY_LABELS: Record<
   unknown: { en: 'unknown', it: 'sconosciuto', fr: 'inconnu', de: 'unbekannt' },
 };
 
+/** Etichette calendario standard per codice (oggi solo gregoriano). */
+export const CALENDAR_LABELS: Record<
+  'gregorian',
+  Record<'en' | 'it' | 'fr' | 'de', string>
+> = {
+  gregorian: { en: 'Gregorian', it: 'gregoriano', fr: 'grégorien', de: 'gregorianisch' },
+};
+
 export type UiLang = 'en' | 'it' | 'fr' | 'de';
 
 export function eventLabel(type: LifeEventType, lang: UiLang): string {
@@ -163,12 +171,7 @@ export function buildEventRow(params: {
     date_edtf: derived.edtf,
     date_as_given: asGiven,
     calendar_code: derived.edtf ? 'gregorian' : null,
-    calendar_label:
-      derived.edtf
-        ? ({ en: 'Gregorian', it: 'gregoriano', fr: 'grégorien', de: 'gregorianisch' } as const)[
-            recordLang
-          ]
-        : null,
+    calendar_label: derived.edtf ? CALENDAR_LABELS.gregorian[recordLang] : null,
     date_start_iso: derived.startIso,
     date_end_iso: derived.endIso,
     place_name_as_given: placeName,

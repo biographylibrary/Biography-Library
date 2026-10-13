@@ -324,7 +324,11 @@ export async function syncArchivePackage(
   return { deposited: true, version: decision.version };
 }
 
-export async function syncDueArchivePackages(svc: AnyClient): Promise<{ checked: number; deposited: number }> {
+export async function syncDueArchivePackages(svc: AnyClient): Promise<{
+  checked: number;
+  deposited: number;
+  failed: string[];
+}> {
   const { data, error } = await svc
     .from('biographies')
     .select('id, biography_type, translation_of, published_at')
@@ -344,13 +348,20 @@ export async function syncDueArchivePackages(svc: AnyClient): Promise<{ checked:
 
   let checked = 0;
   let deposited = 0;
+  const failed: string[] = [];
 
   for (const row of originals) {
     checked += 1;
     const reason: ArchiveReason =
       row.biography_type === 'memorial' ? 'provisional_expired' : 'publication';
-    const result = await syncArchivePackage(svc, row.id, reason);
-    if (result.deposited) deposited += 1;
+    try {
+      const result = await syncArchivePackage(svc, row.id, reason);
+      if (result.deposited) deposited += 1;
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err);
+      console.error('[archive-packages] sync failed', row.id, message);
+      failed.push(row.id);
+    }
   }
 
   // Passata di sicurezza: edizioni pubblicate dopo l'ultima versione del pacchetto.
@@ -384,11 +395,17 @@ export async function syncDueArchivePackages(svc: AnyClient): Promise<{ checked:
 
   for (const originalId of Array.from(pendingOriginals)) {
     checked += 1;
-    const result = await syncArchivePackage(svc, originalId, 'edition_published');
-    if (result.deposited) deposited += 1;
+    try {
+      const result = await syncArchivePackage(svc, originalId, 'edition_published');
+      if (result.deposited) deposited += 1;
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err);
+      console.error('[archive-packages] sync failed', originalId, message);
+      failed.push(originalId);
+    }
   }
 
-  return { checked, deposited };
+  return { checked, deposited, failed };
 }
 
 export { archiveFolder };
