@@ -66,7 +66,15 @@ Nessuno strumento di IA lavora sul testo di un'edizione: né il controllo gramma
 
 **Foto e copertina.** Ogni lettura che mostra, stampa o controlla le foto usa `resolveMediaOwnerId` (`lib/edition-media-owner.ts`): un'edizione prende le righe di `biography_media` dell'originale. Nessuna copia dei file sull'edizione. Le didascalie in lettura e nel PDF vengono solo da `biography_edition_captions` (mai da `biography_media.caption` dell'originale); senza riga o con soli spazi la didascalia è assente. Chi non è proprietario ottiene la copertina con `GET /api/biography/[id]/cover-photo` (stesso accesso di `gallery-photos`), non con nuove policy su `biography_media`. Nelle uscite di un'edizione l'identificativo UM è quello dell'originale (`resolveEditionIdentity`); `um_id` della riga edizione resta nullo. Il riquadro in cima all'editor è una barra con la frase di traduzione e il collegamento all'originale; all'apertura dell'editor di un'edizione compare un messaggio con le regole e gli avvisi (struttura del libro, originale rivisto, non pubblicato, sezioni uguali).
 
-Restano: interfaccia per scrivere le didascalie d'edizione (B2); selettore «Leggi in», filtro e ricerca per lingua, `hreflang` generato lato server, attributo `lang`; `biography.<lingua>.md` nel pacchetto d'archivio; dichiarazione della lingua di eventi e relazioni; ritiro di un'edizione già pubblicata.
+### Blocco 5, sottopasso C: catalogo e «Leggi in» (ottobre 2026, ramo `blocco-5-leggi-in`) — fatto
+
+Nel catalogo pubblico una storia con più edizioni resta una sola scheda (sempre costruita sull'originale): filtro e ricerca considerano le lingue delle edizioni; la scheda mostra titolo e collegamento della versione scelta (`pickDisplayVersion`) e, se ci sono almeno due versioni, le etichette «Disponibile in». Le sezioni in evidenza / più letti / da scoprire non cambiano ordine né conteggi. Sulla pagina di lettura, per schede pubblicate e pubbliche aperte senza token di condivisione, il selettore «Leggi in» elenca le versioni pubbliche. I collegamenti `hreflang` e `canonical` li genera il layout server (`app/biography/[id]/view/layout.tsx`) con client anonimo e `cache: 'no-store'`; niente reindirizzamento automatico in base alla lingua del browser.
+
+Restano (in prosa):
+
+- **D — archivio:** nel pacchetto dell'originale, accanto a `biography.md`, un file `biography.<lingua>.md` per ogni edizione pubblicata, costruito con la stessa `buildBiographyMarkdown` sulle parti di quell'edizione.
+- **E — lingua di eventi e relazioni:** dichiarare e mostrare in quale lingua sono scritti eventi e relazioni (oggi restano solo sull'originale, senza etichetta di lingua propria).
+- **Ritiro di un'edizione pubblicata:** percorso per togliere dal pubblico un'edizione già online senza toccare l'originale (oggi non c'è).
 
 ### Blocco 1: strumenti di intelligenza artificiale (30 settembre 2026, ramo `blocco-1-strumenti-ai`)
 
@@ -294,6 +302,8 @@ Non ancora iniziata. Richiede aiuto professionale. Includerà: PostgreSQL con pg
 ### Debiti
 
 Codice condiviso delle email e funzioni edge. shared/email è andato avanti da giugno (modelli per lista d'attesa e segnalazioni, anno UM nel piè di pagina) e render.ts ora importa @/lib/um, un alias di Next.js che le funzioni edge non risolvono. Lo script scripts/setup-supabase-email-production.mjs, fermo al 25 giugno, non sa impacchettare quel file: il repository così com'è non si può distribuire come funzione edge. send-engagement-emails è in produzione con i file condivisi di giugno e solo index.ts aggiornato; auth-send-email e user-email-confirmed girano anch'esse su quei file. Da risolvere nel blocco 6 o portando le funzioni a rotte Node.
+
+**Sitemap:** non esiste una sitemap XML (né dinamica né statica) delle biografie pubbliche e delle loro edizioni; i motori di ricerca si affidano ai soli collegamenti interni e agli `hreflang` della pagina di lettura.
 
 ---
 

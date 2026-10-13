@@ -659,6 +659,10 @@ export interface Translations {
     galleryLightboxNext: string;
     galleryPhotoCounter: string;
     galleryOpenPhoto: string;
+    /** Language switcher on the public reading page. */
+    readIn: string;
+    /** Parenthetical mark for the original edition in the switcher. */
+    originalEdition: string;
   };
   footer: {
     hostedInSwitzerland: string;
@@ -1529,6 +1533,10 @@ export interface Translations {
     startBiography: string;
     viewsCount: string;
     langOriginal: string;
+    /** Label before edition language chips on a catalogue card. */
+    availableIn: string;
+    /** Accessible name for the “+N” overflow chip. */
+    moreLanguagesAria: string;
   };
   pwa: {
     installBannerText: string;
@@ -2567,6 +2575,8 @@ export const translations: Record<Language, Translations> = {
       galleryLightboxNext: 'Next photo',
       galleryPhotoCounter: 'Photo {current} of {total}',
       galleryOpenPhoto: 'View photo: {caption}',
+      readIn: 'Read in',
+      originalEdition: 'original',
     },
     footer: {
       hostedInSwitzerland: 'Biography Library - Hosted in Switzerland',
@@ -3456,6 +3466,8 @@ export const translations: Record<Language, Translations> = {
       startBiography: 'Start your biography',
       viewsCount: 'views',
       langOriginal: 'Original language',
+      availableIn: 'Available in',
+      moreLanguagesAria: '{count} more languages',
     },
     pwa: {
       installBannerText: 'Add Biography Library to your home screen',
@@ -4456,6 +4468,8 @@ export const translations: Record<Language, Translations> = {
       galleryLightboxNext: 'Foto successiva',
       galleryPhotoCounter: 'Foto {current} di {total}',
       galleryOpenPhoto: 'Apri foto: {caption}',
+      readIn: 'Leggi in',
+      originalEdition: 'originale',
     },
     footer: {
       hostedInSwitzerland: 'Biography Library - Ospitato in Svizzera',
@@ -5345,6 +5359,8 @@ export const translations: Record<Language, Translations> = {
       startBiography: 'Inizia la tua biografia',
       viewsCount: 'visualizzazioni',
       langOriginal: 'Lingua originale',
+      availableIn: 'Disponibile in',
+      moreLanguagesAria: 'altre {count} lingue',
     },
     pwa: {
       installBannerText: 'Aggiungi Biography Library alla schermata principale',
@@ -6346,6 +6362,8 @@ export const translations: Record<Language, Translations> = {
       galleryLightboxNext: 'Photo suivante',
       galleryPhotoCounter: 'Photo {current} sur {total}',
       galleryOpenPhoto: 'Voir la photo : {caption}',
+      readIn: 'Lire en',
+      originalEdition: 'originale',
     },
     footer: {
       hostedInSwitzerland: 'Biography Library - H\u00e9berg\u00e9 en Suisse',
@@ -7235,6 +7253,8 @@ export const translations: Record<Language, Translations> = {
       startBiography: 'Commencer votre biographie',
       viewsCount: 'vues',
       langOriginal: 'Langue originale',
+      availableIn: 'Disponible en',
+      moreLanguagesAria: '{count} autres langues',
     },
     pwa: {
       installBannerText: 'Ajouter Biography Library à votre écran d\'accueil',
@@ -8235,6 +8255,8 @@ export const translations: Record<Language, Translations> = {
       galleryLightboxNext: 'Nächstes Foto',
       galleryPhotoCounter: 'Foto {current} von {total}',
       galleryOpenPhoto: 'Foto anzeigen: {caption}',
+      readIn: 'Lesen auf',
+      originalEdition: 'Original',
     },
     footer: {
       hostedInSwitzerland: 'Biography Library - Gehostet in der Schweiz',
@@ -9124,6 +9146,8 @@ export const translations: Record<Language, Translations> = {
       startBiography: 'Biografie starten',
       viewsCount: 'Aufrufe',
       langOriginal: 'Originalsprache',
+      availableIn: 'Verfügbar in',
+      moreLanguagesAria: '{count} weitere Sprachen',
     },
     pwa: {
       installBannerText: 'Biography Library zum Startbildschirm hinzufügen',

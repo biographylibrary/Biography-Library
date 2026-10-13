@@ -137,6 +137,48 @@ export async function fetchDiscoverBiographies(excludeIds: string[]) {
   return { data: shuffled as PublishedBiography[], error: null };
 }
 
+export type PublicEditionRow = {
+  id: string;
+  slug: string | null;
+  title: string;
+  subject_name: string | null;
+  record_language_tag: string | null;
+  translation_of: string;
+};
+
+/** Published public editions of the given originals (one query). Empty ids → no query. */
+export async function fetchPublicEditionsOf(originalIds: string[]) {
+  if (originalIds.length === 0) {
+    return { data: [] as PublicEditionRow[], error: null };
+  }
+
+  const { data, error } = await supabase
+    .from('biographies')
+    .select('id, slug, title, subject_name, record_language_tag, translation_of')
+    .in('translation_of', originalIds)
+    .eq('status', 'published')
+    .eq('visibility', 'public');
+
+  return {
+    data: (data as PublicEditionRow[] | null) ?? null,
+    error: error?.message ?? null,
+  };
+}
+
+/** Distinct record_language_tag values for all published public rows (originals + editions). */
+export async function fetchPublicLanguageTags() {
+  const { data, error } = await supabase
+    .from('biographies')
+    .select('record_language_tag')
+    .eq('status', 'published')
+    .eq('visibility', 'public');
+
+  return {
+    data: (data as { record_language_tag: string | null }[] | null) ?? null,
+    error: error?.message ?? null,
+  };
+}
+
 export async function fetchBiographies(userId: string) {
   const { data, error } = await supabase
     .from('biographies')
