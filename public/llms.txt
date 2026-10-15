@@ -1,0 +1,9 @@
+# Biography Library
+
+> Permanent, open-source, non-profit digital archive for autobiographies and memorial biographies, hosted in Switzerland.
+
+User manual (English), version 1.13 (2026-10-15):
+- /help/biography-library-manual.en.md
+- /help/manual-meta.json
+
+Content hash: e3c8533cd4715ec63a0548a7f3bb596982f046522f12e0fa7fb6d9a2e9ca60a1

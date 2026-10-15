@@ -30,6 +30,9 @@ jobs:
       - name: Check for unreferenced files
         run: npm run check:dead
 
+      - name: Check platform KB sync
+        run: npm run kb:sync:check
+
       - name: Typecheck
         run: npm run typecheck
 
