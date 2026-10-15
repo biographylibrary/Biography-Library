@@ -1704,6 +1704,12 @@ export interface Translations {
     statusLoadingHistory: string;
     statusLoadingOlder: string;
     errorGeneric: string;
+    /** Preferenza IA spenta: riquadro Echo e codice ai_features_disabled. */
+    aiFeaturesDisabled: string;
+    goToSettings: string;
+    errorRateLimitBurst: string;
+    errorRateLimitDaily: string;
+    errorNotAvailableForEdition: string;
     openEcho: string;
     closeEcho: string;
     assistantBar: string;
@@ -3668,6 +3674,12 @@ export const translations: Record<Language, Translations> = {
       statusLoadingHistory: 'Loading our conversation…',
       statusLoadingOlder: 'Loading earlier messages…',
       errorGeneric: 'Something went wrong. Please try again.',
+      aiFeaturesDisabled:
+        'AI features are turned off. Echo and the other assisted writing tools become available again when you turn them back on in Settings.',
+      goToSettings: 'Go to Settings',
+      errorRateLimitBurst: 'Too many requests in a short time. Please wait a moment and try again.',
+      errorRateLimitDaily: 'You have reached today’s limit for Echo. It resets at midnight UTC.',
+      errorNotAvailableForEdition: 'Echo is not available on a translation edition.',
       openEcho: 'Ask Echo',
       assistantBar: 'Echo — your writing assistant',
       closeEcho: 'Close',
@@ -5567,6 +5579,12 @@ export const translations: Record<Language, Translations> = {
       statusLoadingHistory: 'Recupero la conversazione…',
       statusLoadingOlder: 'Carico messaggi precedenti…',
       errorGeneric: 'Qualcosa è andato storto. Riprova.',
+      aiFeaturesDisabled:
+        'Le funzioni IA sono disattivate. Echo e gli altri strumenti di scrittura assistita tornano disponibili quando le riattivi dalle Impostazioni.',
+      goToSettings: 'Vai alle Impostazioni',
+      errorRateLimitBurst: 'Troppe richieste in poco tempo. Attendi un momento e riprova.',
+      errorRateLimitDaily: 'Hai raggiunto il limite di oggi per Echo. Si rinnova a mezzanotte UTC.',
+      errorNotAvailableForEdition: 'Echo non è disponibile su un’edizione in traduzione.',
       openEcho: 'Chiedi a Echo',
       assistantBar: 'Echo - il tuo assistente alla scrittura',
       closeEcho: 'Chiudi',
@@ -7467,6 +7485,12 @@ export const translations: Record<Language, Translations> = {
       statusLoadingHistory: 'Je charge notre conversation…',
       statusLoadingOlder: 'Chargement des messages précédents…',
       errorGeneric: 'Une erreur s\'est produite. Réessayez.',
+      aiFeaturesDisabled:
+        'Les fonctions d’IA sont désactivées. Echo et les autres outils d’écriture assistée redeviennent disponibles lorsque vous les réactivez dans les Paramètres.',
+      goToSettings: 'Aller aux Paramètres',
+      errorRateLimitBurst: 'Trop de demandes en peu de temps. Attendez un moment et réessayez.',
+      errorRateLimitDaily: 'Vous avez atteint la limite du jour pour Echo. Elle se réinitialise à minuit UTC.',
+      errorNotAvailableForEdition: 'Echo n’est pas disponible sur une édition traduite.',
       openEcho: 'Demander à Echo',
       assistantBar: 'Echo — votre assistant à l’écriture',
       closeEcho: 'Fermer',
@@ -9366,6 +9390,12 @@ export const translations: Record<Language, Translations> = {
       statusLoadingHistory: 'Gespräch wird geladen…',
       statusLoadingOlder: 'Frühere Nachrichten werden geladen…',
       errorGeneric: 'Etwas ist schiefgelaufen. Bitte erneut versuchen.',
+      aiFeaturesDisabled:
+        'Die KI-Funktionen sind ausgeschaltet. Echo und die anderen Schreibhilfen stehen wieder zur Verfügung, wenn Sie sie in den Einstellungen einschalten.',
+      goToSettings: 'Zu den Einstellungen',
+      errorRateLimitBurst: 'Zu viele Anfragen in kurzer Zeit. Bitte kurz warten und erneut versuchen.',
+      errorRateLimitDaily: 'Sie haben das Tageslimit für Echo erreicht. Es wird um Mitternacht UTC zurückgesetzt.',
+      errorNotAvailableForEdition: 'Echo ist in einer Übersetzungsausgabe nicht verfügbar.',
       openEcho: 'Echo fragen',
       assistantBar: 'Echo — dein Schreibassistent',
       closeEcho: 'Schließen',
