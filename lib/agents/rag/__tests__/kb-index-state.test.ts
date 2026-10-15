@@ -24,6 +24,15 @@ beforeEach(() => {
 });
 
 describe('kb_index_state lock', () => {
+  it('il TTL del lock non supera dieci minuti (prova di rottura se allungato o tolto)', () => {
+    // Se KB_RESEED_LOCK_TTL_MS diventa enorme (o Infinity), la prova «dopo TTL»
+    // resta verde perché aspetta quel valore. Questo assert deve diventare rosso.
+    expect(Number.isFinite(KB_RESEED_LOCK_TTL_MS)).toBe(true);
+    expect(KB_RESEED_LOCK_TTL_MS).toBe(10 * 60 * 1000);
+    expect(KB_RESEED_LOCK_TTL_MS).toBeLessThanOrEqual(10 * 60 * 1000);
+    expect(KB_RESEED_LOCK_TTL_MS).toBeGreaterThan(0);
+  });
+
   it('acquisisce il lock se assente', async () => {
     expect(await tryAcquireKbReseedLock(db.client, 'en')).toBe(true);
     expect(db.tables.kb_index_state[0].reseed_locked_until).toBeTruthy();
