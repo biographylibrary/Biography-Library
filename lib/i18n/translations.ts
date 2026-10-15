@@ -1406,6 +1406,8 @@ export interface Translations {
     overviewPeriodLast7Days: string;
     overviewPeriodLast30Days: string;
     overviewParseErrorBanner: string;
+    overviewKbDriftBanner: string;
+    overviewKbSeedAction: string;
     overviewViewAffected: string;
     reviewNoLanguages: string;
     reviewConflictTitle: string;
@@ -3344,6 +3346,9 @@ export const translations: Record<Language, Translations> = {
       overviewPeriodLast7Days: 'Last 7 days',
       overviewPeriodLast30Days: 'Last 30 days',
       overviewParseErrorBanner: '{count} {count, plural, one {biography} other {biographies}} published in the last 7 days bypassed AI screening due to a parse error. These may require manual review.',
+      overviewKbDriftBanner:
+        'Echo is on knowledge base version {indexed}, the deployed manual is {build}. Re-seed so answers match the manual.',
+      overviewKbSeedAction: 'Re-seed Echo knowledge',
       overviewViewAffected: 'View affected biographies',
       reviewNoLanguages: 'No languages assigned — contact an administrator to receive review assignments.',
       reviewConflictTitle: 'Another reviewer is working on this',
@@ -5242,6 +5247,9 @@ export const translations: Record<Language, Translations> = {
       overviewPeriodLast7Days: 'Ultimi 7 giorni',
       overviewPeriodLast30Days: 'Ultimi 30 giorni',
       overviewParseErrorBanner: '{count} {count, plural, one {biografia pubblicata} other {biografie pubblicate}} negli ultimi 7 giorni hanno saltato lo screening AI per errore di parsing. Potrebbero richiedere revisione manuale.',
+      overviewKbDriftBanner:
+        'Echo è alla versione {indexed} della knowledge base, il manuale in produzione è {build}. Rifai il seed per allineare le risposte.',
+      overviewKbSeedAction: 'Ricarica la knowledge di Echo',
       overviewViewAffected: 'Vedi biografie interessate',
       reviewNoLanguages: 'Nessuna lingua assegnata — contatta un amministratore per ricevere assegnazioni di revisione.',
       reviewConflictTitle: 'Un altro revisore sta lavorando su questa biografia',
@@ -7141,6 +7149,9 @@ export const translations: Record<Language, Translations> = {
       overviewPeriodLast7Days: '7 derniers jours',
       overviewPeriodLast30Days: '30 derniers jours',
       overviewParseErrorBanner: '{count} {count, plural, one {biographie publiée} other {biographies publiées}} au cours des 7 derniers jours ont contourné le filtrage IA en raison d\'une erreur d\'analyse. Une révision manuelle peut être nécessaire.',
+      overviewKbDriftBanner:
+        'Echo est à la version {indexed} de la base de connaissances, le manuel déployé est {build}. Relancez le seed pour aligner les réponses.',
+      overviewKbSeedAction: 'Recharger la knowledge Echo',
       overviewViewAffected: 'Voir les biographies concernées',
       reviewNoLanguages: 'Aucune langue assignée — contactez un administrateur pour recevoir des attributions de révision.',
       reviewConflictTitle: 'Un autre réviseur travaille sur cette biographie',
@@ -9039,6 +9050,9 @@ export const translations: Record<Language, Translations> = {
       overviewPeriodLast7Days: 'Letzte 7 Tage',
       overviewPeriodLast30Days: 'Letzte 30 Tage',
       overviewParseErrorBanner: '{count} {count, plural, one {Biografie} other {Biografien}} in den letzten 7 Tagen wurden wegen eines Parse-Fehlers ohne KI-Prüfung veröffentlicht. Manuelle Prüfung kann erforderlich sein.',
+      overviewKbDriftBanner:
+        'Echo hat Knowledge-Base-Version {indexed}, das bereitgestellte Handbuch ist {build}. Seed erneut ausführen, damit die Antworten passen.',
+      overviewKbSeedAction: 'Echo-Knowledge neu laden',
       overviewViewAffected: 'Betroffene Biografien anzeigen',
       reviewNoLanguages: 'Keine Sprachen zugewiesen — wenden Sie sich an einen Administrator für Prüfaufträge.',
       reviewConflictTitle: 'Ein anderer Prüfer arbeitet an dieser Biografie',

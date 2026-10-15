@@ -6,6 +6,15 @@ import {
   KB_LOCALES,
   type KbLocale,
 } from '@/lib/agents/kb/help-kb-sections';
+import {
+  buildKbContentHash,
+  buildKbVersion,
+  isKbIndexCurrent,
+  readKbIndexState,
+  releaseKbReseedLock,
+  tryAcquireKbReseedLock,
+} from '@/lib/agents/rag/kb-index-state';
+import { runAfterResponse } from '@/lib/server/run-after-response';
 
 const CHUNK_SIZE = 900;
 
@@ -54,23 +63,49 @@ const ACCOUNT_KB_SOURCE_KEYS = [
 const ACCOUNT_QUERY_RE =
   /\b(account|accounts|biograph(y|ies)|memorial|autobiograph|onboarding|padre|madre|father|mother|famil(y|iar)|compte|comptes|biographie|konto|konten)\b/i;
 
+/** Triple attese dopo lo split corrente (tutte le lingue del seed). */
+export function expectedKbChunkKeys(locales: KbLocale[] = [...KB_LOCALES]): Set<string> {
+  const keys = new Set<string>();
+  for (const locale of locales) {
+    for (const section of HELP_KB_SECTIONS) {
+      const parts = splitLongSection(section.content[locale]);
+      for (let chunkIndex = 0; chunkIndex < parts.length; chunkIndex++) {
+        keys.add(`${locale}\0${section.sourceKey}\0${chunkIndex}`);
+      }
+    }
+  }
+  return keys;
+}
+
+/**
+ * Elimina chiavi source_key obsolete e frammenti orfani
+ * (stesso source_key ma chunk_index non più presente dopo un accorciamento).
+ */
 export async function pruneStaleKbChunks(serviceClient: SupabaseClient): Promise<number> {
   const validKeys = new Set(HELP_KB_SECTIONS.map((s) => s.sourceKey));
-  const { data, error } = await serviceClient.from('kb_chunks').select('source_key');
+  const expected = expectedKbChunkKeys();
+  const { data, error } = await serviceClient
+    .from('kb_chunks')
+    .select('id, locale, source_key, chunk_index');
   if (error) throw error;
 
-  const staleKeys = Array.from(
-    new Set(
-      (data ?? [])
-        .map((r) => (r as { source_key: string }).source_key)
-        .filter((key) => !validKeys.has(key))
-    )
-  );
-  if (staleKeys.length === 0) return 0;
+  const staleIds: string[] = [];
+  for (const row of data ?? []) {
+    const r = row as { id: string; locale: string; source_key: string; chunk_index: number };
+    if (!validKeys.has(r.source_key)) {
+      staleIds.push(r.id);
+      continue;
+    }
+    const triple = `${r.locale}\0${r.source_key}\0${r.chunk_index}`;
+    if (!expected.has(triple)) {
+      staleIds.push(r.id);
+    }
+  }
+  if (staleIds.length === 0) return 0;
 
-  const { error: delError } = await serviceClient.from('kb_chunks').delete().in('source_key', staleKeys);
+  const { error: delError } = await serviceClient.from('kb_chunks').delete().in('id', staleIds);
   if (delError) throw delError;
-  return staleKeys.length;
+  return staleIds.length;
 }
 
 export async function seedHelpKb(
@@ -142,6 +177,11 @@ export async function seedHelpKb(
   return { indexed: pending.length, skipped, locales };
 }
 
+/**
+ * Allinea Echo all'impronta globale di build (`MANUAL_META.hash`).
+ * Se diverge: lock con TTL + reseed in background (prune orfani + seed + stato);
+ * il turno di chat usa subito i chunk già presenti.
+ */
 export async function ensureHelpKbIndexed(
   serviceClient: SupabaseClient,
   locale = 'en',
@@ -149,6 +189,11 @@ export async function ensureHelpKbIndexed(
 ): Promise<void> {
   const loc = (locale.slice(0, 2) as KbLocale) || 'en';
   const targetLocale = KB_LOCALES.includes(loc as KbLocale) ? (loc as KbLocale) : 'en';
+
+  const state = await readKbIndexState(serviceClient, targetLocale);
+  if (isKbIndexCurrent(state)) {
+    return;
+  }
 
   const { count, error } = await serviceClient
     .from('kb_chunks')
@@ -159,9 +204,48 @@ export async function ensureHelpKbIndexed(
     console.warn('[kb-rag] ensureHelpKbIndexed count failed:', error);
     return;
   }
+
+  // Prima indicizzazione (nessun chunk): sincrona, altrimenti Echo non ha contesto.
   if ((count ?? 0) === 0) {
-    await seedHelpKb(serviceClient, [targetLocale], userId);
+    const locked = await tryAcquireKbReseedLock(serviceClient, targetLocale);
+    if (!locked) return;
+    try {
+      await pruneStaleKbChunks(serviceClient);
+      await seedHelpKb(serviceClient, [targetLocale], userId);
+      await releaseKbReseedLock(serviceClient, targetLocale, {
+        version: buildKbVersion(),
+        content_hash: buildKbContentHash(),
+      });
+    } catch (err) {
+      console.error('[kb-rag] initial seed failed:', err);
+      await releaseKbReseedLock(serviceClient, targetLocale, {
+        version: state?.version ?? '',
+        content_hash: state?.content_hash ?? '',
+      });
+    }
+    return;
   }
+
+  // Drift: reseed in background; la chat risponde con i chunk esistenti.
+  const locked = await tryAcquireKbReseedLock(serviceClient, targetLocale);
+  if (!locked) return;
+
+  runAfterResponse(async () => {
+    try {
+      await pruneStaleKbChunks(serviceClient);
+      await seedHelpKb(serviceClient, [...KB_LOCALES], userId);
+      const meta = { version: buildKbVersion(), content_hash: buildKbContentHash() };
+      for (const l of KB_LOCALES) {
+        await releaseKbReseedLock(serviceClient, l, meta);
+      }
+    } catch (err) {
+      console.error('[kb-rag] background reseed failed:', err);
+      await releaseKbReseedLock(serviceClient, targetLocale, {
+        version: state?.version ?? '',
+        content_hash: state?.content_hash ?? '',
+      });
+    }
+  });
 }
 
 async function fetchPinnedAccountChunks(
