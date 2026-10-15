@@ -494,6 +494,7 @@ export async function createTestDb(
     '20261009150000_drop_content_language_after_release.sql',
     '20261010120000_edition_original_version_at.sql',
     '20261013140000_archive_reason_edition_published.sql',
+    '20261015160000_profiles_ai_features_server_owned.sql',
   ];
   const files = all.filter((file) => !options.skip?.includes(file) && (!options.only || options.only.includes(file)));
   // La seconda migrazione legge translation_of, aggiunta dalla prima. Chi usa only o skip

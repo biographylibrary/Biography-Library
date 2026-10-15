@@ -37,7 +37,14 @@ let db: PGlite;
 
 beforeAll(async () => {
   db = await createTestDb({
-    skip: [FILE, '20261009143000_biography_editions.sql', '20261010120000_edition_original_version_at.sql'],
+    // Anche la migrazione che ri-crea profiles_* con search_path già fissato:
+    // altrimenti «prima della 20300» non è davvero senza percorso.
+    skip: [
+      FILE,
+      '20261009143000_biography_editions.sql',
+      '20261010120000_edition_original_version_at.sql',
+      '20261015160000_profiles_ai_features_server_owned.sql',
+    ],
   });
 }, 120_000);
 
