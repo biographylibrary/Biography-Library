@@ -14,7 +14,8 @@ const MUST_HINT: Record<Language, RegExp[]> = {
 describe('editor.loadTextLostReadOnly', () => {
   it('exists in all four locales with distinct localized copy', () => {
     const values = LOCALES.map((lang) => translations[lang].editor.loadTextLostReadOnly);
-    for (const [i, lang] of LOCALES.entries()) {
+    for (let i = 0; i < LOCALES.length; i++) {
+      const lang = LOCALES[i]!;
       const text = values[i]!;
       expect(text.trim().length, `${lang} empty`).toBeGreaterThan(40);
       for (const re of MUST_HINT[lang]) {
