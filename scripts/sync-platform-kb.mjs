@@ -216,7 +216,7 @@ function buildLlmsTxt(meta) {
   return [
     '# Biography Library',
     '',
-    '> Permanent, open-source, non-profit digital archive for autobiographies and memorial biographies, hosted in Switzerland.',
+    '> Permanent, open-source, non-profit digital archive for autobiographies and memorial biographies. App and AI writing in Switzerland; database still in Ireland during the beta.',
     '',
     `User manual (English), version ${meta.version} (${meta.date}):`,
     '- /help/biography-library-manual.en.md',
