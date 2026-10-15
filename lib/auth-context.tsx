@@ -6,12 +6,13 @@ import { supabase } from './supabase';
 import { clearSupabaseAuthStorage, redirectAfterSignOut } from './auth-storage';
 import type { Language } from '@/lib/i18n/translations';
 import type { AccountStatus } from '@/lib/waitlist';
+import { PLATFORM_STAFF_ROLES } from '@/lib/server/staff-roles';
 
 type FontSize = 'small' | 'normal' | 'large' | 'extra-large';
 
 export type UserRole = 'user' | 'reviewer' | 'admin' | 'super_admin';
 
-export const ADMIN_ROLES: UserRole[] = ['reviewer', 'admin', 'super_admin'];
+export const ADMIN_ROLES: UserRole[] = [...PLATFORM_STAFF_ROLES];
 
 interface AuthContextType {
   user: User | null;

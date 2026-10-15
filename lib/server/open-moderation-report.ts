@@ -4,6 +4,7 @@ import type { ReportOrigin, ReportType } from '@/lib/moderation/types';
 import { notifyAuthorPublicationEmail } from '@/lib/server/email/publication-helpers';
 import { sendTemplateEmail } from '@/lib/server/email';
 import { writeModerationMessage } from '@/lib/server/moderation-register';
+import { PLATFORM_STAFF_ROLES } from '@/lib/server/staff-roles';
 
 type AnyClient = SupabaseClient<any, any, any>;
 
@@ -35,7 +36,7 @@ async function notifyImmediateReviewers(
   const { data: staff } = await svc
     .from('profiles')
     .select('id, email, language')
-    .in('role', ['reviewer', 'admin', 'super_admin']);
+    .in('role', [...PLATFORM_STAFF_ROLES]);
 
   for (const person of staff ?? []) {
     const row = person as { id: string; email?: string | null; language?: string | null };
