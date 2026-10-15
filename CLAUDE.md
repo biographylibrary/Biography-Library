@@ -33,3 +33,11 @@ L'elenco `ignore` in `knip.jsonc` contiene un arretrato di file già orfani al 2
 ## Specifica dell'identificativo UM
 
 `docs/UM-IDENTIFIER-SPEC.md` è una specifica pubblica e depositata, non documentazione interna. I vettori di prova della sezione 7 sono vincolanti: se un test fallisce, l'errore è nel codice e va corretto lì, mai adattando il vettore atteso. Il formato, l'alfabeto e l'algoritmo di controllo non si modificano, e gli identificativi già emessi non si rigenerano.
+
+## Knowledge base e manuale Aiuto
+
+- Sorgente fatti EN: `docs/PLATFORM_KB.md` (marcatori `<!-- public-title: … -->` e `<!-- internal -->…<!-- /internal -->`).
+- Dopo ogni modifica: `npm run kb:sync` (genera sezioni RAG EN, `public/help/biography-library-manual.en.md`, `manual-meta.json`, `public/llms.txt`). In CI: `npm run kb:sync:check`.
+- Echo riceve il testo completo (blocchi internal inclusi). Il manuale scaricabile da Aiuto esclude gli internal.
+- Traduzioni IT/FR/DE del RAG: ancora in `lib/agents/kb/help-kb-sections.locales.ts` (tappa 2 le sposterà in Markdown).
+- Preferenza «funzioni IA»: solo via `POST /api/profile/ai-features` (purge memoria Echo su tutte le biografie dell’utente allo spegnimento).
