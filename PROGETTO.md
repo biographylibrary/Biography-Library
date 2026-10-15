@@ -105,6 +105,12 @@ Screening a pezzi sull’intero testo pubblico dell’impronta (`assembleScreeni
 - **Metadati pagina di lettura**: oltre agli `alternates`, mancano titolo/descrizione dedicati.
 - **Sitemap XML** delle biografie pubbliche: assente.
 
+### Bucket foto
+
+- **Porta larga su `biography_media`**: il browser può ancora fare INSERT e UPDATE sulla riga (policy con solo `user_id = auth.uid()`), quindi un autore può scrivere un `file_url` a piacere — un indirizzo falso in galleria, non un file nel bucket. Tracciato in `docs/SICUREZZA-SCRITTURE-ELENCO.md`.
+- **`allowed_mime_types` assente**: il bucket `biography-photos` non ha ancora un elenco di tipi ammessi. Ora che nessun browser scrive i file (solo la rotta server), si può impostare a `image/jpeg` senza rischiare il flusso.
+- **Limite nginx non verificato**: il bucket ha `file_size_limit` 20 MiB (`20261006120000`), ma sul nodo Jelastic non si è mai controllato `client_max_body_size` di nginx davanti all’app. Se restasse il predefinito da 1 MB, una foto grande darebbe un errore poco chiaro. Controllo: sul nodo, `grep -r client_max_body_size /etc/nginx`; nessun valore significa 1 MB.
+
 ### Email e Edge
 
 - **`shared/email` / Edge Functions**: `render.ts` importa `@/lib/um` (alias Next); lo script di packaging di giugno non lo risolve. `send-engagement-emails` in produzione con file condivisi vecchi + `index.ts` aggiornato. Da portare a rotte Node o riparare il bundle.
