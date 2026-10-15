@@ -22,9 +22,14 @@ import {
   LogOut,
   ChevronRight,
   BookOpen,
+  Sparkles,
 } from 'lucide-react';
 import { patchOnboarding } from '@/lib/onboarding/onboarding-client';
 import { useOnboardingGate } from '@/components/onboarding/OnboardingGateProvider';
+import {
+  interpretAiFeaturesToggleResponse,
+  requestAiFeaturesToggle,
+} from '@/lib/ai/ai-features-client';
 import { cn } from '@/lib/utils';
 
 function SectionHeading({ children }: { children: React.ReactNode }) {
@@ -81,6 +86,8 @@ export default function SettingsPage() {
   const [biographyCount, setBiographyCount] = useState(0);
   const [latestBiographyId, setLatestBiographyId] = useState<string | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [aiEnabled, setAiEnabled] = useState(false);
+  const [aiToggleBusy, setAiToggleBusy] = useState(false);
 
   useEffect(() => {
     setMounted(true);
@@ -110,10 +117,53 @@ export default function SettingsPage() {
         .limit(1)
         .maybeSingle();
       setLatestBiographyId(latest?.id ?? null);
+
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('ai_features_enabled')
+        .eq('id', user.id)
+        .maybeSingle();
+      setAiEnabled(Boolean(profile?.ai_features_enabled));
     };
 
     fetchBiographyCount();
   }, [user, loading, router]);
+
+  const handleAiFeaturesToggle = async (next: boolean) => {
+    if (!user || aiToggleBusy) return;
+    const previous = aiEnabled;
+    setAiEnabled(next);
+    setAiToggleBusy(true);
+    try {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      if (!session?.access_token) {
+        setAiEnabled(previous);
+        toast.error(t.toast.requestFailed);
+        return;
+      }
+      const response = await requestAiFeaturesToggle({
+        enabled: next,
+        accessToken: session.access_token,
+      });
+      const outcome = interpretAiFeaturesToggleResponse({
+        previous,
+        requested: next,
+        responded: response.responded,
+        status: response.status,
+        body: response.body,
+      });
+      setAiEnabled(outcome.enabled);
+      if (outcome.action === 'keep_off_retry') {
+        toast.error(t.accountSettings.aiFeaturesPurgeRetry);
+      } else if (outcome.action === 'restore') {
+        toast.error(t.toast.requestFailed);
+      }
+    } finally {
+      setAiToggleBusy(false);
+    }
+  };
 
   const handleDeleteAccount = async () => {
     if (!user) return;
@@ -178,6 +228,20 @@ export default function SettingsPage() {
               currentSize={fontSize}
               onSizeChange={setFontSize}
               userId={user.id}
+            />
+          </SettingsRow>
+
+          <SettingsRow
+            icon={<Sparkles className="h-4 w-4" />}
+            label={t.accountSettings.aiFeatures}
+            description={t.accountSettings.aiFeaturesDescription}
+          >
+            <Switch
+              checked={aiEnabled}
+              disabled={aiToggleBusy}
+              onCheckedChange={(checked) => {
+                void handleAiFeaturesToggle(checked);
+              }}
             />
           </SettingsRow>
         </section>

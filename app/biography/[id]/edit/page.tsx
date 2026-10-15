@@ -1101,28 +1101,6 @@ export default function BiographyEditorPage() {
     }, 100);
   }, []);
 
-  const handleToggleAi = useCallback(async () => {
-    if (!user) return;
-
-    setAiEnabled((prev) => {
-      const next = !prev;
-      localStorage.setItem(AI_ENABLED_KEY, String(next));
-      if (!next) setAiState(INITIAL_AI_STATE);
-
-      supabase
-        .from('profiles')
-        .update({ ai_features_enabled: next })
-        .eq('id', user.id)
-        .then(({ error }) => {
-          if (error) {
-            console.error('Failed to save AI preference:', error);
-          }
-        });
-
-      return next;
-    });
-  }, [user]);
-
   const handleExportPDF = useCallback(() => {
     if (!biography) return;
     setShowExportDialog(true);

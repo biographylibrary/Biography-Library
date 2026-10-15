@@ -138,6 +138,9 @@ export interface Translations {
     fontSizeNormal: string;
     fontSizeLarge: string;
     fontSizeExtraLarge: string;
+    aiFeatures: string;
+    aiFeaturesDescription: string;
+    aiFeaturesPurgeRetry: string;
     account: string;
     dangerZone: string;
   };
@@ -2037,6 +2040,11 @@ export const translations: Record<Language, Translations> = {
       fontSizeNormal: 'Normal (100%)',
       fontSizeLarge: 'Large (115%)',
       fontSizeExtraLarge: 'Extra-large (130%)',
+      aiFeatures: 'AI features',
+      aiFeaturesDescription:
+        'Echo and the writing tools. Turning them off erases Echo’s memory for all your biographies.',
+      aiFeaturesPurgeRetry:
+        'AI features are off, but Echo’s memory could not be fully erased. Please try again.',
       account: 'Account',
       dangerZone: 'Danger zone',
     },
@@ -3928,6 +3936,11 @@ export const translations: Record<Language, Translations> = {
       fontSizeNormal: 'Normale (100%)',
       fontSizeLarge: 'Grande (115%)',
       fontSizeExtraLarge: 'Extra-grande (130%)',
+      aiFeatures: 'Funzioni IA',
+      aiFeaturesDescription:
+        'Echo e gli strumenti di scrittura. Se le disattivi, la memoria di Echo viene cancellata per tutte le tue biografie.',
+      aiFeaturesPurgeRetry:
+        'Le funzioni IA sono spente, ma la memoria di Echo non è stata cancellata del tutto. Riprova.',
       account: 'Account',
       dangerZone: 'Zona pericolosa',
     },
@@ -5821,6 +5834,11 @@ export const translations: Record<Language, Translations> = {
       fontSizeNormal: 'Normal (100 %)',
       fontSizeLarge: 'Grand (115 %)',
       fontSizeExtraLarge: 'Très grand (130 %)',
+      aiFeatures: 'Fonctions d’IA',
+      aiFeaturesDescription:
+        'Echo et les outils d’écriture. Si vous les désactivez, la mémoire d’Echo est effacée pour toutes vos biographies.',
+      aiFeaturesPurgeRetry:
+        'Les fonctions d’IA sont désactivées, mais la mémoire d’Echo n’a pas pu être entièrement effacée. Veuillez réessayer.',
       account: 'Compte',
       dangerZone: 'Zone de danger',
     },
@@ -7715,6 +7733,11 @@ export const translations: Record<Language, Translations> = {
       fontSizeNormal: 'Normal (100 %)',
       fontSizeLarge: 'Groß (115 %)',
       fontSizeExtraLarge: 'Sehr groß (130 %)',
+      aiFeatures: 'KI-Funktionen',
+      aiFeaturesDescription:
+        'Echo und die Schreibwerkzeuge. Wenn Sie sie ausschalten, wird Echos Gedächtnis für alle Ihre Biografien gelöscht.',
+      aiFeaturesPurgeRetry:
+        'Die KI-Funktionen sind aus, aber Echos Gedächtnis konnte nicht vollständig gelöscht werden. Bitte erneut versuchen.',
       account: 'Konto',
       dangerZone: 'Gefahrenzone',
     },
