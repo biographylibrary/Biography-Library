@@ -26,13 +26,13 @@ lib/
   supabase.ts               Singleton Supabase client
   auth-context.tsx          Auth provider + useAuth hook
   pdf-export.ts             jsPDF B5 document builder
-  checkpoint-service.ts     Conversation state persistence
-  section-status-service    Draft version state machine
+  checkpoint-service.ts     Conversation state persistence (legacy; knip-ignored if unused)
   section-completion-service Mark sections done/undone
   biographies.ts            Biography CRUD helpers
   work-languages.ts         Pure helpers: work versions, language/search match, display pick
   edition-alternates.ts     Pure canonical + hreflang URL builder
   edition-view-metadata.ts  Anon-client resolution for view alternates
+  server/staff-roles.ts     Single source for staff roles (middleware + APIs)
 supabase/
   functions/                Edge Functions (Deno)
   migrations/               Ordered SQL migrations
@@ -48,7 +48,7 @@ The project uses **Next.js 13 App Router**. Pages are React Server Components by
 
 | Route | Notes |
 |---|---|
-| `/` | Marketing / landing |
+| `/` | Waitlist landing (beta); login at `/login` |
 | `/dashboard` | User's biography list |
 | `/biography/[id]/edit` | Full editor — server shell hands off to client component tree |
 | `/biography/[id]/view` | Public reader; validates share token for link-only biographies. Server `layout.tsx` sets `alternates` (canonical + hreflang) via anon client; client page owns the body. |
@@ -127,23 +127,9 @@ Every table has RLS enabled. The general policy pattern is:
 
 The `biography_mode` column on `biographies` determines the editing experience, set at creation and never changed.
 
-### Section mode (default)
+### Document mode (product default)
 
-Nine predefined section keys: `childhood`, `family`, `education`, `career`, `life_events`, `relationships`, `challenges`, `passions`, `legacy`.
-
-Each section has its own row in `biography_sections` with an independent status machine:
-
-```
-in_progress → draft_1 → draft_2 → draft_3 → approved → locked
-```
-
-Draft increments happen when the user saves a revised version. `section_status-service.ts` owns these transitions.
-
-The editor UI renders a `SectionSidebar` for navigation and a `SectionEditor` (Tiptap rich text) for the active section. **As of the Markdown block (6 October 2026):** TipTap 3.19 loads/saves via `@tiptap/markdown` plus the archive serializer in `lib/archive-markdown.ts` (NFC, character escapes, scene separator `***`). Stored original is CommonMark Markdown; HTML is render-only (`storedToSafeHtml`, `html: false`). Paste/import share `lib/editor-content-clean.ts`. The public view reads `content` **and** `content_freeflow` / `biography_mode`.
-
-### Freeflow mode
-
-A single continuous rich-text field (`content_freeflow` on the `biographies` row). No section sidebar, no per-section status tracking. Suitable for users who want to write without structure. The same Tiptap editor is used; Echo and the grammar check work on the whole text.
+The product writes a **single continuous document** (`content_freeflow`). Historical rows may still have `biography_mode = 'sections'` and `biography_sections` data; the UI treats them as one sheet. TipTap 3.19 loads Markdown via `archiveMarkdownToEditorHtml` (not TipTap `contentType: 'markdown'`, which drops text after a leading list). Storage uses `htmlToArchiveMarkdown` in `lib/archive-markdown.ts` (NFC, escapes, scene separator `***`). `@tiptap/markdown` remains registered for regression coverage of that TipTap bug. HTML is render-only (`storedToSafeHtml`, raw HTML in the Markdown parser off). Paste/import share `lib/editor-content-clean.ts`. Public view renders Markdown safely for freeflow and section bodies.
 
 ### Book structure (both modes)
 
@@ -295,7 +281,9 @@ Helpers: `lib/publication-state.ts` (`AUTHOR_TEXT_WRITABLE_STATUSES`, `canAuthor
 | Route | Purpose |
 |-------|---------|
 | `POST /api/publication/start-pdf-draft` | `final_version` → `pdf_draft`; sets `pdf_draft_started_at`, clears `pdf_draft_iteration` and `draft_ai_feedback` |
-| `POST /api/publication/record-pdf-draft` | After each watermarked draft download: increments `pdf_draft_iteration` only (no model call). `draft-ai-review` remains as a deprecated alias. |
+| `POST /api/publication/record-pdf-draft` | After each watermarked draft download: increments `pdf_draft_iteration` only (no model call). |
+| `POST /api/cron/archive-packages` | Cron (`CRON_SECRET`): `syncDueArchivePackages`; **500** with full body if `failed` is non-empty. |
+| `POST /api/cron/ai-rate-limits-cleanup` | Cron (`CRON_SECRET`): RPC `cleanup_ai_rate_limits_30d` (never touches `ai_token_usage`). |
 | `POST /api/publication/preprint-check` | Starts a background quality check (`analysis_jobs`, kind `preprint_check`); responds **202** with `jobId`. On success writes `draft_ai_feedback` and `preprint_check_runs`. Does not block approval. |
 | `GET /api/analysis-jobs` | Owner or staff: latest job status/outcome for `biographyId` + `kind` (also interrupts stale `running` jobs). |
 | `POST /api/cron/analysis-jobs` | Cron (`CRON_SECRET`): `sweepStaleAnalysisJobs` — interrupt all stale `running` jobs; publication screening → human queue via `routeScreeningFailureToManualReview`. |

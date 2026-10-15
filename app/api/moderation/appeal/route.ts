@@ -4,6 +4,7 @@ import { getAuthenticatedUser } from '@/lib/server/onboarding-api-auth';
 import { sendTemplateEmail } from '@/lib/server/email';
 import { writeModerationMessage } from '@/lib/server/moderation-register';
 import { buildServiceClient } from '@/lib/server/review-submit-pipeline';
+import { PLATFORM_STAFF_ROLES } from '@/lib/server/staff-roles';
 
 export const dynamic = 'force-dynamic';
 
@@ -71,7 +72,7 @@ export async function POST(req: NextRequest) {
   const { data: staff } = await svc
     .from('profiles')
     .select('id, email, language')
-    .in('role', ['reviewer', 'admin', 'super_admin']);
+    .in('role', [...PLATFORM_STAFF_ROLES]);
   for (const person of staff ?? []) {
     const reviewer = person as { email?: string | null; language?: string | null };
     if (!reviewer.email) continue;

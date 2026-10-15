@@ -18,9 +18,7 @@ import type {
   PreprintRedFlag,
   PreprintSuggestion,
 } from '@/lib/server/preprint-check';
-
-
-const STAFF_ROLES = new Set(['reviewer', 'admin', 'super_admin']);
+import { STAFF_ROLES } from '@/lib/server/staff-roles';
 
 export const SUBMIT_THROTTLE_WINDOW_SECS = 60;
 export const SUBMIT_THROTTLE_MAX = 3;

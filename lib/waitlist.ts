@@ -1,11 +1,11 @@
-export type AccountStatus = 'active' | 'suspended' | 'waitlist';
+import { isPlatformStaffRole } from '@/lib/server/staff-roles';
 
-const STAFF_ROLES = new Set(['reviewer', 'admin', 'super_admin']);
+export type AccountStatus = 'active' | 'suspended' | 'waitlist';
 
 export const GRANT_ACCESS_BATCH_SIZE = 100;
 
 export function isStaffRole(role: string | null | undefined): boolean {
-  return !!role && STAFF_ROLES.has(role);
+  return isPlatformStaffRole(role);
 }
 
 const WAITLIST_STAY_EXACT = new Set([

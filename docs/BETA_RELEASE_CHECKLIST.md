@@ -13,10 +13,10 @@ Usare come elenco da spuntare in team. Ordine consigliato: **merge → migrazion
 
 ## 1. Merge e qualità codice
 
-- [ ] Branch di lavoro integrato in `main` (la PR #16 è già chiusa; non è più il punto di partenza)
-- [x] `npm run typecheck` e `npm run build` eseguiti su commit di `main-sync` (localmente)
-- [x] Workflow CI (`.github/workflows/ci.yml`) — typecheck, lint, build su PR e push `main`
-- [x] (Opzionale ma consigliato) `npm run lint` — PASS
+- [ ] Branch di lavoro integrato in `main` via pull request (mai push diretto su `main`)
+- [ ] `npm run typecheck` && `npm run build` (e `npm run lint` se tocca UI)
+- [ ] CI (`.github/workflows/ci.yml`): typecheck, lint, build, `check:env`, `check:dead`, suite Vitest
+- [ ] Se toccata la guida piattaforma: `npm run kb:sync` && `npm run kb:sync:check`
 
 ---
 
@@ -54,9 +54,11 @@ Controllare che sul **processo che esegue Next** siano impostate (non committate
 - [ ] `NEXT_PUBLIC_SUPABASE_URL`
 - [ ] `NEXT_PUBLIC_SUPABASE_ANON_KEY`
 - [ ] `SUPABASE_SERVICE_ROLE_KEY` (solo server — route API tipo `/api/review/submit`, publication, ecc.)
-- [ ] `INFOMANIAK_AI_ENDPOINT`, `INFOMANIAK_AI_TOKEN`, `AGENT_MODEL_REVIEWER` / `INFOMANIAK_AI_MODEL_PRIMARY` as in `.env.example` (screening on Next routes; there is no `INFOMANIAK_AI_MODEL`)
-- [ ] `NEXT_PUBLIC_APP_URL` (URL canonico produzione, es. `https://…`)
-- [ ] `UM_ID_BASE_URL` (solo server — URL del risolutore UM; non esiste `NEXT_PUBLIC_UM_ID_BASE_URL`)
+- [ ] `INFOMANIAK_AI_ENDPOINT` / `INFOMANIAK_AI_BASE_URL`, `INFOMANIAK_AI_TOKEN`, `INFOMANIAK_PRODUCT_ID`
+- [ ] Modelli come in `.env.example` / `lib/agents/models.ts`: grammatica `swiss-ai/Apertus-v1.5-70B`; Echo/screening/preprint `google/gemma-4-31B-it` con ripieghi Mistral; embedding `bge_multilingual_gemma2` (non esiste più `INFOMANIAK_AI_MODEL` generico)
+- [ ] `NEXT_PUBLIC_APP_URL` (URL canonico produzione)
+- [ ] `UM_ID_BASE_URL` (solo server — non esiste `NEXT_PUBLIC_UM_ID_BASE_URL`)
+- [ ] `CRON_SECRET` (engagement, report-deadlines, analysis-jobs, archive-packages, ai-rate-limits-cleanup)
 - [ ] `NEXT_PUBLIC_APP_ENV` = `production` (se usato)
 
 **Supabase Dashboard** (progetto produzione):
@@ -66,7 +68,7 @@ Controllare che sul **processo che esegue Next** siano impostate (non committate
 - [ ] `CRON_SECRET`, `AUTH_HOOK_SECRET`, `ENGAGEMENT_EMAILS_ENABLED=true`
 - [ ] **Auth Send Email Hook** → `auth-send-email` (disabilitare template SMTP built-in dopo verifica)
 - [ ] Edge Functions email deployate: `auth-send-email`, `user-email-confirmed`, `send-engagement-emails`
-- [ ] Cron giornaliero su `send-engagement-emails`
+- [ ] Crontab Jelastic: engagement, report-deadlines, analysis-jobs (*/10), archive-packages, ai-rate-limits-cleanup (`scripts/run-*-cron.sh`)
 
 **Edge Functions** (secrets nel progetto Supabase):
 
@@ -98,8 +100,8 @@ Eseguire in **produzione** (o staging identico) con account di test dedicati.
 | **1** | **Registrazione e conferma email** | Home `/` = landing lista d’attesa; accesso su `/login`. Nuovo utente → email conferma (Resend/hook, lingua browser) → link conferma → **email waitlist** → pagina `/waitlist` con **sola data di registrazione** (mai il numero in coda). |
 | **2** | **Login e creazione biografia** | Account già `active`: login → dashboard o `/onboarding` se manca la biografia. Account `waitlist`: login → `/waitlist`, non il pannello. |
 | **3** | **Editor e (opzionale) IA** | Apertura editor, salvataggio testo, una azione IA se i token/quota lo permettono. |
-| **4** | **Verso pubblicazione (PDF)** | Final review → **Start PDF phase** (`start-pdf-draft`) → upload `cover_a5` + toggle copyright page → export draft PDF (round 1–3) → **`draft-ai-review`** salva feedback → approve final PDF → screening → `published` o `under_review`; stati e `listing_cover_url` coerenti. |
-| **5** | **Lettura pubblica** | Biografia `published` + `public`: comparsa in elenco pubblico e/o pagina view; oppure link **link-only** con token. |
+| **4** | **Verso pubblicazione (PDF)** | Revisione finale → **Start PDF phase** → copertina `cover_a5` → bozze PDF filigranate (`record-pdf-draft`) → opzionale **controllo finale** (`preprint-check`, non bloccante) → approve final PDF → screening asincrono → `published` o coda umana; `listing_cover_url` coerente. |
+| **5** | **Lettura pubblica** | Biografia `published` + `public`: catalogo e/o view; edizioni via «Leggi in» / `hreflang`; oppure link **link-only** con token. |
 
 Opzionale:
 
@@ -117,4 +119,4 @@ Opzionale:
 
 ---
 
-*Ultimo aggiornamento: 21 settembre 2026 — lista d’attesa beta, `UM_ID_BASE_URL`, nomi modello AI allineati a `.env.example`.*
+*Ultimo aggiornamento: 15 ottobre 2026 — allineato a modelli `.env.example`, cron attuali, flusso PDF senza draft-ai-review.*

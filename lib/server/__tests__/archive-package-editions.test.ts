@@ -663,7 +663,8 @@ describe('syncDueArchivePackages — edizioni mancanti', () => {
     };
 
     const result = await syncDueArchivePackages(wrapped as never);
-    expect(result.checked).toBe(4);
+    // Tre originali unici: orig-pending è sincronizzato due volte ma contato una.
+    expect(result.checked).toBe(3);
     expect(result.failed).toEqual([]);
     expect(trackSyncIds).toEqual([
       'orig-pending',

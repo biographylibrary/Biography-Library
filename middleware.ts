@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
-
-const STAFF_ROLES = new Set(['reviewer', 'admin', 'super_admin']);
+import { STAFF_ROLES } from '@/lib/server/staff-roles';
 
 function getBearerToken(req: NextRequest): string | null {
   const auth = req.headers.get('authorization') ?? '';

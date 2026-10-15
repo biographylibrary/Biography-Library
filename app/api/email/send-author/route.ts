@@ -6,6 +6,7 @@ import {
   type EmailTemplateId,
 } from '@/lib/server/email';
 import { buildServiceClient } from '@/lib/server/review-submit-pipeline';
+import { isPlatformStaffRole } from '@/lib/server/staff-roles';
 
 const ALLOWED_TEMPLATES = new Set<EmailTemplateId>([
   'admin_bio_force_published',
@@ -22,7 +23,7 @@ const ALLOWED_TEMPLATES = new Set<EmailTemplateId>([
 
 export async function POST(req: NextRequest) {
   const ctx = await getCallerStaffContext(req);
-  if (!ctx || !['reviewer', 'admin', 'super_admin'].includes(ctx.role)) {
+  if (!ctx || !isPlatformStaffRole(ctx.role)) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
   }
 
