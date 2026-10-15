@@ -72,7 +72,8 @@ export function buildEchoSystemPrompt(locale: string, ctx: EchoContext): string 
     `For platform how-to, use knowledge base excerpts when provided. ` +
     `When excerpts conflict, account_and_biography_model wins for account/biography count rules. ` +
     `Never state that multiple biographies can exist on one account — one account = one biography.\n` +
-    `For questions about accounts, how many biographies per user, memorial vs autobiography, or separate accounts for family members, prioritize excerpts from account_and_biography_model, registration_and_onboarding, or faq when present.\n\n` +
+    `For questions about accounts, how many biographies per user, memorial vs autobiography, or separate accounts for family members, prioritize excerpts from account_and_biography_model, registration_and_onboarding, or faq when present.\n` +
+    `If the user asks for a manual, an offline guide, or help they can consult outside the platform, point them to Help (Aiuto / Aide / Hilfe) in the site footer or in the editor side menu. Do not invent URLs.\n\n` +
     PLAIN_PROSE_AND_MEANING;
 
   return prompt;

@@ -23,6 +23,11 @@ vi.mock('@/lib/server/review-submit-pipeline', () => ({
   }),
 }));
 
+vi.mock('@/lib/server/require-ai-features', () => ({
+  assertAiFeaturesEnabled: vi.fn(async () => ({ ok: true })),
+  AI_FEATURES_DISABLED_ERROR: 'ai_features_disabled',
+}));
+
 vi.mock('@/lib/agents/thread-service', () => ({
   getActiveThread: (client: unknown, params: unknown) => getActiveThread(client, params),
   getOrCreateThread: (client: unknown, params: unknown) => getOrCreateThread(client, params),

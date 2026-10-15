@@ -2,6 +2,12 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getCallerStaffContext, isAdminOrSuperAdmin } from '@/lib/server/admin-api-auth';
 import { buildServiceClient } from '@/lib/server/review-submit-pipeline';
 import { seedHelpKb, pruneStaleKbChunks } from '@/lib/agents/rag/kb-rag';
+import {
+  buildKbContentHash,
+  buildKbVersion,
+  releaseKbReseedLock,
+} from '@/lib/agents/rag/kb-index-state';
+import { KB_LOCALES } from '@/lib/agents/kb/help-kb-sections';
 
 export const runtime = 'nodejs';
 
@@ -16,7 +22,11 @@ export async function POST(req: NextRequest) {
     const serviceClient = buildServiceClient();
     const pruned = await pruneStaleKbChunks(serviceClient);
     const result = await seedHelpKb(serviceClient, undefined, staff.userId);
-    return NextResponse.json({ ok: true, pruned, ...result });
+    const meta = { version: buildKbVersion(), content_hash: buildKbContentHash() };
+    for (const locale of KB_LOCALES) {
+      await releaseKbReseedLock(serviceClient, locale, meta);
+    }
+    return NextResponse.json({ ok: true, pruned, ...result, ...meta });
   } catch (err) {
     const msg = err instanceof Error ? err.message : 'Seed failed';
     console.error('[agents/admin/seed-kb]', err);

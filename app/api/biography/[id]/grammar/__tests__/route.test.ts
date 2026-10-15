@@ -47,6 +47,13 @@ vi.mock('@/lib/ai/token-caps', async (importOriginal) => {
   return { ...actual, checkAuthorTokenCap: (...a: unknown[]) => checkAuthorTokenCap(...a) };
 });
 
+const assertAiFeaturesEnabled = vi.fn();
+
+vi.mock('@/lib/server/require-ai-features', () => ({
+  assertAiFeaturesEnabled: (...a: unknown[]) => assertAiFeaturesEnabled(...a),
+  AI_FEATURES_DISABLED_ERROR: 'ai_features_disabled',
+}));
+
 import { POST } from '@/app/api/biography/[id]/grammar/route';
 import { GRAMMAR_MAX_CHARS } from '@/lib/ai/grammar';
 
@@ -67,6 +74,7 @@ const validBody = { content: '<p>Ciao a tutti, questo è il mio testo.</p>', sec
 beforeEach(() => {
   vi.clearAllMocks();
   getAuthenticatedUser.mockResolvedValue({ user: { id: 'owner-1' } });
+  assertAiFeaturesEnabled.mockResolvedValue({ ok: true });
   tables.profiles = { role: 'user', account_status: 'active' };
   tables.biographies = { user_id: 'owner-1', is_frozen: false, translation_of: null };
   isOverMinuteLimit.mockResolvedValue(false);
@@ -78,6 +86,21 @@ beforeEach(() => {
       { id: '2', original: 'uguale', suggestion: 'uguale  ', explanation: 'identico: da scartare' },
     ]),
     modelUsed: 'swiss-ai/Apertus-v1.5-70B',
+  });
+});
+
+describe('POST /api/biography/[id]/grammar: preferenza IA', () => {
+  it('403 ai_features_disabled quando il flag è falso (prova di rottura)', async () => {
+    assertAiFeaturesEnabled.mockResolvedValue({
+      ok: false,
+      status: 403,
+      error: 'ai_features_disabled',
+    });
+    const res = await call(validBody);
+    expect(res.status).toBe(403);
+    expect(await res.json()).toEqual({ error: 'ai_features_disabled' });
+    expect(chat).not.toHaveBeenCalled();
+    expect(assertAiFeaturesEnabled).toHaveBeenCalled();
   });
 });
 

@@ -2,9 +2,7 @@
 
 export const HELP_KB_EN = `# Biography Library — Platform Knowledge Base
 
-Version: 1.12 — 2026-10-14
-
-Reference language: English. Echo, Help, and platform assistants answer in the user's language using these facts. Update this file whenever product rules or UX change, then run \`npm run kb:sync\`.
+Version: 1.14 — 2026-10-15
 
 ## account_and_biography_model
 
@@ -22,19 +20,27 @@ If unsure which account to use, contact support at https://biographylibrary.org/
 
 ## platform_intro
 
-Biography Library is a permanent, open-source, non-profit digital archive hosted in Switzerland. Users write autobiographies or biographies of deceased direct family members. It is not a social network or commercial data business. Assistants explain how the platform works in clear, simple language. They do not give legal, medical, tax or psychological advice. When uncertain, direct users to https://biographylibrary.org/contacts.
+Biography Library is a permanent, open-source, non-profit digital archive run by an association in Lugano. The application and AI writing inference run in Switzerland (Infomaniak). During the beta the database and sign-in still sit on Supabase in Ireland; they are planned to move to Zurich. If you use spoken voice replies, those may be generated in the European Union. Users write autobiographies or biographies of deceased direct family members. It is not a social network or commercial data business. The platform and its assistants do not give legal, medical, tax or psychological advice. When uncertain, contact https://biographylibrary.org/contacts.
+
+Assistants explain how the platform works in clear, simple language. They do not give legal, medical, tax or psychological advice. When uncertain, direct users to https://biographylibrary.org/contacts.
 
 ## manifesto
 
-Key principles: (1) Every life deserves memory. (2) Only your own autobiography or a deceased direct family member's biography. (3) Open source AGPL v3. (4) Ethical Swiss-hosted open-source AI only; AI helps writing, never replaces voice; can be disabled. (5) Identity declared at registration, 18+. (6) Privacy: public, link-only, family-only, or private visibility; data never sold. (7) Strict moderation for illegal/harmful content. (8) No ads or data sales. (9) Long-term preservation commitment. (10) Non-profit association governance in Lugano.
+Key principles: (1) Every life deserves memory. (2) Only your own autobiography or a deceased direct family member's biography. (3) Open source AGPL v3. (4) Ethical open-source AI for writing help (Infomaniak in Switzerland); AI helps writing, never replaces the author’s voice; can be disabled. Spoken voice may use a separate EU provider. (5) Identity declared at registration, 18+. (6) Privacy: public, link-only, family-only, or private visibility; data never sold. (7) Strict moderation for illegal/harmful content. (8) No ads or data sales. (9) Long-term preservation commitment. (10) Non-profit association governance in Lugano.
 
 ## registration_and_onboarding
 
-Registration needs first name, last name, email, password. Must be 18+. New accounts join a waitlist (\`account_status = waitlist\`): the public home \`/\` is the waitlist landing; sign-in is at \`/login\`. After email confirmation you see only your registration date, never a queue position. Access is granted by staff; you then complete the introduction wizard at \`/onboarding\` (not the dashboard) to create your one biography: choose type (autobiography or memorial of a deceased direct family member), confirm legal declarations, enter title or protagonist/writer names, and pick visibility. There is no choice between guided chapters, import, or a finished text. You arrive on one blank page. The dashboard only shows your existing biography; it does not offer memorial setup. The public catalogue and UM resolver stay public without an account.
+Registration needs first name, last name, email, password. Must be 18+. New accounts join a waitlist: the public home \`/\` is the waitlist landing; sign-in is at \`/login\`. After email confirmation you see only your registration date, never a queue position. The association enables access when your turn comes; you then complete the introduction wizard at \`/onboarding\` (not the dashboard) to create your one biography: choose type (autobiography or memorial of a deceased direct family member), confirm legal declarations, enter title or protagonist/writer names, and pick visibility. There is no choice between guided chapters, import, or a finished text. You arrive on one blank page. The dashboard only shows your existing biography; it does not offer memorial setup. The public catalogue and UM resolver stay public without an account.
+
+New accounts have \`account_status = waitlist\`. Access is granted by staff.
 
 ## writing_modes
 
-One page, like a word processor. There are no fixed life chapters and no separate free-text mode. Chapters are the headings the author marks with Chapter title. They appear in the side list as anchors. If the text has no chapters, it stays whole; chapters are added later, not invented. Echo may suggest a shape, for example chronological, and must leave room for reflection, not a list of facts. Echo may privately remember broad life themes (childhood, family, education, work, turning points, relationships, hard times, what they loved, what they hope remains) only to ask a question when something is missing. Those themes are never written as empty chapters and never shown as a required path.
+One page, like a word processor. There are no fixed life chapters and no separate free-text mode. Chapters are the headings the author marks with Chapter title. They appear in the side list as anchors. If the text has no chapters, it stays whole; chapters are added later, not invented.
+
+While you work on a biography, Echo keeps a private memory of your conversation: the chat history, a running summary, and short notes such as the people you mention, your preferences, the decisions you have made and the topics still open. It uses this memory only to help you pick up where you left off and to suggest questions when something seems to be missing. This memory is never part of the biography and is never shown to readers. It is erased when the biography is published, and deleted if you turn off AI features or delete the biography or your account. For how AI data is processed, see the Privacy Policy.
+
+Echo may suggest a shape, for example chronological, and must leave room for reflection, not a list of facts. Echo may privately remember broad life themes only to ask a question when something is missing. Those themes are never written as empty chapters and never shown as a required path.
 
 ## ai_tools
 
@@ -46,15 +52,21 @@ There is no separate Conversation Mode toggle. The biography is one page and alw
 
 ## editor_interface
 
-The editor has no top bar. In the left menu: the biography title (click to rename) and the author name, written at the same size as the chapter titles. Then the chapter list, which fills only when a chapter title is marked. At the bottom of that menu: save status (Saved / Saving), Import text (always visible), then Export (always visible), and Share link when the biography is not private. A thin divider, then Tools. Inside Tools: visibility (Private, Family, or Public — tap to cycle), My details or Who this person was, notes, photos, book structure, and review and publication. On an original, the language of the text is chosen in Tools, Language of the text; the Language button next to the font size takes you there. On a phone or tablet the same menu opens from the hamburger on the left of the site header, not from a bar under the header. Admin is only inside the account menu on the right, at every screen size. On a narrow screen the formatting buttons fold into a menu labelled Style (Stile, Style, Stil). The closed menu keeps showing the chosen style until it changes: Bold, Italic, Title, List •, List #, or Quote. Chapter title is a bordered button on a wide screen and an item in that menu on a narrow one.
+The editor has no top bar. In the left menu: the biography title (click to rename) and the author name, written at the same size as the chapter titles. Then the chapter list, which fills only when a chapter title is marked. At the bottom of that menu: save status (Saved / Saving), Import text (always visible), then Export (always visible), and Share link when the biography is not private. A thin divider, then Tools. Inside Tools: visibility (Private, Family, or Public — tap to cycle), My details or Who this person was, notes, photos, book structure, and review and publication. On an original, the language of the text is chosen in Tools, Language of the text; the Language button next to the font size takes you there. On a phone or tablet the same menu opens from the hamburger on the left of the site header, not from a bar under the header. On a narrow screen the formatting buttons fold into a menu labelled Style (Stile, Style, Stil). The closed menu keeps showing the chosen style until it changes: Bold, Italic, Title, List •, List #, or Quote. Chapter title is a bordered button on a wide screen and an item in that menu on a narrow one.
+
+Admin is only inside the account menu on the right, at every screen size.
 
 ## um_identifier
 
-Each biography receives one permanent UM identifier when it is created. It is never replaced and never regenerated. The written form looks like UM-0000-XXXX-XXXX-XXXX: UM, a hyphen, the UM year with at least four digits, then the rest. Year 0 UM is Gregorian 2026. Hyphens and letter case do not change which identifier it is. Only Biography Library (Lugano, CHE-416.014.530) issues identifiers. Do not invent one. The public explanation is at /um-identifier. The canonical address is https://id.biographylibrary.org/ followed by the identifier. An issued identifier keeps answering. If the biography cannot be read, the page says the identifier exists and the content is not available. It does not answer as a missing page. The UM year is for archive dates (publication, credits, PDF colophon, site footer). It is never a birth year or a death year.
+Each biography receives one permanent UM identifier when it is created. It is never replaced and never regenerated. The written form looks like UM-0000-XXXX-XXXX-XXXX: UM, a hyphen, the UM year with at least four digits, then the rest. Year 0 UM is Gregorian 2026. Hyphens and letter case do not change which identifier it is. Only Biography Library (Lugano, CHE-416.014.530) issues identifiers. Nobody else invents one. The public explanation is at /um-identifier. The canonical address is https://id.biographylibrary.org/ followed by the identifier. An issued identifier keeps answering. If the biography cannot be read, the page says the identifier exists and the content is not available. It does not answer as a missing page. The UM year is for archive dates (publication, credits, PDF colophon, site footer). It is never a birth year or a death year.
+
+Do not invent a UM identifier.
 
 ## memorial_review_window
 
-Memorial biographies only. There is no status called provisional. The 30-day window is the date column provisional_until. While that date is still in the future, a public memorial stays in the catalogue and is marked “In the first 30 days” (Italian: Nei primi 30 giorni). A report is possible during the window and remains possible forever after it. First publication sets the window to 30 days after published_at. A later accepted republication sets revised_at and a new 30-day window from revised_at. It does not replace published_at. The first archive package of a memorial is deposited only after the current window has passed. Autobiographies do not get this window.
+Memorial biographies only. After a memorial is first published, and again after a later accepted republication, it stays in the public catalogue for a 30-day window marked “In the first 30 days” (Italian: Nei primi 30 giorni). During that window, and forever after it, anyone can file a report. Autobiographies do not get this window. The full rules are in the Terms of Service (/terms-of-service) and the Privacy Policy (/privacy-policy).
+
+There is no status called provisional. The 30-day window is the date column provisional_until. First publication sets the window to 30 days after published_at. A later accepted republication sets revised_at and a new 30-day window from revised_at. It does not replace published_at. The first archive package of a memorial is deposited only after the current window has passed.
 
 ## book_structure_photos
 
@@ -62,7 +74,9 @@ Book Structure panel (left sidebar): optional front matter (Dedication, Epigraph
 
 ## import_export
 
-Import text is always visible, just above Export. Paste or upload .txt, .rtf, or .docx onto the one page. A digital PDF whose text can be selected is also accepted, up to 30 MB. Ask first whether to keep the original cover. If yes, that picture is page 1 of the generated PDF. When its shape differs from the book page (176×250 mm), do not stretch it: center it on a beige border, the same color as the back cover. If the shape already matches, it fills the page. Bold, italics, and titles are kept only when the PDF font still records them. Headings become chapters in the side list. Text without headings stays whole; chapters are not invented. The inside is set again as text, not copied as a photograph of the pages. If the PDF is only a photograph or a scan, say so clearly and do not promise handwriting recognition. If the page already has text, a question asks whether to replace it or add the new text at the end. Nothing is chosen in advance. Export is PDF, Word, and plain text of the whole page. Print-ready B5 PDF uses the cover and an optional photo gallery. Pre-flight check is available before the final PDF. Exported PDF and text are yours to print, share, or publish elsewhere.
+Import text is always visible, just above Export. Paste or upload .txt, .rtf, or .docx onto the one page. A digital PDF whose text can be selected is also accepted, up to 30 MB. The platform asks whether to keep the original cover. If yes, that picture is page 1 of the generated PDF. When its shape differs from the book page (176×250 mm), it is not stretched: it is centered on a beige border, the same color as the back cover. If the shape already matches, it fills the page. Bold, italics, and titles are kept only when the PDF font still records them. Headings become chapters in the side list. Text without headings stays whole; chapters are not invented. The inside is set again as text, not copied as a photograph of the pages. If the PDF is only a photograph or a scan, the platform says so clearly and does not promise handwriting recognition. If the page already has text, a question asks whether to replace it or add the new text at the end. Nothing is chosen in advance. Export is PDF, Word, and plain text of the whole page. Print-ready B5 PDF uses the cover and an optional photo gallery. Pre-flight check is available before the final PDF. Exported PDF and text are yours to print, share, or publish elsewhere.
+
+Ask first whether to keep the original cover. Do not stretch mismatched covers. If the PDF is only a photograph or a scan, say so clearly and do not promise handwriting recognition. Do not invent chapters.
 
 ## translations
 
@@ -82,8 +96,16 @@ The record card in the files of a translation (PDF header, exported TXT and DOCX
 
 ## rights_chapters
 
-Author keeps full copyright; platform is custodian only. No commercial AI training on private/semi-private/family biographies. Autobiography chapters: after first publish, new chapter allowed after minimum 365 days; published chapters are immutable. After author's death, autobiography frozen; family may write separate linked biographies using their own accounts. Deceased-person biographies: only direct family. See memorial_review_window: 30 days via provisional_until, not a provisional status. A report remains possible after that window, forever.
+Author keeps full copyright; platform is custodian only. No commercial AI training on private/semi-private/family biographies. Autobiography chapters: after first publish, new chapter allowed after minimum 365 days; published chapters are immutable. After author's death, autobiography frozen; family may write separate linked biographies using their own accounts. Deceased-person biographies: only direct family. Memorials have a 30-day window after publication (see “The first 30 days for memorials”); a report remains possible after that window, forever. Details: Terms of Service (/terms-of-service).
+
+See memorial_review_window: 30 days via provisional_until, not a provisional status.
 
 ## faq
 
-FAQ: One account = one biography (autobiography OR memorial). Need another biography? Use a separate account with another email. New accounts wait on the waitlist and see only their registration date, never a queue number. Cannot write a biography of a living friend (only your own or a deceased direct family member). Notes and to-dos are private and not exported. The biography is one page. Echo sits under it; closing the black bar hides the chat. There are no fixed life chapters and no free-text mode. Import text is always visible, just above Export, and accepts Word or PDF; headings become chapters. Export stays visible at the bottom of the side menu and includes the whole page. Review blocks only if the page is empty, not because a life theme is missing. After death your autobiography is frozen; family writes separate biographies on separate accounts. Each biography has one permanent UM identifier. Memorials show “In the first 30 days” while provisional_until is still in the future; they stay in the public catalogue. Commercial AI does not train on the archive.`;
+FAQ: One account = one biography (autobiography OR memorial). Need another biography? Use a separate account with another email. New accounts wait on the waitlist and see only their registration date, never a queue number. Cannot write a biography of a living friend (only your own or a deceased direct family member). Notes and to-dos are private and not exported. The biography is one page. Echo sits under it; closing the black bar hides the chat. There are no fixed life chapters and no free-text mode. Import text is always visible, just above Export, and accepts Word or PDF; headings become chapters. Export stays visible at the bottom of the side menu and includes the whole page. Review blocks only if the page is empty, not because a life theme is missing. After death your autobiography is frozen; family writes separate biographies on separate accounts. Each biography has one permanent UM identifier. Memorials show “In the first 30 days” while that window is still open; they stay in the public catalogue. Commercial AI does not train on the archive.
+
+Memorials show “In the first 30 days” while provisional_until is still in the future.
+
+## offline_manual
+
+You can download this manual from Help in the site footer or in the editor menu. The file is a Markdown document you can open on your computer or load into any AI assistant. It describes how Biography Library works. It is not a substitute for the Privacy Policy or the Terms of Service.`;

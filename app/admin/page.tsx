@@ -23,6 +23,12 @@ interface OverviewStats {
   parseErrorCount: number | null;
 }
 
+interface KbDriftState {
+  drifted: boolean;
+  buildVersion: string;
+  indexedVersion: string | null;
+}
+
 async function safeCount(query: any): Promise<number | null> {
   try {
     const result = await query;
@@ -108,10 +114,57 @@ function OverviewContent() {
     resolvedThisWeek: null,
     parseErrorCount: null,
   });
+  const [kbDrift, setKbDrift] = useState<KbDriftState | null>(null);
+  const [kbSeeding, setKbSeeding] = useState(false);
 
   useEffect(() => {
     fetchStats().then(setStats);
   }, []);
+
+  useEffect(() => {
+    if (isReviewer) return;
+    void (async () => {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      if (!session?.access_token) return;
+      const res = await fetch('/api/agents/admin/kb-status', {
+        headers: { Authorization: `Bearer ${session.access_token}` },
+      });
+      if (!res.ok) return;
+      const body = (await res.json()) as {
+        drifted?: boolean;
+        buildVersion?: string;
+        indexedVersion?: string | null;
+      };
+      setKbDrift({
+        drifted: Boolean(body.drifted),
+        buildVersion: body.buildVersion ?? '—',
+        indexedVersion: body.indexedVersion ?? null,
+      });
+    })();
+  }, [isReviewer]);
+
+  const handleKbReseed = async () => {
+    setKbSeeding(true);
+    try {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      if (!session?.access_token) return;
+      const res = await fetch('/api/agents/admin/seed-kb', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${session.access_token}` },
+      });
+      if (res.ok) {
+        setKbDrift((prev) =>
+          prev ? { ...prev, drifted: false, indexedVersion: prev.buildVersion } : prev
+        );
+      }
+    } finally {
+      setKbSeeding(false);
+    }
+  };
 
   return (
     <>
@@ -126,6 +179,31 @@ function OverviewContent() {
             <p className="text-sm text-muted-foreground mt-0.5">{t.admin.overviewSubtitle}</p>
           </div>
         </div>
+
+        {kbDrift?.drifted && (
+          <div className="notice tone-warning mb-8 flex items-start gap-3 px-4 py-3.5">
+            <TriangleAlert className="h-5 w-5 shrink-0 mt-0.5" />
+            <div className="flex-1 min-w-0">
+              <p className="text-sm">
+                {t.admin.overviewKbDriftBanner
+                  .replace('{indexed}', kbDrift.indexedVersion ?? '—')
+                  .replace('{build}', kbDrift.buildVersion)}
+              </p>
+            </div>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              disabled={kbSeeding}
+              onClick={() => {
+                void handleKbReseed();
+              }}
+              className="shrink-0"
+            >
+              {t.admin.overviewKbSeedAction}
+            </Button>
+          </div>
+        )}
 
         {stats.parseErrorCount !== null && stats.parseErrorCount > 0 && (
           <div className="notice tone-warning mb-8 flex items-start gap-3 px-4 py-3.5">

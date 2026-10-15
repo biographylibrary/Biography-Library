@@ -11,6 +11,7 @@ import {
   resolveContentFingerprintForPreprint,
   runPreprintCheck,
 } from '@/lib/server/preprint-check';
+import { assertAiFeaturesEnabled } from '@/lib/server/require-ai-features';
 
 type AnyClient = SupabaseClient<any, any, any>;
 
@@ -47,6 +48,11 @@ export async function POST(req: NextRequest) {
     }
 
     const serviceClient = buildServiceClient();
+
+    const aiGate = await assertAiFeaturesEnabled(serviceClient, user.id);
+    if (!aiGate.ok) {
+      return NextResponse.json({ error: aiGate.error }, { status: aiGate.status });
+    }
 
     if (!(await checkPerUserThrottle(serviceClient, user.id, 'preprint_check'))) {
       return NextResponse.json({ error: 'Too many requests' }, { status: 429 });

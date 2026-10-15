@@ -135,6 +135,21 @@ export function createFakeDb(seed: Record<string, Row[]> = {}, options: FakeDbOp
       payload = patch;
       return chain;
     };
+    chain.upsert = (row: Row, _opts?: { onConflict?: string }) => {
+      op = 'insert';
+      const conflictCols = (_opts?.onConflict ?? 'id').split(',').map((c) => c.trim());
+      const existing = rowsOf(table).find((r) => conflictCols.every((c) => r[c] === row[c]));
+      if (existing) {
+        Object.assign(existing, row);
+        log.push({ op: 'update', table, data: { ...row } });
+        return {
+          then: (resolve: (v: unknown) => unknown, reject?: (e: unknown) => unknown) =>
+            Promise.resolve({ data: [existing], error: null, count: 1 }).then(resolve, reject),
+        };
+      }
+      payload = row;
+      return chain;
+    };
     chain.delete = () => {
       op = 'delete';
       return chain;

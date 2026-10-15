@@ -1,0 +1,9 @@
+# Biography Library
+
+> Permanent, open-source, non-profit digital archive for autobiographies and memorial biographies. App and AI writing in Switzerland; database still in Ireland during the beta.
+
+User manual (English), version 1.14 (2026-10-15):
+- /help/biography-library-manual.en.md
+- /help/manual-meta.json
+
+Content hash: 7ac0234d14126a2cb43df3fa439cd0fe0e926cdb19beff211964665d8e89a1e8

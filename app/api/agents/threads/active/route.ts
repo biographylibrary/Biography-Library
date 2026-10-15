@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { authenticateAgentRequest } from '@/lib/agents/agent-chat-handler';
 import { buildServiceClient } from '@/lib/server/review-submit-pipeline';
+import { assertAiFeaturesEnabled } from '@/lib/server/require-ai-features';
 import {
   appendMessage,
   getActiveThread,
@@ -39,6 +40,11 @@ export async function GET(req: NextRequest) {
   }
 
   const serviceClient = buildServiceClient();
+
+  const aiGate = await assertAiFeaturesEnabled(serviceClient, auth.userId);
+  if (!aiGate.ok) {
+    return NextResponse.json({ error: aiGate.error }, { status: aiGate.status });
+  }
 
   if (biographyId) {
     const ownership = await verifyBiographyOwnership(serviceClient, biographyId, auth.userId);

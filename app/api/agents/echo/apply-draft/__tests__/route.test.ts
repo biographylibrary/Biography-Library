@@ -13,6 +13,11 @@ vi.mock('@/lib/server/review-submit-pipeline', () => ({
   buildServiceClient: () => ({}),
 }));
 
+vi.mock('@/lib/server/require-ai-features', () => ({
+  assertAiFeaturesEnabled: vi.fn(async () => ({ ok: true })),
+  AI_FEATURES_DISABLED_ERROR: 'ai_features_disabled',
+}));
+
 vi.mock('@/lib/agents/thread-service', () => ({
   verifyBiographyOwnership: (...args: unknown[]) => verifyBiographyOwnership(...args),
 }));
@@ -22,6 +27,7 @@ vi.mock('@/lib/echo/apply-draft', () => ({
 }));
 
 import { POST } from '@/app/api/agents/echo/apply-draft/route';
+import { assertAiFeaturesEnabled } from '@/lib/server/require-ai-features';
 
 function request(body: unknown) {
   return new NextRequest('http://localhost/api/agents/echo/apply-draft', {
@@ -41,8 +47,21 @@ describe('POST /api/agents/echo/apply-draft', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     authenticateAgentRequest.mockResolvedValue({ ok: true, userId: 'user-1', jwt: 'jwt' });
+    vi.mocked(assertAiFeaturesEnabled).mockResolvedValue({ ok: true });
     verifyBiographyOwnership.mockResolvedValue({ ok: true, isEdition: false });
     appendDraftToBiography.mockResolvedValue({ ok: true });
+  });
+
+  it('403 ai_features_disabled quando le funzioni IA sono spente', async () => {
+    vi.mocked(assertAiFeaturesEnabled).mockResolvedValue({
+      ok: false,
+      status: 403,
+      error: 'ai_features_disabled',
+    });
+    const res = await POST(request(validBody));
+    expect(res.status).toBe(403);
+    expect(await res.json()).toEqual({ error: 'ai_features_disabled' });
+    expect(appendDraftToBiography).not.toHaveBeenCalled();
   });
 
   it('edizione: 403 echo_not_available_for_edition senza scrivere testo', async () => {

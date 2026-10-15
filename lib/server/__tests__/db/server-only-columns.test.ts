@@ -159,13 +159,18 @@ describe('profiles: nessuno si assegna un ruolo o salta la lista d\'attesa', () 
     ['legal_declaration_type', `legal_declaration_type = 'x'`],
     ['legal_declaration_version', `legal_declaration_version = '1999'`],
     ['welcome_email_sent_at', `welcome_email_sent_at = now()`],
+    ['ai_features_enabled', `ai_features_enabled = true`],
   ])('non scrive %s', async (_name, assignment) => {
     const err = await errorOf(() => as(db, 'authenticated', U.waitlist, `update profiles set ${assignment} where id = $1`, [U.waitlist]));
     expect(err).toContain('server_only_column');
   });
 
-  it('continua a scrivere le proprie preferenze', async () => {
-    await as(db, 'authenticated', U.author, `update profiles set name = 'Anna', language = 'it', ui_font_size = 18, ai_features_enabled = true where id = $1`, [U.author]);
+  it('continua a scrivere le proprie preferenze (non ai_features_enabled)', async () => {
+    await as(db, 'authenticated', U.author, `update profiles set name = 'Anna', language = 'it', ui_font_size = 18 where id = $1`, [U.author]);
+  });
+
+  it('il ruolo di servizio può scrivere ai_features_enabled', async () => {
+    await asService(`update profiles set ai_features_enabled = true where id = $1`, [U.author]);
   });
 
   it('nessuno inserisce righe in profiles dal browser: la policy di INSERT non esiste più', async () => {

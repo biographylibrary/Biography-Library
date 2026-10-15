@@ -85,9 +85,17 @@ Controllare che sul **processo che esegue Next** siano impostate (non committate
 ## 4. Deploy applicazione
 
 - [ ] Se modificato `docs/PLATFORM_KB.md`: `npm run kb:sync` + `npm run kb:sync:check` + `POST /api/agents/admin/seed-kb` (admin) per re-indicizzare RAG Echo
+- [ ] **Dopo un fix alle sezioni IT/FR/DE in `help-kb-sections.locales.ts` (e finché il reseed automatico hash-aware non è in produzione):** seed manuale esplicito per **it, fr, de** (`npm run kb:seed` o `POST /api/agents/admin/seed-kb`), altrimenti Echo continua a leggere i chunk vecchi
+- [ ] Applicare la migrazione `kb_index_state` (`20261015150000_kb_index_state.sql`) in sviluppo, poi in produzione dopo revisione
 - [ ] Edge Functions deployate se ci sono modifiche in `supabase/functions/` (`audio-transcription` ora scrive anche in `ai_token_usage`)
 - [ ] Deploy Next: push su `main` che attiva il workflow, **oppure** procedura manuale documentata (git pull, build, restart container).
 - [ ] Risposta HTTP 200 sulla homepage e su una route API leggera se disponibile.
+
+## 4b. Condizioni per l’apertura pubblica (oltre la beta chiusa)
+
+- [ ] **Migrazione del database Supabase in regione svizzera** (l’informativa dichiara che i dati risiedono in Svizzera) — vedi piano `.cursor/plans/supabase-zurich-migrate.plan.md`
+- [ ] Gli **avvisi** di `kb:sync` sulle traduzioni KB incomplete (chiavi/versione locale dietro l’EN) diventano **blocchi** in CI prima dell’apertura pubblica
+- [ ] Seed Echo allineato a `manual-meta.json` (banner admin senza drift; checklist seed it/fr/de dopo fix didascalie)
 
 ---
 

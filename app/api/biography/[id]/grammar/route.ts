@@ -26,6 +26,7 @@ import {
   recordMinuteHit,
 } from '@/lib/ai/grammar-limits';
 import { checkAuthorTokenCap, tokenCapResponseBody } from '@/lib/ai/token-caps';
+import { assertAiFeaturesEnabled } from '@/lib/server/require-ai-features';
 import { isEditionBiography } from '@/lib/edition-ai';
 
 export const runtime = 'nodejs';
@@ -58,6 +59,11 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
   }
 
   const service = buildServiceClient();
+  const aiGate = await assertAiFeaturesEnabled(service, userId);
+  if (!aiGate.ok) {
+    return NextResponse.json({ error: aiGate.error }, { status: aiGate.status });
+  }
+
   const biographyId = await resolveBiographyId(service, params.id);
   if (!biographyId) {
     return NextResponse.json({ error: 'Not found' }, { status: 404 });

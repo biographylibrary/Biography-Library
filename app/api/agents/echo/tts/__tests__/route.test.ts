@@ -50,13 +50,43 @@ vi.mock('@/lib/server/review-submit-pipeline', () => ({
   buildServiceClient: () => buildServiceClient(),
 }));
 
+const assertAiFeaturesEnabled = vi.fn();
+
+vi.mock('@/lib/server/require-ai-features', () => ({
+  assertAiFeaturesEnabled: (...a: unknown[]) => assertAiFeaturesEnabled(...a),
+  AI_FEATURES_DISABLED_ERROR: 'ai_features_disabled',
+}));
+
 describe('echo/tts route', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    assertAiFeaturesEnabled.mockResolvedValue({ ok: true });
     checkAgentRateLimit.mockResolvedValue({ allowed: true });
     isEchoTtsConfigured.mockReturnValue(true);
     synthesizeVoxtralSpeech.mockResolvedValue(new ArrayBuffer(8));
   });
+
+  it('POST 403 ai_features_disabled quando le funzioni IA sono spente (prova di rottura)', async () => {
+    authenticateAgentRequest.mockResolvedValue({ ok: true, userId: 'user-1', jwt: 'jwt' });
+    assertAiFeaturesEnabled.mockResolvedValue({
+      ok: false,
+      status: 403,
+      error: 'ai_features_disabled',
+    });
+    const { POST } = await import('@/app/api/agents/echo/tts/route');
+    const res = await POST(
+      new NextRequest('http://localhost/api/agents/echo/tts', {
+        method: 'POST',
+        headers: { authorization: 'Bearer jwt' },
+        body: JSON.stringify({ text: 'Ciao', language: 'it' }),
+      })
+    );
+    expect(res.status).toBe(403);
+    expect(await res.json()).toEqual({ error: 'ai_features_disabled' });
+    expect(synthesizeVoxtralSpeech).not.toHaveBeenCalled();
+    expect(assertAiFeaturesEnabled).toHaveBeenCalled();
+  });
+
 
   it('GET returns public TTS config', async () => {
     isEchoTtsConfigured.mockReturnValue(false);

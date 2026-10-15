@@ -138,6 +138,9 @@ export interface Translations {
     fontSizeNormal: string;
     fontSizeLarge: string;
     fontSizeExtraLarge: string;
+    aiFeatures: string;
+    aiFeaturesDescription: string;
+    aiFeaturesPurgeRetry: string;
     account: string;
     dangerZone: string;
   };
@@ -671,6 +674,18 @@ export interface Translations {
     cookiePolicy: string;
     credits: string;
     umIdentifier: string;
+  };
+  helpDialog: {
+    title: string;
+    description: string;
+    askEcho: string;
+    requestAccess: string;
+    downloadManual: string;
+    downloadHint: string;
+    downloadEn: string;
+    englishFallback: string;
+    manualVersion: string;
+    openAria: string;
   };
   creditsPage: {
     orgHeading: string;
@@ -1403,6 +1418,8 @@ export interface Translations {
     overviewPeriodLast7Days: string;
     overviewPeriodLast30Days: string;
     overviewParseErrorBanner: string;
+    overviewKbDriftBanner: string;
+    overviewKbSeedAction: string;
     overviewViewAffected: string;
     reviewNoLanguages: string;
     reviewConflictTitle: string;
@@ -1585,20 +1602,6 @@ export interface Translations {
     coverPreview: string;
     noCoverPhoto: string;
     goToPhotos: string;
-  };
-  helpChatbot: {
-    title: string;
-    placeholder: string;
-    send: string;
-    loading: string;
-    lowConfidence: string;
-    clearChat: string;
-    openHelp: string;
-    closeHelp: string;
-    sessionExpired: string;
-    rateLimitError: string;
-    genericError: string;
-    signInRequired: string;
   };
   onboardingWizard: {
     stepProgress: string;
@@ -2037,6 +2040,11 @@ export const translations: Record<Language, Translations> = {
       fontSizeNormal: 'Normal (100%)',
       fontSizeLarge: 'Large (115%)',
       fontSizeExtraLarge: 'Extra-large (130%)',
+      aiFeatures: 'AI features',
+      aiFeaturesDescription:
+        'Echo and the writing tools. Turning them off erases Echo’s memory for all your biographies.',
+      aiFeaturesPurgeRetry:
+        'AI features are off, but Echo’s memory could not be fully erased. Please try again.',
       account: 'Account',
       dangerZone: 'Danger zone',
     },
@@ -2585,6 +2593,18 @@ export const translations: Record<Language, Translations> = {
       cookiePolicy: 'Cookies',
       credits: 'Credits',
       umIdentifier: 'UM identifier',
+    },
+    helpDialog: {
+      title: 'Help',
+      description: 'Ask Echo, or download the platform manual to read offline or load into any AI assistant.',
+      askEcho: 'Ask Echo',
+      requestAccess: 'Request access',
+      downloadManual: 'Download the manual',
+      downloadHint: 'Markdown file. You can open it on your computer or load it into any AI assistant.',
+      downloadEn: 'Download English manual',
+      englishFallback: 'English',
+      manualVersion: 'Version {version} — {date}',
+      openAria: 'Open Help',
     },
     creditsPage: {
       orgHeading: 'Association',
@@ -3336,6 +3356,9 @@ export const translations: Record<Language, Translations> = {
       overviewPeriodLast7Days: 'Last 7 days',
       overviewPeriodLast30Days: 'Last 30 days',
       overviewParseErrorBanner: '{count} {count, plural, one {biography} other {biographies}} published in the last 7 days bypassed AI screening due to a parse error. These may require manual review.',
+      overviewKbDriftBanner:
+        'Echo is on knowledge base version {indexed}, the deployed manual is {build}. Re-seed so answers match the manual.',
+      overviewKbSeedAction: 'Re-seed Echo knowledge',
       overviewViewAffected: 'View affected biographies',
       reviewNoLanguages: 'No languages assigned — contact an administrator to receive review assignments.',
       reviewConflictTitle: 'Another reviewer is working on this',
@@ -3516,20 +3539,6 @@ export const translations: Record<Language, Translations> = {
       coverPreview: 'Cover preview',
       noCoverPhoto: 'No cover photo',
       goToPhotos: 'Add in Photos',
-    },
-    helpChatbot: {
-      title: 'Help',
-      placeholder: 'Ask a question…',
-      send: 'Send',
-      loading: 'Thinking…',
-      lowConfidence: "I'm not 100% sure — try the full guide for more details.",
-      clearChat: 'Clear chat',
-      openHelp: 'Open help',
-      closeHelp: 'Close help',
-      sessionExpired: 'Your session has expired. Please sign in again.',
-      rateLimitError: 'Too many requests. Please wait a moment.',
-      genericError: 'Something went wrong. Please try again.',
-      signInRequired: 'Sign in to use the help assistant.',
     },
     onboardingWizard: {
       stepProgress: 'Step {current} of {total}',
@@ -3928,6 +3937,11 @@ export const translations: Record<Language, Translations> = {
       fontSizeNormal: 'Normale (100%)',
       fontSizeLarge: 'Grande (115%)',
       fontSizeExtraLarge: 'Extra-grande (130%)',
+      aiFeatures: 'Funzioni IA',
+      aiFeaturesDescription:
+        'Echo e gli strumenti di scrittura. Se le disattivi, la memoria di Echo viene cancellata per tutte le tue biografie.',
+      aiFeaturesPurgeRetry:
+        'Le funzioni IA sono spente, ma la memoria di Echo non è stata cancellata del tutto. Riprova.',
       account: 'Account',
       dangerZone: 'Zona pericolosa',
     },
@@ -4478,6 +4492,18 @@ export const translations: Record<Language, Translations> = {
       cookiePolicy: 'Cookie',
       credits: 'Crediti',
       umIdentifier: 'Identificativo UM',
+    },
+    helpDialog: {
+      title: 'Aiuto',
+      description: 'Chiedi a Echo, oppure scarica il manuale della piattaforma da leggere offline o da caricare in qualsiasi assistente AI.',
+      askEcho: 'Chiedi a Echo',
+      requestAccess: 'Richiedi accesso',
+      downloadManual: 'Scarica il manuale',
+      downloadHint: 'File Markdown. Puoi aprirlo sul computer o caricarlo in qualsiasi assistente AI.',
+      downloadEn: 'Scarica il manuale in inglese',
+      englishFallback: 'inglese',
+      manualVersion: 'Versione {version} — {date}',
+      openAria: 'Apri Aiuto',
     },
     creditsPage: {
       orgHeading: 'Associazione',
@@ -5229,6 +5255,9 @@ export const translations: Record<Language, Translations> = {
       overviewPeriodLast7Days: 'Ultimi 7 giorni',
       overviewPeriodLast30Days: 'Ultimi 30 giorni',
       overviewParseErrorBanner: '{count} {count, plural, one {biografia pubblicata} other {biografie pubblicate}} negli ultimi 7 giorni hanno saltato lo screening AI per errore di parsing. Potrebbero richiedere revisione manuale.',
+      overviewKbDriftBanner:
+        'Echo è alla versione {indexed} della knowledge base, il manuale in produzione è {build}. Rifai il seed per allineare le risposte.',
+      overviewKbSeedAction: 'Ricarica la knowledge di Echo',
       overviewViewAffected: 'Vedi biografie interessate',
       reviewNoLanguages: 'Nessuna lingua assegnata — contatta un amministratore per ricevere assegnazioni di revisione.',
       reviewConflictTitle: 'Un altro revisore sta lavorando su questa biografia',
@@ -5409,20 +5438,6 @@ export const translations: Record<Language, Translations> = {
       coverPreview: 'Anteprima copertina',
       noCoverPhoto: 'Nessuna foto di copertina',
       goToPhotos: 'Aggiungi nelle Foto',
-    },
-    helpChatbot: {
-      title: 'Aiuto',
-      placeholder: 'Fai una domanda…',
-      send: 'Invia',
-      loading: 'Sto pensando…',
-      lowConfidence: 'Non sono sicuro al 100% — prova la guida completa per maggiori dettagli.',
-      clearChat: 'Cancella chat',
-      openHelp: 'Apri aiuto',
-      closeHelp: 'Chiudi aiuto',
-      sessionExpired: 'La sessione è scaduta. Accedi di nuovo.',
-      rateLimitError: 'Troppe richieste. Attendi un momento.',
-      genericError: 'Qualcosa è andato storto. Riprova.',
-      signInRequired: 'Accedi per usare l\'assistente.',
     },
     onboardingWizard: {
       stepProgress: 'Passo {current} di {total}',
@@ -5821,6 +5836,11 @@ export const translations: Record<Language, Translations> = {
       fontSizeNormal: 'Normal (100 %)',
       fontSizeLarge: 'Grand (115 %)',
       fontSizeExtraLarge: 'Très grand (130 %)',
+      aiFeatures: 'Fonctions d’IA',
+      aiFeaturesDescription:
+        'Echo et les outils d’écriture. Si vous les désactivez, la mémoire d’Echo est effacée pour toutes vos biographies.',
+      aiFeaturesPurgeRetry:
+        'Les fonctions d’IA sont désactivées, mais la mémoire d’Echo n’a pas pu être entièrement effacée. Veuillez réessayer.',
       account: 'Compte',
       dangerZone: 'Zone de danger',
     },
@@ -6372,6 +6392,18 @@ export const translations: Record<Language, Translations> = {
       cookiePolicy: 'Cookies',
       credits: 'Crédits',
       umIdentifier: 'Identifiant UM',
+    },
+    helpDialog: {
+      title: 'Aide',
+      description: 'Demandez à Echo, ou téléchargez le manuel de la plateforme pour le lire hors ligne ou le charger dans n’importe quel assistant IA.',
+      askEcho: 'Demander à Echo',
+      requestAccess: 'Demander l’accès',
+      downloadManual: 'Télécharger le manuel',
+      downloadHint: 'Fichier Markdown. Vous pouvez l’ouvrir sur votre ordinateur ou le charger dans n’importe quel assistant IA.',
+      downloadEn: 'Télécharger le manuel en anglais',
+      englishFallback: 'anglais',
+      manualVersion: 'Version {version} — {date}',
+      openAria: 'Ouvrir Aide',
     },
     creditsPage: {
       orgHeading: 'Association',
@@ -7123,6 +7155,9 @@ export const translations: Record<Language, Translations> = {
       overviewPeriodLast7Days: '7 derniers jours',
       overviewPeriodLast30Days: '30 derniers jours',
       overviewParseErrorBanner: '{count} {count, plural, one {biographie publiée} other {biographies publiées}} au cours des 7 derniers jours ont contourné le filtrage IA en raison d\'une erreur d\'analyse. Une révision manuelle peut être nécessaire.',
+      overviewKbDriftBanner:
+        'Echo est à la version {indexed} de la base de connaissances, le manuel déployé est {build}. Relancez le seed pour aligner les réponses.',
+      overviewKbSeedAction: 'Recharger la knowledge Echo',
       overviewViewAffected: 'Voir les biographies concernées',
       reviewNoLanguages: 'Aucune langue assignée — contactez un administrateur pour recevoir des attributions de révision.',
       reviewConflictTitle: 'Un autre réviseur travaille sur cette biographie',
@@ -7303,20 +7338,6 @@ export const translations: Record<Language, Translations> = {
       coverPreview: 'Aperçu de la couverture',
       noCoverPhoto: 'Aucune photo de couverture',
       goToPhotos: 'Ajouter dans Photos',
-    },
-    helpChatbot: {
-      title: 'Aide',
-      placeholder: 'Posez une question…',
-      send: 'Envoyer',
-      loading: 'Je réfléchis…',
-      lowConfidence: "Je ne suis pas sûr à 100 % — consultez le guide complet pour plus de détails.",
-      clearChat: 'Effacer la conversation',
-      openHelp: 'Ouvrir l\'aide',
-      closeHelp: 'Fermer l\'aide',
-      sessionExpired: 'Votre session a expiré. Veuillez vous reconnecter.',
-      rateLimitError: 'Trop de requêtes. Veuillez patienter un moment.',
-      genericError: 'Une erreur est survenue. Veuillez réessayer.',
-      signInRequired: 'Connectez-vous pour utiliser l\'assistant.',
     },
     onboardingWizard: {
       stepProgress: 'Étape {current} sur {total}',
@@ -7715,6 +7736,11 @@ export const translations: Record<Language, Translations> = {
       fontSizeNormal: 'Normal (100 %)',
       fontSizeLarge: 'Groß (115 %)',
       fontSizeExtraLarge: 'Sehr groß (130 %)',
+      aiFeatures: 'KI-Funktionen',
+      aiFeaturesDescription:
+        'Echo und die Schreibwerkzeuge. Wenn Sie sie ausschalten, wird Echos Gedächtnis für alle Ihre Biografien gelöscht.',
+      aiFeaturesPurgeRetry:
+        'Die KI-Funktionen sind aus, aber Echos Gedächtnis konnte nicht vollständig gelöscht werden. Bitte erneut versuchen.',
       account: 'Konto',
       dangerZone: 'Gefahrenzone',
     },
@@ -8265,6 +8291,18 @@ export const translations: Record<Language, Translations> = {
       cookiePolicy: 'Cookies',
       credits: 'Impressum',
       umIdentifier: 'UM-Kennung',
+    },
+    helpDialog: {
+      title: 'Hilfe',
+      description: 'Fragen Sie Echo, oder laden Sie das Plattformhandbuch herunter, um es offline zu lesen oder in einen KI-Assistenten zu laden.',
+      askEcho: 'Echo fragen',
+      requestAccess: 'Zugang anfordern',
+      downloadManual: 'Handbuch herunterladen',
+      downloadHint: 'Markdown-Datei. Sie können sie auf dem Computer öffnen oder in jeden KI-Assistenten laden.',
+      downloadEn: 'Englisches Handbuch herunterladen',
+      englishFallback: 'Englisch',
+      manualVersion: 'Version {version} — {date}',
+      openAria: 'Hilfe öffnen',
     },
     creditsPage: {
       orgHeading: 'Verein',
@@ -9016,6 +9054,9 @@ export const translations: Record<Language, Translations> = {
       overviewPeriodLast7Days: 'Letzte 7 Tage',
       overviewPeriodLast30Days: 'Letzte 30 Tage',
       overviewParseErrorBanner: '{count} {count, plural, one {Biografie} other {Biografien}} in den letzten 7 Tagen wurden wegen eines Parse-Fehlers ohne KI-Prüfung veröffentlicht. Manuelle Prüfung kann erforderlich sein.',
+      overviewKbDriftBanner:
+        'Echo hat Knowledge-Base-Version {indexed}, das bereitgestellte Handbuch ist {build}. Seed erneut ausführen, damit die Antworten passen.',
+      overviewKbSeedAction: 'Echo-Knowledge neu laden',
       overviewViewAffected: 'Betroffene Biografien anzeigen',
       reviewNoLanguages: 'Keine Sprachen zugewiesen — wenden Sie sich an einen Administrator für Prüfaufträge.',
       reviewConflictTitle: 'Ein anderer Prüfer arbeitet an dieser Biografie',
@@ -9196,20 +9237,6 @@ export const translations: Record<Language, Translations> = {
       coverPreview: 'Vorschau Titelbild',
       noCoverPhoto: 'Kein Titelfoto',
       goToPhotos: 'In Fotos hinzufügen',
-    },
-    helpChatbot: {
-      title: 'Hilfe',
-      placeholder: 'Stellen Sie eine Frage…',
-      send: 'Senden',
-      loading: 'Ich denke nach…',
-      lowConfidence: 'Ich bin nicht 100 % sicher — schauen Sie in die vollständige Anleitung für weitere Details.',
-      clearChat: 'Chat leeren',
-      openHelp: 'Hilfe öffnen',
-      closeHelp: 'Hilfe schließen',
-      sessionExpired: 'Ihre Sitzung ist abgelaufen. Bitte melden Sie sich erneut an.',
-      rateLimitError: 'Zu viele Anfragen. Bitte warten Sie einen Moment.',
-      genericError: 'Etwas ist schiefgelaufen. Bitte versuchen Sie es erneut.',
-      signInRequired: 'Melden Sie sich an, um den Assistenten zu nutzen.',
     },
     onboardingWizard: {
       stepProgress: 'Schritt {current} von {total}',

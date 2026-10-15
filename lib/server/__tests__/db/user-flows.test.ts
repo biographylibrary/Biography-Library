@@ -162,10 +162,13 @@ describe('un nuovo utente: registrazione e onboarding, dichiarazione legale comp
     expect(buildOnboardingUpdates(state, { action: 'advance_wizard', biographyType: 'admin' as never }, 'x').ok).toBe(false);
   });
 
-  it('continua a scrivere le proprie preferenze con la sessione (corpo, dimensione carattere, IA)', async () => {
+  it('continua a scrivere le proprie preferenze con la sessione (dimensione carattere); IA solo via server', async () => {
     await update('authenticated', U.author, 'profiles', U.author, { ui_font_size: 'large' });
-    await update('authenticated', U.author, 'profiles', U.author, { ai_features_enabled: true });
-    expect(await profileOf(U.author)).toMatchObject({ ui_font_size: 'large', ai_features_enabled: true });
+    expect(await profileOf(U.author)).toMatchObject({ ui_font_size: 'large' });
+    const err = await errorOf(() =>
+      update('authenticated', U.author, 'profiles', U.author, { ai_features_enabled: true })
+    );
+    expect(err).toContain('server_only_column');
   });
 });
 

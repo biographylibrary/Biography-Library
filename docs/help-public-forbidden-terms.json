@@ -1,0 +1,24 @@
+{
+  "$comment": "Terms that must not appear in public/help manuals. Used by anti-leak tests.",
+  "forbiddenSubstrings": [
+    "<!-- internal",
+    "<!-- /internal",
+    "kb:sync",
+    "npm run",
+    "Assistants explain",
+    "Echo must",
+    "Do not invent",
+    "provisional_until",
+    "published_at",
+    "revised_at",
+    "account_status",
+    "super_admin"
+  ],
+  "forbiddenRegexes": [
+    "`[a-z]+_[a-z0-9_]+`",
+    "\\bstaff\\b",
+    "\\badmin panel\\b",
+    "\\bpannello admin\\b"
+  ],
+  "forbiddenRegexFlags": "i"
+}
