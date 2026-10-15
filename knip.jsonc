@@ -32,8 +32,7 @@
     "hooks/use-require-auth.ts",
     "lib/checkpoint-service.ts",
     "lib/echo/onboarding.ts",
-    "lib/help/help-kb.ts",
-    "lib/section-status-service.ts"
+    "lib/help/help-kb.ts"
   ],
 
   "ignoreDependencies": ["knip"],

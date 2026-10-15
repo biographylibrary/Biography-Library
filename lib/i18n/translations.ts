@@ -462,7 +462,7 @@ export interface Translations {
     revisionRequired: string;
     screeningTextChanged: string;
     screeningTooLong: string;
-    /** Load guard: TipTap document lost author text — read-only, no autosave. */
+    /** Load guard: saved text ≠ editor rebuild — read-only, nothing lost. */
     loadTextLostReadOnly: string;
     textLockedForStatus: string;
     reopenForNewChapter: string;
@@ -2365,7 +2365,7 @@ export const translations: Record<Language, Translations> = {
       screeningTextChanged: 'The text changed while it was being checked, so it was not published. The review team will look at it.',
       screeningTooLong: 'The automatic screening did not cover the whole text, so a person will review it before it is published.',
       loadTextLostReadOnly:
-        'Non è stato possibile caricare tutto il testo: per sicurezza la modifica è disattivata, il testo salvato è intatto',
+        'The saved text does not match what the editor rebuilt. Nothing was lost. Reload the page; if it happens again, write to support.',
       textLockedForStatus: 'The text can\'t be changed while the biography is in this state.',
       reopenForNewChapter: 'Reopen to write a new chapter',
       reopenDialogTitle: 'Reopen your biography?',
@@ -4256,7 +4256,7 @@ export const translations: Record<Language, Translations> = {
       screeningTextChanged: 'Il testo è cambiato mentre veniva controllato, quindi non è stato pubblicato. Lo esaminerà il gruppo di revisione.',
       screeningTooLong: 'Lo screening automatico non ha coperto tutto il testo, quindi lo esaminerà una persona prima della pubblicazione.',
       loadTextLostReadOnly:
-        'Non è stato possibile caricare tutto il testo: per sicurezza la modifica è disattivata, il testo salvato è intatto',
+        'Il testo salvato non coincide con quello che l\'editor ha ricostruito. Non si è perso niente. Ricarica la pagina; se succede di nuovo, scrivi all\'assistenza.',
       textLockedForStatus: 'Il testo non si può modificare mentre la biografia è in questo stato.',
       reopenForNewChapter: 'Riapri per scrivere un nuovo capitolo',
       reopenDialogTitle: 'Riaprire la biografia?',
@@ -6150,7 +6150,7 @@ export const translations: Record<Language, Translations> = {
       screeningTextChanged: 'Le texte a changé pendant la vérification, il n\'a donc pas été publié. L\'équipe de révision va l\'examiner.',
       screeningTooLong: 'Le contrôle automatique n\'a pas couvert tout le texte ; une personne l\'examinera avant la publication.',
       loadTextLostReadOnly:
-        'Non è stato possibile caricare tutto il testo: per sicurezza la modifica è disattivata, il testo salvato è intatto',
+        'Le texte enregistré ne correspond pas à celui que l\'éditeur a reconstruit. Rien n\'a été perdu. Rechargez la page ; si cela se reproduit, écrivez au support.',
       textLockedForStatus: 'Le texte ne peut pas être modifié tant que la biographie est dans cet état.',
       reopenForNewChapter: 'Rouvrir pour écrire un nouveau chapitre',
       reopenDialogTitle: 'Rouvrir votre biographie ?',
@@ -8043,7 +8043,7 @@ export const translations: Record<Language, Translations> = {
       screeningTextChanged: 'Der Text hat sich während der Prüfung geändert und wurde deshalb nicht veröffentlicht. Das Prüfteam sieht ihn sich an.',
       screeningTooLong: 'Die automatische Prüfung hat den Text nicht vollständig erfasst; eine Person prüft ihn vor der Veröffentlichung.',
       loadTextLostReadOnly:
-        'Non è stato possibile caricare tutto il testo: per sicurezza la modifica è disattivata, il testo salvato è intatto',
+        'Der gespeicherte Text stimmt nicht mit dem überein, den der Editor wiederhergestellt hat. Nichts ist verloren. Laden Sie die Seite neu; wenn es wieder vorkommt, schreiben Sie an den Support.',
       textLockedForStatus: 'Der Text kann nicht geändert werden, solange sich die Biografie in diesem Zustand befindet.',
       reopenForNewChapter: 'Für ein neues Kapitel wieder öffnen',
       reopenDialogTitle: 'Biografie wieder öffnen?',

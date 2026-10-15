@@ -89,8 +89,7 @@ import { AuthorLicensePanel } from '@/components/editor/AuthorLicensePanel';
 import { PermanenceDialog } from '@/components/editor/PermanenceDialog';
 import { useTranslation } from '@/lib/i18n/i18n-context';
 import { LICENSE_BY_NC_SA_4, type ContentLicenseUri } from '@/lib/rights';
-import { storedToArchiveMarkdown } from '@/lib/archive-markdown';
-import { stripHtmlTags } from '@/lib/export-utils';
+import { storedToArchiveMarkdown, storedToPlainText } from '@/lib/archive-markdown';
 import { Loader as Loader2, Sparkles, Snowflake as SnowflakeIcon, Send as SendIcon, TriangleAlert, Lock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -1239,8 +1238,8 @@ export default function BiographyEditorPage() {
     if (!aiWritingToolsAvailableForBiography({ translationOf })) return;
     const onSheet = biographyModeRef.current === 'freeflow';
     const plain = onSheet
-      ? stripHtmlTags(contentFreeflowRef.current).trim()
-      : getSectionData(contentRef.current, activeSection).text.trim();
+      ? storedToPlainText(contentFreeflowRef.current).trim()
+      : storedToPlainText(getSectionData(contentRef.current, activeSection).text).trim();
     const section = BIOGRAPHY_SECTIONS.find((s) => s.key === activeSection);
     const sectionTitle = onSheet
       ? titleRef.current.trim() || t.biography.untitled
