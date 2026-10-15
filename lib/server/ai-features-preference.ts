@@ -1,23 +1,27 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
-import { purgeAgentMemoryForBiography } from '@/lib/agents/purge-agent-memory';
+import {
+  purgeAgentMemoryForBiography,
+  purgeAgentMemoryForUserHub,
+} from '@/lib/agents/purge-agent-memory';
 
 export type SetAiFeaturesResult =
-  | { ok: true; enabled: boolean; purgedBiographyIds: string[] }
+  | { ok: true; enabled: boolean; purgedBiographyIds: string[]; hubPurged: boolean }
   | {
       ok: false;
       error: 'memory_purge_failed';
       enabled: false;
       purgedBiographyIds: string[];
       failedBiographyIds: string[];
+      hubPurged: boolean;
     }
   | { ok: false; error: 'profile_update_failed'; message: string };
 
 /**
  * Imposta `profiles.ai_features_enabled`.
  * Se si spegne: prima il flag a false, poi purge della memoria Echo su ogni
- * biografia dell'utente (originali ed edizioni). Se un purge fallisce il flag
- * resta false così l'operazione è ripetibile.
- * Non tocca i thread Echo senza `biography_id` (hub).
+ * biografia dell'utente (originali ed edizioni) e sui thread hub senza
+ * `biography_id`. Se un purge fallisce il flag resta false così l'operazione
+ * è ripetibile.
  */
 export async function setAiFeaturesEnabled(
   serviceClient: SupabaseClient,
@@ -34,7 +38,7 @@ export async function setAiFeaturesEnabled(
   }
 
   if (enabled) {
-    return { ok: true, enabled: true, purgedBiographyIds: [] };
+    return { ok: true, enabled: true, purgedBiographyIds: [], hubPurged: false };
   }
 
   const { data: bios, error: listError } = await serviceClient
@@ -49,6 +53,7 @@ export async function setAiFeaturesEnabled(
       enabled: false,
       purgedBiographyIds: [],
       failedBiographyIds: [],
+      hubPurged: false,
     };
   }
 
@@ -65,15 +70,24 @@ export async function setAiFeaturesEnabled(
     }
   }
 
-  if (failedBiographyIds.length > 0) {
+  let hubPurged = false;
+  try {
+    await purgeAgentMemoryForUserHub(serviceClient, userId);
+    hubPurged = true;
+  } catch {
+    hubPurged = false;
+  }
+
+  if (failedBiographyIds.length > 0 || !hubPurged) {
     return {
       ok: false,
       error: 'memory_purge_failed',
       enabled: false,
       purgedBiographyIds,
       failedBiographyIds,
+      hubPurged,
     };
   }
 
-  return { ok: true, enabled: false, purgedBiographyIds };
+  return { ok: true, enabled: false, purgedBiographyIds, hubPurged: true };
 }
