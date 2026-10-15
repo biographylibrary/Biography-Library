@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { OPEN_ECHO_PANEL_EVENT } from '@/lib/onboarding/tour-mobile';
 import { ChevronDown, ChevronUp } from 'lucide-react';
 import { EchoChat } from './EchoChat';
+import { EchoAiDisabledNotice } from './EchoAiDisabledNotice';
 import { EditorPeek } from './EditorPeek';
 import { useTranslation } from '@/lib/i18n/i18n-context';
 import { BIOGRAPHY_SECTIONS } from '@/lib/editor-constants';
@@ -22,7 +23,11 @@ interface GuidedSectionWorkspaceProps {
   onOpenLanguage?: () => void;
   textLanguageName?: string;
   isPublished?: boolean;
-  aiEnabled?: boolean;
+  /**
+   * Preferenza IA del profilo. `null` = ancora in lettura (né riquadro né chat).
+   * `false` = riquadro informativo; `true` = EchoChat completo.
+   */
+  aiEnabled?: boolean | null;
   aiUsageRefresh?: number;
   aiLoading?: boolean;
   onGrammarCheck?: () => void;
@@ -149,7 +154,7 @@ export function GuidedSectionWorkspace({
           onOpenLanguage={onOpenLanguage}
           textLanguageName={textLanguageName}
           isPublished={isPublished}
-          aiEnabled={aiEnabled}
+          aiEnabled={aiEnabled === true}
           aiLoading={aiLoading}
           onGrammarCheck={onGrammarCheck}
           grammarUnavailable={grammarUnavailable}
@@ -164,16 +169,24 @@ export function GuidedSectionWorkspace({
           data-tour-id="echo-panel"
           className={cn(
             'shrink-0 flex flex-col',
-            echoOpen && 'h-[min(42vh,340px)] min-h-[220px] lg:h-[min(52vh,640px)] lg:min-h-[360px]'
+            echoOpen &&
+              aiEnabled !== null &&
+              'h-[min(42vh,340px)] min-h-[220px] lg:h-[min(52vh,640px)] lg:min-h-[360px]'
           )}
         >
           {echoBar}
-          <EchoChat
-            className={cn('min-h-0', echoOpen ? 'flex-1' : 'hidden')}
-            headerLayout="horizontal"
-            showOrb
-            fontSize={editorFontSize ?? 15}
-          />
+          {aiEnabled === true ? (
+            <EchoChat
+              className={cn('min-h-0', echoOpen ? 'flex-1' : 'hidden')}
+              headerLayout="horizontal"
+              showOrb
+              fontSize={editorFontSize ?? 15}
+            />
+          ) : aiEnabled === false && echoOpen ? (
+            <div className="flex-1 min-h-0 overflow-auto p-3" data-testid="echo-ai-disabled-body">
+              <EchoAiDisabledNotice />
+            </div>
+          ) : null}
         </div>
       )}
     </div>

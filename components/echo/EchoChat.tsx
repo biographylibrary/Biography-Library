@@ -18,6 +18,7 @@ import {
 } from './EchoSpeechControls';
 import { EchoIcebreakers } from './EchoIcebreakers';
 import { EchoDraftInsertPrompt } from './EchoDraftInsertPrompt';
+import { EchoErrorAlert } from './EchoErrorAlert';
 import { useEchoActivityStatus } from '@/lib/echo/use-echo-activity-status';
 import { BIOGRAPHY_SECTIONS } from '@/lib/editor-constants';
 import { classifyEditIntent } from '@/lib/echo/apply-draft';
@@ -424,7 +425,11 @@ export function EchoChat({
           </div>
           );
         })}
-        {error && <p className="text-sm text-destructive text-center">{error}</p>}
+        {error && (
+          <div className="px-2 py-1">
+            <EchoErrorAlert raw={error} />
+          </div>
+        )}
         {!historyLoading && !loading && icebreakersVisible && messages.length > 0 && !compact && (
           <div className="px-1">{icebreakersBlock}</div>
         )}

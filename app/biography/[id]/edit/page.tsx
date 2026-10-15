@@ -64,6 +64,7 @@ import {
 import { INITIAL_AI_STATE, type AiPanelState } from '@/lib/ai-constants';
 import { checkGrammar, AiLimitError } from '@/lib/grammar-service';
 import { grammarLanguageForTag } from '@/lib/ai/grammar';
+import { resolveAiErrorMessage } from '@/lib/echo/ai-error-message';
 import {
   REOPEN_SECTION_PAYLOAD,
   buildEditorSavePayload,
@@ -280,7 +281,8 @@ export default function BiographyEditorPage() {
   const [globalTodosCount, setGlobalTodosCount] = useState(0);
   const [editorFontSize, setEditorFontSize] = useState<number>(15);
 
-  const [aiEnabled, setAiEnabled] = useState(false);
+  /** `null` finché non arriva `profiles.ai_features_enabled` (evita lampeggio del pannello). */
+  const [aiEnabled, setAiEnabled] = useState<boolean | null>(null);
   const [aiState, setAiState] = useState<AiPanelState>(INITIAL_AI_STATE);
 
   const [showExportDialog, setShowExportDialog] = useState(false);
@@ -489,8 +491,11 @@ export default function BiographyEditorPage() {
         .maybeSingle();
 
       if (data) {
-        setAiEnabled(data.ai_features_enabled);
-        localStorage.setItem(AI_ENABLED_KEY, String(data.ai_features_enabled));
+        const enabled = Boolean(data.ai_features_enabled);
+        setAiEnabled(enabled);
+        localStorage.setItem(AI_ENABLED_KEY, String(enabled));
+      } else {
+        setAiEnabled(false);
       }
     };
 
@@ -1263,7 +1268,9 @@ export default function BiographyEditorPage() {
         return;
       }
       const message =
-        err?.message === 'AI_TIMEOUT' ? t.biography.aiTimeout : err.message || t.editor.failedGrammar;
+        err?.message === 'AI_TIMEOUT'
+          ? t.biography.aiTimeout
+          : resolveAiErrorMessage(err?.message || t.editor.failedGrammar, t.echo).message;
       setAiState((prev) => ({
         ...prev,
         loading: false,
@@ -1486,7 +1493,11 @@ export default function BiographyEditorPage() {
         setAiLimitError(err);
         return;
       }
-      setAiState((prev) => ({ ...prev, loading: false, error: err.message || t.editor.failedGrammar }));
+      setAiState((prev) => ({
+        ...prev,
+        loading: false,
+        error: resolveAiErrorMessage(err?.message || t.editor.failedGrammar, t.echo).message,
+      }));
     }
   }, [id, finalVersion, session, language, recordLanguageTag, translationOf, t]);
 
@@ -1995,14 +2006,17 @@ export default function BiographyEditorPage() {
 
 
   const showEchoBubble = false;
-  const aiToolsOnThisSheet = aiEnabled && aiWritingToolsAvailableForBiography({ translationOf });
+  const aiToolsOnThisSheet =
+    aiEnabled === true && aiWritingToolsAvailableForBiography({ translationOf });
+  /** Provider Echo solo con IA attiva e scheda originale (come già per le edizioni). */
+  const echoChatActive = !translationOf && aiEnabled === true;
   const missingBookStructureParts = translationOf
     ? missingBookStructurePartsComparedToOriginal(originalBookStructure, editionBookStructure)
     : [];
 
   return (
     <EchoShell
-      biographyId={translationOf ? undefined : id}
+      biographyId={echoChatActive ? id : undefined}
       sectionKey={activeSection}
       biographyMode={biographyMode}
       showBubble={showEchoBubble}
@@ -2487,7 +2501,7 @@ export default function BiographyEditorPage() {
                     isSectionOrFreeflowRevisionLocked ||
                     reviewQueueLocksEditor
                   }
-                  aiEnabled={aiToolsOnThisSheet}
+                  aiEnabled={translationOf ? false : aiEnabled}
                   aiUsageRefresh={aiUsageRefresh}
                   aiLoading={aiState.loading}
                   highlightChange={echoChangeHighlight}
