@@ -1,11 +1,14 @@
 'use client';
 
+import { useState } from 'react';
 import Link from 'next/link';
 import { useTranslation } from '@/lib/i18n/i18n-context';
 import { formatUmYear, umYearFromDate } from '@/lib/um';
+import { HelpDialog, HelpTriggerButton } from '@/components/help/HelpDialog';
 
 export function Footer() {
   const { t } = useTranslation();
+  const [helpOpen, setHelpOpen] = useState(false);
 
   const umLabel = `${t.umId.yearWord} ${formatUmYear(umYearFromDate(new Date()), 'short')}`;
 
@@ -20,6 +23,11 @@ export function Footer() {
             </p>
           </div>
           <div className="flex w-full items-center justify-center flex-nowrap whitespace-nowrap gap-[0.35em] text-muted-foreground text-[clamp(8px,2.15vw,12px)]">
+            <HelpTriggerButton
+              className="inline-flex items-center gap-1 hover:text-foreground transition-colors"
+              onClick={() => setHelpOpen(true)}
+            />
+            <span>•</span>
             <Link href="/terms-of-service" className="hover:text-foreground transition-colors">
               {t.footer.termsOfService}
             </Link>
@@ -42,6 +50,7 @@ export function Footer() {
           </div>
         </div>
       </div>
+      <HelpDialog open={helpOpen} onOpenChange={setHelpOpen} />
     </footer>
   );
 }

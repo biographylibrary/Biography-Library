@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { Check, ChevronDown, StickyNote, Images, Upload, Download, Lock, BookOpen, FileCheck, Landmark, Link2, User, CloudOff, Loader as Loader2, Users, Globe, Plus, Languages, BookA, Trash2 } from 'lucide-react';
+import { HelpDialog, HelpTriggerButton } from '@/components/help/HelpDialog';
 import {
   type BiographyContent,
 } from '@/lib/editor-constants';
@@ -128,6 +129,7 @@ export function SectionSidebar({
 }: SectionSidebarProps) {
   const { t } = useTranslation();
   const [toolsOpen, setToolsOpen] = useState(false);
+  const [helpOpen, setHelpOpen] = useState(false);
   const [isEditingTitle, setIsEditingTitle] = useState(false);
   const [editTitle, setEditTitle] = useState(title);
   const titleInputRef = useRef<HTMLInputElement>(null);
@@ -334,6 +336,10 @@ export function SectionSidebar({
           <StatusIcon className={cn('h-4 w-4 shrink-0', saveStatus === 'saving' && 'animate-spin')} />
           <span className="truncate">{status.text}</span>
         </div>
+        <HelpTriggerButton
+          className="w-full flex items-center gap-2 px-3 py-1 lg:py-2 rounded-lg text-sm text-muted-foreground hover:bg-muted/50 hover:text-foreground transition-colors"
+          onClick={() => setHelpOpen(true)}
+        />
         <button
           type="button"
           data-tour-id="import-btn"
@@ -537,6 +543,7 @@ export function SectionSidebar({
         )}
       </div>
 
+      <HelpDialog open={helpOpen} onOpenChange={setHelpOpen} />
     </nav>
   );
 }

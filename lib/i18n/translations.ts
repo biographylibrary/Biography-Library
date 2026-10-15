@@ -675,6 +675,18 @@ export interface Translations {
     credits: string;
     umIdentifier: string;
   };
+  helpDialog: {
+    title: string;
+    description: string;
+    askEcho: string;
+    requestAccess: string;
+    downloadManual: string;
+    downloadHint: string;
+    downloadEn: string;
+    englishFallback: string;
+    manualVersion: string;
+    openAria: string;
+  };
   creditsPage: {
     orgHeading: string;
     nameLabel: string;
@@ -1590,20 +1602,6 @@ export interface Translations {
     coverPreview: string;
     noCoverPhoto: string;
     goToPhotos: string;
-  };
-  helpChatbot: {
-    title: string;
-    placeholder: string;
-    send: string;
-    loading: string;
-    lowConfidence: string;
-    clearChat: string;
-    openHelp: string;
-    closeHelp: string;
-    sessionExpired: string;
-    rateLimitError: string;
-    genericError: string;
-    signInRequired: string;
   };
   onboardingWizard: {
     stepProgress: string;
@@ -2596,6 +2594,18 @@ export const translations: Record<Language, Translations> = {
       credits: 'Credits',
       umIdentifier: 'UM identifier',
     },
+    helpDialog: {
+      title: 'Help',
+      description: 'Ask Echo, or download the platform manual to read offline or load into any AI assistant.',
+      askEcho: 'Ask Echo',
+      requestAccess: 'Request access',
+      downloadManual: 'Download the manual',
+      downloadHint: 'Markdown file. You can open it on your computer or load it into any AI assistant.',
+      downloadEn: 'Download English manual',
+      englishFallback: 'English',
+      manualVersion: 'Version {version} — {date}',
+      openAria: 'Open Help',
+    },
     creditsPage: {
       orgHeading: 'Association',
       nameLabel: 'Name',
@@ -3529,20 +3539,6 @@ export const translations: Record<Language, Translations> = {
       coverPreview: 'Cover preview',
       noCoverPhoto: 'No cover photo',
       goToPhotos: 'Add in Photos',
-    },
-    helpChatbot: {
-      title: 'Help',
-      placeholder: 'Ask a question…',
-      send: 'Send',
-      loading: 'Thinking…',
-      lowConfidence: "I'm not 100% sure — try the full guide for more details.",
-      clearChat: 'Clear chat',
-      openHelp: 'Open help',
-      closeHelp: 'Close help',
-      sessionExpired: 'Your session has expired. Please sign in again.',
-      rateLimitError: 'Too many requests. Please wait a moment.',
-      genericError: 'Something went wrong. Please try again.',
-      signInRequired: 'Sign in to use the help assistant.',
     },
     onboardingWizard: {
       stepProgress: 'Step {current} of {total}',
@@ -4497,6 +4493,18 @@ export const translations: Record<Language, Translations> = {
       credits: 'Crediti',
       umIdentifier: 'Identificativo UM',
     },
+    helpDialog: {
+      title: 'Aiuto',
+      description: 'Chiedi a Echo, oppure scarica il manuale della piattaforma da leggere offline o da caricare in qualsiasi assistente AI.',
+      askEcho: 'Chiedi a Echo',
+      requestAccess: 'Richiedi accesso',
+      downloadManual: 'Scarica il manuale',
+      downloadHint: 'File Markdown. Puoi aprirlo sul computer o caricarlo in qualsiasi assistente AI.',
+      downloadEn: 'Scarica il manuale in inglese',
+      englishFallback: 'inglese',
+      manualVersion: 'Versione {version} — {date}',
+      openAria: 'Apri Aiuto',
+    },
     creditsPage: {
       orgHeading: 'Associazione',
       nameLabel: 'Denominazione',
@@ -5430,20 +5438,6 @@ export const translations: Record<Language, Translations> = {
       coverPreview: 'Anteprima copertina',
       noCoverPhoto: 'Nessuna foto di copertina',
       goToPhotos: 'Aggiungi nelle Foto',
-    },
-    helpChatbot: {
-      title: 'Aiuto',
-      placeholder: 'Fai una domanda…',
-      send: 'Invia',
-      loading: 'Sto pensando…',
-      lowConfidence: 'Non sono sicuro al 100% — prova la guida completa per maggiori dettagli.',
-      clearChat: 'Cancella chat',
-      openHelp: 'Apri aiuto',
-      closeHelp: 'Chiudi aiuto',
-      sessionExpired: 'La sessione è scaduta. Accedi di nuovo.',
-      rateLimitError: 'Troppe richieste. Attendi un momento.',
-      genericError: 'Qualcosa è andato storto. Riprova.',
-      signInRequired: 'Accedi per usare l\'assistente.',
     },
     onboardingWizard: {
       stepProgress: 'Passo {current} di {total}',
@@ -6399,6 +6393,18 @@ export const translations: Record<Language, Translations> = {
       credits: 'Crédits',
       umIdentifier: 'Identifiant UM',
     },
+    helpDialog: {
+      title: 'Aide',
+      description: 'Demandez à Echo, ou téléchargez le manuel de la plateforme pour le lire hors ligne ou le charger dans n’importe quel assistant IA.',
+      askEcho: 'Demander à Echo',
+      requestAccess: 'Demander l’accès',
+      downloadManual: 'Télécharger le manuel',
+      downloadHint: 'Fichier Markdown. Vous pouvez l’ouvrir sur votre ordinateur ou le charger dans n’importe quel assistant IA.',
+      downloadEn: 'Télécharger le manuel en anglais',
+      englishFallback: 'anglais',
+      manualVersion: 'Version {version} — {date}',
+      openAria: 'Ouvrir Aide',
+    },
     creditsPage: {
       orgHeading: 'Association',
       nameLabel: 'Dénomination',
@@ -7332,20 +7338,6 @@ export const translations: Record<Language, Translations> = {
       coverPreview: 'Aperçu de la couverture',
       noCoverPhoto: 'Aucune photo de couverture',
       goToPhotos: 'Ajouter dans Photos',
-    },
-    helpChatbot: {
-      title: 'Aide',
-      placeholder: 'Posez une question…',
-      send: 'Envoyer',
-      loading: 'Je réfléchis…',
-      lowConfidence: "Je ne suis pas sûr à 100 % — consultez le guide complet pour plus de détails.",
-      clearChat: 'Effacer la conversation',
-      openHelp: 'Ouvrir l\'aide',
-      closeHelp: 'Fermer l\'aide',
-      sessionExpired: 'Votre session a expiré. Veuillez vous reconnecter.',
-      rateLimitError: 'Trop de requêtes. Veuillez patienter un moment.',
-      genericError: 'Une erreur est survenue. Veuillez réessayer.',
-      signInRequired: 'Connectez-vous pour utiliser l\'assistant.',
     },
     onboardingWizard: {
       stepProgress: 'Étape {current} sur {total}',
@@ -8300,6 +8292,18 @@ export const translations: Record<Language, Translations> = {
       credits: 'Impressum',
       umIdentifier: 'UM-Kennung',
     },
+    helpDialog: {
+      title: 'Hilfe',
+      description: 'Fragen Sie Echo, oder laden Sie das Plattformhandbuch herunter, um es offline zu lesen oder in einen KI-Assistenten zu laden.',
+      askEcho: 'Echo fragen',
+      requestAccess: 'Zugang anfordern',
+      downloadManual: 'Handbuch herunterladen',
+      downloadHint: 'Markdown-Datei. Sie können sie auf dem Computer öffnen oder in jeden KI-Assistenten laden.',
+      downloadEn: 'Englisches Handbuch herunterladen',
+      englishFallback: 'Englisch',
+      manualVersion: 'Version {version} — {date}',
+      openAria: 'Hilfe öffnen',
+    },
     creditsPage: {
       orgHeading: 'Verein',
       nameLabel: 'Name',
@@ -9233,20 +9237,6 @@ export const translations: Record<Language, Translations> = {
       coverPreview: 'Vorschau Titelbild',
       noCoverPhoto: 'Kein Titelfoto',
       goToPhotos: 'In Fotos hinzufügen',
-    },
-    helpChatbot: {
-      title: 'Hilfe',
-      placeholder: 'Stellen Sie eine Frage…',
-      send: 'Senden',
-      loading: 'Ich denke nach…',
-      lowConfidence: 'Ich bin nicht 100 % sicher — schauen Sie in die vollständige Anleitung für weitere Details.',
-      clearChat: 'Chat leeren',
-      openHelp: 'Hilfe öffnen',
-      closeHelp: 'Hilfe schließen',
-      sessionExpired: 'Ihre Sitzung ist abgelaufen. Bitte melden Sie sich erneut an.',
-      rateLimitError: 'Zu viele Anfragen. Bitte warten Sie einen Moment.',
-      genericError: 'Etwas ist schiefgelaufen. Bitte versuchen Sie es erneut.',
-      signInRequired: 'Melden Sie sich an, um den Assistenten zu nutzen.',
     },
     onboardingWizard: {
       stepProgress: 'Schritt {current} von {total}',
