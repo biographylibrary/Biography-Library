@@ -543,7 +543,7 @@ export function SectionSidebar({
         )}
       </div>
 
-      <HelpDialog open={helpOpen} onOpenChange={setHelpOpen} />
+      <HelpDialog open={helpOpen} onOpenChange={setHelpOpen} isAuthenticated />
     </nav>
   );
 }

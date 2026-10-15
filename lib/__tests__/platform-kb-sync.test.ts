@@ -63,7 +63,7 @@ describe('PLATFORM_KB.md sync', () => {
 
   it('every section has a public-title marker', () => {
     const md = fs.readFileSync(MD_PATH, 'utf8');
-    const keys = [...md.matchAll(/^## ([a-z][a-z0-9_]*)$/gm)].map((m) => m[1]);
+    const keys = Array.from(md.matchAll(/^## ([a-z][a-z0-9_]*)$/gm)).map((m) => m[1]);
     for (const key of keys) {
       const idx = md.indexOf(`## ${key}`);
       const next = md.indexOf('\n## ', idx + 1);

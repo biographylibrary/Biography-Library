@@ -11,19 +11,24 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { useAuth } from '@/lib/auth-context';
 import { useTranslation } from '@/lib/i18n/i18n-context';
 import { MANUAL_META } from '@/lib/help/manual-meta.generated';
 
 type HelpDialogProps = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  /** When true, show Ask Echo; when false, show Request access. */
+  isAuthenticated?: boolean;
   /** Called when the authenticated user chooses Ask Echo (e.g. scroll to panel). */
   onAskEcho?: () => void;
 };
 
-export function HelpDialog({ open, onOpenChange, onAskEcho }: HelpDialogProps) {
-  const { user } = useAuth();
+export function HelpDialog({
+  open,
+  onOpenChange,
+  isAuthenticated = false,
+  onAskEcho,
+}: HelpDialogProps) {
   const { t, language } = useTranslation();
 
   const downloadName = useMemo(
@@ -63,7 +68,7 @@ export function HelpDialog({ open, onOpenChange, onAskEcho }: HelpDialogProps) {
         </DialogHeader>
 
         <div className="space-y-3 pt-1">
-          {user ? (
+          {isAuthenticated ? (
             <Button type="button" className="w-full" onClick={handleAskEcho}>
               <MessageCircle className="h-4 w-4 mr-2" aria-hidden />
               {t.helpDialog.askEcho}

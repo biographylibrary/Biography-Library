@@ -4,10 +4,12 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { useTranslation } from '@/lib/i18n/i18n-context';
 import { formatUmYear, umYearFromDate } from '@/lib/um';
+import { useAuth } from '@/lib/auth-context';
 import { HelpDialog, HelpTriggerButton } from '@/components/help/HelpDialog';
 
 export function Footer() {
   const { t } = useTranslation();
+  const { user } = useAuth();
   const [helpOpen, setHelpOpen] = useState(false);
 
   const umLabel = `${t.umId.yearWord} ${formatUmYear(umYearFromDate(new Date()), 'short')}`;
@@ -50,7 +52,11 @@ export function Footer() {
           </div>
         </div>
       </div>
-      <HelpDialog open={helpOpen} onOpenChange={setHelpOpen} />
+      <HelpDialog
+        open={helpOpen}
+        onOpenChange={setHelpOpen}
+        isAuthenticated={Boolean(user)}
+      />
     </footer>
   );
 }

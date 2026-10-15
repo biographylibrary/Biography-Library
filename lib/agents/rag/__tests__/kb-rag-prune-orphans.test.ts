@@ -27,7 +27,7 @@ describe('pruneStaleKbChunks orphan chunk_index', () => {
   it('expectedKbChunkKeys includes every current split triple', () => {
     const keys = expectedKbChunkKeys(['en']);
     expect(keys.size).toBeGreaterThan(HELP_KB_SECTIONS.length);
-    expect([...keys].some((k) => k.startsWith('en\0writing_modes\0'))).toBe(true);
+    expect(Array.from(keys).some((k) => k.startsWith('en\0writing_modes\0'))).toBe(true);
   });
 
   it('elimina frammenti con chunk_index non più atteso (prova di rottura se prune sparisce)', async () => {
