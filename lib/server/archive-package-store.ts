@@ -346,12 +346,12 @@ export async function syncDueArchivePackages(svc: AnyClient): Promise<{
     (row) => typeof row.translation_of === 'string' && row.translation_of.trim()
   );
 
-  let checked = 0;
+  const checkedIds = new Set<string>();
   let deposited = 0;
-  const failed: string[] = [];
+  const failedIds = new Set<string>();
 
   for (const row of originals) {
-    checked += 1;
+    checkedIds.add(row.id);
     const reason: ArchiveReason =
       row.biography_type === 'memorial' ? 'provisional_expired' : 'publication';
     try {
@@ -360,7 +360,7 @@ export async function syncDueArchivePackages(svc: AnyClient): Promise<{
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
       console.error('[archive-packages] sync failed', row.id, message);
-      failed.push(row.id);
+      failedIds.add(row.id);
     }
   }
 
@@ -394,18 +394,22 @@ export async function syncDueArchivePackages(svc: AnyClient): Promise<{
   }
 
   for (const originalId of Array.from(pendingOriginals)) {
-    checked += 1;
+    checkedIds.add(originalId);
     try {
       const result = await syncArchivePackage(svc, originalId, 'edition_published');
       if (result.deposited) deposited += 1;
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
       console.error('[archive-packages] sync failed', originalId, message);
-      failed.push(originalId);
+      failedIds.add(originalId);
     }
   }
 
-  return { checked, deposited, failed };
+  return {
+    checked: checkedIds.size,
+    deposited,
+    failed: Array.from(failedIds),
+  };
 }
 
 export { archiveFolder };

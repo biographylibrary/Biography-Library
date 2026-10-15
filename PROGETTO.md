@@ -84,12 +84,6 @@ Quando parte un deposito: prima pubblicazione automatica di un'edizione; ogni pu
 
 **Debito — N+1 versioni in `syncDueArchivePackages`:** per ogni originale con edizioni pubbliche la passata di sicurezza fa una query a `archive_package_versions`. Accettabile oggi; da raggruppare in una sola query quando i lavori saranno centinaia.
 
-**Debito — contatore `checked`:** un originale che compare sia nel primo ciclo sia fra le edizioni pendenti viene contato due volte. È solo un numero di registro; non indica lavori unici.
-
-**Debito — risposta 500 del cron senza test:** quando `failed` non è vuoto la rotta `/api/cron/archive-packages` risponde 500 con il corpo completo, ma non c’è un test che lo verifichi.
-
-**Debito — `failed` con id ripetuto:** un originale che fallisce sia nel primo ciclo sia nella passata delle edizioni compare due volte in `failed`. Solo estetico; non blocca altri lavori.
-
 Restano (in prosa):
 
 - **Ritiro di un'edizione pubblicata:** percorso per togliere dal pubblico un'edizione già online senza toccare l'originale (oggi non c'è).
