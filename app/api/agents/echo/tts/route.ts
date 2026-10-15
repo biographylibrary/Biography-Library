@@ -4,6 +4,7 @@ import { checkAgentRateLimit } from '@/lib/agents/thread-service';
 import { echoTtsModel, isEchoTtsConfigured } from '@/lib/echo/voice-config';
 import { MAX_INPUT_CHARS, synthesizeVoxtralSpeech } from '@/lib/echo/voxtral-tts';
 import { recordAiUsage } from '@/lib/ai/usage-recorder';
+import { assertAiFeaturesEnabled } from '@/lib/server/require-ai-features';
 import { buildServiceClient } from '@/lib/server/review-submit-pipeline';
 import { isPlatformStaffRole } from '@/lib/server/staff-roles';
 import type { UserRole } from '@/lib/auth-context';
@@ -25,6 +26,11 @@ export async function POST(req: NextRequest) {
   }
 
   const serviceClient = buildServiceClient();
+
+  const aiGate = await assertAiFeaturesEnabled(serviceClient, auth.userId);
+  if (!aiGate.ok) {
+    return NextResponse.json({ error: aiGate.error }, { status: aiGate.status });
+  }
 
   const { data: staffProfile } = await serviceClient
     .from('profiles')

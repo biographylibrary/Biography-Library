@@ -112,6 +112,18 @@ Deno.serve(async (req: Request) => {
       return errorResponse("Unauthorized", 401);
     }
 
+    const { data: aiProfile, error: aiProfileError } = await supabase
+      .from("profiles")
+      .select("ai_features_enabled")
+      .eq("id", user.id)
+      .maybeSingle();
+    if (
+      aiProfileError ||
+      !(aiProfile as { ai_features_enabled?: boolean } | null)?.ai_features_enabled
+    ) {
+      return errorResponse("ai_features_disabled", 403);
+    }
+
     const contentType = req.headers.get("content-type") || "";
     if (!contentType.includes("multipart/form-data")) {
       return errorResponse("Expected multipart/form-data body", 400);

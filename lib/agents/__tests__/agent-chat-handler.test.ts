@@ -53,11 +53,19 @@ vi.mock('@/lib/agents/tools/echo-tools', () => ({
   executeEchoTool: vi.fn(),
 }));
 
+const assertAiFeaturesEnabled = vi.fn();
+
+vi.mock('@/lib/server/require-ai-features', () => ({
+  assertAiFeaturesEnabled: (...args: unknown[]) => assertAiFeaturesEnabled(...args),
+  AI_FEATURES_DISABLED_ERROR: 'ai_features_disabled',
+}));
+
 import { prepareAgentTurn } from '@/lib/agents/agent-chat-handler';
 
 describe('prepareAgentTurn memorial context', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    assertAiFeaturesEnabled.mockResolvedValue({ ok: true });
     checkAgentRateLimit.mockResolvedValue({ allowed: true });
     getOrCreateThread.mockResolvedValue({ id: 'thread-1' });
     buildAgentContext.mockResolvedValue({ history: [], memoryBlock: '' });
@@ -66,6 +74,30 @@ describe('prepareAgentTurn memorial context', () => {
     ensureHelpKbIndexed.mockResolvedValue(undefined);
     retrieveKbContext.mockResolvedValue('');
   });
+
+  it('Echo: 403 ai_features_disabled quando le funzioni IA sono spente (prova di rottura)', async () => {
+    assertAiFeaturesEnabled.mockResolvedValue({
+      ok: false,
+      status: 403,
+      error: 'ai_features_disabled',
+    });
+    const result = await prepareAgentTurn('user-1', {
+      agentType: 'echo',
+      message: 'Help',
+      language: 'en',
+      echoPage: 'hub',
+    });
+    expect(result).toEqual({
+      ok: false,
+      status: 403,
+      error: 'ai_features_disabled',
+    });
+    expect(getOrCreateThread).not.toHaveBeenCalled();
+    // Se qualcuno toglie il gate, questo deve diventare rosso: senza chiamare il gate
+    // il turno proseguirebbe e getOrCreateThread verrebbe invocato.
+    expect(assertAiFeaturesEnabled).toHaveBeenCalled();
+  });
+
 
   it('injects memorial block and subject name into Echo system prompt', async () => {
     verifyBiographyOwnership.mockResolvedValue({

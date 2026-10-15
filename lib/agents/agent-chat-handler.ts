@@ -2,6 +2,7 @@ import { NextRequest } from 'next/server';
 import { getBearerJwt, buildUserClient } from '@/lib/server/admin-api-auth';
 import { buildServiceClient } from '@/lib/server/review-submit-pipeline';
 import { checkAuthorTokenCap, tokenCapResponseBody } from '@/lib/ai/token-caps';
+import { assertAiFeaturesEnabled } from '@/lib/server/require-ai-features';
 import { isPlatformStaffRole } from '@/lib/server/staff-roles';
 import type { UserRole } from '@/lib/auth-context';
 import type { AgentType, AgentRole } from '@/lib/agents/models';
@@ -135,6 +136,11 @@ export async function prepareAgentTurn(
   const serviceClient = buildServiceClient();
   const locale = (payload.language ?? 'en').slice(0, 2);
   const { agentType, message, biographyId, activeSection } = payload;
+
+  const aiGate = await assertAiFeaturesEnabled(serviceClient, userId);
+  if (!aiGate.ok) {
+    return { ok: false, status: aiGate.status, error: aiGate.error };
+  }
 
   const { data: staffProfile } = await serviceClient
     .from('profiles')

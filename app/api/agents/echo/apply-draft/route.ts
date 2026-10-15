@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { authenticateAgentRequest } from '@/lib/agents/agent-chat-handler';
 import { verifyBiographyOwnership } from '@/lib/agents/thread-service';
+import { assertAiFeaturesEnabled } from '@/lib/server/require-ai-features';
 import { buildServiceClient } from '@/lib/server/review-submit-pipeline';
 import { appendDraftToBiography } from '@/lib/echo/apply-draft';
 
@@ -10,6 +11,11 @@ export async function POST(req: NextRequest) {
   const auth = await authenticateAgentRequest(req);
   if (!auth.ok) {
     return NextResponse.json({ error: auth.error }, { status: auth.status });
+  }
+
+  const aiGate = await assertAiFeaturesEnabled(buildServiceClient(), auth.userId);
+  if (!aiGate.ok) {
+    return NextResponse.json({ error: aiGate.error }, { status: aiGate.status });
   }
 
   let body: {
