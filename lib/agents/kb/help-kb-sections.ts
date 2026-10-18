@@ -1,14 +1,14 @@
 /**
  * Help knowledge base split into RAG sections, 4 locales.
- * English sections: generated from docs/PLATFORM_KB.md (npm run kb:sync).
- * IT/FR/DE: lib/agents/kb/help-kb-sections.locales.ts — update when platform rules change.
+ * English: docs/PLATFORM_KB.md → npm run kb:sync
+ * IT/FR/DE: docs/PLATFORM_KB.{it,fr,de}.md → npm run kb:sync
  */
 
 import {
   HELP_KB_EN_SECTION_KEYS,
   HELP_KB_EN_SECTIONS,
 } from './help-kb-sections.en.generated';
-import { HELP_KB_LOCALE_SECTIONS } from './help-kb-sections.locales';
+import { HELP_KB_LOCALE_SECTIONS } from './help-kb-sections.locales.generated';
 
 export type KbLocale = 'en' | 'it' | 'fr' | 'de';
 
@@ -24,7 +24,9 @@ export const HELP_KB_SECTIONS: KbSection[] = HELP_KB_EN_SECTION_KEYS.map((source
     throw new Error(`Missing EN section for ${sourceKey} in PLATFORM_KB.md`);
   }
   if (!locales) {
-    throw new Error(`Missing IT/FR/DE locales for ${sourceKey} in help-kb-sections.locales.ts`);
+    throw new Error(
+      `Missing IT/FR/DE locales for ${sourceKey} in docs/PLATFORM_KB.{it,fr,de}.md`
+    );
   }
   return {
     sourceKey,

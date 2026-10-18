@@ -39,10 +39,9 @@ describe(`limite di foto di galleria (${N})`, () => {
   });
 
   it('le guide in italiano, francese e tedesco dicono lo stesso numero', () => {
-    const locales = read('lib/agents/kb/help-kb-sections.locales.ts');
-    expect(locales).toContain(`max ${N} in galleria`);
-    expect(locales).toContain(`max ${N} en galerie`);
-    expect(locales).toContain(`max. ${N} Galerie-Fotos`);
+    expect(read('docs/PLATFORM_KB.it.md')).toContain(`max ${N} in galleria`);
+    expect(read('docs/PLATFORM_KB.fr.md')).toContain(`max ${N} en galerie`);
+    expect(read('docs/PLATFORM_KB.de.md')).toContain(`max. ${N} Galerie-Fotos`);
   });
 
   it('il documento di progetto dice lo stesso numero', () => {
@@ -50,7 +49,12 @@ describe(`limite di foto di galleria (${N})`, () => {
   });
 
   it('nessuna guida attuale nomina ancora un numero diverso', () => {
-    for (const file of ['docs/PLATFORM_KB.md', 'lib/agents/kb/help-kb-sections.locales.ts']) {
+    for (const file of [
+      'docs/PLATFORM_KB.md',
+      'docs/PLATFORM_KB.it.md',
+      'docs/PLATFORM_KB.fr.md',
+      'docs/PLATFORM_KB.de.md',
+    ]) {
       const text = read(file);
       const found = Array.from(
         text.matchAll(/max\.? (\d+) (?:gallery photos|in galleria|en galerie|Galerie-Fotos)/g),

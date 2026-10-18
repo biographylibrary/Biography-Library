@@ -31,10 +31,18 @@ export function HelpDialog({
 }: HelpDialogProps) {
   const { t, language } = useTranslation();
 
+  const manualLocale = useMemo(() => {
+    const lang = language as keyof typeof MANUAL_META.languages;
+    return MANUAL_META.languages[lang] ? lang : 'en';
+  }, [language]);
+
   const downloadName = useMemo(
-    () => `biography-library-manual-v${MANUAL_META.version}-${MANUAL_META.date}-en.md`,
-    []
+    () =>
+      `biography-library-manual-v${MANUAL_META.version}-${MANUAL_META.date}-${manualLocale}.md`,
+    [manualLocale]
   );
+
+  const manualHref = `/help/biography-library-manual.${manualLocale}.md`;
 
   const versionLine = t.helpDialog.manualVersion
     .replace('{version}', MANUAL_META.version)
@@ -86,11 +94,9 @@ export function HelpDialog({
             <p className="text-xs text-muted-foreground">{versionLine}</p>
             <p className="text-xs text-muted-foreground">{t.helpDialog.downloadHint}</p>
             <Button type="button" variant="secondary" className="w-full" asChild>
-              <a href="/help/biography-library-manual.en.md" download={downloadName}>
+              <a href={manualHref} download={downloadName}>
                 <Download className="h-4 w-4 mr-2" aria-hidden />
-                {language === 'en'
-                  ? t.helpDialog.downloadEn
-                  : `${t.helpDialog.downloadEn} (${t.helpDialog.englishFallback})`}
+                {t.helpDialog.downloadManual}
               </a>
             </Button>
           </div>

@@ -82,7 +82,7 @@ Posizione: nuova riga **dopo** «AI suggestions».
 
 **Frase attuale (EN):** «Translates the biography (you always review the result)»
 
-**Cosa è falso vs codice:** non esiste traduzione automatica; le traduzioni le scrive l’autore (o persona di fiducia) in una seconda edizione. Prova: `docs/PLATFORM_KB.md` sezione `translations`; `lib/agents/kb/help-kb-sections.locales.ts`.
+**Cosa è falso vs codice:** non esiste traduzione automatica; le traduzioni le scrive l’autore (o persona di fiducia) in una seconda edizione. Prova: `docs/PLATFORM_KB.md` sezione `translations` (e le traduzioni in `docs/PLATFORM_KB.{it,fr,de}.md`).
 
 **Testo proposto EN:** Remove the “Translates the biography…” bullet. If a sentence is needed: Translations are written by the author (or someone the author trusts). Biography Library does not machine-translate biographies.
 
