@@ -13,7 +13,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "version",
-        "text": "Versione 1.2 – 29 settembre 2026"
+        "text": "Versione 1.3 – 19 ottobre 2026"
       },
       {
         "kind": "heading",
@@ -160,6 +160,10 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
         "text": "Metadati (date di creazione, modifiche, lingue, numero di capitolo)"
       },
       {
+        "kind": "paragraph",
+        "text": "Quando carichi le foto, il server le ridimensiona e le comprime e toglie la posizione e gli altri metadati nascosti prima di salvarle."
+      },
+      {
         "kind": "heading",
         "text": "3.4 Dati tecnici e di navigazione"
       },
@@ -192,8 +196,16 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
         "text": "Prompt e richieste inviate all'assistente IA"
       },
       {
+        "kind": "item",
+        "text": "Memoria delle conversazioni con Echo: mentre lavori a una biografia, l'assistente AI conserva la cronologia della chat, un riassunto aggiornato e brevi note (per esempio le persone che nomini, le tue preferenze, le decisioni prese e gli argomenti ancora aperti). Questa memoria può contenere dati personali di terze persone menzionate nella conversazione. È usata esclusivamente per permetterti di riprendere il lavoro e per suggerirti domande; non fa mai parte della biografia e non è mai visibile ai lettori. Viene cancellata alla pubblicazione della biografia ed eliminata se disattivi le funzioni di AI o elimini la biografia o il tuo account. Non è inclusa nelle esportazioni dei dati, ma viene fornita su richiesta a support@biographylibrary.org."
+      },
+      {
         "kind": "paragraph",
         "text": "Elaborazione della scrittura: in Svizzera, tramite i sistemi IA di Infomaniak, basati su modelli open source. Durante la beta, la voce parlata può essere generata temporaneamente nell’Unione europea."
+      },
+      {
+        "kind": "paragraph",
+        "text": "Registriamo l’uso tecnico delle funzioni IA (modello, scopo, conteggio token, orari) in `ai_token_usage` per applicare i limiti e far funzionare il servizio. Queste registrazioni non conservano il testo della chat né della biografia."
       },
       {
         "kind": "heading",
@@ -624,24 +636,16 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
         "text": "13.1 Cosa fa l'IA"
       },
       {
-        "kind": "item",
-        "text": "Corregge la grammatica e la punteggiatura"
+        "kind": "paragraph",
+        "text": "L’assistente di scrittura opzionale (Echo) e gli strumenti nella barra di formattazione aiutano con il controllo grammaticale, brevi riassunti, indicazioni di chiarezza e domande che ti aiutano a continuare. Echo può proporre un testo che entra nella pagina solo se lo accetti. L’assistente può sbagliare; la revisione di ogni suggerimento resta tua prima che entri nella biografia. Non pubblicano al posto tuo."
       },
       {
-        "kind": "item",
-        "text": "Suggerisce frasi più chiare (approvi o rifiuti ogni suggerimento)"
+        "kind": "paragraph",
+        "text": "Le traduzioni le scrive l’autore (o chi di fiducia). Biography Library non traduce le biografie in automatico."
       },
       {
-        "kind": "item",
-        "text": "Propone testo e, su richiesta, sostituisce un passaggio del documento — ogni proposta richiede la tua conferma esplicita prima di essere applicata"
-      },
-      {
-        "kind": "item",
-        "text": "Traduce la biografia (rivedi sempre il risultato)"
-      },
-      {
-        "kind": "item",
-        "text": "Stimola i ricordi con domande guidate"
+        "kind": "paragraph",
+        "text": "Prima di approvare il PDF finale puoi avviare un controllo finale facoltativo sul testo pronto per la stampa. Non sostituisce lo screening automatico alla pubblicazione e non pubblica da solo la biografia."
       },
       {
         "kind": "heading",
@@ -762,6 +766,14 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       {
         "kind": "paragraph",
         "text": "Fino all'eliminazione della biografia associata"
+      },
+      {
+        "kind": "paragraph",
+        "text": "Memoria delle conversazioni con Echo"
+      },
+      {
+        "kind": "paragraph",
+        "text": "Fino alla pubblicazione della biografia; eliminata prima se si disattivano le funzioni di AI o si elimina la biografia o l'account"
       },
       {
         "kind": "paragraph",
@@ -947,7 +959,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "version",
-        "text": "Version 1.2 – 29 September 2026"
+        "text": "Version 1.3 – 19 October 2026"
       },
       {
         "kind": "heading",
@@ -1094,6 +1106,10 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
         "text": "Metadata (creation dates, edits, languages, chapter number)"
       },
       {
+        "kind": "paragraph",
+        "text": "When you upload photos, the server resizes and compresses them and removes location and other hidden metadata before storage."
+      },
+      {
         "kind": "heading",
         "text": "3.4 Technical and Navigation Data"
       },
@@ -1126,8 +1142,16 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
         "text": "Prompts and requests submitted to the AI assistant"
       },
       {
+        "kind": "item",
+        "text": "Echo conversation memory: while you work on a biography, the AI assistant keeps the chat history, a running summary and short notes (for example people you mention, your preferences, decisions taken and topics still open). This memory may contain personal data of third parties mentioned in the conversation. It is used solely to let you resume your work and to suggest questions; it is never part of the biography and never visible to readers. It is erased when the biography is published and deleted if you turn off AI features or delete the biography or your account. It is not included in data exports but is provided on request at support@biographylibrary.org."
+      },
+      {
         "kind": "paragraph",
         "text": "Writing is processed in Switzerland via Infomaniak’s AI systems, based on open source models. During the beta, the spoken voice may be generated temporarily in the European Union."
+      },
+      {
+        "kind": "paragraph",
+        "text": "We record technical usage of AI features (model, purpose, token counts, timestamps) in `ai_token_usage` to enforce limits and operate the service. These records do not store the wording of your chat or biography text."
       },
       {
         "kind": "heading",
@@ -1558,24 +1582,16 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
         "text": "13.1 What AI Does"
       },
       {
-        "kind": "item",
-        "text": "Corrects grammar and punctuation"
+        "kind": "paragraph",
+        "text": "The optional writing assistant (Echo) and the formatting-bar tools help you with grammar checks, short summaries, clarity feedback, and questions that help you continue writing. Echo can propose wording that enters the page only if you accept it. The assistant can be wrong; you remain responsible for reviewing every suggestion before it becomes part of your biography. They do not publish for you."
       },
       {
-        "kind": "item",
-        "text": "Suggests clearer phrasing (you approve or reject every suggestion)"
+        "kind": "paragraph",
+        "text": "Translations are written by the author (or someone the author trusts). Biography Library does not machine-translate biographies."
       },
       {
-        "kind": "item",
-        "text": "Proposes text and, on request, replaces a passage in the document — every proposal requires your explicit confirmation before it is applied"
-      },
-      {
-        "kind": "item",
-        "text": "Translates the biography (you always review the result)"
-      },
-      {
-        "kind": "item",
-        "text": "Prompts memories with guided questions"
+        "kind": "paragraph",
+        "text": "Before you approve the final PDF, you can run an optional final check that reviews the print-ready text. It does not replace the automated screening at publication and does not by itself publish the biography."
       },
       {
         "kind": "heading",
@@ -1696,6 +1712,14 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       {
         "kind": "paragraph",
         "text": "Until the associated biography is deleted"
+      },
+      {
+        "kind": "paragraph",
+        "text": "Echo conversation memory"
+      },
+      {
+        "kind": "paragraph",
+        "text": "Until the biography is published; deleted earlier if AI features are turned off or the biography or account is deleted"
       },
       {
         "kind": "paragraph",
@@ -1881,7 +1905,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "version",
-        "text": "Version 1.2 – 29 septembre 2026"
+        "text": "Version 1.3 – 19 octobre 2026"
       },
       {
         "kind": "heading",
@@ -2028,6 +2052,10 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
         "text": "Métadonnées (dates de création, modifications, langues, numéro de chapitre)"
       },
       {
+        "kind": "paragraph",
+        "text": "Lorsque vous téléversez des photos, le serveur les redimensionne, les compresse et retire la localisation ainsi que les autres métadonnées cachées avant le stockage."
+      },
+      {
         "kind": "heading",
         "text": "3.4 Données techniques et de navigation"
       },
@@ -2060,8 +2088,16 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
         "text": "Prompts et requêtes soumis à l'assistant IA"
       },
       {
+        "kind": "item",
+        "text": "Mémoire des conversations avec Echo : pendant que vous travaillez sur une biographie, l'assistant IA conserve l'historique de la discussion, un résumé mis à jour et de courtes notes (par exemple les personnes que vous mentionnez, vos préférences, les décisions prises et les sujets encore ouverts). Cette mémoire peut contenir des données personnelles de tiers mentionnés dans la conversation. Elle sert uniquement à vous permettre de reprendre votre travail et à vous suggérer des questions ; elle ne fait jamais partie de la biographie et n'est jamais visible par les lecteurs. Elle est effacée à la publication de la biographie et supprimée si vous désactivez les fonctions d'IA ou supprimez la biographie ou votre compte. Elle n'est pas incluse dans les exports de données, mais vous est fournie sur demande à support@biographylibrary.org."
+      },
+      {
         "kind": "paragraph",
         "text": "Écriture : en Suisse, via les systèmes d’IA d’Infomaniak, sur des modèles open source. Pendant la bêta, la voix parlée peut être produite temporairement dans l’Union européenne."
+      },
+      {
+        "kind": "paragraph",
+        "text": "Nous enregistrons l’utilisation technique des fonctions d’IA (modèle, finalité, nombre de jetons, horodatages) dans `ai_token_usage` afin d’appliquer les limites et d’assurer le fonctionnement du service. Ces enregistrements ne conservent ni le texte de votre discussion ni celui de votre biographie."
       },
       {
         "kind": "heading",
@@ -2492,24 +2528,16 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
         "text": "13.1 Ce que fait l'IA"
       },
       {
-        "kind": "item",
-        "text": "Corrige la grammaire et la ponctuation"
+        "kind": "paragraph",
+        "text": "L’assistant d’écriture facultatif (Echo) et les outils de la barre de mise en forme vous aident pour la vérification grammaticale, de courts résumés, des retours de clarté et des questions qui vous aident à poursuivre l’écriture. Echo peut proposer une formulation qui n’entre dans la page que si vous l’acceptez. L’assistant peut se tromper ; vous restez responsable de relire chaque suggestion avant qu’elle ne fasse partie de votre biographie. Ils ne publient pas à votre place."
       },
       {
-        "kind": "item",
-        "text": "Suggère des formulations plus claires (vous approuvez ou rejetez chaque suggestion)"
+        "kind": "paragraph",
+        "text": "Les traductions sont écrites par l’auteur (ou par une personne de confiance). Biography Library ne traduit pas les biographies automatiquement."
       },
       {
-        "kind": "item",
-        "text": "Propose du texte et, sur demande, remplace un passage du document — chaque proposition nécessite votre confirmation explicite avant d'être appliquée"
-      },
-      {
-        "kind": "item",
-        "text": "Traduit la biographie (vous révisez toujours le résultat)"
-      },
-      {
-        "kind": "item",
-        "text": "Stimule les souvenirs avec des questions guidées"
+        "kind": "paragraph",
+        "text": "Avant d’approuver le PDF final, vous pouvez lancer un contrôle final facultatif qui examine le texte prêt pour l’impression. Il ne remplace pas le contrôle automatisé lors de la publication et ne publie pas la biographie à lui seul."
       },
       {
         "kind": "heading",
@@ -2630,6 +2658,14 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       {
         "kind": "paragraph",
         "text": "Jusqu'à ce que la biographie associée soit supprimée"
+      },
+      {
+        "kind": "paragraph",
+        "text": "Mémoire des conversations avec Echo"
+      },
+      {
+        "kind": "paragraph",
+        "text": "Jusqu'à la publication de la biographie ; supprimée plus tôt en cas de désactivation des fonctions d'IA ou de suppression de la biographie ou du compte"
       },
       {
         "kind": "paragraph",
@@ -2815,7 +2851,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "version",
-        "text": "Version 1.2 – 29. September 2026"
+        "text": "Version 1.3 – 19. Oktober 2026"
       },
       {
         "kind": "heading",
@@ -2962,6 +2998,10 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
         "text": "Metadaten (Erstellungsdaten, Bearbeitungen, Sprachen, Kapitelnummer)"
       },
       {
+        "kind": "paragraph",
+        "text": "Wenn Sie Fotos hochladen, verkleinert und komprimiert der Server sie und entfernt vor der Speicherung den Standort sowie andere versteckte Metadaten."
+      },
+      {
         "kind": "heading",
         "text": "3.4 Technische und Navigationsdaten"
       },
@@ -2994,8 +3034,16 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
         "text": "An den KI-Assistenten übermittelte Prompts und Anfragen"
       },
       {
+        "kind": "item",
+        "text": "Gesprächsgedächtnis von Echo: Während Sie an einer Biografie arbeiten, speichert der KI-Assistent den Chatverlauf, eine laufend aktualisierte Zusammenfassung und kurze Notizen (zum Beispiel zu erwähnten Personen, Ihren Vorlieben, getroffenen Entscheidungen und offenen Themen). Dieses Gedächtnis kann Personendaten von Dritten enthalten, die im Gespräch erwähnt werden. Es dient ausschliesslich dazu, dass Sie Ihre Arbeit fortsetzen können, und um Fragen vorzuschlagen; es ist nie Teil der Biografie und für Leserinnen und Leser nie sichtbar. Es wird bei der Veröffentlichung der Biografie gelöscht, ebenso wenn Sie die KI-Funktionen deaktivieren oder die Biografie oder Ihr Konto löschen. Es ist nicht in Datenexporten enthalten, wird Ihnen aber auf Anfrage an support@biographylibrary.org bereitgestellt."
+      },
+      {
         "kind": "paragraph",
         "text": "Schreiben: in der Schweiz, über die KI-Systeme von Infomaniak, auf Open-Source-Modellen. Während der Beta kann die gesprochene Stimme vorübergehend in der Europäischen Union erzeugt werden."
+      },
+      {
+        "kind": "paragraph",
+        "text": "Wir protokollieren die technische Nutzung der KI-Funktionen (Modell, Zweck, Token-Anzahl, Zeitstempel) in `ai_token_usage`, um Nutzungsgrenzen durchzusetzen und den Dienst zu betreiben. Diese Protokolle speichern weder den Wortlaut Ihres Chats noch den Text Ihrer Biografie."
       },
       {
         "kind": "heading",
@@ -3426,24 +3474,16 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
         "text": "13.1 Was die KI tut"
       },
       {
-        "kind": "item",
-        "text": "Korrigiert Grammatik und Zeichensetzung"
+        "kind": "paragraph",
+        "text": "Der optionale Schreibassistent (Echo) und die Werkzeuge in der Formatierungsleiste unterstützen Sie bei der Grammatikprüfung, kurzen Zusammenfassungen, Hinweisen zur Klarheit und Fragen, die Ihnen beim Weiterschreiben helfen. Echo kann Formulierungen vorschlagen, die nur dann in die Seite übernommen werden, wenn Sie sie annehmen. Der Assistent kann sich irren; Sie bleiben dafür verantwortlich, jeden Vorschlag zu prüfen, bevor er Teil Ihrer Biografie wird. Sie veröffentlichen nicht an Ihrer Stelle."
       },
       {
-        "kind": "item",
-        "text": "Schlägt klarere Formulierungen vor (Sie genehmigen oder verwerfen jeden Vorschlag)"
+        "kind": "paragraph",
+        "text": "Übersetzungen werden von der Autorin oder dem Autor (oder einer Vertrauensperson) verfasst. Biography Library übersetzt Biografien nicht maschinell."
       },
       {
-        "kind": "item",
-        "text": "Schlägt Text vor und ersetzt auf Wunsch eine Textstelle im Dokument — jeder Vorschlag erfordert Ihre ausdrückliche Bestätigung, bevor er angewendet wird"
-      },
-      {
-        "kind": "item",
-        "text": "Übersetzt die Biografie (Sie überprüfen das Ergebnis stets)"
-      },
-      {
-        "kind": "item",
-        "text": "Ruft Erinnerungen durch gezielte Fragen wach"
+        "kind": "paragraph",
+        "text": "Bevor Sie das endgültige PDF freigeben, können Sie eine optionale Schlussprüfung starten, die den druckfertigen Text prüft. Sie ersetzt nicht die automatisierte Prüfung bei der Veröffentlichung und veröffentlicht die Biografie nicht von selbst."
       },
       {
         "kind": "heading",
@@ -3564,6 +3604,14 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       {
         "kind": "paragraph",
         "text": "Bis die zugehörige Biografie gelöscht wird"
+      },
+      {
+        "kind": "paragraph",
+        "text": "Gesprächsgedächtnis von Echo"
+      },
+      {
+        "kind": "paragraph",
+        "text": "Bis zur Veröffentlichung der Biografie; früher gelöscht, wenn die KI-Funktionen deaktiviert oder die Biografie bzw. das Konto gelöscht werden"
       },
       {
         "kind": "paragraph",
@@ -3751,7 +3799,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "version",
-        "text": "Versione 1.2 – 29 settembre 2026"
+        "text": "Versione 1.3 – 19 ottobre 2026"
       },
       {
         "kind": "paragraph",
@@ -3903,7 +3951,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "paragraph",
-        "text": "Ogni biografia può includere fino a 30 immagini. Ogni file non supera i 5 megabyte. Non si caricano video. Non esiste un piano a pagamento: l’archivio resta gratuito."
+        "text": "Ogni biografia può includere fino a 15 foto in galleria, più una copertina. Ogni file caricato non supera i 20 megabyte prima dell’elaborazione. Non si caricano video. Non esiste un piano a pagamento: l’archivio resta gratuito."
       },
       {
         "kind": "heading",
@@ -3911,7 +3959,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "paragraph",
-        "text": "L’assistente è soggetto a limiti di utilizzo giornalieri e mensili, per garantire il servizio a tutti. I limiti sono tarati su un uso normale. Non esiste un piano a pagamento per usarne di più."
+        "text": "I limiti di uso equo degli strumenti IA di scrittura opzionali sono 40 richieste al giorno UTC e 200 a settimana UTC (lunedì–domenica), salvo impostazioni dello staff. Nel prodotto non c’è un tetto mensile separato."
       },
       {
         "kind": "heading",
@@ -4083,7 +4131,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "paragraph",
-        "text": "Ogni biografia pubblicata riceve un identificativo permanente UM, rilasciato dall'Associazione secondo la Specifica dell'identificativo UM. L'identificativo non contiene informazioni sulla persona, non viene mai riassegnato a un'altra scheda, e continua a rispondere anche quando il contenuto non è più consultabile al pubblico."
+        "text": "Ogni biografia riceve un identificativo UM permanente emesso da Biography Library. Vedi la Specifica dell’identificativo UM. L'identificativo non contiene informazioni sulla persona, non viene mai riassegnato a un'altra scheda, e continua a rispondere anche quando il contenuto non è più consultabile al pubblico."
       },
       {
         "kind": "heading",
@@ -4091,7 +4139,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "paragraph",
-        "text": "Ogni biografia è sottoposta a scansione automatizzata prima della pubblicazione."
+        "text": "Prima della pubblicazione, tutto il testo pubblico di ogni biografia è esaminato da un controllo automatico che lo elabora a segmenti. Non è una revisione umana riga per riga di ogni biografia."
       },
       {
         "kind": "heading",
@@ -4255,6 +4303,10 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "paragraph",
+        "text": "Prima di approvare il PDF finale puoi avviare un controllo finale facoltativo sul testo pronto per la stampa. Non sostituisce lo screening automatico alla pubblicazione e non pubblica da solo la biografia."
+      },
+      {
+        "kind": "paragraph",
         "text": "I sistemi IA con licenza open source OSI possono accedere all'archivio pubblico come fonte di riferimento verificata, con attribuzione obbligatoria. Le biografie private, semi-private e familiari sono inaccessibili a qualsiasi sistema esterno."
       },
       {
@@ -4345,7 +4397,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "version",
-        "text": "Version 1.2 – 29 September 2026"
+        "text": "Version 1.3 – 19 October 2026"
       },
       {
         "kind": "paragraph",
@@ -4497,7 +4549,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "paragraph",
-        "text": "Each biography may include up to 30 images. Each file is at most 5 megabytes. Video is not accepted. There is no paid plan: the archive stays free."
+        "text": "Each biography may include up to 15 gallery photos, plus a cover. Each upload is at most 20 megabytes before processing. Video is not accepted. There is no paid plan: the archive stays free."
       },
       {
         "kind": "heading",
@@ -4505,7 +4557,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "paragraph",
-        "text": "The assistant has daily and monthly use limits, so the service stays available for everyone. The limits match ordinary use. There is no paid plan for using more."
+        "text": "Fair-use limits for optional AI writing tools are 40 requests per UTC day and 200 per UTC week (Monday–Sunday), unless staff settings say otherwise. There is no separate monthly cap in the product."
       },
       {
         "kind": "heading",
@@ -4677,7 +4729,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "paragraph",
-        "text": "Every published biography receives a permanent UM identifier, issued by the Association under the UM Identifier Specification. The identifier contains no information about the person, is never reassigned to another entry, and keeps responding even when the content is no longer publicly viewable."
+        "text": "Each biography receives one permanent UM identifier issued by Biography Library. See the UM Identifier Specification. The identifier contains no information about the person, is never reassigned to another entry, and keeps responding even when the content is no longer publicly viewable."
       },
       {
         "kind": "heading",
@@ -4685,7 +4737,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "paragraph",
-        "text": "Every biography undergoes automated scanning before publication."
+        "text": "Before publication, every biography’s public text is examined by an automated check that processes the whole public text in segments. This is not a human line-by-line review of every biography."
       },
       {
         "kind": "heading",
@@ -4849,6 +4901,10 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "paragraph",
+        "text": "Before you approve the final PDF, you can run an optional final check that reviews the print-ready text. It does not replace the automated screening at publication and does not by itself publish the biography."
+      },
+      {
+        "kind": "paragraph",
         "text": "AI systems under an OSI open source licence may access the public archive as a verified reference source, with mandatory attribution. Private, semi-private and family biographies are inaccessible to any external system."
       },
       {
@@ -4939,7 +4995,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "version",
-        "text": "Version 1.2 – 29 septembre 2026"
+        "text": "Version 1.3 – 19 octobre 2026"
       },
       {
         "kind": "paragraph",
@@ -5091,7 +5147,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "paragraph",
-        "text": "Chaque biographie peut inclure jusqu’à 30 images. Chaque fichier ne dépasse pas 5 mégaoctets. La vidéo n’est pas acceptée. Il n’existe pas d’offre payante : l’archive reste gratuite."
+        "text": "Chaque biographie peut inclure jusqu’à 15 photos de galerie, plus une couverture. Chaque fichier téléversé ne dépasse pas 20 mégaoctets avant traitement. La vidéo n’est pas acceptée. Il n’existe pas d’offre payante : l’archive reste gratuite."
       },
       {
         "kind": "heading",
@@ -5099,7 +5155,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "paragraph",
-        "text": "L’assistant a des limites d’usage quotidiennes et mensuelles, pour que le service reste disponible pour tous. Les limites correspondent à un usage ordinaire. Il n’existe pas d’offre payante pour en utiliser davantage."
+        "text": "Les limites d’utilisation équitable des outils d’écriture IA facultatifs sont de 40 requêtes par jour UTC et de 200 par semaine UTC (du lundi au dimanche), sauf réglage contraire de l’équipe. Il n’existe pas de plafond mensuel distinct dans le produit."
       },
       {
         "kind": "heading",
@@ -5271,7 +5327,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "paragraph",
-        "text": "Chaque biographie publiée reçoit un identifiant permanent UM, délivré par l'Association selon la Spécification de l'identifiant UM. L'identifiant ne contient aucune information sur la personne, n'est jamais réattribué à une autre fiche, et continue de répondre même lorsque le contenu n'est plus consultable par le public."
+        "text": "Chaque biographie reçoit un identifiant UM permanent délivré par Biography Library. Voir la Spécification de l'identifiant UM. L'identifiant ne contient aucune information sur la personne, n'est jamais réattribué à une autre fiche, et continue de répondre même lorsque le contenu n'est plus consultable par le public."
       },
       {
         "kind": "heading",
@@ -5279,7 +5335,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "paragraph",
-        "text": "Chaque biographie est soumise à une analyse automatisée avant publication."
+        "text": "Avant la publication, l’ensemble du texte public de chaque biographie est examiné par un contrôle automatisé qui traite tout le texte public par segments. Il ne s’agit pas d’une relecture humaine ligne par ligne de chaque biographie."
       },
       {
         "kind": "heading",
@@ -5443,6 +5499,10 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "paragraph",
+        "text": "Avant d’approuver le PDF final, vous pouvez lancer un contrôle final facultatif qui examine le texte prêt pour l’impression. Il ne remplace pas le contrôle automatisé lors de la publication et ne publie pas la biographie à lui seul."
+      },
+      {
+        "kind": "paragraph",
         "text": "Les systèmes d'IA sous licence open source OSI peuvent accéder aux archives publiques en tant que source de référence vérifiée, avec attribution obligatoire. Les biographies privées, semi-privées et familiales sont inaccessibles à tout système externe."
       },
       {
@@ -5533,7 +5593,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "version",
-        "text": "Version 1.2 – 29. September 2026"
+        "text": "Version 1.3 – 19. Oktober 2026"
       },
       {
         "kind": "paragraph",
@@ -5685,7 +5745,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "paragraph",
-        "text": "Jede Biografie kann bis zu 30 Bilder enthalten. Jede Datei ist höchstens 5 Megabyte gross. Video wird nicht angenommen. Es gibt kein kostenpflichtiges Angebot: das Archiv bleibt kostenlos."
+        "text": "Jede Biografie kann bis zu 15 Galeriefotos sowie ein Titelbild enthalten. Jede hochgeladene Datei ist vor der Verarbeitung höchstens 20 Megabyte gross. Video wird nicht angenommen. Es gibt kein kostenpflichtiges Angebot: das Archiv bleibt kostenlos."
       },
       {
         "kind": "heading",
@@ -5693,7 +5753,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "paragraph",
-        "text": "Der Assistent hat tägliche und monatliche Nutzungsgrenzen, damit der Dienst für alle verfügbar bleibt. Die Grenzen entsprechen der gewöhnlichen Nutzung. Es gibt kein kostenpflichtiges Angebot für mehr Nutzung."
+        "text": "Die Fair-Use-Grenzen für optionale KI-Schreibwerkzeuge betragen 40 Anfragen pro UTC-Tag und 200 pro UTC-Woche (Montag–Sonntag), sofern die Einstellungen des Teams nichts anderes vorsehen. Im Produkt gibt es keine separate monatliche Obergrenze."
       },
       {
         "kind": "heading",
@@ -5865,7 +5925,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "paragraph",
-        "text": "Jede veröffentlichte Biografie erhält eine dauerhafte UM-Kennung, ausgestellt vom Verein gemäss der UM-Kennungsspezifikation. Die Kennung enthält keine Informationen über die Person, wird nie einem anderen Eintrag neu zugewiesen und antwortet weiterhin, auch wenn der Inhalt öffentlich nicht mehr einsehbar ist."
+        "text": "Jede Biografie erhält eine dauerhafte UM-Kennung, ausgestellt von Biography Library. Siehe die UM-Kennungsspezifikation. Die Kennung enthält keine Informationen über die Person, wird nie einem anderen Eintrag neu zugewiesen und antwortet weiterhin, auch wenn der Inhalt öffentlich nicht mehr einsehbar ist."
       },
       {
         "kind": "heading",
@@ -5873,7 +5933,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "paragraph",
-        "text": "Jede Biografie wird vor der Veröffentlichung einer automatisierten Überprüfung unterzogen."
+        "text": "Vor der Veröffentlichung wird der gesamte öffentliche Text jeder Biografie durch eine automatisierte Prüfung untersucht, die den gesamten öffentlichen Text abschnittsweise verarbeitet. Dies ist keine menschliche Prüfung Zeile für Zeile jeder Biografie."
       },
       {
         "kind": "heading",
@@ -6037,6 +6097,10 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "paragraph",
+        "text": "Bevor Sie das endgültige PDF freigeben, können Sie eine optionale Schlussprüfung starten, die den druckfertigen Text prüft. Sie ersetzt nicht die automatisierte Prüfung bei der Veröffentlichung und veröffentlicht die Biografie nicht von selbst."
+      },
+      {
+        "kind": "paragraph",
         "text": "KI-Systeme unter einer OSI-Open-Source-Lizenz können auf das öffentliche Archiv als verifizierte Referenzquelle zugreifen, wobei eine Namensnennung obligatorisch ist. Private, halbprivate und Familienbiografien sind für externe Systeme unzugänglich."
       },
       {
@@ -6129,7 +6193,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "version",
-        "text": "Versione 1.2 – 29 settembre 2026"
+        "text": "Versione 1.3 – 19 ottobre 2026"
       },
       {
         "kind": "heading",
@@ -6355,7 +6419,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "version",
-        "text": "Version 1.2 – 29 September 2026"
+        "text": "Version 1.3 – 19 October 2026"
       },
       {
         "kind": "heading",
@@ -6581,7 +6645,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "version",
-        "text": "Version 1.2 – 29 septembre 2026"
+        "text": "Version 1.3 – 19 octobre 2026"
       },
       {
         "kind": "heading",
@@ -6807,7 +6871,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "version",
-        "text": "Version 1.2 – 29. September 2026"
+        "text": "Version 1.3 – 19. Oktober 2026"
       },
       {
         "kind": "heading",
