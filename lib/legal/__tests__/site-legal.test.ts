@@ -98,4 +98,61 @@ describe('site legal pages', () => {
     expect(fullText('privacy', 'fr')).toContain('ne traduit pas les biographies automatiquement');
     expect(fullText('privacy', 'de')).toContain('übersetzt Biografien nicht maschinell');
   });
+
+  it('privacy non contiene più lo storico dei suggerimenti IA (§3.5 e tabella §16), ma conserva Echo conversation memory e ha 8 righe dati nella tabella', () => {
+    const removedHistoryItems = [
+      'History of AI suggestions',
+      "Cronologia dei suggerimenti dell'IA",
+      "Historique des suggestions de l'IA",
+      'Verlauf der KI-Vorschläge',
+    ];
+    const removedRetentionLabels = [
+      'AI suggestions',
+      "Suggerimenti dell'IA",
+      "Suggestions de l'IA",
+      'KI-Vorschläge',
+    ];
+    const removedRetentionPeriods = [
+      'Until the associated biography is deleted',
+      "Fino all'eliminazione della biografia associata",
+      "Jusqu'à ce que la biographie associée soit supprimée",
+      'Bis die zugehörige Biografie gelöscht wird',
+    ];
+    const echoRetentionLabels: Record<(typeof LANGUAGES)[number], string> = {
+      en: 'Echo conversation memory',
+      it: 'Memoria delle conversazioni con Echo',
+      fr: 'Mémoire des conversations avec Echo',
+      de: 'Gesprächsgedächtnis von Echo',
+    };
+
+    for (const lang of LANGUAGES) {
+      const blocks = siteLegal.privacy[lang];
+      const texts = blocks.map((b) => b.text);
+
+      for (const item of removedHistoryItems) {
+        expect(texts, `privacy.${lang} non deve contenere "${item}"`).not.toContain(item);
+      }
+      for (const label of removedRetentionLabels) {
+        expect(texts, `privacy.${lang} non deve contenere la riga "${label}"`).not.toContain(label);
+      }
+      for (const period of removedRetentionPeriods) {
+        expect(texts, `privacy.${lang} non deve contenere il periodo "${period}"`).not.toContain(
+          period
+        );
+      }
+
+      expect(texts, `privacy.${lang} deve conservare Echo conversation memory`).toContain(
+        echoRetentionLabels[lang]
+      );
+
+      const idx16 = blocks.findIndex((b) => b.kind === 'heading' && b.text.startsWith('16. '));
+      const idx17 = blocks.findIndex((b) => b.kind === 'heading' && b.text.startsWith('17. '));
+      expect(idx16).toBeGreaterThan(0);
+      expect(idx17).toBeGreaterThan(idx16);
+      // 1 coppia intestazione + 8 coppie dati = 18 blocchi paragraph (prima erano 20 = 1 + 9)
+      const retentionBlocks = blocks.slice(idx16 + 1, idx17);
+      expect(retentionBlocks.length, `privacy.${lang} §16 blocchi`).toBe(18);
+      expect(retentionBlocks.every((b) => b.kind === 'paragraph')).toBe(true);
+    }
+  });
 });

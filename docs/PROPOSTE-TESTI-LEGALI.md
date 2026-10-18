@@ -184,5 +184,5 @@ Posizione: nuova riga **dopo** «AI suggestions».
 
 ## Altre frasi che contraddicono il codice (solo segnalazione)
 
-1. Tabella retention «AI suggestions» solo «fino all’eliminazione della biografia» vs purge memoria Echo **alla pubblicazione**.
+1. Tabella retention «AI suggestions» solo «fino all’eliminazione della biografia» vs purge memoria Echo **alla pubblicazione**. Risolta il 19 ottobre 2026: tolta la riga «Suggerimenti dell'IA» e la voce collegata in §3.5, perché il campo che la motivava (revision_history) non ha più scrittori nell'applicazione; la riga «Echo conversation memory» è già nella tabella. Il punto 2 (paragrafo 18) resta aperto, legato al passaggio di Supabase a Zurigo.
 2. Privacy §18 IT («Non trasferiamo dati personali al di fuori della Svizzera») in tensione con altri paragrafi sullo stesso documento relativi a fornitori/UE in fase beta.

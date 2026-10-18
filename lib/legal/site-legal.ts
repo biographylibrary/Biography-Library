@@ -13,7 +13,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "version",
-        "text": "Versione 1.3 – 19 ottobre 2026"
+        "text": "Versione 1.4 – 19 ottobre 2026"
       },
       {
         "kind": "heading",
@@ -186,10 +186,6 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       {
         "kind": "heading",
         "text": "3.5 Dati generati dall'IA"
-      },
-      {
-        "kind": "item",
-        "text": "Cronologia dei suggerimenti dell'IA"
       },
       {
         "kind": "item",
@@ -761,14 +757,6 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "paragraph",
-        "text": "Suggerimenti dell'IA"
-      },
-      {
-        "kind": "paragraph",
-        "text": "Fino all'eliminazione della biografia associata"
-      },
-      {
-        "kind": "paragraph",
         "text": "Memoria delle conversazioni con Echo"
       },
       {
@@ -959,7 +947,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "version",
-        "text": "Version 1.3 – 19 October 2026"
+        "text": "Version 1.4 – 19 October 2026"
       },
       {
         "kind": "heading",
@@ -1132,10 +1120,6 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       {
         "kind": "heading",
         "text": "3.5 AI-Generated Data"
-      },
-      {
-        "kind": "item",
-        "text": "History of AI suggestions"
       },
       {
         "kind": "item",
@@ -1707,14 +1691,6 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "paragraph",
-        "text": "AI suggestions"
-      },
-      {
-        "kind": "paragraph",
-        "text": "Until the associated biography is deleted"
-      },
-      {
-        "kind": "paragraph",
         "text": "Echo conversation memory"
       },
       {
@@ -1905,7 +1881,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "version",
-        "text": "Version 1.3 – 19 octobre 2026"
+        "text": "Version 1.4 – 19 octobre 2026"
       },
       {
         "kind": "heading",
@@ -2078,10 +2054,6 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       {
         "kind": "heading",
         "text": "3.5 Données générées par l'IA"
-      },
-      {
-        "kind": "item",
-        "text": "Historique des suggestions de l'IA"
       },
       {
         "kind": "item",
@@ -2653,14 +2625,6 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "paragraph",
-        "text": "Suggestions de l'IA"
-      },
-      {
-        "kind": "paragraph",
-        "text": "Jusqu'à ce que la biographie associée soit supprimée"
-      },
-      {
-        "kind": "paragraph",
         "text": "Mémoire des conversations avec Echo"
       },
       {
@@ -2851,7 +2815,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "version",
-        "text": "Version 1.3 – 19. Oktober 2026"
+        "text": "Version 1.4 – 19. Oktober 2026"
       },
       {
         "kind": "heading",
@@ -3024,10 +2988,6 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       {
         "kind": "heading",
         "text": "3.5 KI-generierte Daten"
-      },
-      {
-        "kind": "item",
-        "text": "Verlauf der KI-Vorschläge"
       },
       {
         "kind": "item",
@@ -3599,14 +3559,6 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "paragraph",
-        "text": "KI-Vorschläge"
-      },
-      {
-        "kind": "paragraph",
-        "text": "Bis die zugehörige Biografie gelöscht wird"
-      },
-      {
-        "kind": "paragraph",
         "text": "Gesprächsgedächtnis von Echo"
       },
       {
@@ -3799,7 +3751,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "version",
-        "text": "Versione 1.3 – 19 ottobre 2026"
+        "text": "Versione 1.4 – 19 ottobre 2026"
       },
       {
         "kind": "paragraph",
@@ -4397,7 +4349,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "version",
-        "text": "Version 1.3 – 19 October 2026"
+        "text": "Version 1.4 – 19 October 2026"
       },
       {
         "kind": "paragraph",
@@ -4995,7 +4947,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "version",
-        "text": "Version 1.3 – 19 octobre 2026"
+        "text": "Version 1.4 – 19 octobre 2026"
       },
       {
         "kind": "paragraph",
@@ -5593,7 +5545,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "version",
-        "text": "Version 1.3 – 19. Oktober 2026"
+        "text": "Version 1.4 – 19. Oktober 2026"
       },
       {
         "kind": "paragraph",
@@ -6193,7 +6145,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "version",
-        "text": "Versione 1.3 – 19 ottobre 2026"
+        "text": "Versione 1.4 – 19 ottobre 2026"
       },
       {
         "kind": "heading",
@@ -6419,7 +6371,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "version",
-        "text": "Version 1.3 – 19 October 2026"
+        "text": "Version 1.4 – 19 October 2026"
       },
       {
         "kind": "heading",
@@ -6645,7 +6597,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "version",
-        "text": "Version 1.3 – 19 octobre 2026"
+        "text": "Version 1.4 – 19 octobre 2026"
       },
       {
         "kind": "heading",
@@ -6871,7 +6823,7 @@ export const siteLegal: Record<LegalDocId, Record<'it' | 'en' | 'fr' | 'de', Leg
       },
       {
         "kind": "version",
-        "text": "Version 1.3 – 19. Oktober 2026"
+        "text": "Version 1.4 – 19. Oktober 2026"
       },
       {
         "kind": "heading",
