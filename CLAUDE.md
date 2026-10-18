@@ -36,8 +36,7 @@ L'elenco `ignore` in `knip.jsonc` contiene un arretrato di file già orfani al 2
 
 ## Knowledge base e manuale Aiuto
 
-- Sorgente fatti EN: `docs/PLATFORM_KB.md` (marcatori `<!-- public-title: … -->` e `<!-- internal -->…<!-- /internal -->`).
-- Dopo ogni modifica: `npm run kb:sync` (genera sezioni RAG EN, `public/help/biography-library-manual.en.md`, `manual-meta.json`, `public/llms.txt`). In CI: `npm run kb:sync:check`.
-- Echo riceve il testo completo (blocchi internal inclusi). Il manuale scaricabile da Aiuto esclude gli internal.
-- Traduzioni IT/FR/DE del RAG: ancora in `lib/agents/kb/help-kb-sections.locales.ts` (tappa 2 le sposterà in Markdown).
+- Sorgente fatti: `docs/PLATFORM_KB.md` (EN) e `docs/PLATFORM_KB.{it,fr,de}.md` (marcatori `<!-- public-title: … -->` e `<!-- internal -->…<!-- /internal -->`). Stessa Version e stesse chiavi `##` in tutte le lingue.
+- Dopo ogni modifica: `npm run kb:sync` (sezioni RAG, manuali pubblici per lingua, `manual-meta.json`, `public/llms.txt`). In CI: `npm run kb:sync:check`.
+- Echo riceve il testo completo (blocchi internal inclusi). Il manuale scaricabile da Aiuto esclude gli internal e segue la lingua dell’interfaccia.
 - Preferenza «funzioni IA»: solo via `POST /api/profile/ai-features` (purge memoria Echo su tutte le biografie dell’utente allo spegnimento).

@@ -84,8 +84,8 @@ Controllare che sul **processo che esegue Next** siano impostate (non committate
 
 ## 4. Deploy applicazione
 
-- [ ] Se modificato `docs/PLATFORM_KB.md`: `npm run kb:sync` + `npm run kb:sync:check` + `POST /api/agents/admin/seed-kb` (admin) per re-indicizzare RAG Echo
-- [ ] **Dopo un fix alle sezioni IT/FR/DE in `help-kb-sections.locales.ts` (e finché il reseed automatico hash-aware non è in produzione):** seed manuale esplicito per **it, fr, de** (`npm run kb:seed` o `POST /api/agents/admin/seed-kb`), altrimenti Echo continua a leggere i chunk vecchi
+- [ ] Se modificato `docs/PLATFORM_KB.md` o `docs/PLATFORM_KB.{it,fr,de}.md`: `npm run kb:sync` + `npm run kb:sync:check` + `POST /api/agents/admin/seed-kb` (admin) per re-indicizzare RAG Echo
+- [ ] **Dopo un fix alle sezioni IT/FR/DE (e finché il reseed automatico hash-aware non è in produzione):** seed manuale esplicito (`npm run kb:seed` o `POST /api/agents/admin/seed-kb`), altrimenti Echo continua a leggere i chunk vecchi
 - [ ] Applicare la migrazione `kb_index_state` (`20261015150000_kb_index_state.sql`) in sviluppo, poi in produzione dopo revisione
 - [ ] Edge Functions deployate se ci sono modifiche in `supabase/functions/` (`audio-transcription` ora scrive anche in `ai_token_usage`)
 - [ ] Deploy Next: push su `main` che attiva il workflow, **oppure** procedura manuale documentata (git pull, build, restart container).
@@ -96,6 +96,7 @@ Controllare che sul **processo che esegue Next** siano impostate (non committate
 - [ ] **Migrazione del database Supabase in regione svizzera** (l’informativa dichiara che i dati risiedono in Svizzera) — vedi piano `.cursor/plans/supabase-zurich-migrate.plan.md`
 - [ ] Gli **avvisi** di `kb:sync` sulle traduzioni KB incomplete (chiavi/versione locale dietro l’EN) diventano **blocchi** in CI prima dell’apertura pubblica
 - [ ] Seed Echo allineato a `manual-meta.json` (banner admin senza drift; checklist seed it/fr/de dopo fix didascalie)
+- [ ] **Rilettura da madrelingua** dei manuali pubblici francese e tedesco (`public/help/biography-library-manual.{fr,de}.md`) e delle traduzioni FR/DE delle schede in `docs/PLATFORM_KB.{fr,de}.md` (testi scritti in tappa 2, non da madrelingua)
 
 ---
 

@@ -48,10 +48,12 @@ describe('peso massimo di una foto (20 MB)', () => {
       expect(read(file), file).toContain('JPG/PNG/WEBP up to 20 MB');
       expect(read(file), file).not.toContain('JPG/PNG/WEBP up to 5 MB');
     }
-    const locales = read('lib/agents/kb/help-kb-sections.locales.ts');
-    for (const phrase of ['JPG/PNG/WEBP fino a 20 MB', "JPG/PNG/WEBP jusqu'à 20 Mo", 'JPG/PNG/WEBP bis 20 MB']) {
-      expect(locales, phrase).toContain(phrase);
-    }
-    expect(locales).not.toMatch(/JPG\/PNG\/WEBP (fino 5|jusqu'à 5|bis 5) /);
+    const it = read('docs/PLATFORM_KB.it.md');
+    const fr = read('docs/PLATFORM_KB.fr.md');
+    const de = read('docs/PLATFORM_KB.de.md');
+    expect(it).toContain('JPG/PNG/WEBP fino a 20 MB');
+    expect(fr).toContain("JPG/PNG/WEBP jusqu'à 20 Mo");
+    expect(de).toContain('JPG/PNG/WEBP bis 20 MB');
+    expect(`${it}\n${fr}\n${de}`).not.toMatch(/JPG\/PNG\/WEBP (fino 5|jusqu'à 5|bis 5) /);
   });
 });

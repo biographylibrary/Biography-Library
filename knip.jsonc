@@ -8,6 +8,7 @@
   "ignore": [
     "components/ui/**", // libreria shadcn: presente per intero, usata in parte
     "lib/help/*.generated.ts", // generato da npm run kb:sync
+    "lib/agents/kb/*.generated.ts", // generato da npm run kb:sync
 
     // ─────────────────────────────────────────────────────────────────────
     // Arretrato al 20 settembre 2026: file scritti e mai collegati, trovati
