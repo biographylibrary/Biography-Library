@@ -134,9 +134,11 @@ Posizione: nuova riga **dopo** «AI suggestions».
 
 **Cosa è falso vs codice:** galleria max **15** (`lib/biography-media-constants.ts`); upload fino a **20 MB** (`lib/server/photo-processing.ts`) mentre il testo legale dice ancora **5 megabyte**. «There is no paid plan» è **vero** rispetto al codice attuale.
 
-**Testo proposto EN:** Each biography may include up to 15 gallery photos, plus a cover. Each upload is at most 20 megabytes before processing (the previous legal text said 5 megabytes). Video is not accepted. There is no paid plan: the archive stays free.
+**Testo proposto EN:** Each biography may include up to 15 gallery photos, plus a cover. Each upload is at most 20 megabytes before processing. Video is not accepted. There is no paid plan: the archive stays free.
 
-**Testo proposto IT:** Ogni biografia può includere fino a 15 foto in galleria, più una copertina. Ogni file caricato non supera i 20 megabyte prima dell’elaborazione (il testo legale precedente diceva 5 megabyte). Non si caricano video. Non esiste un piano a pagamento: l’archivio resta gratuito.
+**Testo proposto IT:** Ogni biografia può includere fino a 15 foto in galleria, più una copertina. Ogni file caricato non supera i 20 megabyte prima dell’elaborazione. Non si caricano video. Non esiste un piano a pagamento: l’archivio resta gratuito.
+
+**Nota per l'approvazione:** il testo legale attuale indica ancora 5 MB per file (EN: «the previous legal text said 5 megabytes»; IT: «il testo legale precedente diceva 5 megabyte»).
 
 ---
 
@@ -158,9 +160,11 @@ Posizione: nuova riga **dopo** «AI suggestions».
 
 **Cosa è falso se riapparisse:** il prodotto emette identificativi UM (`docs/UM-IDENTIFIER-SPEC.md`), non credenziali W3C VC.
 
-**Testo proposto EN:** Each biography receives one permanent UM identifier issued by Biography Library. See the UM Identifier Specification. (Do not claim W3C Verifiable Credentials.)
+**Testo proposto EN:** Each biography receives one permanent UM identifier issued by Biography Library. See the UM Identifier Specification.
 
-**Testo proposto IT:** Ogni biografia riceve un identificativo UM permanente emesso da Biography Library. Vedi la Specifica dell’identificativo UM. (Non affermare certificazioni W3C Verifiable Credentials.)
+**Testo proposto IT:** Ogni biografia riceve un identificativo UM permanente emesso da Biography Library. Vedi la Specifica dell’identificativo UM.
+
+**Nota per l'approvazione:** non si deve dichiarare la conformità a W3C Verifiable Credentials (EN: «Do not claim W3C Verifiable Credentials.»; IT: «Non affermare certificazioni W3C Verifiable Credentials.»).
 
 ---
 

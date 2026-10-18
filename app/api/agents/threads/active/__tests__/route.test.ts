@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { NextRequest } from 'next/server';
 
 const authenticateAgentRequest = vi.fn();
+const assertAiFeaturesEnabled = vi.fn();
 const verifyBiographyOwnership = vi.fn();
 const getActiveThread = vi.fn();
 const getOrCreateThread = vi.fn();
@@ -24,7 +25,7 @@ vi.mock('@/lib/server/review-submit-pipeline', () => ({
 }));
 
 vi.mock('@/lib/server/require-ai-features', () => ({
-  assertAiFeaturesEnabled: vi.fn(async () => ({ ok: true })),
+  assertAiFeaturesEnabled: (...a: unknown[]) => assertAiFeaturesEnabled(...a),
   AI_FEATURES_DISABLED_ERROR: 'ai_features_disabled',
 }));
 
@@ -53,6 +54,7 @@ describe('threads/active route', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     authenticateAgentRequest.mockResolvedValue({ ok: true, userId: 'user-1', jwt: 'jwt' });
+    assertAiFeaturesEnabled.mockResolvedValue({ ok: true });
     verifyBiographyOwnership.mockResolvedValue({ ok: true });
     loadRecentThreadMessages.mockResolvedValue([]);
     appendMessage.mockResolvedValue({
@@ -61,6 +63,46 @@ describe('threads/active route', () => {
       content: 'usage guide',
       created_at: '2026-01-01T00:00:00Z',
     });
+  });
+
+  it('GET 403 ai_features_disabled quando le funzioni IA sono spente, senza toccare i thread', async () => {
+    assertAiFeaturesEnabled.mockResolvedValue({
+      ok: false,
+      status: 403,
+      error: 'ai_features_disabled',
+    });
+    const { GET } = await import('@/app/api/agents/threads/active/route');
+    const req = new NextRequest(
+      'http://localhost/api/agents/threads/active?agentType=echo&biographyId=bio-1'
+    );
+    const res = await GET(req);
+    expect(res.status).toBe(403);
+    expect(await res.json()).toEqual({ error: 'ai_features_disabled' });
+    expect(assertAiFeaturesEnabled).toHaveBeenCalled();
+    expect(verifyBiographyOwnership).not.toHaveBeenCalled();
+    expect(getActiveThread).not.toHaveBeenCalled();
+    expect(getOrCreateThread).not.toHaveBeenCalled();
+    expect(loadRecentThreadMessages).not.toHaveBeenCalled();
+    expect(appendMessage).not.toHaveBeenCalled();
+  });
+
+  it('GET con funzioni IA accese prosegue e crea il thread se manca', async () => {
+    assertAiFeaturesEnabled.mockResolvedValue({ ok: true });
+    getActiveThread.mockResolvedValue(null);
+    getOrCreateThread.mockResolvedValue({
+      id: 'thread-ai-on',
+      user_id: 'user-1',
+      biography_id: 'bio-1',
+      agent_type: 'echo',
+    });
+    const { GET } = await import('@/app/api/agents/threads/active/route');
+    const req = new NextRequest(
+      'http://localhost/api/agents/threads/active?agentType=echo&biographyId=bio-1'
+    );
+    const res = await GET(req);
+    expect(res.status).toBe(200);
+    expect(assertAiFeaturesEnabled).toHaveBeenCalled();
+    expect(getOrCreateThread).toHaveBeenCalled();
   });
 
   it('GET rejects agent types other than echo', async () => {
