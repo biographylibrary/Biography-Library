@@ -1,7 +1,7 @@
 # Proposte testi legali
 
 **Data:** 15 ottobre 2026  
-**Stato:** solo lettura e approvazione. Non modifica `lib/legal/site-legal.ts` (lo farà Claudio dopo l’ok). Francese e tedesco delle voci nuove (oltre a C/D già forniti) verranno scritti dopo l’approvazione.
+**Stato:** voci da 1 a 11 approvate da Claudio e inserite in `lib/legal/site-legal.ts` (19 ottobre 2026).
 
 ## Elenco voci
 

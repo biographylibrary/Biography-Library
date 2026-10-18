@@ -97,6 +97,7 @@ Controllare che sul **processo che esegue Next** siano impostate (non committate
 - [ ] Gli **avvisi** di `kb:sync` sulle traduzioni KB incomplete (chiavi/versione locale dietro l’EN) diventano **blocchi** in CI prima dell’apertura pubblica
 - [ ] Seed Echo allineato a `manual-meta.json` (banner admin senza drift; checklist seed it/fr/de dopo fix didascalie)
 - [ ] **Rilettura da madrelingua** dei manuali pubblici francese e tedesco (`public/help/biography-library-manual.{fr,de}.md`) e delle traduzioni FR/DE delle schede in `docs/PLATFORM_KB.{fr,de}.md` (testi scritti in tappa 2, non da madrelingua)
+- [ ] **Rilettura da madrelingua** dei testi legali in francese e tedesco in `lib/legal/site-legal.ts` (voci da 3 a 11 di `docs/PROPOSTE-TESTI-LEGALI.md`, scritte senza madrelingua) prima dell’apertura ai tester
 
 ---
 
