@@ -26,10 +26,7 @@ interface FinalVersionEditorProps {
   primaryButtonLabel?: string;
   primaryActionPending?: boolean;
   aiEnabled?: boolean;
-  aiLoading?: boolean;
   aiUsageRefresh?: number;
-  onGrammarCheck?: () => void;
-  grammarUnavailable?: string | null;
 }
 
 export function FinalVersionEditor({
@@ -44,10 +41,7 @@ export function FinalVersionEditor({
   primaryButtonLabel,
   primaryActionPending = false,
   aiEnabled,
-  aiLoading,
   aiUsageRefresh,
-  onGrammarCheck,
-  grammarUnavailable = null,
 }: FinalVersionEditorProps) {
   const { language } = useTranslation();
 
@@ -147,17 +141,7 @@ export function FinalVersionEditor({
                 'Your final version will appear here...'
               }
               editorFontSize={editorFontSize}
-              aiTools={
-                aiEnabled
-                  ? {
-                      aiEnabled: true,
-                      aiLoading,
-                      hasText: content.replace(/<[^>]*>/g, '').replace(/&nbsp;/g, ' ').trim().length > 0,
-                      onGrammarCheck,
-                      grammarUnavailable,
-                    }
-                  : undefined
-              }
+              aiEnabled={aiEnabled}
               aiUsageRefresh={aiUsageRefresh}
             />
           )}

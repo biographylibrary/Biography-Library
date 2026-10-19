@@ -20,7 +20,7 @@ import type { WritingPath } from '@/lib/onboarding/types';
 import { GlobalNotesPanel } from '@/components/editor/GlobalNotesPanel';
 import { BookStructureDialog } from '@/components/editor/BookStructureDialog';
 import { AiSuggestionsDialog } from '@/components/editor/ai-suggestions-panel';
-import { ShareLinkPanel } from '@/components/editor/share-link-panel';
+import { VisibilityDialog } from '@/components/editor/VisibilityDialog';
 import { PhotoGalleryDialog } from '@/components/editor/PhotoGalleryDialog';
 import { EditionPhotoCaptionsDialog } from '@/components/editor/EditionPhotoCaptionsDialog';
 import { ImportTextDialog } from '@/components/editor/import-text-dialog';
@@ -63,7 +63,8 @@ import {
 } from '@/lib/editor/single-document';
 import { INITIAL_AI_STATE, type AiPanelState } from '@/lib/ai-constants';
 import { checkGrammar, AiLimitError } from '@/lib/grammar-service';
-import { grammarLanguageForTag } from '@/lib/ai/grammar';
+import { grammarLanguageForTag, pickGrammarCheckExcerpt } from '@/lib/ai/grammar';
+import { readActiveEditorTarget } from '@/lib/editor/active-editor-selection';
 import { resolveAiErrorMessage } from '@/lib/echo/ai-error-message';
 import {
   REOPEN_SECTION_PAYLOAD,
@@ -85,12 +86,10 @@ import type { Biography, BiographyPublicationStatus } from '@/lib/biographies';
 import { canAuthorWriteText, isBiographyPublicationStatus, isReviewOrScreeningLockStatus } from '@/lib/publication-state';
 import { generateBiographyPDF, checkBiographyPdfReadiness, checkPdfPreflight, getPdfReadinessMessage } from '@/lib/pdf-export';
 import { AdvancedExportDialog } from '@/components/export/AdvancedExportDialog';
-import { LicenseChoiceDialog } from '@/components/editor/LicenseChoiceDialog';
-import { AuthorLicensePanel } from '@/components/editor/AuthorLicensePanel';
 import { PermanenceDialog } from '@/components/editor/PermanenceDialog';
 import { useTranslation } from '@/lib/i18n/i18n-context';
 import { LICENSE_BY_NC_SA_4, type ContentLicenseUri } from '@/lib/rights';
-import { storedToArchiveMarkdown, storedToPlainText } from '@/lib/archive-markdown';
+import { storedToArchiveMarkdown } from '@/lib/archive-markdown';
 import { Loader as Loader2, Sparkles, Snowflake as SnowflakeIcon, Send as SendIcon, TriangleAlert, Lock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -219,8 +218,7 @@ export default function BiographyEditorPage() {
   const [recordLanguageTag, setRecordLanguageTag] = useState<string | null>(null);
   const [recordScript, setRecordScript] = useState<string | null>('Latn');
   const [textPublishConfirmed, setTextPublishConfirmed] = useState(false);
-  const [licenseDialogOpen, setLicenseDialogOpen] = useState(false);
-  const [licenseDialogMode, setLicenseDialogMode] = useState<'initial' | 'upgrade'>('initial');
+  const [licenseView, setLicenseView] = useState<null | 'initial' | 'upgrade'>(null);
   const [licenseBusy, setLicenseBusy] = useState(false);
   const [status, setStatus] = useState<'draft' | 'sections_complete'>('draft');
   const [shareToken, setShareToken] = useState<string | null>(null);
@@ -918,8 +916,8 @@ export default function BiographyEditorPage() {
   const handlePrivacyChange = useCallback(
     (newPrivacy: 'private' | 'link-only' | 'public') => {
       if (newPrivacy === 'public' && !rightsStatementUri?.trim()) {
-        setLicenseDialogMode('initial');
-        setLicenseDialogOpen(true);
+        setLicenseView('initial');
+        setShareDialogOpen(true);
         return;
       }
       setPrivacy(newPrivacy);
@@ -940,14 +938,14 @@ export default function BiographyEditorPage() {
       setLicenseBusy(true);
       try {
         const now = new Date().toISOString();
-        const isUpgrade = licenseDialogMode === 'upgrade';
+        const isUpgrade = licenseView === 'upgrade';
         // One-way only: never write BY-NC-SA over an existing BY-SA
         if (
           isUpgrade &&
           rightsStatementUri &&
           rightsStatementUri !== LICENSE_BY_NC_SA_4
         ) {
-          setLicenseDialogOpen(false);
+          setLicenseView(null);
           return;
         }
 
@@ -973,12 +971,12 @@ export default function BiographyEditorPage() {
         } else {
           toast.success(t.rightsChoice.optionBySaTitle);
         }
-        setLicenseDialogOpen(false);
+        setLicenseView(null);
       } finally {
         setLicenseBusy(false);
       }
     },
-    [id, licenseDialogMode, rightsStatementUri, t]
+    [id, licenseView, rightsStatementUri, t]
   );
 
   const handleModeChange = useCallback(
@@ -1219,16 +1217,18 @@ export default function BiographyEditorPage() {
 
   const handleGrammarCheck = useCallback(async () => {
     if (!aiWritingToolsAvailableForBiography({ translationOf })) return;
+    if (recordLanguageTag && !grammarLanguageForTag(recordLanguageTag)) return;
+    const excerpt = pickGrammarCheckExcerpt(readActiveEditorTarget());
+    if (!excerpt) {
+      toast.info(t.editor.selectParagraphForGrammar);
+      return;
+    }
     const onSheet = biographyModeRef.current === 'freeflow';
-    const plain = onSheet
-      ? storedToPlainText(contentFreeflowRef.current).trim()
-      : storedToPlainText(getSectionData(contentRef.current, activeSection).text).trim();
     const section = BIOGRAPHY_SECTIONS.find((s) => s.key === activeSection);
     const sectionTitle = onSheet
       ? titleRef.current.trim() || t.biography.untitled
       : section?.title;
-    if (!plain || !sectionTitle) return;
-    if (recordLanguageTag && !grammarLanguageForTag(recordLanguageTag)) return;
+    if (!sectionTitle) return;
 
     if (!session) {
       setAiState({
@@ -1251,7 +1251,7 @@ export default function BiographyEditorPage() {
       const suggestions = await checkGrammar(
         id,
         sectionTitle,
-        plain,
+        excerpt,
         recordLanguageTag ?? 'en',
         language
       );
@@ -1457,49 +1457,6 @@ export default function BiographyEditorPage() {
       console.error('Error saving final version:', err);
     }
   }, [id]);
-
-  const handleFinalVersionGrammarCheck = useCallback(async () => {
-    if (!aiWritingToolsAvailableForBiography({ translationOf })) return;
-    if (!finalVersion.trim()) return;
-    if (recordLanguageTag && !grammarLanguageForTag(recordLanguageTag)) return;
-    if (!session) {
-      setAiState({
-        type: 'grammar',
-        loading: false,
-        suggestions: [],
-        error: t.editor.signInForAi,
-      });
-      return;
-    }
-    setAiState({
-      type: 'grammar',
-      loading: true,
-      suggestions: [],
-      error: null,
-    });
-    try {
-      const suggestions = await checkGrammar(
-        id,
-        'Final Biography',
-        finalVersion,
-        recordLanguageTag ?? 'en',
-        language
-      );
-      setAiUsageRefresh((n) => n + 1);
-      setAiState((prev) => ({ ...prev, loading: false, suggestions }));
-    } catch (err: any) {
-      if (err instanceof AiLimitError) {
-        setAiState(INITIAL_AI_STATE);
-        setAiLimitError(err);
-        return;
-      }
-      setAiState((prev) => ({
-        ...prev,
-        loading: false,
-        error: resolveAiErrorMessage(err?.message || t.editor.failedGrammar, t.echo).message,
-      }));
-    }
-  }, [id, finalVersion, session, language, recordLanguageTag, translationOf, t]);
 
   /** Fuori dagli stati di lavoro il testo è in sola lettura: lo si dice invece di lasciar fallire il salvataggio. */
   const notifyTextLocked = useCallback(() => {
@@ -2030,14 +1987,6 @@ export default function BiographyEditorPage() {
     <div className="h-full flex flex-col bg-[#ECE9E4] dark:bg-[#1F2121] overflow-hidden">
       <ReportDeadlineBanner biographyId={id} status={biographyStatus} language={language} />
 
-      <LicenseChoiceDialog
-        open={licenseDialogOpen}
-        onOpenChange={setLicenseDialogOpen}
-        onConfirm={handleLicenseConfirm}
-        mode={licenseDialogMode}
-        busy={licenseBusy}
-      />
-
       {translationOf && originalMeta && (
         <EditionBanner
           languageTag={recordLanguageTag}
@@ -2380,9 +2329,14 @@ export default function BiographyEditorPage() {
               if (isReviewOrScreeningLockStatus(biographyStatus)) return;
               setShowExportDialog(true);
             }}
-            onOpenShareLink={() => setShareDialogOpen(true)}
-            showShareLink={privacy !== 'private'}
-            shareLinkOpen={shareDialogOpen}
+            onToggleVisibilityPanel={() => {
+              setShareDialogOpen((prev) => {
+                const next = !prev;
+                if (next) setLicenseView(null);
+                return next;
+              });
+            }}
+            showVisibilityPanel={shareDialogOpen}
             onToggleReviewPublication={() => {
               setShowReviewPublicationDialog((open) => {
                 if (!open) setSubmitPreflightError(null);
@@ -2468,14 +2422,7 @@ export default function BiographyEditorPage() {
                   editorFontSize={editorFontSize}
                   onRevertToDraft={biographyStatus === 'final_version' ? handleRevertToDraft : undefined}
                   aiEnabled={aiToolsOnThisSheet}
-                  aiLoading={aiState.loading}
                   aiUsageRefresh={aiUsageRefresh}
-                  onGrammarCheck={handleFinalVersionGrammarCheck}
-                  grammarUnavailable={
-                    recordLanguageTag && !grammarLanguageForTag(recordLanguageTag)
-                      ? t.editor.grammarUnavailableForLanguage
-                      : null
-                  }
                 />
                     ) : (
                 <GuidedSectionWorkspace
@@ -2522,33 +2469,26 @@ export default function BiographyEditorPage() {
                   }
                 />
               )}
-
-              {!isFrozen && !translationOf && (
-                <div className="shrink-0">
-                  <AuthorLicensePanel
-                    visibility={privacy}
-                    rightsStatementUri={rightsStatementUri}
-                    onRequestUpgrade={() => {
-                      setLicenseDialogMode('upgrade');
-                      setLicenseDialogOpen(true);
-                    }}
-                    disabled={licenseBusy}
-                  />
-                </div>
-              )}
             </div>
           </div>
 
         </div>
       </div>
 
-      <ShareLinkPanel
+      <VisibilityDialog
         open={shareDialogOpen}
         onOpenChange={setShareDialogOpen}
         biographyId={id}
         visibility={privacy}
+        onVisibilityChange={handlePrivacyChange}
         currentShareToken={shareToken}
         onTokenGenerated={setShareToken}
+        rightsStatementUri={rightsStatementUri}
+        onRequestLicenseUpgrade={() => setLicenseView('upgrade')}
+        licenseBusy={licenseBusy}
+        licenseView={licenseView}
+        onLicenseConfirm={handleLicenseConfirm}
+        onLicenseCancel={() => setLicenseView(null)}
       />
 
       <AiSuggestionsDialog

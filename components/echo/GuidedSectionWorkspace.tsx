@@ -155,9 +155,6 @@ export function GuidedSectionWorkspace({
           textLanguageName={textLanguageName}
           isPublished={isPublished}
           aiEnabled={aiEnabled === true}
-          aiLoading={aiLoading}
-          onGrammarCheck={onGrammarCheck}
-          grammarUnavailable={grammarUnavailable}
           aiUsageRefresh={aiUsageRefresh}
           highlightChange={highlightChange}
           undoLastChange={undoLastChange}
@@ -181,6 +178,9 @@ export function GuidedSectionWorkspace({
               headerLayout="horizontal"
               showOrb
               fontSize={editorFontSize ?? 15}
+              onGrammarCheck={isPublished ? undefined : onGrammarCheck}
+              grammarLoading={aiLoading}
+              grammarUnavailable={grammarUnavailable}
             />
           ) : aiEnabled === false && echoOpen ? (
             <div className="flex-1 min-h-0 overflow-auto p-3" data-testid="echo-ai-disabled-body">

@@ -405,6 +405,7 @@ export interface Translations {
     signInForAi: string;
     failedGrammar: string;
     grammarUnavailableForLanguage: string;
+    selectParagraphForGrammar: string;
     editorMode: string;
     conversationMode: string;
     publishedChapterNotice: string;
@@ -605,6 +606,11 @@ export interface Translations {
     familyViewDescription: string;
     copied: string;
     copy: string;
+    visibilityDialogSubtitle: string;
+    privateModeDescription: string;
+    familyModeDescription: string;
+    publicModeDescription: string;
+    defaultBadge: string;
   };
   view: {
     accessDenied: string;
@@ -2318,6 +2324,7 @@ export const translations: Record<Language, Translations> = {
       signInForAi: 'You must be signed in to use AI features. Please refresh the page.',
       failedGrammar: 'Failed to check grammar',
       grammarUnavailableForLanguage: 'Grammar check is not available for this language',
+      selectParagraphForGrammar: 'Select a paragraph or place the cursor in a paragraph to check its grammar.',
       editorMode: 'Editor Mode',
       conversationMode: 'Conversation Mode',
       publishedChapterNotice: 'This chapter is published and cannot be edited.',
@@ -2529,6 +2536,14 @@ export const translations: Record<Language, Translations> = {
       familyViewDescription: 'Share this link with family members',
       copied: 'Copied',
       copy: 'Copy',
+      visibilityDialogSubtitle: 'Choose who can read this biography. It is private by default.',
+      privateModeDescription:
+        'Only you can read this biography while writing and in your personal archive. It never appears in the public catalogue or via shared links.',
+      familyModeDescription:
+        'Anyone who has the link below can read this biography, without needing an account or signing in. It does not appear in the public catalogue.',
+      publicModeDescription:
+        'Once published, this biography appears in the public catalogue and can be read by anyone under the open license you choose.',
+      defaultBadge: 'Default',
     },
     view: {
       accessDenied: 'Access Denied',
@@ -3579,10 +3594,10 @@ export const translations: Record<Language, Translations> = {
         'The title is at the top of the side menu. Click it to rename the biography. The author name is just underneath.',
       privacyTitle: 'Visibility',
       privacyDesc:
-        'This sits inside Tools. It shows who can see the biography. Tap it to switch between Private, Family, and Public.',
+        'This sits inside Tools. Click it to open a window where you can choose Private (default), Family (with a copyable link), or Public.',
       editorToolsTitle: 'Tools',
       editorToolsDesc:
-        'Most editor tools are folded here: visibility, your details, notes, photos, book structure, and review. Import and Export stay above this button and are always visible. Share link appears beside Export when the biography is not private.',
+        'Most editor tools are folded here: visibility, your details, notes, photos, book structure, and review. Import and Export stay above this button and are always visible.',
       echoPanelTitle: 'Write with Echo',
       echoPanelDesc:
         'Echo sits under the page. Ask questions or request a draft. The clean text goes into the biography only if you accept it.',
@@ -4221,6 +4236,7 @@ export const translations: Record<Language, Translations> = {
       signInForAi: 'Devi aver effettuato l\'accesso per usare le funzionalit\u00e0 AI. Ricarica la pagina.',
       failedGrammar: 'Impossibile controllare la grammatica',
       grammarUnavailableForLanguage: 'Il controllo grammaticale non è disponibile per questa lingua',
+      selectParagraphForGrammar: 'Seleziona un paragrafo o posiziona il cursore in un paragrafo per controllarne la grammatica.',
       editorMode: 'Modalità Editor',
       conversationMode: 'Modalità Conversazione',
       publishedChapterNotice: 'Questo capitolo è pubblicato e non può essere modificato.',
@@ -4434,6 +4450,14 @@ export const translations: Record<Language, Translations> = {
       familyViewDescription: 'Condividi questo link con i familiari',
       copied: 'Copiato',
       copy: 'Copia',
+      visibilityDialogSubtitle: 'Scegli chi può leggere questa biografia. Di default è privata.',
+      privateModeDescription:
+        'Solo tu puoi leggere questa biografia mentre scrivi e nel tuo archivio personale. Non compare mai nel catalogo pubblico né tramite link condivisi.',
+      familyModeDescription:
+        'Chiunque possieda il link qui sotto può leggere la biografia, senza bisogno di avere un account o effettuare l’accesso. Non compare nel catalogo pubblico.',
+      publicModeDescription:
+        'Una volta pubblicata, la biografia compare nel catalogo pubblico ed è leggibile da chiunque secondo la licenza aperta che scegli.',
+      defaultBadge: 'Predefinita',
     },
     view: {
       accessDenied: 'Accesso Negato',
@@ -5484,10 +5508,10 @@ export const translations: Record<Language, Translations> = {
         'Il titolo è in cima al menu a sinistra. Cliccalo per rinominare la biografia. Il nome dell’autore è subito sotto.',
       privacyTitle: 'Visibilità',
       privacyDesc:
-        'Sta dentro Strumenti. Indica chi può vedere la biografia. Toccalo per passare tra Privata, Famiglia e Pubblica.',
+        'Sta dentro Strumenti. Cliccala per aprire una finestra in cui scegliere tra Privata (predefinita), Famiglia (con link copiabile) e Pubblica.',
       editorToolsTitle: 'Strumenti',
       editorToolsDesc:
-        'Quasi tutti gli strumenti sono qui dentro: visibilità, i dati, note, foto, struttura del libro e revisione. Importa ed Esporta restano sopra questo pulsante, sempre visibili. Condividi link compare lì accanto quando la biografia non è privata.',
+        'Quasi tutti gli strumenti sono qui dentro: visibilità, i dati, note, foto, struttura del libro e revisione. Importa ed Esporta restano sopra questo pulsante, sempre visibili.',
       echoPanelTitle: 'Scrivi con Echo',
       echoPanelDesc:
         'Echo sta sotto il foglio. Fai domande o chiedi una bozza. Il testo pulito entra nella biografia solo se lo accetti.',
@@ -6127,6 +6151,8 @@ export const translations: Record<Language, Translations> = {
       failedGrammar: 'Impossible de v\u00e9rifier la grammaire',
       grammarUnavailableForLanguage:
         'La vérification grammaticale n\u2019est pas disponible pour cette langue',
+      selectParagraphForGrammar:
+        'Sélectionnez un paragraphe ou placez le curseur dans un paragraphe pour en vérifier la grammaire.',
       editorMode: 'Mode Éditeur',
       conversationMode: 'Mode Conversation',
       publishedChapterNotice: 'Ce chapitre est publié et ne peut pas être modifié.',
@@ -6340,6 +6366,14 @@ export const translations: Record<Language, Translations> = {
       familyViewDescription: 'Partagez ce lien avec les membres de la famille',
       copied: 'Copi\u00e9',
       copy: 'Copier',
+      visibilityDialogSubtitle: 'Choisissez qui peut lire cette biographie. Par défaut, elle est privée.',
+      privateModeDescription:
+        'Vous seul pouvez lire cette biographie pendant l’écriture et dans vos archives personnelles. Elle n’apparaît jamais dans le catalogue public ni via un lien partagé.',
+      familyModeDescription:
+        'Toute personne disposant du lien ci-dessous peut lire la biographie, sans avoir besoin d’un compte ni de se connecter. Elle n’apparaît pas dans le catalogue public.',
+      publicModeDescription:
+        'Une fois publiée, la biographie apparaît dans le catalogue public et peut être lue par tous selon la licence ouverte que vous choisissez.',
+      defaultBadge: 'Par défaut',
     },
     view: {
       accessDenied: 'Acc\u00e8s Refus\u00e9',
@@ -7390,10 +7424,10 @@ export const translations: Record<Language, Translations> = {
         'Le titre est en haut du menu de gauche. Cliquez pour renommer la biographie. Le nom de l’auteur est juste en dessous.',
       privacyTitle: 'Visibilité',
       privacyDesc:
-        'Il est dans Outils. Il indique qui peut voir la biographie. Touchez-le pour passer de Privé à Famille, puis à Public.',
+        'Elle est dans Outils. Cliquez pour ouvrir une fenêtre permettant de choisir entre Privée (par défaut), Famille (avec lien copiable) et Publique.',
       editorToolsTitle: 'Outils',
       editorToolsDesc:
-        'La plupart des outils sont repliés ici : visibilité, vos données, notes, photos, structure du livre et révision. Importer et Exporter restent au-dessus de ce bouton, toujours visibles. Le lien de partage apparaît à côté quand la biographie n’est pas privée.',
+        'La plupart des outils sont repliés ici : visibilité, vos données, notes, photos, structure du livre et révision. Importer et Exporter restent au-dessus de ce bouton, toujours visibles.',
       echoPanelTitle: 'Écrire avec Echo',
       echoPanelDesc:
         'Echo est sous la page. Posez des questions ou demandez un brouillon. Le texte propre n\'entre dans la biographie que si vous l\'acceptez.',
@@ -8032,6 +8066,8 @@ export const translations: Record<Language, Translations> = {
       signInForAi: 'Sie m\u00fcssen angemeldet sein, um KI-Funktionen zu nutzen. Bitte laden Sie die Seite neu.',
       failedGrammar: 'Grammatikpr\u00fcfung fehlgeschlagen',
       grammarUnavailableForLanguage: 'Die Grammatikprüfung ist für diese Sprache nicht verfügbar',
+      selectParagraphForGrammar:
+        'Markieren Sie einen Absatz oder setzen Sie den Cursor in einen Absatz, um die Grammatik zu prüfen.',
       editorMode: 'Editor-Modus',
       conversationMode: 'Konversationsmodus',
       publishedChapterNotice: 'Dieses Kapitel ist veröffentlicht und kann nicht bearbeitet werden.',
@@ -8245,6 +8281,14 @@ export const translations: Record<Language, Translations> = {
       familyViewDescription: 'Teilen Sie diesen Link mit Familienmitgliedern',
       copied: 'Kopiert',
       copy: 'Kopieren',
+      visibilityDialogSubtitle: 'Wählen Sie, wer diese Biografie lesen kann. Standardmäßig ist sie privat.',
+      privateModeDescription:
+        'Nur Sie können diese Biografie beim Schreiben und in Ihrem persönlichen Archiv lesen. Sie erscheint weder im öffentlichen Katalog noch über geteilte Links.',
+      familyModeDescription:
+        'Jeder, der den untenstehenden Link besitzt, kann die Biografie lesen, ohne ein Konto zu benötigen oder sich anzumelden. Sie erscheint nicht im öffentlichen Katalog.',
+      publicModeDescription:
+        'Nach der Veröffentlichung erscheint die Biografie im öffentlichen Katalog und kann von jedem unter der von Ihnen gewählten offenen Lizenz gelesen werden.',
+      defaultBadge: 'Standard',
     },
     view: {
       accessDenied: 'Zugriff Verweigert',
@@ -9295,10 +9339,10 @@ export const translations: Record<Language, Translations> = {
         'Der Titel steht oben im linken Menü. Klicken Sie, um die Biografie umzubenennen. Der Autorenname steht direkt darunter.',
       privacyTitle: 'Sichtbarkeit',
       privacyDesc:
-        'Sie liegt unter Werkzeuge. Sie zeigt, wer die Biografie sehen kann. Tippen wechselt zwischen Privat, Familie und Öffentlich.',
+        'Sie liegt unter Werkzeuge. Klicken Sie, um ein Fenster zu öffnen, in dem Sie zwischen Privat (Standard), Familie (mit kopierbarem Link) und Öffentlich wählen.',
       editorToolsTitle: 'Werkzeuge',
       editorToolsDesc:
-        'Die meisten Werkzeuge sind hier eingeklappt: Sichtbarkeit, Ihre Angaben, Notizen, Fotos, Buchstruktur und Überprüfung. Importieren und Exportieren bleiben über dieser Schaltfläche, immer sichtbar. Link teilen erscheint daneben, wenn die Biografie nicht privat ist.',
+        'Die meisten Werkzeuge sind hier eingeklappt: Sichtbarkeit, Ihre Angaben, Notizen, Fotos, Buchstruktur und Überprüfung. Importieren und Exportieren bleiben über dieser Schaltfläche, immer sichtbar.',
       echoPanelTitle: 'Mit Echo schreiben',
       echoPanelDesc:
         'Echo steht unter der Seite. Stellen Sie Fragen oder bitten Sie um einen Entwurf. Der bereinigte Text kommt nur in die Biografie, wenn Sie ihn annehmen.',

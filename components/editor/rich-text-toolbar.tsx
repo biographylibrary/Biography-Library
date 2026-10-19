@@ -28,7 +28,6 @@ import {
   SeparatorHorizontal,
 } from 'lucide-react';
 import { EditorFontSizeControl } from './editor-font-size-control';
-import { EditorAiToolsMenu, type EditorAiToolsMenuProps } from './editor-ai-tools-menu';
 import { AiUsageIndicator } from './ai-usage-indicator';
 import { cn } from '@/lib/utils';
 import { IconHint } from '@/components/ui/icon-hint';
@@ -73,7 +72,7 @@ interface RichTextToolbarProps {
   /** Opens Tools → language of the text (originals only). */
   onOpenLanguage?: () => void;
   textLanguageName?: string;
-  aiTools?: Omit<EditorAiToolsMenuProps, 'className' | 'buttonClassName'>;
+  aiEnabled?: boolean;
   aiUsageRefresh?: number;
   countsOnly?: boolean;
   undoLastChange?: { label: string; hint: string; onUndo: () => void };
@@ -86,7 +85,7 @@ export function RichTextToolbar({
   onEditorFontSizeChange,
   onOpenLanguage,
   textLanguageName,
-  aiTools,
+  aiEnabled,
   aiUsageRefresh,
   countsOnly = false,
   undoLastChange,
@@ -138,10 +137,10 @@ export function RichTextToolbar({
 
   const usageAndCount = (
     <div
-      data-tour-id={aiTools?.aiEnabled ? 'ai-credits' : undefined}
+      data-tour-id={aiEnabled ? 'ai-credits' : undefined}
       className="ml-auto flex h-8 flex-col items-end justify-center gap-px shrink-0 pl-1"
     >
-      {aiTools?.aiEnabled && <AiUsageIndicator refreshTrigger={aiUsageRefresh} />}
+      {aiEnabled && <AiUsageIndicator refreshTrigger={aiUsageRefresh} />}
       <span className="text-[9px] md:text-[10px] leading-none text-muted-foreground tabular-nums whitespace-nowrap">
         {editor.storage.characterCount?.characters() || 0} {t.editor.chars}
       </span>
@@ -408,13 +407,6 @@ export function RichTextToolbar({
               {t.textLanguage.toolbarButton}
             </button>
           )}
-        </>
-      )}
-
-      {aiTools?.aiEnabled && (
-        <>
-          <Separator orientation="vertical" className="h-6 mx-1 hidden md:block" />
-          <EditorAiToolsMenu {...aiTools} />
         </>
       )}
       </div>
