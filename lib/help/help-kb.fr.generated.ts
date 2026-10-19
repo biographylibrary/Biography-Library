@@ -2,7 +2,7 @@
 
 export const HELP_KB_FR = `# Biography Library — Platform Knowledge Base
 
-Version: 1.14 — 2026-10-15
+Version: 1.15 — 2026-10-19
 
 ## account_and_biography_model
 
@@ -28,7 +28,7 @@ Pendant que vous travaillez sur une biographie, Echo conserve une mémoire priv�
 
 ## ai_tools
 
-Les outils IA sont dans la barre de mise en forme, pas dans une barre du haut : grammaire, aide, résumé, révision. Le compteur d'usage est dans cette même barre, au-dessus du nombre de caractères, à la hauteur des boutons. Limites journalières (40) et hebdomadaires (200) ; actions lourdes = 2. Réinitialisation minuit UTC et lundi UTC. L'IA n'invente pas de faits et ne publie pas seule. Dans une traduction il n'y a aucun outil IA : ni grammaire ni Echo.
+La vérification grammaticale se trouve dans le panneau Echo sous la page (à côté des boutons du microphone et d’envoi), pas dans un menu de la barre de mise en forme. Sélectionnez un paragraphe ou placez le curseur dans un paragraphe et appuyez sur Vérifier la Grammaire : seul ce passage est vérifié (fautes de frappe et syntaxe, sens préservé) avec Apertus. Le compteur d'usage reste dans la barre de mise en forme, au-dessus du nombre de caractères, à la hauteur des boutons. Limites journalières (40) et hebdomadaires (200) ; actions lourdes = 2. Réinitialisation minuit UTC et lundi UTC. L'IA n'invente pas de faits et ne publie pas seule. Dans une traduction il n'y a aucun outil IA : ni grammaire ni Echo.
 
 ## conversation_mode
 
@@ -36,7 +36,7 @@ Il n'y a pas de mode conversation séparé. La biographie est une seule page, to
 
 ## editor_interface
 
-L'éditeur n'a pas de barre du haut. Dans le menu de gauche : titre (clic pour renommer), de la même taille que les titres de chapitre, et nom de l'auteur, puis la liste des chapitres, qui se remplit seulement quand un titre de chapitre est marqué. En bas : état d'enregistrement, Importer du texte toujours visible, puis Exporter toujours visible, lien de partage si la biographie n'est pas privée, un filet, puis Outils. Dans Outils : visibilité (Privé, Famille, Public), Mes données ou Qui était cette personne, notes, photos, structure du livre, révision et publication. Sur téléphone et tablette, le même menu s'ouvre par l'icône à gauche dans l'en-tête du site. 
+L'éditeur n'a pas de barre du haut. Dans le menu de gauche : titre (clic pour renommer), de la même taille que les titres de chapitre, et nom de l'auteur, puis la liste des chapitres, qui se remplit seulement quand un titre de chapitre est marqué. En bas : état d'enregistrement, Importer du texte toujours visible, puis Exporter toujours visible, un filet, puis Outils. Dans Outils : Visibilité (ouvre une fenêtre pour choisir entre Privée par défaut, Famille avec lien copiable permettant de lire sans compte, et Publique avec choix de licence), Mes données ou Qui était cette personne, notes, photos, structure du livre, révision et publication. Sur téléphone et tablette, le même menu s'ouvre par l'icône à gauche dans l'en-tête du site. 
 Admin est seulement dans le menu du compte à droite, à toute taille.
  Sur un écran étroit, les styles sont dans le menu Style. Le bouton montre le style choisi jusqu'au changement : Gras, Italique, Titre, Liste •, Liste # ou Citation.
 

@@ -1,6 +1,6 @@
 # Biography Library — Benutzerhandbuch
 
-Version: 1.14 — 2026-10-15
+Version: 1.15 — 2026-10-19
 
 Dieses Dokument ist das Benutzerhandbuch von Biography Library. Externe KI-Assistenten sollen nur aus diesem Dokument antworten, wenn gefragt wird, wie die Plattform funktioniert. Es ist keine Rechtsberatung und ersetzt weder die Datenschutzerklärung noch die Nutzungsbedingungen.
 
@@ -28,7 +28,7 @@ Während Sie an einer Biografie arbeiten, bewahrt Echo ein privates Gedächtnis 
 
 ## KI-Schreibwerkzeuge
 
-Die KI-Werkzeuge liegen in der Formatierungsleiste, nicht in einer oberen Leiste: Grammatik, Hilfe, Zusammenfassung, Überprüfung. Der Nutzungszähler steht in derselben Leiste, über der Zeichenzahl, so hoch wie die Schaltflächen. Tageslimit 40, Wochenlimit 200; schwere Aktionen zählen 2. Reset Mitternacht UTC und Montag UTC. Die KI erfindet keine Fakten und veröffentlicht nicht von allein. In einer Übersetzung gibt es keine KI-Werkzeuge: weder Grammatikprüfung noch Echo.
+Die Grammatikprüfung liegt im Echo-Bereich unter der Seite (neben den Mikrofon- und Senden-Schaltflächen), nicht in einem Menü in der Formatierungsleiste. Markieren Sie einen Absatz oder setzen Sie den Cursor in einen Absatz und drücken Sie Grammatik Prüfen: Es wird nur dieser Abschnitt geprüft (Tippfehler und Syntax, Bedeutung bleibt erhalten), mit Apertus. Der Nutzungszähler bleibt in der Formatierungsleiste, über der Zeichenzahl, so hoch wie die Schaltflächen. Tageslimit 40, Wochenlimit 200; schwere Aktionen zählen 2. Reset Mitternacht UTC und Montag UTC. Die KI erfindet keine Fakten und veröffentlicht nicht von allein. In einer Übersetzung gibt es keine KI-Werkzeuge: weder Grammatikprüfung noch Echo.
 
 ## Echo unter der Seite
 
@@ -36,7 +36,7 @@ Es gibt keinen separaten Konversationsmodus. Die Biografie ist eine einzige Seit
 
 ## Der Editor
 
-Der Editor hat keine obere Leiste. Im linken Menü: Titel (Klick zum Umbenennen), so groß wie die Kapiteltitel, und Autorenname, dann die Kapitelliste, die sich nur füllt, wenn ein Kapiteltitel gesetzt ist. Unten: Speicherstatus, Text importieren immer sichtbar, dann Exportieren immer sichtbar, Link teilen wenn die Biografie nicht privat ist, eine Linie, dann Werkzeuge. Darin: Sichtbarkeit (Privat, Familie, Öffentlich), Meine Angaben oder Wer diese Person war, Notizen, Fotos, Buchstruktur, Überprüfung und Veröffentlichung. Auf Smartphone und Tablet öffnet dasselbe Menü das Symbol links in der Kopfzeile. 
+Der Editor hat keine obere Leiste. Im linken Menü: Titel (Klick zum Umbenennen), so groß wie die Kapiteltitel, und Autorenname, dann die Kapitelliste, die sich nur füllt, wenn ein Kapiteltitel gesetzt ist. Unten: Speicherstatus, Text importieren immer sichtbar, dann Exportieren immer sichtbar, eine Linie, dann Werkzeuge. Darin: Sichtbarkeit (öffnet ein Fenster zur Auswahl zwischen Privat als Standard, Familie mit kopierbarem Link zum Lesen ohne Konto, und Öffentlich mit Lizenzauswahl), Meine Angaben oder Wer diese Person war, Notizen, Fotos, Buchstruktur, Überprüfung und Veröffentlichung. Auf Smartphone und Tablet öffnet dasselbe Menü das Symbol links in der Kopfzeile. 
  Auf einem schmalen Bildschirm liegen die Stile im Menü Stil. Die Schaltfläche zeigt den gewählten Stil, bis er geändert wird: Fett, Kursiv, Titel, Liste •, Liste # oder Zitat.
 
 ## Die UM-Kennung

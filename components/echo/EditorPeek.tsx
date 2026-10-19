@@ -2,7 +2,6 @@
 
 import { cn } from '@/lib/utils';
 import { RichTextEditor } from '@/components/editor/rich-text-editor';
-import type { EditorAiToolsMenuProps } from '@/components/editor/editor-ai-tools-menu';
 
 interface EditorPeekProps {
   text: string;
@@ -14,17 +13,10 @@ interface EditorPeekProps {
   textLanguageName?: string;
   isPublished?: boolean;
   aiEnabled?: boolean;
-  aiLoading?: boolean;
-  onGrammarCheck?: () => void;
-  grammarUnavailable?: string | null;
   aiUsageRefresh?: number;
   highlightChange?: { id: number; text: string } | null;
   undoLastChange?: { label: string; hint: string; onUndo: () => void };
   className?: string;
-}
-
-function hasTextContent(html: string): boolean {
-  return html.replace(/<[^>]*>/g, '').replace(/&nbsp;/g, ' ').trim().length > 0;
 }
 
 export function EditorPeek({
@@ -37,25 +29,11 @@ export function EditorPeek({
   textLanguageName,
   isPublished = false,
   aiEnabled,
-  aiLoading,
-  onGrammarCheck,
-  grammarUnavailable = null,
   aiUsageRefresh,
   highlightChange,
   undoLastChange,
   className,
 }: EditorPeekProps) {
-  const aiTools: Omit<EditorAiToolsMenuProps, 'className' | 'buttonClassName'> | undefined =
-    aiEnabled
-      ? {
-          aiEnabled: true,
-          aiLoading,
-          hasText: hasTextContent(text),
-          onGrammarCheck,
-          grammarUnavailable,
-        }
-      : undefined;
-
   return (
     <div className={cn('h-full min-h-0 overflow-hidden pb-3', className)}>
       <RichTextEditor
@@ -67,7 +45,7 @@ export function EditorPeek({
         onOpenLanguage={onOpenLanguage}
         textLanguageName={textLanguageName}
         isPublished={isPublished}
-        aiTools={aiTools}
+        aiEnabled={aiEnabled}
         aiUsageRefresh={aiUsageRefresh}
         highlightChange={highlightChange}
         undoLastChange={undoLastChange}

@@ -1,6 +1,6 @@
 # Biography Library — Base di conoscenza della piattaforma
 
-Version: 1.14 — 2026-10-15
+Version: 1.15 — 2026-10-19
 
 <!-- internal -->
 Lingua di questa traduzione: italiano. Allineare a docs/PLATFORM_KB.md (EN). Dopo ogni modifica: npm run kb:sync.
@@ -36,7 +36,7 @@ Mentre lavori a una biografia, Echo conserva una memoria privata della conversaz
 ## ai_tools
 <!-- public-title: Strumenti di scrittura IA -->
 
-Gli strumenti IA stanno nella barra di formattazione, non in una barra in alto: grammatica, aiuto, riassunto, revisione. Il contatore d’uso è in quella stessa barra, sopra il conteggio dei caratteri, alto come i pulsanti. Limiti giornalieri (40) e settimanali (200); azioni pesanti valgono 2. Reset a mezzanotte UTC e il lunedì UTC. L'IA non inventa fatti né pubblica da sola. In una traduzione non ci sono strumenti di IA: né controllo grammaticale né Echo.
+Il controllo grammaticale sta nel pannello di Echo sotto il foglio (accanto ai pulsanti del microfono e di invio), non in un menu nella barra di formattazione. Seleziona un paragrafo o posiziona il cursore in un paragrafo e premi Controlla Grammatica: controlla solo quel brano (refusi e sintassi, significato preservato) usando Apertus. Il contatore d’uso resta nella barra di formattazione, sopra il conteggio dei caratteri, alto come i pulsanti. Limiti giornalieri (40) e settimanali (200); azioni pesanti valgono 2. Reset a mezzanotte UTC e il lunedì UTC. L'IA non inventa fatti né pubblica da sola. In una traduzione non ci sono strumenti di IA: né controllo grammaticale né Echo.
 
 ## conversation_mode
 <!-- public-title: Echo sotto il foglio -->
@@ -46,7 +46,7 @@ Non esiste una modalità conversazione separata. La biografia è un solo foglio,
 ## editor_interface
 <!-- public-title: L’editor -->
 
-L'editor non ha una barra in alto. Nel menu a sinistra: titolo (clic per rinominare), grande come i titoli dei capitoli, e nome dell'autore, poi l'elenco dei capitoli, che si riempie solo quando si segna un titolo di capitolo. In basso: stato di salvataggio, Importa testo sempre visibile, poi Esporta sempre visibile, Condividi link se la biografia non è privata, un filetto, poi Strumenti. Dentro Strumenti: visibilità (Privata, Famiglia, Pubblica), I miei dati o Chi era questa persona, note, foto, struttura del libro, revisione e pubblicazione. Su telefono e tablet lo stesso menu si apre dall'icona a sinistra nell'intestazione del sito. 
+L'editor non ha una barra in alto. Nel menu a sinistra: titolo (clic per rinominare), grande come i titoli dei capitoli, e nome dell'autore, poi l'elenco dei capitoli, che si riempie solo quando si segna un titolo di capitolo. In basso: stato di salvataggio, Importa testo sempre visibile, poi Esporta sempre visibile, un filetto, poi Strumenti. Dentro Strumenti: Visibilità (apre una finestra per scegliere tra Privata di default, Famiglia con link copiabile che permette di leggere senza account, e Pubblica con scelta della licenza), I miei dati o Chi era questa persona, note, foto, struttura del libro, revisione e pubblicazione. Su telefono e tablet lo stesso menu si apre dall'icona a sinistra nell'intestazione del sito. 
 <!-- internal -->
 Admin sta solo nel menu account a destra, su ogni formato.
 <!-- /internal -->

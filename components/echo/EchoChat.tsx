@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { Loader, Send } from 'lucide-react';
+import { Loader, Send, SpellCheck } from 'lucide-react';
 import { useAuth } from '@/lib/auth-context';
 import { useTranslation } from '@/lib/i18n/i18n-context';
 import { useEchoChat } from '@/lib/echo/echo-chat-context';
@@ -57,6 +57,9 @@ export interface EchoChatProps {
   conversationOpen?: boolean;
   /** Same size as the biography text, on every screen. */
   fontSize?: number;
+  onGrammarCheck?: () => void;
+  grammarLoading?: boolean;
+  grammarUnavailable?: string | null;
 }
 
 export function EchoChat({
@@ -69,6 +72,9 @@ export function EchoChat({
   compact = false,
   conversationOpen = true,
   fontSize = 15,
+  onGrammarCheck,
+  grammarLoading = false,
+  grammarUnavailable = null,
 }: EchoChatProps) {
   const { session } = useAuth();
   const { language, t } = useTranslation();
@@ -488,6 +494,31 @@ export function EchoChat({
                 className={flushChrome ? 'h-8 w-8' : undefined}
               />
             </>
+          )}
+          {onGrammarCheck && (
+            <IconHint label={grammarUnavailable || t.editor.checkGrammar}>
+              <Button
+                type="button"
+                size="icon"
+                variant="outline"
+                data-testid="echo-grammar-btn"
+                title={grammarUnavailable || t.editor.checkGrammar}
+                aria-label={grammarUnavailable || t.editor.checkGrammar}
+                disabled={loading || grammarLoading || Boolean(grammarUnavailable)}
+                onMouseDown={(e) => e.preventDefault()}
+                onClick={grammarUnavailable ? undefined : onGrammarCheck}
+                className={cn(
+                  'shrink-0 rounded-md',
+                  flushChrome ? 'h-8 w-8' : 'h-11 w-11'
+                )}
+              >
+                {grammarLoading ? (
+                  <Loader className={cn(flushChrome ? 'h-3.5 w-3.5' : 'h-4 w-4', 'animate-spin')} />
+                ) : (
+                  <SpellCheck className={flushChrome ? 'h-3.5 w-3.5' : 'h-4 w-4'} />
+                )}
+              </Button>
+            </IconHint>
           )}
           <IconHint label={t.conversation.send}>
           <Button

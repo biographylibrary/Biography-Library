@@ -159,3 +159,20 @@ export function grammarTooLongMessage(rawLocale?: string | null): string {
       return `The text is too long for the grammar check (maximum ${max} characters). Please check a shorter part: the text has not been checked.`;
   }
 }
+
+/**
+ * Estrae il brano da sottoporre al controllo grammaticale:
+ * preferisce il testo selezionato dall'utente; altrimenti usa il paragrafo
+ * in cui si trova il cursore. Non invia mai l'intero documento.
+ */
+export function pickGrammarCheckExcerpt(target: {
+  selectedText: string;
+  blockText: string;
+}): string {
+  const selected = target.selectedText.trim();
+  if (selected) return selected;
+  const block = target.blockText.trim();
+  if (block) return block;
+  return '';
+}
+

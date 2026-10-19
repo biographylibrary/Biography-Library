@@ -37,10 +37,6 @@ vi.mock('@/components/editor/editor-font-size-control', () => ({
   EditorFontSizeControl: () => <div data-testid="font-size" />,
 }));
 
-vi.mock('@/components/editor/editor-ai-tools-menu', () => ({
-  EditorAiToolsMenu: () => null,
-}));
-
 vi.mock('@/lib/supabase', () => ({
   supabase: {
     from: () => ({

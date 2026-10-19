@@ -4,7 +4,6 @@ import { useEditor, EditorContent } from '@tiptap/react';
 import CharacterCount from '@tiptap/extension-character-count';
 import { useEffect, useRef, useState } from 'react';
 import { RichTextToolbar } from './rich-text-toolbar';
-import type { EditorAiToolsMenuProps } from './editor-ai-tools-menu';
 import {
   archiveMarkdownToEditorHtml,
   archiveTiptapExtensions,
@@ -33,7 +32,7 @@ interface RichTextEditorProps {
   onOpenLanguage?: () => void;
   textLanguageName?: string;
   isPublished?: boolean;
-  aiTools?: Omit<EditorAiToolsMenuProps, 'className' | 'buttonClassName'>;
+  aiEnabled?: boolean;
   aiUsageRefresh?: number;
   /** Newly added or replaced text, shown in bold for a few seconds. */
   highlightChange?: { id: number; text: string } | null;
@@ -51,7 +50,7 @@ export function RichTextEditor({
   onOpenLanguage,
   textLanguageName,
   isPublished = false,
-  aiTools,
+  aiEnabled,
   aiUsageRefresh,
   highlightChange,
   undoLastChange,
@@ -193,7 +192,7 @@ export function RichTextEditor({
         onEditorFontSizeChange={onEditorFontSizeChange}
         onOpenLanguage={onOpenLanguage}
         textLanguageName={textLanguageName}
-        aiTools={aiTools}
+        aiEnabled={aiEnabled}
         aiUsageRefresh={aiUsageRefresh}
         countsOnly={readOnly}
         undoLastChange={loadBlocked ? undefined : undoLastChange}

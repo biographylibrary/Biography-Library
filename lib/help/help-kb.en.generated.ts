@@ -2,7 +2,7 @@
 
 export const HELP_KB_EN = `# Biography Library — Platform Knowledge Base
 
-Version: 1.14 — 2026-10-15
+Version: 1.15 — 2026-10-19
 
 ## account_and_biography_model
 
@@ -44,7 +44,7 @@ Echo may suggest a shape, for example chronological, and must leave room for ref
 
 ## ai_tools
 
-Editor AI tools sit in the formatting bar, not in a top bar: Check Grammar (typos/syntax, meaning preserved), Need Help? (contextual assistance), Summarise, Review (clarity/flow feedback). The AI usage counter is in that same bar, above the character count, at the height of the formatting buttons. It shows daily (40) and weekly (200) limits; heavy actions count as 2. Reset daily midnight UTC, weekly Monday UTC. AI never invents facts or publishes automatically. In a translation there are no AI tools at all: no grammar check and no Echo.
+Grammar check sits inside the Echo bar under the page (next to the microphone and send buttons), not in a menu in the formatting bar. Select a paragraph or place the cursor in a paragraph and press Check Grammar: it checks only that excerpt (typos and syntax, meaning preserved) using Apertus. The AI usage counter sits in the formatting bar, above the character count, at the height of the formatting buttons. It shows daily (40) and weekly (200) limits; heavy actions count as 2. Reset daily midnight UTC, weekly Monday UTC. AI never invents facts or publishes automatically. In a translation there are no AI tools at all: no grammar check and no Echo.
 
 ## conversation_mode
 
@@ -52,7 +52,7 @@ There is no separate Conversation Mode toggle. The biography is one page and alw
 
 ## editor_interface
 
-The editor has no top bar. In the left menu: the biography title (click to rename) and the author name, written at the same size as the chapter titles. Then the chapter list, which fills only when a chapter title is marked. At the bottom of that menu: save status (Saved / Saving), Import text (always visible), then Export (always visible), and Share link when the biography is not private. A thin divider, then Tools. Inside Tools: visibility (Private, Family, or Public — tap to cycle), My details or Who this person was, notes, photos, book structure, and review and publication. On an original, the language of the text is chosen in Tools, Language of the text; the Language button next to the font size takes you there. On a phone or tablet the same menu opens from the hamburger on the left of the site header, not from a bar under the header. On a narrow screen the formatting buttons fold into a menu labelled Style (Stile, Style, Stil). The closed menu keeps showing the chosen style until it changes: Bold, Italic, Title, List •, List #, or Quote. Chapter title is a bordered button on a wide screen and an item in that menu on a narrow one.
+The editor has no top bar. In the left menu: the biography title (click to rename) and the author name, written at the same size as the chapter titles. Then the chapter list, which fills only when a chapter title is marked. At the bottom of that menu: save status (Saved / Saving), Import text (always visible), then Export (always visible). A thin divider, then Tools. Inside Tools: Visibility (opens a window to choose between Private by default, Family with a copyable link that lets anyone with the link read without an account, and Public with license choice), My details or Who this person was, notes, photos, book structure, and review and publication. On an original, the language of the text is chosen in Tools, Language of the text; the Language button next to the font size takes you there. On a phone or tablet the same menu opens from the hamburger on the left of the site header, not from a bar under the header. On a narrow screen the formatting buttons fold into a menu labelled Style (Stile, Style, Stil). The closed menu keeps showing the chosen style until it changes: Bold, Italic, Title, List •, List #, or Quote. Chapter title is a bordered button on a wide screen and an item in that menu on a narrow one.
 
 Admin is only inside the account menu on the right, at every screen size.
 

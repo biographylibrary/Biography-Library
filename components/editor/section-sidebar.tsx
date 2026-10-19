@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { Check, ChevronDown, StickyNote, Images, Upload, Download, Lock, BookOpen, FileCheck, Landmark, Link2, User, CloudOff, Loader as Loader2, Users, Globe, Plus, Languages, BookA, Trash2 } from 'lucide-react';
+import { Check, ChevronDown, StickyNote, Images, Upload, Download, Lock, BookOpen, FileCheck, Landmark, User, CloudOff, Loader as Loader2, Users, Globe, Plus, Languages, BookA, Trash2 } from 'lucide-react';
 import { HelpDialog, HelpTriggerButton } from '@/components/help/HelpDialog';
 import {
   type BiographyContent,
@@ -22,8 +22,6 @@ const privacyIcons: Record<Privacy, typeof Lock> = {
   public: Globe,
 };
 
-const privacyOrder: Privacy[] = ['private', 'link-only', 'public'];
-
 interface SectionSidebarProps {
   content: BiographyContent;
   activeSection: string;
@@ -37,10 +35,8 @@ interface SectionSidebarProps {
   onToggleImportText: () => void;
   onToggleExportText: () => void;
   onToggleReviewPublication: () => void;
-  /** When set, a share-link item sits beside Tools and opens a popup. */
-  onOpenShareLink?: () => void;
-  showShareLink?: boolean;
-  shareLinkOpen?: boolean;
+  onToggleVisibilityPanel?: () => void;
+  showVisibilityPanel?: boolean;
   /** When true, export control is disabled (e.g. biography under review). */
   exportDisabled?: boolean;
   showNotesPanel: boolean;
@@ -72,7 +68,7 @@ interface SectionSidebarProps {
   isFrozen?: boolean;
   saveStatus: SaveStatus;
   privacy: Privacy;
-  onPrivacyChange: (privacy: Privacy) => void;
+  onPrivacyChange?: (privacy: Privacy) => void;
   /** Originale: mostra «Traduci». Edizione: nasconde o rende sola lettura gli strumenti di scheda. */
   isEdition?: boolean;
   canTranslate?: boolean;
@@ -94,9 +90,8 @@ export function SectionSidebar({
   onToggleImportText,
   onToggleExportText,
   onToggleReviewPublication,
-  onOpenShareLink,
-  showShareLink = false,
-  shareLinkOpen = false,
+  onToggleVisibilityPanel,
+  showVisibilityPanel = false,
   exportDisabled = false,
   showNotesPanel,
   showPhotosPanel,
@@ -118,7 +113,6 @@ export function SectionSidebar({
   isFrozen = false,
   saveStatus,
   privacy,
-  onPrivacyChange,
   isEdition = false,
   canTranslate = false,
   onToggleTranslate,
@@ -138,6 +132,7 @@ export function SectionSidebar({
   const authorInputRef = useRef<HTMLInputElement>(null);
   const toolsVisible =
     toolsOpen ||
+    showVisibilityPanel ||
     showPermanencePanel ||
     showNotesPanel ||
     showPhotosPanel ||
@@ -189,11 +184,6 @@ export function SectionSidebar({
 
   const isMemorial = biographyType === 'memorial';
   const titleDisplay = title || (isMemorial ? t.biography.subjectNameLabel : t.biography.untitled);
-  const privacyLabels: Record<Privacy, string> = {
-    private: t.dashboard.private,
-    'link-only': t.dashboard.family,
-    public: t.dashboard.public,
-  };
   const saveStatusConfig: Record<SaveStatus, { icon: typeof Check; text: string; className: string }> = {
     saved: { icon: Check, text: t.common.saved, className: 'text-brand-greenDark dark:text-brand-greenLight' },
     saving: { icon: Loader2, text: t.common.saving, className: 'text-muted-foreground' },
@@ -203,7 +193,6 @@ export function SectionSidebar({
   const status = saveStatusConfig[saveStatus];
   const StatusIcon = status.icon;
   const CurrentPrivacyIcon = privacyIcons[privacy] ?? Lock;
-  const nextPrivacy = privacyOrder[(privacyOrder.indexOf(privacy) + 1) % privacyOrder.length];
 
   return (
     <nav className="flex flex-col h-full overflow-hidden">
@@ -374,21 +363,6 @@ export function SectionSidebar({
           <Download className="h-4 w-4 shrink-0" />
           <span className="truncate min-w-0 flex-1 text-left">{t.notesAndTodos.exportText}</span>
         </button>
-        {showShareLink && onOpenShareLink && (
-          <button
-            type="button"
-            onClick={onOpenShareLink}
-            className={cn(
-              'w-full flex items-center gap-2 px-3 py-1 lg:py-2 rounded-lg text-sm transition-colors',
-              shareLinkOpen
-                ? 'bg-primary/10 text-primary'
-                : 'text-muted-foreground hover:bg-muted/50 hover:text-foreground'
-            )}
-          >
-            <Link2 className="h-4 w-4 shrink-0" />
-            <span className="truncate min-w-0 flex-1 text-left">{t.biography.shareLink}</span>
-          </button>
-        )}
         <div className="h-px bg-black dark:bg-white mx-2 my-1" />
         <button
           type="button"
@@ -432,11 +406,16 @@ export function SectionSidebar({
           <button
             type="button"
             data-tour-id="privacy-btn"
-            onClick={() => onPrivacyChange(nextPrivacy)}
-            className="w-full flex items-center gap-2 px-3 py-1 lg:py-2 rounded-lg text-sm text-muted-foreground hover:bg-muted/50 hover:text-foreground transition-colors"
+            onClick={onToggleVisibilityPanel}
+            className={cn(
+              'w-full flex items-center gap-2 px-3 py-1 lg:py-2 rounded-lg text-sm transition-colors',
+              showVisibilityPanel
+                ? 'bg-primary/10 text-primary'
+                : 'text-muted-foreground hover:bg-muted/50 hover:text-foreground'
+            )}
           >
             <CurrentPrivacyIcon className="h-4 w-4 shrink-0" />
-            <span className="truncate min-w-0 flex-1 text-left">{privacyLabels[privacy]}</span>
+            <span className="truncate min-w-0 flex-1 text-left">{t.dashboard.visibility}</span>
           </button>
         )}
         {isEdition && (
