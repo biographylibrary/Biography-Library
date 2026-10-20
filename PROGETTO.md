@@ -100,7 +100,7 @@ Screening a pezzi sull’intero testo pubblico dell’impronta (`assembleScreeni
 ### Formato e dati
 
 - **Conversione HTML → Markdown reale** ancora in attesa (`npm run markdown:legacy -- --apply`). `biography_source_html_legacy` tiene l’HTML 180 giorni; `content_html_legacy` in produzione è vuota — da eliminare insieme dopo i 180 giorni dalla conversione.
-- **`revision_history` su `biography_sections`**: colonna e helper morti (la revisione AI per sezione è tolta); in produzione ~9,6 KB su una scheda, nessuna crescita nell’ultimo mese. Decisione sul ritiro rinviata.
+- **`revision_history` su `biography_sections`**: colonna e helper morti (la revisione AI per sezione è tolta); colonna rimossa il 20 ottobre 2026.
 - **PDF non latino**: jsPDF senza subsetting Noto adeguato; serve altro motore.
 - **Metadati pagina di lettura**: oltre agli `alternates`, mancano titolo/descrizione dedicati.
 - **Sitemap XML** delle biografie pubbliche: assente.

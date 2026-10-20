@@ -116,7 +116,7 @@ async function main(): Promise<void> {
     fetchAll<SectionRow>(
       supabase,
       'biography_sections',
-      'id, biography_id, section_key, content, revision_history'
+      'id, biography_id, section_key, content'
     ),
     fetchAll<BookRow>(
       supabase,
@@ -143,10 +143,6 @@ async function main(): Promise<void> {
     fields_unchanged: 0,
     fields_convert: 0,
     fields_manual_review: 0,
-    revision_history_entries: 0,
-    revision_history_html: 0,
-    revision_history_convert: 0,
-    revision_history_manual_review: 0,
   };
 
   type WorkItem = {
@@ -166,16 +162,6 @@ async function main(): Promise<void> {
       if (field.kind === 'markdown') counts.fields_unchanged += 1;
       else if (field.kind === 'text_loss') counts.fields_manual_review += 1;
       else counts.fields_convert += 1;
-      if (field.path.startsWith('revision_history.')) {
-        counts.revision_history_entries += 1;
-        if (field.kind === 'clean' || field.kind === 'formatting_loss' || field.kind === 'text_loss') {
-          counts.revision_history_html += 1;
-        }
-        if (field.kind === 'text_loss') counts.revision_history_manual_review += 1;
-        else if (field.kind === 'clean' || field.kind === 'formatting_loss') {
-          counts.revision_history_convert += 1;
-        }
-      }
     }
     const decision = decideApply(bio.status, assessment);
     counts[decision === 'skip_unchanged' ? 'unchanged' : decision] += 1;
@@ -250,7 +236,7 @@ async function main(): Promise<void> {
         if (error || !data) throw new Error(`draft_reread_failed:${error?.message ?? item.bio.id}`);
         const { data: secs, error: sErr } = await supabase
           .from('biography_sections')
-          .select('id, biography_id, section_key, content, revision_history')
+          .select('id, biography_id, section_key, content')
           .eq('biography_id', item.bio.id);
         if (sErr) throw new Error(sErr.message);
         const { data: book, error: bErr } = await supabase
@@ -314,9 +300,6 @@ async function main(): Promise<void> {
   );
   console.log(
     `Campi non vuoti ${counts.fields_total}: già Markdown ${counts.fields_unchanged}, convertibili ${counts.fields_convert}, non convertibili ${counts.fields_manual_review}.`
-  );
-  console.log(
-    `revision_history: voci ${counts.revision_history_entries}, HTML ${counts.revision_history_html}, convertibili ${counts.revision_history_convert}, non convertibili ${counts.revision_history_manual_review}.`
   );
   console.log(`Rapporto: ${outPath}`);
   if (dryRun) {

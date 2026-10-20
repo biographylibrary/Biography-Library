@@ -105,13 +105,6 @@ export async function erasePriorContent(
   if (legacyErr) throw new Error(legacyErr.message);
   removed.push('content_html_legacy');
 
-  const { error: historyErr } = await svc
-    .from('biography_sections')
-    .update({ revision_history: [] })
-    .eq('biography_id', biographyId);
-  if (historyErr) throw new Error(historyErr.message);
-  removed.push('revision_history');
-
   const exportKeys = EXPORT_KEYS.map((name) => `biography-exports/${biographyId}/${name}`);
   const { error: exportErr } = await svc.storage.from('biography-exports').remove(exportKeys);
   if (exportErr) throw new Error(exportErr.message);

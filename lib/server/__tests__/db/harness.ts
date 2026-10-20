@@ -239,7 +239,6 @@ create table public.biography_sections (
   status varchar default 'in_progress',
   draft_version integer default 1,
   approved_at timestamptz,
-  revision_history jsonb default '[]'::jsonb,
   section_key text,
   unique (biography_id, section_key)
 );
