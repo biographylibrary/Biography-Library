@@ -225,8 +225,6 @@ function OverviewContent() {
         )}
 
         <div className="space-y-10">
-          {!isReviewer && <MaintenancePanel />}
-
           {!isReviewer && (
           <section>
             <h2 className="text-xs uppercase tracking-widest text-muted-foreground mb-4">
@@ -365,6 +363,8 @@ function OverviewContent() {
               </Button>
             </div>
           </section>
+
+          {!isReviewer && <MaintenancePanel />}
         </div>
     </>
   );
