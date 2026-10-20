@@ -113,7 +113,7 @@ Screening a pezzi sull’intero testo pubblico dell’impronta (`assembleScreeni
 
 ### Email e Edge
 
-- **`shared/email` / Edge Functions**: `render.ts` importa `@/lib/um` (alias Next); lo script di packaging di giugno non lo risolve. `send-engagement-emails` in produzione con file condivisi vecchi + `index.ts` aggiornato. Da portare a rotte Node o riparare il bundle.
+- **`shared/email` / Edge Functions**: risolto il 20 ottobre 2026 estraendo `shared/email/um-year.ts` (riesportato da `lib/um.ts`) così `shared/email/` importa solo file locali senza alias Next.js.
 - **Voxtral TTS**: voice ID IT/FR/DE da completare in `.env` (EN ok).
 
 ### Sicurezza / DB (tracciati, non in questo blocco)

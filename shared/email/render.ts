@@ -1,6 +1,6 @@
 import { resolveSiteName, resolveSiteUrl } from './locale';
 import type { EmailLocale, EmailTemplateId, EmailTemplateVars, RenderedEmail } from './types';
-import { formatUmYear, umYearFromDate } from '@/lib/um';
+import { formatUmYear, umYearFromDate } from './um-year';
 
 function esc(value: string): string {
   return value
