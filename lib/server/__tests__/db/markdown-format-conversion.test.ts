@@ -48,7 +48,7 @@ describe('markdown format conversion (PGlite)', () => {
         [id]
       );
       const sections = await asService<Record<string, unknown>>(
-        `select id, biography_id, section_key, content, revision_history from biography_sections where biography_id = $1`,
+        `select id, biography_id, section_key, content from biography_sections where biography_id = $1`,
         [id]
       );
       return { bio, sections };

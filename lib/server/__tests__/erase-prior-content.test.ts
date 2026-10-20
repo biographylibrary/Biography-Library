@@ -98,13 +98,11 @@ describe('erasePriorContent', () => {
     expect(result.removed).toEqual([
       'archive/v1',
       'content_html_legacy',
-      'revision_history',
       'export_pdf',
       'biography_chunks',
     ]);
     expect(calls.some((call) => call.bucket === 'archive' && call.op === 'remove')).toBe(true);
     expect(calls.some((call) => call.table === 'biographies' && call.op === 'update' && (call.payload as { content_html_legacy?: null }).content_html_legacy === null)).toBe(true);
-    expect(calls.some((call) => call.table === 'biography_sections' && call.op === 'update')).toBe(true);
     expect(calls.some((call) => call.bucket === 'biography-exports' && call.op === 'remove')).toBe(true);
     expect(calls.some((call) => call.table === 'biography_chunks' && call.op === 'delete')).toBe(true);
     expect(calls.some((call) => call.table === 'moderation_messages' && call.op === 'insert')).toBe(true);

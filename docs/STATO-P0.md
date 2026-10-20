@@ -59,12 +59,9 @@ WHERE frozen_reason IS NOT NULL
   AND frozen_reason NOT IN ('death', 'admin_action');
 
 SELECT
-  count(*) AS section_rows,
-  count(*) FILTER (
-    WHERE revision_history IS NOT NULL AND revision_history <> '[]'::jsonb
-  ) AS with_history,
-  coalesce(sum(pg_column_size(revision_history)), 0) AS revision_history_bytes
+  count(*) AS section_rows
 FROM biography_sections;
+-- revision_history rimossa il 20 ottobre 2026
 ```
 
 ---

@@ -29,7 +29,6 @@ export type SectionRow = {
   biography_id: string;
   section_key: string | null;
   content: string | null;
-  revision_history?: Array<{ version?: number; content?: string; timestamp?: string }> | null;
 };
 
 export type BookRow = {
@@ -51,22 +50,6 @@ function plainStored(value: string): string {
   return nfc(storedToPlainText(value)).replace(/\s+/g, ' ').trim();
 }
 
-function revisionFieldsFor(sectionRows: SectionRow[]): StoredField[] {
-  const fields: StoredField[] = [];
-  for (const section of sectionRows) {
-    const history = Array.isArray(section.revision_history) ? section.revision_history : [];
-    history.forEach((entry, index) => {
-      const entryId =
-        entry.version != null ? String(entry.version) : `${section.section_key || section.id}:${index}`;
-      fields.push({
-        path: `revision_history.${section.section_key || section.id}.${entryId}`,
-        value: entry.content ?? null,
-      });
-    });
-  }
-  return fields;
-}
-
 export function collectBiographyFields(
   bio: BiographyConversionRow,
   sectionRows: SectionRow[],
@@ -84,7 +67,6 @@ export function collectBiographyFields(
       value: section.content,
     })),
     ...bookFields,
-    ...revisionFieldsFor(sectionRows),
   ];
 }
 
@@ -96,14 +78,6 @@ export function assessBiographyConversion(
   const fields = collectBiographyFields(bio, sectionRows, book);
   const assessment = assessFields(fields);
   return { decision: decideApply(bio.status, assessment), fields };
-}
-
-function parseRevisionPath(
-  path: string
-): { sectionRef: string; entryId: string } | null {
-  const m = /^revision_history\.(.+)\.([^.]+)$/.exec(path);
-  if (!m) return null;
-  return { sectionRef: m[1], entryId: m[2] };
 }
 
 /** Solo HTML vero: mai salvare Markdown come «HTML precedente». */
@@ -120,16 +94,6 @@ export function legacyRowsForFields(
   for (const field of fields) {
     const value = field.value ?? '';
     if (!value.trim() || !looksLikeStoredHtml(value)) continue;
-    const rev = parseRevisionPath(field.path);
-    if (rev) {
-      rows.push({
-        biography_id: biographyId,
-        source_column: 'revision_history',
-        entry_id: rev.entryId,
-        content: value,
-      });
-      continue;
-    }
     rows.push({
       biography_id: biographyId,
       source_column: field.path,
@@ -196,18 +160,6 @@ async function ensureLegacyHtmlCopy(
     `legacy_content_mismatch:${row.biography_id}:${row.source_column}` +
       (row.entry_id != null ? `:${row.entry_id}` : '')
   );
-}
-
-function convertedRevisionHistory(
-  section: SectionRow
-): Array<{ version?: number; content?: string; timestamp?: string }> | null {
-  const history = Array.isArray(section.revision_history) ? section.revision_history : null;
-  if (!history) return null;
-  return history.map((entry) => {
-    const content = entry.content ?? '';
-    if (!content.trim() || !looksLikeStoredHtml(content)) return entry;
-    return { ...entry, content: storedToArchiveMarkdown(content) };
-  });
 }
 
 export type FormatConversionPrevious = {
@@ -327,15 +279,11 @@ export async function applyMarkdownConversionToBiography(
       section.content != null && looksLikeStoredHtml(section.content)
         ? storedToArchiveMarkdown(section.content)
         : section.content;
-    const nextHistory = convertedRevisionHistory(section);
-    const historyChanged =
-      nextHistory != null &&
-      JSON.stringify(nextHistory) !== JSON.stringify(section.revision_history ?? []);
-    if (nextContent === section.content && !historyChanged) continue;
-    const patch: Record<string, unknown> = {};
-    if (nextContent !== section.content) patch.content = nextContent;
-    if (historyChanged) patch.revision_history = nextHistory;
-    const { error } = await client.from('biography_sections').update(patch).eq('id', section.id);
+    if (nextContent === section.content) continue;
+    const { error } = await client
+      .from('biography_sections')
+      .update({ content: nextContent })
+      .eq('id', section.id);
     if (error) throw new Error(`section_update_failed:${error.message}`);
   }
 
@@ -356,7 +304,7 @@ export async function applyMarkdownConversionToBiography(
   if (afterErr || !afterBio) throw new Error(`biography_reread_failed:${afterErr?.message ?? 'missing'}`);
   const { data: afterSections, error: secErr } = await client
     .from('biography_sections')
-    .select('id, biography_id, section_key, content, revision_history')
+    .select('id, biography_id, section_key, content')
     .eq('biography_id', bio.id);
   if (secErr) throw new Error(`sections_reread_failed:${secErr.message}`);
   const { data: afterBookRows, error: bookErr } = await client
