@@ -181,6 +181,27 @@ This is safe while `bl-app` is running — it does not remove the active contain
 
 ---
 
+## Maintenance mode
+
+Platform-wide maintenance is controlled from **Admin → Overview → Maintenance** (no Jelastic / env change required). The flag lives in Postgres (`site_settings` key `maintenance`), so it travels with a database dump.
+
+**Turn on**
+
+1. Sign in as `admin` or `super_admin`.
+2. Open `/admin`, confirm the «Maintenance» toggle, and enable it.
+3. Visitors (and non-admin APIs) receive HTTP 503 with a short multilingual page (`Retry-After: 3600`, `noindex`). Cron routes stay callable with `CRON_SECRET` but answer `{"skipped":"maintenance"}` without doing work.
+
+**What admins see**
+
+- `/admin` and `/api/admin/*` remain available.
+- Entering the admin panel (or calling `/api/admin/maintenance`) sets an HttpOnly signed bypass cookie so the admin can browse the rest of the site while testing (e.g. after a Zurich database cutover).
+
+**Turn off**
+
+Use the same toggle in the admin overview. The site reopens for everyone as soon as the flag is cleared (middleware cache is ~10 seconds).
+
+**Fail-open:** if the maintenance flag cannot be read from the database, the site stays open and the failure is logged.
+
 ## Database migrations
 
 Migrations are plain SQL files in `supabase/migrations/`. The filename prefix is a timestamp (e.g., `20260205184358_`). Apply them in order.

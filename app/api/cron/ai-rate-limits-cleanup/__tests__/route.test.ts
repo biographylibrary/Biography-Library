@@ -3,9 +3,14 @@ import { NextRequest } from 'next/server';
 
 const rpc = vi.fn();
 const buildServiceClient = vi.fn(() => ({ rpc }));
+const cronSkipIfMaintenance = vi.fn<() => Promise<Response | null>>(async () => null);
 
 vi.mock('@/lib/server/review-submit-pipeline', () => ({
   buildServiceClient: () => buildServiceClient(),
+}));
+
+vi.mock('@/lib/maintenance/cron', () => ({
+  cronSkipIfMaintenance: () => cronSkipIfMaintenance(),
 }));
 
 describe('POST /api/cron/ai-rate-limits-cleanup', () => {
@@ -15,6 +20,7 @@ describe('POST /api/cron/ai-rate-limits-cleanup', () => {
     vi.clearAllMocks();
     process.env.CRON_SECRET = 'test-cron-secret';
     rpc.mockResolvedValue({ error: null });
+    cronSkipIfMaintenance.mockResolvedValue(null);
   });
 
   afterEach(() => {
@@ -58,5 +64,22 @@ describe('POST /api/cron/ai-rate-limits-cleanup', () => {
     );
     expect(res.status).toBe(500);
     expect(await res.json()).toEqual({ error: 'boom' });
+  });
+
+  it('200 skipped in manutenzione senza lavorare', async () => {
+    const { NextResponse } = await import('next/server');
+    cronSkipIfMaintenance.mockResolvedValue(
+      NextResponse.json({ skipped: 'maintenance' })
+    );
+    const { POST } = await import('@/app/api/cron/ai-rate-limits-cleanup/route');
+    const res = await POST(
+      new NextRequest('http://localhost/api/cron/ai-rate-limits-cleanup', {
+        method: 'POST',
+        headers: { authorization: 'Bearer test-cron-secret' },
+      })
+    );
+    expect(res.status).toBe(200);
+    expect(await res.json()).toEqual({ skipped: 'maintenance' });
+    expect(rpc).not.toHaveBeenCalled();
   });
 });

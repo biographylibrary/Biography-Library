@@ -25,6 +25,12 @@ export function I18nProvider({ children }: { children: ReactNode }) {
   const syncLanguageFromProfile = useCallback((lang: Language) => {
     setLanguageState(lang);
     localStorage.setItem('userLanguage', lang);
+    // Readable by middleware for the maintenance page (localStorage is not sent).
+    try {
+      document.cookie = `bl_lang=${lang}; Path=/; Max-Age=31536000; SameSite=Lax`;
+    } catch {
+      /* ignore */
+    }
   }, []);
 
   const loadUserLanguage = useCallback(async () => {

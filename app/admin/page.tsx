@@ -7,6 +7,7 @@ import { useTranslation } from '@/lib/i18n/i18n-context';
 import { useAuth } from '@/lib/auth-context';
 import { supabase } from '@/lib/supabase';
 import { StatCard } from '@/components/admin/StatCard';
+import { MaintenancePanel } from '@/components/admin/MaintenancePanel';
 import { Button } from '@/components/ui/button';
 
 interface OverviewStats {
@@ -224,6 +225,8 @@ function OverviewContent() {
         )}
 
         <div className="space-y-10">
+          {!isReviewer && <MaintenancePanel />}
+
           {!isReviewer && (
           <section>
             <h2 className="text-xs uppercase tracking-widest text-muted-foreground mb-4">
