@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { buildServiceClient } from '@/lib/server/review-submit-pipeline';
+import { cronSkipIfMaintenance } from '@/lib/maintenance/cron';
 
 export const dynamic = 'force-dynamic';
 
@@ -13,6 +14,9 @@ export async function POST(req: NextRequest) {
   if (!cronSecret || bearer !== cronSecret) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
+
+  const skipped = await cronSkipIfMaintenance();
+  if (skipped) return skipped;
 
   try {
     const svc = buildServiceClient();

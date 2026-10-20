@@ -13,6 +13,10 @@ vi.mock('@/lib/server/review-submit-pipeline', () => ({
   buildServiceClient: () => buildServiceClient(),
 }));
 
+vi.mock('@/lib/maintenance/cron', () => ({
+  cronSkipIfMaintenance: async () => null,
+}));
+
 describe('POST /api/cron/analysis-jobs', () => {
   const prevSecret = process.env.CRON_SECRET;
 

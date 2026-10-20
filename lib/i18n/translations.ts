@@ -1427,6 +1427,18 @@ export interface Translations {
     overviewKbDriftBanner: string;
     overviewKbSeedAction: string;
     overviewViewAffected: string;
+    maintenanceSection: string;
+    maintenanceTitle: string;
+    maintenanceDescription: string;
+    maintenanceEnabledLabel: string;
+    maintenanceDisabledLabel: string;
+    maintenanceConfirmTitle: string;
+    maintenanceConfirmDetail: string;
+    maintenanceLastChanged: string;
+    maintenanceNever: string;
+    maintenanceUnknownActor: string;
+    maintenanceLoadError: string;
+    maintenanceSaveError: string;
     reviewNoLanguages: string;
     reviewConflictTitle: string;
     reviewConflictDescription: string;
@@ -3380,6 +3392,19 @@ export const translations: Record<Language, Translations> = {
       overviewKbDriftBanner:
         'Echo is on knowledge base version {indexed}, the deployed manual is {build}. Re-seed so answers match the manual.',
       overviewKbSeedAction: 'Re-seed Echo knowledge',
+      maintenanceSection: 'Maintenance',
+      maintenanceTitle: 'Site maintenance mode',
+      maintenanceDescription:
+        'When enabled, visitors see a maintenance page. Administrators can still use the whole site.',
+      maintenanceEnabledLabel: 'Maintenance on',
+      maintenanceDisabledLabel: 'Maintenance off',
+      maintenanceConfirmTitle: 'Turn on maintenance mode?',
+      maintenanceConfirmDetail: 'The site will be visible only to administrators.',
+      maintenanceLastChanged: 'Last changed by {who} on {when}',
+      maintenanceNever: 'never',
+      maintenanceUnknownActor: 'unknown',
+      maintenanceLoadError: 'Could not load maintenance status.',
+      maintenanceSaveError: 'Could not update maintenance status.',
       overviewViewAffected: 'View affected biographies',
       reviewNoLanguages: 'No languages assigned — contact an administrator to receive review assignments.',
       reviewConflictTitle: 'Another reviewer is working on this',
@@ -5294,6 +5319,19 @@ export const translations: Record<Language, Translations> = {
       overviewKbDriftBanner:
         'Echo è alla versione {indexed} della knowledge base, il manuale in produzione è {build}. Rifai il seed per allineare le risposte.',
       overviewKbSeedAction: 'Ricarica la knowledge di Echo',
+      maintenanceSection: 'Manutenzione',
+      maintenanceTitle: 'Modalità manutenzione del sito',
+      maintenanceDescription:
+        'Se attiva, i visitatori vedono una pagina di manutenzione. Gli amministratori possono usare tutto il sito.',
+      maintenanceEnabledLabel: 'Manutenzione accesa',
+      maintenanceDisabledLabel: 'Manutenzione spenta',
+      maintenanceConfirmTitle: 'Accendere la modalità manutenzione?',
+      maintenanceConfirmDetail: 'Il sito sarà visibile solo agli amministratori.',
+      maintenanceLastChanged: 'Ultima modifica di {who} il {when}',
+      maintenanceNever: 'mai',
+      maintenanceUnknownActor: 'sconosciuto',
+      maintenanceLoadError: 'Impossibile caricare lo stato della manutenzione.',
+      maintenanceSaveError: 'Impossibile aggiornare lo stato della manutenzione.',
       overviewViewAffected: 'Vedi biografie interessate',
       reviewNoLanguages: 'Nessuna lingua assegnata — contatta un amministratore per ricevere assegnazioni di revisione.',
       reviewConflictTitle: 'Un altro revisore sta lavorando su questa biografia',
@@ -7210,6 +7248,19 @@ export const translations: Record<Language, Translations> = {
       overviewKbDriftBanner:
         'Echo est à la version {indexed} de la base de connaissances, le manuel déployé est {build}. Relancez le seed pour aligner les réponses.',
       overviewKbSeedAction: 'Recharger la knowledge Echo',
+      maintenanceSection: 'Maintenance',
+      maintenanceTitle: 'Mode maintenance du site',
+      maintenanceDescription:
+        'Lorsqu’il est activé, les visiteurs voient une page de maintenance. Les administrateurs peuvent toujours utiliser tout le site.',
+      maintenanceEnabledLabel: 'Maintenance activée',
+      maintenanceDisabledLabel: 'Maintenance désactivée',
+      maintenanceConfirmTitle: 'Activer le mode maintenance ?',
+      maintenanceConfirmDetail: 'Le site ne sera visible que pour les administrateurs.',
+      maintenanceLastChanged: 'Dernière modification par {who} le {when}',
+      maintenanceNever: 'jamais',
+      maintenanceUnknownActor: 'inconnu',
+      maintenanceLoadError: 'Impossible de charger l’état de la maintenance.',
+      maintenanceSaveError: 'Impossible de mettre à jour l’état de la maintenance.',
       overviewViewAffected: 'Voir les biographies concernées',
       reviewNoLanguages: 'Aucune langue assignée — contactez un administrateur pour recevoir des attributions de révision.',
       reviewConflictTitle: 'Un autre réviseur travaille sur cette biographie',
@@ -9125,6 +9176,19 @@ export const translations: Record<Language, Translations> = {
       overviewKbDriftBanner:
         'Echo hat Knowledge-Base-Version {indexed}, das bereitgestellte Handbuch ist {build}. Seed erneut ausführen, damit die Antworten passen.',
       overviewKbSeedAction: 'Echo-Knowledge neu laden',
+      maintenanceSection: 'Wartung',
+      maintenanceTitle: 'Wartungsmodus der Website',
+      maintenanceDescription:
+        'Wenn aktiv, sehen Besucher eine Wartungsseite. Administratoren können die gesamte Website weiter nutzen.',
+      maintenanceEnabledLabel: 'Wartung an',
+      maintenanceDisabledLabel: 'Wartung aus',
+      maintenanceConfirmTitle: 'Wartungsmodus einschalten?',
+      maintenanceConfirmDetail: 'Die Website ist nur für Administratoren sichtbar.',
+      maintenanceLastChanged: 'Zuletzt geändert von {who} am {when}',
+      maintenanceNever: 'nie',
+      maintenanceUnknownActor: 'unbekannt',
+      maintenanceLoadError: 'Wartungsstatus konnte nicht geladen werden.',
+      maintenanceSaveError: 'Wartungsstatus konnte nicht aktualisiert werden.',
       overviewViewAffected: 'Betroffene Biografien anzeigen',
       reviewNoLanguages: 'Keine Sprachen zugewiesen — wenden Sie sich an einen Administrator für Prüfaufträge.',
       reviewConflictTitle: 'Ein anderer Prüfer arbeitet an dieser Biografie',
