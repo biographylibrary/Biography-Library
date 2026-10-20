@@ -194,7 +194,8 @@ Platform-wide maintenance is controlled from **Admin → Overview → Maintenanc
 **What admins see**
 
 - `/admin` and `/api/admin/*` remain available.
-- Entering the admin panel (or calling `/api/admin/maintenance`) sets an HttpOnly signed bypass cookie so the admin can browse the rest of the site while testing (e.g. after a Zurich database cutover).
+- **With maintenance on, open `/admin` first** (after login), before browsing the rest of the site. That visit (or a call to `/api/admin/maintenance`) sets the HttpOnly signed bypass cookie (`bl_maint_bypass`). Without it, other pages return the same 503 as for visitors — the session in localStorage alone is not enough for the middleware.
+- After the cookie is set, the admin can navigate the whole site normally (useful when testing after a Zurich database cutover).
 
 **Turn off**
 
