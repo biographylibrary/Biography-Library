@@ -52,11 +52,12 @@ function rewriteSharedSource(src) {
     .replaceAll("from './locale'", "from './locale.ts'")
     .replaceAll("from './render'", "from './render.ts'")
     .replaceAll("from './send'", "from './send.ts'")
-    .replaceAll("from './types'", "from './types.ts'");
+    .replaceAll("from './types'", "from './types.ts'")
+    .replaceAll("from './um-year'", "from './um-year.ts'");
 }
 
 function sharedFiles() {
-  return ['send.ts', 'render.ts', 'locale.ts', 'types.ts'].map((f) => ({
+  return ['send.ts', 'render.ts', 'locale.ts', 'types.ts', 'um-year.ts'].map((f) => ({
     name: `_shared/email/${f}`,
     content: rewriteSharedSource(
       fs.readFileSync(path.join(ROOT, 'shared/email', f), 'utf8'),
