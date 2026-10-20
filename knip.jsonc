@@ -3,7 +3,7 @@
 
   // Punti d'ingresso che Next.js non conosce: le Edge Function girano su Deno,
   // gli script si lanciano a mano.
-  "entry": ["supabase/functions/*/index.ts", "scripts/*.mjs", "scripts/*.ts"],
+  "entry": ["supabase/functions/*/index.ts", "scripts/*.mjs", "scripts/migrate/*.mjs", "scripts/*.ts"],
 
   "ignore": [
     "components/ui/**", // libreria shadcn: presente per intero, usata in parte
