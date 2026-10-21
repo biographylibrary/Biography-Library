@@ -1,8 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import {
   assertPublicDataPresent,
+  buildRowCountsSql,
   countTableDataBySchema,
+  sqlJsonLiteral,
+  sqlStringLiteral,
 } from '../dump-source.mjs';
+import { AUTH_EXCLUDED_TABLES } from '../lib-db.mjs';
 import {
   composeBaselineSql,
   qualifyAuthTrigger,
@@ -37,6 +41,24 @@ describe('countTableDataBySchema', () => {
   it('passes assertPublicDataPresent when public data present', () => {
     const r = assertPublicDataPresent(sample);
     expect(r.bySchema.public).toBe(2);
+  });
+});
+
+describe('buildRowCountsSql JSON literals', () => {
+  it('embeds dumped/excluded auth tables as quoted ::json literals', () => {
+    const dumped = ['auth.users', 'auth.identities'];
+    const sql = buildRowCountsSql(dumped, AUTH_EXCLUDED_TABLES);
+    expect(sql).toContain(`'dumped_auth_tables', ${sqlJsonLiteral(dumped)}`);
+    expect(sql).toContain(`'excluded_auth_tables', ${sqlJsonLiteral(AUTH_EXCLUDED_TABLES)}`);
+    expect(sql).toMatch(/'dumped_auth_tables',\s*'\[.*\]'::json/);
+    expect(sql).toMatch(/'excluded_auth_tables',\s*'\[.*\]'::json/);
+    // Must not inject bare JSON arrays (the bug that broke psql)
+    expect(sql).not.toMatch(/'dumped_auth_tables',\s*\[/);
+  });
+
+  it('doubles single quotes inside sqlStringLiteral', () => {
+    expect(sqlStringLiteral("a'b")).toBe("'a''b'");
+    expect(sqlJsonLiteral(["o'k"])).toBe(`'["o''k"]'::json`);
   });
 });
 

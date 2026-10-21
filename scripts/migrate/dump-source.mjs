@@ -69,6 +69,47 @@ export function assertPublicDataPresent(listText, minPublic = 1) {
   return { bySchema, tables };
 }
 
+/** Escape a value for a Postgres single-quoted string literal (double any '). */
+export function sqlStringLiteral(value) {
+  return `'${String(value).replace(/'/g, "''")}'`;
+}
+
+/** JSON value as `'…'::json` (safe for embedding in -c SQL). */
+export function sqlJsonLiteral(value) {
+  return `${sqlStringLiteral(JSON.stringify(value))}::json`;
+}
+
+/** Row-counts query for Ireland snapshot (used after data dump). */
+export function buildRowCountsSql(authWithRows, excludedAuthTables = AUTH_EXCLUDED_TABLES) {
+  return `
+select json_build_object(
+  'captured_at', now(),
+  'public', (select coalesce(json_object_agg(relname, n), '{}'::json)
+             from (
+               select c.relname, (xpath('//row/c/text()', query_to_xml(format('select count(*)::text as c from %I.%I', n.nspname, c.relname), false, true, '')))[1]::text::bigint as n
+               from pg_class c
+               join pg_namespace n on n.oid = c.relnamespace
+               where n.nspname = 'public' and c.relkind = 'r'
+               order by 1
+             ) s),
+  'auth', (select coalesce(json_object_agg(t, n), '{}'::json)
+           from (
+             select 'users' as t, count(*)::bigint as n from auth.users
+             union all select 'identities', count(*)::bigint from auth.identities
+             union all select 'sessions', count(*)::bigint from auth.sessions
+             union all select 'refresh_tokens', count(*)::bigint from auth.refresh_tokens
+             union all select 'audit_log_entries', count(*)::bigint from auth.audit_log_entries
+             union all select 'mfa_factors', count(*)::bigint from auth.mfa_factors
+             union all select 'mfa_challenges', count(*)::bigint from auth.mfa_challenges
+             union all select 'mfa_amr_claims', count(*)::bigint from auth.mfa_amr_claims
+             union all select 'flow_state', count(*)::bigint from auth.flow_state
+             union all select 'one_time_tokens', count(*)::bigint from auth.one_time_tokens
+           ) a),
+  'dumped_auth_tables', ${sqlJsonLiteral(authWithRows)},
+  'excluded_auth_tables', ${sqlJsonLiteral(excludedAuthTables)}
+)::text`;
+}
+
 function main() {
   const { dryRun, help } = parseArgs();
   if (help) {
@@ -156,33 +197,7 @@ Excludes auth.sessions, auth.refresh_tokens, auth.audit_log_entries and storage.
       console.log(`  auth tables in dump: ${checked.tables.auth.join(', ') || '(none)'}`);
     }
 
-    const countsSql = `
-select json_build_object(
-  'captured_at', now(),
-  'public', (select coalesce(json_object_agg(relname, n), '{}'::json)
-             from (
-               select c.relname, (xpath('//row/c/text()', query_to_xml(format('select count(*)::text as c from %I.%I', n.nspname, c.relname), false, true, '')))[1]::text::bigint as n
-               from pg_class c
-               join pg_namespace n on n.oid = c.relnamespace
-               where n.nspname = 'public' and c.relkind = 'r'
-               order by 1
-             ) s),
-  'auth', (select coalesce(json_object_agg(t, n), '{}'::json)
-           from (
-             select 'users' as t, count(*)::bigint as n from auth.users
-             union all select 'identities', count(*)::bigint from auth.identities
-             union all select 'sessions', count(*)::bigint from auth.sessions
-             union all select 'refresh_tokens', count(*)::bigint from auth.refresh_tokens
-             union all select 'audit_log_entries', count(*)::bigint from auth.audit_log_entries
-             union all select 'mfa_factors', count(*)::bigint from auth.mfa_factors
-             union all select 'mfa_challenges', count(*)::bigint from auth.mfa_challenges
-             union all select 'mfa_amr_claims', count(*)::bigint from auth.mfa_amr_claims
-             union all select 'flow_state', count(*)::bigint from auth.flow_state
-             union all select 'one_time_tokens', count(*)::bigint from auth.one_time_tokens
-           ) a),
-  'dumped_auth_tables', ${JSON.stringify(authWithRows)}::json,
-  'excluded_auth_tables', ${JSON.stringify(AUTH_EXCLUDED_TABLES)}::json
-)::text`;
+    const countsSql = buildRowCountsSql(authWithRows, AUTH_EXCLUDED_TABLES);
 
     if (dryRun) {
       console.log(`[dry-run] would write ${countsFile} via psql counts query`);

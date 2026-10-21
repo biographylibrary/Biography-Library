@@ -58,7 +58,8 @@ Mai mettere password in file versionati. Gli script stampano solo URL con passwo
 ## Parte A — preparazione (nessun write su Zurigo)
 
 ```bash
-export MIGRATE_SOURCE_DB_URL='postgresql://…@aws-0-….pooler.supabase.com:5432/postgres'
+read -s MIGRATE_SOURCE_DB_URL && export MIGRATE_SOURCE_DB_URL
+# (Parte B: anche MIGRATE_DEST_DB_URL con read -s + export)
 export MIGRATE_DUMP_DIR="var/migrate-dumps/$(date -u +%Y%m%d-%H%M)-irlanda"
 
 node scripts/migrate/preflight.mjs
@@ -72,6 +73,9 @@ node scripts/migrate/apply-baseline.mjs --dry-run
 node scripts/migrate/restore-dest.mjs --dry-run
 node scripts/migrate/verify-counts.mjs --dry-run
 node scripts/migrate/copy-storage.mjs --dry-run
+
+# Prova B orchestrata (SOURCE+DEST già exportati nel terminale):
+# bash scripts/migrate/run-prova-b.sh
 ```
 
 Output tipico in `MIGRATE_DUMP_DIR` (gitignored):
