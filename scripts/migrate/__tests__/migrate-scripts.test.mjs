@@ -75,6 +75,21 @@ COMMENT ON EXTENSION vector IS 'x';
     expect(out).not.toMatch(/CREATE EXTENSION/i);
     expect(out).toContain('CREATE TABLE public.profiles');
   });
+
+  it('strips ALTER DEFAULT PRIVILEGES (postgres cannot change supabase_admin defaults)', () => {
+    const raw = `
+CREATE TABLE public.profiles (id uuid);
+ALTER DEFAULT PRIVILEGES FOR ROLE supabase_admin IN SCHEMA public GRANT ALL ON TABLES TO postgres;
+ALTER DEFAULT PRIVILEGES FOR ROLE supabase_admin IN SCHEMA public
+  GRANT ALL ON FUNCTIONS TO postgres;
+ALTER DEFAULT PRIVILEGES FOR ROLE postgres IN SCHEMA public GRANT ALL ON SEQUENCES TO postgres;
+GRANT SELECT ON public.profiles TO anon;
+`;
+    const out = sanitizePublicSchema(raw);
+    expect(out).not.toMatch(/ALTER\s+DEFAULT\s+PRIVILEGES/i);
+    expect(out).toContain('CREATE TABLE public.profiles');
+    expect(out).toContain('GRANT SELECT ON public.profiles TO anon;');
+  });
 });
 
 describe('qualifyAuthTrigger', () => {

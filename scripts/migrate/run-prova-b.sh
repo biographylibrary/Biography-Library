@@ -25,7 +25,7 @@ mkdir -p "$MIGRATE_DUMP_DIR"
 REPORT="$MIGRATE_DUMP_DIR/prova-b-report.txt"
 echo "MIGRATE_DUMP_DIR=$MIGRATE_DUMP_DIR" | tee "$REPORT"
 git check-ignore -v "$MIGRATE_DUMP_DIR" | tee -a "$REPORT" || true
-git status --short --untracked-files=normal | rg 'migrate-dumps|prova' || echo "git_status: dump dir not listed (good)" | tee -a "$REPORT"
+git status --short --untracked-files=normal | grep -E 'migrate-dumps|prova' || echo "git_status: dump dir not listed (good)" | tee -a "$REPORT"
 
 run_step() {
   local n="$1"
@@ -64,7 +64,7 @@ if [ -f "$MIGRATE_DUMP_DIR/data.dump" ]; then
 fi
 if [ -f "$MIGRATE_DUMP_DIR/baseline_zurich.sql" ]; then
   echo "baseline_first_line=$(head -1 "$MIGRATE_DUMP_DIR/baseline_zurich.sql")" | tee -a "$REPORT"
-  rg -n '^CREATE EXTENSION' "$MIGRATE_DUMP_DIR/baseline_zurich.sql" | tee -a "$REPORT" || true
+  grep -n '^CREATE EXTENSION' "$MIGRATE_DUMP_DIR/baseline_zurich.sql" | tee -a "$REPORT" || true
 fi
 echo "DONE" | tee -a "$REPORT"
 echo "Remember: unset MIGRATE_SOURCE_DB_URL MIGRATE_DEST_DB_URL"

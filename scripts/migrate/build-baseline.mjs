@@ -84,6 +84,11 @@ export function sanitizePublicSchema(sql) {
   // Extensions are emitted at the top of our baseline; drop dump copies.
   out = out.replace(/^\s*CREATE\s+EXTENSION[\s\S]*?;\s*$/gim, '');
   out = out.replace(/^\s*COMMENT\s+ON\s+EXTENSION[\s\S]*?;\s*$/gim, '');
+  // Drop ALTER DEFAULT PRIVILEGES: on Supabase, role postgres cannot change default
+  // privileges FOR ROLE supabase_admin ("permission denied"). Zurich already has the
+  // same public-schema default ACLs as Ireland for postgres and supabase_admin
+  // (tables, functions, sequences), so replaying these from the dump is unnecessary.
+  out = out.replace(/\bALTER\s+DEFAULT\s+PRIVILEGES[\s\S]*?;/gi, '');
   return out.trim() + '\n';
 }
 
