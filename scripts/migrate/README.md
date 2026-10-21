@@ -44,7 +44,16 @@ Non vengono installati automaticamente dagli script.
 
 Usa il connection string del **pooler in modalità session**, non l’host `db.<ref>.supabase.co` (spesso solo IPv6).
 
+In prova, inserisci gli URI solo in shell (non in `.env.local` versionato):
+
+```bash
+read -s MIGRATE_SOURCE_DB_URL && export MIGRATE_SOURCE_DB_URL
+read -s MIGRATE_DEST_DB_URL && export MIGRATE_DEST_DB_URL
+```
+
 Mai mettere password in file versionati. Gli script stampano solo URL con password mascherata (`***`).
+
+**Decisioni chiuse:** migrazioni orfane assorbite nel dump live; export Auth già fatto; keep-alive pre-cutover non necessario (Zurigo Pro). Dettaglio in `docs/migrate/CUTOVER-CHECKLIST.md`.
 
 ## Parte A — preparazione (nessun write su Zurigo)
 
