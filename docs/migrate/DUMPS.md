@@ -52,3 +52,5 @@ shasum -a 256 "/tmp/bl-dump.tar.gz.age"
 ## Relazione col piano Zurich
 
 Vedi `.cursor/plans/supabase-zurich-migrate.plan.md`. Gli stessi dump e la stessa procedura servono al trasloco successivo verso Infomaniak.
+
+Durante la prova generale: usare `scripts/migrate/dump-source.mjs` e `build-baseline.mjs` (output solo sotto `var/migrate-dumps/`). **Congelamento schema** fino al cutover: `docs/migrate/SCHEMA-FREEZE.md`.
