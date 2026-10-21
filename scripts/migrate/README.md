@@ -22,6 +22,8 @@ export PATH="/opt/homebrew/opt/postgresql@17/bin:$PATH"
 # oppure: brew install libpq && brew link --force libpq
 ```
 
+Su Mac con Homebrew Intel sotto Rosetta (Tier 3 / macOS Golden Gate), `brew install` può fallire: in alternativa estrarre i binari client EDB in `~/.local/pgsql-17/bin` (gli script li risolvono automaticamente).
+
 Non vengono installati automaticamente dagli script.
 
 ## Variabili
@@ -57,6 +59,7 @@ node scripts/migrate/dump-source.mjs          # scrive solo in MIGRATE_DUMP_DIR
 MIGRATE_DUMP_DIR="$MIGRATE_DUMP_DIR" node scripts/migrate/build-baseline.mjs --dry-run
 MIGRATE_DUMP_DIR="$MIGRATE_DUMP_DIR" node scripts/migrate/build-baseline.mjs
 
+node scripts/migrate/apply-baseline.mjs --dry-run
 node scripts/migrate/restore-dest.mjs --dry-run
 node scripts/migrate/verify-counts.mjs --dry-run
 node scripts/migrate/copy-storage.mjs --dry-run
@@ -65,19 +68,22 @@ node scripts/migrate/copy-storage.mjs --dry-run
 Output tipico in `MIGRATE_DUMP_DIR` (gitignored):
 
 - `public-schema.sql` — schema `public`, `--no-owner`, **con** GRANT  
-- `data.dump` — custom: dati `public` + auth selezionate (no sessions/refresh/audit, no storage)  
+- `data.dump` — custom: `-t 'public.*'` + auth selezionate (verificato con `pg_restore --list`)  
 - `row-counts.json`  
-- `baseline_zurich.sql` — schema + extension vector + trigger auth + bucket + policy storage + riga `schema_migrations`  
+- `baseline_zurich.sql` — **prima riga** `CREATE EXTENSION … vector`; altre estensioni Irlanda; schema sanitizzato; trigger `public.handle_new_user`; bucket/policy; `supabase_migrations` (CREATE IF NOT EXISTS). Applicare con `psql -1 -v ON_ERROR_STOP=1`  
+
 - `baseline-notes.json`
 
 ## Parte B — ripristino Zurigo (non in Parte A)
 
-1. Applicare una volta `baseline_zurich.sql` su Zurigo (psql).  
+1. `MIGRATE_DEST_DB_URL=… node scripts/migrate/apply-baseline.mjs --apply`  
+   (equivale a `psql -1 -v ON_ERROR_STOP=1 -f baseline_zurich.sql`)  
 2. `MIGRATE_DEST_DB_URL=… node scripts/migrate/restore-dest.mjs --apply`  
-3. `node scripts/migrate/verify-counts.mjs`  
+   (SQL con `SET session_replication_role = replica`; **no** `--disable-triggers`)  
+3. `node scripts/migrate/verify-counts.mjs` (conteggi + checksum contenuto; fallisce alla prima diff)  
 4. `node scripts/migrate/copy-storage.mjs` poi `verify-storage.mjs`
 
-`restore-dest` abortisce se l’host destinazione non contiene `frycyhvhuifznxzamenn`, se contiene `gckmusbozgbclokvbnwx`, o se coincide con la sorgente.
+`restore-dest` / `apply-baseline` abortiscono se l’URL destinazione non contiene `frycyhvhuifznxzamenn`, se contiene `gckmusbozgbclokvbnwx`, o se coincide con la sorgente.
 
 ## Altri comandi (già esistenti)
 

@@ -153,15 +153,17 @@ function majorVersion(text) {
   return m ? Number(m[1]) : 0;
 }
 
-/** Resolve pg_dump / pg_restore / psql ≥ 17 from PATH or Homebrew. */
+/** Resolve pg_dump / pg_restore / psql ≥ 17 from PATH or common install prefixes. */
 export function resolvePgTools() {
+  const home = process.env.HOME || '';
   const candidates = [
     '',
+    home ? `${home}/.local/pgsql-17/bin/` : '',
     '/opt/homebrew/opt/postgresql@17/bin/',
     '/usr/local/opt/postgresql@17/bin/',
     '/opt/homebrew/opt/libpq/bin/',
     '/usr/local/opt/libpq/bin/',
-  ];
+  ].filter((p) => p !== undefined);
   const tools = {};
   for (const name of ['pg_dump', 'pg_restore', 'psql']) {
     let found = null;
@@ -197,10 +199,10 @@ export function assertPgTools(tools = resolvePgTools()) {
       missing.length ? `Missing: ${missing.join(', ')}` : null,
       old.length ? `Too old: ${old.join(', ')}` : null,
       '',
-      'Install (Homebrew, example — do not run unless you choose to):',
+      'Install client tools ≥17 (Homebrew preferred):',
       '  brew install postgresql@17',
-      '  # or: brew install libpq && brew link --force libpq',
       '  export PATH="/opt/homebrew/opt/postgresql@17/bin:$PATH"',
+      'Also checked: ~/.local/pgsql-17/bin (EDB macOS binaries fallback).',
     ].filter(Boolean);
     throw new Error(lines.join('\n'));
   }
@@ -230,6 +232,13 @@ export function run(bin, args, { env = process.env, dryRun = false, label = '' }
   const r = spawnSync(bin, args, { encoding: 'utf8', env, maxBuffer: 64 * 1024 * 1024 });
   if (r.status !== 0) {
     const err = (r.stderr || r.stdout || '').trim() || `exit ${r.status}`;
+    if (/session_replication_role/i.test(err) || /must be superuser|permission denied.*replication/i.test(err)) {
+      throw new Error(
+        `${label || bin} failed: cannot SET session_replication_role = replica. ` +
+          `The role needs permission to disable user triggers during restore ` +
+          `(use the Supabase postgres role). Details: ${err}`
+      );
+    }
     throw new Error(`${label || bin} failed: ${err}`);
   }
   return r;
