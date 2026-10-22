@@ -83,7 +83,8 @@ Output tipico in `MIGRATE_DUMP_DIR` (gitignored):
 - `public-schema.sql` — schema `public`, `--no-owner`, **con** GRANT  
 - `data.dump` — custom: `-t 'public.*'` + auth selezionate (verificato con `pg_restore --list`)  
 - `row-counts.json`  
-- `baseline_zurich.sql` — **prima riga** `CREATE EXTENSION … vector`; altre estensioni Irlanda; schema sanitizzato; trigger `public.handle_new_user`; bucket/policy; `supabase_migrations` (CREATE IF NOT EXISTS). Applicare con `psql -1 -v ON_ERROR_STOP=1`  
+- `baseline_zurich.sql` — **prima riga** `CREATE EXTENSION … vector`; altre estensioni Irlanda; schema sanitizzato (corpo `handle_new_user` solo dal dump); trigger su `auth.users` qualificato; bucket/policy; `supabase_migrations` (CREATE IF NOT EXISTS). Applicare con `psql -1 -v ON_ERROR_STOP=1`  
+
 
 - `baseline-notes.json`
 

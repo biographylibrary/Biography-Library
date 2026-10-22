@@ -6,7 +6,7 @@
  *   1. First line: CREATE EXTENSION IF NOT EXISTS vector WITH SCHEMA public;
  *   2. Other Ireland extensions
  *   3. Sanitized public-schema.sql (no bare CREATE SCHEMA public; extensions stripped)
- *   4. public.handle_new_user + qualified trigger on auth.users
+ *   4. DROP/CREATE trigger on auth.users (function body comes from the dump only)
  *   5. storage.buckets + policies
  *   6. supabase_migrations schema/table if missing + registration row
  *
@@ -38,36 +38,23 @@ export const IRELAND_EXTENSIONS = [
   { name: 'pg_stat_statements', schema: 'extensions' },
 ];
 
-const HANDLE_NEW_USER_SQL = `
-CREATE OR REPLACE FUNCTION public.handle_new_user()
- RETURNS trigger
- LANGUAGE plpgsql
- SECURITY DEFINER
- SET search_path TO 'public'
-AS $function$
-DECLARE
-  signup_lang text;
-BEGIN
-  signup_lang := LOWER(LEFT(COALESCE(NEW.raw_user_meta_data->>'language', ''), 2));
-  IF signup_lang NOT IN ('en', 'it', 'fr', 'de') THEN
-    signup_lang := 'en';
-  END IF;
+const HANDLE_NEW_USER_FN_RE =
+  /CREATE\s+(OR\s+REPLACE\s+)?FUNCTION\s+public\.handle_new_user\s*\(/i;
 
-  INSERT INTO public.profiles (id, email, name, language, language_confirmed_at, account_status)
-  VALUES (
-    NEW.id,
-    NEW.email,
-    COALESCE(NEW.raw_user_meta_data->>'name', ''),
-    signup_lang,
-    NOW(),
-    'waitlist'
-  );
-  RETURN NEW;
-EXCEPTION WHEN OTHERS THEN
-  RETURN NEW;
-END;
-$function$;
-`.trim();
+/** Fail if the public schema dump does not define handle_new_user (body must come from dump). */
+export function assertDumpHasHandleNewUser(publicSchema) {
+  if (!HANDLE_NEW_USER_FN_RE.test(String(publicSchema))) {
+    throw new Error(
+      'public-schema dump missing CREATE FUNCTION public.handle_new_user — ' +
+        'baseline must use the dump body (not a hand-written copy)'
+    );
+  }
+}
+
+export function countHandleNewUserDefinitions(sql) {
+  const re = /CREATE\s+(OR\s+REPLACE\s+)?FUNCTION\s+public\.handle_new_user\s*\(/gi;
+  return [...String(sql).matchAll(re)].length;
+}
 
 /** Sanitize pg_dump public schema for baseline. */
 export function sanitizePublicSchema(sql) {
@@ -136,13 +123,17 @@ export function composeBaselineSql({
   parts.push('-- Single transaction via: psql -1 -v ON_ERROR_STOP=1');
   parts.push('');
 
+  assertDumpHasHandleNewUser(publicSchema);
+  const sanitizedPublic = sanitizePublicSchema(publicSchema);
+  // After sanitize, the dump definition must still be present exactly once.
+  assertDumpHasHandleNewUser(sanitizedPublic);
+
   parts.push('-- ========== public schema (from pg_dump, sanitized) ==========');
-  parts.push(sanitizePublicSchema(publicSchema).trimEnd());
+  parts.push(sanitizedPublic.trimEnd());
   parts.push('');
 
-  parts.push('-- ========== auth.users → public.handle_new_user (qualified) ==========');
-  parts.push(HANDLE_NEW_USER_SQL);
-  parts.push('');
+  // Function body is only from the dump (above). Attach qualified trigger on auth.users.
+  parts.push('-- ========== auth.users → public.handle_new_user (trigger only) ==========');
   parts.push('DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;');
   parts.push(`${qualifyAuthTrigger(triggerDef)};`);
   parts.push('');
@@ -197,6 +188,12 @@ ON CONFLICT (version) DO NOTHING;`);
       `baseline first line must be CREATE EXTENSION IF NOT EXISTS vector WITH SCHEMA public;; got: ${firstLine}`
     );
   }
+  const fnDefs = countHandleNewUserDefinitions(sql);
+  if (fnDefs !== 1) {
+    throw new Error(
+      `baseline must contain exactly one CREATE FUNCTION public.handle_new_user (from dump); found ${fnDefs}`
+    );
+  }
   return sql;
 }
 
@@ -226,7 +223,9 @@ function main() {
 
     let publicSchema = '';
     if (dryRun && !fs.existsSync(schemaPath)) {
-      publicSchema = '-- [dry-run] public-schema.sql would be read here\n';
+      publicSchema =
+        '-- [dry-run] public-schema.sql would be read here\n' +
+        'CREATE FUNCTION public.handle_new_user() RETURNS trigger LANGUAGE plpgsql AS $$ BEGIN RETURN NEW; END; $$\n';
     } else {
       publicSchema = fs.readFileSync(schemaPath, 'utf8');
     }

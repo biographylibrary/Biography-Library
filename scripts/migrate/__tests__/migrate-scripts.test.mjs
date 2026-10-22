@@ -8,7 +8,9 @@ import {
 } from '../dump-source.mjs';
 import { AUTH_EXCLUDED_TABLES } from '../lib-db.mjs';
 import {
+  assertDumpHasHandleNewUser,
   composeBaselineSql,
+  countHandleNewUserDefinitions,
   qualifyAuthTrigger,
   sanitizePublicSchema,
 } from '../build-baseline.mjs';
@@ -102,13 +104,29 @@ describe('qualifyAuthTrigger', () => {
 });
 
 describe('composeBaselineSql', () => {
+  const dumpWithFn = `
+CREATE SCHEMA public;
+CREATE FUNCTION public.handle_new_user()
+ RETURNS trigger
+ LANGUAGE plpgsql
+ SECURITY DEFINER
+ SET search_path TO ''
+AS $function$
+BEGIN
+  INSERT INTO public.profiles (id) VALUES (NEW.id);
+  RETURN NEW;
+END;
+$function$;
+CREATE TABLE public.t (id int);
+`;
+
   it('starts with CREATE EXTENSION vector and creates schema_migrations', () => {
     const sql = composeBaselineSql({
       extensions: [
         { name: 'pgcrypto', schema: 'extensions' },
         { name: 'vector', schema: 'public' },
       ],
-      publicSchema: 'CREATE SCHEMA public;\nCREATE TABLE public.t (id int);\n',
+      publicSchema: dumpWithFn,
       triggerDef:
         'CREATE TRIGGER on_auth_user_created AFTER INSERT ON auth.users FOR EACH ROW EXECUTE FUNCTION handle_new_user()',
       buckets: [],
@@ -121,8 +139,39 @@ describe('composeBaselineSql', () => {
     expect(sql).toContain('CREATE SCHEMA IF NOT EXISTS public;');
     expect(sql).toContain('CREATE SCHEMA IF NOT EXISTS supabase_migrations;');
     expect(sql).toContain('CREATE TABLE IF NOT EXISTS supabase_migrations.schema_migrations');
-    expect(sql).toContain('public.handle_new_user');
-    expect(sql).toMatch(/SET search_path TO 'public'/);
+    expect(sql).toContain('DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;');
+    expect(sql).toContain('EXECUTE FUNCTION public.handle_new_user(');
+    expect(sql).toMatch(/SET search_path TO ''/);
+    expect(sql).not.toMatch(/SET search_path TO 'public'/);
+  });
+
+  it('keeps exactly one handle_new_user definition from the dump (no hand-written copy)', () => {
+    const sql = composeBaselineSql({
+      extensions: [{ name: 'vector', schema: 'public' }],
+      publicSchema: dumpWithFn,
+      triggerDef:
+        'CREATE TRIGGER on_auth_user_created AFTER INSERT ON auth.users FOR EACH ROW EXECUTE FUNCTION public.handle_new_user()',
+      buckets: [],
+      policies: [],
+    });
+    expect(countHandleNewUserDefinitions(sql)).toBe(1);
+    expect(sql).not.toMatch(/CREATE OR REPLACE FUNCTION public\.handle_new_user/i);
+  });
+
+  it('fails when dump lacks handle_new_user', () => {
+    expect(() =>
+      composeBaselineSql({
+        extensions: [{ name: 'vector', schema: 'public' }],
+        publicSchema: 'CREATE TABLE public.t (id int);\n',
+        triggerDef:
+          'CREATE TRIGGER on_auth_user_created AFTER INSERT ON auth.users FOR EACH ROW EXECUTE FUNCTION public.handle_new_user()',
+        buckets: [],
+        policies: [],
+      })
+    ).toThrow(/missing CREATE FUNCTION public\.handle_new_user/);
+    expect(() => assertDumpHasHandleNewUser('CREATE TABLE x(i int);')).toThrow(
+      /missing CREATE FUNCTION/
+    );
   });
 });
 
