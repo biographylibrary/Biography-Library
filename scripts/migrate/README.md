@@ -96,7 +96,18 @@ Output tipico in `MIGRATE_DUMP_DIR` (gitignored):
 3. `node scripts/migrate/verify-counts.mjs` (conteggi + checksum contenuto; fallisce alla prima diff)  
 4. `node scripts/migrate/copy-storage.mjs` poi `verify-storage.mjs`
 
-`restore-dest` / `apply-baseline` abortiscono se l’URL destinazione non contiene `frycyhvhuifznxzamenn`, se contiene `gckmusbozgbclokvbnwx`, o se coincide con la sorgente.
+`restore-dest` / `apply-baseline` / `reset-dest` abortiscono se l’URL destinazione non contiene `frycyhvhuifznxzamenn`, se contiene `gckmusbozgbclokvbnwx`, o se coincide con la sorgente.
+
+### Reset Zurigo (rifare la prova da capo)
+
+Dopo un tentativo fallito o per ripetere i passi 4–6 senza lasciare schema a metà:
+
+```bash
+node scripts/migrate/reset-dest.mjs --dry-run
+node scripts/migrate/reset-dest.mjs --apply
+```
+
+Svuota: `DROP SCHEMA public CASCADE` + schema `public` vuoto con grant Supabase standard; `TRUNCATE auth.users CASCADE`; policy/bucket creati dal baseline su storage; `supabase_migrations.schema_migrations`; `DROP EXTENSION vector`. Poi di nuovo `apply-baseline` → `restore-dest` → `verify-counts` (o `bash scripts/migrate/run-prova-b.sh`).
 
 ## Altri comandi (già esistenti)
 

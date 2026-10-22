@@ -13,6 +13,7 @@ import {
   sanitizePublicSchema,
 } from '../build-baseline.mjs';
 import { buildRestoreSqlFile } from '../restore-dest.mjs';
+import { buildResetDestSql } from '../reset-dest.mjs';
 
 describe('countTableDataBySchema', () => {
   const sample = `
@@ -122,6 +123,19 @@ describe('composeBaselineSql', () => {
     expect(sql).toContain('CREATE TABLE IF NOT EXISTS supabase_migrations.schema_migrations');
     expect(sql).toContain('public.handle_new_user');
     expect(sql).toMatch(/SET search_path TO 'public'/);
+  });
+});
+
+describe('buildResetDestSql', () => {
+  it('includes public recreate, auth truncate, storage cleanup, vector drop', () => {
+    const sql = buildResetDestSql();
+    expect(sql).toMatch(/DROP SCHEMA IF EXISTS public CASCADE/i);
+    expect(sql).toMatch(/CREATE SCHEMA public/i);
+    expect(sql).toMatch(/GRANT ALL ON SCHEMA public TO postgres, anon, authenticated, service_role/i);
+    expect(sql).toMatch(/TRUNCATE TABLE auth\.users CASCADE/i);
+    expect(sql).toMatch(/DROP EXTENSION IF EXISTS vector CASCADE/i);
+    expect(sql).toContain('biography-photos');
+    expect(sql).toContain('TRUNCATE TABLE supabase_migrations.schema_migrations');
   });
 });
 

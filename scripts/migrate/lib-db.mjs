@@ -244,13 +244,28 @@ export function run(bin, args, { env = process.env, dryRun = false, label = '' }
   return r;
 }
 
+/**
+ * Last non-empty line of psql stdout. DO / DDL blocks can still emit lines like
+ * "CREATE TABLE" before the SELECT result even with -At; -q helps, and we keep
+ * only the final payload line (e.g. JSON).
+ */
+export function lastNonEmptyLine(text) {
+  const lines = String(text ?? '')
+    .split(/\r?\n/)
+    .map((l) => l.trimEnd())
+    .filter((l) => l.trim().length > 0);
+  return lines.length ? lines[lines.length - 1].trim() : '';
+}
+
 export function psqlTuples(psqlBin, dbUrl, sql, { dryRun = false } = {}) {
   if (dryRun) {
-    console.log(`[dry-run] psql -At -c <sql> on ${maskDbUrl(dbUrl)}`);
+    console.log(`[dry-run] psql -q -At -c <sql> on ${maskDbUrl(dbUrl)}`);
     return '';
   }
-  const r = run(psqlBin, ['-v', 'ON_ERROR_STOP=1', '-At', '-c', sql, dbUrl], {
-    label: 'psql',
-  });
-  return (r.stdout || '').trim();
+  const r = run(
+    psqlBin,
+    ['-v', 'ON_ERROR_STOP=1', '-q', '-At', '-c', sql, dbUrl],
+    { label: 'psql' }
+  );
+  return lastNonEmptyLine(r.stdout || '');
 }

@@ -3,6 +3,7 @@ import {
   DEST_PROJECT_REF,
   SOURCE_PROJECT_REF,
   assertSafeDest,
+  lastNonEmptyLine,
   maskDbUrl,
   parseArgs,
 } from '../lib-db.mjs';
@@ -49,5 +50,22 @@ describe('parseArgs', () => {
   it('detects dry-run', () => {
     expect(parseArgs(['--dry-run']).dryRun).toBe(true);
     expect(parseArgs([]).dryRun).toBe(false);
+  });
+});
+
+describe('lastNonEmptyLine', () => {
+  it('keeps only the final payload when psql emits DDL tags before JSON', () => {
+    const stdout = `CREATE TABLE
+TRUNCATE TABLE
+{"public.profiles":{"checksum":"abc","n":1}}
+`;
+    expect(lastNonEmptyLine(stdout)).toBe(
+      '{"public.profiles":{"checksum":"abc","n":1}}'
+    );
+  });
+
+  it('returns empty string for blank output', () => {
+    expect(lastNonEmptyLine('')).toBe('');
+    expect(lastNonEmptyLine('\n\n')).toBe('');
   });
 });
