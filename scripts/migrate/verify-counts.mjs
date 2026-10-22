@@ -10,6 +10,7 @@
  */
 import fs from 'node:fs';
 import path from 'node:path';
+import { pathToFileURL } from 'node:url';
 import {
   assertLooksLikeSource,
   assertPgTools,
@@ -22,36 +23,11 @@ import {
   timedSync,
 } from './lib-db.mjs';
 
-const { dryRun, help } = parseArgs();
-if (help) {
-  console.log('Usage: node scripts/migrate/verify-counts.mjs [--dry-run]');
-  process.exit(0);
-}
-
-const sourceUrl = dryRun
-  ? process.env.MIGRATE_SOURCE_DB_URL || ''
-  : requireEnv('MIGRATE_SOURCE_DB_URL');
-const destUrl = dryRun
-  ? process.env.MIGRATE_DEST_DB_URL || ''
-  : requireEnv('MIGRATE_DEST_DB_URL');
-
-if (sourceUrl) assertLooksLikeSource(sourceUrl);
-if (destUrl) {
-  try {
-    assertSafeDest(destUrl, sourceUrl);
-  } catch (e) {
-    if (!dryRun) {
-      console.error(String(e.message || e));
-      process.exit(1);
-    }
-    console.warn(`[dry-run] dest guard: ${e.message}`);
-  }
-}
-
-console.log(`Source: ${maskDbUrl(sourceUrl)}`);
-console.log(`Dest:   ${maskDbUrl(destUrl)}`);
-
-const catalogSql = `
+/**
+ * Catalog snapshot SQL. fn_hash must order by name + identity arguments so
+ * overloads (e.g. array_to_vector) produce a stable hash across reads/projects.
+ */
+export const CATALOG_SQL = `
 select json_build_object(
   'tables', (select count(*) from pg_class c join pg_namespace n on n.oid=c.relnamespace where n.nspname='public' and c.relkind='r'),
   'functions', (select count(*) from pg_proc p join pg_namespace n on n.oid=p.pronamespace where n.nspname='public'),
@@ -59,16 +35,16 @@ select json_build_object(
   'policies', (select count(*) from pg_policies where schemaname in ('public','storage')),
   'indexes', (select count(*) from pg_indexes where schemaname='public'),
   'constraints', (select count(*) from pg_constraint con join pg_namespace n on n.oid=con.connamespace where n.nspname='public'),
-  'fn_hash', (select md5(string_agg(md5(pg_get_functiondef(p.oid)), ',' order by p.proname))
+  'fn_hash', (select md5(string_agg(md5(pg_get_functiondef(p.oid)), ',' order by p.proname, pg_get_function_identity_arguments(p.oid)))
               from pg_proc p join pg_namespace n on n.oid=p.pronamespace
               where n.nspname='public' and p.prokind in ('f','p')),
-  'policy_hash', (select md5(string_agg(md5(coalesce(qual,'')||'|'||coalesce(with_check,'')||'|'||policyname||'|'||cmd), ',' order by schemaname, tablename, policyname))
+  'policy_hash', (select md5(string_agg(md5(coalesce(qual,'')||'|'||coalesce(with_check,'')||'|'||policyname||'|'||cmd), ',' order by schemaname, tablename, policyname, cmd))
                   from pg_policies where schemaname in ('public','storage'))
 )::text
 `;
 
-const publicCountsSql = `
-select coalesce(json_object_agg(relname, n), '{}'::json)::text
+export const PUBLIC_COUNTS_SQL = `
+select coalesce(json_object_agg(relname, n ORDER BY relname), '{}'::json)::text
 from (
   select c.relname,
          (xpath('//row/c/text()', query_to_xml(
@@ -82,15 +58,18 @@ from (
 ) s
 `;
 
-const authCountsSql = `
+export const AUTH_COUNTS_SQL = `
 select json_build_object(
   'users', (select count(*)::bigint from auth.users),
   'identities', (select count(*)::bigint from auth.identities)
 )::text
 `;
 
-/** Per-table content checksums via temp table + dynamic SQL (skips bytea/vector/arrays). */
-const contentChecksumPlpgsql = `
+/**
+ * Per-table content checksums via temp table + dynamic SQL (skips bytea/vector/arrays).
+ * Every string_agg has a total ORDER BY (PK columns, or the row hash itself).
+ */
+export const CONTENT_CHECKSUM_SQL = `
 CREATE TEMP TABLE IF NOT EXISTS _verify_checksums (fq text PRIMARY KEY, checksum text, n bigint);
 TRUNCATE _verify_checksums;
 DO $body$
@@ -98,7 +77,6 @@ DECLARE
   r record;
   pk_cols text;
   safe_cols text;
-  order_expr text;
   sql text;
   h text;
   n bigint;
@@ -137,7 +115,6 @@ BEGIN
     END IF;
 
     IF pk_cols IS NOT NULL THEN
-      order_expr := pk_cols;
       sql := format(
         'SELECT count(*)::bigint,
                 coalesce(md5(string_agg(x, '','' ORDER BY %s)), md5(''''))
@@ -177,9 +154,28 @@ BEGIN
   END LOOP;
 END
 $body$;
-SELECT coalesce(json_object_agg(fq, json_build_object('checksum', checksum, 'n', n)), '{}'::json)::text
+SELECT coalesce(
+  json_object_agg(fq, json_build_object('checksum', checksum, 'n', n) ORDER BY fq),
+  '{}'::json
+)::text
 FROM _verify_checksums;
 `;
+
+/** True when fn_hash string_agg orders by name + identity args (stable for overloads). */
+export function catalogSqlHasStableFnHashOrder(sql = CATALOG_SQL) {
+  return /string_agg\s*\(\s*md5\s*\(\s*pg_get_functiondef\s*\(\s*p\.oid\s*\)\s*\)\s*,\s*','\s*order\s+by\s+p\.proname\s*,\s*pg_get_function_identity_arguments\s*\(\s*p\.oid\s*\)\s*\)/i.test(
+    sql
+  );
+}
+
+/** True when every content string_agg for row hashes has an ORDER BY clause. */
+export function contentChecksumSqlHasOrderedAggregates(sql = CONTENT_CHECKSUM_SQL) {
+  const rowAgg =
+    /md5\s*\(\s*string_agg\s*\(\s*x\s*,\s*'',''\s+ORDER\s+BY\s+/gi;
+  const matches = sql.match(rowAgg) || [];
+  // PK path and no-PK path each need one
+  return matches.length >= 2 && /json_object_agg\s*\(\s*fq\s*,[\s\S]*?ORDER\s+BY\s+fq\s*\)/i.test(sql);
+}
 
 function failFirst(diffs) {
   if (!diffs.length) return;
@@ -203,81 +199,6 @@ function diffMaps(a, b, label) {
   return rows;
 }
 
-timedSync('verify-counts', () => {
-  if (dryRun) {
-    console.log('[dry-run] would compare:');
-    console.log('  - row counts for every public table + auth.users/identities');
-    console.log('  - content checksums (md5 of md5(safe cols) ordered by PK; skip bytea/vector/arrays)');
-    console.log('  - catalog counts + fn/policy definition hashes');
-    console.log('  - exit 1 on first difference');
-    console.log('[dry-run] storage files: node scripts/migrate/verify-storage.mjs');
-    return;
-  }
-
-  const tools = assertPgTools();
-
-  const srcPublic = JSON.parse(psqlTuples(tools.psql.bin, sourceUrl, publicCountsSql));
-  const dstPublic = JSON.parse(psqlTuples(tools.psql.bin, destUrl, publicCountsSql));
-  let diffs = diffMaps(srcPublic, dstPublic, 'public_rows');
-  if (diffs.length) {
-    printTable(diffs);
-    failFirst(diffs);
-    writeReport({ diffs, srcPublic, dstPublic });
-    return;
-  }
-
-  const srcAuth = JSON.parse(psqlTuples(tools.psql.bin, sourceUrl, authCountsSql));
-  const dstAuth = JSON.parse(psqlTuples(tools.psql.bin, destUrl, authCountsSql));
-  diffs = diffMaps(srcAuth, dstAuth, 'auth_rows');
-  if (diffs.length) {
-    printTable(diffs);
-    failFirst(diffs);
-    writeReport({ diffs, srcAuth, dstAuth });
-    return;
-  }
-
-  console.log('Computing content checksums (source)…');
-  const srcContent = JSON.parse(psqlTuples(tools.psql.bin, sourceUrl, contentChecksumPlpgsql));
-  console.log('Computing content checksums (dest)…');
-  const dstContent = JSON.parse(psqlTuples(tools.psql.bin, destUrl, contentChecksumPlpgsql));
-  diffs = diffMaps(srcContent, dstContent, 'content');
-  if (diffs.length) {
-    printTable(diffs);
-    failFirst(diffs);
-    writeReport({ diffs, srcContent, dstContent });
-    return;
-  }
-
-  const srcCat = JSON.parse(psqlTuples(tools.psql.bin, sourceUrl, catalogSql));
-  const dstCat = JSON.parse(psqlTuples(tools.psql.bin, destUrl, catalogSql));
-  diffs = diffMaps(srcCat, dstCat, 'catalog');
-  if (diffs.length) {
-    printTable(diffs);
-    failFirst(diffs);
-    writeReport({ diffs, srcCat, dstCat });
-    return;
-  }
-
-  console.log('');
-  console.log('| kind | key | source | dest |');
-  console.log('|------|-----|--------|------|');
-  console.log('| (none) | — | — | — |');
-  console.log('');
-  console.log('OK: zero differences (counts + content checksums + catalog)');
-  writeReport({
-    diffs: [],
-    srcPublic,
-    dstPublic,
-    srcAuth,
-    dstAuth,
-    srcContent,
-    dstContent,
-    srcCat,
-    dstCat,
-  });
-  console.log('Also run: node scripts/migrate/verify-storage.mjs');
-});
-
 function printTable(diffs) {
   console.log('');
   console.log('| kind | key | source | dest |');
@@ -288,7 +209,7 @@ function printTable(diffs) {
   if (diffs.length > 50) console.log(`| … | (${diffs.length - 50} more) | | |`);
 }
 
-function writeReport(extra) {
+function writeReport(sourceUrl, destUrl, extra) {
   const runDir = ensureRunDir(process.env.MIGRATE_DUMP_DIR);
   const out = path.join(runDir, 'verify-counts.json');
   fs.writeFileSync(
@@ -306,3 +227,115 @@ function writeReport(extra) {
   );
   console.log(`Wrote ${out}`);
 }
+
+function main() {
+  const { dryRun, help } = parseArgs();
+  if (help) {
+    console.log('Usage: node scripts/migrate/verify-counts.mjs [--dry-run]');
+    process.exit(0);
+  }
+
+  const sourceUrl = dryRun
+    ? process.env.MIGRATE_SOURCE_DB_URL || ''
+    : requireEnv('MIGRATE_SOURCE_DB_URL');
+  const destUrl = dryRun
+    ? process.env.MIGRATE_DEST_DB_URL || ''
+    : requireEnv('MIGRATE_DEST_DB_URL');
+
+  if (sourceUrl) assertLooksLikeSource(sourceUrl);
+  if (destUrl) {
+    try {
+      assertSafeDest(destUrl, sourceUrl);
+    } catch (e) {
+      if (!dryRun) {
+        console.error(String(e.message || e));
+        process.exit(1);
+      }
+      console.warn(`[dry-run] dest guard: ${e.message}`);
+    }
+  }
+
+  console.log(`Source: ${maskDbUrl(sourceUrl)}`);
+  console.log(`Dest:   ${maskDbUrl(destUrl)}`);
+
+  timedSync('verify-counts', () => {
+    if (dryRun) {
+      console.log('[dry-run] would compare:');
+      console.log('  - row counts for every public table + auth.users/identities');
+      console.log(
+        '  - content checksums (md5 of md5(safe cols) ordered by PK; skip bytea/vector/arrays)'
+      );
+      console.log('  - catalog counts + fn/policy definition hashes (fn_hash ordered by name+args)');
+      console.log('  - exit 1 on first difference');
+      console.log('[dry-run] storage files: node scripts/migrate/verify-storage.mjs');
+      return;
+    }
+
+    const tools = assertPgTools();
+
+    const srcPublic = JSON.parse(psqlTuples(tools.psql.bin, sourceUrl, PUBLIC_COUNTS_SQL));
+    const dstPublic = JSON.parse(psqlTuples(tools.psql.bin, destUrl, PUBLIC_COUNTS_SQL));
+    let diffs = diffMaps(srcPublic, dstPublic, 'public_rows');
+    if (diffs.length) {
+      printTable(diffs);
+      failFirst(diffs);
+      writeReport(sourceUrl, destUrl, { diffs, srcPublic, dstPublic });
+      return;
+    }
+
+    const srcAuth = JSON.parse(psqlTuples(tools.psql.bin, sourceUrl, AUTH_COUNTS_SQL));
+    const dstAuth = JSON.parse(psqlTuples(tools.psql.bin, destUrl, AUTH_COUNTS_SQL));
+    diffs = diffMaps(srcAuth, dstAuth, 'auth_rows');
+    if (diffs.length) {
+      printTable(diffs);
+      failFirst(diffs);
+      writeReport(sourceUrl, destUrl, { diffs, srcAuth, dstAuth });
+      return;
+    }
+
+    console.log('Computing content checksums (source)…');
+    const srcContent = JSON.parse(psqlTuples(tools.psql.bin, sourceUrl, CONTENT_CHECKSUM_SQL));
+    console.log('Computing content checksums (dest)…');
+    const dstContent = JSON.parse(psqlTuples(tools.psql.bin, destUrl, CONTENT_CHECKSUM_SQL));
+    diffs = diffMaps(srcContent, dstContent, 'content');
+    if (diffs.length) {
+      printTable(diffs);
+      failFirst(diffs);
+      writeReport(sourceUrl, destUrl, { diffs, srcContent, dstContent });
+      return;
+    }
+
+    const srcCat = JSON.parse(psqlTuples(tools.psql.bin, sourceUrl, CATALOG_SQL));
+    const dstCat = JSON.parse(psqlTuples(tools.psql.bin, destUrl, CATALOG_SQL));
+    diffs = diffMaps(srcCat, dstCat, 'catalog');
+    if (diffs.length) {
+      printTable(diffs);
+      failFirst(diffs);
+      writeReport(sourceUrl, destUrl, { diffs, srcCat, dstCat });
+      return;
+    }
+
+    console.log('');
+    console.log('| kind | key | source | dest |');
+    console.log('|------|-----|--------|------|');
+    console.log('| (none) | — | — | — |');
+    console.log('');
+    console.log('OK: zero differences (counts + content checksums + catalog)');
+    writeReport(sourceUrl, destUrl, {
+      diffs: [],
+      srcPublic,
+      dstPublic,
+      srcAuth,
+      dstAuth,
+      srcContent,
+      dstContent,
+      srcCat,
+      dstCat,
+    });
+    console.log('Also run: node scripts/migrate/verify-storage.mjs');
+  });
+}
+
+const isMain =
+  process.argv[1] && import.meta.url === pathToFileURL(path.resolve(process.argv[1])).href;
+if (isMain) main();

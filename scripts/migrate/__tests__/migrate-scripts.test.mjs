@@ -16,6 +16,12 @@ import {
 } from '../build-baseline.mjs';
 import { buildRestoreSqlFile } from '../restore-dest.mjs';
 import { buildResetDestSql } from '../reset-dest.mjs';
+import {
+  CATALOG_SQL,
+  CONTENT_CHECKSUM_SQL,
+  catalogSqlHasStableFnHashOrder,
+  contentChecksumSqlHasOrderedAggregates,
+} from '../verify-counts.mjs';
 
 describe('countTableDataBySchema', () => {
   const sample = `
@@ -172,6 +178,26 @@ CREATE TABLE public.t (id int);
     expect(() => assertDumpHasHandleNewUser('CREATE TABLE x(i int);')).toThrow(
       /missing CREATE FUNCTION/
     );
+  });
+});
+
+describe('verify-counts catalog / content SQL stability', () => {
+  it('orders fn_hash by proname and identity arguments', () => {
+    expect(catalogSqlHasStableFnHashOrder(CATALOG_SQL)).toBe(true);
+    expect(CATALOG_SQL).toMatch(
+      /order by p\.proname,\s*pg_get_function_identity_arguments\(p\.oid\)/i
+    );
+    // Must not order by name alone (unstable for overloads)
+    expect(CATALOG_SQL).not.toMatch(
+      /string_agg\(md5\(pg_get_functiondef\(p\.oid\)\), ',' order by p\.proname\)/i
+    );
+    expect(CATALOG_SQL).toMatch(
+      /policy_hash[\s\S]*order by schemaname, tablename, policyname/i
+    );
+  });
+
+  it('orders every content string_agg (and json_object_agg) stably', () => {
+    expect(contentChecksumSqlHasOrderedAggregates(CONTENT_CHECKSUM_SQL)).toBe(true);
   });
 });
 
