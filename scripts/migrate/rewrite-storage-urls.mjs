@@ -57,7 +57,7 @@ export function buildRewriteSql({ reverse = false } = {}) {
 SET ${column} = replace(${column}, '${fromLit}', '${toLit}')
 WHERE ${column} IS NOT NULL AND ${column} LIKE '%${fromLit}%';`
   );
-  return `BEGIN;\n${updates.join('\n')}\nCOMMIT;\n`;
+  return `BEGIN;\nSET LOCAL session_replication_role = replica;\n${updates.join('\n')}\nCOMMIT;\n`;
 }
 
 export function countHostSql(host) {

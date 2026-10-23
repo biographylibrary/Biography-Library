@@ -224,6 +224,15 @@ describe('rewrite-storage-urls', () => {
     }
   });
 
+  it('sets session_replication_role = replica inside the transaction (both directions)', () => {
+    for (const reverse of [false, true]) {
+      const sql = buildRewriteSql({ reverse });
+      expect(sql).toMatch(
+        /BEGIN;\nSET LOCAL session_replication_role = replica;\nUPDATE/
+      );
+    }
+  });
+
   it('supports --reverse and fails if forbidden host remains', () => {
     const sql = buildRewriteSql({ reverse: true });
     expect(sql).toContain(`replace(file_url, '${ZURICH_HOST}', '${IRELAND_HOST}')`);

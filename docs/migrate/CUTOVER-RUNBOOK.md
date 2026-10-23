@@ -89,6 +89,8 @@ Schema già presente su Zurigo dalla prova: **non** rieseguire `build-baseline` 
 | **Atteso** | Prima: ~media 76, export_txt 10, export_docx 10, final_pdf 8, listing_cover 0 (host Irlanda); dopo: **0** righe con host Irlanda |
 | **Stop** | Restano host Irlanda → non deploy app |
 
+La riscrittura gira in transazione con `SET LOCAL session_replication_role = replica` così i trigger (es. aggiornamento di `updated_at`) non modificano le date delle righe durante la sostituzione dell’host.
+
 Dry-run consigliato: `node scripts/migrate/rewrite-storage-urls.mjs --dry-run`.
 
 ### 8. Variabili su Jelastic (`/opt/bl-app/.env`) + rebuild
