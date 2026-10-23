@@ -22,6 +22,14 @@ import {
   catalogSqlHasStableFnHashOrder,
   contentChecksumSqlHasOrderedAggregates,
 } from '../verify-counts.mjs';
+import {
+  IRELAND_HOST,
+  URL_COLUMNS,
+  ZURICH_HOST,
+  assertNoHostRemaining,
+  buildRewriteSql,
+  hostPair,
+} from '../rewrite-storage-urls.mjs';
 
 describe('countTableDataBySchema', () => {
   const sample = `
@@ -198,6 +206,31 @@ describe('verify-counts catalog / content SQL stability', () => {
 
   it('orders every content string_agg (and json_object_agg) stably', () => {
     expect(contentChecksumSqlHasOrderedAggregates(CONTENT_CHECKSUM_SQL)).toBe(true);
+  });
+});
+
+describe('rewrite-storage-urls', () => {
+  it('builds ireland→zurich replace SQL for all tracked columns', () => {
+    const sql = buildRewriteSql({ reverse: false });
+    expect(sql).toMatch(/^BEGIN;/);
+    expect(sql).toMatch(/COMMIT;/);
+    expect(hostPair().fromHost).toBe(IRELAND_HOST);
+    expect(hostPair().toHost).toBe(ZURICH_HOST);
+    for (const { table, column } of URL_COLUMNS) {
+      expect(sql).toContain(`UPDATE public.${table}`);
+      expect(sql).toContain(
+        `replace(${column}, '${IRELAND_HOST}', '${ZURICH_HOST}')`
+      );
+    }
+  });
+
+  it('supports --reverse and fails if forbidden host remains', () => {
+    const sql = buildRewriteSql({ reverse: true });
+    expect(sql).toContain(`replace(file_url, '${ZURICH_HOST}', '${IRELAND_HOST}')`);
+    expect(() =>
+      assertNoHostRemaining({ 'media.file_url': 2 }, IRELAND_HOST, 'test')
+    ).toThrow(/still contain/);
+    expect(() => assertNoHostRemaining({ 'media.file_url': 0 }, IRELAND_HOST, 'test')).not.toThrow();
   });
 });
 
