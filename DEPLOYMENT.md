@@ -111,7 +111,7 @@ The repository is the single source of truth. Branches: `main` is production. Tw
 
 Supabase is managed separately from the application host.
 
-**Schema changes** — Apply migrations on **Zurich** (`frycyhvhuifznxzamenn`) via the Supabase MCP tool (`apply_migration`) or the SQL editor. Migrations live in `supabase/migrations/` and must be applied in filename order (timestamps ensure ordering). Never modify already-applied migrations; always add a new file. Versions after `20261022000000` sit on top of the baseline snapshot in `supabase/baseline/`.
+**Schema changes** — Apply migrations on **Zurich** (`frycyhvhuifznxzamenn`) via the Supabase MCP tool (`apply_migration`) or the SQL editor. Migrations live in `supabase/migrations/` and must be applied in filename order (timestamps ensure ordering). Never modify already-applied migrations; always add a new file. Versions after `20261022000000` sit on top of the baseline snapshot in `supabase/baseline/`. Example post-baseline migration: `20261023190000_drop_public_list_biography_exports.sql` (drops Storage listing on `biography-exports`; apply with version aligned to `20261023190000`).
 
 **Edge Functions** — Deployed via the Supabase MCP `deploy_edge_function` tool or the Supabase dashboard. There is no CLI-based deploy in this workflow. After deploying, set or update secrets in the dashboard under Project Settings → Edge Functions → Secrets.
 

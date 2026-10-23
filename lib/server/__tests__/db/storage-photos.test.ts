@@ -16,6 +16,8 @@ const BUCKET_SQL = read('migrations/20261006100000_storage_biography_photos_buck
 const DIMENSIONS_SQL = read('migrations/20261006110000_biography_media_dimensions.sql');
 const SERVER_ONLY_SQL = read('migrations/20261006120000_storage_biography_photos_server_only_writes.sql');
 const ROLLBACK_SQL = read('rollback/20261006_storage_biography_photos_rollback.sql');
+const EXPORTS_BUCKET_SQL = read('migrations/20260403001236_create_biography_exports_storage_bucket.sql');
+const DROP_EXPORTS_LIST_SQL = read('migrations/20261023190000_drop_public_list_biography_exports.sql');
 
 /** Le definizioni lette da pg_policies in produzione il 6 ottobre 2026 (Irlanda gckmusbozgbclokvbnwx; cutover → frycyhvhuifznxzamenn). */
 const PRODUCTION_POLICIES = [
@@ -141,6 +143,45 @@ describe('20261006100000: il bucket e le quattro policy come in produzione', () 
     expect(await as(db, 'authenticated', U.author, `update storage.objects set metadata = '{}' where name = $1 returning name`, [mine])).toHaveLength(1);
     // Un anonimo non vede niente.
     expect(await as(db, 'anon', null, `select name from storage.objects`)).toEqual([]);
+  });
+});
+
+describe('20261023190000: niente elenco pubblico su biography-exports', () => {
+  it('dopo le migrazioni storage non resta SELECT su biography-exports; biography-photos invariato', async () => {
+    await db.exec(EXPORTS_BUCKET_SQL);
+    await db.exec(BUCKET_SQL);
+    await db.exec(SERVER_ONLY_SQL);
+    expect(
+      (await policies()).some(
+        (p) => p.policyname === 'Public read biography exports' && p.cmd === 'SELECT'
+      )
+    ).toBe(true);
+
+    await db.exec(DROP_EXPORTS_LIST_SQL);
+    await db.exec(DROP_EXPORTS_LIST_SQL); // idempotente
+
+    const left = await policies();
+    expect(
+      left.filter(
+        (p) =>
+          p.cmd === 'SELECT' &&
+          String(p.qual ?? '').includes("biography-exports")
+      )
+    ).toEqual([]);
+    expect(left.map((p) => p.policyname).sort()).toEqual([
+      'Users can delete own files',
+      'Users can read own files',
+    ]);
+    for (const kept of left) {
+      expect(kept).toEqual(PRODUCTION_POLICIES.find((p) => p.policyname === kept.policyname));
+    }
+
+    const exportRow = (
+      await db.query<{ public: boolean }>(
+        `select public from storage.buckets where id = 'biography-exports'`
+      )
+    ).rows[0];
+    expect(exportRow).toEqual({ public: true });
   });
 });
 

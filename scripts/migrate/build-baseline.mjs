@@ -250,14 +250,8 @@ function main() {
         allowed_mime_types: null,
       },
     ];
+    // No SELECT policy on biography-exports (listing leak). Bucket stays public for direct URLs.
     let policies = [
-      {
-        policyname: 'Public read biography exports',
-        cmd: 'SELECT',
-        roles: '{public}',
-        qual: "(bucket_id = 'biography-exports'::text)",
-        with_check: null,
-      },
       {
         policyname: 'Users can delete own files',
         cmd: 'DELETE',
@@ -335,6 +329,8 @@ function main() {
            ) p`
         )
       );
+      // Never re-emit listing policy on biography-exports (dropped by 20261023190000).
+      policies = policies.filter((p) => p.policyname !== 'Public read biography exports');
     } else {
       console.log('[dry-run] would refresh extensions/trigger/buckets/policies from source');
     }

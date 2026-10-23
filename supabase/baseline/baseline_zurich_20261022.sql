@@ -5479,10 +5479,9 @@ ON CONFLICT (id) DO UPDATE SET
   allowed_mime_types = EXCLUDED.allowed_mime_types;
 
 -- ========== storage.objects policies ==========
-DROP POLICY IF EXISTS "Public read biography exports" ON storage.objects;
-CREATE POLICY "Public read biography exports" ON storage.objects
-  FOR SELECT TO public
-  USING ((bucket_id = 'biography-exports'::text));
+-- Nota: non ricreare "Public read biography exports" (elenco anonimo degli oggetti).
+-- Rimossa in produzione da 20261023190000_drop_public_list_biography_exports.sql;
+-- il bucket biography-exports resta pubblico per gli URL diretti.
 DROP POLICY IF EXISTS "Users can delete own files" ON storage.objects;
 CREATE POLICY "Users can delete own files" ON storage.objects
   FOR DELETE TO authenticated
