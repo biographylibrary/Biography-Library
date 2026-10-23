@@ -4,7 +4,7 @@ How to run the project locally and how it is deployed to production.
 
 Related docs: [`README.md`](README.md) · [`PRD.md`](PRD.md) · [`SPEC.md`](SPEC.md) · [`docs/BETA_RELEASE_CHECKLIST.md`](docs/BETA_RELEASE_CHECKLIST.md) · [`docs/migrate/CUTOVER-RUNBOOK.md`](docs/migrate/CUTOVER-RUNBOOK.md) · [`.cursor/`](.cursor/)
 
-**Supabase production (after cutover):** project `frycyhvhuifznxzamenn` (Zurich, `eu-central-2`). Legacy Ireland ref `gckmusbozgbclokvbnwx` remains only in migrate tooling as dump source. Day-of sequence: [`docs/migrate/CUTOVER-RUNBOOK.md`](docs/migrate/CUTOVER-RUNBOOK.md).
+**Supabase production:** project `frycyhvhuifznxzamenn` (Zurich, `eu-central-2`). Schema snapshot for emergency rebuild: [`supabase/baseline/`](supabase/baseline/). The Ireland project `gckmusbozgbclokvbnwx` is **paused** (keep ≥30 days for rollback only); its ref remains in `scripts/migrate/` and historical docs, not as the active app database. Cutover day log: [`docs/migrate/CUTOVER-RUNBOOK.md`](docs/migrate/CUTOVER-RUNBOOK.md). Schema freeze closed: [`docs/migrate/SCHEMA-FREEZE.md`](docs/migrate/SCHEMA-FREEZE.md).
 
 ---
 
@@ -111,7 +111,7 @@ The repository is the single source of truth. Branches: `main` is production. Tw
 
 Supabase is managed separately from the application host.
 
-**Schema changes** — Apply migrations via the Supabase MCP tool (`apply_migration`) or the SQL editor in the Supabase dashboard. Migrations live in `supabase/migrations/` and must be applied in filename order (timestamps ensure ordering). Never modify already-applied migrations; always add a new file.
+**Schema changes** — Apply migrations on **Zurich** (`frycyhvhuifznxzamenn`) via the Supabase MCP tool (`apply_migration`) or the SQL editor. Migrations live in `supabase/migrations/` and must be applied in filename order (timestamps ensure ordering). Never modify already-applied migrations; always add a new file. Versions after `20261022000000` sit on top of the baseline snapshot in `supabase/baseline/`.
 
 **Edge Functions** — Deployed via the Supabase MCP `deploy_edge_function` tool or the Supabase dashboard. There is no CLI-based deploy in this workflow. After deploying, set or update secrets in the dashboard under Project Settings → Edge Functions → Secrets.
 

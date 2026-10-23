@@ -171,3 +171,14 @@ Dopo il deploy: ridistribuire Edge Functions su **Zurigo** se non già allineate
 - Congelamento schema: `docs/migrate/SCHEMA-FREEZE.md`
 - Script: `scripts/migrate/README.md`
 - Deploy / env: `DEPLOYMENT.md`
+- Istantanea schema: `supabase/baseline/`
+
+---
+
+## Esito
+
+- **Data:** 23 ottobre 2026 — passaggio Irlanda → Zurigo riuscito.
+- **Manutenzione:** circa **35 minuti**.
+- **Lezioni:**
+  1. La shell dell’utente è **zsh**: nei comandi non usare `${!v}` (bash); usare `${(P)v}`.
+  2. I segreti Edge **`INFOMANIAK_AI_TOKEN`** e **`INFOMANIAK_AI_ENDPOINT`** vanno copiati su Zurigo **prima** della finestra di cutover (altrimenti Whisper e le function AI falliscono dopo lo switch).

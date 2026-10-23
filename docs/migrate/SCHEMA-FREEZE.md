@@ -1,15 +1,15 @@
 # Congelamento schema (Irlanda → Zurigo)
 
-**Da ora fino al cutover riuscito: nessuna migrazione nuova deve essere unita in `main`.**
+**Chiuso il 23 ottobre 2026** — passaggio a Zurigo riuscito. Il congelamento non è più in vigore.
 
-Il file di base Zurigo (`baseline_zurich.sql`, generato in `var/migrate-dumps/` da `scripts/migrate/build-baseline.mjs`) è uno snapshot dello schema pubblico live. Se tra il dump e il ripristino entra una migrazione in produzione, la baseline va **rigenerata** (nuovo `dump-source` + `build-baseline`).
+Produzione: progetto Supabase `frycyhvhuifznxzamenn` (eu-central-2). Istantanea di schema in `supabase/baseline/baseline_zurich_20261022.sql` (vedi `supabase/baseline/README.md`).
 
-## Regole
+## Cosa vale da ora
 
-1. Non aprire / non unire PR che aggiungono file in `supabase/migrations/` finché la prova generale e il passaggio non sono chiusi.
-2. Non modificare lo schema Irlanda dalla Dashboard (SQL editor / table editor).
-3. Eccezioni solo con conferma esplicita e immediatamente seguite da nuovo dump + baseline.
+1. Nuove modifiche allo schema: file in `supabase/migrations/` con timestamp, applicati su **Zurigo** con `apply_migration` e versione allineata al prefisso del file (procedura in `DEPLOYMENT.md`).
+2. Niente modifiche dirette allo schema dalla Dashboard senza file di migrazione (stessa disciplina di sempre, non un “congelamento” speciale).
+3. L’Irlanda resta in pausa ≥ 30 giorni per eventuale rollback; non è più il database attivo.
 
-## Checklist cutover
+## Storia
 
-Vedi `docs/migrate/CUTOVER-CHECKLIST.md`.
+Fino al cutover: nessuna migrazione nuova in `main` mentre la baseline Zurigo era uno snapshot del live. Documentato qui e in `docs/migrate/CUTOVER-CHECKLIST.md` / `CUTOVER-RUNBOOK.md`.
