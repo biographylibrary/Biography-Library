@@ -1,7 +1,9 @@
 #!/usr/bin/env node
 /**
  * Deploy email Edge Functions, set secrets, enable Auth Send Email hook.
- * Usage: SUPABASE_ACCESS_TOKEN=sbp_... node scripts/setup-supabase-email-production.mjs
+ * Usage:
+ *   SUPABASE_ACCESS_TOKEN=sbp_... SUPABASE_PROJECT_REF=frycyhvhuifznxzamenn \
+ *     node scripts/setup-supabase-email-production.mjs
  */
 import fs from 'node:fs';
 import path from 'node:path';
@@ -10,7 +12,8 @@ import { fileURLToPath } from 'node:url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, '..');
-const PROJECT = 'gckmusbozgbclokvbnwx';
+/** Zurich production by default; override with SUPABASE_PROJECT_REF. */
+const PROJECT = process.env.SUPABASE_PROJECT_REF || 'frycyhvhuifznxzamenn';
 const SITE_URL = 'https://app.biographylibrary.org';
 
 const TOKEN =

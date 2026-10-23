@@ -17,7 +17,7 @@ const DIMENSIONS_SQL = read('migrations/20261006110000_biography_media_dimension
 const SERVER_ONLY_SQL = read('migrations/20261006120000_storage_biography_photos_server_only_writes.sql');
 const ROLLBACK_SQL = read('rollback/20261006_storage_biography_photos_rollback.sql');
 
-/** Le definizioni lette da pg_policies in produzione il 6 ottobre 2026 (project gckmusbozgbclokvbnwx). */
+/** Le definizioni lette da pg_policies in produzione il 6 ottobre 2026 (Irlanda gckmusbozgbclokvbnwx; cutover → frycyhvhuifznxzamenn). */
 const PRODUCTION_POLICIES = [
   {
     policyname: 'Users can delete own files',

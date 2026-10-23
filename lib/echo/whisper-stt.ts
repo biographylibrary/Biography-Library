@@ -35,6 +35,8 @@ export async function transcribeAudioWithWhisper(
       headers: {
         Authorization: `Bearer ${accessToken}`,
         Apikey: anonKey,
+        // Zurich (eu-central-2): routing for Infomaniak Whisper region affinity
+        'x-region': 'eu-central-2',
       },
       body: form,
     });

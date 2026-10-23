@@ -2,7 +2,9 @@
 
 How to run the project locally and how it is deployed to production.
 
-Related docs: [`README.md`](README.md) · [`PRD.md`](PRD.md) · [`SPEC.md`](SPEC.md) · [`docs/BETA_RELEASE_CHECKLIST.md`](docs/BETA_RELEASE_CHECKLIST.md) · [`.cursor/`](.cursor/)
+Related docs: [`README.md`](README.md) · [`PRD.md`](PRD.md) · [`SPEC.md`](SPEC.md) · [`docs/BETA_RELEASE_CHECKLIST.md`](docs/BETA_RELEASE_CHECKLIST.md) · [`docs/migrate/CUTOVER-RUNBOOK.md`](docs/migrate/CUTOVER-RUNBOOK.md) · [`.cursor/`](.cursor/)
+
+**Supabase production (after cutover):** project `frycyhvhuifznxzamenn` (Zurich, `eu-central-2`). Legacy Ireland ref `gckmusbozgbclokvbnwx` remains only in migrate tooling as dump source. Day-of sequence: [`docs/migrate/CUTOVER-RUNBOOK.md`](docs/migrate/CUTOVER-RUNBOOK.md).
 
 ---
 
@@ -293,8 +295,14 @@ Per una **sequenza operativa** (merge → migrazioni prod → env → deploy →
 - All migrations applied in order
 - Edge Functions deployed (audio-transcription, log-error)
 - Edge Function secrets set: `INFOMANIAK_AI_TOKEN`, `INFOMANIAK_AI_ENDPOINT`, model secrets per `DEPLOYMENT.md` (or unset secrets to use code defaults)
-- Host environment variables set on Jelastic: `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, `INFOMANIAK_AI_ENDPOINT`, `INFOMANIAK_AI_TOKEN`, `AGENT_MODEL_*` / `INFOMANIAK_AI_MODEL_PRIMARY` as in `.env.example` (there is no `INFOMANIAK_AI_MODEL`), `UM_ID_BASE_URL`, `NEXT_PUBLIC_APP_URL`
+- Host environment variables set on Jelastic: `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, `INFOMANIAK_AI_ENDPOINT`, `INFOMANIAK_AI_TOKEN`, `AGENT_MODEL_*` / `INFOMANIAK_AI_MODEL_PRIMARY` as in `.env.example` (there is no `INFOMANIAK_AI_MODEL`), `UM_ID_BASE_URL`, `NEXT_PUBLIC_APP_URL`, `CRON_SECRET` (same value as Edge Function secret)
+- After Zurich cutover: `NEXT_PUBLIC_SUPABASE_URL` must be `https://frycyhvhuifznxzamenn.supabase.co` (rebuild required for `NEXT_PUBLIC_*`); engagement cron defaults to that project (`scripts/run-engagement-cron.sh`)
+- Whisper client sends `x-region: eu-central-2`; redeploy `audio-transcription` so CORS allows that header
 - `npm run build` passes without errors on the container
 - First admin user created via Supabase Auth, then role set to `admin` directly in the `profiles` table
 - Supabase Storage bucket created for biography media with appropriate public/private access policy
+
+### Cutover Irlanda → Zurigo
+
+See **[`docs/migrate/CUTOVER-RUNBOOK.md`](docs/migrate/CUTOVER-RUNBOOK.md)** for the exact day-of commands, expected checks, and rollback (`rewrite-storage-urls --reverse` + restore Ireland env on Jelastic).
 

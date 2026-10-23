@@ -96,8 +96,11 @@ Output tipico in `MIGRATE_DUMP_DIR` (gitignored):
    (SQL con `SET session_replication_role = replica`; **no** `--disable-triggers`)  
 3. `node scripts/migrate/verify-counts.mjs` (conteggi + checksum contenuto; fallisce alla prima diff)  
 4. `node scripts/migrate/copy-storage.mjs` poi `verify-storage.mjs`
+5. `node scripts/migrate/rewrite-storage-urls.mjs --apply` (host Irlanda → Zurigo nelle colonne URL; `--reverse` per rollback)
 
-`restore-dest` / `apply-baseline` / `reset-dest` abortiscono se l’URL destinazione non contiene `frycyhvhuifznxzamenn`, se contiene `gckmusbozgbclokvbnwx`, o se coincide con la sorgente.
+`restore-dest` / `apply-baseline` / `reset-dest` / `rewrite-storage-urls` abortiscono se l’URL destinazione non contiene `frycyhvhuifznxzamenn`, se contiene `gckmusbozgbclokvbnwx`, o se coincide con la sorgente.
+
+**Giorno del passaggio:** `docs/migrate/CUTOVER-RUNBOOK.md`.
 
 ### Reset Zurigo (rifare la prova da capo)
 

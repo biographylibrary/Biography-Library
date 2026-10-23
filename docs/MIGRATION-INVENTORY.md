@@ -1,6 +1,6 @@
 # Inventario delle migrazioni: storia di produzione e repository
 
-*Stato al 1 ottobre 2026. Letto dalla tabella `supabase_migrations.schema_migrations` del progetto `gckmusbozgbclokvbnwx` (94 voci) e da `supabase/migrations/` (110 file).*
+*Stato al 1 ottobre 2026. Letto dalla tabella `supabase_migrations.schema_migrations` del progetto Irlanda `gckmusbozgbclokvbnwx` (94 voci) e da `supabase/migrations/` (110 file). Dopo il cutover la produzione è Zurigo `frycyhvhuifznxzamenn` — questo inventario resta uno snapshot storico Irlanda.*
 
 **Per chi migrerà a Infomaniak: la storia delle migrazioni di produzione non si può rigiocare così com'è.** Non coincide con i file del repository, per nome, per versione, per ordine e per presenza. Quello che fa fede è lo **schema** che oggi c'è in produzione (un `pg_dump --schema-only` del progetto, più i dati), non la storia. I file servono da documentazione e da ordine di lettura, non da script di ricostruzione.
 
