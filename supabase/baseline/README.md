@@ -8,6 +8,8 @@
 psql -1 -v ON_ERROR_STOP=1 -f supabase/baseline/baseline_zurich_20261022.sql
 ```
 
+Serve psql 17.6 o superiore: il file contiene i comandi `\restrict` e `\unrestrict` generati da pg_dump 17, che le versioni più vecchie di psql non riconoscono.
+
 Registra in `supabase_migrations.schema_migrations` la versione `20261022000000` (`baseline_zurich`).
 
 ## Migrazioni successive
