@@ -12,6 +12,7 @@ alwaysApply: true
 ## Database
 - Ogni modifica schema = nuovo file in `supabase/migrations/` con timestamp e commento SQL.
 - Applicare prima in sviluppo; in produzione solo dopo revisione e checklist (`docs/BETA_RELEASE_CHECKLIST.md`).
+- Congelamento Irlanda→Zurigo **chiuso il 23 ottobre 2026**. Produzione: progetto `frycyhvhuifznxzamenn`. Applicare le migrazioni su Zurigo con `apply_migration` e versione allineata al prefisso del file (come in `DEPLOYMENT.md`). Istantanea emergenza: `supabase/baseline/`.
 
 ## Flusso Cursor
 1. **Esplora** (Ask/Piano) — capire il codice esistente
