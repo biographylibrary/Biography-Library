@@ -19,13 +19,33 @@ export function optionalEnv(name, fallback = '') {
 }
 
 export function sourceClient() {
-  return createClient(requireEnv('MIGRATE_SOURCE_URL'), requireEnv('MIGRATE_SOURCE_SERVICE_KEY'), {
+  const url = process.env.MIGRATE_SOURCE_URL;
+  const key = process.env.MIGRATE_SOURCE_SERVICE_KEY;
+  if (!url) {
+    console.error('Missing env MIGRATE_SOURCE_URL');
+    process.exit(1);
+  }
+  if (!key) {
+    console.error('Missing env MIGRATE_SOURCE_SERVICE_KEY');
+    process.exit(1);
+  }
+  return createClient(url, key, {
     auth: { persistSession: false, autoRefreshToken: false },
   });
 }
 
 export function destClient() {
-  return createClient(requireEnv('MIGRATE_DEST_URL'), requireEnv('MIGRATE_DEST_SERVICE_KEY'), {
+  const url = process.env.MIGRATE_DEST_URL;
+  const key = process.env.MIGRATE_DEST_SERVICE_KEY;
+  if (!url) {
+    console.error('Missing env MIGRATE_DEST_URL');
+    process.exit(1);
+  }
+  if (!key) {
+    console.error('Missing env MIGRATE_DEST_SERVICE_KEY');
+    process.exit(1);
+  }
+  return createClient(url, key, {
     auth: { persistSession: false, autoRefreshToken: false },
   });
 }
