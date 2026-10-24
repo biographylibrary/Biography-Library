@@ -11,7 +11,6 @@ interface LogPayload {
   url: string | null;
   userAgent: string | null;
   timestamp: string;
-  userId: string | null;
 }
 
 function getEndpointUrl(): string | null {
@@ -28,13 +27,23 @@ function getAnonKey(): string | null {
   return null;
 }
 
-async function getUserId(): Promise<string | null> {
+function authStorageKey(): string | null {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL ?? '';
+  if (!url) return null;
+  const host = url.replace(/https?:\/\//, '').split('.')[0];
+  return `sb-${host}-auth-token`;
+}
+
+/** Session access token when the user is signed in; otherwise null. */
+async function getAccessToken(): Promise<string | null> {
   try {
     if (typeof window === 'undefined') return null;
-    const raw = localStorage.getItem('sb-' + (process.env.NEXT_PUBLIC_SUPABASE_URL ?? '').replace(/https?:\/\//, '').split('.')[0] + '-auth-token');
+    const key = authStorageKey();
+    if (!key) return null;
+    const raw = localStorage.getItem(key);
     if (!raw) return null;
     const parsed = JSON.parse(raw);
-    return parsed?.user?.id ?? null;
+    return typeof parsed?.access_token === 'string' ? parsed.access_token : null;
   } catch {
     return null;
   }
@@ -53,7 +62,8 @@ async function send(level: LogLevel, message: string, metadata?: LogMetadata): P
     const anonKey = getAnonKey();
     if (!endpointUrl || !anonKey) return;
 
-    const userId = await getUserId();
+    const accessToken = await getAccessToken();
+    const bearer = accessToken || anonKey;
 
     const payload: LogPayload = {
       level,
@@ -62,15 +72,14 @@ async function send(level: LogLevel, message: string, metadata?: LogMetadata): P
       url: typeof window !== 'undefined' ? window.location.href : null,
       userAgent: typeof navigator !== 'undefined' ? navigator.userAgent : null,
       timestamp: new Date().toISOString(),
-      userId,
     };
 
     await fetch(endpointUrl, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${anonKey}`,
-        'apikey': anonKey,
+        Authorization: `Bearer ${bearer}`,
+        apikey: anonKey,
       },
       body: JSON.stringify(payload),
     });
