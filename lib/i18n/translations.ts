@@ -113,6 +113,25 @@ export interface Translations {
     registrationLanguageHint: string;
     registrationLanguageAlertTitle: string;
     registrationLanguageAlertMessage: string;
+    passwordRequirementsTitle: string;
+    passwordReqMinLength: string;
+    passwordReqLowercase: string;
+    passwordReqUppercase: string;
+    passwordReqDigit: string;
+    passwordReqSymbol: string;
+    passwordMissingPrefix: string;
+    passwordMissingConjunction: string;
+    passwordMissingMinLength: string;
+    passwordMissingLowercase: string;
+    passwordMissingUppercase: string;
+    passwordMissingDigit: string;
+    passwordMissingSymbol: string;
+    passwordValid: string;
+    passwordPwned: string;
+    passwordWeakCharacters: string;
+    passwordWeakGeneric: string;
+    showPassword: string;
+    hidePassword: string;
   };
   waitlist: {
     landingTitle: string;
@@ -1977,10 +1996,10 @@ export const translations: Record<Language, Translations> = {
       yourName: 'Your name',
       emailPlaceholder: 'you@example.com',
       enterPassword: 'Enter your password',
-      atLeastSixChars: 'At least 6 characters',
+      atLeastSixChars: 'At least 10 characters',
       repeatPassword: 'Repeat your password',
       passwordsDoNotMatch: 'Passwords do not match',
-      passwordMinLength: 'Password must be at least 8 characters',
+      passwordMinLength: 'Password must be at least 10 characters',
       createOne: 'Create one',
       createAccount: 'Create account',
       forgotPassword: 'Forgot password?',
@@ -2004,7 +2023,7 @@ export const translations: Record<Language, Translations> = {
       resetPasswordInvalidLinkDetail: 'This password reset link has expired or already been used. Please request a new one.',
       resetPasswordRequestNew: 'Request a new reset link',
       resetPasswordVerifying: 'Verifying your reset link...',
-      atLeastEightChars: 'At least 8 characters',
+      atLeastEightChars: 'At least 10 characters',
       verifyEmailTitle: 'Verify your email',
       verifyEmailSubtitle: 'We\'ve sent a verification email to your address. Please check your inbox and click the link to activate your account.',
       verifySentTo: 'We sent a confirmation link to',
@@ -2036,6 +2055,27 @@ export const translations: Record<Language, Translations> = {
       registrationLanguageAlertTitle: 'Language cannot be changed later',
       registrationLanguageAlertMessage:
         'The language you select will be used for emails, onboarding, and the entire app. After registration you will not be able to change it.',
+      passwordRequirementsTitle: 'Password requirements',
+      passwordReqMinLength: 'At least 10 characters',
+      passwordReqLowercase: 'One lowercase letter (a-z)',
+      passwordReqUppercase: 'One uppercase letter (A-Z)',
+      passwordReqDigit: 'One digit (0-9)',
+      passwordReqSymbol: 'One symbol (for example ! ? # %)',
+      passwordMissingPrefix: 'Missing: ',
+      passwordMissingConjunction: ' and ',
+      passwordMissingMinLength: 'at least 10 characters',
+      passwordMissingLowercase: 'a lowercase letter',
+      passwordMissingUppercase: 'an uppercase letter',
+      passwordMissingDigit: 'a digit',
+      passwordMissingSymbol: 'a symbol (for example ! ? # %)',
+      passwordValid: 'Valid password',
+      passwordPwned:
+        'This password appears in lists of compromised passwords: please choose another one',
+      passwordWeakCharacters:
+        'Password must include at least one lowercase letter, one uppercase letter, one digit, and one symbol',
+      passwordWeakGeneric: 'The password does not meet all security requirements',
+      showPassword: 'Show password',
+      hidePassword: 'Hide password',
     },
     waitlist: {
       landingTitle: 'Join the waitlist',
@@ -3902,10 +3942,10 @@ export const translations: Record<Language, Translations> = {
       yourName: 'Il tuo nome',
       emailPlaceholder: 'tu@esempio.com',
       enterPassword: 'Inserisci la tua password',
-      atLeastSixChars: 'Almeno 6 caratteri',
+      atLeastSixChars: 'Almeno 10 caratteri',
       repeatPassword: 'Ripeti la tua password',
       passwordsDoNotMatch: 'Le password non corrispondono',
-      passwordMinLength: 'La password deve essere di almeno 8 caratteri',
+      passwordMinLength: 'La password deve essere di almeno 10 caratteri',
       createOne: 'Creane uno',
       createAccount: 'Crea account',
       forgotPassword: 'Password dimenticata?',
@@ -3929,7 +3969,7 @@ export const translations: Record<Language, Translations> = {
       resetPasswordInvalidLinkDetail: 'Questo link per reimpostare la password è scaduto o è già stato utilizzato. Richiedine uno nuovo.',
       resetPasswordRequestNew: 'Richiedi un nuovo link di reimpostazione',
       resetPasswordVerifying: 'Verifica del link in corso...',
-      atLeastEightChars: 'Almeno 8 caratteri',
+      atLeastEightChars: 'Almeno 10 caratteri',
       verifyEmailTitle: 'Verifica la tua email',
       verifyEmailSubtitle: 'Abbiamo inviato un\'email di verifica al tuo indirizzo. Controlla la tua casella di posta e clicca sul link per attivare il tuo account.',
       verifySentTo: 'Abbiamo inviato un link di conferma a',
@@ -3961,6 +4001,27 @@ export const translations: Record<Language, Translations> = {
       registrationLanguageAlertTitle: 'La lingua non potrà essere modificata',
       registrationLanguageAlertMessage:
         'La lingua selezionata verrà usata per email, onboarding e tutta l\'app. Dopo la registrazione non potrai più cambiarla.',
+      passwordRequirementsTitle: 'Requisiti della password',
+      passwordReqMinLength: 'Almeno 10 caratteri',
+      passwordReqLowercase: 'Una lettera minuscola (a-z)',
+      passwordReqUppercase: 'Una lettera maiuscola (A-Z)',
+      passwordReqDigit: 'Una cifra (0-9)',
+      passwordReqSymbol: 'Un simbolo (per esempio ! ? # %)',
+      passwordMissingPrefix: 'Manca: ',
+      passwordMissingConjunction: ' e ',
+      passwordMissingMinLength: 'almeno 10 caratteri',
+      passwordMissingLowercase: 'una lettera minuscola',
+      passwordMissingUppercase: 'una lettera maiuscola',
+      passwordMissingDigit: 'una cifra',
+      passwordMissingSymbol: 'un simbolo (per esempio ! ? # %)',
+      passwordValid: 'Password valida',
+      passwordPwned:
+        'Questa password compare in elenchi di password compromesse: scegline un\'altra',
+      passwordWeakCharacters:
+        'La password deve contenere almeno una lettera minuscola, una maiuscola, una cifra e un simbolo',
+      passwordWeakGeneric: 'La password non rispetta tutti i requisiti di sicurezza',
+      showPassword: 'Mostra password',
+      hidePassword: 'Nascondi password',
     },
     waitlist: {
       landingTitle: 'Entra in lista d’attesa',
@@ -5829,10 +5890,10 @@ export const translations: Record<Language, Translations> = {
       yourName: 'Votre nom',
       emailPlaceholder: 'vous@exemple.com',
       enterPassword: 'Entrez votre mot de passe',
-      atLeastSixChars: 'Au moins 6 caract\u00e8res',
+      atLeastSixChars: 'Au moins 10 caract\u00e8res',
       repeatPassword: 'R\u00e9p\u00e9tez votre mot de passe',
       passwordsDoNotMatch: 'Les mots de passe ne correspondent pas',
-      passwordMinLength: 'Le mot de passe doit contenir au moins 8 caract\u00e8res',
+      passwordMinLength: 'Le mot de passe doit contenir au moins 10 caract\u00e8res',
       createOne: 'Cr\u00e9er un compte',
       createAccount: 'Cr\u00e9er un compte',
       forgotPassword: 'Mot de passe oubli\u00e9\u00a0?',
@@ -5856,7 +5917,7 @@ export const translations: Record<Language, Translations> = {
       resetPasswordInvalidLinkDetail: 'Ce lien de r\u00e9initialisation du mot de passe a expir\u00e9 ou a d\u00e9j\u00e0 \u00e9t\u00e9 utilis\u00e9. Veuillez en demander un nouveau.',
       resetPasswordRequestNew: 'Demander un nouveau lien de r\u00e9initialisation',
       resetPasswordVerifying: 'V\u00e9rification de votre lien...',
-      atLeastEightChars: 'Au moins 8 caract\u00e8res',
+      atLeastEightChars: 'Au moins 10 caract\u00e8res',
       verifyEmailTitle: 'V\u00e9rifiez votre email',
       verifyEmailSubtitle: 'Nous avons envoy\u00e9 un email de v\u00e9rification \u00e0 votre adresse. Veuillez v\u00e9rifier votre bo\u00eete de r\u00e9ception et cliquer sur le lien pour activer votre compte.',
       verifySentTo: 'Nous avons envoy\u00e9 un lien de confirmation \u00e0',
@@ -5888,6 +5949,27 @@ export const translations: Record<Language, Translations> = {
       registrationLanguageAlertTitle: 'La langue ne pourra pas \u00eatre modifi\u00e9e',
       registrationLanguageAlertMessage:
         'La langue s\u00e9lectionn\u00e9e sera utilis\u00e9e pour les e-mails, l\u2019onboarding et toute l\u2019application. Apr\u00e8s l\u2019inscription, vous ne pourrez plus la modifier.',
+      passwordRequirementsTitle: 'Exigences du mot de passe',
+      passwordReqMinLength: 'Au moins 10 caract\u00e8res',
+      passwordReqLowercase: 'Une lettre minuscule (a-z)',
+      passwordReqUppercase: 'Une lettre majuscule (A-Z)',
+      passwordReqDigit: 'Un chiffre (0-9)',
+      passwordReqSymbol: 'Un symbole (par exemple ! ? # %)',
+      passwordMissingPrefix: 'Il manque : ',
+      passwordMissingConjunction: ' et ',
+      passwordMissingMinLength: 'au moins 10 caract\u00e8res',
+      passwordMissingLowercase: 'une lettre minuscule',
+      passwordMissingUppercase: 'une lettre majuscule',
+      passwordMissingDigit: 'un chiffre',
+      passwordMissingSymbol: 'un symbole (par exemple ! ? # %)',
+      passwordValid: 'Mot de passe valide',
+      passwordPwned:
+        'Ce mot de passe figure dans des listes de mots de passe compromis : choisissez-en un autre',
+      passwordWeakCharacters:
+        'Le mot de passe doit contenir au moins une lettre minuscule, une majuscule, un chiffre et un symbole',
+      passwordWeakGeneric: 'Le mot de passe ne respecte pas toutes les exigences de s\u00e9curit\u00e9',
+      showPassword: 'Afficher le mot de passe',
+      hidePassword: 'Masquer le mot de passe',
     },
     waitlist: {
       landingTitle: 'Rejoindre la liste d’attente',
@@ -7758,10 +7840,10 @@ export const translations: Record<Language, Translations> = {
       yourName: 'Ihr Name',
       emailPlaceholder: 'sie@beispiel.de',
       enterPassword: 'Geben Sie Ihr Passwort ein',
-      atLeastSixChars: 'Mindestens 6 Zeichen',
+      atLeastSixChars: 'Mindestens 10 Zeichen',
       repeatPassword: 'Passwort wiederholen',
       passwordsDoNotMatch: 'Passw\u00f6rter stimmen nicht \u00fcberein',
-      passwordMinLength: 'Das Passwort muss mindestens 8 Zeichen lang sein',
+      passwordMinLength: 'Das Passwort muss mindestens 10 Zeichen lang sein',
       createOne: 'Konto erstellen',
       createAccount: 'Konto erstellen',
       forgotPassword: 'Passwort vergessen?',
@@ -7785,7 +7867,7 @@ export const translations: Record<Language, Translations> = {
       resetPasswordInvalidLinkDetail: 'Dieser Link zum Zur\u00fccksetzen des Passworts ist abgelaufen oder wurde bereits verwendet. Bitte fordern Sie einen neuen an.',
       resetPasswordRequestNew: 'Neuen Zur\u00fccksetzen-Link anfordern',
       resetPasswordVerifying: 'Ihr Link wird \u00fcberpr\u00fcft...',
-      atLeastEightChars: 'Mindestens 8 Zeichen',
+      atLeastEightChars: 'Mindestens 10 Zeichen',
       verifyEmailTitle: 'E-Mail best\u00e4tigen',
       verifyEmailSubtitle: 'Wir haben eine Best\u00e4tigungs-E-Mail an Ihre Adresse gesendet. Bitte \u00fcberpr\u00fcfen Sie Ihren Posteingang und klicken Sie auf den Link, um Ihr Konto zu aktivieren.',
       verifySentTo: 'Wir haben einen Best\u00e4tigungslink gesendet an',
@@ -7817,6 +7899,27 @@ export const translations: Record<Language, Translations> = {
       registrationLanguageAlertTitle: 'Sprache kann sp\u00e4ter nicht ge\u00e4ndert werden',
       registrationLanguageAlertMessage:
         'Die gew\u00e4hlte Sprache gilt f\u00fcr E-Mails, Onboarding und die gesamte App. Nach der Registrierung ist keine \u00c4nderung mehr m\u00f6glich.',
+      passwordRequirementsTitle: 'Passwortanforderungen',
+      passwordReqMinLength: 'Mindestens 10 Zeichen',
+      passwordReqLowercase: 'Ein Kleinbuchstabe (a-z)',
+      passwordReqUppercase: 'Ein Gro\u00dfbuchstabe (A-Z)',
+      passwordReqDigit: 'Eine Ziffer (0-9)',
+      passwordReqSymbol: 'Ein Sonderzeichen (zum Beispiel ! ? # %)',
+      passwordMissingPrefix: 'Es fehlt: ',
+      passwordMissingConjunction: ' und ',
+      passwordMissingMinLength: 'mindestens 10 Zeichen',
+      passwordMissingLowercase: 'ein Kleinbuchstabe',
+      passwordMissingUppercase: 'ein Gro\u00dfbuchstabe',
+      passwordMissingDigit: 'eine Ziffer',
+      passwordMissingSymbol: 'ein Sonderzeichen (zum Beispiel ! ? # %)',
+      passwordValid: 'G\u00fcltiges Passwort',
+      passwordPwned:
+        'Dieses Passwort steht in Listen kompromittierter Passw\u00f6rter: Bitte w\u00e4hlen Sie ein anderes',
+      passwordWeakCharacters:
+        'Das Passwort muss mindestens einen Kleinbuchstaben, einen Gro\u00dfbuchstaben, eine Ziffer und ein Sonderzeichen enthalten',
+      passwordWeakGeneric: 'Das Passwort erf\u00fcllt nicht alle Sicherheitsanforderungen',
+      showPassword: 'Passwort anzeigen',
+      hidePassword: 'Passwort verbergen',
     },
     waitlist: {
       landingTitle: 'Auf die Warteliste',
