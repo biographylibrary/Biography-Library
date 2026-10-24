@@ -796,6 +796,14 @@ today_start timestamptz := date_trunc('day', now_utc);
 week_start timestamptz := date_trunc('week', now_utc);
 rec ai_usage_tracking%ROWTYPE;
 BEGIN
+-- Solo il proprio user_id, oppure service_role (vedi 20261024100000).
+-- SECURITY DEFINER: il ruolo API è nel JWT, non in current_user.
+IF p_user_id IS DISTINCT FROM (SELECT auth.uid())
+   AND coalesce(current_setting('request.jwt.claim.role', true), '')
+       IS DISTINCT FROM 'service_role' THEN
+RETURN;
+END IF;
+
 SELECT * INTO rec FROM ai_usage_tracking WHERE ai_usage_tracking.user_id = p_user_id;
 
 IF NOT FOUND THEN
@@ -976,7 +984,8 @@ CREATE FUNCTION public.increment_view_count(biography_uuid uuid) RETURNS void
     AS $$
 UPDATE biographies
 SET view_count = view_count + 1
-WHERE id = biography_uuid;
+WHERE id = biography_uuid
+  AND status = 'published';
 $$;
 
 
@@ -4737,8 +4746,7 @@ GRANT ALL ON FUNCTION public.biographies_keep_pioneer() TO service_role;
 -- Name: FUNCTION biographies_mark_pioneer(); Type: ACL; Schema: public; Owner: -
 --
 
-GRANT ALL ON FUNCTION public.biographies_mark_pioneer() TO anon;
-GRANT ALL ON FUNCTION public.biographies_mark_pioneer() TO authenticated;
+-- Solo trigger: niente EXECUTE per anon/authenticated (20261024100000).
 GRANT ALL ON FUNCTION public.biographies_mark_pioneer() TO service_role;
 
 
@@ -4817,8 +4825,7 @@ GRANT ALL ON FUNCTION public.check_biography_media_limit() TO service_role;
 -- Name: FUNCTION cleanup_ai_rate_limits_30d(); Type: ACL; Schema: public; Owner: -
 --
 
-GRANT ALL ON FUNCTION public.cleanup_ai_rate_limits_30d() TO anon;
-GRANT ALL ON FUNCTION public.cleanup_ai_rate_limits_30d() TO authenticated;
+-- Solo service_role (cron Next.js) — 20261024100000.
 GRANT ALL ON FUNCTION public.cleanup_ai_rate_limits_30d() TO service_role;
 
 
@@ -4861,7 +4868,7 @@ GRANT ALL ON FUNCTION public.generate_biography_slug(input_text text) TO service
 -- Name: FUNCTION get_ai_usage(p_user_id uuid); Type: ACL; Schema: public; Owner: -
 --
 
-GRANT ALL ON FUNCTION public.get_ai_usage(p_user_id uuid) TO anon;
+-- Niente anon (20261024100000); il corpo controlla auth.uid() / service_role.
 GRANT ALL ON FUNCTION public.get_ai_usage(p_user_id uuid) TO authenticated;
 GRANT ALL ON FUNCTION public.get_ai_usage(p_user_id uuid) TO service_role;
 
@@ -4907,8 +4914,7 @@ GRANT ALL ON FUNCTION public.handle_biography_published() TO service_role;
 -- Name: FUNCTION handle_new_user(); Type: ACL; Schema: public; Owner: -
 --
 
-GRANT ALL ON FUNCTION public.handle_new_user() TO anon;
-GRANT ALL ON FUNCTION public.handle_new_user() TO authenticated;
+-- Solo trigger (20261024100000).
 GRANT ALL ON FUNCTION public.handle_new_user() TO service_role;
 
 
@@ -5006,8 +5012,7 @@ GRANT ALL ON FUNCTION public.revoke_share_token(p_biography_id uuid) TO service_
 -- Name: FUNCTION set_biography_slug(); Type: ACL; Schema: public; Owner: -
 --
 
-GRANT ALL ON FUNCTION public.set_biography_slug() TO anon;
-GRANT ALL ON FUNCTION public.set_biography_slug() TO authenticated;
+-- Solo trigger (20261024100000).
 GRANT ALL ON FUNCTION public.set_biography_slug() TO service_role;
 
 
@@ -5015,8 +5020,7 @@ GRANT ALL ON FUNCTION public.set_biography_slug() TO service_role;
 -- Name: FUNCTION set_next_chapter_available_at(); Type: ACL; Schema: public; Owner: -
 --
 
-GRANT ALL ON FUNCTION public.set_next_chapter_available_at() TO anon;
-GRANT ALL ON FUNCTION public.set_next_chapter_available_at() TO authenticated;
+-- Solo trigger (20261024100000).
 GRANT ALL ON FUNCTION public.set_next_chapter_available_at() TO service_role;
 
 
@@ -5024,8 +5028,7 @@ GRANT ALL ON FUNCTION public.set_next_chapter_available_at() TO service_role;
 -- Name: FUNCTION update_moderation_reports_updated_at(); Type: ACL; Schema: public; Owner: -
 --
 
-GRANT ALL ON FUNCTION public.update_moderation_reports_updated_at() TO anon;
-GRANT ALL ON FUNCTION public.update_moderation_reports_updated_at() TO authenticated;
+-- Solo trigger (20261024100000).
 GRANT ALL ON FUNCTION public.update_moderation_reports_updated_at() TO service_role;
 
 

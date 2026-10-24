@@ -18,7 +18,9 @@ This application stores biographical data — personal life stories, photos, and
 | Anon visitor accesses private biography via share token | Share-token path uses a signed RPC (`get_biography_by_share_token`); `link_only` visibility excluded from general anon SELECT |
 | Privilege escalation (user → admin/reviewer) | Role stored in `profiles.role`; only `super_admin` may change it; role changes are logged in `role_change_log` |
 | AI endpoint abuse / prompt injection | Per-user rate limits enforced in the Edge Function (5/min, 40/day, 200/week); content passed to AI is user-owned text only |
-| Mass scraping of published biographies | `increment_view_count` RPC exists; no current rate-limit on public reads — treat published content as public |
+| Mass scraping of published biographies | `increment_view_count` only bumps rows with `status = 'published'`; no rate-limit on public reads — treat published content as public |
+| Anon executes housekeeping / trigger RPCs | Migration `20261024100000`: `cleanup_ai_rate_limits_30d` is `service_role` only; trigger-only functions revoke EXECUTE from `anon`/`authenticated`; `get_ai_usage` requires `p_user_id = auth.uid()` (or `service_role`) and revokes `anon` |
+| Spoofed `userId` on client error reports | Edge Function `log-error` ignores body `userId`; sets `user_id` only from a verified session JWT (not the anon key); global 60/min and per-user 20/min caps |
 | Service-role key exposure | Key is never exposed to the client; used only inside Edge Functions and server-side API routes |
 | Frozen/moderated biography edits | `is_frozen = true` blocks UPDATE via RLS policy (`add_frozen_update_block_policy` migration) |
 | Admin action accountability | All admin actions (freeze, role change, moderation decisions) are written to `admin_action_log` |
