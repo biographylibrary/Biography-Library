@@ -10,12 +10,23 @@ const withPWA = require('next-pwa')({
   buildExcludes: [/middleware-manifest\.json$/],
 });
 
+const { buildSecurityHeaders } = require('./lib/security-headers');
+
 const nextConfig = {
   output: 'standalone',
+  poweredByHeader: false,
   eslint: {
     ignoreDuringBuilds: true,
   },
   images: { unoptimized: true },
+  async headers() {
+    return [
+      {
+        source: '/:path*',
+        headers: buildSecurityHeaders(),
+      },
+    ];
+  },
   experimental: {
     // sharp (elaborazione delle foto) non si impacchetta con webpack: si carica da node_modules.
     // ATTENZIONE: in Next 13.5 il pacchetto `standalone` contiene il codice JavaScript di sharp ma non

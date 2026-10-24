@@ -111,7 +111,7 @@ The repository is the single source of truth. Branches: `main` is production. Tw
 
 Supabase is managed separately from the application host.
 
-**Schema changes** — Apply migrations on **Zurich** (`frycyhvhuifznxzamenn`) via the Supabase MCP tool (`apply_migration`) or the SQL editor. Migrations live in `supabase/migrations/` and must be applied in filename order (timestamps ensure ordering). Never modify already-applied migrations; always add a new file. Versions after `20261022000000` sit on top of the baseline snapshot in `supabase/baseline/`. Example post-baseline migration: `20261023190000_drop_public_list_biography_exports.sql` (drops Storage listing on `biography-exports`; apply with version aligned to `20261023190000`).
+**Schema changes** — Apply migrations on **Zurich** (`frycyhvhuifznxzamenn`) via the Supabase MCP tool (`apply_migration`) or the SQL editor. Migrations live in `supabase/migrations/` and must be applied in filename order (timestamps ensure ordering). Never modify already-applied migrations; always add a new file. Versions after `20261022000000` sit on top of the baseline snapshot in `supabase/baseline/`. Post-baseline examples: `20261023190000_drop_public_list_biography_exports.sql` (Storage listing); `20261024100000_security_anon_functions.sql` (REVOKE su RPC/trigger e controlli su `get_ai_usage` / `increment_view_count` — applicare con versione allineata a `20261024100000`).
 
 **Edge Functions** — Deployed via the Supabase MCP `deploy_edge_function` tool or the Supabase dashboard. There is no CLI-based deploy in this workflow. After deploying, set or update secrets in the dashboard under Project Settings → Edge Functions → Secrets.
 
@@ -281,7 +281,7 @@ Two functions are deployed for AI transcription and error reporting. The `ai-ass
 | `log-error`           | Receives client-side error reports and writes to `error_logs` table     |
 
 
-All functions require a valid Supabase JWT in the `Authorization` header (enforced by Supabase). The `log-error` function is the exception — it accepts anon tokens because errors may occur before login.
+All functions require a valid Supabase JWT in the `Authorization` header (enforced by Supabase). The `log-error` function accepts the anon key when the user is signed out; when a session JWT is present it resolves `user_id` via `auth.getUser` and ignores any `userId` in the body. It also enforces a global cap of 60 inserts/minute and 20/minute per verified user. Redeploy `log-error` after pulling these changes (not done automatically by the app deploy).
 
 To update a function: edit `supabase/functions/<slug>/index.ts` and redeploy via the MCP tool.
 

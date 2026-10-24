@@ -539,11 +539,13 @@ export async function as<T = Record<string, unknown>>(
   }
   await db.exec(`set role ${role}`);
   await db.query(`select set_config('request.jwt.claim.sub', $1, false)`, [userId ?? '']);
+  await db.query(`select set_config('request.jwt.claim.role', $1, false)`, [role]);
   try {
     return (await db.query<T>(sql, params)).rows;
   } finally {
     await db.exec('reset role');
     await db.query(`select set_config('request.jwt.claim.sub', '', false)`);
+    await db.query(`select set_config('request.jwt.claim.role', '', false)`);
   }
 }
 
