@@ -17,6 +17,7 @@ export default defineConfig({
       'components/**/__tests__/**/*.test.{ts,tsx}',
       'hooks/**/__tests__/**/*.test.{ts,tsx}',
       'scripts/migrate/__tests__/**/*.test.mjs',
+      'scripts/__tests__/**/*.test.ts',
     ],
   },
 });
