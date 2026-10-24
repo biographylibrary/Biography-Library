@@ -799,8 +799,7 @@ BEGIN
 -- Solo il proprio user_id, oppure service_role (vedi 20261024100000).
 -- SECURITY DEFINER: il ruolo API è nel JWT, non in current_user.
 IF p_user_id IS DISTINCT FROM (SELECT auth.uid())
-   AND coalesce(current_setting('request.jwt.claim.role', true), '')
-       IS DISTINCT FROM 'service_role' THEN
+   AND NOT coalesce((SELECT auth.role()) = 'service_role', false) THEN
 RETURN;
 END IF;
 

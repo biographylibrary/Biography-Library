@@ -26,10 +26,9 @@ DECLARE
   rec ai_usage_tracking%ROWTYPE;
 BEGIN
   -- SECURITY DEFINER: current_user è il proprietario della funzione, non il chiamante.
-  -- Il ruolo API arriva dal JWT (PostgREST / client service_role).
+  -- Il ruolo API arriva dal JWT (PostgREST / client service_role tramite auth.role()).
   IF p_user_id IS DISTINCT FROM (SELECT auth.uid())
-     AND coalesce(current_setting('request.jwt.claim.role', true), '')
-         IS DISTINCT FROM 'service_role' THEN
+     AND NOT coalesce((SELECT auth.role()) = 'service_role', false) THEN
     RETURN;
   END IF;
 

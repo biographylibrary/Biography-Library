@@ -88,8 +88,8 @@ describe('20261024100000_security_anon_functions', () => {
     expect(sqlText).toMatch(/REVOKE ALL ON FUNCTION public\.cleanup_ai_rate_limits_30d\(\) FROM anon/);
     expect(sqlText).toMatch(/GRANT EXECUTE ON FUNCTION public\.cleanup_ai_rate_limits_30d\(\) TO service_role/);
     expect(sqlText).toMatch(/p_user_id IS DISTINCT FROM \(SELECT auth\.uid\(\)\)/);
-    expect(sqlText).toMatch(/request\.jwt\.claim\.role/);
-    expect(sqlText).toMatch(/IS DISTINCT FROM 'service_role'/);
+    expect(sqlText).toMatch(/\(SELECT auth\.role\(\)\) = 'service_role'/);
+    expect(sqlText).not.toMatch(/request\.jwt\.claim\.role/);
     expect(sqlText).toMatch(/AND status = 'published'/);
     for (const fn of [
       'biographies_mark_pioneer',
@@ -144,6 +144,23 @@ describe('20261024100000_security_anon_functions', () => {
       [U.author]
     );
     expect(asService.length).toBe(1);
+
+    // Caso PostgREST con solo request.jwt.claims JSON (senza request.jwt.claim.role)
+    await db.exec('set role service_role');
+    await db.query(`select set_config('request.jwt.claim.sub', '', false)`);
+    await db.query(`select set_config('request.jwt.claim.role', '', false)`);
+    await db.query(`select set_config('request.jwt.claims', $1, false)`, [
+      JSON.stringify({ role: 'service_role' }),
+    ]);
+    try {
+      const viaClaimsJson = (
+        await db.query<{ daily_count: number }>(`select * from public.get_ai_usage($1)`, [U.author])
+      ).rows;
+      expect(viaClaimsJson).toHaveLength(1);
+    } finally {
+      await db.exec('reset role');
+      await db.query(`select set_config('request.jwt.claims', '', false)`);
+    }
 
     expect(
       await errorOf(() => as(db, 'anon', null, `select * from public.get_ai_usage($1)`, [U.author]))
