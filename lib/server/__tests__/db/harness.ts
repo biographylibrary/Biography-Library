@@ -45,12 +45,18 @@ create schema auth;
 create function auth.uid() returns uuid language sql stable as $$
   select nullif(current_setting('request.jwt.claim.sub', true), '')::uuid
 $$;
+create function auth.role() returns text language sql stable as $$
+  select coalesce(
+    nullif(current_setting('request.jwt.claim.role', true), ''),
+    (nullif(current_setting('request.jwt.claims', true), '')::jsonb ->> 'role')
+  )::text
+$$;
 grant usage on schema auth, public to authenticated, anon, service_role;
 -- Come in Supabase: le tabelle nuove nascono con tutti i privilegi ai ruoli API.
 alter default privileges in schema public grant all on tables to authenticated, anon, service_role;
 -- Come in Supabase: ogni funzione creata in public nasce eseguibile da anon, authenticated e servizio.
 alter default privileges in schema public grant execute on functions to anon, authenticated, service_role;
-grant execute on function auth.uid() to public;
+grant execute on function auth.uid(), auth.role() to public;
 
 create table auth.users (
   id uuid primary key,
@@ -539,11 +545,14 @@ export async function as<T = Record<string, unknown>>(
   }
   await db.exec(`set role ${role}`);
   await db.query(`select set_config('request.jwt.claim.sub', $1, false)`, [userId ?? '']);
+  await db.query(`select set_config('request.jwt.claim.role', $1, false)`, [role]);
   try {
     return (await db.query<T>(sql, params)).rows;
   } finally {
     await db.exec('reset role');
     await db.query(`select set_config('request.jwt.claim.sub', '', false)`);
+    await db.query(`select set_config('request.jwt.claim.role', '', false)`);
+    await db.query(`select set_config('request.jwt.claims', '', false)`);
   }
 }
 
