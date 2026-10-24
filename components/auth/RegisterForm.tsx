@@ -8,12 +8,25 @@ import { useTranslation } from '@/lib/i18n/i18n-context';
 import { getProposedRegistrationLanguage } from '@/lib/i18n/detect-browser-language';
 import type { Language } from '@/lib/i18n/translations';
 import { RegistrationLanguagePicker } from '@/components/auth/RegistrationLanguagePicker';
+import { PasswordRequirements } from '@/components/auth/PasswordRequirements';
+import {
+  evaluatePassword,
+  formatMissingPasswordRequirements,
+  resolvePasswordAuthError,
+} from '@/lib/password-policy';
 import { supabase } from '@/lib/supabase';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Logo } from '@/components/logo';
-import { Loader as Loader2, CircleAlert as AlertCircle, Mail, CircleCheck as CheckCircle2 } from 'lucide-react';
+import {
+  Loader as Loader2,
+  CircleAlert as AlertCircle,
+  Mail,
+  CircleCheck as CheckCircle2,
+  Eye,
+  EyeOff,
+} from 'lucide-react';
 import { ThemeToggle } from '@/components/theme-toggle';
 import { postLoginPath } from '@/lib/waitlist';
 
@@ -22,6 +35,8 @@ export function RegisterForm({ embedded = false }: { embedded?: boolean }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [resendLoading, setResendLoading] = useState(false);
@@ -53,23 +68,24 @@ export function RegisterForm({ embedded = false }: { embedded?: boolean }) {
     e.preventDefault();
     setError('');
 
+    const evaluation = evaluatePassword(password);
+    if (!evaluation.valid) {
+      setError(formatMissingPasswordRequirements(evaluation.missing, t.auth));
+      return;
+    }
+
     if (password !== confirmPassword) {
       setError(t.auth.passwordsDoNotMatch);
       return;
     }
 
-    if (password.length < 6) {
-      setError(t.auth.passwordMinLength);
-      return;
-    }
-
     setIsLoading(true);
 
-    const { error, emailConfirmRequired } = await signUp(email, password, name, registrationLanguage);
-    if (error) {
-      setError(error);
+    const signUpResult = await signUp(email, password, name, registrationLanguage);
+    if (signUpResult.error) {
+      setError(resolvePasswordAuthError(signUpResult, t.auth, password));
       setIsLoading(false);
-    } else if (emailConfirmRequired) {
+    } else if (signUpResult.emailConfirmRequired) {
       setShowVerification(true);
       setIsLoading(false);
     } else {
@@ -262,30 +278,61 @@ export function RegisterForm({ embedded = false }: { embedded?: boolean }) {
 
             <div className="space-y-2">
               <Label htmlFor="password">{t.auth.password}</Label>
-              <Input
-                id="password"
-                type="password"
-                placeholder={t.auth.atLeastSixChars}
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                autoComplete="new-password"
-                className="h-11"
-              />
+              <div className="relative">
+                <Input
+                  id="password"
+                  type={showPassword ? 'text' : 'password'}
+                  placeholder={t.auth.atLeastSixChars}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                  autoComplete="new-password"
+                  className="h-11 pr-10"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword((prev) => !prev)}
+                  aria-label={showPassword ? t.auth.hidePassword : t.auth.showPassword}
+                  data-testid="toggle-password-visibility"
+                  className="absolute inset-y-0 right-0 flex items-center px-3 text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  {showPassword ? (
+                    <EyeOff className="h-4 w-4" aria-hidden="true" />
+                  ) : (
+                    <Eye className="h-4 w-4" aria-hidden="true" />
+                  )}
+                </button>
+              </div>
+              <PasswordRequirements password={password} />
             </div>
 
             <div className="space-y-2">
               <Label htmlFor="confirmPassword">{t.auth.confirmPassword}</Label>
-              <Input
-                id="confirmPassword"
-                type="password"
-                placeholder={t.auth.repeatPassword}
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                required
-                autoComplete="new-password"
-                className="h-11"
-              />
+              <div className="relative">
+                <Input
+                  id="confirmPassword"
+                  type={showConfirmPassword ? 'text' : 'password'}
+                  placeholder={t.auth.repeatPassword}
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  required
+                  autoComplete="new-password"
+                  className="h-11 pr-10"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowConfirmPassword((prev) => !prev)}
+                  aria-label={showConfirmPassword ? t.auth.hidePassword : t.auth.showPassword}
+                  data-testid="toggle-confirm-password-visibility"
+                  className="absolute inset-y-0 right-0 flex items-center px-3 text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  {showConfirmPassword ? (
+                    <EyeOff className="h-4 w-4" aria-hidden="true" />
+                  ) : (
+                    <Eye className="h-4 w-4" aria-hidden="true" />
+                  )}
+                </button>
+              </div>
             </div>
 
             <Button

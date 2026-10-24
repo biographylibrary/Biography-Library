@@ -4,7 +4,8 @@ import { createContext, useContext, useEffect, useState, useCallback } from 'rea
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from './supabase';
 import { clearSupabaseAuthStorage, redirectAfterSignOut } from './auth-storage';
-import type { Language } from '@/lib/i18n/translations';
+import { translations, type Language } from '@/lib/i18n/translations';
+import { extractWeakPasswordReasons, resolvePasswordAuthError } from '@/lib/password-policy';
 import type { AccountStatus } from '@/lib/waitlist';
 import { PLATFORM_STAFF_ROLES } from '@/lib/server/staff-roles';
 
@@ -190,7 +191,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // Il profilo lo crea il trigger handle_new_user dai metadati (name, language).
 
     const emailConfirmRequired = !error && data.user && !data.session;
-    return { error: error?.message ?? null, emailConfirmRequired: emailConfirmRequired ?? false };
+    if (error) {
+      const authCopy = (translations[language] ?? translations.en).auth;
+      const resolvedError = resolvePasswordAuthError(error, authCopy, password);
+      const reasons = extractWeakPasswordReasons(error);
+      return {
+        error: resolvedError,
+        ...(reasons ? { reasons } : {}),
+        emailConfirmRequired: false,
+      };
+    }
+    return { error: null, emailConfirmRequired: emailConfirmRequired ?? false };
   }, []);
 
   const signOut = useCallback(async (options?: { redirectToLogin?: boolean }) => {

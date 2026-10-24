@@ -115,7 +115,7 @@ Supabase is managed separately from the application host.
 
 **Edge Functions** — Deployed via the Supabase MCP `deploy_edge_function` tool or the Supabase dashboard. There is no CLI-based deploy in this workflow. After deploying, set or update secrets in the dashboard under Project Settings → Edge Functions → Secrets.
 
-**Auth** — Email/password; **email confirmation** is enforced in Supabase (production). Auth emails (confirm signup, reset password) are sent via the **Send Email Hook** → Edge Function `auth-send-email` → **Resend API** (multilingual en/it/fr/de). Configure the hook in Supabase Dashboard → Authentication → Hooks. Set `AUTH_HOOK_SECRET` on the Edge Function and disable built-in SMTP templates once the hook is verified.
+**Auth** — Email/password; **email confirmation** is enforced in Supabase (production). Auth emails (confirm signup, reset password) are sent via the **Send Email Hook** → Edge Function `auth-send-email` → **Resend API** (multilingual en/it/fr/de). Configure the hook in Supabase Dashboard → Authentication → Hooks. Set `AUTH_HOOK_SECRET` on the Edge Function and disable built-in SMTP templates once the hook is verified. **Password policy (Zurich `frycyhvhuifznxzamenn`)**: minimum 10 characters; at least one lowercase letter (`a-z`), one uppercase letter (`A-Z`), one digit (`0-9`), and one symbol (`!@#$%^&*()_+-=[]{};'\:"|<>?,./`~`); compromised-password rejection (HaveIBeenPwned) enabled. The client-side rules in `lib/password-policy.ts` must stay identical to these Supabase Auth settings.
 
 **Transactional email (Resend API)** — All app emails (welcome, publication, admin account, engagement G1/G2) use `lib/server/email/` and `shared/email/`. Required env on **Jelastic** and **Edge Function secrets**:
 
