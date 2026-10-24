@@ -8,7 +8,6 @@ describe('logger', () => {
     vi.resetModules();
     process.env.NEXT_PUBLIC_SUPABASE_URL = 'https://proj.supabase.co';
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY = 'anon-key';
-    process.env.NODE_ENV = 'test';
     vi.stubGlobal(
       'fetch',
       vi.fn(async () => new Response(JSON.stringify({ ok: true }), { status: 200 }))
