@@ -34,14 +34,10 @@ Ultimo aggiornamento: ottobre 2026.
 
 ### Font
 
-- **Sans (UI + body):** Noto Sans — Google Fonts, pesi 400 e 700 (anche italic).
-- **Serif (titoli e testo ricco):** Noto Serif — Google Fonts, pesi 400 e 700 (anche italic).
+- **Sans (UI + body):** Noto Sans — file `.woff2` locali in `public/fonts/noto-sans/` (pesi 400 e 700, normal e italic, sottoinsiemi `latin` e `latin-ext`; licenza in `public/fonts/LICENSE-NOTO.txt`).
+- **Serif (titoli e testo ricco):** Noto Serif — file `.woff2` locali in `public/fonts/noto-serif/` (pesi 400 e 700, normal e italic, sottoinsiemi `latin` e `latin-ext`; i file `.ttf` nella stessa cartella sono usati da `lib/pdf-export.ts`).
 
-Import in `app/globals.css`:
-
-```css
-@import url('https://fonts.googleapis.com/css2?family=Noto+Sans:ital,wght@0,400;0,700;1,400;1,700&family=Noto+Serif:ital,wght@0,400;0,700;1,400;1,700&display=swap');
-```
+Dichiarati in `app/globals.css` tramite `@font-face` (`font-display: swap`, nessuna dipendenza da `fonts.googleapis.com` o `fonts.gstatic.com`).
 
 ### Regole globali
 
