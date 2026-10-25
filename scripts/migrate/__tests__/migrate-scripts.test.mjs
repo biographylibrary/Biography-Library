@@ -8,6 +8,8 @@ import {
 } from '../dump-source.mjs';
 import { AUTH_EXCLUDED_TABLES } from '../lib-db.mjs';
 import {
+  ANON_BIOGRAPHIES_SELECT_COLUMNS,
+  applyAnonBiographyColumnGrants,
   assertDumpHasHandleNewUser,
   composeBaselineSql,
   countHandleNewUserDefinitions,
@@ -106,6 +108,26 @@ GRANT SELECT ON public.profiles TO anon;
     expect(out).not.toMatch(/ALTER\s+DEFAULT\s+PRIVILEGES/i);
     expect(out).toContain('CREATE TABLE public.profiles');
     expect(out).toContain('GRANT SELECT ON public.profiles TO anon;');
+  });
+
+  it('sostituisce GRANT ALL anon su biographies con SELECT a colonna e revoca biography_flat', () => {
+    const raw = `
+GRANT ALL ON TABLE public.biographies TO anon;
+GRANT ALL ON TABLE public.biographies TO authenticated;
+GRANT ALL ON TABLE public.biographies TO service_role;
+GRANT SELECT ON TABLE public.biography_flat TO anon;
+GRANT SELECT ON TABLE public.biography_flat TO authenticated;
+GRANT SELECT ON TABLE public.biography_flat TO service_role;
+`;
+    const out = applyAnonBiographyColumnGrants(raw);
+    expect(out).toContain('REVOKE ALL ON TABLE public.biographies FROM anon;');
+    expect(out).toMatch(/GRANT SELECT \([\s\S]*final_pdf_url[\s\S]*\) ON TABLE public\.biographies TO anon;/);
+    expect(out).not.toMatch(/GRANT ALL ON TABLE public\.biographies TO anon;/);
+    expect(out).not.toMatch(/GRANT SELECT ON TABLE public\.biography_flat TO anon;/);
+    expect(out).toContain('GRANT SELECT ON TABLE public.biography_flat TO authenticated;');
+    for (const col of ANON_BIOGRAPHIES_SELECT_COLUMNS) {
+      expect(out).toContain(col);
+    }
   });
 });
 

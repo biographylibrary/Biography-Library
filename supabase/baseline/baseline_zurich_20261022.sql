@@ -5141,7 +5141,40 @@ GRANT ALL ON TABLE public.archive_package_versions TO service_role;
 -- Name: TABLE biographies; Type: ACL; Schema: public; Owner: -
 --
 
-GRANT ALL ON TABLE public.biographies TO anon;
+-- anon: SELECT a colonna (20261025120000); authenticated/service_role invariati
+REVOKE ALL ON TABLE public.biographies FROM anon;
+GRANT SELECT (
+  id,
+  title,
+  subject_name,
+  author_name,
+  biography_type,
+  biography_mode,
+  content,
+  content_freeflow,
+  record_language_tag,
+  record_script,
+  record_direction,
+  um_id,
+  slug,
+  status,
+  visibility,
+  translation_of,
+  published_at,
+  created_at,
+  provisional_until,
+  is_pioneer,
+  is_frozen,
+  frozen_at,
+  chapters_count,
+  view_count,
+  is_featured,
+  featured_at,
+  listing_cover_url,
+  export_txt_url,
+  export_docx_url,
+  final_pdf_url
+) ON TABLE public.biographies TO anon;
 GRANT ALL ON TABLE public.biographies TO authenticated;
 GRANT ALL ON TABLE public.biographies TO service_role;
 
@@ -5186,7 +5219,7 @@ GRANT ALL ON TABLE public.person_events TO service_role;
 -- Name: TABLE biography_flat; Type: ACL; Schema: public; Owner: -
 --
 
-GRANT SELECT ON TABLE public.biography_flat TO anon;
+-- biography_flat: REVOKE anon (20261025120000); authenticated/service_role invariati
 GRANT SELECT ON TABLE public.biography_flat TO authenticated;
 GRANT SELECT ON TABLE public.biography_flat TO service_role;
 

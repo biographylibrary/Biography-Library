@@ -1,10 +1,17 @@
 import { supabase } from './supabase';
 import { ONE_BIOGRAPHY_PER_USER_ERROR, getUserBiographyCount } from './biography-limits';
 import type { BiographyPublicationStatus } from './publication-state';
+import { PUBLIC_EDITIONS_SELECT, PUBLISHED_SELECT } from './public-biography-selects';
 
 export { ONE_BIOGRAPHY_PER_USER_ERROR } from './biography-limits';
 
 export type { BiographyPublicationStatus } from './publication-state';
+
+export {
+  PUBLIC_BIOGRAPHY_FILTER_COLUMNS,
+  PUBLIC_EDITIONS_SELECT,
+  PUBLISHED_SELECT,
+} from './public-biography-selects';
 
 export interface Biography {
   id: string;
@@ -63,9 +70,6 @@ export interface PublishedBiography {
   /** True for the first 10,000 biographies created. */
   is_pioneer?: boolean;
 }
-
-const PUBLISHED_SELECT =
-  'id, title, subject_name, author_name, record_language_tag, biography_type, chapters_count, published_at, view_count, is_featured, featured_at, slug, listing_cover_url, provisional_until, is_pioneer';
 
 export async function fetchPublishedBiographies() {
   const { data, error } = await supabase
@@ -154,7 +158,7 @@ export async function fetchPublicEditionsOf(originalIds: string[]) {
 
   const { data, error } = await supabase
     .from('biographies')
-    .select('id, slug, title, subject_name, record_language_tag, translation_of')
+    .select(PUBLIC_EDITIONS_SELECT)
     .in('translation_of', originalIds)
     .eq('status', 'published')
     .eq('visibility', 'public');
