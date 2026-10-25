@@ -30,22 +30,23 @@ describe('security headers', () => {
     );
   });
 
-  it('mette solo CSP Report-Only (mai la bloccante) con connect-src da NEXT_PUBLIC_SUPABASE_URL', () => {
+  it('espone Content-Security-Policy vincolante con frame-src, font-src self/data e connect-src da NEXT_PUBLIC_SUPABASE_URL', () => {
     const headers = buildSecurityHeaders({
       supabaseUrl: 'https://abc.supabase.co',
     });
     const keys = headers.map((h) => h.key);
-    expect(keys).toContain('Content-Security-Policy-Report-Only');
-    expect(keys).not.toContain('Content-Security-Policy');
+    expect(keys).toContain('Content-Security-Policy');
+    expect(keys).not.toContain('Content-Security-Policy-Report-Only');
 
-    const csp = byKey(headers, 'Content-Security-Policy-Report-Only');
+    const csp = byKey(headers, 'Content-Security-Policy');
     expect(csp).toContain("default-src 'self'");
     expect(csp).toContain("script-src 'self' 'unsafe-inline' 'unsafe-eval'");
     expect(csp).toContain("style-src 'self' 'unsafe-inline'");
-    expect(csp).toContain('img-src \'self\' data: blob: https:');
+    expect(csp).toContain("img-src 'self' data: blob: https:");
     expect(csp).toContain("font-src 'self' data:");
     expect(csp).toContain("media-src 'self' blob: data:");
     expect(csp).toContain("worker-src 'self' blob:");
+    expect(csp).toContain("frame-src 'self' blob: data:");
     expect(csp).toContain("frame-ancestors 'none'");
     expect(csp).toContain("base-uri 'self'");
     expect(csp).toContain("form-action 'self'");
@@ -54,6 +55,7 @@ describe('security headers', () => {
       "connect-src 'self' https://abc.supabase.co wss://abc.supabase.co"
     );
     expect(csp).not.toMatch(/api\.infomaniak\.com/);
+    expect(csp).not.toMatch(/fonts\.googleapis\.com|fonts\.gstatic\.com/);
   });
 
   it('buildConnectSrc non inventa host se l’URL manca o è invalido', () => {
@@ -72,8 +74,8 @@ describe('security headers', () => {
     expect(routes).toHaveLength(1);
     expect(routes[0].source).toBe('/:path*');
     const keys = routes[0].headers.map((h) => h.key);
-    expect(keys).toContain('Content-Security-Policy-Report-Only');
-    expect(keys).not.toContain('Content-Security-Policy');
+    expect(keys).toContain('Content-Security-Policy');
+    expect(keys).not.toContain('Content-Security-Policy-Report-Only');
     expect(keys).toContain('Strict-Transport-Security');
   });
 });
