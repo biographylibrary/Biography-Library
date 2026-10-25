@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { supabase } from '@/lib/supabase';
+import { PUBLIC_EDITIONS_SELECT } from '@/lib/public-biography-selects';
 import { useTranslation } from '@/lib/i18n/i18n-context';
 import { buildWorkVersions, type WorkVersion } from '@/lib/work-languages';
 import { textLanguageLabels } from '@/lib/text-languages';
@@ -46,7 +47,7 @@ export function ReadInSwitcher({
     void (async () => {
       const { data } = await supabase
         .from('biographies')
-        .select('id, slug, title, subject_name, record_language_tag, translation_of')
+        .select(PUBLIC_EDITIONS_SELECT)
         .or(`id.eq.${root},translation_of.eq.${root}`)
         .eq('status', 'published')
         .eq('visibility', 'public');

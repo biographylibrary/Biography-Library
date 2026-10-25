@@ -7,6 +7,10 @@ import {
 const UUID_RE =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
+/** Select anon per canonical/hreflang sulla view pubblica. */
+export const EDITION_VIEW_METADATA_SELECT =
+  'id, slug, translation_of, record_language_tag, status, visibility';
+
 /**
  * Loose Supabase-like client. Real `@supabase/supabase-js` is cast at the call site;
  * unit tests pass a fake chain.
@@ -48,15 +52,13 @@ export async function resolveEditionViewAlternates(
   routeId: string,
   origin = siteOrigin()
 ): Promise<EditionViewAlternates | null> {
-  const selectCols = 'id, slug, translation_of, record_language_tag, status, visibility';
-
   let row: EditionAlternateRow | null = null;
   if (UUID_RE.test(routeId)) {
-    const lookup = client.from('biographies').select(selectCols) as LookupBuilder;
+    const lookup = client.from('biographies').select(EDITION_VIEW_METADATA_SELECT) as LookupBuilder;
     const { data } = await lookup.eq('id', routeId).maybeSingle();
     row = data;
   } else {
-    const lookup = client.from('biographies').select(selectCols) as LookupBuilder;
+    const lookup = client.from('biographies').select(EDITION_VIEW_METADATA_SELECT) as LookupBuilder;
     const { data } = await lookup.eq('slug', routeId).maybeSingle();
     row = data;
   }
@@ -67,7 +69,9 @@ export async function resolveEditionViewAlternates(
 
   const current = row;
   const root = current.translation_of || current.id;
-  const groupQuery = client.from('biographies').select(selectCols) as GroupBuilder;
+  const groupQuery = client
+    .from('biographies')
+    .select(EDITION_VIEW_METADATA_SELECT) as GroupBuilder;
   const { data: group } = await groupQuery
     .or(`id.eq.${root},translation_of.eq.${root}`)
     .eq('status', 'published')

@@ -56,6 +56,71 @@ export function countHandleNewUserDefinitions(sql) {
   return [...String(sql).matchAll(re)].length;
 }
 
+/** Colonne SELECT concesse ad anon su public.biographies (allineate a 20261025120000). */
+export const ANON_BIOGRAPHIES_SELECT_COLUMNS = [
+  'id',
+  'title',
+  'subject_name',
+  'author_name',
+  'biography_type',
+  'biography_mode',
+  'content',
+  'content_freeflow',
+  'record_language_tag',
+  'record_script',
+  'record_direction',
+  'um_id',
+  'slug',
+  'status',
+  'visibility',
+  'translation_of',
+  'published_at',
+  'created_at',
+  'provisional_until',
+  'is_pioneer',
+  'is_frozen',
+  'frozen_at',
+  'chapters_count',
+  'view_count',
+  'is_featured',
+  'featured_at',
+  'listing_cover_url',
+  'export_txt_url',
+  'export_docx_url',
+  'final_pdf_url',
+];
+
+/**
+ * Sostituisce GRANT ALL su biographies/biography_flat per anon con i permessi
+ * a colonna di 20261025120000 (ricostruzione di emergenza allineata a Zurigo).
+ */
+export function applyAnonBiographyColumnGrants(sql) {
+  let out = String(sql);
+  const grantCols = ANON_BIOGRAPHIES_SELECT_COLUMNS.map((c) => `  ${c}`).join(',\n');
+  const biographiesAcl = `-- anon: SELECT a colonna (20261025120000); authenticated/service_role invariati
+REVOKE ALL ON TABLE public.biographies FROM anon;
+GRANT SELECT (
+${grantCols}
+) ON TABLE public.biographies TO anon;
+GRANT ALL ON TABLE public.biographies TO authenticated;
+GRANT ALL ON TABLE public.biographies TO service_role;`;
+
+  out = out.replace(
+    /GRANT ALL ON TABLE public\.biographies TO anon;\s*\nGRANT ALL ON TABLE public\.biographies TO authenticated;\s*\nGRANT ALL ON TABLE public\.biographies TO service_role;/g,
+    biographiesAcl
+  );
+
+  // Vista non usata dall'app: niente SELECT anon (resta authenticated + service_role).
+  out = out.replace(
+    /GRANT SELECT ON TABLE public\.biography_flat TO anon;\s*\nGRANT SELECT ON TABLE public\.biography_flat TO authenticated;\s*\nGRANT SELECT ON TABLE public\.biography_flat TO service_role;/g,
+    `-- biography_flat: REVOKE anon (20261025120000); authenticated/service_role invariati
+GRANT SELECT ON TABLE public.biography_flat TO authenticated;
+GRANT SELECT ON TABLE public.biography_flat TO service_role;`
+  );
+
+  return out;
+}
+
 /** Sanitize pg_dump public schema for baseline. */
 export function sanitizePublicSchema(sql) {
   let out = String(sql);
@@ -76,6 +141,7 @@ export function sanitizePublicSchema(sql) {
   // same public-schema default ACLs as Ireland for postgres and supabase_admin
   // (tables, functions, sequences), so replaying these from the dump is unnecessary.
   out = out.replace(/\bALTER\s+DEFAULT\s+PRIVILEGES[\s\S]*?;/gi, '');
+  out = applyAnonBiographyColumnGrants(out);
   return out.trim() + '\n';
 }
 

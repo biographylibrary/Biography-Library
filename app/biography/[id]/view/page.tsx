@@ -33,6 +33,10 @@ import { formatDateWithUmYear } from '@/lib/um';
 import { resolveRecordLanguageTag } from '@/lib/record-language';
 import { isPdfScriptCovered } from '@/lib/pdf/covered-scripts';
 import { textLanguageLabels } from '@/lib/text-languages';
+import {
+  BIOGRAPHY_VIEW_SELECT,
+  PUBLIC_VIEW_SELECT,
+} from '@/lib/biography-view-select';
 
 interface BiographyViewData {
   id: string;
@@ -44,7 +48,8 @@ interface BiographyViewData {
   content: BiographyContent;
   visibility: string;
   status: string;
-  share_token: string | null;
+  /** Solo ramo autenticato / RPC share-token; mai nel select anonimo pubblico. */
+  share_token?: string | null;
   created_at: string;
   published_at: string | null;
   provisional_until?: string | null;
@@ -71,9 +76,6 @@ interface SectionWithDate {
 }
 
 type ViewError = 'not-found' | 'private' | 'invalid-token' | null;
-
-const BIOGRAPHY_VIEW_SELECT =
-  'id, title, subject_name, biography_type, author_name, um_id, content, content_freeflow, biography_mode, visibility, status, share_token, created_at, published_at, provisional_until, is_pioneer, is_frozen, frozen_at, export_txt_url, export_docx_url, listing_cover_url, record_language_tag, record_script, record_direction, translation_of, final_pdf_url';
 
 function shouldRenderFreeflowBody(
   bio: BiographyViewData,
@@ -234,7 +236,7 @@ export default function BiographyViewPage() {
       } else {
         const publicQuery = await supabase
           .from('biographies')
-          .select(BIOGRAPHY_VIEW_SELECT)
+          .select(PUBLIC_VIEW_SELECT)
           .eq('id', resolvedId)
           .eq('visibility', 'public')
           .eq('status', 'published')

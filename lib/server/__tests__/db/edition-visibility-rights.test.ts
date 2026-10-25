@@ -103,9 +103,7 @@ describe('visibilità e licenza dell\'edizione', () => {
     );
     expect(allowed[0]).toMatchObject({ ok: true });
     expect(await asAnon(`select id from biographies where id = $1`, [editionId])).toHaveLength(1);
-    expect(
-      await asAnon(`select id from biography_flat where id = $1`, [editionId])
-    ).toHaveLength(1);
+    // biography_flat: SELECT anon rimosso in 20261025120000 (vista non usata dall'app).
 
     await asAuthor(`update biographies set visibility = 'link-only' where id = $1`, [
       BIO.published,
