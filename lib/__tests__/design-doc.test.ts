@@ -17,5 +17,8 @@ describe('docs/DESIGN.md §1 tipografia', () => {
     );
     expect(src).toContain('sans (Noto Sans)');
     expect(src).toContain('serif (Noto Serif)');
+    expect(src).toContain('public/fonts/noto-sans/');
+    expect(src).toContain('public/fonts/noto-serif/');
+    expect(src).not.toContain("@import url('https://fonts.googleapis.com");
   });
 });

@@ -3,7 +3,7 @@
  * Peso 400 globale; grassetto solo in .ProseMirror / .rich-text / .echo-reply;
  * niente classi prose* (plugin non installato).
  */
-import { readFileSync, readdirSync, statSync } from 'node:fs';
+import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
 import { join, relative } from 'node:path';
 import { createElement } from 'react';
 import { cleanup, render } from '@testing-library/react';
@@ -331,16 +331,30 @@ describe('typography: CSS bold scopes and rich-text selectors', () => {
     }
   });
 
-  it('@import Noto Sans e Noto Serif con pesi 400 e 700 (anche corsivo)', () => {
-    const m = css.match(/@import url\('([^']+)'\)/);
-    expect(m).toBeTruthy();
-    const url = m![1];
-    expect(url).toMatch(/family=Noto\+Sans:ital,wght@[^&]*0,400/);
-    expect(url).toMatch(/family=Noto\+Sans:ital,wght@[^&]*0,700/);
-    expect(url).toMatch(/family=Noto\+Serif:ital,wght@[^&]*0,400/);
-    expect(url).toMatch(/family=Noto\+Serif:ital,wght@[^&]*0,700/);
-    expect(url).toMatch(/1,400/);
-    expect(url).toMatch(/1,700/);
+  it('@font-face locali Noto Sans e Noto Serif (pesi 400 e 700, normal e italic, latin e latin-ext); niente Google Fonts e tutti i file woff2 esistono', () => {
+    expect(css).not.toContain('fonts.googleapis.com');
+    expect(css).not.toContain('fonts.gstatic.com');
+    expect(css).not.toMatch(/@import\s+url\(/);
+
+    const woff2Urls = Array.from(css.matchAll(/url\(['"](\/fonts\/[^'"]+\.woff2)['"]\)/g)).map(
+      (m) => m[1]!
+    );
+    expect(woff2Urls).toHaveLength(16);
+
+    for (const family of ['noto-sans', 'noto-serif']) {
+      for (const subset of ['latin', 'latin-ext']) {
+        for (const weight of ['400', '700']) {
+          for (const style of ['normal', 'italic']) {
+            const expectedUrl = `/fonts/${family}/${family}-${subset}-${weight}-${style}.woff2`;
+            expect(woff2Urls).toContain(expectedUrl);
+            const diskPath = join(ROOT, 'public', expectedUrl);
+            expect(existsSync(diskPath), `missing font file ${diskPath}`).toBe(true);
+          }
+        }
+      }
+    }
+
+    expect(existsSync(join(ROOT, 'public/fonts/LICENSE-NOTO.txt'))).toBe(true);
   });
 });
 
