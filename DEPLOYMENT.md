@@ -306,24 +306,3 @@ Per una **sequenza operativa** (merge → migrazioni prod → env → deploy →
 
 See **[`docs/migrate/CUTOVER-RUNBOOK.md`](docs/migrate/CUTOVER-RUNBOOK.md)** for the exact day-of commands, expected checks, and rollback (`rewrite-storage-urls --reverse` + restore Ireland env on Jelastic).
 
-### Content-Security-Policy (CSP vincolante e rollback di emergenza)
-
-L'applicazione invia l'intestazione vincolante `Content-Security-Policy` definita in `lib/security-headers.js` (registrata su `/:path*` in `next.config.js`):
-- I caratteri `Noto Sans` e `Noto Serif` sono serviti localmente da `/fonts/` (`font-src 'self' data:`), senza chiamate verso Google Fonts.
-- `frame-src 'self' blob: data:` consente l'anteprima PDF generata in memoria (`components/export/AdvancedExportDialog.tsx`).
-- `script-src` mantiene per ora `'unsafe-inline'` e `'unsafe-eval'`: la loro riduzione tramite nonce/hash è un lavoro separato e non fa parte di questo rilascio.
-
-**Come tornare indietro in emergenza:**
-1. Annullare il commit che attiva la CSP vincolante (`git revert <sha-commit-csp>`) oppure, in `lib/security-headers.js`, rimettere la chiave dell'intestazione a `'Content-Security-Policy-Report-Only'`.
-2. Fare push/merge su `main` per avviare il deploy automatico su Jelastic (oppure ricostruire e riavviare il container sul nodo Jelastic).
-
-**Pagine e flussi da controllare in console dopo il rilascio (zero violazioni `Content Security Policy`):**
-- Dashboard (`/dashboard`)
-- Impostazioni (`/settings`)
-- Editor di una biografia (`/biography/[id]/edit`), inclusa l'apertura di **Esporta testo → Anteprima PDF** (`blob:` in iframe)
-- Catalogo pubblico (`/biographies`)
-- Pagina di lettura di una biografia pubblica (`/biography/[id]/view`)
-- Registrazione vocale con microfono in Echo (`audio-transcription` + `media-src`)
-- Caricamento di una foto nella galleria (`POST /api/biography/[id]/media` + anteprima immagine da Supabase Storage)
-
-
