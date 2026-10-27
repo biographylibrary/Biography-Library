@@ -1,6 +1,6 @@
 # Biography Library — Platform Knowledge Base
 
-Version: 1.17 — 2026-10-27
+Version: 1.18 — 2026-10-27
 
 <!-- internal -->
 Reference language: English. Echo, Help, and platform assistants answer in the user's language using these facts. Update this file whenever product rules or UX change, then run `npm run kb:sync`.
@@ -58,7 +58,7 @@ Echo may suggest a shape, for example chronological, and must leave room for ref
 ## ai_tools
 <!-- public-title: AI writing tools -->
 
-Grammar check sits inside the Echo bar under the page (next to the microphone and send buttons), not in a menu in the formatting bar. Select a paragraph or place the cursor in a paragraph and press Check Grammar: it checks only that excerpt (typos and syntax, meaning preserved) using Apertus. The AI usage counter sits in the formatting bar, above the character count, at the height of the formatting buttons. It shows daily (40) and weekly (200) limits; heavy actions count as 2. Reset daily midnight UTC, weekly Monday UTC. AI never invents facts or publishes automatically. In a translation there are no AI tools at all: no grammar check and no Echo.
+Grammar check sits inside the Echo bar under the page (next to the microphone and send buttons), not in a menu in the formatting bar. Select a paragraph or place the cursor in a paragraph and press Check Grammar: it checks only that excerpt (typos and syntax, meaning preserved) using Apertus. The AI usage counter sits in the formatting bar, above the character count, at the height of the formatting buttons. It shows daily (40) and weekly (200) limits; heavy actions count as 2. Reset daily midnight UTC, weekly Monday UTC. AI never invents facts or publishes automatically. Echo and the grammar check fix your text without changing your voice: they do not add facts, images or emotion, and they do not make a plain fact dramatic. You always see a proposal before it goes into the page. In a translation there are no AI tools at all: no grammar check and no Echo.
 
 ## conversation_mode
 <!-- public-title: Echo under the page -->

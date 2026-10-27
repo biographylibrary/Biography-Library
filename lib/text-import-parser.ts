@@ -138,7 +138,7 @@ function mergeParsed(results: ParsedText[]): ParsedText {
 }
 
 /** Import keeps h1–h6 so detectSectionsFromHtml still finds chapters. Paste flattens them. */
-const IMPORT_CLEAN = { preserveHeadings: true } as const;
+const IMPORT_CLEAN = { preserveHeadings: true, sceneBreaks: true } as const;
 
 function toArchiveMarkdown(htmlOrMd: string): { markdown: string; warnings: ContentCleanWarning[] } {
   const cleaned = cleanEditorIncomingHtml(htmlOrMd, IMPORT_CLEAN);

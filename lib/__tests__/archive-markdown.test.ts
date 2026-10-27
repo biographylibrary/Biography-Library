@@ -203,3 +203,16 @@ describe('incolla e importazione di elenchi', () => {
     expect(storedToPlainText(md)).toBe('При\ny');
   });
 });
+
+describe('separatore di scena importato da un file', () => {
+  it('un paragrafo «* * *» diventa un separatore, non testo con asterischi', () => {
+    const clean = (html: string) => cleanEditorIncomingHtml(html, { preserveHeadings: true, sceneBreaks: true }).html;
+    expect(clean('<p>Prima</p><p>* * *</p><p>Dopo</p>')).toBe('<p>Prima</p><hr><p>Dopo</p>');
+    expect(clean('<p>Prima</p><p>---</p><p>Dopo</p>')).toBe('<p>Prima</p><hr><p>Dopo</p>');
+    expect(clean('<p>Un asterisco * solo</p>')).toBe('<p>Un asterisco * solo</p>');
+  });
+
+  it('incollando, «***» resta testo come scritto', () => {
+    expect(cleanEditorIncomingHtml('<p>***</p>').html).toBe('<p>***</p>');
+  });
+});

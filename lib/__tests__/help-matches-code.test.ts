@@ -1,6 +1,9 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
+import { getModelParams } from '@/lib/agents/models';
+import { FAITHFUL_WRITING_RULES } from '@/lib/agents/prompts/plain-meaning';
+import { GRAMMAR_MODEL_PARAMS } from '@/lib/ai/grammar';
 import { GRAMMAR_DAILY_LIMIT, GRAMMAR_WEEKLY_LIMIT } from '@/lib/ai/grammar-limits';
 import { ECHO_MAX_RECORDING_SECONDS, ECHO_RECORDING_WARNING_SECONDS } from '@/lib/echo/recording-limits';
 import { BOOK_PART_DEFS } from '@/lib/book-parts';
@@ -81,6 +84,19 @@ describe('la guida e il codice dicono lo stesso', () => {
       expect(text).toContain('REC');
       expect(text.match(/\d+/g)).toEqual(expect.arrayContaining([minutes, warning]));
     }
+  });
+
+  it('IA: la guida promette di non cambiare la voce, e le istruzioni al modello lo impongono', () => {
+    const promise: Record<Locale, RegExp> = {
+      en: /without changing your voice/,
+      it: /senza cambiare la tua voce/,
+      fr: /sans changer votre voix/,
+      de: /ohne Ihre Stimme zu verändern/,
+    };
+    for (const locale of LOCALES) expect(KB[locale].ai_tools).toMatch(promise[locale]);
+    expect(FAITHFUL_WRITING_RULES).toContain('Ordinary things stay ordinary');
+    expect(getModelParams('coach').temperature).toBeLessThanOrEqual(0.3);
+    expect(GRAMMAR_MODEL_PARAMS.temperature).toBeLessThanOrEqual(0.3);
   });
 
   it('controllo grammaticale: limiti giornaliero e settimanale', () => {

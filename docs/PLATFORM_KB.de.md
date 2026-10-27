@@ -1,6 +1,6 @@
 # Biography Library — Plattform-Wissensbasis
 
-Version: 1.17 — 2026-10-27
+Version: 1.18 — 2026-10-27
 
 <!-- internal -->
 Sprache dieser Übersetzung: Deutsch. An docs/PLATFORM_KB.md (EN) ausrichten. Nach jeder Änderung: npm run kb:sync.
@@ -36,7 +36,7 @@ Während Sie an einer Biografie arbeiten, bewahrt Echo ein privates Gedächtnis 
 ## ai_tools
 <!-- public-title: KI-Schreibwerkzeuge -->
 
-Die Grammatikprüfung liegt im Echo-Bereich unter der Seite (neben den Mikrofon- und Senden-Schaltflächen), nicht in einem Menü in der Formatierungsleiste. Markieren Sie einen Absatz oder setzen Sie den Cursor in einen Absatz und drücken Sie Grammatik Prüfen: Es wird nur dieser Abschnitt geprüft (Tippfehler und Syntax, Bedeutung bleibt erhalten), mit Apertus. Der Nutzungszähler bleibt in der Formatierungsleiste, über der Zeichenzahl, so hoch wie die Schaltflächen. Tageslimit 40, Wochenlimit 200; schwere Aktionen zählen 2. Reset Mitternacht UTC und Montag UTC. Die KI erfindet keine Fakten und veröffentlicht nicht von allein. In einer Übersetzung gibt es keine KI-Werkzeuge: weder Grammatikprüfung noch Echo.
+Die Grammatikprüfung liegt im Echo-Bereich unter der Seite (neben den Mikrofon- und Senden-Schaltflächen), nicht in einem Menü in der Formatierungsleiste. Markieren Sie einen Absatz oder setzen Sie den Cursor in einen Absatz und drücken Sie Grammatik Prüfen: Es wird nur dieser Abschnitt geprüft (Tippfehler und Syntax, Bedeutung bleibt erhalten), mit Apertus. Der Nutzungszähler bleibt in der Formatierungsleiste, über der Zeichenzahl, so hoch wie die Schaltflächen. Tageslimit 40, Wochenlimit 200; schwere Aktionen zählen 2. Reset Mitternacht UTC und Montag UTC. Die KI erfindet keine Fakten und veröffentlicht nicht von allein. Echo und die Grammatikprüfung korrigieren Ihren Text, ohne Ihre Stimme zu verändern: Sie fügen keine Fakten, Bilder oder Gefühle hinzu und machen eine schlichte Tatsache nicht dramatisch. Sie sehen jeden Vorschlag, bevor er auf die Seite kommt. In einer Übersetzung gibt es keine KI-Werkzeuge: weder Grammatikprüfung noch Echo.
 
 ## conversation_mode
 <!-- public-title: Echo unter der Seite -->

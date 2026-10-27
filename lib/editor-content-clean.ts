@@ -20,6 +20,8 @@ export type CleanedEditorContent = {
  */
 export type CleanEditorOptions = {
   preserveHeadings?: boolean;
+  /** Importazione da file: un paragrafo «* * *» è un separatore di scena. Nell'incolla resta testo. */
+  sceneBreaks?: boolean;
 };
 
 const DROP_TAGS = new Set([
@@ -98,6 +100,8 @@ function isElement(node: Node): node is HTMLElement {
 function tagName(el: HTMLElement): string {
   return (el.rawTagName || el.tagName || '').toLowerCase();
 }
+
+const SCENE_BREAK_TEXT = /^(?:\*\s*){3,}$|^(?:-\s*){3,}$|^(?:_\s*){3,}$/;
 
 function escapeHtmlText(text: string): string {
   return text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
@@ -328,11 +332,18 @@ function serializeCleanBlocks(
   options: CleanEditorOptions = {}
 ): string {
   const preserveHeadings = options.preserveHeadings === true;
+  const sceneBreaks = options.sceneBreaks === true;
   const parts: string[] = [];
   let listBuffer: ListBuffer | null = null;
 
   const pushParagraph = (inner: string) => {
     listBuffer = flushList(listBuffer, parts);
+    // Un paragrafo fatto solo di «* * *», «---» o «___» è un separatore di scena (così lo scrive
+    // anche l'esportazione in Word), non testo con asterischi.
+    if (sceneBreaks && SCENE_BREAK_TEXT.test(inner.replace(/<[^>]+>/g, '').replace(/&nbsp;/g, ' ').trim())) {
+      parts.push('<hr>');
+      return;
+    }
     if (inner) parts.push(`<p>${inner}</p>`);
   };
 
