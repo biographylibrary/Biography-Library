@@ -263,6 +263,65 @@ function flushList(buffer: ListBuffer | null, parts: string[]): ListBuffer | nul
   return null;
 }
 
+/**
+ * Una voce di elenco con tutto il suo contenuto: ogni paragrafo, ogni a capo e ogni sotto-elenco,
+ * nell'ordine in cui stanno. Prima si teneva solo il primo paragrafo e il resto spariva senza
+ * avviso (incollando da Word o importando un .docx con voci su più paragrafi o con sotto-elenchi).
+ */
+function serializeCleanListItem(li: HTMLElement): string {
+  const blocks: string[] = [];
+  let run: Node[] = [];
+  const flush = () => {
+    if (!run.length) return;
+    const inner = serializeCleanInline(run)
+      .trim()
+      .replace(/^(?:<br>\s*)+|(?:\s*<br>)+$/g, '')
+      .trim();
+    if (inner) blocks.push(`<p>${inner}</p>`);
+    run = [];
+  };
+  const collect = (nodes: Node[]) => {
+    for (const child of nodes) {
+      if (isElement(child)) {
+        const tag = tagName(child);
+        if (DROP_TAGS.has(tag)) continue;
+        if (tag === 'ul' || tag === 'ol') {
+          flush();
+          const nested = serializeCleanList(child);
+          if (nested) blocks.push(nested);
+          continue;
+        }
+        if (tag === 'p' || /^h[1-6]$/.test(tag)) {
+          flush();
+          run = [...child.childNodes];
+          flush();
+          continue;
+        }
+        if (tag === 'div' || tag === 'section' || tag === 'article' || tag === 'blockquote') {
+          flush();
+          collect(child.childNodes);
+          flush();
+          continue;
+        }
+      }
+      run.push(child);
+    }
+  };
+  collect(li.childNodes);
+  flush();
+  return blocks.length ? `<li>${blocks.join('')}</li>` : '';
+}
+
+function serializeCleanList(list: HTMLElement): string {
+  const tag = tagName(list);
+  const items = list.childNodes
+    .filter((child): child is HTMLElement => isElement(child) && tagName(child) === 'li')
+    .map(serializeCleanListItem)
+    .filter(Boolean)
+    .join('');
+  return items ? `<${tag}>${items}</${tag}>` : '';
+}
+
 function serializeCleanBlocks(
   nodes: Node[],
   warnings: Set<ContentCleanWarning>,
@@ -403,23 +462,8 @@ function serializeCleanBlocks(
         (child): child is HTMLElement => isElement(child) && tagName(child) === 'li'
       );
       if (items.length === 0) continue;
-      const lis = items
-        .map((li) => {
-          if (hasBlockChild(li.childNodes)) {
-            const nested = serializeCleanBlocks(li.childNodes, warnings, options);
-            // Prefer first paragraph text inside the item (already HTML-escaped).
-            const m = /<p>([\s\S]*?)<\/p>/i.exec(nested);
-            if (m?.[1]) return `<li><p>${m[1]}</p></li>`;
-            // plainInlineText is decoded — escape before putting it back into HTML.
-            const plain = plainInlineText(li.childNodes);
-            return plain ? `<li><p>${escapeHtmlText(plain)}</p></li>` : '';
-          }
-          const inner = serializeCleanInline(li.childNodes).trim();
-          return inner ? `<li><p>${inner}</p></li>` : '';
-        })
-        .filter(Boolean)
-        .join('');
-      if (lis) parts.push(`<${tag}>${lis}</${tag}>`);
+      const list = serializeCleanList(node);
+      if (list) parts.push(list);
       continue;
     }
 

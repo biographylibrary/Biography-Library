@@ -62,9 +62,9 @@ export function structureFromArchiveHtml(html: string): ArchiveDocStructure {
         // TipTap wraps list-item text in <p>; markdown-it often does not.
         // Count only free paragraphs so both sides agree.
         if (parentTag !== 'li') {
+          // Un paragrafo con solo a capo forzati non sopravvive al salvataggio: non si conta.
           const text = node.text.replace(/\u00a0/g, ' ').trim();
-          const hasBr = node.querySelector('br');
-          if (text || hasBr) counts.paragraphs += 1;
+          if (text) counts.paragraphs += 1;
         }
       } else if (tag === 'h1' || tag === 'h2' || tag === 'h3') counts.headings += 1;
       else if (tag === 'hr') counts.horizontalRules += 1;
@@ -97,15 +97,13 @@ export function structureFromEditorDoc(editor: Editor): ArchiveDocStructure {
         if (parent?.type.name === 'listItem') break;
         // TipTap often keeps a trailing empty paragraph; ignore empties.
         const text = node.textBetween(0, node.content.size, '\n', '\n').trim();
-        let hasHardBreak = false;
-        node.forEach((child) => {
-          if (child.type.name === 'hardBreak') hasHardBreak = true;
-        });
-        if (text || hasHardBreak) counts.paragraphs += 1;
+        if (text) counts.paragraphs += 1;
         break;
       }
       case 'heading':
-        counts.headings += 1;
+        // Un titolo vuoto (H1 premuto su una riga vuota) non finisce nel testo salvato: come i
+        // paragrafi vuoti non si conta, altrimenti la guardia blocca chi non ha sbagliato niente.
+        if (node.textContent.trim()) counts.headings += 1;
         break;
       case 'horizontalRule':
         counts.horizontalRules += 1;

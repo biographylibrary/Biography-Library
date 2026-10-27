@@ -43,6 +43,19 @@ const MOBILE_STYLE_ORDER: MobileStyleKey[] = [
   'italic',
 ];
 
+/** Vero se l'inizio o la fine della selezione sta dentro una voce di elenco. */
+function selectionInList(editor: Editor): boolean {
+  const selection = editor.state?.selection;
+  if (!selection) return editor.isActive('listItem');
+  const { $from, $to } = selection;
+  return [$from, $to].some((pos) => {
+    for (let depth = pos.depth; depth > 0; depth--) {
+      if (pos.node(depth).type.name === 'listItem') return true;
+    }
+    return false;
+  });
+}
+
 function isMobileStyleActive(editor: Editor, key: MobileStyleKey): boolean {
   switch (key) {
     case 'bold':
@@ -128,7 +141,9 @@ export function RichTextToolbar({
     chain.focus();
     if (key === 'bold') chain.toggleBold();
     else if (key === 'italic') chain.toggleItalic();
-    else if (key === 'title') chain.toggleHeading({ level: 1 });
+    else if (key === 'title') {
+      if (!selectionInList(editor)) chain.toggleHeading({ level: 1 });
+    }
     else if (key === 'bullet') chain.toggleBulletList();
     else if (key === 'number') chain.toggleOrderedList();
     else chain.toggleBlockquote();
@@ -224,6 +239,8 @@ export function RichTextToolbar({
           )}
           data-tour-id="chapter-title-btn"
           title={t.formatting.chapterTitle}
+          // Un titolo non sta dentro una voce di elenco: nel testo salvato diventerebbe testo semplice.
+          disabled={selectionInList(editor)}
           onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}
         >
           {t.formatting.chapterTitle}
@@ -254,6 +271,7 @@ export function RichTextToolbar({
             </DropdownMenuItem>
             <DropdownMenuItem
               onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}
+              disabled={selectionInList(editor)}
               className={cn(
                 'flex items-center gap-2',
                 editor.isActive('heading', { level: 1 }) && 'bg-accent'
@@ -264,6 +282,7 @@ export function RichTextToolbar({
             </DropdownMenuItem>
             <DropdownMenuItem
               onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
+              disabled={selectionInList(editor)}
               className={cn(
                 'flex items-center gap-2',
                 editor.isActive('heading', { level: 2 }) && 'bg-accent'
@@ -274,6 +293,7 @@ export function RichTextToolbar({
             </DropdownMenuItem>
             <DropdownMenuItem
               onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()}
+              disabled={selectionInList(editor)}
               className={cn(
                 'flex items-center gap-2',
                 editor.isActive('heading', { level: 3 }) && 'bg-accent'
@@ -312,6 +332,8 @@ export function RichTextToolbar({
         <ToolbarButton
           onClick={() => editor.chain().focus().setHorizontalRule().run()}
           isActive={false}
+          // Il separatore sta tra i blocchi: dentro una voce di elenco non verrebbe salvato.
+          disabled={selectionInList(editor)}
           title={t.formatting.separator}
           icon={SeparatorHorizontal}
         />

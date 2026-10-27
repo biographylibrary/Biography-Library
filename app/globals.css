@@ -373,14 +373,14 @@
   font-weight: 700 !important;
 }
 
-/* Le parole appena cambiate da Echo: grassetto (sopra) e fondo giallo tenue, per qualche secondo. */
+/* Le parole appena inserite o cambiate da Echo: grassetto (sopra) e fondo verde tenue (lo stesso di tone-success), per qualche secondo. */
 .ProseMirror .echo-just-changed {
-  background-color: rgb(221 207 136 / 0.6);
+  background-color: #C8DFBE;
   border-radius: 2px;
 }
 
 .dark .ProseMirror .echo-just-changed {
-  background-color: rgb(221 207 136 / 0.3);
+  background-color: rgb(200 223 190 / 0.3);
 }
 
 :is(.ProseMirror, .rich-text) em,
