@@ -1,4 +1,5 @@
-import { Document, Paragraph, TextRun, HeadingLevel, AlignmentType } from 'docx';
+import { Document, Paragraph, TextRun, HeadingLevel, AlignmentType, LevelFormat } from 'docx';
+import { parse, NodeType, type HTMLElement, type Node } from 'node-html-parser';
 import JSZip from 'jszip';
 import { saveAs } from 'file-saver';
 import { storedToPlainText, storedToSafeHtml } from '@/lib/archive-markdown';
@@ -22,106 +23,162 @@ export function stripHtmlTags(html: string): string {
   return storedToPlainText(html ?? '');
 }
 
-interface InlineRun {
-  text: string;
-  bold: boolean;
-  italic: boolean;
+const DOCX_FONT = 'Times New Roman';
+const DOCX_SIZE = 24;
+const DOCX_ORDERED = 'bl-ordered';
+const DOCX_LEVELS = 5;
+let docxListInstance = 0;
+
+/** Numerazione degli elenchi numerati: ogni elenco riparte da 1 (un `instance` per elenco). */
+export const DOCX_NUMBERING = {
+  config: [
+    {
+      reference: DOCX_ORDERED,
+      levels: Array.from({ length: DOCX_LEVELS }, (_, level) => ({
+        level,
+        format: LevelFormat.DECIMAL,
+        text: `%${level + 1}.`,
+        alignment: AlignmentType.LEFT,
+        style: { paragraph: { indent: { left: 720 * (level + 1), hanging: 360 } } },
+      })),
+    },
+  ],
+};
+
+function newDocument(children: Paragraph[]): Document {
+  return new Document({ numbering: DOCX_NUMBERING, sections: [{ properties: {}, children }] });
 }
 
-function parseHtmlIntoRuns(html: string): InlineRun[] {
-  const runs: InlineRun[] = [];
-  let pos = 0;
-  let bold = false;
-  let italic = false;
-
-  const tagRe = /<(\/?)(\w+)[^>]*>/gi;
-  let match: RegExpExecArray | null;
-
-  tagRe.lastIndex = 0;
-
-  while ((match = tagRe.exec(html)) !== null) {
-    const before = html.slice(pos, match.index);
-    if (before) {
-      const text = before
-        .replace(/&amp;/g, '&')
-        .replace(/&lt;/g, '<')
-        .replace(/&gt;/g, '>')
-        .replace(/&nbsp;/g, ' ')
-        .replace(/&quot;/g, '"')
-        .replace(/&#39;/g, "'");
-      if (text) runs.push({ text, bold, italic });
-    }
-    pos = match.index + match[0].length;
-
-    const closing = match[1] === '/';
-    const tag = match[2].toLowerCase();
-
-    if (tag === 'strong' || tag === 'b') {
-      bold = !closing;
-    } else if (tag === 'em' || tag === 'i') {
-      italic = !closing;
-    }
-  }
-
-  const remaining = html.slice(pos);
-  if (remaining) {
-    const text = remaining
-      .replace(/&amp;/g, '&')
-      .replace(/&lt;/g, '<')
-      .replace(/&gt;/g, '>')
-      .replace(/&nbsp;/g, ' ')
-      .replace(/&quot;/g, '"')
-      .replace(/&#39;/g, "'");
-    if (text.trim()) runs.push({ text, bold, italic });
-  }
-
-  return runs.filter((r) => r.text.trim() !== '' || r.text === ' ');
+function isElement(node: Node): node is HTMLElement {
+  return node.nodeType === NodeType.ELEMENT_NODE;
 }
 
-function htmlToParagraphs(html: string): InlineRun[][] {
-  const paragraphs: InlineRun[][] = [];
+function tagOf(el: HTMLElement): string {
+  return (el.rawTagName || el.tagName || '').toLowerCase();
+}
 
-  const normalized = html
-    .replace(/<\/p>\s*<p[^>]*>/gi, '\n\n')
-    .replace(/<p[^>]*>/gi, '')
-    .replace(/<\/p>/gi, '\n\n')
-    .replace(/<br\s*\/?>/gi, '\n');
+/** Parti di testo in linea, con grassetto, corsivo e a capo forzati (`<br>` → vero a capo di Word). */
+function docxRuns(nodes: Node[], bold = false, italic = false): TextRun[] {
+  const out: TextRun[] = [];
+  nodes.forEach((node, index) => {
+    if (node.nodeType === NodeType.TEXT_NODE) {
+      let text = node.text.replace(/ /g, ' ');
+      const previous = nodes[index - 1];
+      // markdown-it scrive `<br>` seguito da un a capo letterale: è lo stesso a capo.
+      if (previous && isElement(previous) && tagOf(previous) === 'br') text = text.replace(/^\n+/, '');
+      text = text.replace(/\n+/g, ' ');
+      if (text) out.push(new TextRun({ text, bold, italics: italic, font: DOCX_FONT, size: DOCX_SIZE }));
+      return;
+    }
+    if (!isElement(node)) return;
+    const tag = tagOf(node);
+    if (tag === 'br') out.push(new TextRun({ break: 1 }));
+    else if (tag === 'strong' || tag === 'b') out.push(...docxRuns(node.childNodes, true, italic));
+    else if (tag === 'em' || tag === 'i') out.push(...docxRuns(node.childNodes, bold, true));
+    else if (tag === 'script' || tag === 'style') return;
+    else out.push(...docxRuns(node.childNodes, bold, italic));
+  });
+  return out;
+}
 
-  const parts = normalized.split(/\n\n+/);
+const HEADING_LEVELS = {
+  h1: HeadingLevel.HEADING_1,
+  h2: HeadingLevel.HEADING_2,
+  h3: HeadingLevel.HEADING_3,
+} as const;
 
-  for (const part of parts) {
-    const trimmed = part.trim();
-    if (!trimmed) continue;
-    const runs = parseHtmlIntoRuns(trimmed);
-    if (runs.length > 0) paragraphs.push(runs);
+function hasText(runs: TextRun[]): boolean {
+  return runs.length > 0;
+}
+
+/** Una lista, voce per voce: elenco puntato o numerato, con sotto-elenchi e paragrafi di continuazione. */
+function docxList(list: HTMLElement, depth: number): Paragraph[] {
+  const ordered = tagOf(list) === 'ol';
+  const instance = ordered ? ++docxListInstance : 0;
+  const level = Math.min(depth, DOCX_LEVELS - 1);
+  const out: Paragraph[] = [];
+  for (const li of list.childNodes) {
+    if (!isElement(li) || tagOf(li) !== 'li') continue;
+    let first = true;
+    let loose: Node[] = [];
+    const flush = () => {
+      const runs = docxRuns(loose);
+      loose = [];
+      if (!hasText(runs)) return;
+      out.push(
+        first
+          ? new Paragraph(
+              ordered
+                ? { numbering: { reference: DOCX_ORDERED, level, instance }, children: runs }
+                : { bullet: { level }, children: runs }
+            )
+          : new Paragraph({ indent: { left: 720 * (level + 1) }, children: runs })
+      );
+      first = false;
+    };
+    for (const child of li.childNodes) {
+      if (isElement(child) && (tagOf(child) === 'ul' || tagOf(child) === 'ol')) {
+        flush();
+        out.push(...docxList(child, depth + 1));
+      } else if (isElement(child) && tagOf(child) === 'p') {
+        flush();
+        loose = [...child.childNodes];
+        flush();
+      } else {
+        loose.push(child);
+      }
+    }
+    flush();
   }
+  return out;
+}
 
-  return paragraphs;
+function docxBlocks(nodes: Node[]): Paragraph[] {
+  const out: Paragraph[] = [];
+  const spacer = () => out.push(new Paragraph({ text: '' }));
+  for (const node of nodes) {
+    if (node.nodeType === NodeType.TEXT_NODE) {
+      const runs = docxRuns([node]);
+      if (node.text.trim() && hasText(runs)) {
+        out.push(new Paragraph({ children: runs }));
+        spacer();
+      }
+      continue;
+    }
+    if (!isElement(node)) continue;
+    const tag = tagOf(node);
+    if (tag === 'script' || tag === 'style') continue;
+    if (tag === 'h1' || tag === 'h2' || tag === 'h3') {
+      const runs = docxRuns(node.childNodes, true);
+      if (hasText(runs)) out.push(new Paragraph({ heading: HEADING_LEVELS[tag], children: runs }));
+    } else if (tag === 'p') {
+      const runs = docxRuns(node.childNodes);
+      if (hasText(runs)) {
+        out.push(new Paragraph({ children: runs }));
+        spacer();
+      }
+    } else if (tag === 'ul' || tag === 'ol') {
+      out.push(...docxList(node, 0));
+      spacer();
+    } else if (tag === 'blockquote') {
+      for (const quoted of docxBlocks(node.childNodes)) out.push(quoted);
+    } else if (tag === 'hr') {
+      out.push(
+        new Paragraph({
+          alignment: AlignmentType.CENTER,
+          children: [new TextRun({ text: '* * *', font: DOCX_FONT, size: DOCX_SIZE })],
+        })
+      );
+      spacer();
+    } else {
+      out.push(...docxBlocks(node.childNodes));
+    }
+  }
+  return out;
 }
 
 function buildDocxParagraphsFromHtml(html: string): Paragraph[] {
-  const paragraphRuns = htmlToParagraphs(storedToSafeHtml(html));
-  const result: Paragraph[] = [];
-
-  for (const runs of paragraphRuns) {
-    result.push(
-      new Paragraph({
-        children: runs.map(
-          (r) =>
-            new TextRun({
-              text: r.text,
-              bold: r.bold,
-              italics: r.italic,
-              font: 'Times New Roman',
-              size: 24,
-            })
-        ),
-      })
-    );
-    result.push(new Paragraph({ text: '' }));
-  }
-
-  return result;
+  return docxBlocks(parse(storedToSafeHtml(html), { comment: false }).childNodes);
 }
 
 function buildHeader(biography: BiographyData): string[] {
@@ -333,7 +390,7 @@ export async function exportAsDOCX(
       ...buildCoverParagraphs(),
       ...buildDocxParagraphsFromHtml(biography.content_freeflow || ''),
     ];
-    const doc = new Document({ sections: [{ properties: {}, children }] });
+    const doc = newDocument(children);
     const blob = await Packer.toBlob(doc);
     saveAs(blob, `${baseFileName}.docx`);
     return;
@@ -349,7 +406,7 @@ export async function exportAsDOCX(
         new Paragraph({ text: '' }),
         ...buildDocxParagraphsFromHtml(section.content),
       ];
-      const doc = new Document({ sections: [{ properties: {}, children }] });
+      const doc = newDocument(children);
       const blob = await Packer.toBlob(doc);
       zip.file(`${section.key}.docx`, blob);
     }
@@ -369,7 +426,7 @@ export async function exportAsDOCX(
       );
     });
 
-    const doc = new Document({ sections: [{ properties: {}, children }] });
+    const doc = newDocument(children);
     const blob = await Packer.toBlob(doc);
     saveAs(blob, `${baseFileName}.docx`);
   }
@@ -424,6 +481,6 @@ export async function buildBiographyDocxBuffer(
     );
   });
 
-  const doc = new Document({ sections: [{ properties: {}, children }] });
+  const doc = newDocument(children);
   return Packer.toBuffer(doc);
 }

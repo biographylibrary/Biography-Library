@@ -1,6 +1,6 @@
 # Biography Library — Plattform-Wissensbasis
 
-Version: 1.15 — 2026-10-19
+Version: 1.17 — 2026-10-27
 
 <!-- internal -->
 Sprache dieser Übersetzung: Deutsch. An docs/PLATFORM_KB.md (EN) ausrichten. Nach jeder Änderung: npm run kb:sync.
@@ -41,12 +41,12 @@ Die Grammatikprüfung liegt im Echo-Bereich unter der Seite (neben den Mikrofon-
 ## conversation_mode
 <!-- public-title: Echo unter der Seite -->
 
-Es gibt keinen separaten Konversationsmodus. Die Biografie ist eine einzige Seite und immer bearbeitbar. Echo steht darunter: schwarzer Streifen «Echo — dein Schreibassistent», standardmäßig offen. Schließen blendet Chat, Feld und Symbole aus. Ein Entwurf kommt nur auf die Seite, wenn Sie ihn annehmen. Der Chat wird nicht kopiert. Ältere Gespräche bleiben und öffnen sich über Frühere Gespräche. Es gibt keine schwebende Schaltfläche.
+Es gibt keinen separaten Konversationsmodus. Die Biografie ist eine einzige Seite und immer bearbeitbar. Echo steht darunter: schwarzer Streifen «Echo — dein Schreibassistent», standardmäßig offen. Schließen blendet Chat, Feld und Symbole aus. Ein Entwurf kommt nur auf die Seite, wenn Sie ihn annehmen. Der Chat wird nicht kopiert. Ältere Gespräche bleiben und öffnen sich über Frühere Gespräche. Es gibt keine schwebende Schaltfläche. Stimme: Das Mikrofon nimmt bis zu 5 Minuten am Stück auf. Während der Aufnahme zeigt ein roter REC-Streifen die vergangene und die verbleibende Zeit, und die Schaltfläche wird zu einem Stopp-Quadrat. 30 Sekunden vor dem Ende erscheint eine Warnung; am Limit endet die Aufnahme und wird von selbst in Text umgewandelt. Schlägt die Umwandlung fehl, sendet eine Schaltfläche zum erneuten Versuch dieselbe Aufnahme noch einmal.
 
 ## editor_interface
 <!-- public-title: Der Editor -->
 
-Der Editor hat keine obere Leiste. Im linken Menü: Titel (Klick zum Umbenennen), so groß wie die Kapiteltitel, und Autorenname, dann die Kapitelliste, die sich nur füllt, wenn ein Kapiteltitel gesetzt ist. Unten: Speicherstatus, Text importieren immer sichtbar, dann Exportieren immer sichtbar, eine Linie, dann Werkzeuge. Darin: Sichtbarkeit (öffnet ein Fenster zur Auswahl zwischen Privat als Standard, Familie mit kopierbarem Link zum Lesen ohne Konto, und Öffentlich mit Lizenzauswahl), Meine Angaben oder Wer diese Person war, Notizen, Fotos, Buchstruktur, Überprüfung und Veröffentlichung. Auf Smartphone und Tablet öffnet dasselbe Menü das Symbol links in der Kopfzeile. 
+Der Editor hat keine obere Leiste. Im linken Menü: Titel (Klick zum Umbenennen), so groß wie die Kapiteltitel, und Autorenname, dann die Kapitelliste, die sich nur füllt, wenn ein Kapiteltitel gesetzt ist. Unten: Speicherstatus, Text importieren immer sichtbar, dann Exportieren immer sichtbar, eine Linie, dann Werkzeuge. Darin: Sichtbarkeit (öffnet ein Fenster zur Auswahl zwischen Privat als Standard, Familie mit kopierbarem Link zum Lesen ohne Konto, und Öffentlich mit Lizenzauswahl), Meine Angaben oder Wer diese Person war, Notizen, Fotos, Buchstruktur, Überprüfung und Veröffentlichung. Bei einem Original wird die Textsprache unter Werkzeuge, Sprache des Textes gewählt; die Schaltfläche Sprache neben der Schriftgröße führt dorthin. Auf Smartphone und Tablet öffnet dasselbe Menü das Symbol links in der Kopfzeile. 
 <!-- internal -->
 Admin ist nur im Kontomenü rechts, in jeder Größe.
 <!-- /internal -->
@@ -78,7 +78,7 @@ Buchstruktur-Panel: optionales Vorspann (Widmung, Epigraph, Vorwort) und Nachspa
 ## import_export
 <!-- public-title: Importieren und exportieren -->
 
-Text importieren ist immer sichtbar, direkt vor Exportieren. .txt, .rtf oder .docx werden auf die Seite eingefügt oder hochgeladen. Ein digitales PDF, dessen Text sich auswählen lässt, wird ebenfalls angenommen, bis 30 MB. Zuerst wird gefragt, ob das Originalcover behalten werden soll. Wenn ja, ist dieses Bild Seite 1 des erzeugten PDF. Weicht die Form von der Buchseite ab (176×250 mm), wird es nicht gestreckt: es bleibt mittig mit einem beigen Rand, derselben Farbe wie die Rückseite. Passt die Form schon, füllt es die Seite. Fett, Kursiv und Titel bleiben nur, wenn die PDF-Schrift sie noch verzeichnet. Überschriften werden Kapitel. Text ohne Überschriften bleibt ganz. Der Innenteil wird neu als Text gesetzt, nicht als Foto der Seiten. Ist das PDF nur ein Foto oder ein Scan, wird das klar gesagt, ohne Schrifterkennung zu versprechen. Ist schon Text da, erscheint die Frage, ob er ersetzt oder der neue Text unten angefügt wird. Nichts ist vorausgewählt. Text importieren ist immer sichtbar, direkt vor Exportieren. Export ist PDF, Word und Text der ganzen Seite. Die exportierte Datei gehört Ihnen.
+Text importieren ist immer sichtbar, direkt vor Exportieren. .txt, .rtf oder .docx werden auf die Seite eingefügt oder hochgeladen; eine .txt-, .rtf- oder .docx-Datei darf bis zu 5 MB groß sein. Ein digitales PDF, dessen Text sich auswählen lässt, wird ebenfalls angenommen, bis 30 MB. Zuerst wird gefragt, ob das Originalcover behalten werden soll. Wenn ja, ist dieses Bild Seite 1 des erzeugten PDF. Weicht die Form von der Buchseite ab (176×250 mm), wird es nicht gestreckt: es bleibt mittig mit einem beigen Rand, derselben Farbe wie die Rückseite. Passt die Form schon, füllt es die Seite. Fett, Kursiv und Titel bleiben nur, wenn die PDF-Schrift sie noch verzeichnet. Überschriften werden Kapitel. Text ohne Überschriften bleibt ganz. Der Innenteil wird neu als Text gesetzt, nicht als Foto der Seiten. Ist das PDF nur ein Foto oder ein Scan, wird das klar gesagt, ohne Schrifterkennung zu versprechen. Ist schon Text da, erscheint die Frage, ob er ersetzt oder der neue Text unten angefügt wird. Nichts ist vorausgewählt. Text importieren ist immer sichtbar, direkt vor Exportieren. Export ist PDF, Word und Text der ganzen Seite. Die exportierte Datei gehört Ihnen.
 
 ## translations
 <!-- public-title: Übersetzungen -->

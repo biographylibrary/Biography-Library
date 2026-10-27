@@ -1,6 +1,6 @@
 # Biography Library — Base di conoscenza della piattaforma
 
-Version: 1.15 — 2026-10-19
+Version: 1.17 — 2026-10-27
 
 <!-- internal -->
 Lingua di questa traduzione: italiano. Allineare a docs/PLATFORM_KB.md (EN). Dopo ogni modifica: npm run kb:sync.
@@ -41,12 +41,12 @@ Il controllo grammaticale sta nel pannello di Echo sotto il foglio (accanto ai p
 ## conversation_mode
 <!-- public-title: Echo sotto il foglio -->
 
-Non esiste una modalità conversazione separata. La biografia è un solo foglio, sempre modificabile. Echo sta sotto: striscia nera «Echo - il tuo assistente alla scrittura», aperta di default. Chiuderla nasconde chat, campo e icone. Una bozza entra nel foglio solo se la accetti. La chat non viene copiata. Le conversazioni vecchie restano e si aprono con Conversazioni precedenti. Non c’è un pulsante flottante.
+Non esiste una modalità conversazione separata. La biografia è un solo foglio, sempre modificabile. Echo sta sotto: striscia nera «Echo - il tuo assistente alla scrittura», aperta di default. Chiuderla nasconde chat, campo e icone. Una bozza entra nel foglio solo se la accetti. La chat non viene copiata. Le conversazioni vecchie restano e si aprono con Conversazioni precedenti. Non c’è un pulsante flottante. Voce: il microfono registra fino a 5 minuti per volta. Mentre registri compare una striscia rossa REC con il tempo trascorso e quello che resta, e il pulsante diventa un quadrato di stop. 30 secondi prima della fine arriva un avviso; allo scadere la registrazione si ferma e viene trascritta da sola. Se la trascrizione non riesce, un pulsante di nuovo tentativo invia di nuovo la stessa registrazione.
 
 ## editor_interface
 <!-- public-title: L’editor -->
 
-L'editor non ha una barra in alto. Nel menu a sinistra: titolo (clic per rinominare), grande come i titoli dei capitoli, e nome dell'autore, poi l'elenco dei capitoli, che si riempie solo quando si segna un titolo di capitolo. In basso: stato di salvataggio, Importa testo sempre visibile, poi Esporta sempre visibile, un filetto, poi Strumenti. Dentro Strumenti: Visibilità (apre una finestra per scegliere tra Privata di default, Famiglia con link copiabile che permette di leggere senza account, e Pubblica con scelta della licenza), I miei dati o Chi era questa persona, note, foto, struttura del libro, revisione e pubblicazione. Su telefono e tablet lo stesso menu si apre dall'icona a sinistra nell'intestazione del sito. 
+L'editor non ha una barra in alto. Nel menu a sinistra: titolo (clic per rinominare), grande come i titoli dei capitoli, e nome dell'autore, poi l'elenco dei capitoli, che si riempie solo quando si segna un titolo di capitolo. In basso: stato di salvataggio, Importa testo sempre visibile, poi Esporta sempre visibile, un filetto, poi Strumenti. Dentro Strumenti: Visibilità (apre una finestra per scegliere tra Privata di default, Famiglia con link copiabile che permette di leggere senza account, e Pubblica con scelta della licenza), I miei dati o Chi era questa persona, note, foto, struttura del libro, revisione e pubblicazione. Su un originale, la lingua del testo si sceglie in Strumenti, Lingua del testo; il pulsante Lingua accanto alla dimensione del carattere porta lì. Su telefono e tablet lo stesso menu si apre dall'icona a sinistra nell'intestazione del sito. 
 <!-- internal -->
 Admin sta solo nel menu account a destra, su ogni formato.
 <!-- /internal -->
@@ -78,7 +78,7 @@ Pannello Struttura libro (barra laterale): frontespizio opzionale (Dedica, Epigr
 ## import_export
 <!-- public-title: Importa ed esporta -->
 
-Importa testo è sempre visibile, subito prima di Esporta. Si incolla o si carica .txt, .rtf o .docx sul foglio. Si accetta anche un PDF digitale il cui testo si può selezionare, fino a 30 MB. Prima si chiede se tenere la copertina originale. Se sì, quella immagine è la prima pagina del PDF generato. Se la forma è diversa dalla pagina del libro (176×250 mm), non si stira: resta al centro con un bordo beige, lo stesso colore della quarta di copertina. Se la forma coincide già, riempie la pagina. Grassetto, corsivo e titoli restano solo se il carattere del PDF li registra ancora. I titoli diventano capitoli nell'elenco. Un testo senza titoli resta intero. L'interno viene ricomposto come testo, non come foto delle pagine. Se il PDF è solo una fotografia o una scansione, si dice chiaramente, senza promettere di riconoscere la scrittura. Se c'è già del testo, una domanda chiede se sostituirlo o aggiungere il nuovo in fondo. Niente è già scelto. Importa testo è sempre visibile, subito prima di Esporta. Esporta è PDF, Word e testo di tutto il foglio. PDF B5 con copertina e galleria foto opzionale. Il file esportato è tuo.
+Importa testo è sempre visibile, subito prima di Esporta. Si incolla o si carica .txt, .rtf o .docx sul foglio; un file .txt, .rtf o .docx può pesare fino a 5 MB. Si accetta anche un PDF digitale il cui testo si può selezionare, fino a 30 MB. Prima si chiede se tenere la copertina originale. Se sì, quella immagine è la prima pagina del PDF generato. Se la forma è diversa dalla pagina del libro (176×250 mm), non si stira: resta al centro con un bordo beige, lo stesso colore della quarta di copertina. Se la forma coincide già, riempie la pagina. Grassetto, corsivo e titoli restano solo se il carattere del PDF li registra ancora. I titoli diventano capitoli nell'elenco. Un testo senza titoli resta intero. L'interno viene ricomposto come testo, non come foto delle pagine. Se il PDF è solo una fotografia o una scansione, si dice chiaramente, senza promettere di riconoscere la scrittura. Se c'è già del testo, una domanda chiede se sostituirlo o aggiungere il nuovo in fondo. Niente è già scelto. Importa testo è sempre visibile, subito prima di Esporta. Esporta è PDF, Word e testo di tutto il foglio. PDF B5 con copertina e galleria foto opzionale. Il file esportato è tuo.
 
 ## translations
 <!-- public-title: Traduzioni -->

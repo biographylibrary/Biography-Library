@@ -1,6 +1,6 @@
 # Biography Library — Base de connaissances de la plateforme
 
-Version: 1.15 — 2026-10-19
+Version: 1.17 — 2026-10-27
 
 <!-- internal -->
 Langue de cette traduction : français. Aligner sur docs/PLATFORM_KB.md (EN). Après toute modification : npm run kb:sync.
@@ -41,12 +41,12 @@ La vérification grammaticale se trouve dans le panneau Echo sous la page (à c�
 ## conversation_mode
 <!-- public-title: Echo sous la page -->
 
-Il n'y a pas de mode conversation séparé. La biographie est une seule page, toujours modifiable. Echo est dessous : bande noire « Echo — votre assistant à l'écriture », ouverte par défaut. La fermer cache la conversation, le champ et les icônes. Un brouillon n'entre dans la page que si vous l'acceptez. La conversation n'est pas copiée. Les anciens échanges restent et s'ouvrent avec Conversations précédentes. Il n'y a pas de bouton flottant.
+Il n'y a pas de mode conversation séparé. La biographie est une seule page, toujours modifiable. Echo est dessous : bande noire « Echo — votre assistant à l'écriture », ouverte par défaut. La fermer cache la conversation, le champ et les icônes. Un brouillon n'entre dans la page que si vous l'acceptez. La conversation n'est pas copiée. Les anciens échanges restent et s'ouvrent avec Conversations précédentes. Il n'y a pas de bouton flottant. Voix : le microphone enregistre jusqu'à 5 minutes à la fois. Pendant l'enregistrement, une bande rouge REC montre le temps écoulé et le temps restant, et le bouton devient un carré d'arrêt. Un avertissement apparaît 30 secondes avant la fin ; à la limite, l'enregistrement s'arrête et est transcrit tout seul. Si la transcription échoue, un bouton de nouvel essai renvoie le même enregistrement.
 
 ## editor_interface
 <!-- public-title: L’éditeur -->
 
-L'éditeur n'a pas de barre du haut. Dans le menu de gauche : titre (clic pour renommer), de la même taille que les titres de chapitre, et nom de l'auteur, puis la liste des chapitres, qui se remplit seulement quand un titre de chapitre est marqué. En bas : état d'enregistrement, Importer du texte toujours visible, puis Exporter toujours visible, un filet, puis Outils. Dans Outils : Visibilité (ouvre une fenêtre pour choisir entre Privée par défaut, Famille avec lien copiable permettant de lire sans compte, et Publique avec choix de licence), Mes données ou Qui était cette personne, notes, photos, structure du livre, révision et publication. Sur téléphone et tablette, le même menu s'ouvre par l'icône à gauche dans l'en-tête du site. 
+L'éditeur n'a pas de barre du haut. Dans le menu de gauche : titre (clic pour renommer), de la même taille que les titres de chapitre, et nom de l'auteur, puis la liste des chapitres, qui se remplit seulement quand un titre de chapitre est marqué. En bas : état d'enregistrement, Importer du texte toujours visible, puis Exporter toujours visible, un filet, puis Outils. Dans Outils : Visibilité (ouvre une fenêtre pour choisir entre Privée par défaut, Famille avec lien copiable permettant de lire sans compte, et Publique avec choix de licence), Mes données ou Qui était cette personne, notes, photos, structure du livre, révision et publication. Sur un original, la langue du texte se choisit dans Outils, Langue du texte ; le bouton Langue à côté de la taille de police y mène. Sur téléphone et tablette, le même menu s'ouvre par l'icône à gauche dans l'en-tête du site. 
 <!-- internal -->
 Admin est seulement dans le menu du compte à droite, à toute taille.
 <!-- /internal -->
@@ -78,7 +78,7 @@ Panneau Structure du livre : avant-propos optionnel (Dédicace, Épigraphe, Pré
 ## import_export
 <!-- public-title: Importer et exporter -->
 
-Importer du texte est toujours visible, juste avant Exporter. On colle ou téléverse .txt, .rtf ou .docx sur la page. Un PDF numérique dont le texte se sélectionne est aussi accepté, jusqu'à 30 Mo. On demande d'abord s'il faut garder la couverture originale. Si oui, cette image est la première page du PDF généré. Si la forme diffère de la page du livre (176×250 mm), on ne l'étire pas : elle reste au centre avec une bordure beige, la même couleur que la quatrième de couverture. Si la forme correspond déjà, elle remplit la page. Gras, italique et titres restent seulement si la police du PDF les enregistre encore. Les titres deviennent des chapitres. Un texte sans titres reste entier. L'intérieur est recomposé en texte, pas en photo des pages. Si le PDF n'est qu'une photo ou un scan, on le dit clairement, sans promettre de reconnaître l'écriture. S'il y a déjà du texte, une question demande de le remplacer ou d'ajouter le nouveau à la fin. Rien n'est choisi d'avance. Importer du texte est toujours visible, juste avant Exporter. L'export est PDF, Word et texte de toute la page. Le fichier exporté vous appartient.
+Importer du texte est toujours visible, juste avant Exporter. On colle ou téléverse .txt, .rtf ou .docx sur la page ; un fichier .txt, .rtf ou .docx peut peser jusqu'à 5 Mo. Un PDF numérique dont le texte se sélectionne est aussi accepté, jusqu'à 30 Mo. On demande d'abord s'il faut garder la couverture originale. Si oui, cette image est la première page du PDF généré. Si la forme diffère de la page du livre (176×250 mm), on ne l'étire pas : elle reste au centre avec une bordure beige, la même couleur que la quatrième de couverture. Si la forme correspond déjà, elle remplit la page. Gras, italique et titres restent seulement si la police du PDF les enregistre encore. Les titres deviennent des chapitres. Un texte sans titres reste entier. L'intérieur est recomposé en texte, pas en photo des pages. Si le PDF n'est qu'une photo ou un scan, on le dit clairement, sans promettre de reconnaître l'écriture. S'il y a déjà du texte, une question demande de le remplacer ou d'ajouter le nouveau à la fin. Rien n'est choisi d'avance. Importer du texte est toujours visible, juste avant Exporter. L'export est PDF, Word et texte de toute la page. Le fichier exporté vous appartient.
 
 ## translations
 <!-- public-title: Traductions -->
