@@ -2,11 +2,11 @@
 
 > Permanent, open-source, non-profit digital archive for autobiographies and memorial biographies. App and AI writing in Switzerland; database still in Ireland during the beta.
 
-User manuals, version 1.15 (2026-10-19):
+User manuals, version 1.17 (2026-10-27):
 - /help/biography-library-manual.en.md
 - /help/biography-library-manual.it.md
 - /help/biography-library-manual.fr.md
 - /help/biography-library-manual.de.md
 - /help/manual-meta.json
 
-Content hash: 1e07a7455ec2dfe845e4c7a914c95caf045ed7bf6aba514c207f96d6f914d6e9
+Content hash: 87941e4fdd2dc6e0e976a4a28b825df7c183652b9017e09adec9937d0eb186e9
