@@ -1,3 +1,4 @@
+import { cleanEditorIncomingHtml } from '@/lib/editor-content-clean';
 import { describe, expect, it } from 'vitest';
 import {
   archiveMarkdownToHtml,
@@ -121,5 +122,84 @@ describe('archive-markdown', () => {
     expect(html).toContain('&lt;p&gt;');
     expect(storedToPlainText(fromEditor)).toBe(author);
     expect(roundTripArchiveMarkdown(fromEditor)).toBe(fromEditor);
+  });
+});
+
+describe('grassetto e corsivo con spazi ai bordi della selezione', () => {
+  it('lascia gli spazi fuori dai segni, così alla rilettura il grassetto resta grassetto', () => {
+    const md = htmlToArchiveMarkdown('<p>Una frase <strong>con </strong>altre parole.</p>');
+    expect(md).toBe('Una frase **con** altre parole.');
+    expect(storedToPlainText(md)).toBe('Una frase con altre parole.');
+    expect(htmlToArchiveMarkdown('<p>a<em> molto</em> b</p>')).toBe('a *molto* b');
+    expect(htmlToArchiveMarkdown('<p>a<strong><em> tutto </em></strong>b</p>')).toBe('a **_tutto_** b');
+  });
+
+  it('un grassetto fatto solo di spazi non lascia asterischi', () => {
+    expect(htmlToArchiveMarkdown('<p>a<strong> </strong>b</p>')).toBe('a b');
+  });
+});
+
+describe('segni di grassetto e corsivo accanto a punteggiatura e ad altri segni', () => {
+  /** Il testo salvato, riletto, deve avere le stesse parole di prima e nessun asterisco in più. */
+  const rereadPlain = (html: string) => storedToPlainText(htmlToArchiveMarkdown(html));
+
+  it('un segno che inizia o finisce con punteggiatura attaccata a una lettera non lascia asterischi', () => {
+    expect(rereadPlain('<p>N<strong>.1 prova</strong> fine</p>')).toBe('N.1 prova fine');
+    expect(rereadPlain('<p>una <em>frase «lunga»</em>parola</p>')).toBe('una frase «lunga»parola');
+    expect(rereadPlain('<p><em>fine ☺</em>nonna</p>')).toBe('fine ☺nonna');
+  });
+
+  it('corsivo che attraversa una parola in grassetto resta annidato', () => {
+    const md = htmlToArchiveMarkdown('<p><em>a </em><strong><em>b</em></strong><em> c</em></p>');
+    expect(md).toBe('*a **b** c*');
+    expect(rereadPlain('<p><strong>a </strong><em><strong>b</strong></em><strong> c</strong></p>')).toBe('a b c');
+  });
+
+  it('grassetto e corsivo attaccati senza spazio restano due segni distinti', () => {
+    const md = htmlToArchiveMarkdown('<p><strong>x…</strong><em>a</em>.</p>');
+    expect(storedToPlainText(md)).toBe('x…a.');
+    expect(md).not.toMatch(/\*\*\*/);
+  });
+
+  it('due a capo forzati di fila non spezzano il paragrafo', () => {
+    const md = htmlToArchiveMarkdown('<p>prima<br><br>dopo</p>');
+    expect(archiveMarkdownToHtml(md)).toBe('<p>prima<br>\n<br>\ndopo</p>');
+  });
+
+  it('un a capo forzato a inizio o fine paragrafo non lascia barre rovesciate', () => {
+    expect(htmlToArchiveMarkdown('<p><br><br>testo<br><br></p>')).toBe('testo');
+    expect(htmlToArchiveMarkdown('<ul><li><p><br><br>voce</p></li></ul>')).toBe('- voce');
+  });
+
+  it('un a capo forzato dentro un titolo diventa uno spazio', () => {
+    expect(htmlToArchiveMarkdown('<h2>primo<br>secondo</h2>')).toBe('## primo secondo');
+    expect(htmlToArchiveMarkdown('<h2><br><br>solo</h2>')).toBe('## solo');
+  });
+});
+
+describe('voci di elenco con testo formattato', () => {
+  it('lo spazio tra una parola in grassetto e una in corsivo non si perde', () => {
+    expect(htmlToArchiveMarkdown('<ul><li>a <strong>b</strong> <em>c</em> d</li></ul>')).toBe('- a **b** *c* d');
+    const md = '- a **b** *c d* e';
+    expect(htmlToArchiveMarkdown(archiveMarkdownToHtml(md))).toBe(md);
+  });
+});
+
+describe('incolla e importazione di elenchi', () => {
+  it('non perde i paragrafi, gli a capo e i sotto-elenchi di una voce', () => {
+    const clean = (html: string) => cleanEditorIncomingHtml(html).html;
+    expect(clean('<ul><li><p>uno</p><p>due</p></li></ul>')).toBe('<ul><li><p>uno</p><p>due</p></li></ul>');
+    expect(clean('<ul><li>uno<br>due</li></ul>')).toBe('<ul><li><p>uno<br>due</p></li></ul>');
+    expect(clean('<ul><li>uno<ul><li>sub</li></ul></li></ul>')).toBe(
+      '<ul><li><p>uno</p><ul><li><p>sub</p></li></ul></li></ul>'
+    );
+    expect(clean('<ol><li>uno</li><li><p>due</p><p>tre</p></li></ol>')).toBe(
+      '<ol><li><p>uno</p></li><li><p>due</p><p>tre</p></li></ol>'
+    );
+  });
+
+  it('una voce con grassetto, a capo e testo dopo arriva intera', () => {
+    const md = htmlToArchiveMarkdown(cleanEditorIncomingHtml('<ol><li>П<strong>ри</strong><br>y</li></ol>').html);
+    expect(storedToPlainText(md)).toBe('При\ny');
   });
 });

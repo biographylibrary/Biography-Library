@@ -33,9 +33,18 @@ export function decodeHtmlEntities(text: string): string {
     .replace(/&#39;/g, "'");
 }
 
+/**
+ * Un `<br>` seguito dal suo a capo letterale (come lo scrive il lettore di Markdown: `<br>\n`) è
+ * un solo a capo. Se si contasse due volte, il testo semplice e le sequenze in grassetto/corsivo
+ * avrebbero lunghezze diverse e nel PDF si perderebbe la prima lettera della riga dopo l'a capo.
+ */
+function collapseBreakNewlines(html: string): string {
+  return html.replace(/<br\s*\/?>[ \t]*\r?\n?/gi, '<br>');
+}
+
 export function stripHtmlToPlain(html: string): string {
   return decodeHtmlEntities(
-    html
+    collapseBreakNewlines(html)
       .replace(/<p[^>]*>/gi, '')
       .replace(/<\/p>/gi, '\n\n')
       .replace(/<br\s*\/?>/gi, '\n')
@@ -46,7 +55,8 @@ export function stripHtmlToPlain(html: string): string {
   );
 }
 
-export function parseHtmlIntoRuns(html: string): InlineRun[] {
+export function parseHtmlIntoRuns(rawHtml: string): InlineRun[] {
+  const html = collapseBreakNewlines(rawHtml);
   const runs: InlineRun[] = [];
   let pos = 0;
   let bold = false;
@@ -68,6 +78,7 @@ export function parseHtmlIntoRuns(html: string): InlineRun[] {
     if (tag === 'strong' || tag === 'b') bold = !closing;
     else if (tag === 'em' || tag === 'i') italic = !closing;
     else if (tag === 'u') underline = !closing;
+    else if (tag === 'br') runs.push({ text: '\n', bold, italic });
     void underline;
   }
 
@@ -77,7 +88,7 @@ export function parseHtmlIntoRuns(html: string): InlineRun[] {
     if (text.trim()) runs.push({ text, bold, italic });
   }
 
-  return runs.filter((r) => r.text.trim() !== '' || r.text === ' ');
+  return runs.filter((r) => r.text.trim() !== '' || r.text === ' ' || r.text === '\n');
 }
 
 export function extractSemanticBlocks(html: string): SemanticBlock[] {

@@ -576,7 +576,8 @@ export function EchoChatProvider({
         );
 
         const highlightText =
-          json.mode === 'replaced' && target.pendingDraft.draftText.trim().length >= 8
+          (json.mode === 'replaced' || json.mode === 'appended') &&
+          target.pendingDraft.draftText.trim().length >= 8
             ? target.pendingDraft.draftText
             : '';
         await onDraftApplied?.(sectionKey, highlightText ? { text: highlightText } : undefined);

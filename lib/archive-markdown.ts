@@ -114,23 +114,198 @@ function onlyElementChild(nodes: Node[]): HTMLElement | null {
   return found;
 }
 
-function serializeInline(nodes: Node[]): string {
+type InlineMark = { open: string; close: string; inner: string };
+type InlinePiece = string | InlineMark;
+
+const TOKEN_FIRST = /^(?:\\[\s\S]|&[a-z#0-9]+;|[\s\S])/u;
+const TOKEN_LAST = /(?:\\[\s\S]|&[a-z#0-9]+;|[\s\S])$/u;
+
+function isSpaceChar(ch: string): boolean {
+  return ch === '' || /\s/u.test(ch);
+}
+
+/** Punteggiatura nel senso di CommonMark (categorie P e S), compresi i caratteri già «escapati». */
+function isPunctToken(token: string): boolean {
+  if (token.startsWith('\\') || token.startsWith('&')) return true;
+  return /[\p{P}\p{S}]/u.test(token);
+}
+
+/**
+ * Chiude i segni di grassetto e corsivo guardando i caratteri accanto. Per CommonMark un `**` si
+ * apre o si chiude solo se non ha uno spazio dalla parte del testo e, quando ha una
+ * punteggiatura dalla parte del testo, ha uno spazio o una punteggiatura dall'altra. Altrimenti
+ * i due asterischi restano nel testo alla rilettura: `**con **altre`, `N**.1 …**`, `*…😀*nonna`.
+ * Si sistema lasciando fuori dai segni gli spazi e la punteggiatura di bordo, che perdono il
+ * grassetto ma non cambiano parola.
+ */
+function resolveInlinePieces(pieces: InlinePiece[]): string {
   let out = '';
-  for (const node of nodes) {
+  pieces.forEach((piece, index) => {
+    if (typeof piece === 'string') {
+      out += piece;
+      return;
+    }
+    const plain = piece.open === piece.close && piece.open.startsWith('*');
+    let lead = '';
+    let trail = '';
+    let core = piece.inner;
+    const trim = () => {
+      const m = /^(\s*)([\s\S]*?)(\s*)$/.exec(core);
+      if (!m) return;
+      lead += m[1];
+      trail = m[3] + trail;
+      core = m[2];
+    };
+    trim();
+    // Subito dopo un a capo forzato gli spazi iniziali non contano per Markdown.
+    if (/(?: {2}|\\)\n$/.test(out)) lead = lead.replace(/^[ \t]+/, '');
+    if (plain) {
+      const following = pieces[index + 1];
+      for (let guard = 0; guard < 8 && core; guard++) {
+        const before = lead ? lead[lead.length - 1] : (out[out.length - 1] ?? '');
+        const first = TOKEN_FIRST.exec(core)?.[0] ?? '';
+        if (first && isPunctToken(first) && !isSpaceChar(before) && !isPunctToken(before)) {
+          lead += first;
+          core = core.slice(first.length);
+          trim();
+          continue;
+        }
+        const after = trail
+          ? trail[0]
+          : typeof following === 'string'
+            ? (following[0] ?? '')
+            : following
+              ? '*'
+              : '';
+        const last = TOKEN_LAST.exec(core)?.[0] ?? '';
+        if (last && isPunctToken(last) && !isSpaceChar(after) && !isPunctToken(after)) {
+          trail = last + trail;
+          core = core.slice(0, core.length - last.length);
+          trim();
+          continue;
+        }
+        break;
+      }
+    }
+    if (!core) {
+      out += lead + trail;
+      return;
+    }
+    let { open, close } = piece;
+    if (open === '**_' || open === '_**') {
+      // Grassetto e corsivo insieme: accanto a un altro segno `*` si scrive col corsivo fuori
+      // (`_**x**_`), così gli asterischi dei due segni non si fondono in una sola serie.
+      const before = lead ? lead[lead.length - 1] : (out[out.length - 1] ?? '');
+      const following = pieces[index + 1];
+      const after = trail
+        ? trail[0]
+        : typeof following === 'string'
+          ? (following[0] ?? '')
+          : following
+            ? '*'
+            : '';
+      if (before === '*' || after === '*') {
+        open = '_**';
+        close = '**_';
+      }
+    }
+    if (open === '*' && close === '*') {
+      // Corsivo attaccato a un grassetto (`**a***b*`): le due serie di asterischi si fonderebbero.
+      // Col trattino basso restano distinte, se dai due lati non c'è una lettera attaccata.
+      const before = lead ? lead[lead.length - 1] : (out[out.length - 1] ?? '');
+      const following = pieces[index + 1];
+      const after = trail
+        ? trail[0]
+        : typeof following === 'string'
+          ? (following[0] ?? '')
+          : following
+            ? '*'
+            : '';
+      const edgeOk = (ch: string) => isSpaceChar(ch) || isPunctToken(ch);
+      if ((before === '*' || after === '*') && edgeOk(before) && edgeOk(after)) {
+        open = '_';
+        close = '_';
+      }
+    }
+    out += `${lead}${open}${core}${close}${trail}`;
+  });
+  return out;
+}
+
+/** Il primo figlio è un elemento di questo tipo (grassetto o corsivo)? */
+function markKind(node: Node | undefined): 'strong' | 'em' | null {
+  if (!node || !isElement(node)) return null;
+  const tag = tagName(node);
+  if (tag === 'strong' || tag === 'b') return 'strong';
+  if (tag === 'em' || tag === 'i') return 'em';
+  return null;
+}
+
+/**
+ * Corsivo che attraversa una parola in grassetto (o il contrario): l'editor lo conserva come
+ * <em>a</em><strong><em>b</em></strong><em>c</em>, e scritto così `*a***_b_***c*` non si legge più.
+ * Si scrive annidato: `*a **b** c*`. Restituisce quanti nodi ha consumato, 0 se non è il caso.
+ */
+function mergeNestedMarks(nodes: Node[], i: number, pieces: InlinePiece[]): number {
+  const kind = markKind(nodes[i]);
+  if (!kind) return 0;
+  const other = kind === 'strong' ? 'em' : 'strong';
+  const wrapper = (node: Node | undefined) => {
+    if (markKind(node) !== other) return null;
+    const only = onlyElementChild((node as HTMLElement).childNodes);
+    return only && markKind(only) === kind ? only : null;
+  };
+  const marker = (k: 'strong' | 'em') => (k === 'strong' ? '**' : '*');
+  const parts: InlinePiece[] = [serializeInline((nodes[i] as HTMLElement).childNodes)];
+  let j = i;
+  while (wrapper(nodes[j + 1]) && markKind(nodes[j + 2]) === kind) {
+    const core = wrapper(nodes[j + 1])!;
+    parts.push({ open: marker(other), close: marker(other), inner: serializeInline(core.childNodes) });
+    parts.push(serializeInline((nodes[j + 2] as HTMLElement).childNodes));
+    j += 2;
+  }
+  if (j === i) return 0;
+  const inner = resolveInlinePieces(parts);
+  if (inner.trim()) pieces.push({ open: marker(kind), close: marker(kind), inner });
+  return j - i + 1;
+}
+
+function serializeInline(nodes: Node[]): string {
+  const pieces: InlinePiece[] = [];
+  for (let i = 0; i < nodes.length; i++) {
+    const node = nodes[i];
     if (node.nodeType === NodeType.TEXT_NODE) {
       let text = node.text;
       // markdown-it emits a newline text node after <br>; keep a single hard break.
-      if (out.endsWith('  \n') && text.startsWith('\n')) {
+      const last = pieces[pieces.length - 1];
+      if (
+        typeof last === 'string' &&
+        (last.endsWith('  \n') || last.endsWith('\\\n')) &&
+        text.startsWith('\n')
+      ) {
         text = text.slice(1);
       }
-      out += escapeInlineMd(text);
+      // Dopo un a capo forzato gli spazi iniziali della riga dopo non contano per Markdown.
+      if (typeof last === 'string' && (last.endsWith('  \n') || last.endsWith('\\\n'))) {
+        text = text.replace(/^[ \t]+/, '');
+      }
+      if (text) pieces.push(escapeInlineMd(text));
       continue;
     }
     if (!isElement(node)) continue;
     const tag = tagName(node);
     if (tag === 'script' || tag === 'style' || tag === 'noscript') continue;
     if (tag === 'br') {
-      out += '  \n';
+      // Due a capo di fila: `  \n  \n` per CommonMark è una riga vuota e spezza il paragrafo.
+      // Il secondo si scrive con la barra rovesciata, che resta un a capo forzato.
+      const last = pieces[pieces.length - 1];
+      const afterBreak = typeof last === 'string' && (last.endsWith('  \n') || last.endsWith('\\\n'));
+      pieces.push(afterBreak ? '\\\n' : '  \n');
+      continue;
+    }
+    const consumed = mergeNestedMarks(nodes, i, pieces);
+    if (consumed) {
+      i += consumed - 1;
       continue;
     }
     // Bold+italic as **_…_** / _**…**_ — never ***…*** (ambiguous with scene breaks).
@@ -138,37 +313,37 @@ function serializeInline(nodes: Node[]): string {
       const only = onlyElementChild(node.childNodes);
       if (only && (tagName(only) === 'em' || tagName(only) === 'i')) {
         const inner = serializeInline(only.childNodes);
-        if (inner) out += `**_${inner}_**`;
+        if (inner) pieces.push({ open: '**_', close: '_**', inner });
         continue;
       }
       const inner = serializeInline(node.childNodes);
-      if (inner) out += `**${inner}**`;
+      if (inner) pieces.push({ open: '**', close: '**', inner });
       continue;
     }
     if (tag === 'em' || tag === 'i') {
       const only = onlyElementChild(node.childNodes);
       if (only && (tagName(only) === 'strong' || tagName(only) === 'b')) {
         const inner = serializeInline(only.childNodes);
-        if (inner) out += `_**${inner}**_`;
+        if (inner) pieces.push({ open: '_**', close: '**_', inner });
         continue;
       }
       const inner = serializeInline(node.childNodes);
-      if (inner) out += `*${inner}*`;
+      if (inner) pieces.push({ open: '*', close: '*', inner });
       continue;
     }
     const inner = serializeInline(node.childNodes);
     if (tag === 'a') {
       const href = (node.getAttribute('href') ?? '').trim();
       if (inner && isSafeHref(href)) {
-        out += `[${inner.replace(/\]/g, '\\]')}](${href})`;
+        pieces.push(`[${inner.replace(/\]/g, '\\]')}](${href})`);
       } else {
-        out += inner;
+        pieces.push(inner);
       }
       continue;
     }
-    out += inner;
+    pieces.push(inner);
   }
-  return out;
+  return resolveInlinePieces(pieces);
 }
 
 type ListItemBlock =
@@ -203,7 +378,9 @@ function listItemBlocks(li: HTMLElement): ListItemBlock[] {
     }
     if (
       child.nodeType === NodeType.TEXT_NODE &&
-      !(child.text ?? '').replace(/\u00a0/g, ' ').trim()
+      !(child.text ?? '').replace(/\u00a0/g, ' ').trim() &&
+      // Lo spazio tra due parole formattate (`**a** *b*`) è testo: si toglie solo a inizio blocco.
+      looseInline.length === 0
     ) {
       continue;
     }
@@ -215,7 +392,7 @@ function listItemBlocks(li: HTMLElement): ListItemBlock[] {
 
 /** Serialize one list-item paragraph (inline + block-start escape), like a normal <p>. */
 function serializeListItemParagraph(nodes: Node[]): string {
-  const text = serializeInline(nodes);
+  const text = stripEdgeBreaks(serializeInline(nodes));
   const normalized = text
     .replace(/[ \t]+\n/g, '  \n')
     .replace(/[ \t]+$/g, (m) => (m.length >= 2 ? '  ' : ''));
@@ -284,6 +461,19 @@ function serializeListItemLines(
   return lines;
 }
 
+/** Gli a capo forzati all'inizio o alla fine di un paragrafo non si salvano: Markdown li perde, e la barra rovesciata resterebbe come lettera. */
+function stripEdgeBreaks(text: string): string {
+  return text.replace(/^(?:\\\n|[ \t]*\n)+/, '').replace(/(?:\\\n|[ \t]*\n)+[ \t]*$/, '');
+}
+
+/** Un titolo sta su una riga sola: un a capo forzato (Maiusc+Invio) diventa uno spazio. */
+function serializeHeadingInline(nodes: Node[]): string {
+  return serializeInline(nodes)
+    .replace(/\\\n/g, '\n')
+    .replace(/[ \t]*\n[ \t]*/g, ' ')
+    .trim();
+}
+
 function serializeBlocks(nodes: Node[], listIndent = ''): string {
   const parts: string[] = [];
 
@@ -305,21 +495,19 @@ function serializeBlocks(nodes: Node[], listIndent = ''): string {
     }
 
     if (tag === 'h1' || tag === 'h2' || tag === 'h3') {
-      const text = serializeInline(node.childNodes).trim();
+      const text = serializeHeadingInline(node.childNodes);
       if (text) parts.push(`${'#'.repeat(Number(tag[1]))} ${text}`);
       continue;
     }
     if (tag === 'h4' || tag === 'h5' || tag === 'h6') {
-      const text = serializeInline(node.childNodes).trim();
+      const text = serializeHeadingInline(node.childNodes);
       if (text) parts.push(`### ${text}`);
       continue;
     }
     if (tag === 'p' || tag === 'div') {
-      const text = serializeInline(node.childNodes);
+      const text = stripEdgeBreaks(serializeInline(node.childNodes)).replace(/^[ \t]+/, '');
       // Keep hard-break markers (`  \n`); drop other trailing spaces.
-      const normalized = text
-        .replace(/[ \t]+\n/g, '  \n')
-        .replace(/[ \t]+$/g, (m) => (m.length >= 2 ? '  ' : ''));
+      const normalized = text.replace(/[ \t]+\n/g, '  \n').replace(/[ \t]+$/g, '');
       if (normalized) parts.push(finalizeParagraphMd(normalized));
       continue;
     }
@@ -504,7 +692,8 @@ export function storedToPlainText(stored: string): string {
   return html
     .replace(/<hr\s*\/?>/gi, '\n\n')
     .replace(/<\/p>/gi, '\n\n')
-    .replace(/<br\s*\/?>/gi, '\n')
+    // `<br>` seguito dal suo a capo letterale (come lo scrive markdown-it) è un a capo solo.
+    .replace(/<br\s*\/?>[ \t]*\r?\n?/gi, '\n')
     .replace(/<\/li>/gi, '\n')
     .replace(/<\/h[1-3]>/gi, '\n\n')
     .replace(/<\/blockquote>/gi, '\n\n')
