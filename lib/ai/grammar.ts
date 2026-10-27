@@ -1,9 +1,11 @@
 /**
  * Controllo grammaticale su richiesta. Spostato dall'Edge Function `ai-assistant`
  * (azione `grammar`) senza cambiare prompt, modelli, ordine di ripiego né
- * parametri: temperatura 0.7, max_tokens 2048, timeout 45 s, tre tentativi con
+ * parametri (la temperatura è poi scesa da 0.7 a 0.2 per la fedeltà): max_tokens 2048, timeout 45 s, tre tentativi con
  * attesa 500 ms raddoppiata per 429/503/504.
  */
+
+import { FAITHFUL_WRITING_RULES } from '@/lib/agents/prompts/plain-meaning';
 
 const LANGUAGE_NAMES: Record<string, string> = {
   en: 'English',
@@ -43,7 +45,8 @@ export const GRAMMAR_MAX_RAW_CHARS = 200_000;
 
 export const GRAMMAR_MODEL_PARAMS = {
   max_tokens: 2048,
-  temperature: 0.7,
+  // Bassa di proposito: la correzione deve restare fedele al testo dell'autore.
+  temperature: 0.2,
   timeoutMs: 45_000,
   retry: { attempts: 3, baseDelayMs: 500 },
 } as const;
@@ -103,6 +106,8 @@ export function buildGrammarPrompt(sectionTitle: string, content: string, langua
   return {
     system: `${JSON_ONLY_PREFIX}You are a skilled editor helping with a biography written in ${langName}. Review text for grammar, spelling, clarity, and style in ${langName}. Preserve the author's voice and tone. Respond in ${langName}. Return a JSON array of suggestions.
 
+${FAITHFUL_WRITING_RULES}
+
 Each suggestion must have:
 - "id": unique string
 - "original": exact substring copied verbatim from the user text (enough context for a unique find-and-replace)
@@ -113,6 +118,7 @@ Rules:
 - Include an entry ONLY when you recommend a concrete wording change.
 - If a phrase is already correct, omit it — never return identical "original" and "suggestion".
 - Put the preferred replacement in "suggestion", not only in "explanation" (e.g. if you mention an alternative phrase in the explanation, that phrase must appear in "suggestion").
+- "suggestion" holds ONE replacement only: never alternatives, never "or", never text in parentheses.
 - If no changes are needed, return an empty array [].`,
     user: `Section: "${sectionTitle}"\n\nText to review:\n${content}`,
   };
@@ -129,12 +135,29 @@ export type GrammarSuggestion = {
   explanation?: string;
 };
 
+/** Alternative nella stessa proposta, come «(oppure: …)»: il testo applicato le conterrebbe tutte. */
+const ALTERNATIVE_IN_SUGGESTION = /\((?:oppure|or|ou|oder|o)\b[:\s]/i;
+
+/** Una correzione non triplica la frase: sopra questa soglia è una riscrittura, non va proposta. */
+const MAX_SUGGESTION_GROWTH = { ratio: 2.5, extraChars: 40 } as const;
+
 export function sanitizeGrammarSuggestions(items: GrammarSuggestion[]): GrammarSuggestion[] {
   return items.filter((item) => {
     const original = String(item.original ?? '').trim();
     const suggestion = String(item.suggestion ?? '').trim();
     if (!original || !suggestion) return false;
-    return normalizeGrammarText(original) !== normalizeGrammarText(suggestion);
+    if (normalizeGrammarText(original) === normalizeGrammarText(suggestion)) return false;
+    if (ALTERNATIVE_IN_SUGGESTION.test(suggestion) && !ALTERNATIVE_IN_SUGGESTION.test(original)) {
+      return false;
+    }
+    const growth = suggestion.length - original.length;
+    if (
+      suggestion.length > original.length * MAX_SUGGESTION_GROWTH.ratio &&
+      growth > MAX_SUGGESTION_GROWTH.extraChars
+    ) {
+      return false;
+    }
+    return true;
   });
 }
 
