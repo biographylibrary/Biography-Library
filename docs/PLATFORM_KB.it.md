@@ -1,6 +1,6 @@
 # Biography Library — Base di conoscenza della piattaforma
 
-Version: 1.17 — 2026-10-27
+Version: 1.18 — 2026-10-27
 
 <!-- internal -->
 Lingua di questa traduzione: italiano. Allineare a docs/PLATFORM_KB.md (EN). Dopo ogni modifica: npm run kb:sync.
@@ -36,7 +36,7 @@ Mentre lavori a una biografia, Echo conserva una memoria privata della conversaz
 ## ai_tools
 <!-- public-title: Strumenti di scrittura IA -->
 
-Il controllo grammaticale sta nel pannello di Echo sotto il foglio (accanto ai pulsanti del microfono e di invio), non in un menu nella barra di formattazione. Seleziona un paragrafo o posiziona il cursore in un paragrafo e premi Controlla Grammatica: controlla solo quel brano (refusi e sintassi, significato preservato) usando Apertus. Il contatore d’uso resta nella barra di formattazione, sopra il conteggio dei caratteri, alto come i pulsanti. Limiti giornalieri (40) e settimanali (200); azioni pesanti valgono 2. Reset a mezzanotte UTC e il lunedì UTC. L'IA non inventa fatti né pubblica da sola. In una traduzione non ci sono strumenti di IA: né controllo grammaticale né Echo.
+Il controllo grammaticale sta nel pannello di Echo sotto il foglio (accanto ai pulsanti del microfono e di invio), non in un menu nella barra di formattazione. Seleziona un paragrafo o posiziona il cursore in un paragrafo e premi Controlla Grammatica: controlla solo quel brano (refusi e sintassi, significato preservato) usando Apertus. Il contatore d’uso resta nella barra di formattazione, sopra il conteggio dei caratteri, alto come i pulsanti. Limiti giornalieri (40) e settimanali (200); azioni pesanti valgono 2. Reset a mezzanotte UTC e il lunedì UTC. L'IA non inventa fatti né pubblica da sola. Echo e il controllo grammaticale correggono il testo senza cambiare la tua voce: non aggiungono fatti, immagini o emozioni e non rendono drammatico un fatto semplice. Vedi sempre la proposta prima che entri nel foglio. In una traduzione non ci sono strumenti di IA: né controllo grammaticale né Echo.
 
 ## conversation_mode
 <!-- public-title: Echo sotto il foglio -->
