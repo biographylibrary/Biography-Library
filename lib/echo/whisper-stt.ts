@@ -3,11 +3,18 @@ import { echoWhisperLanguage } from '@/lib/echo/voice-config';
 export class EchoTranscriptionError extends Error {
   constructor(
     message: string,
-    readonly code: 'unauthorized' | 'network' | 'empty' | 'server'
+    readonly code: 'unauthorized' | 'network' | 'empty' | 'server' | 'too_large'
   ) {
     super(message);
     this.name = 'EchoTranscriptionError';
   }
+}
+
+/** Safari registra in mp4: il nome del file deve dire la verità sul contenitore. */
+function audioExtension(mimeType: string): string {
+  if (mimeType.includes('mp4')) return 'mp4';
+  if (mimeType.includes('ogg')) return 'ogg';
+  return 'webm';
 }
 
 /**
@@ -25,7 +32,7 @@ export async function transcribeAudioWithWhisper(
   }
 
   const form = new FormData();
-  form.append('file', blob, 'recording.webm');
+  form.append('file', blob, `recording.${audioExtension(blob.type)}`);
   form.append('language', echoWhisperLanguage(appLanguage));
 
   let res: Response;
@@ -48,6 +55,10 @@ export async function transcribeAudioWithWhisper(
 
   if (res.status === 401) {
     throw new EchoTranscriptionError('Session expired', 'unauthorized');
+  }
+
+  if (res.status === 413) {
+    throw new EchoTranscriptionError('Recording too large', 'too_large');
   }
 
   if (!res.ok || !json) {

@@ -9,7 +9,9 @@ import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { IconHint } from '@/components/ui/icon-hint';
 import { EchoAvatar } from './EchoAvatar';
-import { EchoVoiceSession } from './EchoVoiceSession';
+import { EchoVoiceSession, type EchoVoiceNotice } from './EchoVoiceSession';
+import { EchoRecordingBanner } from './EchoRecordingBanner';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { EchoMessageContent } from './EchoMessageContent';
 import {
   EchoSpeakingBanner,
@@ -126,6 +128,15 @@ export function EchoChat({
     },
     [t.sectionTitles, t.onboardingTour.freeflowEditorTitle]
   );
+
+  const [recordingElapsed, setRecordingElapsed] = useState<number | null>(null);
+  const [voiceNotice, setVoiceNotice] = useState<EchoVoiceNotice | null>(null);
+  // Il cronometro arriva ogni 250 ms: si aggiorna lo stato solo al cambio di secondo.
+  const handleRecordingElapsed = useCallback((seconds: number | null) => {
+    setRecordingElapsed((prev) =>
+      seconds === null || prev === null || Math.floor(prev) !== Math.floor(seconds) ? seconds : prev
+    );
+  }, []);
 
   const [pastOpen, setPastOpen] = useState(false);
   const recentCount = 4;
@@ -436,6 +447,16 @@ export function EchoChat({
             <EchoErrorAlert raw={error} />
           </div>
         )}
+        {voiceNotice && (
+          <div className="px-2 py-1">
+            <Alert
+              variant={voiceNotice.kind === 'error' ? 'destructive' : 'info'}
+              data-testid="echo-voice-notice"
+            >
+              <AlertDescription>{voiceNotice.text}</AlertDescription>
+            </Alert>
+          </div>
+        )}
         {!historyLoading && !loading && icebreakersVisible && messages.length > 0 && !compact && (
           <div className="px-1">{icebreakersBlock}</div>
         )}
@@ -450,6 +471,12 @@ export function EchoChat({
         >
           <Loader className="h-3.5 w-3.5 animate-spin shrink-0" />
           <span>{activityStatus}</span>
+        </div>
+      )}
+
+      {recordingElapsed !== null && (
+        <div className={cn('shrink-0 py-1', flushChrome ? 'px-3' : 'px-2')}>
+          <EchoRecordingBanner elapsedSeconds={recordingElapsed} />
         </div>
       )}
 
@@ -473,7 +500,8 @@ export function EchoChat({
               accessToken={session?.access_token}
               disabled={loading}
               onTranscript={(text) => void sendMessage(text)}
-              onError={() => {}}
+              onRecordingElapsed={handleRecordingElapsed}
+              onNotice={setVoiceNotice}
               onOrbStateChange={reportOrbState}
               className={flushChrome ? 'h-8 w-8' : 'h-11 w-11'}
             />
