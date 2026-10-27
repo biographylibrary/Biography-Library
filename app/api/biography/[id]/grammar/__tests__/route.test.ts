@@ -273,7 +273,7 @@ describe('POST /api/biography/[id]/grammar: modelli, parametri, limiti', () => {
     ]);
     expect(opts).toMatchObject({
       max_tokens: 2048,
-      temperature: 0.7,
+      temperature: 0.2,
       timeoutMs: 45_000,
       retry: { attempts: 3, baseDelayMs: 500 },
       stopOnClientError: true,

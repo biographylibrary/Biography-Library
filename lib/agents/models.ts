@@ -53,7 +53,8 @@ export interface ModelParams {
 }
 
 const MODEL_PARAMS: Record<AgentRole, ModelParams> = {
-  coach: { max_tokens: 2048, temperature: 0.7, supportsThinking: false },
+  // Echo nell'editor riscrive il testo dell'autore: temperatura bassa per restare fedele.
+  coach: { max_tokens: 2048, temperature: 0.3, supportsThinking: false },
   reviewer: { max_tokens: 2048, temperature: 0.2, supportsThinking: false },
   onboarding: { max_tokens: 1024, temperature: 0.5, supportsThinking: false },
   embedding: { max_tokens: 0, temperature: 0, supportsThinking: false },
