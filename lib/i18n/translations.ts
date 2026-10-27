@@ -1763,6 +1763,19 @@ export interface Translations {
     consultEcho: string;
     stopSpeaking: string;
     microphone: string;
+    recLabel: string;
+    recordingStopSend: string;
+    recordingElapsed: string;
+    recordingRemaining: string;
+    recordingLimitWarning: string;
+    recordingLimitReached: string;
+    voiceRetryTranscription: string;
+    voiceErrorPermission: string;
+    voiceErrorEmpty: string;
+    voiceErrorNetwork: string;
+    voiceErrorServer: string;
+    voiceErrorExpired: string;
+    voiceErrorTooLong: string;
     muteVoice: string;
     unmuteVoice: string;
     speakingBanner: string;
@@ -3776,6 +3789,19 @@ export const translations: Record<Language, Translations> = {
       consultEcho: 'Echo',
       stopSpeaking: 'Stop',
       microphone: 'Microphone',
+      recLabel: 'REC',
+      recordingStopSend: 'Stop and send',
+      recordingElapsed: 'Recording',
+      recordingRemaining: '{time} left',
+      recordingLimitWarning: 'Recording stops in {seconds} seconds and is sent automatically.',
+      recordingLimitReached: 'The {minutes}-minute limit was reached: your recording has been sent.',
+      voiceRetryTranscription: 'Retry transcription',
+      voiceErrorPermission: 'Microphone access denied. Allow the microphone in your browser settings and reload the page.',
+      voiceErrorEmpty: 'No speech detected. Please try again.',
+      voiceErrorNetwork: 'Connection problem during transcription. Your recording is kept: tap retry.',
+      voiceErrorServer: 'Transcription failed. Your recording is kept: tap retry.',
+      voiceErrorExpired: 'Your session has expired. Sign in again to use the voice.',
+      voiceErrorTooLong: 'The recording is too long to be transcribed. Please record a shorter message.',
       muteVoice: 'Mute Echo voice',
       unmuteVoice: 'Unmute Echo voice',
       speakingBanner: 'Echo is reading aloud…',
@@ -5724,6 +5750,19 @@ export const translations: Record<Language, Translations> = {
       consultEcho: 'Echo',
       stopSpeaking: 'Interrompi',
       microphone: 'Microfono',
+      recLabel: 'REC',
+      recordingStopSend: 'Ferma e invia',
+      recordingElapsed: 'Registrazione',
+      recordingRemaining: 'Restano {time}',
+      recordingLimitWarning: 'La registrazione si ferma tra {seconds} secondi e viene inviata in automatico.',
+      recordingLimitReached: 'Hai raggiunto il limite di {minutes} minuti: la registrazione è stata inviata.',
+      voiceRetryTranscription: 'Riprova la trascrizione',
+      voiceErrorPermission: 'Accesso al microfono negato. Consenti il microfono nelle impostazioni del browser e ricarica la pagina.',
+      voiceErrorEmpty: 'Non ho sentito nessuna voce. Riprova.',
+      voiceErrorNetwork: 'Problema di connessione durante la trascrizione. La registrazione è stata conservata: premi riprova.',
+      voiceErrorServer: 'Trascrizione non riuscita. La registrazione è stata conservata: premi riprova.',
+      voiceErrorExpired: 'La sessione è scaduta. Accedi di nuovo per usare la voce.',
+      voiceErrorTooLong: 'La registrazione è troppo lunga per essere trascritta. Registra un messaggio più breve.',
       muteVoice: 'Disattiva voce di Echo',
       unmuteVoice: 'Attiva voce di Echo',
       speakingBanner: 'Echo sta leggendo ad alta voce…',
@@ -7674,6 +7713,19 @@ export const translations: Record<Language, Translations> = {
       consultEcho: 'Echo',
       stopSpeaking: 'Arrêter',
       microphone: 'Microphone',
+      recLabel: 'REC',
+      recordingStopSend: 'Arrêter et envoyer',
+      recordingElapsed: 'Enregistrement',
+      recordingRemaining: 'Il reste {time}',
+      recordingLimitWarning: 'L\'enregistrement s\'arrête dans {seconds} secondes et est envoyé automatiquement.',
+      recordingLimitReached: 'La limite de {minutes} minutes est atteinte : votre enregistrement a été envoyé.',
+      voiceRetryTranscription: 'Réessayer la transcription',
+      voiceErrorPermission: 'Accès au microphone refusé. Autorisez le microphone dans les paramètres du navigateur et rechargez la page.',
+      voiceErrorEmpty: 'Aucune voix détectée. Veuillez réessayer.',
+      voiceErrorNetwork: 'Problème de connexion pendant la transcription. L\'enregistrement est conservé : appuyez sur réessayer.',
+      voiceErrorServer: 'La transcription a échoué. L\'enregistrement est conservé : appuyez sur réessayer.',
+      voiceErrorExpired: 'Votre session a expiré. Reconnectez-vous pour utiliser la voix.',
+      voiceErrorTooLong: 'L\'enregistrement est trop long pour être transcrit. Enregistrez un message plus court.',
       muteVoice: 'Couper la voix d\'Echo',
       unmuteVoice: 'Activer la voix d\'Echo',
       speakingBanner: 'Echo lit à voix haute…',
@@ -9623,6 +9675,19 @@ export const translations: Record<Language, Translations> = {
       consultEcho: 'Echo',
       stopSpeaking: 'Stoppen',
       microphone: 'Mikrofon',
+      recLabel: 'REC',
+      recordingStopSend: 'Stoppen und senden',
+      recordingElapsed: 'Aufnahme',
+      recordingRemaining: 'Noch {time}',
+      recordingLimitWarning: 'Die Aufnahme endet in {seconds} Sekunden und wird automatisch gesendet.',
+      recordingLimitReached: 'Das Limit von {minutes} Minuten ist erreicht: Ihre Aufnahme wurde gesendet.',
+      voiceRetryTranscription: 'Transkription wiederholen',
+      voiceErrorPermission: 'Zugriff auf das Mikrofon verweigert. Erlauben Sie das Mikrofon in den Browsereinstellungen und laden Sie die Seite neu.',
+      voiceErrorEmpty: 'Keine Sprache erkannt. Bitte versuchen Sie es erneut.',
+      voiceErrorNetwork: 'Verbindungsproblem bei der Transkription. Die Aufnahme bleibt erhalten: Tippen Sie auf Wiederholen.',
+      voiceErrorServer: 'Transkription fehlgeschlagen. Die Aufnahme bleibt erhalten: Tippen Sie auf Wiederholen.',
+      voiceErrorExpired: 'Ihre Sitzung ist abgelaufen. Melden Sie sich erneut an, um die Stimme zu nutzen.',
+      voiceErrorTooLong: 'Die Aufnahme ist zu lang für die Transkription. Bitte nehmen Sie eine kürzere Nachricht auf.',
       muteVoice: 'Echo-Stimme stummschalten',
       unmuteVoice: 'Echo-Stimme aktivieren',
       speakingBanner: 'Echo liest vor…',

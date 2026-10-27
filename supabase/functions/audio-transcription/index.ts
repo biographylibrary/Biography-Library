@@ -8,6 +8,16 @@ const corsHeaders = {
     "Content-Type, Authorization, X-Client-Info, Apikey, x-region",
 };
 
+// Tetto di peso dell'audio: 5 minuti pesano circa 1,2 MB a 32 kbit/s e 4,8 MB a
+// 128 kbit/s. Tenere allineato con ECHO_MAX_AUDIO_BYTES in lib/echo/recording-limits.ts.
+const MAX_AUDIO_BYTES = 12 * 1024 * 1024;
+
+function audioFileName(mimeType: string): string {
+  if (mimeType.includes("mp4")) return "recording.mp4";
+  if (mimeType.includes("ogg")) return "recording.ogg";
+  return "recording.webm";
+}
+
 function errorResponse(message: string, status: number) {
   return new Response(JSON.stringify({ error: message }), {
     status,
@@ -124,6 +134,11 @@ Deno.serve(async (req: Request) => {
       return errorResponse("ai_features_disabled", 403);
     }
 
+    const declaredLength = Number(req.headers.get("content-length") ?? "0");
+    if (declaredLength > MAX_AUDIO_BYTES + 64 * 1024) {
+      return errorResponse("Audio file too large", 413);
+    }
+
     const contentType = req.headers.get("content-type") || "";
     if (!contentType.includes("multipart/form-data")) {
       return errorResponse("Expected multipart/form-data body", 400);
@@ -143,11 +158,15 @@ Deno.serve(async (req: Request) => {
 
     const language = incomingForm.get("language");
 
+    if (fileEntry.size > MAX_AUDIO_BYTES) {
+      return errorResponse("Audio file too large", 413);
+    }
+
     const audioBytes = await fileEntry.arrayBuffer();
     const audioBlob = new Blob([audioBytes], { type: fileEntry.type || "audio/webm" });
 
     const outboundForm = new FormData();
-    outboundForm.append("file", audioBlob, "recording.webm");
+    outboundForm.append("file", audioBlob, audioFileName(audioBlob.type));
     outboundForm.append("model", "whisper");
     if (language && typeof language === "string" && language.trim()) {
       outboundForm.append("language", language.trim());
