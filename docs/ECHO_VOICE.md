@@ -106,7 +106,7 @@ Health check: `GET /api/agents/echo/tts` → `{ "configured": true, "provider": 
 1. User **taps mic** → orb `listening`
 2. User **taps again** → orb `thinking`, Whisper transcribes
 3. Text sent to Echo → LLM streams reply
-4. Reply complete → orb `speaking`, Voxtral plays MP3 (or browser TTS on failure)
+4. Reply complete → text only by default. Voice output is **off until the user turns it on** with the speaker button (`ECHO_VOICE_OUTPUT_DEFAULT = false`; the choice is remembered in the browser). When on: orb `speaking`, Voxtral plays MP3 (or browser TTS on failure)
 5. Transcript always visible in chat
 
 ---

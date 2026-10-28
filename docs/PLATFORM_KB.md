@@ -1,6 +1,6 @@
 # Biography Library — Platform Knowledge Base
 
-Version: 1.19 — 2026-10-28
+Version: 1.20 — 2026-10-28
 
 <!-- internal -->
 Reference language: English. Echo, Help, and platform assistants answer in the user's language using these facts. Update this file whenever product rules or UX change, then run `npm run kb:sync`.
@@ -63,7 +63,7 @@ Grammar check sits inside the Echo bar under the page (next to the microphone an
 ## conversation_mode
 <!-- public-title: Echo under the page -->
 
-There is no separate Conversation Mode toggle. The biography is one page and always editable. Echo sits under the page: a black bar labelled “Echo — your writing assistant”, open by default. Closing the bar hides the conversation, the writing field, and the microphone icons. Opening it shows the conversation, then the writing field. Echo proposes changes and asks questions. A draft is copied into the page only if you accept it (Insert in editor, or reply yes). The chat itself is not copied. Older messages stay saved; they stay hidden until you open Earlier conversations. There is no floating Echo button. Share memories in natural language. Useful when a blank page is intimidating. Voice: the microphone records up to 5 minutes at a time. While it records, a red REC bar shows the time elapsed and the time left, and the button becomes a stop square. A warning appears 30 seconds before the end; at the limit the recording stops and is turned into text on its own. If the transcription fails, a retry button sends the same recording again.
+There is no separate Conversation Mode toggle. The biography is one page and always editable. Echo sits under the page: a black bar labelled “Echo — your writing assistant”, open by default. Closing the bar hides the conversation, the writing field, and the microphone icons. Opening it shows the conversation, then the writing field. Echo proposes changes and asks questions. A draft is copied into the page only if you accept it (Insert in editor, or reply yes). The chat itself is not copied. Older messages stay saved; they stay hidden until you open Earlier conversations. There is no floating Echo button. Share memories in natural language. Useful when a blank page is intimidating. Voice: the microphone records up to 5 minutes at a time. While it records, a red REC bar shows the time elapsed and the time left, and the button becomes a stop square. A warning appears 30 seconds before the end; at the limit the recording stops and is turned into text on its own. If the transcription fails, a retry button sends the same recording again. Echo's replies are not read aloud until you turn the voice on with the speaker button; the choice is remembered in this browser, and one more click turns it off.
 
 ## editor_interface
 <!-- public-title: The editor -->

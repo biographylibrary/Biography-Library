@@ -5,6 +5,7 @@ import { getModelParams } from '@/lib/agents/models';
 import { FAITHFUL_WRITING_RULES } from '@/lib/agents/prompts/plain-meaning';
 import { GRAMMAR_MAX_CHARS, GRAMMAR_MODEL_PARAMS } from '@/lib/ai/grammar';
 import { GRAMMAR_DAILY_LIMIT, GRAMMAR_WEEKLY_LIMIT } from '@/lib/ai/grammar-limits';
+import { ECHO_VOICE_OUTPUT_DEFAULT } from '@/lib/echo/echo-voice-prefs';
 import { ECHO_MAX_RECORDING_SECONDS, ECHO_RECORDING_WARNING_SECONDS } from '@/lib/echo/recording-limits';
 import { BOOK_PART_DEFS } from '@/lib/book-parts';
 import { MANUAL_META } from '@/lib/help/manual-meta.generated';
@@ -97,6 +98,17 @@ describe('la guida e il codice dicono lo stesso', () => {
     expect(FAITHFUL_WRITING_RULES).toContain('Ordinary things stay ordinary');
     expect(getModelParams('coach').temperature).toBeLessThanOrEqual(0.3);
     expect(GRAMMAR_MODEL_PARAMS.temperature).toBeLessThanOrEqual(0.3);
+  });
+
+  it('voce di Echo: la guida dice che è spenta finché non si accende, come l\'app', () => {
+    expect(ECHO_VOICE_OUTPUT_DEFAULT).toBe(false);
+    const promise: Record<Locale, RegExp> = {
+      en: /not read aloud until you turn the voice on/,
+      it: /non vengono lette ad alta voce finché non accendi la voce/,
+      fr: /ne sont pas lues à voix haute tant que vous n'activez pas la voix/,
+      de: /nicht vorgelesen, solange Sie die Stimme nicht/,
+    };
+    for (const locale of LOCALES) expect(KB[locale].conversation_mode).toMatch(promise[locale]);
   });
 
   it('controllo grammaticale: la guida dice il limite di testo selezionabile, come l\'app', () => {

@@ -1,6 +1,6 @@
 # Biography Library — Base di conoscenza della piattaforma
 
-Version: 1.19 — 2026-10-28
+Version: 1.20 — 2026-10-28
 
 <!-- internal -->
 Lingua di questa traduzione: italiano. Allineare a docs/PLATFORM_KB.md (EN). Dopo ogni modifica: npm run kb:sync.
@@ -41,7 +41,7 @@ Il controllo grammaticale sta nel pannello di Echo sotto il foglio (accanto ai p
 ## conversation_mode
 <!-- public-title: Echo sotto il foglio -->
 
-Non esiste una modalità conversazione separata. La biografia è un solo foglio, sempre modificabile. Echo sta sotto: striscia nera «Echo - il tuo assistente alla scrittura», aperta di default. Chiuderla nasconde chat, campo e icone. Una bozza entra nel foglio solo se la accetti. La chat non viene copiata. Le conversazioni vecchie restano e si aprono con Conversazioni precedenti. Non c’è un pulsante flottante. Voce: il microfono registra fino a 5 minuti per volta. Mentre registri compare una striscia rossa REC con il tempo trascorso e quello che resta, e il pulsante diventa un quadrato di stop. 30 secondi prima della fine arriva un avviso; allo scadere la registrazione si ferma e viene trascritta da sola. Se la trascrizione non riesce, un pulsante di nuovo tentativo invia di nuovo la stessa registrazione.
+Non esiste una modalità conversazione separata. La biografia è un solo foglio, sempre modificabile. Echo sta sotto: striscia nera «Echo - il tuo assistente alla scrittura», aperta di default. Chiuderla nasconde chat, campo e icone. Una bozza entra nel foglio solo se la accetti. La chat non viene copiata. Le conversazioni vecchie restano e si aprono con Conversazioni precedenti. Non c’è un pulsante flottante. Voce: il microfono registra fino a 5 minuti per volta. Mentre registri compare una striscia rossa REC con il tempo trascorso e quello che resta, e il pulsante diventa un quadrato di stop. 30 secondi prima della fine arriva un avviso; allo scadere la registrazione si ferma e viene trascritta da sola. Se la trascrizione non riesce, un pulsante di nuovo tentativo invia di nuovo la stessa registrazione. Le risposte di Echo non vengono lette ad alta voce finché non accendi la voce con il pulsante dell'altoparlante; la scelta resta ricordata in questo browser, e un altro clic la spegne.
 
 ## editor_interface
 <!-- public-title: L’editor -->

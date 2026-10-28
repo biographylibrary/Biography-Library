@@ -19,6 +19,7 @@ import { useEcho } from '@/lib/echo/echo-context';
 import type { EchoOrbState } from '@/components/echo/EchoOrb';
 import { speakEchoReply, stopEchoSpeech } from '@/lib/echo/echo-playback';
 import {
+  ECHO_VOICE_OUTPUT_DEFAULT,
   getEchoVoiceOutputEnabled,
   setEchoVoiceOutputEnabled,
 } from '@/lib/echo/echo-voice-prefs';
@@ -197,7 +198,7 @@ export function EchoChatProvider({
   const [error, setError] = useState<string | null>(null);
   const [threadId, setThreadId] = useState<string | undefined>();
   const [orbState, setOrbState] = useState<EchoOrbState>('idle');
-  const [voiceOutputEnabled, setVoiceOutputEnabled] = useState(true);
+  const [voiceOutputEnabled, setVoiceOutputEnabled] = useState(ECHO_VOICE_OUTPUT_DEFAULT);
   const [activeSectionLabel, setActiveSectionLabel] = useState<string | null>(null);
   const [icebreakers, setIcebreakers] = useState<EchoIcebreakerItem[]>([]);
   const [icebreakersVisible, setIcebreakersVisible] = useState(false);

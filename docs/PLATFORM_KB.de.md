@@ -1,6 +1,6 @@
 # Biography Library — Plattform-Wissensbasis
 
-Version: 1.19 — 2026-10-28
+Version: 1.20 — 2026-10-28
 
 <!-- internal -->
 Sprache dieser Übersetzung: Deutsch. An docs/PLATFORM_KB.md (EN) ausrichten. Nach jeder Änderung: npm run kb:sync.
@@ -41,7 +41,7 @@ Die Grammatikprüfung liegt im Echo-Bereich unter der Seite (neben den Mikrofon-
 ## conversation_mode
 <!-- public-title: Echo unter der Seite -->
 
-Es gibt keinen separaten Konversationsmodus. Die Biografie ist eine einzige Seite und immer bearbeitbar. Echo steht darunter: schwarzer Streifen «Echo — dein Schreibassistent», standardmäßig offen. Schließen blendet Chat, Feld und Symbole aus. Ein Entwurf kommt nur auf die Seite, wenn Sie ihn annehmen. Der Chat wird nicht kopiert. Ältere Gespräche bleiben und öffnen sich über Frühere Gespräche. Es gibt keine schwebende Schaltfläche. Stimme: Das Mikrofon nimmt bis zu 5 Minuten am Stück auf. Während der Aufnahme zeigt ein roter REC-Streifen die vergangene und die verbleibende Zeit, und die Schaltfläche wird zu einem Stopp-Quadrat. 30 Sekunden vor dem Ende erscheint eine Warnung; am Limit endet die Aufnahme und wird von selbst in Text umgewandelt. Schlägt die Umwandlung fehl, sendet eine Schaltfläche zum erneuten Versuch dieselbe Aufnahme noch einmal.
+Es gibt keinen separaten Konversationsmodus. Die Biografie ist eine einzige Seite und immer bearbeitbar. Echo steht darunter: schwarzer Streifen «Echo — dein Schreibassistent», standardmäßig offen. Schließen blendet Chat, Feld und Symbole aus. Ein Entwurf kommt nur auf die Seite, wenn Sie ihn annehmen. Der Chat wird nicht kopiert. Ältere Gespräche bleiben und öffnen sich über Frühere Gespräche. Es gibt keine schwebende Schaltfläche. Stimme: Das Mikrofon nimmt bis zu 5 Minuten am Stück auf. Während der Aufnahme zeigt ein roter REC-Streifen die vergangene und die verbleibende Zeit, und die Schaltfläche wird zu einem Stopp-Quadrat. 30 Sekunden vor dem Ende erscheint eine Warnung; am Limit endet die Aufnahme und wird von selbst in Text umgewandelt. Schlägt die Umwandlung fehl, sendet eine Schaltfläche zum erneuten Versuch dieselbe Aufnahme noch einmal. Die Antworten von Echo werden nicht vorgelesen, solange Sie die Stimme nicht mit der Lautsprecher-Schaltfläche einschalten; die Wahl wird in diesem Browser gemerkt, und ein weiterer Klick schaltet sie wieder aus.
 
 ## editor_interface
 <!-- public-title: Der Editor -->
