@@ -1,9 +1,7 @@
 import * as mammoth from 'mammoth';
 import { RTFJS } from 'rtf.js';
-import {
-  appendHtml,
-  stripHtmlToPlain,
-} from '@/lib/import/html-blocks';
+import { stripHtmlToPlain } from '@/lib/import/html-blocks';
+import { appendMarkdown } from '@/lib/editor/single-document';
 import {
   detectSectionsFromHtml,
   MAMMOTH_STYLE_MAP,
@@ -129,7 +127,8 @@ function mergeParsed(results: ParsedText[]): ParsedText {
     };
   }
 
-  const content = results.reduce((acc, r) => appendHtml(acc, r.content), '');
+  // Ogni file è già Markdown d'archivio (finalizeParsed): si uniscono i paragrafi, non si rileggono come HTML.
+  const content = results.reduce((acc, r) => appendMarkdown(acc, r.content), '');
   return {
     content,
     hasSections: false,
@@ -247,7 +246,8 @@ export async function parseTextFiles(
       headingChunks: merged.sections.map((s) => ({ title: s.title, html: s.content })),
     };
   }
-  return finalizeParsed(merged.content, language);
+  // Il contenuto è già Markdown d'archivio: rileggerlo come HTML farebbe sparire gli a capo tra i paragrafi.
+  return merged;
 }
 
 async function parseTxtFile(file: File): Promise<ParsedText> {

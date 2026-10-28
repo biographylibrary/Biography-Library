@@ -2,7 +2,7 @@
 import { beforeAll, describe, expect, it, vi } from 'vitest';
 import { storedToPlainText } from '@/lib/archive-markdown';
 import { buildBiographyDocxBuffer } from '@/lib/export-utils';
-import { parseTextFile } from '@/lib/text-import-parser';
+import { parseTextFiles } from '@/lib/text-import-parser';
 import { installDomShims, savedTextsOfJourney } from './helpers/author-journey';
 
 // Nel browser mammoth legge un ArrayBuffer; la versione per Node vuole un Buffer. Stessa lettura.
@@ -31,7 +31,7 @@ describe('Word: dal testo salvato al file e ritorno', () => {
         // jsdom non sa leggere un File come ArrayBuffer: si passa un file finto con gli stessi tre campi.
         const arrayBuffer = buffer.buffer.slice(buffer.byteOffset, buffer.byteOffset + buffer.byteLength);
         const file = { name: 'x.docx', size: buffer.byteLength, arrayBuffer: async () => arrayBuffer } as unknown as File;
-        const parsed = await parseTextFile(file, 'it');
+        const parsed = await parseTextFiles([file], 'it');
         const text = parsed.sections?.length
           ? parsed.sections.map((s) => `${s.title}\n\n${s.content}`).join('\n\n')
           : parsed.content;
