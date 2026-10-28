@@ -325,6 +325,7 @@ export interface Translations {
     noCoverPhotoWarning: string;
     pdfDraftNotice: string;
     draftIterationNone: string;
+    pdfLayoutProofNotice: string;
     draftIterationCurrent: string;
     draftIterationWarning: string;
     draftLimitReached: string;
@@ -2295,6 +2296,7 @@ export const translations: Record<Language, Translations> = {
       noCoverPhotoWarning: 'A cover photo is required to generate the PDF. Upload a photo and tag it as cover in the Photos section.',
       pdfDraftNotice: 'This is a draft proof PDF. It reflects the current state of your biography and lets you verify layout and content before submitting for review.',
       draftIterationNone: 'No draft PDF generated yet. Exporting will create your first draft.',
+      pdfLayoutProofNotice: 'This PDF is a layout proof: use it to check layout and content. It is not saved as a review draft and does not count as a round.',
       draftIterationCurrent: 'Draft {n} already generated. Exporting will create draft {next}.',
       draftIterationWarning: 'You have already generated {n} draft PDFs. Consider submitting for review soon.',
       draftLimitReached: 'You have reached the maximum number of draft PDFs for this biography. Submit for review before generating more.',
@@ -4259,6 +4261,7 @@ export const translations: Record<Language, Translations> = {
       noCoverPhotoWarning: 'È necessaria una foto di copertina per generare il PDF. Carica una foto e contrassegnala come copertina nella sezione Foto.',
       pdfDraftNotice: 'Questo è un PDF di bozza. Riflette lo stato attuale della biografia e ti permette di verificare il layout e il contenuto prima di inviarlo alla revisione.',
       draftIterationNone: 'Nessun PDF di bozza generato ancora. Esportando creerai la prima bozza.',
+      pdfLayoutProofNotice: 'Questo PDF è una prova di impaginazione: serve a controllare layout e contenuto. Non viene salvato come bozza di revisione e non conta come giro.',
       draftIterationCurrent: 'Bozza {n} già generata. Esportando si creerà la bozza {next}.',
       draftIterationWarning: 'Hai già generato {n} bozze PDF. Valuta di inviare presto per la revisione.',
       draftLimitReached: 'Hai raggiunto il numero massimo di bozze PDF per questa biografia. Invia per revisione prima di generarne altre.',
@@ -6225,6 +6228,7 @@ export const translations: Record<Language, Translations> = {
       noCoverPhotoWarning: 'Une photo de couverture est requise pour générer le PDF. Importez une photo et marquez-la comme couverture dans la section Photos.',
       pdfDraftNotice: 'Il s\'agit d\'un PDF de brouillon. Il reflète l\'état actuel de votre biographie et vous permet de vérifier la mise en page et le contenu avant de soumettre pour révision.',
       draftIterationNone: 'Aucun PDF de brouillon généré pour l\'instant. L\'exportation créera votre premier brouillon.',
+      pdfLayoutProofNotice: 'Ce PDF est une épreuve de mise en page : il sert à vérifier la mise en page et le contenu. Il n\'est pas enregistré comme brouillon de révision et ne compte pas comme un tour.',
       draftIterationCurrent: 'Brouillon {n} déjà généré. L\'exportation créera le brouillon {next}.',
       draftIterationWarning: 'Vous avez déjà généré {n} brouillons PDF. Pensez à soumettre bientôt pour révision.',
       draftLimitReached: 'Vous avez atteint le nombre maximum de brouillons PDF pour cette biographie. Soumettez pour révision avant d\'en générer d\'autres.',
@@ -8192,6 +8196,7 @@ export const translations: Record<Language, Translations> = {
       noCoverPhotoWarning: 'Ein Titelfoto ist erforderlich, um das PDF zu erstellen. Lade ein Foto hoch und markiere es als Titelbild im Fotos-Bereich.',
       pdfDraftNotice: 'Dies ist ein Entwurfs-PDF. Es spiegelt den aktuellen Stand der Biografie wider und ermöglicht es dir, Layout und Inhalt vor der Einreichung zur Überprüfung zu verifizieren.',
       draftIterationNone: 'Noch kein Entwurfs-PDF generiert. Beim Exportieren wird dein erster Entwurf erstellt.',
+      pdfLayoutProofNotice: 'Dieses PDF ist ein Layout-Probedruck: Damit prüfst du Layout und Inhalt. Es wird nicht als Überprüfungsentwurf gespeichert und zählt nicht als Durchgang.',
       draftIterationCurrent: 'Entwurf {n} bereits generiert. Beim Exportieren wird Entwurf {next} erstellt.',
       draftIterationWarning: 'Du hast bereits {n} Entwurfs-PDFs generiert. Reiche die Biografie bald zur Überprüfung ein.',
       draftLimitReached: 'Du hast die maximale Anzahl an Entwurfs-PDFs für diese Biografie erreicht. Reiche zur Überprüfung ein, bevor du weitere erstellst.',
