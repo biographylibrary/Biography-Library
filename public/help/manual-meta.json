@@ -1,27 +1,27 @@
 {
-  "version": "1.19",
+  "version": "1.20",
   "date": "2026-10-28",
-  "hash": "be1ab4d4ba604dd2e20b87959e124fc5d07cf6f49d6bc1896f83fa5d3269d698",
+  "hash": "6927c6b0b56d69f925b83b9548caf00af3b49bd9fb1172b3e536706b22924aae",
   "languages": {
     "en": {
-      "version": "1.19",
+      "version": "1.20",
       "date": "2026-10-28",
-      "hash": "ddc522381584255702f09fee3e09fb83662acc79c722087317c6c0511e3c2f03"
+      "hash": "5ff76538fc069e7fdb3cbabcb5ab72b91a4a5f88e68fa32e859921fa49b97e88"
     },
     "it": {
-      "version": "1.19",
+      "version": "1.20",
       "date": "2026-10-28",
-      "hash": "c751595fef04493a0ade27611b26c3b770529242118810030dba744ea229496e"
+      "hash": "f44a90b989472db7d1c7b31c35f888f9b6d3cf91daa414c3ed28446ecb6e7736"
     },
     "fr": {
-      "version": "1.19",
+      "version": "1.20",
       "date": "2026-10-28",
-      "hash": "dd18058733892f33a4256863b6d818021ba030af597c5163b59d299d452db74b"
+      "hash": "13744ddb969f849ab2c5c938e92cd99e335d41b320f2cd190c85b789693c71f6"
     },
     "de": {
-      "version": "1.19",
+      "version": "1.20",
       "date": "2026-10-28",
-      "hash": "910b482c7f6a170185b9a6431a53f0c54206274c0fb06fbdeab0d0e60c5ae6f5"
+      "hash": "954b0473d3ec48c7b262a1beb50a9b8c3235c2167353891c65e59647118075a3"
     }
   }
 }

@@ -1,5 +1,6 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { MANUAL_META } from '@/lib/help/manual-meta.generated';
+import { KB_RETRIEVAL_VERSION } from '@/lib/agents/rag/kb-ranking';
 import type { KbLocale } from '@/lib/agents/kb/help-kb-sections';
 
 /** Lock TTL: un processo morto non tiene Echo bloccato. */
@@ -13,8 +14,9 @@ export type KbIndexRow = {
   reseed_locked_until: string | null;
 };
 
+/** Impronta del testo della guida e del modo di tagliarla: se cambia uno dei due, l'indice si rifà. */
 export function buildKbContentHash(): string {
-  return MANUAL_META.hash;
+  return `${MANUAL_META.hash}.r${KB_RETRIEVAL_VERSION}`;
 }
 
 export function buildKbVersion(): string {

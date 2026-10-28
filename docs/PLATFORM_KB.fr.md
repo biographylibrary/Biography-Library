@@ -1,6 +1,6 @@
 # Biography Library — Base de connaissances de la plateforme
 
-Version: 1.19 — 2026-10-28
+Version: 1.20 — 2026-10-28
 
 <!-- internal -->
 Langue de cette traduction : français. Aligner sur docs/PLATFORM_KB.md (EN). Après toute modification : npm run kb:sync.
@@ -41,7 +41,7 @@ La vérification grammaticale se trouve dans le panneau Echo sous la page (à c�
 ## conversation_mode
 <!-- public-title: Echo sous la page -->
 
-Il n'y a pas de mode conversation séparé. La biographie est une seule page, toujours modifiable. Echo est dessous : bande noire « Echo — votre assistant à l'écriture », ouverte par défaut. La fermer cache la conversation, le champ et les icônes. Un brouillon n'entre dans la page que si vous l'acceptez. La conversation n'est pas copiée. Les anciens échanges restent et s'ouvrent avec Conversations précédentes. Il n'y a pas de bouton flottant. Voix : le microphone enregistre jusqu'à 5 minutes à la fois. Pendant l'enregistrement, une bande rouge REC montre le temps écoulé et le temps restant, et le bouton devient un carré d'arrêt. Un avertissement apparaît 30 secondes avant la fin ; à la limite, l'enregistrement s'arrête et est transcrit tout seul. Si la transcription échoue, un bouton de nouvel essai renvoie le même enregistrement.
+Il n'y a pas de mode conversation séparé. La biographie est une seule page, toujours modifiable. Echo est dessous : bande noire « Echo — votre assistant à l'écriture », ouverte par défaut. La fermer cache la conversation, le champ et les icônes. Un brouillon n'entre dans la page que si vous l'acceptez. La conversation n'est pas copiée. Les anciens échanges restent et s'ouvrent avec Conversations précédentes. Il n'y a pas de bouton flottant. Voix : le microphone enregistre jusqu'à 5 minutes à la fois. Pendant l'enregistrement, une bande rouge REC montre le temps écoulé et le temps restant, et le bouton devient un carré d'arrêt. Un avertissement apparaît 30 secondes avant la fin ; à la limite, l'enregistrement s'arrête et est transcrit tout seul. Si la transcription échoue, un bouton de nouvel essai renvoie le même enregistrement. Les réponses d'Echo ne sont pas lues à voix haute tant que vous n'activez pas la voix avec le bouton haut-parleur ; le choix est mémorisé dans ce navigateur, et un autre clic l'éteint.
 
 ## editor_interface
 <!-- public-title: L’éditeur -->
