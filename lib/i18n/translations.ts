@@ -428,6 +428,7 @@ export interface Translations {
     grammarSelectionTitle: string;
     grammarSelectionTooLong: string;
     grammarSelectionGotIt: string;
+    grammarApplyFailed: string;
     editorMode: string;
     conversationMode: string;
     publishedChapterNotice: string;
@@ -2396,6 +2397,7 @@ export const translations: Record<Language, Translations> = {
       grammarSelectionTitle: 'Select the text to check',
       grammarSelectionTooLong: 'You selected {count} characters; the grammar check works on up to {max}. Select a shorter passage, for example one paragraph, and try again. Nothing was sent to the AI.',
       grammarSelectionGotIt: 'Got it',
+      grammarApplyFailed: 'I could not apply this correction: the text has changed or the passage is no longer selected. Select it again and check it again, or edit by hand.',
       editorMode: 'Editor Mode',
       conversationMode: 'Conversation Mode',
       publishedChapterNotice: 'This chapter is published and cannot be edited.',
@@ -4358,6 +4360,7 @@ export const translations: Record<Language, Translations> = {
       grammarSelectionTitle: 'Seleziona il testo da controllare',
       grammarSelectionTooLong: 'Hai selezionato {count} caratteri, il controllo ne accetta al massimo {max}. Seleziona un brano più corto, per esempio un paragrafo, e riprova. Non è stato inviato niente alla IA.',
       grammarSelectionGotIt: 'Ho capito',
+      grammarApplyFailed: 'Non riesco ad applicare questa correzione: il testo è cambiato o il brano non è più selezionato. Selezionalo di nuovo e ricontrolla, oppure modifica a mano.',
       editorMode: 'Modalità Editor',
       conversationMode: 'Modalità Conversazione',
       publishedChapterNotice: 'Questo capitolo è pubblicato e non può essere modificato.',
@@ -6323,6 +6326,7 @@ export const translations: Record<Language, Translations> = {
       grammarSelectionTitle: 'Sélectionnez le texte à vérifier',
       grammarSelectionTooLong: 'Vous avez sélectionné {count} caractères ; la vérification en accepte {max} au maximum. Sélectionnez un passage plus court, par exemple un paragraphe, et réessayez. Rien n\'a été envoyé à l\'IA.',
       grammarSelectionGotIt: 'Compris',
+      grammarApplyFailed: 'Je n\'ai pas pu appliquer cette correction : le texte a changé ou le passage n\'est plus sélectionné. Sélectionnez-le de nouveau et revérifiez, ou modifiez à la main.',
       editorMode: 'Mode Éditeur',
       conversationMode: 'Mode Conversation',
       publishedChapterNotice: 'Ce chapitre est publié et ne peut pas être modifié.',
@@ -8287,6 +8291,7 @@ export const translations: Record<Language, Translations> = {
       grammarSelectionTitle: 'Wählen Sie den zu prüfenden Text aus',
       grammarSelectionTooLong: 'Sie haben {count} Zeichen markiert; die Prüfung akzeptiert höchstens {max}. Markieren Sie eine kürzere Stelle, zum Beispiel einen Absatz, und versuchen Sie es erneut. Es wurde nichts an die KI gesendet.',
       grammarSelectionGotIt: 'Verstanden',
+      grammarApplyFailed: 'Ich konnte diese Korrektur nicht anwenden: Der Text hat sich geändert oder die Stelle ist nicht mehr markiert. Markieren Sie sie erneut und prüfen Sie noch einmal, oder ändern Sie von Hand.',
       editorMode: 'Editor-Modus',
       conversationMode: 'Konversationsmodus',
       publishedChapterNotice: 'Dieses Kapitel ist veröffentlicht und kann nicht bearbeitet werden.',
