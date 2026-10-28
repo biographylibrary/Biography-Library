@@ -57,6 +57,19 @@ export function classifyEditIntent(instruction: string | undefined): EditIntent 
   return 'unknown';
 }
 
+/**
+ * Se la proposta prende il posto di un testo già scritto. Un'aggiunta prima o dopo un passaggio non
+ * sostituisce nulla, anche se la richiesta contiene parole come «cambiarlo» («senza cambiarlo»).
+ */
+export function draftReplacesText(
+  draft: { replaceText?: string; insertBefore?: string; insertAfter?: string },
+  intent: EditIntent
+): boolean {
+  if (draft.replaceText) return true;
+  if (draft.insertBefore || draft.insertAfter) return false;
+  return intent === 'replace';
+}
+
 function wordsOf(text: string): string[] {
   return text
     .toLowerCase()

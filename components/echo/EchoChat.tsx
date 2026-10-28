@@ -23,7 +23,7 @@ import { EchoDraftInsertPrompt } from './EchoDraftInsertPrompt';
 import { EchoErrorAlert } from './EchoErrorAlert';
 import { useEchoActivityStatus } from '@/lib/echo/use-echo-activity-status';
 import { BIOGRAPHY_SECTIONS } from '@/lib/editor-constants';
-import { classifyEditIntent } from '@/lib/echo/apply-draft';
+import { classifyEditIntent, draftReplacesText } from '@/lib/echo/apply-draft';
 
 function clipDraftMark(value: string): string {
   const clean = value.replace(/\s+/g, ' ').trim();
@@ -370,8 +370,7 @@ export function EchoChat({
                   const replaceAll =
                     Boolean(m.pendingDraft.replaceAll && m.pendingDraft.replaceText) ||
                     intent === 'dashes_to_commas';
-                  const replaceOne =
-                    !replaceAll && (Boolean(m.pendingDraft.replaceText) || intent === 'replace');
+                  const replaceOne = !replaceAll && draftReplacesText(m.pendingDraft, intent);
                   return (
                   <EchoDraftInsertPrompt
                     sectionTitle={sectionTitleFor(m.pendingDraft.sectionKey)}
