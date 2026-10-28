@@ -11,6 +11,7 @@ vi.mock('@/lib/help/manual-meta.generated', () => ({
 }));
 
 import {
+  buildKbContentHash,
   isKbIndexCurrent,
   tryAcquireKbReseedLock,
   releaseKbReseedLock,
@@ -53,10 +54,12 @@ describe('kb_index_state lock', () => {
 
   it('release aggiorna hash e toglie il lock', async () => {
     await tryAcquireKbReseedLock(db.client, 'en');
-    await releaseKbReseedLock(db.client, 'en', { version: '1.13', content_hash: 'abc123' });
+    await releaseKbReseedLock(db.client, 'en', { version: '1.13', content_hash: buildKbContentHash() });
     const row = db.tables.kb_index_state[0];
     expect(row.reseed_locked_until).toBeNull();
-    expect(row.content_hash).toBe('abc123');
+    expect(row.content_hash).toBe(buildKbContentHash());
+    // L'impronta comprende il modo di tagliare e cercare: cambiandolo, l'indice si rifà da solo.
+    expect(row.content_hash).toMatch(/^abc123\.r\d+$/);
     expect(isKbIndexCurrent(row as never)).toBe(true);
   });
 });

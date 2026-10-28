@@ -15,37 +15,12 @@ import {
   tryAcquireKbReseedLock,
 } from '@/lib/agents/rag/kb-index-state';
 import { runAfterResponse } from '@/lib/server/run-after-response';
+import { buildKbQuery, pickKbChunks, rankKbChunks, splitKbSection } from '@/lib/agents/rag/kb-ranking';
 
-const CHUNK_SIZE = 900;
+export { buildKbQuery };
 
 function hashText(text: string): string {
   return createHash('sha256').update(text).digest('hex');
-}
-
-function splitLongSection(text: string): string[] {
-  const trimmed = text.trim();
-  if (!trimmed) return [];
-  if (trimmed.length <= CHUNK_SIZE) return [trimmed];
-  const parts: string[] = [];
-  let start = 0;
-  while (start < trimmed.length) {
-    parts.push(trimmed.slice(start, start + CHUNK_SIZE));
-    start += CHUNK_SIZE;
-  }
-  return parts;
-}
-
-function cosineSimilarity(a: number[], b: number[]): number {
-  let dot = 0;
-  let na = 0;
-  let nb = 0;
-  for (let i = 0; i < a.length; i++) {
-    dot += a[i] * b[i];
-    na += a[i] * a[i];
-    nb += b[i] * b[i];
-  }
-  const denom = Math.sqrt(na) * Math.sqrt(nb);
-  return denom === 0 ? 0 : dot / denom;
 }
 
 export type SeedHelpKbResult = {
@@ -68,7 +43,7 @@ export function expectedKbChunkKeys(locales: KbLocale[] = [...KB_LOCALES]): Set<
   const keys = new Set<string>();
   for (const locale of locales) {
     for (const section of HELP_KB_SECTIONS) {
-      const parts = splitLongSection(section.content[locale]);
+      const parts = splitKbSection(section.content[locale]);
       for (let chunkIndex = 0; chunkIndex < parts.length; chunkIndex++) {
         keys.add(`${locale}\0${section.sourceKey}\0${chunkIndex}`);
       }
@@ -126,7 +101,7 @@ export async function seedHelpKb(
 
   for (const locale of locales) {
     for (const section of HELP_KB_SECTIONS) {
-      const parts = splitLongSection(section.content[locale]);
+      const parts = splitKbSection(section.content[locale]);
       for (let chunkIndex = 0; chunkIndex < parts.length; chunkIndex++) {
         const content = parts[chunkIndex];
         const text_hash = hashText(content);
@@ -270,7 +245,7 @@ export async function retrieveKbContext(
   serviceClient: SupabaseClient,
   query: string,
   locale: string,
-  k = 4,
+  k = 5,
   userId: string | null = null
 ): Promise<{ context: string; sources: string[] }> {
   const loc = (locale.slice(0, 2) as KbLocale) || 'en';
@@ -297,39 +272,20 @@ export async function retrieveKbContext(
 
     if (error || !chunks?.length) continue;
 
-    const scored = chunks
-      .map((row) => {
-        const r = row as { source_key: string; content: string; embedding: number[] };
-        if (!r.embedding?.length) return null;
-        return {
-          sourceKey: r.source_key,
-          content: r.content,
-          score: cosineSimilarity(queryVec, r.embedding),
-        };
-      })
-      .filter((x): x is { sourceKey: string; content: string; score: number } => x !== null)
-      .sort((a, b) => b.score - a.score);
+    const scored = rankKbChunks(
+      queryVec,
+      query,
+      (chunks as { source_key: string; content: string; embedding: number[] }[]).map((r) => ({
+        sourceKey: r.source_key,
+        content: r.content,
+        embedding: r.embedding,
+      }))
+    );
 
     if (!scored.length) continue;
 
-    const picked: { sourceKey: string; content: string }[] = [];
-    const seen = new Set<string>();
-
-    if (pinAccountChunks) {
-      const pinned = await fetchPinnedAccountChunks(serviceClient, tryLocale);
-      for (const p of pinned) {
-        if (seen.has(p.sourceKey)) continue;
-        seen.add(p.sourceKey);
-        picked.push(p);
-      }
-    }
-
-    for (const row of scored) {
-      if (picked.length >= k) break;
-      if (seen.has(row.sourceKey)) continue;
-      seen.add(row.sourceKey);
-      picked.push({ sourceKey: row.sourceKey, content: row.content });
-    }
+    const pinned = pinAccountChunks ? await fetchPinnedAccountChunks(serviceClient, tryLocale) : [];
+    const picked = pickKbChunks(scored, pinned, k);
 
     if (!picked.length) continue;
 

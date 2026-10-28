@@ -16,6 +16,7 @@ import { buildEchoSystemPrompt } from '@/lib/agents/prompts/echo';
 import { getEchoToolsForContext } from '@/lib/agents/tools/echo-tools';
 import { indexBiography, retrieveBiographyContext } from '@/lib/agents/rag/biography-rag';
 import {
+  buildKbQuery,
   ensureHelpKbIndexed,
   retrieveKbContext,
 } from '@/lib/agents/rag/kb-rag';
@@ -214,7 +215,7 @@ export async function prepareAgentTurn(
 
   try {
     await ensureHelpKbIndexed(serviceClient, locale, userId);
-    const kb = await retrieveKbContext(serviceClient, message, locale, 4, userId);
+    const kb = await retrieveKbContext(serviceClient, buildKbQuery(message, history), locale, 5, userId);
     kbContext = kb.context;
     kbSources = kb.sources;
   } catch (err) {
