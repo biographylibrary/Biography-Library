@@ -18,7 +18,7 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Separator } from '@/components/ui/separator';
 import { Download, Loader as Loader2, Info, TriangleAlert as AlertTriangle, X, RefreshCw, FileWarning, Eye } from 'lucide-react';
 import { BIOGRAPHY_SECTIONS } from '@/lib/editor-constants';
-import { generateBiographyPDF, checkBiographyPdfReadiness, getPdfReadinessMessage, type PdfReadinessIssue } from '@/lib/pdf-export';
+import { generateBiographyPDF, resolvePdfTranslations, checkBiographyPdfReadiness, getPdfReadinessMessage, type PdfReadinessIssue } from '@/lib/pdf-export';
 import { exportAsPlainText, exportAsDOCX } from '@/lib/export-utils';
 import {
   BOOK_STRUCTURE_SELECT,
@@ -134,6 +134,11 @@ export function AdvancedExportDialog({
   const [exportError, setExportError] = useState<string | null>(null);
   const [draftIteration, setDraftIteration] = useState<number | null>(null);
   const [contentLanguage, setContentLanguage] = useState<string>('en');
+  // Lingua del libro, non dell'interfaccia: guida retro di copertina, titoli e
+  // colophon. `contentLanguage` si carica solo per le bozze, quindi per una
+  // biografia pubblicata si legge dalla biografia stessa.
+  const pdfLanguage = isPublished ? resolveRecordLanguageTag(biography) : contentLanguage;
+  const pdfTranslations = resolvePdfTranslations(pdfLanguage);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [isPreviewing, setIsPreviewing] = useState(false);
   const [draftFeedback, setDraftFeedback] = useState<DraftAiFeedback | null>(null);
@@ -379,20 +384,9 @@ export function AdvancedExportDialog({
           await generateBiographyPDF(
             finalBio,
             'b5-standard',
-            {
-              createdWith: t.exportDialog.createdWith,
-              allRightsReserved: t.exportDialog.allRightsReserved,
-              preface: t.exportDialog.preface,
-              epilogue: t.exportDialog.epilogue,
-              acknowledgements: t.exportDialog.acknowledgements,
-              specificCredits: t.exportDialog.specificCredits,
-              backCoverDescription: t.exportDialog.backCoverDescription,
-              backCoverPropertyStatement: t.exportDialog.backCoverPropertyStatement,
-              backCoverAiStatement: t.exportDialog.backCoverAiStatement,
-              backCoverFooter: t.exportDialog.backCoverFooter,
-            },
+            pdfTranslations,
             iterationToUse,
-            contentLanguage
+            pdfLanguage
           );
         } else if (format === 'txt') {
           await exportPermanenceTxt(finalBio);
@@ -408,20 +402,9 @@ export function AdvancedExportDialog({
           await generateBiographyPDF(
             biography,
             'b5-standard',
-            {
-              createdWith: t.exportDialog.createdWith,
-              allRightsReserved: t.exportDialog.allRightsReserved,
-              preface: t.exportDialog.preface,
-              epilogue: t.exportDialog.epilogue,
-              acknowledgements: t.exportDialog.acknowledgements,
-              specificCredits: t.exportDialog.specificCredits,
-              backCoverDescription: t.exportDialog.backCoverDescription,
-              backCoverPropertyStatement: t.exportDialog.backCoverPropertyStatement,
-              backCoverAiStatement: t.exportDialog.backCoverAiStatement,
-              backCoverFooter: t.exportDialog.backCoverFooter,
-            },
+            pdfTranslations,
             iterationToUse,
-            contentLanguage
+            pdfLanguage
           );
         } else if (format === 'txt') {
           await exportPermanenceTxt(biography);
@@ -469,20 +452,9 @@ export function AdvancedExportDialog({
         await generateBiographyPDF(
           filteredBiography,
           'b5-standard',
-          {
-            createdWith: t.exportDialog.createdWith,
-            allRightsReserved: t.exportDialog.allRightsReserved,
-            preface: t.exportDialog.preface,
-            epilogue: t.exportDialog.epilogue,
-            acknowledgements: t.exportDialog.acknowledgements,
-            specificCredits: t.exportDialog.specificCredits,
-            backCoverDescription: t.exportDialog.backCoverDescription,
-            backCoverPropertyStatement: t.exportDialog.backCoverPropertyStatement,
-            backCoverAiStatement: t.exportDialog.backCoverAiStatement,
-            backCoverFooter: t.exportDialog.backCoverFooter,
-          },
+          pdfTranslations,
           iterationToUse,
-          contentLanguage
+          pdfLanguage
         );
       } else if (format === 'txt') {
         await exportPermanenceTxt(
@@ -617,20 +589,9 @@ export function AdvancedExportDialog({
       const url = await generateBiographyPDF(
         biographyForPreview,
         'b5-standard',
-        {
-          createdWith: t.exportDialog.createdWith,
-          allRightsReserved: t.exportDialog.allRightsReserved,
-          preface: t.exportDialog.preface,
-          epilogue: t.exportDialog.epilogue,
-          acknowledgements: t.exportDialog.acknowledgements,
-          specificCredits: t.exportDialog.specificCredits,
-          backCoverDescription: t.exportDialog.backCoverDescription,
-          backCoverPropertyStatement: t.exportDialog.backCoverPropertyStatement,
-          backCoverAiStatement: t.exportDialog.backCoverAiStatement,
-          backCoverFooter: t.exportDialog.backCoverFooter,
-        },
+        pdfTranslations,
         draftIteration,
-        contentLanguage,
+        pdfLanguage,
         true
       ) as string;
 

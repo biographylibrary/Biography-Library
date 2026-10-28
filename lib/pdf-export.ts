@@ -16,10 +16,10 @@ import { addImageFitted } from '@/lib/pdf/photo-fit';
 import { splitTextToSizeLang } from '@/lib/pdf/text-wrap';
 import { isPdfScriptCovered } from '@/lib/pdf/covered-scripts';
 import { resolvePdfBiographyLabels } from '@/lib/biography-display';
-import type { Language } from '@/lib/i18n/translations';
+import { translations as i18nTranslations, type Language } from '@/lib/i18n/translations';
 import {
-  buildColophonLines,
   buildPermanenceHeaderLines,
+  uiLangFromTag,
   type PermanenceExportBiography,
   type PermanenceExportEvent,
   type PermanenceExportRelation,
@@ -33,13 +33,6 @@ type PdfSupabase = SupabaseClient<any, any, any>;
 import { storedToPlainText, storedToSafeHtml } from '@/lib/archive-markdown';
 import { BIOGRAPHY_SECTIONS } from './editor-constants';
 import { supabase } from './supabase';
-
-const UM_YEAR_WORD: Record<string, string> = {
-  en: 'Year',
-  it: 'Anno',
-  fr: 'An',
-  de: 'Jahr',
-};
 
 /** Server-side PDF generation can inject the service-role client (cover/media/storage). */
 let pdfSupabaseOverride: PdfSupabase | null = null;
@@ -1602,6 +1595,42 @@ async function resolveUmIdBaseUrl(explicit?: string | null): Promise<string | nu
   return fetchUmIdBaseUrl();
 }
 
+export type PdfTranslations = {
+  createdWith: string;
+  allRightsReserved: string;
+  preface: string;
+  epilogue: string;
+  acknowledgements: string;
+  specificCredits: string;
+  backCoverDescription: string;
+  backCoverPropertyStatement: string;
+  backCoverAiStatement: string;
+  backCoverFooter: string;
+};
+
+/** Fixed PDF strings in the language of the book (en/it/fr/de; anything else is en). */
+export function resolvePdfTranslations(lang: string | null | undefined): PdfTranslations {
+  const d = i18nTranslations[uiLangFromTag(lang)].exportDialog;
+  return {
+    createdWith: d.createdWith,
+    allRightsReserved: d.allRightsReserved,
+    preface: d.preface,
+    epilogue: d.epilogue,
+    acknowledgements: d.acknowledgements,
+    specificCredits: d.specificCredits,
+    backCoverDescription: d.backCoverDescription,
+    backCoverPropertyStatement: d.backCoverPropertyStatement,
+    backCoverAiStatement: d.backCoverAiStatement,
+    backCoverFooter: d.backCoverFooter,
+  };
+}
+
+function stripUndefined<T extends object>(o: T | undefined): Partial<T> {
+  return Object.fromEntries(
+    Object.entries(o ?? {}).filter(([, v]) => v !== undefined)
+  ) as Partial<T>;
+}
+
 export async function generateBiographyPDF(
   biography: BiographyData,
   _variant?: string,
@@ -1657,6 +1686,9 @@ export async function generateBiographyPDF(
     draftIteration != null ? getDraftLabel(draftIteration, lang) : null;
 
   const pdfLabels = resolvePdfBiographyLabels(biography, lang as Language);
+  // Back cover text follows the language of the book (like colophon and
+  // headings), never the interface language of whoever clicks "export".
+  const pdfText = { ...resolvePdfTranslations(lang), ...stripUndefined(translations) };
   const pdfTitle = pdfLabels.title;
   const pdfAuthor = pdfLabels.author_name;
 
@@ -1706,23 +1738,14 @@ export async function generateBiographyPDF(
   }
 
   // ────────────────────────────────────────
-  // Permanence invariant header (after cover)
+  // Page 2 — left intentionally blank (verso of the cover).
+  // The page is kept, not removed: it holds the inner title page on a recto
+  // (odd page), which also fixes the parity of every later spread. The
+  // permanence record lives in a single block on the last page before the back
+  // cover (see "Permanence record" below).
   // ────────────────────────────────────────
-  if (permanenceData.bio) {
-    logPdfBuildStep('permanence: invariant header page');
-    addNewPage(state, false);
-    const headerLines = buildPermanenceHeaderLines(
-      {
-        ...permanenceData.bio,
-        title: permanenceData.bio.title || pdfTitle,
-        author_name: permanenceData.bio.author_name || pdfAuthor,
-      },
-      permanenceData.events,
-      permanenceData.relations,
-      resolvedUmIdBaseUrl
-    );
-    drawPermanenceTextPage(state, headerLines);
-  }
+  logPdfBuildStep('page 2: blank verso of the cover');
+  addNewPage(state, false);
 
   // ────────────────────────────────────────
   // Optional short author credits (book structure flag only)
@@ -1730,8 +1753,8 @@ export async function generateBiographyPDF(
   if (bookStructure?.include_author_copyright_page) {
     logPdfBuildStep('optional: author copyright page');
     addNewPage(state, false);
-    const createdWith = translations?.createdWith ?? 'Created with Biography Library';
-    const allRightsRaw = translations?.allRightsReserved ?? '© {year} all rights reserved';
+    const createdWith = pdfText.createdWith;
+    const allRightsRaw = pdfText.allRightsReserved;
     const year = new Date().getFullYear();
     const allRights = allRightsRaw.replace('{year}', String(year));
 
@@ -1803,7 +1826,7 @@ export async function generateBiographyPDF(
       addNewPage(state, false);
       addSectionWithTitle(
         state,
-        translations?.preface ?? 'Preface',
+        pdfText.preface,
         bs.preface_content!,
         PT_BODY,
         LINE_HEIGHT_BODY,
@@ -1972,7 +1995,7 @@ export async function generateBiographyPDF(
       addNewPage(state, false);
       addSectionWithTitle(
         state,
-        translations?.epilogue ?? 'Epilogue',
+        pdfText.epilogue,
         bs.epilogue_content!,
         PT_BODY,
         LINE_HEIGHT_BODY,
@@ -1985,7 +2008,7 @@ export async function generateBiographyPDF(
       addNewPage(state, false);
       addSectionWithTitle(
         state,
-        translations?.acknowledgements ?? 'Acknowledgements',
+        pdfText.acknowledgements,
         bs.acknowledgements_content!,
         PT_BODY,
         LINE_HEIGHT_BODY,
@@ -1998,7 +2021,7 @@ export async function generateBiographyPDF(
       addNewPage(state, false);
       addSectionWithTitle(
         state,
-        translations?.specificCredits ?? 'Credits',
+        pdfText.specificCredits,
         bs.specific_credits_content!,
         PT_CREDITS,
         1.5,
@@ -2008,19 +2031,23 @@ export async function generateBiographyPDF(
   }
 
   // ────────────────────────────────────────
-  // Colophon — dual date notation + UM id (before back cover)
+  // Permanence record — the only place identifier, resolver address and
+  // publication date appear (last page before the back cover)
   // ────────────────────────────────────────
   if (permanenceData.bio) {
-    logPdfBuildStep('permanence: colophon');
+    logPdfBuildStep('permanence: record page');
     addNewPage(state, false);
-    const yearWord = UM_YEAR_WORD[lang] ?? UM_YEAR_WORD.en;
-    const colophonLines = buildColophonLines(
-      permanenceData.bio,
-      yearWord,
-      lang,
+    const recordLines = buildPermanenceHeaderLines(
+      {
+        ...permanenceData.bio,
+        title: permanenceData.bio.title || pdfTitle,
+        author_name: permanenceData.bio.author_name || pdfAuthor,
+      },
+      permanenceData.events,
+      permanenceData.relations,
       resolvedUmIdBaseUrl
     );
-    drawPermanenceTextPage(state, colophonLines);
+    drawPermanenceTextPage(state, recordLines);
   }
 
   // ────────────────────────────────────────
@@ -2032,13 +2059,10 @@ export async function generateBiographyPDF(
   await drawBackCover(
     doc,
     biography.author_name,
-    translations?.backCoverDescription ??
-      'This biography was managed with Biography Library, the digital archive of human memory that freely offers the tools to create and preserve your own story or that of a loved one.',
-    translations?.backCoverPropertyStatement ??
-      'The text of this biography is the exclusive property of the author, who retains all rights to pursue any unauthorized use, including use for AI training purposes.',
-    translations?.backCoverAiStatement ??
-      "Biography Library prohibits the use of content hosted on its servers for text mining, AI training or machine learning, pursuant to the Swiss Copyright Act (CopA/LDA) and the author's exclusive right of use under Swiss law.",
-    translations?.backCoverFooter ?? 'Biography Library · biographylibrary.org',
+    pdfText.backCoverDescription,
+    pdfText.backCoverPropertyStatement,
+    pdfText.backCoverAiStatement,
+    pdfText.backCoverFooter,
     lang
   );
 

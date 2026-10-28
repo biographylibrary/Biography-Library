@@ -492,7 +492,13 @@ export default function BiographyViewPage() {
         return;
       }
       setPdfReady(true);
-      await generateBiographyPDF(getBiographyExportData());
+      await generateBiographyPDF(
+        getBiographyExportData(),
+        undefined,
+        undefined,
+        null,
+        biography.record_language_tag ?? undefined
+      );
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : '';
       const coverMsg = biography.translation_of
