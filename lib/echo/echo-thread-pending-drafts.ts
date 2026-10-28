@@ -36,6 +36,12 @@ export type MessageWithPendingDraft = {
   role: string;
   content: string;
   pendingDraft?: { sectionKey: string; draftText: string; replaceText?: string; replaceAll?: boolean; insertBefore?: string; insertAfter?: string };
+  /**
+   * Quando la proposta è stata attaccata al messaggio di conferma che la segue, gli identificativi
+   * dei messaggi da cui viene: «già inserita» si ricorda con l'identificativo della proposta, non
+   * con quello del messaggio che la mostra.
+   */
+  draftSourceIds?: string[];
 };
 
 export function enrichMessagesWithPendingDrafts(
@@ -104,6 +110,7 @@ export function mergeOrphanedDraftMessages<T extends MessageWithPendingDraft>(
       result.push({
         ...next,
         pendingDraft: current.pendingDraft,
+        draftSourceIds: [current.id, next.id],
       });
       i += 1;
       continue;
@@ -137,5 +144,16 @@ export function retainOnlyLatestPendingDraft<T extends MessageWithPendingDraft>(
   if (latestIndex < 0) return messages;
   return messages.map((m, i) =>
     i !== latestIndex && m.pendingDraft ? { ...m, pendingDraft: undefined } : m
+  );
+}
+
+/** Una proposta già inserita non torna come azione dopo il ricaricamento della pagina. */
+export function isDraftApplied(
+  message: { id: string; draftSourceIds?: string[] },
+  appliedMessageIds: Set<string>
+): boolean {
+  return (
+    appliedMessageIds.has(message.id) ||
+    (message.draftSourceIds ?? []).some((id) => appliedMessageIds.has(id))
   );
 }
