@@ -191,6 +191,7 @@ export function RichTextToolbar({
         className={cn('h-8 w-8 p-0', isActive && 'bg-primary text-primary-foreground')}
         onClick={onClick}
         title={title}
+        aria-label={title}
         disabled={disabled}
       >
         <Icon className="h-4 w-4" />

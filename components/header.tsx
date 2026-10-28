@@ -210,6 +210,7 @@ export function Header() {
                     checked={isDark}
                     onCheckedChange={(checked) => setTheme(checked ? 'dark' : 'light')}
                     onClick={(e) => e.stopPropagation()}
+                    aria-label={t.nav.darkMode}
                     className="pointer-events-none"
                   />
                 </div>

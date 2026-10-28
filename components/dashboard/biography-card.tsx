@@ -74,6 +74,8 @@ export function BiographyCard({ biography, onEdit, onDelete }: BiographyCardProp
               e.stopPropagation();
               onDelete(biography);
             }}
+            aria-label={t.common.delete}
+            title={t.common.delete}
           >
             <Trash2 className="h-3.5 w-3.5" />
           </Button>

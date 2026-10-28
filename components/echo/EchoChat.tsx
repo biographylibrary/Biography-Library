@@ -564,6 +564,7 @@ export function EchoChat({
             )}
             disabled={loading || !input.trim()}
             onClick={() => void sendMessage(input)}
+            aria-label={t.conversation.send}
           >
             <Send className={flushChrome ? 'h-3.5 w-3.5' : 'h-4 w-4'} />
           </Button>

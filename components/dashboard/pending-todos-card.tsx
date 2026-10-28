@@ -172,6 +172,8 @@ export function PendingTodosCard() {
                           e.stopPropagation();
                           handleNavigate(todo.biography_id, todo.section);
                         }}
+                        aria-label="Apri la sezione"
+                        title="Apri la sezione"
                       >
                         <ArrowRight className="h-4 w-4" />
                       </Button>

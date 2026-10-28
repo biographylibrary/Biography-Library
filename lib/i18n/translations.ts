@@ -1054,6 +1054,7 @@ export interface Translations {
     priorityMedium: string;
     priorityHigh: string;
     dueDate: string;
+    clearDueDate: string;
     removeDueDate: string;
     addTodo: string;
     filterAll: string;
@@ -3050,6 +3051,7 @@ export const translations: Record<Language, Translations> = {
       priorityMedium: 'Medium Priority',
       priorityHigh: 'High Priority',
       dueDate: 'Due Date',
+      clearDueDate: 'Clear due date',
       removeDueDate: 'Remove date',
       addTodo: 'Add',
       filterAll: 'All',
@@ -5015,6 +5017,7 @@ export const translations: Record<Language, Translations> = {
       priorityMedium: 'Priorità Media',
       priorityHigh: 'Priorità Alta',
       dueDate: 'Scadenza',
+      clearDueDate: 'Togli la scadenza',
       removeDueDate: 'Rimuovi data',
       addTodo: 'Aggiungi',
       filterAll: 'Tutti',
@@ -6981,6 +6984,7 @@ export const translations: Record<Language, Translations> = {
       priorityMedium: 'Priorité Moyenne',
       priorityHigh: 'Priorité Haute',
       dueDate: 'Date d\'échéance',
+      clearDueDate: 'Retirer la date d\'échéance',
       removeDueDate: 'Retirer la date',
       addTodo: 'Ajouter',
       filterAll: 'Tous',
@@ -8946,6 +8950,7 @@ export const translations: Record<Language, Translations> = {
       priorityMedium: 'Mittlere Priorität',
       priorityHigh: 'Hohe Priorität',
       dueDate: 'Fälligkeitsdatum',
+      clearDueDate: 'Fälligkeitsdatum entfernen',
       removeDueDate: 'Datum entfernen',
       addTodo: 'Hinzufügen',
       filterAll: 'Alle',
