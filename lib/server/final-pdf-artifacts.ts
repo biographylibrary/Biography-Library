@@ -6,6 +6,7 @@ import {
   type BiographyData,
 } from '@/lib/pdf-export';
 import { umIdBaseUrl } from '@/lib/um-id-url';
+import { uiLangFromTag } from '@/lib/text-ui-lang';
 import { renderPdfFirstPageToJpegBuffer } from '@/lib/server/render-pdf-first-page-jpeg';
 import '@/lib/server/register-pdf-cover-rasterizer';
 
@@ -167,7 +168,7 @@ export async function generateUploadFinalPdf(
     }
 
     const bioData = await loadBiographyDataForPdfExport(svc, biographyId);
-    const labels = DEFAULT_PDF_LABELS[contentLanguage || 'en'] ?? DEFAULT_PDF_LABELS.en;
+    const labels = DEFAULT_PDF_LABELS[uiLangFromTag(contentLanguage)];
     const buf = await generateBiographyPDF(
       bioData,
       'b5-standard',
