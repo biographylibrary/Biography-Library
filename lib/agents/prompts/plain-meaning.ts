@@ -28,3 +28,9 @@ export const PLAIN_PROSE_AND_MEANING = [
   'When you shape prose: grammar, clarity, and flow only. Do not romanticize, embellish, heighten emotion, or change the person\'s tone. Never invent facts.',
   FAITHFUL_WRITING_RULES,
 ].join('\n');
+
+/** Una scusa è «mi scuso» e basta: niente avverbi enfatici, una volta sola. */
+export const APOLOGY_RULE =
+  'When you apologize, use only the plain apology, once: "mi scuso", "I apologize", "je m\'excuse", "ich entschuldige mich". ' +
+  'Never add intensifiers such as "profondamente", "sinceramente", "sentitamente", "deeply", "sincerely", "profondément", "aufrichtig", and do not apologize again in the same reply. ' +
+  'After the apology, go straight to what you will do.';

@@ -133,3 +133,67 @@ describe('placeDraftInDocument: pezzo da sostituire con differenze di forma', ()
     expect(text).toBe('Cambiata.\n\nAltro.\n\nUna frase uguale.');
   });
 });
+
+describe('inserire prima o dopo un passaggio, senza ripetere il testo', () => {
+  const DOC = [
+    'Ricordo anche le visite alle piramidi, quando avevo circa sei anni. Il giro sul dromedario mi sembrava gigantesco.',
+    'Poi tornammo a casa.',
+  ].join('\n\n');
+  const NEW = "Ricordo quando siamo andati a prendere mia nonna Ada all'aeroporto del Cairo. Non usciva mai.";
+
+  it('mette il testo nuovo come paragrafo prima di quello delle piramidi', () => {
+    const next = placeDraftInDocument(DOC, NEW, { insertBefore: 'Ricordo anche le visite alle piramidi' });
+    expect(next.ok).toBe(true);
+    if (!next.ok) return;
+    expect(next.text).toBe(`${NEW}\n\n${DOC}`);
+    expect(next.text.match(/piramidi/g)).toHaveLength(1);
+  });
+
+  it('mette il testo dopo il paragrafo che contiene il passaggio', () => {
+    const next = placeDraftInDocument(DOC, NEW, { insertAfter: 'Il giro sul dromedario' });
+    expect(next.ok && next.text).toBe(
+      `${DOC.split('\n\n')[0]}\n\n${NEW}\n\n${DOC.split('\n\n')[1]}`
+    );
+  });
+
+  it('trova il passaggio anche con apostrofi e spazi diversi', () => {
+    const doc = "Prima parte.\n\nL’arrivo al Cairo fu lungo.  Poi il viaggio.\n\nFine.";
+    const next = placeDraftInDocument(doc, 'Un paragrafo nuovo.', { insertBefore: "L'arrivo al Cairo fu lungo" });
+    expect(next.ok && next.text).toBe("Prima parte.\n\nUn paragrafo nuovo.\n\nL’arrivo al Cairo fu lungo.  Poi il viaggio.\n\nFine.");
+  });
+
+  it('se il passaggio non c\'è non scrive niente e lo dice', () => {
+    const next = placeDraftInDocument(DOC, NEW, { insertBefore: 'Una frase che non esiste nel testo' });
+    expect(next).toEqual({ ok: false, code: 'anchor_not_found' });
+  });
+
+  it('non ripete un testo che è già lì', () => {
+    const once = placeDraftInDocument(DOC, NEW, { insertBefore: 'Ricordo anche le visite alle piramidi' });
+    if (!once.ok) throw new Error('inserimento fallito');
+    const twice = placeDraftInDocument(once.text, NEW, { insertBefore: 'Ricordo anche le visite alle piramidi' });
+    expect(twice.ok && twice.text.match(/aeroporto del Cairo/g)).toHaveLength(1);
+  });
+});
+
+describe('un testo di più paragrafi non sostituisce una frase «simile» (non si duplica)', () => {
+  it('aggiunge in fondo invece di riscrivere la frase delle piramidi con tutto il blocco', () => {
+    const doc =
+      'Ricordo anche le visite alle piramidi, quando avevo circa sei anni. C\'è il ricordo di un giro sul dromedario, un animale gigantesco.';
+    const draft = [
+      "Ricordo ancora quando siamo andati a prendere mia nonna Ada all'aeroporto del Cairo. Non usciva mai.",
+      'In quel periodo visitammo anche le piramidi. Io avevo circa sei anni e ricordo il giro sul dromedario.',
+    ].join('\n\n');
+    const next = placeDraftInDocument(doc, draft);
+    expect(next.ok).toBe(true);
+    if (!next.ok) return;
+    expect(next.mode).toBe('appended');
+    expect(next.text.startsWith(doc)).toBe(true);
+    expect(next.text.match(/Ricordo anche le visite alle piramidi/g)).toHaveLength(1);
+  });
+
+  it('una frase sola corretta sostituisce ancora la frase che le somiglia', () => {
+    const doc = 'Prima.\n\nRicordo la serra riscaldata, dove mia mamma lavorava. Poi arrivò l\'inverno.';
+    const next = placeDraftInDocument(doc, 'Ricordo la serra riscaldata, dove mia mamma lavorava molto.');
+    expect(next.ok && next.mode).toBe('replaced');
+  });
+});

@@ -1,3 +1,5 @@
+import { APOLOGY_RULE } from '@/lib/agents/prompts/plain-meaning';
+
 const LANGUAGE_NAMES: Record<string, string> = {
   en: 'English',
   it: 'Italian',
@@ -42,6 +44,7 @@ export function buildReviewerChatSystemPrompt(locale: string): string {
     `Be calm and clear; never shame the author. ` +
     `Use read_section and get_publication_status when you need facts from their biography. ` +
     `Do not invent policy rules. If unsure, suggest they contact support. ` +
-    `You cannot publish or change biography status — only explain and guide.`
+    `You cannot publish or change biography status — only explain and guide. ` +
+    APOLOGY_RULE
   );
 }

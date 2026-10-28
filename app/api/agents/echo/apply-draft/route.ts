@@ -27,6 +27,8 @@ export async function POST(req: NextRequest) {
     chapterTitle?: string;
     instruction?: string;
     focusText?: string;
+    insertBefore?: string;
+    insertAfter?: string;
   };
   try {
     body = await req.json();
@@ -41,6 +43,8 @@ export async function POST(req: NextRequest) {
   const chapterTitle = body.chapterTitle?.trim();
   const instruction = body.instruction?.trim();
   const focusText = body.focusText && body.focusText.trim() ? body.focusText : undefined;
+  const insertBefore = body.insertBefore && body.insertBefore.trim() ? body.insertBefore : undefined;
+  const insertAfter = body.insertAfter && body.insertAfter.trim() ? body.insertAfter : undefined;
   const rawDraft = body.draftText ?? '';
   const draftText = replaceText ? rawDraft : rawDraft.trim();
 
@@ -69,7 +73,7 @@ export async function POST(req: NextRequest) {
     biographyId,
     sectionKey,
     draftText,
-    { replaceText, replaceAll, chapterTitle, instruction, focusText }
+    { replaceText, replaceAll, chapterTitle, instruction, focusText, insertBefore, insertAfter }
   );
 
   if (!result.ok) {

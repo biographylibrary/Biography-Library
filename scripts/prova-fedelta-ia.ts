@@ -201,3 +201,6 @@ main().catch((e) => {
   console.error(e);
   process.exit(1);
 });
+
+// Modulo a sé: evita che le funzioni dei due script si scontrino nello spazio globale.
+export {};
