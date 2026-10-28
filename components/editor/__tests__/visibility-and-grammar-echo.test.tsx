@@ -465,7 +465,7 @@ describe('Barra di formattazione e controllo grammatica su selezione/paragrafo',
     expect(screen.getByTestId('ai-usage-indicator')).toBeTruthy();
   });
 
-  it('pickGrammarCheckExcerpt preferisce il testo selezionato, altrimenti il paragrafo del cursore, altrimenti stringa vuota', () => {
+  it('pickGrammarCheckExcerpt controlla solo il testo selezionato: senza selezione non prende il paragrafo del cursore', () => {
     expect(
       pickGrammarCheckExcerpt({
         selectedText: '  Frase selezionata dall’utente.  ',
@@ -473,19 +473,15 @@ describe('Barra di formattazione e controllo grammatica su selezione/paragrafo',
       })
     ).toBe('Frase selezionata dall’utente.');
 
+    // Prima si ripiegava sul paragrafo del cursore: l'autore riceveva proposte su un brano non scelto.
     expect(
       pickGrammarCheckExcerpt({
         selectedText: '   ',
         blockText: '  Solo questo paragrafo viene controllato. ',
       })
-    ).toBe('Solo questo paragrafo viene controllato.');
-
-    expect(
-      pickGrammarCheckExcerpt({
-        selectedText: '',
-        blockText: '   ',
-      })
     ).toBe('');
+
+    expect(pickGrammarCheckExcerpt({ selectedText: '', blockText: '   ' })).toBe('');
   });
 
   it('mostra il pulsante Controlla Grammatica nel pannello di Echo e invoca onGrammarCheck al clic', () => {

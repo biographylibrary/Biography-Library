@@ -32,16 +32,16 @@ const JSON_ONLY_PREFIX =
   'You must respond with valid JSON only. Do not add any explanation, preamble, or text outside the JSON structure. Do not wrap the JSON in markdown code fences.\n\n';
 
 /**
- * Tetto di lunghezza del testo (caratteri, dopo aver tolto l'HTML). Oggi
- * l'interfaccia invia al massimo un capitolo o l'intero foglio libero
- * (nei dati attuali: sezione più lunga 11.598 caratteri, foglio libero più
- * lungo 22.555). Sopra il tetto la rotta rifiuta la richiesta: niente
- * troncamento silenzioso.
+ * Tetto di lunghezza del brano controllato (caratteri, dopo aver tolto l'HTML): circa mezza pagina.
+ * Misurato con il modello vero: fino a 4000 caratteri risponde bene e in pochi secondi; oltre,
+ * con più errori nel testo, trova sempre meno cose (a 16000 caratteri quasi nessuna) e costa di
+ * più. Il controllo è per brani scelti dall'autore, non per l'intero libro: sopra il tetto
+ * l'interfaccia e la rotta rifiutano, niente troncamento silenzioso.
  */
-export const GRAMMAR_MAX_CHARS = 30_000;
+export const GRAMMAR_MAX_CHARS = 4000;
 
 /** Difesa prima di togliere l'HTML: un corpo enorme non entra nemmeno nel parser. */
-export const GRAMMAR_MAX_RAW_CHARS = 200_000;
+export const GRAMMAR_MAX_RAW_CHARS = 40_000;
 
 export const GRAMMAR_MODEL_PARAMS = {
   max_tokens: 2048,
@@ -184,18 +184,148 @@ export function grammarTooLongMessage(rawLocale?: string | null): string {
 }
 
 /**
- * Estrae il brano da sottoporre al controllo grammaticale:
- * preferisce il testo selezionato dall'utente; altrimenti usa il paragrafo
- * in cui si trova il cursore. Non invia mai l'intero documento.
+ * Il brano da controllare è solo il testo che l'autore ha selezionato. Senza selezione non si
+ * controlla niente (e non si manda niente alla IA): si mostra un avviso. In passato, senza
+ * selezione, si controllava il paragrafo dove stava il cursore, e l'autore riceveva proposte su
+ * un brano che non aveva scelto.
  */
 export function pickGrammarCheckExcerpt(target: {
   selectedText: string;
-  blockText: string;
+  blockText?: string;
 }): string {
-  const selected = target.selectedText.trim();
-  if (selected) return selected;
-  const block = target.blockText.trim();
-  if (block) return block;
-  return '';
+  return target.selectedText.trim();
 }
 
+export type GrammarSelectionProblem = 'none' | 'too_long' | null;
+
+/** Controllo fatto nell'interfaccia prima di chiamare la IA. */
+export function grammarSelectionProblem(excerpt: string): GrammarSelectionProblem {
+  const text = excerpt.trim();
+  if (!text) return 'none';
+  return text.length > GRAMMAR_MAX_CHARS ? 'too_long' : null;
+}
+
+/** 1 a 1: apostrofi, virgolette, trattini e spazi speciali ridotti a quelli semplici. */
+function foldQuotes(text: string): string {
+  return text
+    .replace(/[\u2018\u2019\u201A\u2032]/g, "'")
+    .replace(/[\u201C\u201D\u201E\u00AB\u00BB]/g, '"')
+    .replace(/[\u2013\u2014\u2212]/g, '-')
+    .replace(/[\u00A0\u2009\u202F]/g, ' ');
+}
+
+/**
+ * Tiene solo le proposte che parlano davvero del testo controllato. Il modello a volte inventa un
+ * «originale» che nel brano non c'è, o lo copia con apostrofi e spazi diversi: nel primo caso la
+ * proposta non c'entra e si scarta, nel secondo si riscrive «originale» con le parole esatte del
+ * brano, così «Applica» lo trova.
+ */
+export function suggestionsAboutText(items: GrammarSuggestion[], excerpt: string): GrammarSuggestion[] {
+  const folded = foldQuotes(excerpt);
+  const out: GrammarSuggestion[] = [];
+  for (const item of items) {
+    const original = String(item.original ?? '');
+    if (!original.trim()) continue;
+    if (excerpt.includes(original)) {
+      out.push(item);
+      continue;
+    }
+    const words = foldQuotes(original).trim().split(/\s+/).filter(Boolean);
+    if (!words.length) continue;
+    const pattern = new RegExp(words.map((w) => w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('\\s+'));
+    const match = pattern.exec(folded);
+    if (match) out.push({ ...item, original: excerpt.slice(match.index, match.index + match[0].length) });
+  }
+  return out;
+}
+
+/**
+ * Legge l'elenco di proposte anche quando la risposta è troncata o ha del testo intorno: si
+ * recuperano gli oggetti completi. Restituisce null se non se ne salva nemmeno uno.
+ */
+export function parseSuggestionsLoose(text: string): GrammarSuggestion[] | null {
+  return parseLoose(text) ?? parseLoose(repairJsonStrings(extractJson(text)));
+}
+
+/**
+ * Ripara gli errori più comuni dentro le stringhe di un JSON scritto da un modello: un apostrofo
+ * scritto come \' («c\'ho»), un'altra barra rovesciata che non apre una sequenza valida, un a capo
+ * vero dentro la stringa. In italiano gli apostrofi sono ovunque: senza questa riparazione una
+ * risposta buona sembrava «non valida» e l'autore vedeva un errore.
+ */
+export function repairJsonStrings(text: string): string {
+  const VALID_ESCAPE = '"\\/bfnrtu';
+  let out = '';
+  let inString = false;
+  for (let i = 0; i < text.length; i++) {
+    const ch = text[i];
+    if (!inString) {
+      if (ch === '"') inString = true;
+      out += ch;
+      continue;
+    }
+    if (ch === '\\') {
+      const next = text[i + 1];
+      if (next !== undefined && VALID_ESCAPE.includes(next)) {
+        out += ch + next;
+        i++;
+      }
+      // altrimenti la barra si toglie: «\'» diventa «'»
+      continue;
+    }
+    if (ch === '"') {
+      inString = false;
+      out += ch;
+      continue;
+    }
+    if (ch === '\n') out += '\\n';
+    else if (ch === '\r') out += '\\r';
+    else if (ch === '\t') out += '\\t';
+    else out += ch;
+  }
+  return out;
+}
+
+function parseLoose(text: string): GrammarSuggestion[] | null {
+  try {
+    const data = JSON.parse(extractJson(text));
+    if (Array.isArray(data)) return data as GrammarSuggestion[];
+    if (data && typeof data === 'object' && Array.isArray((data as { suggestions?: unknown }).suggestions)) {
+      return (data as { suggestions: GrammarSuggestion[] }).suggestions;
+    }
+  } catch {
+    /* si prova a salvare gli oggetti completi */
+  }
+  const start = text.indexOf('[');
+  if (start < 0) return null;
+  const found: GrammarSuggestion[] = [];
+  let depth = 0;
+  let inString = false;
+  let escaped = false;
+  let objectStart = -1;
+  for (let i = start + 1; i < text.length; i++) {
+    const ch = text[i];
+    if (inString) {
+      if (escaped) escaped = false;
+      else if (ch === '\\') escaped = true;
+      else if (ch === '"') inString = false;
+      continue;
+    }
+    if (ch === '"') inString = true;
+    else if (ch === '{') {
+      if (depth === 0) objectStart = i;
+      depth++;
+    } else if (ch === '}') {
+      depth--;
+      if (depth === 0 && objectStart >= 0) {
+        try {
+          found.push(JSON.parse(text.slice(objectStart, i + 1)) as GrammarSuggestion);
+        } catch {
+          /* oggetto rovinato: si salta */
+        }
+        objectStart = -1;
+      }
+    }
+  }
+  return found.length ? found : null;
+}

@@ -124,3 +124,24 @@ export async function checkAndIncrementUsage(
 
   return { allowed: true };
 }
+
+/**
+ * Restituisce l'uso scalato prima di una chiamata che poi è fallita: un errore della IA non deve
+ * consumare il tetto giornaliero o settimanale dell'autore. Se la riga non c'è, non fa niente.
+ */
+export async function releaseUsage(service: AnyClient, userId: string, cost = 1): Promise<void> {
+  const { data: existing } = await service
+    .from('ai_usage_tracking')
+    .select('daily_count, weekly_count')
+    .eq('user_id', userId)
+    .maybeSingle();
+  if (!existing) return;
+  await service
+    .from('ai_usage_tracking')
+    .update({
+      daily_count: Math.max(0, Number(existing.daily_count) - cost),
+      weekly_count: Math.max(0, Number(existing.weekly_count) - cost),
+      updated_at: new Date().toISOString(),
+    })
+    .eq('user_id', userId);
+}
