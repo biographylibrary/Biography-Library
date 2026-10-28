@@ -145,6 +145,7 @@ export default function NotificationsPage() {
                     className="h-7 w-7 shrink-0 text-muted-foreground hover:text-foreground"
                     onClick={() => handleMarkRead(notification.id)}
                     title={t.notifications.markAsRead}
+                    aria-label={t.notifications.markAsRead}
                   >
                     <Check className="h-3.5 w-3.5" />
                   </Button>

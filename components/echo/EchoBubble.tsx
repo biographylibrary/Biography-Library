@@ -62,6 +62,8 @@ export function EchoBubble() {
                 variant="ghost"
                 size="icon"
                 onClick={() => setBubbleOpen(false)}
+                aria-label={t.common.close}
+                title={t.common.close}
               >
                 <X className="h-4 w-4" />
               </Button>

@@ -227,7 +227,7 @@ function PhotoGridTile({
         {index + 1}
       </span>
       <div className="absolute top-1 right-1 flex gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
-        <div className="cursor-grab active:cursor-grabbing p-1 rounded bg-black/50 text-white">
+        <div aria-hidden="true" className="cursor-grab active:cursor-grabbing p-1 rounded bg-black/50 text-white">
           <GripVertical className="h-3.5 w-3.5" />
         </div>
         <button
@@ -238,6 +238,7 @@ function PhotoGridTile({
           }}
           className="p-1 rounded bg-black/50 text-white hover:bg-brand-wine/80"
           title={t.photos.deleteButton}
+          aria-label={t.photos.deleteButton}
         >
           <Trash2 className="h-3.5 w-3.5" />
         </button>
@@ -297,7 +298,7 @@ function PhotoCard({
             <ImagePlus className="h-8 w-8 text-muted-foreground" />
           </div>
         )}
-        <div className="absolute top-2 left-2 cursor-grab active:cursor-grabbing p-1 rounded bg-black/40 text-white opacity-0 group-hover:opacity-100 transition-opacity">
+        <div aria-hidden="true" className="absolute top-2 left-2 cursor-grab active:cursor-grabbing p-1 rounded bg-black/40 text-white opacity-0 group-hover:opacity-100 transition-opacity">
           <GripVertical className="h-4 w-4" />
         </div>
         <button
@@ -305,6 +306,7 @@ function PhotoCard({
           onClick={() => onDelete(item)}
           className="absolute top-2 right-2 p-1.5 rounded bg-black/40 text-white opacity-0 group-hover:opacity-100 transition-opacity hover:bg-brand-wine/80"
           title={t.photos.deleteButton}
+          aria-label={t.photos.deleteButton}
         >
           <Trash2 className="h-4 w-4" />
         </button>
@@ -616,6 +618,7 @@ export function PhotoGalleryPanel({ biographyId, onClose, embedded }: PhotoGalle
             className="h-8 w-8"
             onClick={() => setViewMode('grid')}
             title={t.photos.viewGrid}
+            aria-label={t.photos.viewGrid}
             aria-pressed={viewMode === 'grid'}
           >
             <LayoutGrid className="h-4 w-4" />
@@ -627,6 +630,7 @@ export function PhotoGalleryPanel({ biographyId, onClose, embedded }: PhotoGalle
             className="h-8 w-8"
             onClick={() => setViewMode('detail')}
             title={t.photos.viewDetail}
+            aria-label={t.photos.viewDetail}
             aria-pressed={viewMode === 'detail'}
           >
             <LayoutList className="h-4 w-4" />
@@ -897,6 +901,7 @@ export function PhotoGalleryPanel({ biographyId, onClose, embedded }: PhotoGalle
               onClick={onClose}
               className="p-1 rounded hover:bg-muted transition-colors text-muted-foreground hover:text-foreground"
               title={t.common.close}
+              aria-label={t.common.close}
             >
               <X className="h-4 w-4" />
             </button>

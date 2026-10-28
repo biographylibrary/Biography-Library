@@ -141,6 +141,7 @@ function CollapsibleGroup({ title, children, defaultOpen = true }: CollapsibleGr
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
+        aria-expanded={open}
         className="w-full flex items-center justify-between px-3 py-2.5 bg-muted/40 hover:bg-muted/60 transition-colors text-sm text-foreground"
       >
         <span>{title}</span>
@@ -170,6 +171,7 @@ function Block({ label, enabled, onToggle, children }: BlockProps) {
         <Switch
           checked={enabled}
           onCheckedChange={onToggle}
+          aria-label={label}
           className="shrink-0"
         />
       </div>
@@ -293,6 +295,7 @@ export function BookStructurePanel({ biographyId, userId, hideTitle }: BookStruc
             {t.editor.bookStructureAuthorCopyrightPage}
           </span>
           <Switch
+            aria-label={t.editor.bookStructureAuthorCopyrightPage}
             checked={data.include_author_copyright_page}
             onCheckedChange={(v) => handleToggle('include_author_copyright_page', v)}
             className="shrink-0"

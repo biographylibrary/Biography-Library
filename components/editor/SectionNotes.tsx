@@ -368,6 +368,8 @@ export function SectionNotes({ biographyId, sectionKey }: SectionNotesProps) {
                                   setEditingNoteId(note.id);
                                   setEditingNoteContent(note.content);
                                 }}
+                                aria-label={t.notesAndTodos.editNote}
+                                title={t.notesAndTodos.editNote}
                               >
                                 <Edit3 className="h-3.5 w-3.5" />
                               </Button>
@@ -376,6 +378,8 @@ export function SectionNotes({ biographyId, sectionKey }: SectionNotesProps) {
                                 variant="ghost"
                                 className="h-7 w-7 p-0 text-destructive hover:text-destructive"
                                 onClick={() => setDeleteNoteId(note.id)}
+                                aria-label={t.notesAndTodos.deleteNote}
+                                title={t.notesAndTodos.deleteNote}
                               >
                                 <Trash2 className="h-3.5 w-3.5" />
                               </Button>
@@ -441,6 +445,8 @@ export function SectionNotes({ biographyId, sectionKey }: SectionNotesProps) {
                       variant="ghost"
                       className="h-9 px-2"
                       onClick={() => setNewTodoDueDate(undefined)}
+                      aria-label={t.notesAndTodos.clearDueDate}
+                      title={t.notesAndTodos.clearDueDate}
                     >
                       <X className="h-4 w-4" />
                     </Button>
@@ -561,6 +567,8 @@ export function SectionNotes({ biographyId, sectionKey }: SectionNotesProps) {
                                 variant="ghost"
                                 className="h-8 px-2"
                                 onClick={() => setEditingTodoDueDate(undefined)}
+                                aria-label={t.notesAndTodos.clearDueDate}
+                                title={t.notesAndTodos.clearDueDate}
                               >
                                 <X className="h-3.5 w-3.5" />
                               </Button>
@@ -627,6 +635,8 @@ export function SectionNotes({ biographyId, sectionKey }: SectionNotesProps) {
                               variant="ghost"
                               className="h-7 w-7 p-0"
                               onClick={() => startEditingTodo(todo)}
+                              aria-label={t.notesAndTodos.editTodo}
+                              title={t.notesAndTodos.editTodo}
                             >
                               <Edit3 className="h-3.5 w-3.5" />
                             </Button>
@@ -635,6 +645,8 @@ export function SectionNotes({ biographyId, sectionKey }: SectionNotesProps) {
                               variant="ghost"
                               className="h-7 w-7 p-0 text-destructive hover:text-destructive"
                               onClick={() => setDeleteTodoId(todo.id)}
+                              aria-label={t.notesAndTodos.deleteTodo}
+                              title={t.notesAndTodos.deleteTodo}
                             >
                               <Trash2 className="h-3.5 w-3.5" />
                             </Button>

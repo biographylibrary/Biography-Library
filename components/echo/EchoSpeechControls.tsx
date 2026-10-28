@@ -93,6 +93,7 @@ export function EchoStopSpeakingButton({
       className={cn(compact ? 'h-11 w-11 shrink-0' : 'h-11 w-11 shrink-0', className)}
       onClick={onStopSpeaking}
       title={t.echo.stopSpeaking}
+      aria-label={t.echo.stopSpeaking}
     >
       <Square className="h-4 w-4 fill-current" />
     </Button>

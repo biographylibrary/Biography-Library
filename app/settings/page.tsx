@@ -214,6 +214,7 @@ export default function SettingsPage() {
             label={t.nav.darkMode}
           >
             <Switch
+              aria-label={t.nav.darkMode}
               checked={isDark}
               onCheckedChange={(checked) => setTheme(checked ? 'dark' : 'light')}
             />
@@ -237,6 +238,7 @@ export default function SettingsPage() {
             description={t.accountSettings.aiFeaturesDescription}
           >
             <Switch
+              aria-label={t.accountSettings.aiFeatures}
               checked={aiEnabled}
               disabled={aiToggleBusy}
               onCheckedChange={(checked) => {
