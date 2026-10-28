@@ -7,6 +7,8 @@ type ToolDraftPayload = {
   draftText?: string;
   replaceText?: string;
   replaceAll?: boolean;
+  insertBefore?: string;
+  insertAfter?: string;
 };
 
 function parseToolDraft(content: string): ToolDraftPayload | null {
@@ -33,7 +35,7 @@ export type MessageWithPendingDraft = {
   id: string;
   role: string;
   content: string;
-  pendingDraft?: { sectionKey: string; draftText: string; replaceText?: string; replaceAll?: boolean };
+  pendingDraft?: { sectionKey: string; draftText: string; replaceText?: string; replaceAll?: boolean; insertBefore?: string; insertAfter?: string };
 };
 
 export function enrichMessagesWithPendingDrafts(
@@ -41,7 +43,7 @@ export function enrichMessagesWithPendingDrafts(
 ): MessageWithPendingDraft[] {
   const draftByAssistantId = new Map<
     string,
-    { sectionKey: string; draftText: string; replaceText?: string; replaceAll?: boolean }
+    { sectionKey: string; draftText: string; replaceText?: string; replaceAll?: boolean; insertBefore?: string; insertAfter?: string }
   >();
 
   for (let i = 0; i < allRows.length; i++) {
@@ -58,6 +60,8 @@ export function enrichMessagesWithPendingDrafts(
           draftText: draft.draftText,
           ...(draft.replaceText ? { replaceText: draft.replaceText } : {}),
           ...(draft.replaceAll ? { replaceAll: true } : {}),
+          ...(draft.insertBefore ? { insertBefore: draft.insertBefore } : {}),
+          ...(draft.insertAfter ? { insertAfter: draft.insertAfter } : {}),
         });
         break;
       }

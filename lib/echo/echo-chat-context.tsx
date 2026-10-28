@@ -40,7 +40,7 @@ export interface EchoChatMessage {
   content: string;
   streaming?: boolean;
   isUsageGuide?: boolean;
-  pendingDraft?: { sectionKey: string; draftText: string; replaceText?: string; replaceAll?: boolean };
+  pendingDraft?: { sectionKey: string; draftText: string; replaceText?: string; replaceAll?: boolean; insertBefore?: string; insertAfter?: string };
   draftDeferred?: boolean;
   draftInserted?: boolean;
   applyingDraft?: boolean;
@@ -53,7 +53,7 @@ function mapStoredMessages(
     id: string;
     role: string;
     content: string;
-    pendingDraft?: { sectionKey: string; draftText: string; replaceText?: string; replaceAll?: boolean };
+    pendingDraft?: { sectionKey: string; draftText: string; replaceText?: string; replaceAll?: boolean; insertBefore?: string; insertAfter?: string };
   }>,
   appliedMessageIds: Set<string>
 ): EchoChatMessage[] {
@@ -91,7 +91,7 @@ function mapStoredMessage(
     id: string;
     role: string;
     content: string;
-    pendingDraft?: { sectionKey: string; draftText: string; replaceText?: string; replaceAll?: boolean };
+    pendingDraft?: { sectionKey: string; draftText: string; replaceText?: string; replaceAll?: boolean; insertBefore?: string; insertAfter?: string };
   },
   appliedMessageIds: Set<string>
 ): EchoChatMessage {
@@ -537,6 +537,8 @@ export function EchoChatProvider({
             draftText: target.pendingDraft.draftText,
             ...(replaceText ? { replaceText } : {}),
             ...(replaceAll ? { replaceAll: true } : {}),
+            ...(target.pendingDraft.insertBefore ? { insertBefore: target.pendingDraft.insertBefore } : {}),
+            ...(target.pendingDraft.insertAfter ? { insertAfter: target.pendingDraft.insertAfter } : {}),
             ...(chapterTitle && !replaceText ? { chapterTitle } : {}),
             ...(instruction ? { instruction } : {}),
             ...(focusText ? { focusText } : {}),
@@ -549,7 +551,7 @@ export function EchoChatProvider({
           mode?: string;
         };
         if (!res.ok) {
-          if (json.code === 'replace_not_found') {
+          if (json.code === 'replace_not_found' || json.code === 'anchor_not_found') {
             throw new Error(t.echo.insertDraftReplaceMissing);
           }
           if (json.code === 'text_locked') {
@@ -662,6 +664,8 @@ export function EchoChatProvider({
         draftText: string;
         replaceText?: string;
         replaceAll?: boolean;
+        insertBefore?: string;
+        insertAfter?: string;
       } | null = null;
       setMessages((prev) => [
         ...prev,
@@ -712,6 +716,8 @@ export function EchoChatProvider({
                   draftText: ev.data.draftText!,
                   ...(ev.data.replaceText ? { replaceText: ev.data.replaceText } : {}),
                   ...(ev.data.replaceAll ? { replaceAll: true } : {}),
+                  ...(ev.data.insertBefore ? { insertBefore: ev.data.insertBefore } : {}),
+                  ...(ev.data.insertAfter ? { insertAfter: ev.data.insertAfter } : {}),
                 };
                 setMessages((prev) =>
                   prev.map((m) =>

@@ -1,3 +1,5 @@
+import { claimsTextInserted, lastAssistantOfferedInsertion, plainApology } from '@/lib/agents/draft-guards';
+import { isAffirmativeDraftReply } from '@/lib/echo/draft-affirmative';
 import { SupabaseClient } from '@supabase/supabase-js';
 import {
   chat,
@@ -254,7 +256,7 @@ async function emitAssistantText(
   serviceClient: SupabaseClient,
   send: SendFn
 ): Promise<void> {
-  const trimmed = text.trim();
+  const trimmed = plainApology(text).trim();
   if (!trimmed) return;
   send('token', { content: trimmed });
   await persistAssistantText(serviceClient, prepared.threadId, trimmed);
@@ -283,6 +285,16 @@ export async function runStreamingAgentTurn(
     (Boolean(prepared.biographyId) || prepared.agentType === 'echo');
 
   let hadDraftPreview = false;
+  const canProposeDraft = Boolean(prepared.tools?.some((t) => t.function.name === 'propose_draft'));
+  /**
+   * Il «sì» a un'offerta di inserimento, senza nessuna scheda in sospeso, non ha niente da applicare:
+   * si pretende la proposta vera subito. Lo stesso se il modello racconta un inserimento mai fatto.
+   */
+  let forceDraftNext =
+    canProposeDraft &&
+    isAffirmativeDraftReply(prepared.userMessage) &&
+    lastAssistantOfferedInsertion(prepared.history);
+  let retriedClaim = false;
   let draftFailed = false;
   let draftAssistantMessageId: string | null = null;
   let draftDisplayPrefix = '';
@@ -298,9 +310,12 @@ export async function runStreamingAgentTurn(
           usage: echoUsage(prepared),
           messages,
           tools: prepared.tools,
-          tool_choice: 'auto',
+          tool_choice: forceDraftNext
+            ? { type: 'function', function: { name: 'propose_draft' } }
+            : 'auto',
           stream: false,
         });
+        forceDraftNext = false;
       } catch (toolErr) {
         console.warn('[agents] tool pass failed, continuing without tools:', toolErr);
         break;
@@ -320,7 +335,7 @@ export async function runStreamingAgentTurn(
       }
 
       if (result.tool_calls?.length) {
-        const assistantContent = extractTextContent(result.content).trim();
+        const assistantContent = plainApology(extractTextContent(result.content)).trim();
         const assistantRow = await appendMessage(serviceClient, prepared.threadId, {
           role: 'assistant',
           content: assistantContent,
@@ -366,6 +381,19 @@ export async function runStreamingAgentTurn(
       }
 
       const directText = extractTextContent(result.content).trim();
+      if (directText && canProposeDraft && !hadDraftPreview && !retriedClaim && claimsTextInserted(directText)) {
+        console.warn('[agents] reply claims an insertion without propose_draft, asking for the real proposal');
+        retriedClaim = true;
+        forceDraftNext = true;
+        messages.push({ role: 'assistant', content: directText });
+        messages.push({
+          role: 'user',
+          content:
+            'You told the author that text was inserted, replaced, added or is being sent, but you did not call propose_draft, so nothing changed. ' +
+            'Call propose_draft now with sectionKey "freeflow" and the exact text. Use insertBefore or insertAfter to place new text next to a passage, or replaceText to change words. Do not write the text in the chat.',
+        });
+        continue;
+      }
       if (directText) {
         const note = failureNote();
         await emitAssistantText(note ? `${directText}\n\n${note}` : directText, prepared, serviceClient, send);

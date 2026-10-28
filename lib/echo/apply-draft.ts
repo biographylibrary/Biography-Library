@@ -32,11 +32,15 @@ export type DraftPlacement = {
   instruction?: string;
   /** Paragraph the cursor was in, when they asked to change a sentence. */
   focusText?: string;
+  /** Passaggio esatto davanti al cui paragrafo inserire il testo nuovo. */
+  insertBefore?: string;
+  /** Passaggio esatto dietro al cui paragrafo inserire il testo nuovo. */
+  insertAfter?: string;
 };
 
 export type PlaceDraftResult =
   | { ok: true; text: string; mode: 'replaced' | 'appended' | 'dashes' }
-  | { ok: false; code: 'replace_not_found' };
+  | { ok: false; code: 'replace_not_found' | 'anchor_not_found' };
 
 export type EditIntent = 'dashes_to_commas' | 'replace' | 'append' | 'unknown';
 
@@ -255,6 +259,47 @@ function replaceTolerant(source: string, target: string, replacement: string): s
   return source.slice(0, from) + replacement + source.slice(to);
 }
 
+/** Dove sta il passaggio nel testo: prima esatto, poi ignorando spazi, poi ignorando apostrofi e segni. */
+function locatePassage(source: string, target: string): { from: number; to: number } | null {
+  if (!target.trim()) return null;
+  const exact = source.indexOf(target);
+  if (exact >= 0) return { from: exact, to: exact + target.length };
+  const words = target.trim().split(/\s+/).filter(Boolean);
+  if (words.length >= 2) {
+    const match = new RegExp(words.map(escapeRegExp).join('\\s+')).exec(source);
+    if (match) return { from: match.index, to: match.index + match[0].length };
+  }
+  const needle = foldForMatching(target).norm.trim();
+  if (needle.length < 4) return null;
+  const hay = foldForMatching(source);
+  const index = hay.norm.indexOf(needle);
+  if (index < 0) return null;
+  return { from: hay.start[index], to: hay.end[index + needle.length - 1] };
+}
+
+/**
+ * Mette il testo nuovo come paragrafo a sé, prima o dopo il paragrafo che contiene il passaggio.
+ * Il testo che c'è già non si tocca: né sostituito né ripetuto.
+ */
+function insertAroundPassage(
+  source: string,
+  anchor: string,
+  draft: string,
+  where: 'before' | 'after'
+): string | null {
+  const found = locatePassage(source, anchor);
+  if (!found) return null;
+  const blockStart = source.lastIndexOf('\n\n', found.from - 1);
+  const start = blockStart < 0 ? 0 : blockStart + 2;
+  const nextBreak = source.indexOf('\n\n', found.to);
+  const end = nextBreak < 0 ? source.length : nextBreak;
+  const text = draft.trim();
+  if (where === 'before') {
+    return `${source.slice(0, start)}${text}\n\n${source.slice(start)}`;
+  }
+  return `${source.slice(0, end)}\n\n${text}${source.slice(end)}`;
+}
+
 function insertUnderChapter(source: string, chapterTitle: string, draft: string): string | null {
   const lines = source.split('\n');
   const wanted = normalizeTitle(chapterTitle);
@@ -309,6 +354,18 @@ export function placeDraftInDocument(
     return { ok: true, text: dashes.text, mode: 'dashes' };
   }
 
+  const insertBefore = literalText(placement.insertBefore);
+  const insertAfter = literalText(placement.insertAfter);
+  if ((insertBefore || insertAfter) && draft && !replaceText) {
+    const where = insertBefore ? 'before' : 'after';
+    const placed = insertAroundPassage(base, insertBefore || insertAfter, draft, where);
+    if (placed === null) return { ok: false, code: 'anchor_not_found' };
+    // Se quel testo è già nel documento, non si ripete.
+    const flat = (t: string) => t.replace(/\s+/g, ' ').trim();
+    if (flat(base).includes(flat(draft))) return { ok: true, text: base, mode: 'appended' };
+    return { ok: true, text: placed, mode: 'appended' };
+  }
+
   if (replaceText) {
     const exact = replaceExact(base, replaceText, draft, placement.replaceAll === true);
     if (exact !== null) return { ok: true, text: exact, mode: 'replaced' };
@@ -345,7 +402,10 @@ export function placeDraftInDocument(
       }
     }
 
-    const similar = replaceBestSentence(base, draft);
+    // La frase «più simile» si sostituisce solo con una frase sola: con un testo di più frasi o
+    // paragrafi il risultato sarebbe lo stesso brano ripetuto (una frase vecchia + il blocco nuovo).
+    const singleSentence = !/\n/.test(draft.trim()) && findSentences(draft).length <= 1;
+    const similar = singleSentence ? replaceBestSentence(base, draft) : null;
     if (similar !== null) return { ok: true, text: similar, mode: 'replaced' };
     if (intent === 'replace') return { ok: false, code: 'replace_not_found' };
   }
@@ -373,7 +433,7 @@ export async function appendDraftToBiography(
   placement: DraftPlacement = {}
 ): Promise<
   | { ok: true; sectionKey: string; appendedWords: number; totalWords: number; mode: 'replaced' | 'appended' | 'dashes' }
-  | { ok: false; error: string; code?: 'replace_not_found' | 'text_locked' }
+  | { ok: false; error: string; code?: 'replace_not_found' | 'anchor_not_found' | 'text_locked' }
 > {
   const trimmed = draftText.trim();
   if (!isValidDraftSectionKey(sectionKey)) {
@@ -421,7 +481,11 @@ export async function appendDraftToBiography(
       placement
     );
     if (!placed.ok) {
-      return { ok: false, error: 'Text to replace was not found', code: placed.code };
+      return {
+        ok: false,
+        error: placed.code === 'anchor_not_found' ? 'Passage to insert next to was not found' : 'Text to replace was not found',
+        code: placed.code,
+      };
     }
     const newText = placed.text;
 
@@ -454,7 +518,11 @@ export async function appendDraftToBiography(
     placement
   );
   if (!placed.ok) {
-    return { ok: false, error: 'Text to replace was not found', code: placed.code };
+    return {
+        ok: false,
+        error: placed.code === 'anchor_not_found' ? 'Passage to insert next to was not found' : 'Text to replace was not found',
+        code: placed.code,
+      };
   }
   const newText = placed.text;
   content[sectionKey] = {

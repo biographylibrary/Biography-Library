@@ -316,4 +316,103 @@ describe('runStreamingAgentTurn', () => {
     );
     expect(appendMessage).toHaveBeenCalled();
   });
+  describe('il modello promette un inserimento senza chiamare lo strumento', () => {
+    const draftCall = {
+      id: 'tc-force',
+      type: 'function',
+      function: {
+        name: 'propose_draft',
+        arguments: '{"sectionKey":"freeflow","draftText":"Nonna Ada arrivò al Cairo.","insertBefore":"Ricordo anche le visite alle piramidi"}',
+      },
+    };
+
+    it('se scrive «sostituzione effettuata» ma non ha chiamato nulla, l\'app pretende la proposta vera e l\'autore non legge la promessa', async () => {
+      events.length = 0;
+      chat.mockReset();
+      chat
+        .mockResolvedValueOnce({ content: 'Procedo subito alla sostituzione. Sostituzione effettuata. Grazie per la pazienza!' })
+        .mockResolvedValueOnce({ content: '', tool_calls: [draftCall] })
+        .mockResolvedValueOnce({ content: 'Ecco la proposta qui sotto.' });
+      executeEchoTool.mockResolvedValue({
+        content: '{"ok":true,"preview":true}',
+        event: { tool: 'propose_draft', sectionKey: 'freeflow', draftText: 'Nonna Ada arrivò al Cairo.', preview: true },
+      });
+
+      await runStreamingAgentTurn({ ...preparedBase, userMessage: 'non vedo il testo inserito' }, serviceClient, send);
+
+      expect(chat.mock.calls[1][0].tool_choice).toEqual({ type: 'function', function: { name: 'propose_draft' } });
+      const shown = events.filter((e) => e.event === 'token').map((e) => (e.data as { content: string }).content).join(' ');
+      expect(shown).not.toContain('Sostituzione effettuata');
+      expect(events.some((e) => e.event === 'tool_result' && (e.data as { preview?: boolean }).preview)).toBe(true);
+    });
+
+    it('il «sì» a un\'offerta di inserimento, senza scheda in sospeso, pretende subito la proposta', async () => {
+      events.length = 0;
+      chat.mockReset();
+      chat
+        .mockResolvedValueOnce({ content: '', tool_calls: [draftCall] })
+        .mockResolvedValueOnce({ content: 'Fatto, la scheda è qui sotto.' });
+      executeEchoTool.mockResolvedValue({
+        content: '{"ok":true,"preview":true}',
+        event: { tool: 'propose_draft', sectionKey: 'freeflow', draftText: 'Nonna Ada arrivò al Cairo.', preview: true },
+      });
+
+      await runStreamingAgentTurn(
+        {
+          ...preparedBase,
+          userMessage: 'sì',
+          history: [
+            { role: 'user', content: 'Aggiungi il ricordo di nonna Ada.' },
+            { role: 'assistant', content: 'Ti sembra che rispecchi il ricordo? Se sì, posso aggiungerlo subito prima della parte delle piramidi.' },
+          ],
+        },
+        serviceClient,
+        send
+      );
+
+      expect(chat.mock.calls[0][0].tool_choice).toEqual({ type: 'function', function: { name: 'propose_draft' } });
+      expect(events.some((e) => e.event === 'tool_result' && (e.data as { preview?: boolean }).preview)).toBe(true);
+    });
+
+    it('un «sì» a una domanda che non riguarda un inserimento non forza niente', async () => {
+      events.length = 0;
+      chat.mockReset();
+      chat.mockResolvedValueOnce({ content: 'Si trova in Aiuto, nel piè di pagina.' });
+      await runStreamingAgentTurn(
+        {
+          ...preparedBase,
+          userMessage: 'sì',
+          history: [
+            { role: 'user', content: 'Dove trovo il manuale?' },
+            { role: 'assistant', content: 'Vuoi che ti spieghi dove scaricare il manuale?' },
+          ],
+        },
+        serviceClient,
+        send
+      );
+      expect(chat.mock.calls[0][0].tool_choice).toBe('auto');
+    });
+
+    it('chiede la proposta una volta sola, poi lascia passare il testo', async () => {
+      events.length = 0;
+      chat.mockReset();
+      chat
+        .mockResolvedValueOnce({ content: 'Ho inserito il testo.' })
+        .mockResolvedValueOnce({ content: 'Ho inserito il testo, davvero.' });
+      await runStreamingAgentTurn({ ...preparedBase, userMessage: 'ok metti' }, serviceClient, send);
+      expect(chat).toHaveBeenCalledTimes(2);
+      expect(events.some((e) => e.event === 'done')).toBe(true);
+    });
+
+    it('«mi scuso profondamente» arriva all\'autore come «mi scuso»', async () => {
+      events.length = 0;
+      chat.mockReset();
+      chat.mockResolvedValueOnce({ content: 'Mi scuso profondamente per l\'errore. Ora lo sistemo.' });
+      await runStreamingAgentTurn({ ...preparedBase, userMessage: 'hai duplicato' }, serviceClient, send);
+      const shown = events.filter((e) => e.event === 'token').map((e) => (e.data as { content: string }).content).join(' ');
+      expect(shown).toContain('Mi scuso per l\'errore');
+      expect(shown).not.toMatch(/profondamente/i);
+    });
+  });
+
 });

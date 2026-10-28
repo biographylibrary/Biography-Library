@@ -46,6 +46,7 @@ export const COACH_TOOL_DEFINITIONS: ToolDefinition[] = [
         'Change the biography document the author is looking at. ' +
         'To add new prose, set only draftText. ' +
         'To replace a passage, set replaceText to the exact current words and draftText to the new words. ' +
+        'To add new text BEFORE or AFTER a passage already in the document, set insertBefore or insertAfter to a short exact passage from the paragraph next to which it goes, and draftText to the new text only. Never repeat the existing text in draftText. ' +
         'To change every occurrence, including a punctuation mark such as a long dash — or –, set replaceAll true. ' +
         'If replaceText is omitted, the text is added at the end. Never do that when the author asked to change existing text. ' +
         'replaceText must be ONE continuous passage copied exactly from the document, as short as possible (the sentence, or the few words around the change); ' +
@@ -71,6 +72,16 @@ export const COACH_TOOL_DEFINITIONS: ToolDefinition[] = [
           replaceAll: {
             type: 'boolean',
             description: 'True to replace every occurrence of replaceText, not only the first.',
+          },
+          insertBefore: {
+            type: 'string',
+            description:
+              'Short exact passage copied from the document. The new text goes as its own paragraph right before the paragraph that contains this passage. Do not combine with replaceText.',
+          },
+          insertAfter: {
+            type: 'string',
+            description:
+              'Short exact passage copied from the document. The new text goes as its own paragraph right after the paragraph that contains this passage. Do not combine with replaceText.',
           },
         },
         required: ['sectionKey', 'draftText'],
@@ -124,6 +135,8 @@ export type CoachToolResultEvent = {
   draftText?: string;
   replaceText?: string;
   replaceAll?: boolean;
+  insertBefore?: string;
+  insertAfter?: string;
   preview?: boolean;
   wordCount?: number;
 };
@@ -239,6 +252,9 @@ export async function executeCoachTool(
       const sectionKey = String(args.sectionKey ?? '');
       const replaceText = typeof args.replaceText === 'string' ? args.replaceText : '';
       const replaceAll = args.replaceAll === true;
+      const insertBefore = typeof args.insertBefore === 'string' && args.insertBefore.trim() ? args.insertBefore : '';
+      const insertAfter = typeof args.insertAfter === 'string' && args.insertAfter.trim() ? args.insertAfter : '';
+      const anchor = insertBefore ? { insertBefore } : insertAfter ? { insertAfter } : {};
       const rawDraft = typeof args.draftText === 'string' ? args.draftText : '';
       const draftText = replaceText.trim() ? rawDraft : rawDraft.trim();
       if (!isValidDraftSectionKey(sectionKey)) {
@@ -246,6 +262,13 @@ export async function executeCoachTool(
       }
       if (!draftText.trim()) {
         return { content: JSON.stringify({ error: 'draftText is required' }) };
+      }
+      if ((insertBefore || insertAfter) && replaceText.trim()) {
+        return {
+          content: JSON.stringify({
+            error: 'Use either replaceText (to change words) or insertBefore/insertAfter (to add a paragraph next to a passage), not both.',
+          }),
+        };
       }
       if (replaceAll && !replaceText.trim()) {
         return { content: JSON.stringify({ error: 'replaceText is required when replaceAll is true' }) };
@@ -281,6 +304,19 @@ export async function executeCoachTool(
             };
           }
         }
+        if ((insertBefore || insertAfter) && !replaceText.trim()) {
+          const found = await replacePassageExists(serviceClient, userId, biographyId, sectionKey, draftText, anchor);
+          if (found === false) {
+            return {
+              content: JSON.stringify({
+                error:
+                  'The passage in insertBefore/insertAfter was not found in the document, so nothing was proposed. ' +
+                  'Call read_section with sectionKey "freeflow", copy a short exact passage from the paragraph next to which the text goes, and call propose_draft again. ' +
+                  'If you still cannot find it, tell the author plainly that you could not place the text.',
+              }),
+            };
+          }
+        }
         return {
           content: JSON.stringify({
             ok: true,
@@ -288,6 +324,7 @@ export async function executeCoachTool(
             sectionKey,
             draftText,
             ...(replaceText.trim() ? { replaceText } : {}),
+            ...anchor,
             ...(replaceAll ? { replaceAll: true } : {}),
             wordCount: words,
           }),
@@ -295,6 +332,7 @@ export async function executeCoachTool(
             tool: 'propose_draft',
             sectionKey,
             draftText,
+            ...anchor,
             ...(replaceText.trim() ? { replaceText } : {}),
             ...(replaceAll ? { replaceAll: true } : {}),
             preview: true,
@@ -312,6 +350,7 @@ export async function executeCoachTool(
         {
           ...(replaceText.trim() ? { replaceText } : {}),
           ...(replaceAll ? { replaceAll: true } : {}),
+          ...anchor,
         }
       );
       if (!applied.ok) {

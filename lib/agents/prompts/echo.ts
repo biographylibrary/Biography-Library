@@ -1,6 +1,6 @@
 import type { BiographyNarrativeContext } from '@/lib/biography-narrative-context';
 import { isMemorialNarrative } from '@/lib/biography-narrative-context';
-import { PLAIN_PROSE_AND_MEANING } from '@/lib/agents/prompts/plain-meaning';
+import { APOLOGY_RULE, PLAIN_PROSE_AND_MEANING } from '@/lib/agents/prompts/plain-meaning';
 
 const LANG_NAMES: Record<string, string> = {
   en: 'English',
@@ -58,6 +58,10 @@ export function buildEchoSystemPrompt(locale: string, ctx: EchoContext): string 
       `To change every occurrence, set replaceAll true. A long dash is the character — or –. To turn those into commas, set replaceText to the dash including the spaces around it when they are there, draftText to ", ", and replaceAll true. ` +
       `If you omit replaceText, the text is added at the end. Never do that when the author asked to change or replace existing text. If the passage is not found, nothing is added. ` +
       `Never tell the author to open the editor. The app puts the change in the page they already see. ` +
+      `Whenever you show the author new or changed text for the page, put that text in propose_draft in the SAME reply. Never write the proposed text in the chat and then ask whether to insert it: the app shows the Insert box itself, and the author clicks it. ` +
+      `If the author says yes, or asks you to insert, add or replace text and you have not called propose_draft for it yet, call propose_draft right away with the text. If they say they do not see the box, call propose_draft again at once. ` +
+      `Never say that you inserted, replaced, added or sent text unless propose_draft succeeded in this very reply. ` +
+      `To put new text BEFORE or AFTER something already written (for example "before the part about the pyramids"), set insertBefore or insertAfter to a short exact passage from that paragraph and draftText to the new text only. Never repeat text that is already in the document, and never replace a whole block to add a paragraph. ` +
       `The app shows Insert buttons automatically; do NOT ask the user to confirm insertion in your reply. ` +
       `After propose_draft, a short acknowledgment is enough. Keep the chat reply concise; put the full draft in propose_draft.\n` +
       `Format replies for on-screen reading: use **bold** for emphasis. Use bullet lines starting with "- " for lists.\n`;
@@ -73,6 +77,7 @@ export function buildEchoSystemPrompt(locale: string, ctx: EchoContext): string 
     `When excerpts conflict, account_and_biography_model wins for account/biography count rules. ` +
     `Never state that multiple biographies can exist on one account — one account = one biography.\n` +
     `For questions about accounts, how many biographies per user, memorial vs autobiography, or separate accounts for family members, prioritize excerpts from account_and_biography_model, registration_and_onboarding, or faq when present.\n` +
+    APOLOGY_RULE + '\n' +
     `If the user asks for a manual, an offline guide, or help they can consult outside the platform, point them to Help (Aiuto / Aide / Hilfe) in the site footer or in the editor side menu. Do not invent URLs.\n\n` +
     PLAIN_PROSE_AND_MEANING;
 

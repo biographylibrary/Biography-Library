@@ -1,10 +1,24 @@
+/**
+ * `\b` di JavaScript non conosce le lettere accentate: «sì» non finiva mai «a fine parola» e non
+ * veniva riconosciuto come risposta affermativa. Qui il confine di parola vale per tutte le lettere.
+ */
+const LETTER_BEFORE = '(?<![\\p{L}\\p{N}_])';
+const LETTER_AFTER = '(?![\\p{L}\\p{N}_])';
+export function unicodeWordBoundaries(re: RegExp): RegExp {
+  const source = re.source.replace(/\\b/g, (_m, offset: number, whole: string) => {
+    const next = whole[offset + 2];
+    return next !== undefined && (next === '(' || /[\p{L}\p{N}]/u.test(next)) ? LETTER_BEFORE : LETTER_AFTER;
+  });
+  return new RegExp(source, 'iu');
+}
+
 const NEGATION_PATTERNS = [
   /\b(no|not|never|don't|dont|nope|nah)\b/i,
   /\b(non|mai|niente)\b/i,
   /\b(pas|jamais|non)\b/i,
   /\b(nicht|nein|nie)\b/i,
   /\b(not now|non ora|pas maintenant|nicht jetzt|later|più tardi|plus tard|später)\b/i,
-];
+].map(unicodeWordBoundaries);
 
 const AFFIRMATIVE_PATTERNS = [
   /^(s[iì]|ok|okay|va bene|certo|procedi|inserisci|aggiungi|metti|copia|confermo)\b/i,
@@ -15,13 +29,13 @@ const AFFIRMATIVE_PATTERNS = [
   /\b(insert|add it|copy it)\b/i,
   /\b(insère|insérer|ajoute)\b/i,
   /\b(einfügen|einfuegen|hinzufügen)\b/i,
-];
+].map(unicodeWordBoundaries);
 
 const DISMISSIVE_PATTERNS = [
   /\b(not now|later|più tardi|dopo|non ora|rimanda)\b/i,
   /\b(pas maintenant|plus tard)\b/i,
   /\b(nicht jetzt|später)\b/i,
-];
+].map(unicodeWordBoundaries);
 
 function normalize(text: string): string {
   return text.trim().toLowerCase().replace(/\s+/g, ' ');
