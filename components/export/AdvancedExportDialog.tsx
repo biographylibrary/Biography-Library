@@ -747,16 +747,24 @@ export function AdvancedExportDialog({
               <div className="notice tone-warning flex items-start gap-3 px-4 py-3">
                 <Info className="h-4 w-4 mt-0.5 shrink-0" />
                 <div className="flex-1 space-y-1">
-                  <p className="text-sm leading-relaxed">
-                    {t.exportDialog.pdfDraftNotice}
-                  </p>
-                  <p className="text-xs">
-                    {draftIteration == null
-                      ? t.exportDialog.draftIterationNone
-                      : t.exportDialog.draftIterationCurrent
-                          .replace('{n}', String(draftIteration))
-                          .replace('{next}', String((draftIteration ?? 0) + 1))}
-                  </p>
+                  {shouldRecordPdfDraft(biography.status) ? (
+                    <>
+                      <p className="text-sm leading-relaxed">
+                        {t.exportDialog.pdfDraftNotice}
+                      </p>
+                      <p className="text-xs">
+                        {draftIteration == null
+                          ? t.exportDialog.draftIterationNone
+                          : t.exportDialog.draftIterationCurrent
+                              .replace('{n}', String(draftIteration))
+                              .replace('{next}', String((draftIteration ?? 0) + 1))}
+                      </p>
+                    </>
+                  ) : (
+                    <p className="text-sm leading-relaxed">
+                      {t.exportDialog.pdfLayoutProofNotice}
+                    </p>
+                  )}
                 </div>
               </div>
             )}
