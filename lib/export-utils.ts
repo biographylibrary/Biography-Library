@@ -46,7 +46,13 @@ export const DOCX_NUMBERING = {
 };
 
 function newDocument(children: Paragraph[]): Document {
-  return new Document({ numbering: DOCX_NUMBERING, sections: [{ properties: {}, children }] });
+  // L'allineamento a sinistra è scritto nel documento: senza, il corpo dipende da come il programma
+  // che lo apre tratta uno stile «Normale» assente. Solo la copertina è centrata, per scelta esplicita.
+  return new Document({
+    numbering: DOCX_NUMBERING,
+    styles: { default: { document: { paragraph: { alignment: AlignmentType.LEFT } } } },
+    sections: [{ properties: {}, children }],
+  });
 }
 
 function isElement(node: Node): node is HTMLElement {
