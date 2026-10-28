@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useCallback, useRef } from 'react';
+import { useEffect, useState, useCallback, useRef, useMemo } from 'react';
 import { useRouter, useParams, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/lib/auth-context';
 import { supabase } from '@/lib/supabase';
@@ -79,6 +79,7 @@ import {
   buildMarkCompletePayload,
 } from '@/lib/editor/write-payloads';
 import { toast } from 'sonner';
+import { createSaveScheduler } from '@/lib/editor/save-scheduler';
 import { useAnalysisJob } from '@/hooks/use-analysis-job';
 import {
   applyApproveOutcome,
@@ -854,6 +855,15 @@ export default function BiographyEditorPage() {
     setSaveStatus('saved');
   }, [id]);
 
+  // Salva 2 secondi dopo l'ultima modifica; l'intervallo di 10 secondi resta come rete di sicurezza.
+  const saveScheduler = useMemo(
+    () =>
+      createSaveScheduler(() => {
+        if (dirtyRef.current) void save();
+      }),
+    [save]
+  );
+
   useEffect(() => {
     const interval = setInterval(() => {
       if (dirtyRef.current) {
@@ -864,24 +874,32 @@ export default function BiographyEditorPage() {
   }, [save]);
 
   useEffect(() => {
-    const handleBeforeUnload = () => {
+    const flush = () => {
+      saveScheduler.cancel();
       if (dirtyRef.current) {
         save();
       }
     };
-    window.addEventListener('beforeunload', handleBeforeUnload);
+    // Scheda in secondo piano, chiusa o ricaricata: si salva subito, finché la pagina è ancora viva.
+    const handleVisibility = () => {
+      if (document.visibilityState === 'hidden') flush();
+    };
+    window.addEventListener('beforeunload', flush);
+    window.addEventListener('pagehide', flush);
+    document.addEventListener('visibilitychange', handleVisibility);
     return () => {
-      window.removeEventListener('beforeunload', handleBeforeUnload);
-      if (dirtyRef.current) {
-        save();
-      }
+      window.removeEventListener('beforeunload', flush);
+      window.removeEventListener('pagehide', flush);
+      document.removeEventListener('visibilitychange', handleVisibility);
+      flush();
     };
-  }, [save]);
+  }, [save, saveScheduler]);
 
   const markDirty = useCallback(() => {
     dirtyRef.current = true;
     setSaveStatus('unsaved');
-  }, []);
+    saveScheduler.schedule();
+  }, [saveScheduler]);
 
   const generateSlugFromTitle = (text: string): string =>
     text
