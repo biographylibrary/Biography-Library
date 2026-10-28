@@ -35,6 +35,7 @@ import { loadLifeFactsForExport } from '@/lib/edition-life-facts';
 import {
   isPdfDraftLimitReached,
   PDF_DRAFT_MAX_ITERATION,
+  shouldRecordPdfDraft,
   shouldShowPdfDraftWarning,
 } from '@/lib/pdf-draft-constants';
 import { useTranslation } from '@/lib/i18n/i18n-context';
@@ -528,7 +529,10 @@ export function AdvancedExportDialog({
 
     await performExport(nextIteration);
 
-    if (biography.id) {
+    // Solo le bozze della fase «revisione PDF» si contano e si registrano. Prima (stato «bozza») il PDF
+    // si scarica per controllare l'impaginazione e non è un giro: la rotta risponderebbe 400, e
+    // l'errore comparirebbe in un dialogo già chiuso, senza che nessuno lo veda.
+    if (biography.id && shouldRecordPdfDraft(biography.status)) {
       try {
         const { data: { session } } = await supabase.auth.getSession();
         const res = await fetch('/api/publication/record-pdf-draft', {
