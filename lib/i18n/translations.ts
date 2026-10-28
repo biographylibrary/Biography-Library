@@ -3655,7 +3655,7 @@ export const translations: Record<Language, Translations> = {
       stepProgress: 'Step {current} of {total}',
       typeSubtitle: 'Tell us who this biography is for. You will confirm your legal rights on the next step.',
       accountModelInfo:
-        'Each account manages one biography only (autobiography or memorial — choose carefully). To write another biography later (e.g. your own story and a family memorial), create a separate account with a different email. Other relatives can write their own perspective on the same person with their own accounts.',
+        'Each account manages one biography only (autobiography or memorial — choose carefully). To write another biography later (e.g. your own story and a family memorial), create a separate account with a different email. Other relatives can write their own perspective on the same person with their own accounts. Once the original is published, you can add translations of it as editions: they do not need another account.',
       legalSubtitle: 'Please read and confirm each statement to continue.',
       pathTitle: 'How would you like to work?',
       pathSubtitle: 'Choose your starting path. You can change approach later.',
@@ -3699,10 +3699,10 @@ export const translations: Record<Language, Translations> = {
         'This marks a line as a chapter title. It appears in the side list, and in the PDF it is larger and starts a new page. The text continues on the same page.',
       aiCreditsTitle: 'AI credits',
       aiCreditsDesc:
-        'This counter shows how many AI-assisted actions you have left today and this week. Standard accounts have daily and weekly limits.',
+        'This counter shows how many AI-assisted actions you have left today and this week. Standard accounts have daily and weekly limits. You can turn the AI features off in Settings: doing so erases Echo’s memory for all your biographies.',
       echoVoiceTitle: 'Echo voice replies',
       echoVoiceDesc:
-        'Under the black Echo bar, the speaker icon is with the microphone, on the left of the writing field. It turns spoken replies on or off.',
+        'Under the black Echo bar, the speaker icon is with the microphone, on the left of the writing field. It turns spoken replies on or off; they start off. The microphone records up to 5 minutes at a time.',
       echoVoiceFreeflowTitle: 'Echo voice replies',
       echoVoiceFreeflowDesc:
         'Open Echo from the floating button, then use the speaker icon inside the chat to mute or unmute spoken replies.',
@@ -3714,7 +3714,7 @@ export const translations: Record<Language, Translations> = {
       importTextDesc: 'Always visible, just above Export. Paste or upload text from Word, PDF, or a plain file.',
       exportTextTitle: 'Export text',
       exportTextDesc:
-        'Export is always visible at the bottom of the side menu, next to the save status. Download TXT or DOCX, or start a PDF draft.',
+        'Export is always visible at the bottom of the side menu, next to the save status. Download PDF, TXT or DOCX. The PDF is a layout proof until the PDF review phase, where each download counts as a draft.',
       bookStructureTitle: 'Book structure',
       bookStructureDesc: 'Inside Tools. Set the cover, credits page, and layout options before exporting.',
       reviewPublicationTitle: 'Review & publication',
@@ -5622,7 +5622,7 @@ export const translations: Record<Language, Translations> = {
       stepProgress: 'Passo {current} di {total}',
       typeSubtitle: 'Indica per chi è questa biografia. Al passo successivo confermerai i tuoi diritti legali.',
       accountModelInfo:
-        'Ogni account gestisce una sola biografia (autobiografia o memorial — scegli con attenzione). Per un altro progetto in futuro (es. la tua autobiografia e un memorial di famiglia), crea un nuovo account con un\'altra email. Altri familiari possono scrivere la loro prospettiva sulla stessa persona con account separati.',
+        'Ogni account gestisce una sola biografia (autobiografia o memorial — scegli con attenzione). Per un altro progetto in futuro (es. la tua autobiografia e un memorial di famiglia), crea un nuovo account con un\'altra email. Altri familiari possono scrivere la loro prospettiva sulla stessa persona con account separati. Una volta pubblicato l\'originale, puoi aggiungerne le traduzioni come edizioni: non serve un altro account.',
       legalSubtitle: 'Leggi e conferma ogni dichiarazione per continuare.',
       pathTitle: 'Come vuoi lavorare?',
       pathSubtitle: 'Scegli il percorso iniziale. Potrai cambiare approccio in seguito.',
@@ -5666,10 +5666,10 @@ export const translations: Record<Language, Translations> = {
         'Segna una riga come titolo di capitolo. Compare nell\'elenco a sinistra e, nel PDF, è più grande e apre una pagina nuova. Il testo continua sulla stessa pagina.',
       aiCreditsTitle: 'Crediti AI',
       aiCreditsDesc:
-        'Questo contatore mostra quante azioni assistite da AI ti restano oggi e questa settimana. Gli account standard hanno limiti giornalieri e settimanali.',
+        'Questo contatore mostra quante azioni assistite da AI ti restano oggi e questa settimana. Gli account standard hanno limiti giornalieri e settimanali. Puoi spegnere le funzioni IA nelle Impostazioni: così si cancella la memoria di Echo su tutte le tue biografie.',
       echoVoiceTitle: 'Voce di Echo',
       echoVoiceDesc:
-        'Sotto la striscia nera di Echo, l’icona dell’altoparlante è con il microfono, a sinistra del campo di scrittura. Attiva o disattiva le risposte a voce.',
+        'Sotto la striscia nera di Echo, l’icona dell’altoparlante è con il microfono, a sinistra del campo di scrittura. Attiva o disattiva le risposte a voce, che partono spente. Il microfono registra fino a 5 minuti per volta.',
       echoVoiceFreeflowTitle: 'Voce di Echo',
       echoVoiceFreeflowDesc:
         'Apri Echo dal pulsante flottante, poi usa l\'icona dell\'altoparlante nella chat per mutare o riattivare la voce.',
@@ -5681,7 +5681,7 @@ export const translations: Record<Language, Translations> = {
       importTextDesc: 'Sempre visibile, subito prima di Esporta. Incolla o carica testo da Word, PDF o un file di testo.',
       exportTextTitle: 'Esporta testo',
       exportTextDesc:
-        'Esporta è sempre visibile in fondo al menu laterale, accanto allo stato di salvataggio. Scarica TXT o DOCX, oppure avvia una bozza PDF.',
+        'Esporta è sempre visibile in fondo al menu laterale, accanto allo stato di salvataggio. Scarica PDF, TXT o DOCX. Il PDF è una prova di impaginazione finché non arrivi alla fase di revisione PDF, dove ogni scaricamento conta come bozza.',
       bookStructureTitle: 'Struttura libro',
       bookStructureDesc: 'Dentro Strumenti. Imposta copertina, crediti e impaginazione prima dell’export.',
       reviewPublicationTitle: 'Revisione e pubblicazione',
@@ -7590,7 +7590,7 @@ export const translations: Record<Language, Translations> = {
       stepProgress: 'Étape {current} sur {total}',
       typeSubtitle: 'Indiquez pour qui est cette biographie. Vous confirmerez vos droits légaux à l\'étape suivante.',
       accountModelInfo:
-        'Chaque compte gère une seule biographie (autobiographie ou mémorial — choisissez avec soin). Pour un autre projet plus tard, créez un compte séparé avec une autre adresse e-mail. D\'autres proches peuvent écrire leur propre perspective sur la même personne avec leurs propres comptes.',
+        'Chaque compte gère une seule biographie (autobiographie ou mémorial — choisissez avec soin). Pour un autre projet plus tard, créez un compte séparé avec une autre adresse e-mail. D\'autres proches peuvent écrire leur propre perspective sur la même personne avec leurs propres comptes. Une fois l\'original publié, vous pouvez en ajouter les traductions comme éditions : un autre compte n\'est pas nécessaire.',
       legalSubtitle: 'Veuillez lire et confirmer chaque déclaration pour continuer.',
       pathTitle: 'Comment souhaitez-vous travailler ?',
       pathSubtitle: 'Choisissez votre parcours initial. Vous pourrez changer d\'approche plus tard.',
@@ -7634,10 +7634,10 @@ export const translations: Record<Language, Translations> = {
         'Marque une ligne comme titre de chapitre. Il apparaît dans la liste à gauche et, dans le PDF, il est plus grand et commence une nouvelle page. Le texte continue sur la même page.',
       aiCreditsTitle: 'Crédits IA',
       aiCreditsDesc:
-        'Ce compteur indique combien d\'actions assistées par IA il vous reste aujourd\'hui et cette semaine. Les comptes standard ont des limites quotidiennes et hebdomadaires.',
+        'Ce compteur indique combien d\'actions assistées par IA il vous reste aujourd\'hui et cette semaine. Les comptes standard ont des limites quotidiennes et hebdomadaires. Vous pouvez désactiver les fonctions IA dans les Paramètres : la mémoire d’Echo est alors effacée pour toutes vos biographies.',
       echoVoiceTitle: 'Voix d\'Echo',
       echoVoiceDesc:
-        'Sous la bande noire d’Echo, l’icône haut-parleur est avec le microphone, à gauche du champ d’écriture. Elle active ou coupe les réponses vocales.',
+        'Sous la bande noire d’Echo, l’icône haut-parleur est avec le microphone, à gauche du champ d’écriture. Elle active ou coupe les réponses vocales, désactivées au départ. Le microphone enregistre jusqu’à 5 minutes à la fois.',
       echoVoiceFreeflowTitle: 'Voix d\'Echo',
       echoVoiceFreeflowDesc:
         'Ouvrez Echo via le bouton flottant, puis utilisez l\'icône haut-parleur dans le chat pour couper ou réactiver la voix.',
@@ -7649,7 +7649,7 @@ export const translations: Record<Language, Translations> = {
       importTextDesc: 'Toujours visible, juste avant Exporter. Collez ou téléversez du texte depuis Word, un PDF ou un fichier texte.',
       exportTextTitle: 'Exporter le texte',
       exportTextDesc:
-        'Exporter est toujours visible en bas du menu latéral, à côté de l’état d’enregistrement. Téléchargez en TXT ou DOCX, ou lancez un brouillon PDF.',
+        'Exporter est toujours visible en bas du menu latéral, à côté de l’état d’enregistrement. Téléchargez en PDF, TXT ou DOCX. Le PDF est une épreuve de mise en page jusqu’à la phase de révision PDF, où chaque téléchargement compte comme un brouillon.',
       bookStructureTitle: 'Structure du livre',
       bookStructureDesc: 'Dans Outils. Définissez couverture, crédits et mise en page avant l’export.',
       reviewPublicationTitle: 'Révision et publication',
@@ -9557,7 +9557,7 @@ export const translations: Record<Language, Translations> = {
       stepProgress: 'Schritt {current} von {total}',
       typeSubtitle: 'Geben Sie an, für wen diese Biografie ist. Im nächsten Schritt bestätigen Sie Ihre rechtlichen Angaben.',
       accountModelInfo:
-        'Jedes Konto verwaltet nur eine Biografie (Autobiografie oder Gedenkbuch — wählen Sie sorgfältig). Für ein weiteres Projekt später erstellen Sie ein separates Konto mit anderer E-Mail. Andere Angehörige können ihre eigene Perspektive auf dieselbe Person mit eigenen Konten schreiben.',
+        'Jedes Konto verwaltet nur eine Biografie (Autobiografie oder Gedenkbuch — wählen Sie sorgfältig). Für ein weiteres Projekt später erstellen Sie ein separates Konto mit anderer E-Mail. Andere Angehörige können ihre eigene Perspektive auf dieselbe Person mit eigenen Konten schreiben. Sobald das Original veröffentlicht ist, können Sie Übersetzungen als Ausgaben hinzufügen: Ein weiteres Konto ist dafür nicht nötig.',
       legalSubtitle: 'Bitte lesen und bestätigen Sie jede Erklärung, um fortzufahren.',
       pathTitle: 'Wie möchten Sie arbeiten?',
       pathSubtitle: 'Wählen Sie Ihren Startweg. Sie können den Ansatz später ändern.',
@@ -9601,10 +9601,10 @@ export const translations: Record<Language, Translations> = {
         'Markiert eine Zeile als Kapiteltitel. Er erscheint in der Liste links und ist im PDF größer und beginnt eine neue Seite. Der Text geht auf derselben Seite weiter.',
       aiCreditsTitle: 'KI-Guthaben',
       aiCreditsDesc:
-        'Dieser Zähler zeigt, wie viele KI-gestützte Aktionen Ihnen heute und diese Woche noch bleiben. Standardkonten haben tägliche und wöchentliche Limits.',
+        'Dieser Zähler zeigt, wie viele KI-gestützte Aktionen Ihnen heute und diese Woche noch bleiben. Standardkonten haben tägliche und wöchentliche Limits. Sie können die KI-Funktionen in den Einstellungen ausschalten: Dabei wird Echos Gedächtnis für alle Ihre Biografien gelöscht.',
       echoVoiceTitle: 'Echo-Stimme',
       echoVoiceDesc:
-        'Unter dem schwarzen Echo-Streifen liegt das Lautsprechersymbol beim Mikrofon, links vom Schreibfeld. Es schaltet gesprochene Antworten ein oder aus.',
+        'Unter dem schwarzen Echo-Streifen liegt das Lautsprechersymbol beim Mikrofon, links vom Schreibfeld. Es schaltet gesprochene Antworten ein oder aus; sie sind anfangs aus. Das Mikrofon nimmt bis zu 5 Minuten am Stück auf.',
       echoVoiceFreeflowTitle: 'Echo-Stimme',
       echoVoiceFreeflowDesc:
         'Öffnen Sie Echo über die schwebende Schaltfläche und nutzen Sie dann das Lautsprechersymbol im Chat zum Stummschalten.',
@@ -9616,7 +9616,7 @@ export const translations: Record<Language, Translations> = {
       importTextDesc: 'Immer sichtbar, direkt vor Exportieren. Text aus Word, PDF oder einer Textdatei einfügen oder hochladen.',
       exportTextTitle: 'Text exportieren',
       exportTextDesc:
-        'Exportieren ist immer unten im Seitenmenü sichtbar, neben dem Speicherstatus. Laden Sie TXT oder DOCX herunter oder starten Sie einen PDF-Entwurf.',
+        'Exportieren ist immer unten im Seitenmenü sichtbar, neben dem Speicherstatus. Laden Sie PDF, TXT oder DOCX herunter. Das PDF ist ein Layout-Probedruck, bis die PDF-Überprüfungsphase beginnt; dort zählt jeder Download als Entwurf.',
       bookStructureTitle: 'Buchstruktur',
       bookStructureDesc: 'Unter Werkzeuge. Cover, Impressum und Layout vor dem Export festlegen.',
       reviewPublicationTitle: 'Überprüfung & Veröffentlichung',
