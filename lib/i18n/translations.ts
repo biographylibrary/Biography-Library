@@ -2477,7 +2477,7 @@ export const translations: Record<Language, Translations> = {
       publicationApproveFinalButton: 'Approve final PDF & run screening',
       publicationExportPdf: 'Export PDF',
       publicationLegacySubmitHint:
-        'For the full print-ready path (PDF drafts → automatic screening), use “Final Review with AI” first, then Start PDF review. You can still submit from here for a quicker check without the PDF phase.',
+        'For the full print-ready path (PDF drafts → automatic screening), first prepare the final version in step 1 above: “Start PDF review” then appears. You can still submit from here for a quicker check without the PDF phase.',
       reviewPublication: {
         menuItem: 'Review & Publication',
         title: 'Review & Publication',
@@ -4440,7 +4440,7 @@ export const translations: Record<Language, Translations> = {
       publicationApproveFinalButton: 'Approva PDF finale e avvia screening',
       publicationExportPdf: 'Esporta PDF',
       publicationLegacySubmitHint:
-        'Per il percorso completo pronto per la stampa (bozze PDF → screening automatico), usa prima “Revisione Finale con IA”, poi Avvia revisione PDF. Puoi ancora inviare da qui per un controllo più rapido senza fase PDF.',
+        'Per il percorso completo pronto per la stampa (bozze PDF → screening automatico), prepara prima la versione finale con il passaggio 1 qui sopra: poi compare «Avvia revisione PDF». Puoi ancora inviare da qui per un controllo più rapido senza fase PDF.',
       reviewPublication: {
         menuItem: 'Revisione e Pubblicazione',
         title: 'Revisione e Pubblicazione',
@@ -6406,7 +6406,7 @@ export const translations: Record<Language, Translations> = {
       publicationApproveFinalButton: 'Approuver le PDF final et lancer le filtrage',
       publicationExportPdf: 'Exporter PDF',
       publicationLegacySubmitHint:
-        'Pour le parcours prêt à l’impression (brouillons PDF → filtrage automatique), utilisez d’abord « Révision finale avec IA », puis Démarrer la révision PDF. Vous pouvez encore soumettre ici pour un contrôle plus rapide sans phase PDF.',
+        'Pour le parcours prêt à l’impression (brouillons PDF → filtrage automatique), préparez d’abord la version finale à l’étape 1 ci-dessus : « Démarrer la révision PDF » apparaît ensuite. Vous pouvez encore soumettre ici pour un contrôle plus rapide sans phase PDF.',
       reviewPublication: {
         menuItem: 'Révision et publication',
         title: 'Révision et publication',
@@ -8371,7 +8371,7 @@ export const translations: Record<Language, Translations> = {
       publicationApproveFinalButton: 'End-PDF genehmigen & Screening starten',
       publicationExportPdf: 'PDF exportieren',
       publicationLegacySubmitHint:
-        'Für den vollen druckfertigen Ablauf (PDF-Entwürfe → automatisches Screening) nutzen Sie zuerst „Abschließende Überprüfung mit KI“, dann „PDF-Prüfung starten“. Sie können hier weiterhin zur schnelleren Prüfung ohne PDF-Phase einreichen.',
+        'Für den vollen druckfertigen Ablauf (PDF-Entwürfe → automatisches Screening) bereiten Sie zuerst oben in Schritt 1 die Endfassung vor: danach erscheint „PDF-Prüfung starten“. Sie können hier weiterhin zur schnelleren Prüfung ohne PDF-Phase einreichen.',
       reviewPublication: {
         menuItem: 'Überprüfung & Veröffentlichung',
         title: 'Überprüfung & Veröffentlichung',
