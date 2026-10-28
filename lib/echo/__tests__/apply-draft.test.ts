@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { placeDraftInDocument, plainDraftText } from '@/lib/echo/apply-draft';
+import { classifyEditIntent, draftReplacesText, placeDraftInDocument, plainDraftText } from '@/lib/echo/apply-draft';
 
 describe('placeDraftInDocument', () => {
   it('adds new prose at the end of the sheet', () => {
@@ -195,5 +195,20 @@ describe('un testo di più paragrafi non sostituisce una frase «simile» (non s
     const doc = 'Prima.\n\nRicordo la serra riscaldata, dove mia mamma lavorava. Poi arrivò l\'inverno.';
     const next = placeDraftInDocument(doc, 'Ricordo la serra riscaldata, dove mia mamma lavorava molto.');
     expect(next.ok && next.mode).toBe('replaced');
+  });
+});
+
+describe('draftReplacesText', () => {
+  it('un\'aggiunta prima o dopo un passaggio non è una sostituzione, anche con «senza cambiarlo»', () => {
+    const intent = classifyEditIntent('Aggiungi prima del paragrafo «Zio Piero» questo ricordo, senza cambiarlo');
+    expect(intent).toBe('replace');
+    expect(draftReplacesText({ insertBefore: 'Zio Piero' }, intent)).toBe(false);
+    expect(draftReplacesText({ insertAfter: 'Zio Piero' }, intent)).toBe(false);
+  });
+
+  it('con un testo da sostituire o una richiesta di sostituzione resta una sostituzione', () => {
+    expect(draftReplacesText({ replaceText: 'vecchio' }, 'unknown')).toBe(true);
+    expect(draftReplacesText({}, 'replace')).toBe(true);
+    expect(draftReplacesText({}, 'append')).toBe(false);
   });
 });
