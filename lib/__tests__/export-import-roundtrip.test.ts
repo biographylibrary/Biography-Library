@@ -2,7 +2,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import { storedToPlainText } from '@/lib/archive-markdown';
 import { buildBiographyDocxBuffer, buildBiographyTxtContent } from '@/lib/export-utils';
-import { parseTextFile } from '@/lib/text-import-parser';
+import { parseTextFiles } from '@/lib/text-import-parser';
 
 // Nel browser mammoth legge un ArrayBuffer; la versione per Node vuole un Buffer. Stessa lettura.
 vi.mock('mammoth', async () => {
@@ -30,7 +30,7 @@ const SAMPLES: Record<string, string> = {
 };
 
 /** Il testo importato: se il file ha titoli, l'app ne fa capitoli; qui si rimettono come titoli. */
-function textOf(parsed: Awaited<ReturnType<typeof parseTextFile>>): string {
+function textOf(parsed: Awaited<ReturnType<typeof parseTextFiles>>): string {
   if (!parsed.sections?.length) return parsed.content;
   return parsed.sections
     .map((s) => (s.title ? `# ${s.title}\n\n${s.content}` : s.content))
@@ -39,13 +39,13 @@ function textOf(parsed: Awaited<ReturnType<typeof parseTextFile>>): string {
 
 async function viaDocx(content: string): Promise<string> {
   const buffer = await buildBiographyDocxBuffer('Titolo', 'Autore', '2026-01-01', [{ title: 'Capitolo', content }]);
-  const parsed = await parseTextFile(new File([buffer], 'prova.docx'), 'it');
+  const parsed = await parseTextFiles([new File([buffer], 'prova.docx')], 'it');
   return textOf(parsed);
 }
 
 async function viaTxt(content: string): Promise<string> {
   const txt = buildBiographyTxtContent('Titolo', 'Autore', '2026-01-01', [{ title: 'Capitolo', content }]);
-  const parsed = await parseTextFile(new File([txt], 'prova.txt'), 'it');
+  const parsed = await parseTextFiles([new File([txt], 'prova.txt')], 'it');
   return textOf(parsed);
 }
 
