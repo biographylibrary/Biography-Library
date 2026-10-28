@@ -183,11 +183,18 @@ export async function fetchPublicLanguageTags() {
   };
 }
 
+/**
+ * Le biografie dell'utente: solo gli originali. Le traduzioni (edizioni, `translation_of` valorizzato)
+ * stanno nel menu Strumenti dell'originale. Senza questo filtro la dashboard mostrava come «la tua
+ * biografia» la scheda aggiornata per ultima, cioè spesso una traduzione: «Continua a scrivere» apriva
+ * la traduzione e l'eliminazione poteva puntare a lei.
+ */
 export async function fetchBiographies(userId: string) {
   const { data, error } = await supabase
     .from('biographies')
     .select('*')
     .eq('user_id', userId)
+    .is('translation_of', null)
     .order('updated_at', { ascending: false });
 
   return {
