@@ -425,6 +425,9 @@ export interface Translations {
     failedGrammar: string;
     grammarUnavailableForLanguage: string;
     selectParagraphForGrammar: string;
+    grammarSelectionTitle: string;
+    grammarSelectionTooLong: string;
+    grammarSelectionGotIt: string;
     editorMode: string;
     conversationMode: string;
     publishedChapterNotice: string;
@@ -2389,7 +2392,10 @@ export const translations: Record<Language, Translations> = {
       signInForAi: 'You must be signed in to use AI features. Please refresh the page.',
       failedGrammar: 'Failed to check grammar',
       grammarUnavailableForLanguage: 'Grammar check is not available for this language',
-      selectParagraphForGrammar: 'Select a paragraph or place the cursor in a paragraph to check its grammar.',
+      selectParagraphForGrammar: 'Select with the mouse or the keyboard the passage you want to check, then press Check Grammar again. Only the selected text is sent to the AI: the rest of your writing is not analyzed.',
+      grammarSelectionTitle: 'Select the text to check',
+      grammarSelectionTooLong: 'You selected {count} characters; the grammar check works on up to {max}. Select a shorter passage, for example one paragraph, and try again. Nothing was sent to the AI.',
+      grammarSelectionGotIt: 'Got it',
       editorMode: 'Editor Mode',
       conversationMode: 'Conversation Mode',
       publishedChapterNotice: 'This chapter is published and cannot be edited.',
@@ -4348,7 +4354,10 @@ export const translations: Record<Language, Translations> = {
       signInForAi: 'Devi aver effettuato l\'accesso per usare le funzionalit\u00e0 AI. Ricarica la pagina.',
       failedGrammar: 'Impossibile controllare la grammatica',
       grammarUnavailableForLanguage: 'Il controllo grammaticale non è disponibile per questa lingua',
-      selectParagraphForGrammar: 'Seleziona un paragrafo o posiziona il cursore in un paragrafo per controllarne la grammatica.',
+      selectParagraphForGrammar: 'Seleziona con il mouse o con la tastiera il brano che vuoi controllare, poi premi di nuovo Controlla Grammatica. Alla IA arriva solo il testo selezionato: il resto di ciò che hai scritto non viene analizzato.',
+      grammarSelectionTitle: 'Seleziona il testo da controllare',
+      grammarSelectionTooLong: 'Hai selezionato {count} caratteri, il controllo ne accetta al massimo {max}. Seleziona un brano più corto, per esempio un paragrafo, e riprova. Non è stato inviato niente alla IA.',
+      grammarSelectionGotIt: 'Ho capito',
       editorMode: 'Modalità Editor',
       conversationMode: 'Modalità Conversazione',
       publishedChapterNotice: 'Questo capitolo è pubblicato e non può essere modificato.',
@@ -6310,8 +6319,10 @@ export const translations: Record<Language, Translations> = {
       failedGrammar: 'Impossible de v\u00e9rifier la grammaire',
       grammarUnavailableForLanguage:
         'La vérification grammaticale n\u2019est pas disponible pour cette langue',
-      selectParagraphForGrammar:
-        'Sélectionnez un paragraphe ou placez le curseur dans un paragraphe pour en vérifier la grammaire.',
+      selectParagraphForGrammar: 'Sélectionnez à la souris ou au clavier le passage à vérifier, puis appuyez de nouveau sur Vérifier la grammaire. Seul le texte sélectionné est envoyé à l\'IA : le reste de votre texte n\'est pas analysé.',
+      grammarSelectionTitle: 'Sélectionnez le texte à vérifier',
+      grammarSelectionTooLong: 'Vous avez sélectionné {count} caractères ; la vérification en accepte {max} au maximum. Sélectionnez un passage plus court, par exemple un paragraphe, et réessayez. Rien n\'a été envoyé à l\'IA.',
+      grammarSelectionGotIt: 'Compris',
       editorMode: 'Mode Éditeur',
       conversationMode: 'Mode Conversation',
       publishedChapterNotice: 'Ce chapitre est publié et ne peut pas être modifié.',
@@ -8272,8 +8283,10 @@ export const translations: Record<Language, Translations> = {
       signInForAi: 'Sie m\u00fcssen angemeldet sein, um KI-Funktionen zu nutzen. Bitte laden Sie die Seite neu.',
       failedGrammar: 'Grammatikpr\u00fcfung fehlgeschlagen',
       grammarUnavailableForLanguage: 'Die Grammatikprüfung ist für diese Sprache nicht verfügbar',
-      selectParagraphForGrammar:
-        'Markieren Sie einen Absatz oder setzen Sie den Cursor in einen Absatz, um die Grammatik zu prüfen.',
+      selectParagraphForGrammar: 'Markieren Sie mit der Maus oder der Tastatur die Stelle, die geprüft werden soll, und drücken Sie dann erneut auf Grammatik prüfen. Nur der markierte Text wird an die KI gesendet: der Rest Ihres Textes wird nicht analysiert.',
+      grammarSelectionTitle: 'Wählen Sie den zu prüfenden Text aus',
+      grammarSelectionTooLong: 'Sie haben {count} Zeichen markiert; die Prüfung akzeptiert höchstens {max}. Markieren Sie eine kürzere Stelle, zum Beispiel einen Absatz, und versuchen Sie es erneut. Es wurde nichts an die KI gesendet.',
+      grammarSelectionGotIt: 'Verstanden',
       editorMode: 'Editor-Modus',
       conversationMode: 'Konversationsmodus',
       publishedChapterNotice: 'Dieses Kapitel ist veröffentlicht und kann nicht bearbeitet werden.',

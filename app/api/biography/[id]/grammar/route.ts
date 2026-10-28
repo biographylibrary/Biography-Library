@@ -10,7 +10,8 @@ import {
   GRAMMAR_MAX_RAW_CHARS,
   GRAMMAR_MODEL_PARAMS,
   buildGrammarPrompt,
-  extractJson,
+  parseSuggestionsLoose,
+  suggestionsAboutText,
   grammarLanguageForTag,
   grammarModelChain,
   grammarTooLongMessage,
@@ -24,6 +25,7 @@ import {
   checkAndIncrementUsage,
   isOverMinuteLimit,
   recordMinuteHit,
+  releaseUsage,
 } from '@/lib/ai/grammar-limits';
 import { checkAuthorTokenCap, tokenCapResponseBody } from '@/lib/ai/token-caps';
 import { assertAiFeaturesEnabled } from '@/lib/server/require-ai-features';
@@ -178,43 +180,54 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
   await recordMinuteHit(service, userId, 'grammar');
 
   const prompt = buildGrammarPrompt(sectionTitle, plainContent, language);
-  let textContent: string;
-  let modelUsed: string;
-  try {
-    const result = await chat({
-      messages: [
-        { role: 'system', content: prompt.system },
-        { role: 'user', content: prompt.user },
-      ],
-      models: grammarModelChain(),
-      max_tokens: GRAMMAR_MODEL_PARAMS.max_tokens,
-      temperature: GRAMMAR_MODEL_PARAMS.temperature,
-      timeoutMs: GRAMMAR_MODEL_PARAMS.timeoutMs,
-      retry: GRAMMAR_MODEL_PARAMS.retry,
-      stopOnClientError: true,
-      usage: { purpose: 'grammar', userId, biographyId },
-    });
-    textContent = result.content;
-    modelUsed = result.modelUsed;
-  } catch (err) {
-    console.error('[api/biography/grammar] AI error:', err);
-    const message =
-      err instanceof Error && err.message.includes('INFOMANIAK_AI_TOKEN')
-        ? 'AI service is not configured yet.'
-        : 'AI service error. Please try again.';
-    return NextResponse.json({ error: message }, { status: 502 });
+  let modelUsed = '';
+  let parsed: GrammarSuggestion[] | null = null;
+  let aiFailed = false;
+
+  // Una risposta illeggibile (troncata, con testo intorno) si ripete una volta sola: costa poco,
+  // e all'autore evita un errore su un brano che il modello sa controllare.
+  for (let attempt = 0; attempt < 2 && parsed === null; attempt++) {
+    try {
+      const result = await chat({
+        messages: [
+          { role: 'system', content: prompt.system },
+          { role: 'user', content: prompt.user },
+        ],
+        models: grammarModelChain(),
+        max_tokens: GRAMMAR_MODEL_PARAMS.max_tokens,
+        temperature: GRAMMAR_MODEL_PARAMS.temperature,
+        timeoutMs: GRAMMAR_MODEL_PARAMS.timeoutMs,
+        retry: GRAMMAR_MODEL_PARAMS.retry,
+        stopOnClientError: true,
+        usage: { purpose: 'grammar', userId, biographyId },
+      });
+      modelUsed = result.modelUsed;
+      parsed = parseSuggestionsLoose(result.content);
+    } catch (err) {
+      console.error('[api/biography/grammar] AI error:', err);
+      aiFailed = true;
+      if (err instanceof Error && err.message.includes('INFOMANIAK_AI_TOKEN')) {
+        if (!isStaff) await releaseUsage(service, userId, 1);
+        return NextResponse.json({ error: 'AI service is not configured yet.' }, { status: 502 });
+      }
+      break;
+    }
   }
 
-  try {
-    const data = JSON.parse(extractJson(textContent));
-    const out = Array.isArray(data)
-      ? sanitizeGrammarSuggestions(data as GrammarSuggestion[])
-      : data;
-    return NextResponse.json({ action: 'grammar', data: out, model_used: modelUsed });
-  } catch {
+  if (parsed === null) {
+    // Un errore della IA non consuma il tetto giornaliero e settimanale dell'autore.
+    if (!isStaff) await releaseUsage(service, userId, 1);
     return NextResponse.json(
-      { error: 'AI returned an invalid response. Please try again.' },
+      {
+        error: aiFailed
+          ? 'AI service error. Please try again.'
+          : 'AI returned an invalid response. Please try again.',
+      },
       { status: 502 }
     );
   }
+
+  // Solo proposte che parlano del brano controllato, con le parole esatte del brano.
+  const out = suggestionsAboutText(sanitizeGrammarSuggestions(parsed), plainContent);
+  return NextResponse.json({ action: 'grammar', data: out, model_used: modelUsed });
 }

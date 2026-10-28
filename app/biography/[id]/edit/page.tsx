@@ -63,7 +63,12 @@ import {
 } from '@/lib/editor/single-document';
 import { INITIAL_AI_STATE, type AiPanelState } from '@/lib/ai-constants';
 import { checkGrammar, AiLimitError } from '@/lib/grammar-service';
-import { grammarLanguageForTag, pickGrammarCheckExcerpt } from '@/lib/ai/grammar';
+import {
+  GRAMMAR_MAX_CHARS,
+  grammarLanguageForTag,
+  grammarSelectionProblem,
+  pickGrammarCheckExcerpt,
+} from '@/lib/ai/grammar';
 import { readActiveEditorTarget } from '@/lib/editor/active-editor-selection';
 import { resolveAiErrorMessage } from '@/lib/echo/ai-error-message';
 import {
@@ -309,6 +314,10 @@ export default function BiographyEditorPage() {
     'passed' | 'flagged' | 'pending' | 'ai_error' | 'parse_error' | null
   >(null);
   const [aiLimitError, setAiLimitError] = useState<AiLimitError | null>(null);
+  /** Avviso del controllo grammaticale: niente testo selezionato, oppure selezione troppo lunga. */
+  const [grammarSelectionNotice, setGrammarSelectionNotice] = useState<
+    { kind: 'none' } | { kind: 'too_long'; count: number } | null
+  >(null);
   const [aiUsageRefresh, setAiUsageRefresh] = useState(0);
   const [isFrozen, setIsFrozen] = useState(false);
   const [biographyMode, setBiographyMode] = useState<'sections' | 'freeflow'>('sections');
@@ -1218,9 +1227,16 @@ export default function BiographyEditorPage() {
   const handleGrammarCheck = useCallback(async () => {
     if (!aiWritingToolsAvailableForBiography({ translationOf })) return;
     if (recordLanguageTag && !grammarLanguageForTag(recordLanguageTag)) return;
+    // Solo il testo selezionato: senza selezione, o con una selezione troppo lunga, si avvisa
+    // e non parte niente verso la IA (né costo, né analisi di un brano non scelto).
     const excerpt = pickGrammarCheckExcerpt(readActiveEditorTarget());
-    if (!excerpt) {
-      toast.info(t.editor.selectParagraphForGrammar);
+    const problem = grammarSelectionProblem(excerpt);
+    if (problem === 'none') {
+      setGrammarSelectionNotice({ kind: 'none' });
+      return;
+    }
+    if (problem === 'too_long') {
+      setGrammarSelectionNotice({ kind: 'too_long', count: excerpt.length });
       return;
     }
     const onSheet = biographyModeRef.current === 'freeflow';
@@ -2111,6 +2127,29 @@ export default function BiographyEditorPage() {
           </div>
         </div>
       )}
+
+      <AlertDialog
+        open={grammarSelectionNotice !== null}
+        onOpenChange={(open) => {
+          if (!open) setGrammarSelectionNotice(null);
+        }}
+      >
+        <AlertDialogContent data-testid="grammar-selection-notice">
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t.editor.grammarSelectionTitle}</AlertDialogTitle>
+            <AlertDialogDescription>
+              {grammarSelectionNotice?.kind === 'too_long'
+                ? t.editor.grammarSelectionTooLong
+                    .replace('{count}', grammarSelectionNotice.count.toLocaleString(language))
+                    .replace('{max}', GRAMMAR_MAX_CHARS.toLocaleString(language))
+                : t.editor.selectParagraphForGrammar}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogAction>{t.editor.grammarSelectionGotIt}</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       <AlertDialog open={showReopenDialog} onOpenChange={setShowReopenDialog}>
         <AlertDialogContent>

@@ -2,7 +2,7 @@
 
 export const HELP_KB_FR = `# Biography Library — Platform Knowledge Base
 
-Version: 1.18 — 2026-10-27
+Version: 1.19 — 2026-10-28
 
 ## account_and_biography_model
 
@@ -28,7 +28,7 @@ Pendant que vous travaillez sur une biographie, Echo conserve une mémoire priv�
 
 ## ai_tools
 
-La vérification grammaticale se trouve dans le panneau Echo sous la page (à côté des boutons du microphone et d’envoi), pas dans un menu de la barre de mise en forme. Sélectionnez un paragraphe ou placez le curseur dans un paragraphe et appuyez sur Vérifier la Grammaire : seul ce passage est vérifié (fautes de frappe et syntaxe, sens préservé) avec Apertus. Le compteur d'usage reste dans la barre de mise en forme, au-dessus du nombre de caractères, à la hauteur des boutons. Limites journalières (40) et hebdomadaires (200) ; actions lourdes = 2. Réinitialisation minuit UTC et lundi UTC. L'IA n'invente pas de faits et ne publie pas seule. Echo et le contrôle grammatical corrigent votre texte sans changer votre voix : ils n'ajoutent ni faits, ni images, ni émotion, et ne rendent pas dramatique un fait simple. Vous voyez toujours la proposition avant son insertion dans la page. Dans une traduction il n'y a aucun outil IA : ni grammaire ni Echo.
+La vérification grammaticale se trouve dans le panneau Echo sous la page (à côté des boutons du microphone et d’envoi), pas dans un menu de la barre de mise en forme. Sélectionnez le passage à vérifier, jusqu'à 4000 caractères (par exemple un paragraphe), et appuyez sur Vérifier la Grammaire : seul ce passage est vérifié (fautes de frappe et syntaxe, sens préservé) avec Apertus. Si rien n'est sélectionné, ou si la sélection est trop longue, un avis apparaît et rien n'est envoyé à l'IA. Le compteur d'usage reste dans la barre de mise en forme, au-dessus du nombre de caractères, à la hauteur des boutons. Limites journalières (40) et hebdomadaires (200) ; actions lourdes = 2. Réinitialisation minuit UTC et lundi UTC. L'IA n'invente pas de faits et ne publie pas seule. Echo et le contrôle grammatical corrigent votre texte sans changer votre voix : ils n'ajoutent ni faits, ni images, ni émotion, et ne rendent pas dramatique un fait simple. Vous voyez toujours la proposition avant son insertion dans la page. Dans une traduction il n'y a aucun outil IA : ni grammaire ni Echo.
 
 ## conversation_mode
 

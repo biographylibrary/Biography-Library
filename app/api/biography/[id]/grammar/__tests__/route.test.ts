@@ -6,6 +6,7 @@ const chat = vi.fn();
 const isOverMinuteLimit = vi.fn();
 const recordMinuteHit = vi.fn();
 const checkAndIncrementUsage = vi.fn();
+const releaseUsage = vi.fn();
 const checkAuthorTokenCap = vi.fn();
 
 const tables: Record<string, Record<string, unknown> | null> = {};
@@ -39,6 +40,7 @@ vi.mock('@/lib/ai/grammar-limits', async (importOriginal) => {
     isOverMinuteLimit: (...a: unknown[]) => isOverMinuteLimit(...a),
     recordMinuteHit: (...a: unknown[]) => recordMinuteHit(...a),
     checkAndIncrementUsage: (...a: unknown[]) => checkAndIncrementUsage(...a),
+    releaseUsage: (...a: unknown[]) => releaseUsage(...a),
   };
 });
 
@@ -80,6 +82,7 @@ beforeEach(() => {
   isOverMinuteLimit.mockResolvedValue(false);
   checkAuthorTokenCap.mockResolvedValue({ allowed: true });
   checkAndIncrementUsage.mockResolvedValue({ allowed: true });
+  releaseUsage.mockResolvedValue(undefined);
   chat.mockResolvedValue({
     content: JSON.stringify([
       { id: '1', original: 'questo è', suggestion: 'questo e', explanation: 'x' },
@@ -349,5 +352,87 @@ describe('POST /api/biography/[id]/grammar: modelli, parametri, limiti', () => {
     chat.mockResolvedValue({ content: 'non è json', modelUsed: 'm' });
     const res = await call(validBody);
     expect(res.status).toBe(502);
+  });
+});
+
+describe('POST /api/biography/[id]/grammar: risposte difficili e proposte fuori tema', () => {
+  const body = {
+    content: '<p>Ho conosciuto mia moglie ad una festa di paese. Ci siamo sposati due anni dopo perchè eravamo felici.</p>',
+    sectionTitle: 'Infanzia',
+    language: 'it',
+  };
+  const ok = JSON.stringify([{ id: '1', original: 'ad una festa', suggestion: 'a una festa', explanation: 'x' }]);
+
+  it('una risposta illeggibile si ripete una volta e poi riesce', async () => {
+    chat
+      .mockResolvedValueOnce({ content: 'Ecco le correzioni, spero ti vadano bene.', modelUsed: 'm' })
+      .mockResolvedValueOnce({ content: ok, modelUsed: 'm' });
+    const res = await call(body);
+    expect(res.status).toBe(200);
+    expect(chat).toHaveBeenCalledTimes(2);
+    expect((await res.json()).data).toHaveLength(1);
+    expect(releaseUsage).not.toHaveBeenCalled();
+  });
+
+  it('un apostrofo scritto \\\' dal modello non produce più «risposta non valida»', async () => {
+    chat.mockResolvedValue({
+      content:
+        '[{"id":"1","original":"ad una festa","suggestion":"a una festa","explanation":"Correzione di \'ad una\' e dell\\\'uso della d eufonica."}]',
+      modelUsed: 'm',
+    });
+    const res = await call(body);
+    expect(res.status).toBe(200);
+    expect(chat).toHaveBeenCalledTimes(1);
+    expect((await res.json()).data).toHaveLength(1);
+  });
+
+  it('una risposta troncata a metà salva le proposte complete', async () => {
+    chat.mockResolvedValue({
+      content:
+        '[{"id":"1","original":"ad una festa","suggestion":"a una festa","explanation":"a"},{"id":"2","original":"perchè","suggestion":"perché","explanation":"b"},{"id":"3","original":"due ann',
+      modelUsed: 'm',
+    });
+    const res = await call(body);
+    expect(res.status).toBe(200);
+    expect((await res.json()).data.map((d: { id: string }) => d.id)).toEqual(['1', '2']);
+    expect(chat).toHaveBeenCalledTimes(1);
+  });
+
+  it('scarta le proposte il cui «originale» non è nel testo controllato', async () => {
+    chat.mockResolvedValue({
+      content: JSON.stringify([
+        { id: '1', original: 'ad una festa', suggestion: 'a una festa', explanation: 'x' },
+        { id: '2', original: 'Il fiume è straripato', suggestion: 'Il fiume straripò', explanation: 'fuori tema' },
+      ]),
+      modelUsed: 'm',
+    });
+    const data = (await (await call(body)).json()).data;
+    expect(data.map((d: { id: string }) => d.id)).toEqual(['1']);
+  });
+
+  it('riscrive «originale» con le parole esatte del testo se il modello cambia apostrofi o spazi', async () => {
+    chat.mockResolvedValue({
+      content: JSON.stringify([{ id: '1', original: "l'altra  volta", suggestion: "l'altra volta,", explanation: 'x' }]),
+      modelUsed: 'm',
+    });
+    const res = await call({ ...body, content: '<p>Disse che l’altra volta non era andata così.</p>' });
+    const data = (await res.json()).data;
+    expect(data).toHaveLength(1);
+    expect(data[0].original).toBe('l’altra volta');
+  });
+
+  it('se la IA fallisce del tutto, l\'errore non consuma il tetto giornaliero e settimanale', async () => {
+    chat.mockRejectedValue(new Error('AI HTTP 503'));
+    const res = await call(body);
+    expect(res.status).toBe(502);
+    expect(releaseUsage).toHaveBeenCalledTimes(1);
+  });
+
+  it('se la risposta resta illeggibile anche al secondo tentativo, si restituisce l\'uso', async () => {
+    chat.mockResolvedValue({ content: 'niente json qui', modelUsed: 'm' });
+    const res = await call(body);
+    expect(res.status).toBe(502);
+    expect(chat).toHaveBeenCalledTimes(2);
+    expect(releaseUsage).toHaveBeenCalledTimes(1);
   });
 });
