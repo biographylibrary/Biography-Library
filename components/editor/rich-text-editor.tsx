@@ -8,7 +8,8 @@ import {
   archiveMarkdownToEditorHtml,
   archiveTiptapExtensions,
 } from '@/lib/editor-archive-tiptap';
-import { registerActiveEditorTarget } from '@/lib/editor/active-editor-selection';
+import { registerActiveEditorTarget, registerSelectionReplacer } from '@/lib/editor/active-editor-selection';
+import { replaceWithinRange, type MarkedRange } from '@/lib/editor/selection-replace';
 import {
   echoChangeHighlight,
   echoHighlightKey,
@@ -157,6 +158,37 @@ export function RichTextEditor({
       const blockText = $from.parent.isTextblock ? $from.parent.textContent : '';
       return { selectedText, blockText };
     });
+  }, [editor]);
+
+  // Il brano scelto per il controllo grammaticale: si ricorda e segue le modifiche del testo, così le
+  // correzioni si applicano lì e non nella prima occorrenza del foglio.
+  const markedRangeRef = useRef<MarkedRange | null>(null);
+  useEffect(() => {
+    if (!editor) return;
+    const follow = ({ transaction }: { transaction: { docChanged: boolean; mapping: { map: (pos: number, assoc?: number) => number } } }) => {
+      const range = markedRangeRef.current;
+      if (!range || !transaction.docChanged) return;
+      markedRangeRef.current = {
+        from: transaction.mapping.map(range.from, -1),
+        to: transaction.mapping.map(range.to, 1),
+      };
+    };
+    editor.on('transaction', follow);
+    const unregister = registerSelectionReplacer({
+      mark: () => {
+        const { from, to } = editor.state.selection;
+        markedRangeRef.current = from === to ? null : { from, to };
+      },
+      replace: (original, replacement) => {
+        const range = markedRangeRef.current;
+        if (!range || editor.isDestroyed) return false;
+        return replaceWithinRange(editor, range, original, replacement);
+      },
+    });
+    return () => {
+      editor.off('transaction', follow);
+      unregister();
+    };
   }, [editor]);
 
   useEffect(() => {

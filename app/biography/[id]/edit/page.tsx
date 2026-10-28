@@ -69,7 +69,11 @@ import {
   grammarSelectionProblem,
   pickGrammarCheckExcerpt,
 } from '@/lib/ai/grammar';
-import { readActiveEditorTarget } from '@/lib/editor/active-editor-selection';
+import {
+  markSelectionForReplacement,
+  readActiveEditorTarget,
+  replaceInMarkedSelection,
+} from '@/lib/editor/active-editor-selection';
 import { resolveAiErrorMessage } from '@/lib/echo/ai-error-message';
 import {
   REOPEN_SECTION_PAYLOAD,
@@ -1239,6 +1243,8 @@ export default function BiographyEditorPage() {
       setGrammarSelectionNotice({ kind: 'too_long', count: excerpt.length });
       return;
     }
+    // Le correzioni si applicheranno solo dentro questo brano, non altrove nel foglio.
+    markSelectionForReplacement();
     const onSheet = biographyModeRef.current === 'freeflow';
     const section = BIOGRAPHY_SECTIONS.find((s) => s.key === activeSection);
     const sectionTitle = onSheet
@@ -1297,44 +1303,23 @@ export default function BiographyEditorPage() {
 
   const handleAcceptSuggestion = useCallback(
     (suggestionId: string) => {
-      setAiState((prev) => {
-        const updated = prev.suggestions.map((s) => {
-          if (s.id !== suggestionId) return s;
-          return { ...s, status: 'accepted' as const };
-        });
-        const accepted = prev.suggestions.find((s) => s.id === suggestionId);
-        if (accepted && accepted.original) {
-          if (biographyModeRef.current === 'freeflow') {
-            setContentFreeflow((prevSheet) => {
-              const next = prevSheet.replace(accepted.original, accepted.suggestion);
-              if (next !== prevSheet) {
-                contentFreeflowRef.current = next;
-                markDirty();
-              }
-              return next;
-            });
-          } else {
-            setContent((prevContent) => {
-              const current = getSectionData(prevContent, activeSection);
-              const newText = current.text.replace(
-                accepted.original,
-                accepted.suggestion
-              );
-              if (newText !== current.text) {
-                markDirty();
-                return {
-                  ...prevContent,
-                  [activeSection]: { ...current, text: newText },
-                };
-              }
-              return prevContent;
-            });
-          }
-        }
-        return { ...prev, suggestions: updated };
-      });
+      const accepted = aiState.suggestions.find((s) => s.id === suggestionId);
+      if (!accepted || !accepted.original) return;
+      // Si cambia dentro il brano che l'autore ha selezionato, nell'editor: prima si cercava la prima
+      // occorrenza nel testo intero e si cambiava un punto non scelto (o niente, se c'era formattazione).
+      const applied = replaceInMarkedSelection(accepted.original, accepted.suggestion);
+      if (!applied) {
+        toast.error(t.editor.grammarApplyFailed);
+        return;
+      }
+      setAiState((prev) => ({
+        ...prev,
+        suggestions: prev.suggestions.map((s) =>
+          s.id === suggestionId ? { ...s, status: 'accepted' as const } : s
+        ),
+      }));
     },
-    [activeSection, markDirty]
+    [aiState.suggestions, t]
   );
 
   const handleRejectSuggestion = useCallback((suggestionId: string) => {
