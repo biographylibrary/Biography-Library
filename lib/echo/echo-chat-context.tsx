@@ -32,7 +32,7 @@ import {
 import { parseEchoMessageContent } from '@/lib/echo/echo-usage-guide';
 import { isAffirmativeDraftReply, isDismissiveDraftReply } from '@/lib/echo/draft-affirmative';
 import { getAppliedDraftMessageIds, markDraftApplied } from '@/lib/echo/draft-applied-storage';
-import { retainOnlyLatestPendingDraft } from '@/lib/echo/echo-thread-pending-drafts';
+import { isDraftApplied, retainOnlyLatestPendingDraft } from '@/lib/echo/echo-thread-pending-drafts';
 import { readActiveEditorTarget } from '@/lib/editor/active-editor-selection';
 
 export interface EchoChatMessage {
@@ -55,6 +55,7 @@ function mapStoredMessages(
     role: string;
     content: string;
     pendingDraft?: { sectionKey: string; draftText: string; replaceText?: string; replaceAll?: boolean; insertBefore?: string; insertAfter?: string };
+    draftSourceIds?: string[];
   }>,
   appliedMessageIds: Set<string>
 ): EchoChatMessage[] {
@@ -93,6 +94,7 @@ function mapStoredMessage(
     role: string;
     content: string;
     pendingDraft?: { sectionKey: string; draftText: string; replaceText?: string; replaceAll?: boolean; insertBefore?: string; insertAfter?: string };
+    draftSourceIds?: string[];
   },
   appliedMessageIds: Set<string>
 ): EchoChatMessage {
@@ -103,7 +105,7 @@ function mapStoredMessage(
     content: parsed.body,
     isUsageGuide: parsed.isUsageGuide,
   };
-  if (m.role !== 'assistant' || !m.pendingDraft || appliedMessageIds.has(m.id)) {
+  if (m.role !== 'assistant' || !m.pendingDraft || isDraftApplied(m, appliedMessageIds)) {
     return base;
   }
   return {
