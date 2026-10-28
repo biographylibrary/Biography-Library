@@ -50,7 +50,13 @@ function newDocument(children: Paragraph[]): Document {
   // che lo apre tratta uno stile «Normale» assente. Solo la copertina è centrata, per scelta esplicita.
   return new Document({
     numbering: DOCX_NUMBERING,
-    styles: { default: { document: { paragraph: { alignment: AlignmentType.LEFT } } } },
+    styles: {
+      default: { document: { paragraph: { alignment: AlignmentType.LEFT } } },
+      // Pages e altri programmi leggono lo stile «Normale», non i predefiniti del documento.
+      paragraphStyles: [
+        { id: 'Normal', name: 'Normal', quickFormat: true, paragraph: { alignment: AlignmentType.LEFT } },
+      ],
+    },
     sections: [{ properties: {}, children }],
   });
 }

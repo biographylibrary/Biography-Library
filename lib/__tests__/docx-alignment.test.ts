@@ -14,6 +14,7 @@ describe('Word: allineamento', () => {
     const body = await zip.file('word/document.xml')!.async('string');
 
     expect(styles).toMatch(/<w:pPrDefault><w:pPr><w:jc w:val="left"\/>/);
+    expect(styles).toMatch(/w:styleId="Normal"[\s\S]*?<w:jc w:val="left"\/>/);
     expect((body.match(/<w:jc w:val="center"\/>/g) ?? []).length).toBe(3);
     // Nessun centrato dopo la copertina: il primo paragrafo del corpo viene dopo i tre centrati.
     const afterCover = body.slice(body.indexOf('Primo paragrafo'));
